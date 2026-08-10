@@ -1074,6 +1074,10 @@ class RenderPySparkTransformModule:
             schemas.add(step.output_schema)
             schemas.update(result.schema for result in step.results)
             schemas.update(self._step_type_schemas(step))
+        for udf in self._udfs(plan):
+            return_type = udf.get("return_type")
+            if isinstance(return_type, StructureType):
+                schemas.update(self._type_schemas(return_type))
         return schemas
 
     def _step_type_schemas(self, step: PySparkStepRecipe) -> set[type[Schema]]:

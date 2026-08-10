@@ -759,6 +759,12 @@ def render_search_example() -> dict[str, str]:
             FieldSearchTermMatch,
             FieldTerm,
         )
+        from examples.search.schemas.fields.intermediate import (
+            DocumentFieldEntry,
+            ExpandedDocumentField,
+            ExpandedFieldText,
+            FieldText,
+        )
         from examples.search.schemas.filtering import DocumentFilterMatch, DocumentFilterScore, FilterQueryAvailability
         from examples.search.schemas.indexing.lexical.index import (
             DocumentIndexSummary,
@@ -1031,6 +1037,12 @@ def render_search_example() -> dict[str, str]:
                 FieldSearchClauseMatch,
                 FieldSearchDocumentMatch,
                 FieldSearchResult,
+            ],
+            "examples.search.schemas.fields.intermediate": [
+                DocumentFieldEntry,
+                ExpandedDocumentField,
+                FieldText,
+                ExpandedFieldText,
             ],
             "examples.search.schemas.indexing.lexical.intermediate": [
                 IndexTargetFrequency,

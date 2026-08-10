@@ -43,6 +43,14 @@ class UdfRaw(Schema):
     id = string(nullable=False)
 
 
+class UdfNestedResult(Schema):
+    value = string(nullable=False)
+
+
+class UdfCount(Schema):
+    count = long(nullable=False)
+
+
 @transform
 class UdfPublished(Transform):
     rows = input(UdfRaw)
@@ -60,6 +68,23 @@ class UdfPipeline(Transform):
     rows = input(UdfRaw)
 
     pipeline = UdfPublished(rows=rows).to()
+
+
+@transform
+class UdfWithNestedReturn(Transform):
+    rows = input(UdfRaw)
+    published = output(UdfCount)
+
+    @special(
+        type="udf",
+        return_type=types.array(types.struct(UdfNestedResult), contains_null=False),
+        nullable=False,
+    )
+    def records(value: Any):
+        return ()
+
+    def publish(self, row: UdfRaw) -> UdfCount:
+        return UdfCount(count=size(self.records(row.id)))
 
 
 @transform
@@ -343,6 +368,21 @@ def test_embed_udfs_copies_udf_source() -> None:
     assert "returnType=" in text
     assert "    @staticmethod\n    def normalize(value: Any):" in text
     assert "return value.strip().lower()" in text
+
+
+def test_transform_module_imports_schemas_nested_in_udf_return_types() -> None:
+    text = PySpark.render.transform()(
+        _recipe(UdfWithNestedReturn),
+        source_transform="tests.UdfWithNestedReturn",
+        runtime_module="testing.model.structure_generated.runtime.schema_assert",
+        schema_modules={
+            UdfRaw: "testing.cache",
+            UdfCount: "testing.cache",
+            UdfNestedResult: "testing.cache",
+        },
+    )
+
+    assert "from testing.cache import UDF_COUNT_SCHEMA, UDF_NESTED_RESULT_SCHEMA, UDF_RAW_SCHEMA" in text
 
 
 def test_v2_cache_directive_renders_as_post_projection_persist() -> None:

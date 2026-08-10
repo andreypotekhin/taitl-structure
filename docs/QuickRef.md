@@ -219,7 +219,7 @@ enriched_df = result.enriched
 The session owns the caller-supplied Spark reference, Structure configuration,
 execution mode and compiled artifacts. It preserves the compiled code between transform and invocations. For instance, the subsequent construction of new insances `EnrichOrders` and repeat invocations of its .run() (on same session) do not trigger recompiling.
 
-## Generated PySpark Code
+## Generated Code
 
 For a source step method like this:
 
@@ -233,7 +233,7 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
     )
 ```
 
-the generated PySpark code looks like this:
+the optionally generated PySpark code looks like this:
 
 ```python
 orders = orders.where(
@@ -270,7 +270,7 @@ before that join; a filter written after a join can reference the joined relatio
 Reference: [expressions API](api/Expressions.api.md), [Transform filtering](background/Transform.back.md), and
 [symbolic execution](background/Compiler.back.md).
 
-## Add and Drop Columns
+## Adding/Droping Columns
 
 Add columns by returning a schema with more fields. Drop columns by returning a schema with fewer fields.
 
@@ -333,17 +333,20 @@ def add_flags(self, order: OrderRaw) -> OrderWithFlags:
     )
 ```
 
-Supported expression forms are field references, literals, `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`, `-`, `*`,
-boolean `&`, `|`, `~`, null checks, `null_safe_eq(...)`, `contains(...)`, `like(...)`, `ilike(...)`, `rlike(...)`,
-array/map indexing, `lower(...)`, `upper(...)`, `trim(...)`, `to_decimal(...)`, `coalesce(...)`, and
-`cast(...)`, `astype(...)`, `try_cast(...)` (PySpark 4 profile), `substring(...)`, `split(...)`,
-`regexp_replace(...)`, `regexp_extract(...)`, `length(...)`, `concat_ws(...)`, and `when(...).otherwise(...)`.
-Additional String helpers include `initcap(...)`, `reverse(...)`, `translate(...)`, `instr(...)`, and
-`levenshtein(...)`.
-Struct fields may also be read with `struct_expr.get_field(name)`.
-Temporal helpers include `date_add(...)`, `datediff(...)`, and `date_trunc(...)`.
-Numeric helpers include `abs(...)`, `round(...)`, `ceil(...)`, and `floor(...)`.
-Predicate helpers include `isnull(...)`, `isnotnull(...)`, and `isnan(...)`.
+Supported expression forms are:
+
+- Field references, literals, `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`, `-`, `*`,
+  boolean `&`, `|`, `~`, null checks, `null_safe_eq(...)`, `when(...).otherwise(...)`.
+- Type casts: `cast(...)`, `astype(...)`, `try_cast(...)` (PySpark 4), 
+- Predicate helpers: `isnull(...)`, `isnotnull(...)`, and `isnan(...)`.
+- String helpers:  `contains(...)`, `like(...)`, `ilike(...)`, `rlike(...)`,
+  array/map indexing, `lower(...)`, `upper(...)`, `trim(...)`, `to_decimal(...)`, `coalesce(...)`, and
+  `substring(...)`, `split(...)`,
+  `regexp_replace(...)`, `regexp_extract(...)`, `length(...)`, `concat_ws(...)`,   `initcap(...)`, `reverse(...)`, `translate(...)`, `instr(...)`.
+- Struct fields may be read with `.get_field(name)`.
+
+- Temporal helpers: `date_add(...)`, `datediff(...)`, and `date_trunc(...)`.
+- Numeric helpers: `abs(...)`, `round(...)`, `ceil(...)`, and `floor(...)`.
 
 Reference: [expressions API](api/Expressions.api.md), [Transform expressions](background/Transform.back.md), and
 [nullability and type coercion](reference/Schema.ref.md).
@@ -371,7 +374,7 @@ Reference: [expressions API](api/Expressions.api.md) and [Transform expression h
 Use `@special(type="ignore")` only for code that must remain outside compiler-visible logic. Calling it from a compiled
 method is an error; use `@special(type="udf")` for intentional scalar Python or `@raw` for arbitrary DataFrame logic.
 
-### Intentional Scalar Python UDFs
+### UDFs
 
 Use `@special(type="udf")` only for deliberately opaque, row-local Python logic that cannot be expressed with the
 typed DSL. Declare both its Spark return type and nullability. Structure records `DSL-W0403` by default because Spark
@@ -535,7 +538,7 @@ The PySpark target lowers these helpers to `row_number()` over
 `Window.partitionBy(...).orderBy(...)`, keeps rank `1`, then drops the temporary rank column. `partition_by` is
 required so the selection is reviewable, and the current public tie policy is `"error"`.
 
-Streaming: global selected-row helpers are batch-only. For finite event-time selection, use grouped
+Regarding streaming, global selected-row helpers are batch-only. For finite event-time selection, use grouped
 `first_value(...)` or `last_value(...)` inside a watermarked `window(...)`; otherwise use caller-owned PySpark after a
 materialization boundary.
 
@@ -705,7 +708,7 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
     return OrderNormalized.project(order)(attributes=attributes)
 ```
 
-Array and map helpers can be combined into one compiled projection:
+Array and map helpers can be combined:
 
 ```python
 normalized_tags = arr_transform(row.tags, lambda tag: lower(trim(tag)))
@@ -750,9 +753,8 @@ return OrderCollectionProfile(
 )
 ```
 
-Callbacks are symbolic: they are evaluated once against a Structure expression, not row-by-row in Python. Callback
-bodies must return typed Structure expressions or typed literals. Python boolean control flow such as `tag and ...`
-is rejected; combine symbolic predicates with `&`, `|`, and `~`.
+Boolean control such as `tag and ...`
+is rejected - combine symbolic predicates with `&`, `|`, and `~`.
 
 Reference: [collections API](api/Collections.api.md),
 [aggregations](background/Aggregations.back.md),
@@ -951,39 +953,87 @@ Reference: [schemas API](api/Schemas.api.md), [schema inheritance](reference/Sch
 
 ### Transform Inheritance
 
-Transform classes can subclass other Transforms. They inherit inputs, lanes, outputs, hooks, helpers, and step methods
-from parent class. Parent transforms run before child transform; a child method with the same name overrides
-the inherited scheduled step. Multiple inheritance is allowed, in which case parents run left-to-right before
-children. Python rules for resolving diamond inheritance shapes are observed.
+Use transform inheritance when one logical pipeline builds upon reusable parent steps. A parent class can contribute
+inputs, lanes, outputs, hooks, helpers, and step methods without being a standalone compiled entry point. The concrete
+child adds the final output and inherits the parent's pipeline flow.
 
 ```python
-class Normalize(Transform):
+class OrderPublished(OrderNormalized):
+    customer_name = string(nullable=True)
+
+
+class NormalizeBase(Transform):
     orders = input(OrderRaw)
     normalized = lane(OrderNormalized)
 
     @step(output=normalized)
     def normalize(self, order: OrderRaw) -> OrderNormalized:
-        return OrderNormalized(
+        where(order.id.is_not_null())
+        return OrderNormalized.project(order)(
             id=lower(trim(order.id)),
             customer_id=lower(trim(order.customer_id)),
+            total=order.total,
         )
 
-class Publish(Normalize):
+
+class PublishOrders(NormalizeBase):
     published = output(OrderPublished)
 
     def publish(self, order: OrderNormalized) -> OrderPublished:
-        return OrderPublished.project(order)
+        return OrderPublished.base(order)(customer_name="published")
 ```
+
+The effective step order is parent-first. Direct parents run left to right, shared diamond ancestors contribute once,
+and local declarations run after inherited declarations. A child method with the same name replaces the inherited
+scheduled step. If sibling parents define the same effective method name, the child must resolve the conflict
+explicitly.
+
+An override can call the parent implementation and add logic to its result:
+
+```python
+class StrictPublishOrders(PublishOrders):
+    @step(output=NormalizeBase.normalized)
+    def normalize(self, order: OrderRaw) -> OrderNormalized:
+        normalized = super().normalize(order)
+        where(normalized.customer_id.is_not_null())
+        return OrderNormalized.project(normalized)
+```
+
+Supported parent-call forms include `super().normalize(order)`, `NormalizeBase.normalize(self, order)`, and
+`super(NormalizeBase, self).normalize(order)`. A supported parent call preserves the parent's hook, validation,
+lane, and traceability boundary. Step methods cannot call other step methods directly; use source order and lanes,
+ordinary compiler-visible helpers, or composition for that reuse.
+
+Use inheritance for one logical pipeline with a stable step flow. Use transform composition for independent complete
+pipelines or when separate input and output boundaries are useful.
 
 ## Transform Composition
 
-Complete transform invocations can be composed dynamically with the invocation-level `.to(...)` method.
+Workflow transforms with stages are first-class citizens of the DSL. Prefer a class-body stage graph when the
+pipeline has named stages. For generated PySpark, this workflow graph is the authored source: assigning a transform
+invocation to a class field declares a stage, and Structure flattens the graph while retaining stage bindings, hooks,
+validation, traceability, and output names.
 
-For authored pipelines, prefer a class-body stage graph with bare transform assignments, as shown by the Search and
-Store example apps.
+```python
+class OrderPipeline(Transform):
+    orders = input(OrderRaw)
+    products = input(Product)
 
-This is an alternative to inheritance, providing more encapsulation (transforms are opaque to each other,
-only connected through inputs/outputs) and allowing to combine independent transforms.
+    normalized = NormalizeOrders(orders=orders)
+    enriched = AddProduct(
+        normalized=normalized.normalized,
+        products=products,
+    )
+    published = PublishOrders(enriched=enriched.enriched)
+    result = output(published=published.published)
+```
+
+The workflow's named stages remain ordinary composition boundaries: `products` comes from the workflow input,
+`normalized` feeds `AddProduct`, and `published` supplies the public result. Use this form when the stages themselves
+are part of the workflow's readable structure.
+
+Complete transform invocations can also be composed dynamically with the invocation-level `.to(...)` method. This is
+useful for combining independent transforms at the call site:
 
 ```python
 result = (
@@ -1160,21 +1210,114 @@ Reference: [schemas API](api/Schemas.api.md), [validation semantics](reference/S
 
 ## Streaming
 
-Structure transforms operate on DataFrames. If the input DataFrame is streaming and every compiled operation
-is supported by Spark Structured Streaming, the transform can run in a streaming pipeline.
+Structure compiles the transformation applied to a streaming DataFrame and returns another DataFrame plan. The
+application creates the source and controls the sink, checkpoint, trigger, output mode, query start, and recovery:
 
-Declare streaming sources on the inputs with `input(..., streaming=True)`. This triggers streaming compatibility
-analysis but does not change the transform options. `@transform(streaming=True)` is an explicit all-step contract:
-every concrete step must be streaming-capable, even when current inputs are batch.
+```python
+events = spark.readStream.schema(raw_event_schema).json(events_path)
+clean = CleanEvents(events=events).run(session).clean
 
-Structure admits row-local projection/filter, stream-static joins, watermarks, event-time and session-window
-aggregation, bounded dedupe, and admitted bounded stream-stream joins. It does not generate `readStream` or
-`writeStream`; the caller owns sources, sinks, checkpoints, triggers, output modes, and query lifecycle.
+query = (
+    clean.writeStream
+    .outputMode("append")
+    .option("checkpointLocation", checkpoint)
+    .format("parquet")
+    .start(output_path)
+)
+```
 
-In composed transforms, default policy propagates streaming lineage through a safe undeclared boundary. Set
-`stream_to_batch_policy = "strict"` when every boundary must be explicit. Global or local
-`allow_stream_to_batch = true` opts into a strict boundary, but cannot suppress a known incompatible operation;
-explicit `streaming=False` remains a compilation error. Structure does not materialize batches or own query lifecycles.
+`run(session)` constructs a streaming DataFrame plan; it does not call `readStream`, `writeStream`, `start()`,
+`awaitTermination()`, or `stop()`. Keep those lifecycle operations in application code.
+
+### Declare streaming compatibility
+
+Use `input(schema, streaming=True)` to declare streaming lineage for one input. Use `@transform(streaming=True)` when
+every concrete step in the transform must be streaming-compatible:
+
+```python
+@transform(streaming=True)
+class CleanEvents(Transform):
+    events = input(RawEvent, streaming=True)
+    clean = output(CleanEvent)
+
+    def clean_event(self, event: RawEvent) -> CleanEvent:
+        where(event.event_id.is_not_null())
+        return CleanEvent.project(event)(
+            event_id=event.event_id,
+            account_id=event.account_id,
+            occurred_at=event.occurred_at,
+        )
+```
+
+The input option reports possible runtime lineage. The transform marker turns known incompatibilities and unknown
+boundaries into errors. An input without `streaming=True` is static and is appropriate for reference data. Explicit
+`streaming=False` cannot override streaming lineage.
+
+### Use stateful operations safely
+
+Watermarks must appear before the stateful operation that uses the event-time field. A windowed aggregate therefore
+declares its watermark and groups by a typed event-time window:
+
+```python
+@transform(streaming=True)
+class AccountTotals(Transform):
+    events = input(RawEvent, streaming=True)
+    totals = output(AccountTotal)
+
+    def summarize(self, event: RawEvent) -> AccountTotal:
+        watermark(event.occurred_at, delay="10 minutes")
+        group_by(
+            window(event.occurred_at, "5 minutes"),
+            account_id=event.account_id,
+        )
+        return AccountTotal.project(event)(total=sum(event.amount))
+```
+
+Watermarks bound event-time state; they do not configure a source, checkpoint, trigger, or sink. The same ordering
+rule applies to watermark-bounded deduplication. Stream-stream joins require both streaming inputs, a watermark on
+each event-time field, and a bounded time predicate:
+
+```python
+watermark(event.occurred_at, delay="10 minutes")
+watermark(acknowledgement.occurred_at, delay="10 minutes")
+inner_join(
+    acknowledgement,
+    on=(acknowledgement.event_id == event.event_id)
+    & event_time_between(event.occurred_at, acknowledgement.occurred_at, upper="5 minutes"),
+)
+```
+
+For a stream-static join, declare the lookup input without `streaming=True`:
+
+```python
+account = input(Account)
+
+left_join(account, on=account.id == event.account_id, hint="broadcast")
+```
+
+### Compose streaming transforms
+
+Streaming lineage propagates through workflow stages. Mark a downstream stage's input as streaming when that stage is
+expected to continue processing a stream; leave a reference-data input static. With
+`stream_to_batch_policy = "strict"`, every stream-to-batch boundary must be declared. The default policy allows a
+boundary only when the downstream operations are proven compatible. `allow_stream_to_batch = true` permits a deliberate
+undeclared boundary but cannot suppress a known incompatible operation.
+
+### Choose an output mode
+
+Structure reports the modes admitted by the transform and target; it does not apply a writer mode. Select the mode in
+the caller's `writeStream` configuration:
+
+| Transform shape | Common modes | Requirement |
+| --- | --- | --- |
+| Stateless projection or filter | `append` | No stateful operation |
+| Event-time aggregate | `append`, `update` | Matching watermark on grouped event time |
+| Session-window aggregate | `append` | Fixed positive gap and matching watermark |
+| Bounded stream-stream join | `append` | Both watermarks and a bounded time predicate |
+
+Global ordering, ranking, limits, offsets, unbounded state without an accepted state policy, RDD/Pandas conversion,
+Spark actions, local collection, and source or sink lifecycle calls are not admitted in a streaming transform. Use a
+batch transform or keep the operation in caller-controlled application code.
 
 Reference: [streaming API](api/Streaming.api.md) and
 [streaming compatibility](background/Streaming.back.md).
@@ -1314,58 +1457,13 @@ Reference docs: [Reference.md](Reference.md)
 
 ## Appendix
 
-## Structure additions to PySpark
+## Extensions to PySpark
 
-## Scan
+Reference: [API extensions](APIExtensions.md)
+
+#### Scan
 
 Use `scan(...)` when an output row depends on state produced by earlier rows in the same explicitly ordered partition.
 Use `lag(...)` when the previous value already exists in the input relation; `scan(...)` is for feedback recurrence.
 
-```python
-class Tick(Schema):
-    series = string(nullable=False)
-    index = long(nullable=False)
-
-
-class FibonacciState(Schema):
-    previous = long(nullable=False)
-    current = long(nullable=False)
-
-
-class Fibonacci(Schema):
-    series = string(nullable=False)
-    index = long(nullable=False)
-    value = long(nullable=False)
-
-
-class FibonacciFromTimeline(Transform):
-    ticks = input(Tick)
-    values = output(Fibonacci)
-
-    def calculate(self, tick: Tick) -> Fibonacci:
-        state = scan(
-            initial=FibonacciState(previous=0, current=1),
-            partition_by=tick.series,
-            order_by=tick.index,
-            max_rows=10_000,
-            step=lambda state, row: FibonacciState(
-                previous=state.current,
-                current=state.previous + state.current,
-            ),
-        )
-        return Fibonacci(series=tick.series, index=tick.index, value=state.previous)
-```
-
-`scan(...)` returns the state before the transition for the current timeline row. Each partition starts from the same
-fully populated `initial` state; empty input returns an empty output relation with the declared schema. The current
-release requires nonempty `partition_by` and `order_by`, accepts only ascending order and `"error"`, rejects
-null order keys, fails duplicate order keys during Spark evaluation, and enforces a positive literal `max_rows` per
-partition.
-
-The PySpark target lowers the recurrence through public DataFrame and Column APIs: group by partition keys, collect and
-sort the payload timeline, fold it with higher-order `aggregate(...)`, then expand one output row per input row. It is
-batch-only and ordinary-PySpark-only; it does not use UDFs, Pandas, RDDs, Spark actions, driver loops, streaming state; nor it persists the state between transform runs.
-
-Reference: [Ordered Timeline Scan](dev/specifications/OrderedTimelineScan.spec.md),
-[API extensions](APIExtensions.md), [IR](background/Compiler.back.md), and
-[PySpark code generation](background/Generation.back.md).
+Reference: [Ordered Timeline Scan](dev/specifications/OrderedTimelineScan.spec.md)

@@ -4,7 +4,6 @@ from typing import Final
 
 from examples.search.schemas.similarity import IndexedSimilarParagraph
 from examples.search.schemas.similarity import ParagraphSimilarity as ParagraphSimilarityPair
-from examples.search.schemas.similarity import SimilarityParagraphQuery
 from examples.search.schemas.text import Paragraph
 from structure import *
 from structure.plugin.pyspark import *
@@ -15,14 +14,14 @@ class SimilarParagraphs(Transform):
 
     maximum_results: Final = 10
 
-    query = input(SimilarityParagraphQuery)
+    query = input(Paragraph)
     paragraphs = input(Paragraph)
     paragraph_similarities = input(ParagraphSimilarityPair)
     ranked_paragraphs = lane(IndexedSimilarParagraph)
     similar_paragraphs = output(IndexedSimilarParagraph)
 
     def rank(
-        self, query: SimilarityParagraphQuery, paragraph: Paragraph, pair: ParagraphSimilarityPair
+        self, query: Paragraph, paragraph: Paragraph, pair: ParagraphSimilarityPair
     ) -> IndexedSimilarParagraph:
         inner_join(on=query.id == pair.left_paragraph_id)
         candidate_id = pair.right_paragraph_id

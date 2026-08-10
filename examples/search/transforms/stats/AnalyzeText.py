@@ -163,6 +163,7 @@ class AnalyzeText(Transform):
             on=(left.source == right.source)
             & (left.language == right.language)
             & (left.title_prefix == right.title_prefix)
+            & (left.document_id < right.document_id)
         )
         return SimilarDocument.project(left)(
             left_document_id=left.document_id,

@@ -4,7 +4,6 @@ from typing import Final
 
 from examples.search.schemas.similarity import IndexedSimilarSentence
 from examples.search.schemas.similarity import SentenceSimilarity as SentenceSimilarityPair
-from examples.search.schemas.similarity import SimilaritySentenceQuery
 from examples.search.schemas.text import Sentence
 from structure import *
 from structure.plugin.pyspark import *
@@ -15,14 +14,14 @@ class SimilarSentences(Transform):
 
     maximum_results: Final = 10
 
-    query = input(SimilaritySentenceQuery)
+    query = input(Sentence)
     sentences = input(Sentence)
     sentence_similarities = input(SentenceSimilarityPair)
     ranked_sentences = lane(IndexedSimilarSentence)
     similar_sentences = output(IndexedSimilarSentence)
 
     def rank(
-        self, query: SimilaritySentenceQuery, sentence: Sentence, pair: SentenceSimilarityPair
+        self, query: Sentence, sentence: Sentence, pair: SentenceSimilarityPair
     ) -> IndexedSimilarSentence:
         inner_join(on=query.id == pair.left_sentence_id)
         candidate_id = pair.right_sentence_id

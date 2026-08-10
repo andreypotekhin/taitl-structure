@@ -2,21 +2,9 @@
 
 from examples.search.algorithms.text import normalized_token
 from examples.search.schemas.fields import *
+from examples.search.schemas.fields.intermediate import ExpandedFieldText, FieldText
 from structure import *
 from structure.plugin.pyspark import *
-
-
-class FieldText(Schema):
-    """Internal field token before expansion."""
-
-    term = string(nullable=False)
-
-
-class ExpandedFieldText(Schema):
-    """Internal field token with its field-local position."""
-
-    position = long(nullable=False)
-    term = string(nullable=False)
 
 
 class FieldIndex(Transform):

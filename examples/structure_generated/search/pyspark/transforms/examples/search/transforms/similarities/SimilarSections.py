@@ -15,7 +15,6 @@ from examples.structure_generated.search.runtime.schema_assert import (
 from examples.structure_generated.search.pyspark.schemas.similarity import (
     INDEXED_SIMILAR_SECTION_SCHEMA,
     SECTION_SIMILARITY_SCHEMA,
-    SIMILARITY_SECTION_QUERY_SCHEMA,
 )
 from examples.structure_generated.search.pyspark.schemas.text import SECTION_SCHEMA
 
@@ -36,7 +35,7 @@ class SimilarSectionsGenerated:
         sections: DataFrame,
         section_similarities: DataFrame,
     ) -> TransformResult:
-        assert_schema(query, SIMILARITY_SECTION_QUERY_SCHEMA, name="SimilaritySectionQuery", mode="strict")
+        assert_schema(query, SECTION_SCHEMA, name="Section", mode="strict")
         assert_schema(sections, SECTION_SCHEMA, name="Section", mode="strict")
         assert_schema(section_similarities, SECTION_SIMILARITY_SCHEMA, name="SectionSimilarity", mode="strict")
         _input_query = query
@@ -44,11 +43,11 @@ class SimilarSectionsGenerated:
         _input_section_similarities = section_similarities
 
         # Step method: rank
-        query = query.alias("similarity_section_query")
+        query = query.alias("section")
         section_similarities_joined = section_similarities.alias("section_similarities")
         query = query.join(
             section_similarities_joined,
-            (F.col("similarity_section_query.id") == F.col("section_similarities.left_section_id")),
+            (F.col("section.id") == F.col("section_similarities.left_section_id")),
             "inner",
         )
         sections_2_joined = sections.alias("sections_2")
@@ -65,7 +64,7 @@ class SimilarSectionsGenerated:
             F.col("sections_2.span_end"),
             F.col("sections_2.heading_span_start"),
             F.col("sections_2.heading_span_end"),
-            F.col("similarity_section_query.id").alias("search_query_id"),
+            F.col("section.id").alias("search_query_id"),
             F.col("section_similarities.score_overlap"),
             F.col("section_similarities.bm25_left_to_right").alias("score_bm25"),
             F.col("section_similarities.rank"),

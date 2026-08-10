@@ -15,7 +15,6 @@ from examples.structure_generated.search.runtime.schema_assert import (
 from examples.structure_generated.search.pyspark.schemas.similarity import (
     INDEXED_SIMILAR_PARAGRAPH_SCHEMA,
     PARAGRAPH_SIMILARITY_SCHEMA,
-    SIMILARITY_PARAGRAPH_QUERY_SCHEMA,
 )
 from examples.structure_generated.search.pyspark.schemas.text import PARAGRAPH_SCHEMA
 
@@ -36,7 +35,7 @@ class SimilarParagraphsGenerated:
         paragraphs: DataFrame,
         paragraph_similarities: DataFrame,
     ) -> TransformResult:
-        assert_schema(query, SIMILARITY_PARAGRAPH_QUERY_SCHEMA, name="SimilarityParagraphQuery", mode="strict")
+        assert_schema(query, PARAGRAPH_SCHEMA, name="Paragraph", mode="strict")
         assert_schema(paragraphs, PARAGRAPH_SCHEMA, name="Paragraph", mode="strict")
         assert_schema(paragraph_similarities, PARAGRAPH_SIMILARITY_SCHEMA, name="ParagraphSimilarity", mode="strict")
         _input_query = query
@@ -44,11 +43,11 @@ class SimilarParagraphsGenerated:
         _input_paragraph_similarities = paragraph_similarities
 
         # Step method: rank
-        query = query.alias("similarity_paragraph_query")
+        query = query.alias("paragraph")
         paragraph_similarities_joined = paragraph_similarities.alias("paragraph_similarities")
         query = query.join(
             paragraph_similarities_joined,
-            (F.col("similarity_paragraph_query.id") == F.col("paragraph_similarities.left_paragraph_id")),
+            (F.col("paragraph.id") == F.col("paragraph_similarities.left_paragraph_id")),
             "inner",
         )
         paragraphs_2_joined = paragraphs.alias("paragraphs_2")
@@ -64,7 +63,7 @@ class SimilarParagraphsGenerated:
             F.col("paragraphs_2.ordinal"),
             F.col("paragraphs_2.span_start"),
             F.col("paragraphs_2.span_end"),
-            F.col("similarity_paragraph_query.id").alias("search_query_id"),
+            F.col("paragraph.id").alias("search_query_id"),
             F.col("paragraph_similarities.score_overlap"),
             F.col("paragraph_similarities.bm25_left_to_right").alias("score_bm25"),
             F.col("paragraph_similarities.rank"),

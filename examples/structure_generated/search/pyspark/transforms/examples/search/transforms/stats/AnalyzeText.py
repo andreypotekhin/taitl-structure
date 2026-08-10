@@ -325,10 +325,13 @@ class AnalyzeTextGenerated:
             comparison_right_joined,
             (
                 (
-                    (F.col("document_profile.source") == F.col("comparison_right.source"))
-                    & (F.col("document_profile.language") == F.col("comparison_right.language"))
+                    (
+                        (F.col("document_profile.source") == F.col("comparison_right.source"))
+                        & (F.col("document_profile.language") == F.col("comparison_right.language"))
+                    )
+                    & (F.col("document_profile.title_prefix") == F.col("comparison_right.title_prefix"))
                 )
-                & (F.col("document_profile.title_prefix") == F.col("comparison_right.title_prefix"))
+                & (F.col("document_profile.document_id") < F.col("comparison_right.document_id"))
             ),
             "inner",
         )

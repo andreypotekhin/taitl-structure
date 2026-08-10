@@ -1,4 +1,4 @@
-﻿# Configuration
+# Configuration
 
 Structure works by convention and supports a small TOML configuration for project-wide settings.
 
@@ -164,7 +164,7 @@ IDE guidance:
 - Do not create a project package named `structure` unless you intend to shadow the installed Structure
   library.
 
-## Validation Settings
+## Validation-related Settings
 
 ```toml
 validate_inputs = true

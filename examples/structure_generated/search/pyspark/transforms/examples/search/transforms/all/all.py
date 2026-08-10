@@ -51,6 +51,7 @@ from examples.structure_generated.search.pyspark.schemas.chunking_intermediate i
     PARAGRAPH_LINE_SCHEMA,
     SECTION_HEADING_SCHEMA,
     SECTION_KEY_SCHEMA,
+    SENTENCE_TEXT_SCHEMA,
 )
 from examples.structure_generated.search.pyspark.schemas.clicks import DAILY_CLICKS_SCHEMA, DAILY_IMPRESSIONS_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.fields import (
@@ -10040,10 +10041,13 @@ class AnalyzeTextGenerated:
             profiled__documents_joined,
             (
                 (
-                    (F.col("document_profile.source") == F.col("profiled__documents.source"))
-                    & (F.col("document_profile.language") == F.col("profiled__documents.language"))
+                    (
+                        (F.col("document_profile.source") == F.col("profiled__documents.source"))
+                        & (F.col("document_profile.language") == F.col("profiled__documents.language"))
+                    )
+                    & (F.col("document_profile.title_prefix") == F.col("profiled__documents.title_prefix"))
                 )
-                & (F.col("document_profile.title_prefix") == F.col("profiled__documents.title_prefix"))
+                & (F.col("document_profile.document_id") < F.col("profiled__documents.document_id"))
             ),
             "inner",
         )

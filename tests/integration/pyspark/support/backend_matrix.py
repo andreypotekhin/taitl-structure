@@ -50,6 +50,7 @@ def spark():
         builder.config("spark.sql.shuffle.partitions", "1")
         .config("spark.sql.session.timeZone", "UTC")
         .config("spark.sql.adaptive.enabled", "false")
+        .config("spark.sql.autoBroadcastJoinThreshold", "-1")
     )
     packages = os.environ.get("STRUCTURE_SPARK_JARS_PACKAGES")
     if packages and not remote:

@@ -4,7 +4,6 @@ from typing import Final
 
 from examples.search.schemas.similarity import IndexedSimilarSection
 from examples.search.schemas.similarity import SectionSimilarity as SectionSimilarityPair
-from examples.search.schemas.similarity import SimilaritySectionQuery
 from examples.search.schemas.text import Section
 from structure import *
 from structure.plugin.pyspark import *
@@ -15,14 +14,14 @@ class SimilarSections(Transform):
 
     maximum_results: Final = 10
 
-    query = input(SimilaritySectionQuery)
+    query = input(Section)
     sections = input(Section)
     section_similarities = input(SectionSimilarityPair)
     ranked_sections = lane(IndexedSimilarSection)
     similar_sections = output(IndexedSimilarSection)
 
     def rank(
-        self, query: SimilaritySectionQuery, section: Section, pair: SectionSimilarityPair
+        self, query: Section, section: Section, pair: SectionSimilarityPair
     ) -> IndexedSimilarSection:
         inner_join(on=query.id == pair.left_section_id)
         candidate_id = pair.right_section_id

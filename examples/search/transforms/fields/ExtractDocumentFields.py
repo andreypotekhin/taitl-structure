@@ -1,24 +1,11 @@
 """Extract searchable fields and flatten them for metadata indexing."""
 
 from examples.search.schemas.fields import *
+from examples.search.schemas.fields.intermediate import ExpandedDocumentField
 from examples.search.schemas.text import *
+from examples.search.transforms.fields.DocumentFields import DocumentFields
 from structure import *
 from structure.plugin.pyspark import *
-
-
-class ExpandedDocumentField(Schema):
-    """Internal map entry with its source-local ordinal."""
-
-    ordinal = long(nullable=False)
-    key = string(nullable=False)
-    value = string(nullable=False)
-
-
-class DocumentFieldEntry(Schema):
-    """One string entry used to merge typed fields into the document map."""
-
-    key = string(nullable=False)
-    value = string(nullable=False)
 
 
 class ExtractDocumentFields(Transform):
@@ -30,32 +17,7 @@ class ExtractDocumentFields(Transform):
 
     @step(input=source_documents, output=documents)
     def extract(self, document: Document) -> Document:
-        typed_fields = map_filter(
-            map_from_entries(
-                array(
-                    DocumentFieldEntry(key="source", value=document.source),
-                    DocumentFieldEntry(key="title", value=document.title),
-                    DocumentFieldEntry(key="url", value=coalesce(document.url, "")),
-                    DocumentFieldEntry(key="content_type", value=document.content_type),
-                    DocumentFieldEntry(key="encoding", value=document.encoding),
-                    DocumentFieldEntry(key="language", value=document.language),
-                    DocumentFieldEntry(key="document_type", value=coalesce(document.document_type, "")),
-                    DocumentFieldEntry(key="category_id", value=coalesce(document.category_id, "")),
-                    DocumentFieldEntry(key="file_type", value=coalesce(document.file_type, "")),
-                )
-            ),
-            lambda key, value: (
-                array_contains(
-                    array("source", "title", "content_type", "encoding", "language"),
-                    key,
-                )
-                | ((key == "url") & document.url.is_not_null())
-                | ((key == "document_type") & document.document_type.is_not_null())
-                | ((key == "category_id") & document.category_id.is_not_null())
-                | ((key == "file_type") & document.file_type.is_not_null())
-            ),
-        )
-        fields = map_concat(typed_fields, document.fields)
+        fields = DocumentFields.complete(document)
         return Document.project(document)(
             source=coalesce(element_at(fields, "source"), document.source),
             title=coalesce(element_at(fields, "title"), document.title),

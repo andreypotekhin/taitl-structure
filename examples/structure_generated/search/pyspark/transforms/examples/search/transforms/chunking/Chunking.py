@@ -22,6 +22,7 @@ from examples.structure_generated.search.pyspark.schemas.chunking_intermediate i
     PARAGRAPH_LINE_SCHEMA,
     SECTION_HEADING_SCHEMA,
     SECTION_KEY_SCHEMA,
+    SENTENCE_TEXT_SCHEMA,
 )
 from examples.structure_generated.search.pyspark.schemas.text import (
     DOCUMENT_SCHEMA,

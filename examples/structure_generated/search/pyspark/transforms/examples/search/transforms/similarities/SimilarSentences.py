@@ -15,7 +15,6 @@ from examples.structure_generated.search.runtime.schema_assert import (
 from examples.structure_generated.search.pyspark.schemas.similarity import (
     INDEXED_SIMILAR_SENTENCE_SCHEMA,
     SENTENCE_SIMILARITY_SCHEMA,
-    SIMILARITY_SENTENCE_QUERY_SCHEMA,
 )
 from examples.structure_generated.search.pyspark.schemas.text import SENTENCE_SCHEMA
 
@@ -36,7 +35,7 @@ class SimilarSentencesGenerated:
         sentences: DataFrame,
         sentence_similarities: DataFrame,
     ) -> TransformResult:
-        assert_schema(query, SIMILARITY_SENTENCE_QUERY_SCHEMA, name="SimilaritySentenceQuery", mode="strict")
+        assert_schema(query, SENTENCE_SCHEMA, name="Sentence", mode="strict")
         assert_schema(sentences, SENTENCE_SCHEMA, name="Sentence", mode="strict")
         assert_schema(sentence_similarities, SENTENCE_SIMILARITY_SCHEMA, name="SentenceSimilarity", mode="strict")
         _input_query = query
@@ -44,11 +43,11 @@ class SimilarSentencesGenerated:
         _input_sentence_similarities = sentence_similarities
 
         # Step method: rank
-        query = query.alias("similarity_sentence_query")
+        query = query.alias("sentence")
         sentence_similarities_joined = sentence_similarities.alias("sentence_similarities")
         query = query.join(
             sentence_similarities_joined,
-            (F.col("similarity_sentence_query.id") == F.col("sentence_similarities.left_sentence_id")),
+            (F.col("sentence.id") == F.col("sentence_similarities.left_sentence_id")),
             "inner",
         )
         sentences_2_joined = sentences.alias("sentences_2")
@@ -66,7 +65,7 @@ class SimilarSentencesGenerated:
             F.col("sentences_2.ordinal"),
             F.col("sentences_2.span_start"),
             F.col("sentences_2.span_end"),
-            F.col("similarity_sentence_query.id").alias("search_query_id"),
+            F.col("sentence.id").alias("search_query_id"),
             F.col("sentence_similarities.score_overlap"),
             F.col("sentence_similarities.bm25_left_to_right").alias("score_bm25"),
             F.col("sentence_similarities.rank"),

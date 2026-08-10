@@ -1714,6 +1714,8 @@ class RunOnlinePySparkTransform:
                 aliases[operation.posexplode_struct.scope] = ""
             if operation.scalar_generator is not None:
                 aliases[operation.scalar_generator.scope] = ""
+            if operation.map_generator is not None:
+                aliases[operation.map_generator.scope] = ""
             if operation.ordered_timeline_scan is not None:
                 aliases[operation.ordered_timeline_scan.row_scope] = ""
                 aliases[operation.ordered_timeline_scan.scope] = ""

@@ -74,6 +74,12 @@ from examples.search.schemas.fields import (
     FieldSearchTermMatch,
     FieldTerm,
 )
+from examples.search.schemas.fields.intermediate import (
+    DocumentFieldEntry,
+    ExpandedDocumentField,
+    ExpandedFieldText,
+    FieldText,
+)
 from examples.search.schemas.filtering import DocumentFilterMatch, DocumentFilterScore, FilterQueryAvailability
 from examples.search.schemas.indexing.lexical.index import (
     DocumentIndexSummary,
@@ -337,6 +343,12 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         FieldSearchClauseMatch,
         FieldSearchDocumentMatch,
         FieldSearchResult,
+    ],
+    "examples.search.schemas.fields.intermediate": [
+        DocumentFieldEntry,
+        ExpandedDocumentField,
+        FieldText,
+        ExpandedFieldText,
     ],
     "examples.search.schemas.indexing.lexical.intermediate": [
         IndexTargetFrequency,
@@ -889,11 +901,9 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
         assert guide["content_contains_structure"] is True
         assert guide["content_sha2"]
 
-        online_index = Indexing(documents=documents, sentences=generated_segments.sentences).run(
-            session(spark, execution_mode="online")
-        )
-        generated_index = Indexing(documents=documents, sentences=generated_segments.sentences).run(
-            session(spark, execution_mode="generated", generated_package=PACKAGE)
+        online_index = _run_indexing(spark, documents, generated_segments.sentences, execution_mode="online")
+        generated_index = _run_indexing(
+            spark, documents, generated_segments.sentences, execution_mode="generated", generated_package=PACKAGE
         )
         inputs = dict(
             documents=documents,
@@ -1159,7 +1169,7 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
 
         similar_sections = (
             SimilarSections(
-                query=generated_segments.sections.where("document_id = 'd-1' AND heading = 'Introduction'"),
+                query=generated_segments.sections.where("document_id = 'd-1' AND ordinal = 1"),
                 sections=generated_segments.sections,
                 section_similarities=generated_similarities.section_similarities,
             )
@@ -1268,9 +1278,7 @@ def test_search_ranks_fixture_sentences_online_and_generated(spark, tmp_path) ->
         segments = Chunking(documents=documents).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
-        index = Indexing(documents=documents, sentences=segments.sentences).run(
-            session(spark, execution_mode="generated", generated_package=PACKAGE)
-        )
+        index = _run_indexing(spark, documents, segments.sentences, execution_mode="generated", generated_package=PACKAGE)
         scores = Scoring(
             queries=queries,
             document_terms=index.document_terms,
@@ -1405,9 +1413,7 @@ def test_passage_search_ranks_paragraphs_with_same_section_context(spark, tmp_pa
         segments = Chunking(documents=documents).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
-        index = Indexing(documents=documents, sentences=segments.sentences).run(
-            session(spark, execution_mode="generated", generated_package=PACKAGE)
-        )
+        index = _run_indexing(spark, documents, segments.sentences, execution_mode="generated", generated_package=PACKAGE)
         scores = Scoring(
             queries=queries,
             document_terms=index.document_terms,
@@ -1598,9 +1604,7 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
         segments = Chunking(documents=documents).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
-        index = Indexing(documents=documents, sentences=segments.sentences).run(
-            session(spark, execution_mode="generated", generated_package=PACKAGE)
-        )
+        index = _run_indexing(spark, documents, segments.sentences, execution_mode="generated", generated_package=PACKAGE)
         scored_at = datetime(2026, 7, 21)
         document_score_rows = [
             (query_id, cast(str, row[0]), None, scored_at, scores[cast(str, row[0])])
@@ -1731,6 +1735,31 @@ def _search_documents() -> list[tuple[object, ...]]:
             for row in csv.DictReader(source)
             if row["id"] in {"d-11", "d-12", "d-13"}
         ]
+
+
+def _run_indexing(spark, documents, sentences, *, execution_mode: str, generated_package: str | None = None):
+    schemas = __import__(
+        f"{generated_package or PACKAGE}.pyspark.schemas.fields",
+        fromlist=["ANALYZER_POLICY_SCHEMA", "FIELD_PROFILE_SCHEMA"],
+    )
+    extracted = ExtractDocumentFields(source_documents=documents).run(
+        session(spark, execution_mode=execution_mode, generated_package=generated_package)
+    )
+    field_profiles = spark.createDataFrame(
+        [("*", "text", "metadata_text_v1", False, True, "metadata")],
+        schemas.FIELD_PROFILE_SCHEMA,
+    )
+    analyzer_policies = spark.createDataFrame(
+        [("metadata_text_v1", "v1", [])],
+        schemas.ANALYZER_POLICY_SCHEMA,
+    )
+    return Indexing(
+        documents=documents,
+        sentences=sentences,
+        document_fields=extracted.document_fields,
+        field_profiles=field_profiles,
+        analyzer_policies=analyzer_policies,
+    ).run(session(spark, execution_mode=execution_mode, generated_package=generated_package))
 
 
 def _timestamp(value: str) -> datetime | None:

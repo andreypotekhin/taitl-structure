@@ -12,7 +12,10 @@ from examples.structure_generated.search.runtime.schema_assert import (
     apply_plan_boundary,
     close_plan_boundaries,
 )
-from examples.structure_generated.search.pyspark.schemas.chunking_intermediate import MATERIALIZED_PARAGRAPH_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.chunking_intermediate import (
+    MATERIALIZED_PARAGRAPH_SCHEMA,
+    SENTENCE_TEXT_SCHEMA,
+)
 from examples.structure_generated.search.pyspark.schemas.text import DOCUMENT_SCHEMA, PARAGRAPH_SCHEMA, SENTENCE_SCHEMA
 
 

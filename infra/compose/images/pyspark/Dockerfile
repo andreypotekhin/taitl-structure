@@ -7,7 +7,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV SPARK_HOME=/usr/local/lib/python3.11/site-packages/pyspark
 ENV PATH="${SPARK_HOME}/bin:${SPARK_HOME}/sbin:${PATH}"
-ENV PYTHONPATH=/workspace/src:/workspace/res
+ENV PYTHONPATH=/workspace:/workspace/src:/workspace/res
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends bash openjdk-17-jre-headless procps tini \
