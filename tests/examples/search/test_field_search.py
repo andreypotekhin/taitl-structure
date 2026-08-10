@@ -7,7 +7,7 @@ from examples.search.transforms.searching.search_fields import SearchFields
 from structure.core.compiler.api import Compiler
 
 
-def test_field_query_parser_keeps_content_for_full_text_and_normalizes_metadata() -> None:
+def test_field_query_parser_forwards_body_and_normalizes_metadata() -> None:
     parsed = parse_field_search_query("q", 'title:"Release the Notes" and content:upgrade')
 
     assert parsed.query["content"] == "upgrade"
@@ -18,7 +18,17 @@ def test_field_query_parser_keeps_content_for_full_text_and_normalizes_metadata(
     assert all(term["is_phrase"] for term in parsed.terms)
     implicit = parse_field_search_query("q2", "release notes")
     assert implicit.query["operator"] == "and"
-    assert [term["term"] for term in implicit.terms] == ["release", "notes"]
+    assert implicit.query["content"] == "release notes"
+    assert implicit.query["clause_count"] == 0
+    assert implicit.query["requires_content"] is True
+    assert implicit.terms == ()
+
+
+def test_field_query_parser_preserves_body_source_order_and_requires_prefixes() -> None:
+    parsed = parse_field_search_query("q", "aurora title:guide beacon content:upgrade")
+
+    assert parsed.query["content"] == "aurora beacon upgrade"
+    assert [(term["field_name"], term["term"]) for term in parsed.terms] == [("title", "guide")]
 
 
 def test_field_query_parser_rejects_mixed_or_content_and_uppercase_operators() -> None:

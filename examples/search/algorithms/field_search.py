@@ -25,12 +25,16 @@ def parse_field_search_query(
     queryset: str = "default",
     requested_at=None,
     language: str | None = None,
+    labels: dict[str, int] | None = None,
+    is_question: bool = False,
+    is_time_sensitive: bool = False,
     stop_words: frozenset[str] = DEFAULT_METADATA_STOP_WORDS,
 ) -> ParsedFieldSearch:
-    """Parse field prefixes and produce normalized metadata terms.
+    """Parse explicit field prefixes and collect unprefixed body text.
 
-    Metadata phrases use field-index positions. ``content:`` is deliberately kept as
-    raw full-text text; callers pass it to the existing full-text query path.
+    Metadata phrases use field-index positions. ``content:`` and unprefixed text are
+    deliberately kept as raw full-text text; callers pass them to the existing
+    full-text query path.
     """
 
     tokens = _scan(text)
@@ -71,11 +75,11 @@ def parse_field_search_query(
         raise ValueError("mixed boolean operators are not supported; use one lowercase operator")
 
     terms: list[dict[str, object]] = []
-    content_values: list[str] = []
+    body_values: list[str] = []
     clause_count = 0
     for clause_ordinal, (field_name, value, is_phrase) in enumerate(clauses):
-        if field_name == "content":
-            content_values.append(value)
+        if field_name is None or field_name == "content":
+            body_values.append(value)
             continue
         clause_count += 1
         term_ordinal = 0
@@ -104,20 +108,23 @@ def parse_field_search_query(
             if term["clause_ordinal"] == clause_ordinal:
                 term["term_count"] = len(clause_terms)
 
-    if content_values and operator == "or" and clause_count:
+    if body_values and operator == "or" and clause_count:
         raise ValueError("content: cannot participate in an 'or' field query")
+    body_content = " ".join(body_values)
     return ParsedFieldSearch(
         query={
             "id": query_id,
             "queryset": queryset,
             "query_text": text,
-            "content": " ".join(content_values),
+            "content": body_content,
             "requested_at": requested_at,
+            "labels": labels or {},
+            "is_question": is_question,
+            "is_time_sensitive": is_time_sensitive,
             "language": language,
-            "default_scope": "metadata",
             "operator": operator,
             "clause_count": clause_count,
-            "requires_content": bool(content_values),
+            "requires_content": bool(body_content),
         },
         terms=tuple(terms),
     )

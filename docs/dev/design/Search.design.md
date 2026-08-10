@@ -108,11 +108,11 @@ Document search is an explicit funnel with typed boundaries:
 
 ```text
 Filtering (offline, selected queries)
-    └─ timestamped DocumentFilterScore artifacts
+    └─ timestamped DocumentFilterScore artifacts, optionally restricted by document_filter_targets
 OnlineFiltering (serving, missing/stale query groups)
     └─ online DocumentFilterScore artifacts
 SelectFilterTargets
-    └─ cached + online filter rows, top 10,000 documents/query
+    └─ cached + online filter rows, top 10,000 documents/query, after any document_filter_targets restriction
 OnlineScoring
     └─ cached + online composite lexical score rows
 RetrieveDocuments

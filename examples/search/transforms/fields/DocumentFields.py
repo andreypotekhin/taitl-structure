@@ -8,6 +8,9 @@ from structure.plugin.pyspark import *
 class DocumentFields:
     """Complete the searchable field map from typed and mapped document values."""
 
+    META_FIELD = "meta"
+    META_SEPARATOR = " \u001e "
+
     @staticmethod
     def complete(document: Document):
         typed_fields = map_from_entries(
@@ -31,4 +34,23 @@ class DocumentFields:
             | ((key == "category_id") & document.category_id.is_not_null())
             | ((key == "file_type") & document.file_type.is_not_null()),
         )
-        return map_concat(typed_fields, document.fields)
+        caller_fields = map_filter(document.fields, lambda key, value: key != DocumentFields.META_FIELD)
+        fields = map_filter(
+            map_concat(typed_fields, caller_fields),
+            lambda key, value: trim(value) != "",
+        )
+        metadata_values = arr_transform(
+            arr_sort(map_keys(fields)),
+            lambda key: regexp_replace(element_at(fields, key), pattern="\u001e", replacement=" "),
+        )
+        return map_concat(
+            fields,
+            map_from_entries(
+                array(
+                    DocumentFieldEntry(
+                        key=DocumentFields.META_FIELD,
+                        value=concat_ws(DocumentFields.META_SEPARATOR, metadata_values),
+                    )
+                )
+            ),
+        )

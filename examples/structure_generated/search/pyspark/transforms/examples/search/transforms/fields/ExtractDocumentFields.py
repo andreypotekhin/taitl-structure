@@ -42,61 +42,298 @@ class ExtractDocumentFieldsGenerated:
                 F.element_at(
                     F.map_concat(
                         F.map_filter(
-                            F.map_from_entries(
-                                F.array(
-                                    F.struct(F.lit('source').alias("key"), F.col("document.source").alias("value")),
-                                    F.struct(F.lit('title').alias("key"), F.col("document.title").alias("value")),
-                                    F.struct(
-                                        F.lit('url').alias("key"),
-                                        F.coalesce(F.col("document.url"), F.lit('')).alias("value"),
+                            F.map_concat(
+                                F.map_filter(
+                                    F.map_from_entries(
+                                        F.array(
+                                            F.struct(
+                                                F.lit('source').alias("key"), F.col("document.source").alias("value")
+                                            ),
+                                            F.struct(
+                                                F.lit('title').alias("key"), F.col("document.title").alias("value")
+                                            ),
+                                            F.struct(
+                                                F.lit('url').alias("key"),
+                                                F.coalesce(F.col("document.url"), F.lit('')).alias("value"),
+                                            ),
+                                            F.struct(
+                                                F.lit('content_type').alias("key"),
+                                                F.col("document.content_type").alias("value"),
+                                            ),
+                                            F.struct(
+                                                F.lit('encoding').alias("key"),
+                                                F.col("document.encoding").alias("value"),
+                                            ),
+                                            F.struct(
+                                                F.lit('language').alias("key"),
+                                                F.col("document.language").alias("value"),
+                                            ),
+                                            F.struct(
+                                                F.lit('document_type').alias("key"),
+                                                F.coalesce(F.col("document.document_type"), F.lit('')).alias("value"),
+                                            ),
+                                            F.struct(
+                                                F.lit('category_id').alias("key"),
+                                                F.coalesce(F.col("document.category_id"), F.lit('')).alias("value"),
+                                            ),
+                                            F.struct(
+                                                F.lit('file_type').alias("key"),
+                                                F.coalesce(F.col("document.file_type"), F.lit('')).alias("value"),
+                                            ),
+                                        )
                                     ),
-                                    F.struct(
-                                        F.lit('content_type').alias("key"),
-                                        F.col("document.content_type").alias("value"),
-                                    ),
-                                    F.struct(F.lit('encoding').alias("key"), F.col("document.encoding").alias("value")),
-                                    F.struct(F.lit('language').alias("key"), F.col("document.language").alias("value")),
-                                    F.struct(
-                                        F.lit('document_type').alias("key"),
-                                        F.coalesce(F.col("document.document_type"), F.lit('')).alias("value"),
-                                    ),
-                                    F.struct(
-                                        F.lit('category_id').alias("key"),
-                                        F.coalesce(F.col("document.category_id"), F.lit('')).alias("value"),
-                                    ),
-                                    F.struct(
-                                        F.lit('file_type').alias("key"),
-                                        F.coalesce(F.col("document.file_type"), F.lit('')).alias("value"),
-                                    ),
-                                )
-                            ),
-                            lambda key, value: (
-                                (
-                                    (
+                                    lambda key, value: (
                                         (
-                                            F.array_contains(
-                                                F.array(
-                                                    F.lit('source'),
-                                                    F.lit('title'),
-                                                    F.lit('content_type'),
-                                                    F.lit('encoding'),
-                                                    F.lit('language'),
-                                                ),
-                                                key,
+                                            (
+                                                (
+                                                    F.array_contains(
+                                                        F.array(
+                                                            F.lit('source'),
+                                                            F.lit('title'),
+                                                            F.lit('content_type'),
+                                                            F.lit('encoding'),
+                                                            F.lit('language'),
+                                                        ),
+                                                        key,
+                                                    )
+                                                    | ((key == F.lit('url')) & F.col("document.url").isNotNull())
+                                                )
+                                                | (
+                                                    (key == F.lit('document_type'))
+                                                    & F.col("document.document_type").isNotNull()
+                                                )
                                             )
-                                            | ((key == F.lit('url')) & F.col("document.url").isNotNull())
+                                            | (
+                                                (key == F.lit('category_id'))
+                                                & F.col("document.category_id").isNotNull()
+                                            )
                                         )
-                                        | (
-                                            (key == F.lit('document_type'))
-                                            & F.col("document.document_type").isNotNull()
-                                        )
-                                    )
-                                    | ((key == F.lit('category_id')) & F.col("document.category_id").isNotNull())
-                                )
-                                | ((key == F.lit('file_type')) & F.col("document.file_type").isNotNull())
+                                        | ((key == F.lit('file_type')) & F.col("document.file_type").isNotNull())
+                                    ),
+                                ),
+                                F.map_filter(F.col("document.fields"), lambda key, value: (key != F.lit('meta'))),
                             ),
+                            lambda key, value: (F.trim(value) != F.lit('')),
                         ),
-                        F.col("document.fields"),
+                        F.map_from_entries(
+                            F.array(
+                                F.struct(
+                                    F.lit('meta').alias("key"),
+                                    F.concat_ws(
+                                        ' \x1e ',
+                                        F.transform(
+                                            F.array_sort(
+                                                F.map_keys(
+                                                    F.map_filter(
+                                                        F.map_concat(
+                                                            F.map_filter(
+                                                                F.map_from_entries(
+                                                                    F.array(
+                                                                        F.struct(
+                                                                            F.lit('source').alias("key"),
+                                                                            F.col("document.source").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('title').alias("key"),
+                                                                            F.col("document.title").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('url').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.url"), F.lit('')
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('content_type').alias("key"),
+                                                                            F.col("document.content_type").alias(
+                                                                                "value"
+                                                                            ),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('encoding').alias("key"),
+                                                                            F.col("document.encoding").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('language').alias("key"),
+                                                                            F.col("document.language").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('document_type').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.document_type"),
+                                                                                F.lit(''),
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('category_id').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.category_id"), F.lit('')
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('file_type').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.file_type"), F.lit('')
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                    )
+                                                                ),
+                                                                lambda key, value: (
+                                                                    (
+                                                                        (
+                                                                            (
+                                                                                F.array_contains(
+                                                                                    F.array(
+                                                                                        F.lit('source'),
+                                                                                        F.lit('title'),
+                                                                                        F.lit('content_type'),
+                                                                                        F.lit('encoding'),
+                                                                                        F.lit('language'),
+                                                                                    ),
+                                                                                    key,
+                                                                                )
+                                                                                | (
+                                                                                    (key == F.lit('url'))
+                                                                                    & F.col("document.url").isNotNull()
+                                                                                )
+                                                                            )
+                                                                            | (
+                                                                                (key == F.lit('document_type'))
+                                                                                & F.col(
+                                                                                    "document.document_type"
+                                                                                ).isNotNull()
+                                                                            )
+                                                                        )
+                                                                        | (
+                                                                            (key == F.lit('category_id'))
+                                                                            & F.col("document.category_id").isNotNull()
+                                                                        )
+                                                                    )
+                                                                    | (
+                                                                        (key == F.lit('file_type'))
+                                                                        & F.col("document.file_type").isNotNull()
+                                                                    )
+                                                                ),
+                                                            ),
+                                                            F.map_filter(
+                                                                F.col("document.fields"),
+                                                                lambda key, value: (key != F.lit('meta')),
+                                                            ),
+                                                        ),
+                                                        lambda key, value: (F.trim(value) != F.lit('')),
+                                                    )
+                                                )
+                                            ),
+                                            lambda item: F.regexp_replace(
+                                                F.element_at(
+                                                    F.map_filter(
+                                                        F.map_concat(
+                                                            F.map_filter(
+                                                                F.map_from_entries(
+                                                                    F.array(
+                                                                        F.struct(
+                                                                            F.lit('source').alias("key"),
+                                                                            F.col("document.source").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('title').alias("key"),
+                                                                            F.col("document.title").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('url').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.url"), F.lit('')
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('content_type').alias("key"),
+                                                                            F.col("document.content_type").alias(
+                                                                                "value"
+                                                                            ),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('encoding').alias("key"),
+                                                                            F.col("document.encoding").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('language').alias("key"),
+                                                                            F.col("document.language").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('document_type').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.document_type"),
+                                                                                F.lit(''),
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('category_id').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.category_id"), F.lit('')
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('file_type').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.file_type"), F.lit('')
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                    )
+                                                                ),
+                                                                lambda key, value: (
+                                                                    (
+                                                                        (
+                                                                            (
+                                                                                F.array_contains(
+                                                                                    F.array(
+                                                                                        F.lit('source'),
+                                                                                        F.lit('title'),
+                                                                                        F.lit('content_type'),
+                                                                                        F.lit('encoding'),
+                                                                                        F.lit('language'),
+                                                                                    ),
+                                                                                    key,
+                                                                                )
+                                                                                | (
+                                                                                    (key == F.lit('url'))
+                                                                                    & F.col("document.url").isNotNull()
+                                                                                )
+                                                                            )
+                                                                            | (
+                                                                                (key == F.lit('document_type'))
+                                                                                & F.col(
+                                                                                    "document.document_type"
+                                                                                ).isNotNull()
+                                                                            )
+                                                                        )
+                                                                        | (
+                                                                            (key == F.lit('category_id'))
+                                                                            & F.col("document.category_id").isNotNull()
+                                                                        )
+                                                                    )
+                                                                    | (
+                                                                        (key == F.lit('file_type'))
+                                                                        & F.col("document.file_type").isNotNull()
+                                                                    )
+                                                                ),
+                                                            ),
+                                                            F.map_filter(
+                                                                F.col("document.fields"),
+                                                                lambda key, value: (key != F.lit('meta')),
+                                                            ),
+                                                        ),
+                                                        lambda key, value: (F.trim(value) != F.lit('')),
+                                                    ),
+                                                    item,
+                                                ),
+                                                '\x1e',
+                                                ' ',
+                                            ),
+                                        ),
+                                    ).alias("value"),
+                                )
+                            )
+                        ),
                     ),
                     F.lit('source'),
                 ),
@@ -106,61 +343,298 @@ class ExtractDocumentFieldsGenerated:
                 F.element_at(
                     F.map_concat(
                         F.map_filter(
-                            F.map_from_entries(
-                                F.array(
-                                    F.struct(F.lit('source').alias("key"), F.col("document.source").alias("value")),
-                                    F.struct(F.lit('title').alias("key"), F.col("document.title").alias("value")),
-                                    F.struct(
-                                        F.lit('url').alias("key"),
-                                        F.coalesce(F.col("document.url"), F.lit('')).alias("value"),
+                            F.map_concat(
+                                F.map_filter(
+                                    F.map_from_entries(
+                                        F.array(
+                                            F.struct(
+                                                F.lit('source').alias("key"), F.col("document.source").alias("value")
+                                            ),
+                                            F.struct(
+                                                F.lit('title').alias("key"), F.col("document.title").alias("value")
+                                            ),
+                                            F.struct(
+                                                F.lit('url').alias("key"),
+                                                F.coalesce(F.col("document.url"), F.lit('')).alias("value"),
+                                            ),
+                                            F.struct(
+                                                F.lit('content_type').alias("key"),
+                                                F.col("document.content_type").alias("value"),
+                                            ),
+                                            F.struct(
+                                                F.lit('encoding').alias("key"),
+                                                F.col("document.encoding").alias("value"),
+                                            ),
+                                            F.struct(
+                                                F.lit('language').alias("key"),
+                                                F.col("document.language").alias("value"),
+                                            ),
+                                            F.struct(
+                                                F.lit('document_type').alias("key"),
+                                                F.coalesce(F.col("document.document_type"), F.lit('')).alias("value"),
+                                            ),
+                                            F.struct(
+                                                F.lit('category_id').alias("key"),
+                                                F.coalesce(F.col("document.category_id"), F.lit('')).alias("value"),
+                                            ),
+                                            F.struct(
+                                                F.lit('file_type').alias("key"),
+                                                F.coalesce(F.col("document.file_type"), F.lit('')).alias("value"),
+                                            ),
+                                        )
                                     ),
-                                    F.struct(
-                                        F.lit('content_type').alias("key"),
-                                        F.col("document.content_type").alias("value"),
-                                    ),
-                                    F.struct(F.lit('encoding').alias("key"), F.col("document.encoding").alias("value")),
-                                    F.struct(F.lit('language').alias("key"), F.col("document.language").alias("value")),
-                                    F.struct(
-                                        F.lit('document_type').alias("key"),
-                                        F.coalesce(F.col("document.document_type"), F.lit('')).alias("value"),
-                                    ),
-                                    F.struct(
-                                        F.lit('category_id').alias("key"),
-                                        F.coalesce(F.col("document.category_id"), F.lit('')).alias("value"),
-                                    ),
-                                    F.struct(
-                                        F.lit('file_type').alias("key"),
-                                        F.coalesce(F.col("document.file_type"), F.lit('')).alias("value"),
-                                    ),
-                                )
-                            ),
-                            lambda key, value: (
-                                (
-                                    (
+                                    lambda key, value: (
                                         (
-                                            F.array_contains(
-                                                F.array(
-                                                    F.lit('source'),
-                                                    F.lit('title'),
-                                                    F.lit('content_type'),
-                                                    F.lit('encoding'),
-                                                    F.lit('language'),
-                                                ),
-                                                key,
+                                            (
+                                                (
+                                                    F.array_contains(
+                                                        F.array(
+                                                            F.lit('source'),
+                                                            F.lit('title'),
+                                                            F.lit('content_type'),
+                                                            F.lit('encoding'),
+                                                            F.lit('language'),
+                                                        ),
+                                                        key,
+                                                    )
+                                                    | ((key == F.lit('url')) & F.col("document.url").isNotNull())
+                                                )
+                                                | (
+                                                    (key == F.lit('document_type'))
+                                                    & F.col("document.document_type").isNotNull()
+                                                )
                                             )
-                                            | ((key == F.lit('url')) & F.col("document.url").isNotNull())
+                                            | (
+                                                (key == F.lit('category_id'))
+                                                & F.col("document.category_id").isNotNull()
+                                            )
                                         )
-                                        | (
-                                            (key == F.lit('document_type'))
-                                            & F.col("document.document_type").isNotNull()
-                                        )
-                                    )
-                                    | ((key == F.lit('category_id')) & F.col("document.category_id").isNotNull())
-                                )
-                                | ((key == F.lit('file_type')) & F.col("document.file_type").isNotNull())
+                                        | ((key == F.lit('file_type')) & F.col("document.file_type").isNotNull())
+                                    ),
+                                ),
+                                F.map_filter(F.col("document.fields"), lambda key, value: (key != F.lit('meta'))),
                             ),
+                            lambda key, value: (F.trim(value) != F.lit('')),
                         ),
-                        F.col("document.fields"),
+                        F.map_from_entries(
+                            F.array(
+                                F.struct(
+                                    F.lit('meta').alias("key"),
+                                    F.concat_ws(
+                                        ' \x1e ',
+                                        F.transform(
+                                            F.array_sort(
+                                                F.map_keys(
+                                                    F.map_filter(
+                                                        F.map_concat(
+                                                            F.map_filter(
+                                                                F.map_from_entries(
+                                                                    F.array(
+                                                                        F.struct(
+                                                                            F.lit('source').alias("key"),
+                                                                            F.col("document.source").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('title').alias("key"),
+                                                                            F.col("document.title").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('url').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.url"), F.lit('')
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('content_type').alias("key"),
+                                                                            F.col("document.content_type").alias(
+                                                                                "value"
+                                                                            ),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('encoding').alias("key"),
+                                                                            F.col("document.encoding").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('language').alias("key"),
+                                                                            F.col("document.language").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('document_type').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.document_type"),
+                                                                                F.lit(''),
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('category_id').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.category_id"), F.lit('')
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('file_type').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.file_type"), F.lit('')
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                    )
+                                                                ),
+                                                                lambda key, value: (
+                                                                    (
+                                                                        (
+                                                                            (
+                                                                                F.array_contains(
+                                                                                    F.array(
+                                                                                        F.lit('source'),
+                                                                                        F.lit('title'),
+                                                                                        F.lit('content_type'),
+                                                                                        F.lit('encoding'),
+                                                                                        F.lit('language'),
+                                                                                    ),
+                                                                                    key,
+                                                                                )
+                                                                                | (
+                                                                                    (key == F.lit('url'))
+                                                                                    & F.col("document.url").isNotNull()
+                                                                                )
+                                                                            )
+                                                                            | (
+                                                                                (key == F.lit('document_type'))
+                                                                                & F.col(
+                                                                                    "document.document_type"
+                                                                                ).isNotNull()
+                                                                            )
+                                                                        )
+                                                                        | (
+                                                                            (key == F.lit('category_id'))
+                                                                            & F.col("document.category_id").isNotNull()
+                                                                        )
+                                                                    )
+                                                                    | (
+                                                                        (key == F.lit('file_type'))
+                                                                        & F.col("document.file_type").isNotNull()
+                                                                    )
+                                                                ),
+                                                            ),
+                                                            F.map_filter(
+                                                                F.col("document.fields"),
+                                                                lambda key, value: (key != F.lit('meta')),
+                                                            ),
+                                                        ),
+                                                        lambda key, value: (F.trim(value) != F.lit('')),
+                                                    )
+                                                )
+                                            ),
+                                            lambda item: F.regexp_replace(
+                                                F.element_at(
+                                                    F.map_filter(
+                                                        F.map_concat(
+                                                            F.map_filter(
+                                                                F.map_from_entries(
+                                                                    F.array(
+                                                                        F.struct(
+                                                                            F.lit('source').alias("key"),
+                                                                            F.col("document.source").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('title').alias("key"),
+                                                                            F.col("document.title").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('url').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.url"), F.lit('')
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('content_type').alias("key"),
+                                                                            F.col("document.content_type").alias(
+                                                                                "value"
+                                                                            ),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('encoding').alias("key"),
+                                                                            F.col("document.encoding").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('language').alias("key"),
+                                                                            F.col("document.language").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('document_type').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.document_type"),
+                                                                                F.lit(''),
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('category_id').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.category_id"), F.lit('')
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('file_type').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.file_type"), F.lit('')
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                    )
+                                                                ),
+                                                                lambda key, value: (
+                                                                    (
+                                                                        (
+                                                                            (
+                                                                                F.array_contains(
+                                                                                    F.array(
+                                                                                        F.lit('source'),
+                                                                                        F.lit('title'),
+                                                                                        F.lit('content_type'),
+                                                                                        F.lit('encoding'),
+                                                                                        F.lit('language'),
+                                                                                    ),
+                                                                                    key,
+                                                                                )
+                                                                                | (
+                                                                                    (key == F.lit('url'))
+                                                                                    & F.col("document.url").isNotNull()
+                                                                                )
+                                                                            )
+                                                                            | (
+                                                                                (key == F.lit('document_type'))
+                                                                                & F.col(
+                                                                                    "document.document_type"
+                                                                                ).isNotNull()
+                                                                            )
+                                                                        )
+                                                                        | (
+                                                                            (key == F.lit('category_id'))
+                                                                            & F.col("document.category_id").isNotNull()
+                                                                        )
+                                                                    )
+                                                                    | (
+                                                                        (key == F.lit('file_type'))
+                                                                        & F.col("document.file_type").isNotNull()
+                                                                    )
+                                                                ),
+                                                            ),
+                                                            F.map_filter(
+                                                                F.col("document.fields"),
+                                                                lambda key, value: (key != F.lit('meta')),
+                                                            ),
+                                                        ),
+                                                        lambda key, value: (F.trim(value) != F.lit('')),
+                                                    ),
+                                                    item,
+                                                ),
+                                                '\x1e',
+                                                ' ',
+                                            ),
+                                        ),
+                                    ).alias("value"),
+                                )
+                            )
+                        ),
                     ),
                     F.lit('title'),
                 ),
@@ -169,57 +643,283 @@ class ExtractDocumentFieldsGenerated:
             F.element_at(
                 F.map_concat(
                     F.map_filter(
-                        F.map_from_entries(
-                            F.array(
-                                F.struct(F.lit('source').alias("key"), F.col("document.source").alias("value")),
-                                F.struct(F.lit('title').alias("key"), F.col("document.title").alias("value")),
-                                F.struct(
-                                    F.lit('url').alias("key"),
-                                    F.coalesce(F.col("document.url"), F.lit('')).alias("value"),
-                                ),
-                                F.struct(
-                                    F.lit('content_type').alias("key"), F.col("document.content_type").alias("value")
-                                ),
-                                F.struct(F.lit('encoding').alias("key"), F.col("document.encoding").alias("value")),
-                                F.struct(F.lit('language').alias("key"), F.col("document.language").alias("value")),
-                                F.struct(
-                                    F.lit('document_type').alias("key"),
-                                    F.coalesce(F.col("document.document_type"), F.lit('')).alias("value"),
-                                ),
-                                F.struct(
-                                    F.lit('category_id').alias("key"),
-                                    F.coalesce(F.col("document.category_id"), F.lit('')).alias("value"),
-                                ),
-                                F.struct(
-                                    F.lit('file_type').alias("key"),
-                                    F.coalesce(F.col("document.file_type"), F.lit('')).alias("value"),
-                                ),
-                            )
-                        ),
-                        lambda key, value: (
-                            (
-                                (
-                                    (
-                                        F.array_contains(
-                                            F.array(
-                                                F.lit('source'),
-                                                F.lit('title'),
-                                                F.lit('content_type'),
-                                                F.lit('encoding'),
-                                                F.lit('language'),
-                                            ),
-                                            key,
-                                        )
-                                        | ((key == F.lit('url')) & F.col("document.url").isNotNull())
+                        F.map_concat(
+                            F.map_filter(
+                                F.map_from_entries(
+                                    F.array(
+                                        F.struct(F.lit('source').alias("key"), F.col("document.source").alias("value")),
+                                        F.struct(F.lit('title').alias("key"), F.col("document.title").alias("value")),
+                                        F.struct(
+                                            F.lit('url').alias("key"),
+                                            F.coalesce(F.col("document.url"), F.lit('')).alias("value"),
+                                        ),
+                                        F.struct(
+                                            F.lit('content_type').alias("key"),
+                                            F.col("document.content_type").alias("value"),
+                                        ),
+                                        F.struct(
+                                            F.lit('encoding').alias("key"), F.col("document.encoding").alias("value")
+                                        ),
+                                        F.struct(
+                                            F.lit('language').alias("key"), F.col("document.language").alias("value")
+                                        ),
+                                        F.struct(
+                                            F.lit('document_type').alias("key"),
+                                            F.coalesce(F.col("document.document_type"), F.lit('')).alias("value"),
+                                        ),
+                                        F.struct(
+                                            F.lit('category_id').alias("key"),
+                                            F.coalesce(F.col("document.category_id"), F.lit('')).alias("value"),
+                                        ),
+                                        F.struct(
+                                            F.lit('file_type').alias("key"),
+                                            F.coalesce(F.col("document.file_type"), F.lit('')).alias("value"),
+                                        ),
                                     )
-                                    | ((key == F.lit('document_type')) & F.col("document.document_type").isNotNull())
-                                )
-                                | ((key == F.lit('category_id')) & F.col("document.category_id").isNotNull())
-                            )
-                            | ((key == F.lit('file_type')) & F.col("document.file_type").isNotNull())
+                                ),
+                                lambda key, value: (
+                                    (
+                                        (
+                                            (
+                                                F.array_contains(
+                                                    F.array(
+                                                        F.lit('source'),
+                                                        F.lit('title'),
+                                                        F.lit('content_type'),
+                                                        F.lit('encoding'),
+                                                        F.lit('language'),
+                                                    ),
+                                                    key,
+                                                )
+                                                | ((key == F.lit('url')) & F.col("document.url").isNotNull())
+                                            )
+                                            | (
+                                                (key == F.lit('document_type'))
+                                                & F.col("document.document_type").isNotNull()
+                                            )
+                                        )
+                                        | ((key == F.lit('category_id')) & F.col("document.category_id").isNotNull())
+                                    )
+                                    | ((key == F.lit('file_type')) & F.col("document.file_type").isNotNull())
+                                ),
+                            ),
+                            F.map_filter(F.col("document.fields"), lambda key, value: (key != F.lit('meta'))),
                         ),
+                        lambda key, value: (F.trim(value) != F.lit('')),
                     ),
-                    F.col("document.fields"),
+                    F.map_from_entries(
+                        F.array(
+                            F.struct(
+                                F.lit('meta').alias("key"),
+                                F.concat_ws(
+                                    ' \x1e ',
+                                    F.transform(
+                                        F.array_sort(
+                                            F.map_keys(
+                                                F.map_filter(
+                                                    F.map_concat(
+                                                        F.map_filter(
+                                                            F.map_from_entries(
+                                                                F.array(
+                                                                    F.struct(
+                                                                        F.lit('source').alias("key"),
+                                                                        F.col("document.source").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('title').alias("key"),
+                                                                        F.col("document.title").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('url').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.url"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('content_type').alias("key"),
+                                                                        F.col("document.content_type").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('encoding').alias("key"),
+                                                                        F.col("document.encoding").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('language').alias("key"),
+                                                                        F.col("document.language").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('document_type').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.document_type"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('category_id').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.category_id"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('file_type').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.file_type"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                )
+                                                            ),
+                                                            lambda key, value: (
+                                                                (
+                                                                    (
+                                                                        (
+                                                                            F.array_contains(
+                                                                                F.array(
+                                                                                    F.lit('source'),
+                                                                                    F.lit('title'),
+                                                                                    F.lit('content_type'),
+                                                                                    F.lit('encoding'),
+                                                                                    F.lit('language'),
+                                                                                ),
+                                                                                key,
+                                                                            )
+                                                                            | (
+                                                                                (key == F.lit('url'))
+                                                                                & F.col("document.url").isNotNull()
+                                                                            )
+                                                                        )
+                                                                        | (
+                                                                            (key == F.lit('document_type'))
+                                                                            & F.col(
+                                                                                "document.document_type"
+                                                                            ).isNotNull()
+                                                                        )
+                                                                    )
+                                                                    | (
+                                                                        (key == F.lit('category_id'))
+                                                                        & F.col("document.category_id").isNotNull()
+                                                                    )
+                                                                )
+                                                                | (
+                                                                    (key == F.lit('file_type'))
+                                                                    & F.col("document.file_type").isNotNull()
+                                                                )
+                                                            ),
+                                                        ),
+                                                        F.map_filter(
+                                                            F.col("document.fields"),
+                                                            lambda key, value: (key != F.lit('meta')),
+                                                        ),
+                                                    ),
+                                                    lambda key, value: (F.trim(value) != F.lit('')),
+                                                )
+                                            )
+                                        ),
+                                        lambda item: F.regexp_replace(
+                                            F.element_at(
+                                                F.map_filter(
+                                                    F.map_concat(
+                                                        F.map_filter(
+                                                            F.map_from_entries(
+                                                                F.array(
+                                                                    F.struct(
+                                                                        F.lit('source').alias("key"),
+                                                                        F.col("document.source").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('title').alias("key"),
+                                                                        F.col("document.title").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('url').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.url"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('content_type').alias("key"),
+                                                                        F.col("document.content_type").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('encoding').alias("key"),
+                                                                        F.col("document.encoding").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('language').alias("key"),
+                                                                        F.col("document.language").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('document_type').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.document_type"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('category_id').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.category_id"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('file_type').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.file_type"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                )
+                                                            ),
+                                                            lambda key, value: (
+                                                                (
+                                                                    (
+                                                                        (
+                                                                            F.array_contains(
+                                                                                F.array(
+                                                                                    F.lit('source'),
+                                                                                    F.lit('title'),
+                                                                                    F.lit('content_type'),
+                                                                                    F.lit('encoding'),
+                                                                                    F.lit('language'),
+                                                                                ),
+                                                                                key,
+                                                                            )
+                                                                            | (
+                                                                                (key == F.lit('url'))
+                                                                                & F.col("document.url").isNotNull()
+                                                                            )
+                                                                        )
+                                                                        | (
+                                                                            (key == F.lit('document_type'))
+                                                                            & F.col(
+                                                                                "document.document_type"
+                                                                            ).isNotNull()
+                                                                        )
+                                                                    )
+                                                                    | (
+                                                                        (key == F.lit('category_id'))
+                                                                        & F.col("document.category_id").isNotNull()
+                                                                    )
+                                                                )
+                                                                | (
+                                                                    (key == F.lit('file_type'))
+                                                                    & F.col("document.file_type").isNotNull()
+                                                                )
+                                                            ),
+                                                        ),
+                                                        F.map_filter(
+                                                            F.col("document.fields"),
+                                                            lambda key, value: (key != F.lit('meta')),
+                                                        ),
+                                                    ),
+                                                    lambda key, value: (F.trim(value) != F.lit('')),
+                                                ),
+                                                item,
+                                            ),
+                                            '\x1e',
+                                            ' ',
+                                        ),
+                                    ),
+                                ).alias("value"),
+                            )
+                        )
+                    ),
                 ),
                 F.lit('url'),
             ).alias("url"),
@@ -228,61 +928,298 @@ class ExtractDocumentFieldsGenerated:
                 F.element_at(
                     F.map_concat(
                         F.map_filter(
-                            F.map_from_entries(
-                                F.array(
-                                    F.struct(F.lit('source').alias("key"), F.col("document.source").alias("value")),
-                                    F.struct(F.lit('title').alias("key"), F.col("document.title").alias("value")),
-                                    F.struct(
-                                        F.lit('url').alias("key"),
-                                        F.coalesce(F.col("document.url"), F.lit('')).alias("value"),
+                            F.map_concat(
+                                F.map_filter(
+                                    F.map_from_entries(
+                                        F.array(
+                                            F.struct(
+                                                F.lit('source').alias("key"), F.col("document.source").alias("value")
+                                            ),
+                                            F.struct(
+                                                F.lit('title').alias("key"), F.col("document.title").alias("value")
+                                            ),
+                                            F.struct(
+                                                F.lit('url').alias("key"),
+                                                F.coalesce(F.col("document.url"), F.lit('')).alias("value"),
+                                            ),
+                                            F.struct(
+                                                F.lit('content_type').alias("key"),
+                                                F.col("document.content_type").alias("value"),
+                                            ),
+                                            F.struct(
+                                                F.lit('encoding').alias("key"),
+                                                F.col("document.encoding").alias("value"),
+                                            ),
+                                            F.struct(
+                                                F.lit('language').alias("key"),
+                                                F.col("document.language").alias("value"),
+                                            ),
+                                            F.struct(
+                                                F.lit('document_type').alias("key"),
+                                                F.coalesce(F.col("document.document_type"), F.lit('')).alias("value"),
+                                            ),
+                                            F.struct(
+                                                F.lit('category_id').alias("key"),
+                                                F.coalesce(F.col("document.category_id"), F.lit('')).alias("value"),
+                                            ),
+                                            F.struct(
+                                                F.lit('file_type').alias("key"),
+                                                F.coalesce(F.col("document.file_type"), F.lit('')).alias("value"),
+                                            ),
+                                        )
                                     ),
-                                    F.struct(
-                                        F.lit('content_type').alias("key"),
-                                        F.col("document.content_type").alias("value"),
-                                    ),
-                                    F.struct(F.lit('encoding').alias("key"), F.col("document.encoding").alias("value")),
-                                    F.struct(F.lit('language').alias("key"), F.col("document.language").alias("value")),
-                                    F.struct(
-                                        F.lit('document_type').alias("key"),
-                                        F.coalesce(F.col("document.document_type"), F.lit('')).alias("value"),
-                                    ),
-                                    F.struct(
-                                        F.lit('category_id').alias("key"),
-                                        F.coalesce(F.col("document.category_id"), F.lit('')).alias("value"),
-                                    ),
-                                    F.struct(
-                                        F.lit('file_type').alias("key"),
-                                        F.coalesce(F.col("document.file_type"), F.lit('')).alias("value"),
-                                    ),
-                                )
-                            ),
-                            lambda key, value: (
-                                (
-                                    (
+                                    lambda key, value: (
                                         (
-                                            F.array_contains(
-                                                F.array(
-                                                    F.lit('source'),
-                                                    F.lit('title'),
-                                                    F.lit('content_type'),
-                                                    F.lit('encoding'),
-                                                    F.lit('language'),
-                                                ),
-                                                key,
+                                            (
+                                                (
+                                                    F.array_contains(
+                                                        F.array(
+                                                            F.lit('source'),
+                                                            F.lit('title'),
+                                                            F.lit('content_type'),
+                                                            F.lit('encoding'),
+                                                            F.lit('language'),
+                                                        ),
+                                                        key,
+                                                    )
+                                                    | ((key == F.lit('url')) & F.col("document.url").isNotNull())
+                                                )
+                                                | (
+                                                    (key == F.lit('document_type'))
+                                                    & F.col("document.document_type").isNotNull()
+                                                )
                                             )
-                                            | ((key == F.lit('url')) & F.col("document.url").isNotNull())
+                                            | (
+                                                (key == F.lit('category_id'))
+                                                & F.col("document.category_id").isNotNull()
+                                            )
                                         )
-                                        | (
-                                            (key == F.lit('document_type'))
-                                            & F.col("document.document_type").isNotNull()
-                                        )
-                                    )
-                                    | ((key == F.lit('category_id')) & F.col("document.category_id").isNotNull())
-                                )
-                                | ((key == F.lit('file_type')) & F.col("document.file_type").isNotNull())
+                                        | ((key == F.lit('file_type')) & F.col("document.file_type").isNotNull())
+                                    ),
+                                ),
+                                F.map_filter(F.col("document.fields"), lambda key, value: (key != F.lit('meta'))),
                             ),
+                            lambda key, value: (F.trim(value) != F.lit('')),
                         ),
-                        F.col("document.fields"),
+                        F.map_from_entries(
+                            F.array(
+                                F.struct(
+                                    F.lit('meta').alias("key"),
+                                    F.concat_ws(
+                                        ' \x1e ',
+                                        F.transform(
+                                            F.array_sort(
+                                                F.map_keys(
+                                                    F.map_filter(
+                                                        F.map_concat(
+                                                            F.map_filter(
+                                                                F.map_from_entries(
+                                                                    F.array(
+                                                                        F.struct(
+                                                                            F.lit('source').alias("key"),
+                                                                            F.col("document.source").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('title').alias("key"),
+                                                                            F.col("document.title").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('url').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.url"), F.lit('')
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('content_type').alias("key"),
+                                                                            F.col("document.content_type").alias(
+                                                                                "value"
+                                                                            ),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('encoding').alias("key"),
+                                                                            F.col("document.encoding").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('language').alias("key"),
+                                                                            F.col("document.language").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('document_type').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.document_type"),
+                                                                                F.lit(''),
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('category_id').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.category_id"), F.lit('')
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('file_type').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.file_type"), F.lit('')
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                    )
+                                                                ),
+                                                                lambda key, value: (
+                                                                    (
+                                                                        (
+                                                                            (
+                                                                                F.array_contains(
+                                                                                    F.array(
+                                                                                        F.lit('source'),
+                                                                                        F.lit('title'),
+                                                                                        F.lit('content_type'),
+                                                                                        F.lit('encoding'),
+                                                                                        F.lit('language'),
+                                                                                    ),
+                                                                                    key,
+                                                                                )
+                                                                                | (
+                                                                                    (key == F.lit('url'))
+                                                                                    & F.col("document.url").isNotNull()
+                                                                                )
+                                                                            )
+                                                                            | (
+                                                                                (key == F.lit('document_type'))
+                                                                                & F.col(
+                                                                                    "document.document_type"
+                                                                                ).isNotNull()
+                                                                            )
+                                                                        )
+                                                                        | (
+                                                                            (key == F.lit('category_id'))
+                                                                            & F.col("document.category_id").isNotNull()
+                                                                        )
+                                                                    )
+                                                                    | (
+                                                                        (key == F.lit('file_type'))
+                                                                        & F.col("document.file_type").isNotNull()
+                                                                    )
+                                                                ),
+                                                            ),
+                                                            F.map_filter(
+                                                                F.col("document.fields"),
+                                                                lambda key, value: (key != F.lit('meta')),
+                                                            ),
+                                                        ),
+                                                        lambda key, value: (F.trim(value) != F.lit('')),
+                                                    )
+                                                )
+                                            ),
+                                            lambda item: F.regexp_replace(
+                                                F.element_at(
+                                                    F.map_filter(
+                                                        F.map_concat(
+                                                            F.map_filter(
+                                                                F.map_from_entries(
+                                                                    F.array(
+                                                                        F.struct(
+                                                                            F.lit('source').alias("key"),
+                                                                            F.col("document.source").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('title').alias("key"),
+                                                                            F.col("document.title").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('url').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.url"), F.lit('')
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('content_type').alias("key"),
+                                                                            F.col("document.content_type").alias(
+                                                                                "value"
+                                                                            ),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('encoding').alias("key"),
+                                                                            F.col("document.encoding").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('language').alias("key"),
+                                                                            F.col("document.language").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('document_type').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.document_type"),
+                                                                                F.lit(''),
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('category_id').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.category_id"), F.lit('')
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('file_type').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.file_type"), F.lit('')
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                    )
+                                                                ),
+                                                                lambda key, value: (
+                                                                    (
+                                                                        (
+                                                                            (
+                                                                                F.array_contains(
+                                                                                    F.array(
+                                                                                        F.lit('source'),
+                                                                                        F.lit('title'),
+                                                                                        F.lit('content_type'),
+                                                                                        F.lit('encoding'),
+                                                                                        F.lit('language'),
+                                                                                    ),
+                                                                                    key,
+                                                                                )
+                                                                                | (
+                                                                                    (key == F.lit('url'))
+                                                                                    & F.col("document.url").isNotNull()
+                                                                                )
+                                                                            )
+                                                                            | (
+                                                                                (key == F.lit('document_type'))
+                                                                                & F.col(
+                                                                                    "document.document_type"
+                                                                                ).isNotNull()
+                                                                            )
+                                                                        )
+                                                                        | (
+                                                                            (key == F.lit('category_id'))
+                                                                            & F.col("document.category_id").isNotNull()
+                                                                        )
+                                                                    )
+                                                                    | (
+                                                                        (key == F.lit('file_type'))
+                                                                        & F.col("document.file_type").isNotNull()
+                                                                    )
+                                                                ),
+                                                            ),
+                                                            F.map_filter(
+                                                                F.col("document.fields"),
+                                                                lambda key, value: (key != F.lit('meta')),
+                                                            ),
+                                                        ),
+                                                        lambda key, value: (F.trim(value) != F.lit('')),
+                                                    ),
+                                                    item,
+                                                ),
+                                                '\x1e',
+                                                ' ',
+                                            ),
+                                        ),
+                                    ).alias("value"),
+                                )
+                            )
+                        ),
                     ),
                     F.lit('content_type'),
                 ),
@@ -292,61 +1229,298 @@ class ExtractDocumentFieldsGenerated:
                 F.element_at(
                     F.map_concat(
                         F.map_filter(
-                            F.map_from_entries(
-                                F.array(
-                                    F.struct(F.lit('source').alias("key"), F.col("document.source").alias("value")),
-                                    F.struct(F.lit('title').alias("key"), F.col("document.title").alias("value")),
-                                    F.struct(
-                                        F.lit('url').alias("key"),
-                                        F.coalesce(F.col("document.url"), F.lit('')).alias("value"),
+                            F.map_concat(
+                                F.map_filter(
+                                    F.map_from_entries(
+                                        F.array(
+                                            F.struct(
+                                                F.lit('source').alias("key"), F.col("document.source").alias("value")
+                                            ),
+                                            F.struct(
+                                                F.lit('title').alias("key"), F.col("document.title").alias("value")
+                                            ),
+                                            F.struct(
+                                                F.lit('url').alias("key"),
+                                                F.coalesce(F.col("document.url"), F.lit('')).alias("value"),
+                                            ),
+                                            F.struct(
+                                                F.lit('content_type').alias("key"),
+                                                F.col("document.content_type").alias("value"),
+                                            ),
+                                            F.struct(
+                                                F.lit('encoding').alias("key"),
+                                                F.col("document.encoding").alias("value"),
+                                            ),
+                                            F.struct(
+                                                F.lit('language').alias("key"),
+                                                F.col("document.language").alias("value"),
+                                            ),
+                                            F.struct(
+                                                F.lit('document_type').alias("key"),
+                                                F.coalesce(F.col("document.document_type"), F.lit('')).alias("value"),
+                                            ),
+                                            F.struct(
+                                                F.lit('category_id').alias("key"),
+                                                F.coalesce(F.col("document.category_id"), F.lit('')).alias("value"),
+                                            ),
+                                            F.struct(
+                                                F.lit('file_type').alias("key"),
+                                                F.coalesce(F.col("document.file_type"), F.lit('')).alias("value"),
+                                            ),
+                                        )
                                     ),
-                                    F.struct(
-                                        F.lit('content_type').alias("key"),
-                                        F.col("document.content_type").alias("value"),
-                                    ),
-                                    F.struct(F.lit('encoding').alias("key"), F.col("document.encoding").alias("value")),
-                                    F.struct(F.lit('language').alias("key"), F.col("document.language").alias("value")),
-                                    F.struct(
-                                        F.lit('document_type').alias("key"),
-                                        F.coalesce(F.col("document.document_type"), F.lit('')).alias("value"),
-                                    ),
-                                    F.struct(
-                                        F.lit('category_id').alias("key"),
-                                        F.coalesce(F.col("document.category_id"), F.lit('')).alias("value"),
-                                    ),
-                                    F.struct(
-                                        F.lit('file_type').alias("key"),
-                                        F.coalesce(F.col("document.file_type"), F.lit('')).alias("value"),
-                                    ),
-                                )
-                            ),
-                            lambda key, value: (
-                                (
-                                    (
+                                    lambda key, value: (
                                         (
-                                            F.array_contains(
-                                                F.array(
-                                                    F.lit('source'),
-                                                    F.lit('title'),
-                                                    F.lit('content_type'),
-                                                    F.lit('encoding'),
-                                                    F.lit('language'),
-                                                ),
-                                                key,
+                                            (
+                                                (
+                                                    F.array_contains(
+                                                        F.array(
+                                                            F.lit('source'),
+                                                            F.lit('title'),
+                                                            F.lit('content_type'),
+                                                            F.lit('encoding'),
+                                                            F.lit('language'),
+                                                        ),
+                                                        key,
+                                                    )
+                                                    | ((key == F.lit('url')) & F.col("document.url").isNotNull())
+                                                )
+                                                | (
+                                                    (key == F.lit('document_type'))
+                                                    & F.col("document.document_type").isNotNull()
+                                                )
                                             )
-                                            | ((key == F.lit('url')) & F.col("document.url").isNotNull())
+                                            | (
+                                                (key == F.lit('category_id'))
+                                                & F.col("document.category_id").isNotNull()
+                                            )
                                         )
-                                        | (
-                                            (key == F.lit('document_type'))
-                                            & F.col("document.document_type").isNotNull()
-                                        )
-                                    )
-                                    | ((key == F.lit('category_id')) & F.col("document.category_id").isNotNull())
-                                )
-                                | ((key == F.lit('file_type')) & F.col("document.file_type").isNotNull())
+                                        | ((key == F.lit('file_type')) & F.col("document.file_type").isNotNull())
+                                    ),
+                                ),
+                                F.map_filter(F.col("document.fields"), lambda key, value: (key != F.lit('meta'))),
                             ),
+                            lambda key, value: (F.trim(value) != F.lit('')),
                         ),
-                        F.col("document.fields"),
+                        F.map_from_entries(
+                            F.array(
+                                F.struct(
+                                    F.lit('meta').alias("key"),
+                                    F.concat_ws(
+                                        ' \x1e ',
+                                        F.transform(
+                                            F.array_sort(
+                                                F.map_keys(
+                                                    F.map_filter(
+                                                        F.map_concat(
+                                                            F.map_filter(
+                                                                F.map_from_entries(
+                                                                    F.array(
+                                                                        F.struct(
+                                                                            F.lit('source').alias("key"),
+                                                                            F.col("document.source").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('title').alias("key"),
+                                                                            F.col("document.title").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('url').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.url"), F.lit('')
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('content_type').alias("key"),
+                                                                            F.col("document.content_type").alias(
+                                                                                "value"
+                                                                            ),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('encoding').alias("key"),
+                                                                            F.col("document.encoding").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('language').alias("key"),
+                                                                            F.col("document.language").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('document_type').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.document_type"),
+                                                                                F.lit(''),
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('category_id').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.category_id"), F.lit('')
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('file_type').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.file_type"), F.lit('')
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                    )
+                                                                ),
+                                                                lambda key, value: (
+                                                                    (
+                                                                        (
+                                                                            (
+                                                                                F.array_contains(
+                                                                                    F.array(
+                                                                                        F.lit('source'),
+                                                                                        F.lit('title'),
+                                                                                        F.lit('content_type'),
+                                                                                        F.lit('encoding'),
+                                                                                        F.lit('language'),
+                                                                                    ),
+                                                                                    key,
+                                                                                )
+                                                                                | (
+                                                                                    (key == F.lit('url'))
+                                                                                    & F.col("document.url").isNotNull()
+                                                                                )
+                                                                            )
+                                                                            | (
+                                                                                (key == F.lit('document_type'))
+                                                                                & F.col(
+                                                                                    "document.document_type"
+                                                                                ).isNotNull()
+                                                                            )
+                                                                        )
+                                                                        | (
+                                                                            (key == F.lit('category_id'))
+                                                                            & F.col("document.category_id").isNotNull()
+                                                                        )
+                                                                    )
+                                                                    | (
+                                                                        (key == F.lit('file_type'))
+                                                                        & F.col("document.file_type").isNotNull()
+                                                                    )
+                                                                ),
+                                                            ),
+                                                            F.map_filter(
+                                                                F.col("document.fields"),
+                                                                lambda key, value: (key != F.lit('meta')),
+                                                            ),
+                                                        ),
+                                                        lambda key, value: (F.trim(value) != F.lit('')),
+                                                    )
+                                                )
+                                            ),
+                                            lambda item: F.regexp_replace(
+                                                F.element_at(
+                                                    F.map_filter(
+                                                        F.map_concat(
+                                                            F.map_filter(
+                                                                F.map_from_entries(
+                                                                    F.array(
+                                                                        F.struct(
+                                                                            F.lit('source').alias("key"),
+                                                                            F.col("document.source").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('title').alias("key"),
+                                                                            F.col("document.title").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('url').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.url"), F.lit('')
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('content_type').alias("key"),
+                                                                            F.col("document.content_type").alias(
+                                                                                "value"
+                                                                            ),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('encoding').alias("key"),
+                                                                            F.col("document.encoding").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('language').alias("key"),
+                                                                            F.col("document.language").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('document_type').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.document_type"),
+                                                                                F.lit(''),
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('category_id').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.category_id"), F.lit('')
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('file_type').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.file_type"), F.lit('')
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                    )
+                                                                ),
+                                                                lambda key, value: (
+                                                                    (
+                                                                        (
+                                                                            (
+                                                                                F.array_contains(
+                                                                                    F.array(
+                                                                                        F.lit('source'),
+                                                                                        F.lit('title'),
+                                                                                        F.lit('content_type'),
+                                                                                        F.lit('encoding'),
+                                                                                        F.lit('language'),
+                                                                                    ),
+                                                                                    key,
+                                                                                )
+                                                                                | (
+                                                                                    (key == F.lit('url'))
+                                                                                    & F.col("document.url").isNotNull()
+                                                                                )
+                                                                            )
+                                                                            | (
+                                                                                (key == F.lit('document_type'))
+                                                                                & F.col(
+                                                                                    "document.document_type"
+                                                                                ).isNotNull()
+                                                                            )
+                                                                        )
+                                                                        | (
+                                                                            (key == F.lit('category_id'))
+                                                                            & F.col("document.category_id").isNotNull()
+                                                                        )
+                                                                    )
+                                                                    | (
+                                                                        (key == F.lit('file_type'))
+                                                                        & F.col("document.file_type").isNotNull()
+                                                                    )
+                                                                ),
+                                                            ),
+                                                            F.map_filter(
+                                                                F.col("document.fields"),
+                                                                lambda key, value: (key != F.lit('meta')),
+                                                            ),
+                                                        ),
+                                                        lambda key, value: (F.trim(value) != F.lit('')),
+                                                    ),
+                                                    item,
+                                                ),
+                                                '\x1e',
+                                                ' ',
+                                            ),
+                                        ),
+                                    ).alias("value"),
+                                )
+                            )
+                        ),
                     ),
                     F.lit('encoding'),
                 ),
@@ -356,61 +1530,298 @@ class ExtractDocumentFieldsGenerated:
                 F.element_at(
                     F.map_concat(
                         F.map_filter(
-                            F.map_from_entries(
-                                F.array(
-                                    F.struct(F.lit('source').alias("key"), F.col("document.source").alias("value")),
-                                    F.struct(F.lit('title').alias("key"), F.col("document.title").alias("value")),
-                                    F.struct(
-                                        F.lit('url').alias("key"),
-                                        F.coalesce(F.col("document.url"), F.lit('')).alias("value"),
+                            F.map_concat(
+                                F.map_filter(
+                                    F.map_from_entries(
+                                        F.array(
+                                            F.struct(
+                                                F.lit('source').alias("key"), F.col("document.source").alias("value")
+                                            ),
+                                            F.struct(
+                                                F.lit('title').alias("key"), F.col("document.title").alias("value")
+                                            ),
+                                            F.struct(
+                                                F.lit('url').alias("key"),
+                                                F.coalesce(F.col("document.url"), F.lit('')).alias("value"),
+                                            ),
+                                            F.struct(
+                                                F.lit('content_type').alias("key"),
+                                                F.col("document.content_type").alias("value"),
+                                            ),
+                                            F.struct(
+                                                F.lit('encoding').alias("key"),
+                                                F.col("document.encoding").alias("value"),
+                                            ),
+                                            F.struct(
+                                                F.lit('language').alias("key"),
+                                                F.col("document.language").alias("value"),
+                                            ),
+                                            F.struct(
+                                                F.lit('document_type').alias("key"),
+                                                F.coalesce(F.col("document.document_type"), F.lit('')).alias("value"),
+                                            ),
+                                            F.struct(
+                                                F.lit('category_id').alias("key"),
+                                                F.coalesce(F.col("document.category_id"), F.lit('')).alias("value"),
+                                            ),
+                                            F.struct(
+                                                F.lit('file_type').alias("key"),
+                                                F.coalesce(F.col("document.file_type"), F.lit('')).alias("value"),
+                                            ),
+                                        )
                                     ),
-                                    F.struct(
-                                        F.lit('content_type').alias("key"),
-                                        F.col("document.content_type").alias("value"),
-                                    ),
-                                    F.struct(F.lit('encoding').alias("key"), F.col("document.encoding").alias("value")),
-                                    F.struct(F.lit('language').alias("key"), F.col("document.language").alias("value")),
-                                    F.struct(
-                                        F.lit('document_type').alias("key"),
-                                        F.coalesce(F.col("document.document_type"), F.lit('')).alias("value"),
-                                    ),
-                                    F.struct(
-                                        F.lit('category_id').alias("key"),
-                                        F.coalesce(F.col("document.category_id"), F.lit('')).alias("value"),
-                                    ),
-                                    F.struct(
-                                        F.lit('file_type').alias("key"),
-                                        F.coalesce(F.col("document.file_type"), F.lit('')).alias("value"),
-                                    ),
-                                )
-                            ),
-                            lambda key, value: (
-                                (
-                                    (
+                                    lambda key, value: (
                                         (
-                                            F.array_contains(
-                                                F.array(
-                                                    F.lit('source'),
-                                                    F.lit('title'),
-                                                    F.lit('content_type'),
-                                                    F.lit('encoding'),
-                                                    F.lit('language'),
-                                                ),
-                                                key,
+                                            (
+                                                (
+                                                    F.array_contains(
+                                                        F.array(
+                                                            F.lit('source'),
+                                                            F.lit('title'),
+                                                            F.lit('content_type'),
+                                                            F.lit('encoding'),
+                                                            F.lit('language'),
+                                                        ),
+                                                        key,
+                                                    )
+                                                    | ((key == F.lit('url')) & F.col("document.url").isNotNull())
+                                                )
+                                                | (
+                                                    (key == F.lit('document_type'))
+                                                    & F.col("document.document_type").isNotNull()
+                                                )
                                             )
-                                            | ((key == F.lit('url')) & F.col("document.url").isNotNull())
+                                            | (
+                                                (key == F.lit('category_id'))
+                                                & F.col("document.category_id").isNotNull()
+                                            )
                                         )
-                                        | (
-                                            (key == F.lit('document_type'))
-                                            & F.col("document.document_type").isNotNull()
-                                        )
-                                    )
-                                    | ((key == F.lit('category_id')) & F.col("document.category_id").isNotNull())
-                                )
-                                | ((key == F.lit('file_type')) & F.col("document.file_type").isNotNull())
+                                        | ((key == F.lit('file_type')) & F.col("document.file_type").isNotNull())
+                                    ),
+                                ),
+                                F.map_filter(F.col("document.fields"), lambda key, value: (key != F.lit('meta'))),
                             ),
+                            lambda key, value: (F.trim(value) != F.lit('')),
                         ),
-                        F.col("document.fields"),
+                        F.map_from_entries(
+                            F.array(
+                                F.struct(
+                                    F.lit('meta').alias("key"),
+                                    F.concat_ws(
+                                        ' \x1e ',
+                                        F.transform(
+                                            F.array_sort(
+                                                F.map_keys(
+                                                    F.map_filter(
+                                                        F.map_concat(
+                                                            F.map_filter(
+                                                                F.map_from_entries(
+                                                                    F.array(
+                                                                        F.struct(
+                                                                            F.lit('source').alias("key"),
+                                                                            F.col("document.source").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('title').alias("key"),
+                                                                            F.col("document.title").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('url').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.url"), F.lit('')
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('content_type').alias("key"),
+                                                                            F.col("document.content_type").alias(
+                                                                                "value"
+                                                                            ),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('encoding').alias("key"),
+                                                                            F.col("document.encoding").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('language').alias("key"),
+                                                                            F.col("document.language").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('document_type').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.document_type"),
+                                                                                F.lit(''),
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('category_id').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.category_id"), F.lit('')
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('file_type').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.file_type"), F.lit('')
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                    )
+                                                                ),
+                                                                lambda key, value: (
+                                                                    (
+                                                                        (
+                                                                            (
+                                                                                F.array_contains(
+                                                                                    F.array(
+                                                                                        F.lit('source'),
+                                                                                        F.lit('title'),
+                                                                                        F.lit('content_type'),
+                                                                                        F.lit('encoding'),
+                                                                                        F.lit('language'),
+                                                                                    ),
+                                                                                    key,
+                                                                                )
+                                                                                | (
+                                                                                    (key == F.lit('url'))
+                                                                                    & F.col("document.url").isNotNull()
+                                                                                )
+                                                                            )
+                                                                            | (
+                                                                                (key == F.lit('document_type'))
+                                                                                & F.col(
+                                                                                    "document.document_type"
+                                                                                ).isNotNull()
+                                                                            )
+                                                                        )
+                                                                        | (
+                                                                            (key == F.lit('category_id'))
+                                                                            & F.col("document.category_id").isNotNull()
+                                                                        )
+                                                                    )
+                                                                    | (
+                                                                        (key == F.lit('file_type'))
+                                                                        & F.col("document.file_type").isNotNull()
+                                                                    )
+                                                                ),
+                                                            ),
+                                                            F.map_filter(
+                                                                F.col("document.fields"),
+                                                                lambda key, value: (key != F.lit('meta')),
+                                                            ),
+                                                        ),
+                                                        lambda key, value: (F.trim(value) != F.lit('')),
+                                                    )
+                                                )
+                                            ),
+                                            lambda item: F.regexp_replace(
+                                                F.element_at(
+                                                    F.map_filter(
+                                                        F.map_concat(
+                                                            F.map_filter(
+                                                                F.map_from_entries(
+                                                                    F.array(
+                                                                        F.struct(
+                                                                            F.lit('source').alias("key"),
+                                                                            F.col("document.source").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('title').alias("key"),
+                                                                            F.col("document.title").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('url').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.url"), F.lit('')
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('content_type').alias("key"),
+                                                                            F.col("document.content_type").alias(
+                                                                                "value"
+                                                                            ),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('encoding').alias("key"),
+                                                                            F.col("document.encoding").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('language').alias("key"),
+                                                                            F.col("document.language").alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('document_type').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.document_type"),
+                                                                                F.lit(''),
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('category_id').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.category_id"), F.lit('')
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                        F.struct(
+                                                                            F.lit('file_type').alias("key"),
+                                                                            F.coalesce(
+                                                                                F.col("document.file_type"), F.lit('')
+                                                                            ).alias("value"),
+                                                                        ),
+                                                                    )
+                                                                ),
+                                                                lambda key, value: (
+                                                                    (
+                                                                        (
+                                                                            (
+                                                                                F.array_contains(
+                                                                                    F.array(
+                                                                                        F.lit('source'),
+                                                                                        F.lit('title'),
+                                                                                        F.lit('content_type'),
+                                                                                        F.lit('encoding'),
+                                                                                        F.lit('language'),
+                                                                                    ),
+                                                                                    key,
+                                                                                )
+                                                                                | (
+                                                                                    (key == F.lit('url'))
+                                                                                    & F.col("document.url").isNotNull()
+                                                                                )
+                                                                            )
+                                                                            | (
+                                                                                (key == F.lit('document_type'))
+                                                                                & F.col(
+                                                                                    "document.document_type"
+                                                                                ).isNotNull()
+                                                                            )
+                                                                        )
+                                                                        | (
+                                                                            (key == F.lit('category_id'))
+                                                                            & F.col("document.category_id").isNotNull()
+                                                                        )
+                                                                    )
+                                                                    | (
+                                                                        (key == F.lit('file_type'))
+                                                                        & F.col("document.file_type").isNotNull()
+                                                                    )
+                                                                ),
+                                                            ),
+                                                            F.map_filter(
+                                                                F.col("document.fields"),
+                                                                lambda key, value: (key != F.lit('meta')),
+                                                            ),
+                                                        ),
+                                                        lambda key, value: (F.trim(value) != F.lit('')),
+                                                    ),
+                                                    item,
+                                                ),
+                                                '\x1e',
+                                                ' ',
+                                            ),
+                                        ),
+                                    ).alias("value"),
+                                )
+                            )
+                        ),
                     ),
                     F.lit('language'),
                 ),
@@ -425,224 +1836,1123 @@ class ExtractDocumentFieldsGenerated:
             F.element_at(
                 F.map_concat(
                     F.map_filter(
-                        F.map_from_entries(
-                            F.array(
-                                F.struct(F.lit('source').alias("key"), F.col("document.source").alias("value")),
-                                F.struct(F.lit('title').alias("key"), F.col("document.title").alias("value")),
-                                F.struct(
-                                    F.lit('url').alias("key"),
-                                    F.coalesce(F.col("document.url"), F.lit('')).alias("value"),
-                                ),
-                                F.struct(
-                                    F.lit('content_type').alias("key"), F.col("document.content_type").alias("value")
-                                ),
-                                F.struct(F.lit('encoding').alias("key"), F.col("document.encoding").alias("value")),
-                                F.struct(F.lit('language').alias("key"), F.col("document.language").alias("value")),
-                                F.struct(
-                                    F.lit('document_type').alias("key"),
-                                    F.coalesce(F.col("document.document_type"), F.lit('')).alias("value"),
-                                ),
-                                F.struct(
-                                    F.lit('category_id').alias("key"),
-                                    F.coalesce(F.col("document.category_id"), F.lit('')).alias("value"),
-                                ),
-                                F.struct(
-                                    F.lit('file_type').alias("key"),
-                                    F.coalesce(F.col("document.file_type"), F.lit('')).alias("value"),
-                                ),
-                            )
-                        ),
-                        lambda key, value: (
-                            (
-                                (
-                                    (
-                                        F.array_contains(
-                                            F.array(
-                                                F.lit('source'),
-                                                F.lit('title'),
-                                                F.lit('content_type'),
-                                                F.lit('encoding'),
-                                                F.lit('language'),
-                                            ),
-                                            key,
-                                        )
-                                        | ((key == F.lit('url')) & F.col("document.url").isNotNull())
+                        F.map_concat(
+                            F.map_filter(
+                                F.map_from_entries(
+                                    F.array(
+                                        F.struct(F.lit('source').alias("key"), F.col("document.source").alias("value")),
+                                        F.struct(F.lit('title').alias("key"), F.col("document.title").alias("value")),
+                                        F.struct(
+                                            F.lit('url').alias("key"),
+                                            F.coalesce(F.col("document.url"), F.lit('')).alias("value"),
+                                        ),
+                                        F.struct(
+                                            F.lit('content_type').alias("key"),
+                                            F.col("document.content_type").alias("value"),
+                                        ),
+                                        F.struct(
+                                            F.lit('encoding').alias("key"), F.col("document.encoding").alias("value")
+                                        ),
+                                        F.struct(
+                                            F.lit('language').alias("key"), F.col("document.language").alias("value")
+                                        ),
+                                        F.struct(
+                                            F.lit('document_type').alias("key"),
+                                            F.coalesce(F.col("document.document_type"), F.lit('')).alias("value"),
+                                        ),
+                                        F.struct(
+                                            F.lit('category_id').alias("key"),
+                                            F.coalesce(F.col("document.category_id"), F.lit('')).alias("value"),
+                                        ),
+                                        F.struct(
+                                            F.lit('file_type').alias("key"),
+                                            F.coalesce(F.col("document.file_type"), F.lit('')).alias("value"),
+                                        ),
                                     )
-                                    | ((key == F.lit('document_type')) & F.col("document.document_type").isNotNull())
-                                )
-                                | ((key == F.lit('category_id')) & F.col("document.category_id").isNotNull())
-                            )
-                            | ((key == F.lit('file_type')) & F.col("document.file_type").isNotNull())
+                                ),
+                                lambda key, value: (
+                                    (
+                                        (
+                                            (
+                                                F.array_contains(
+                                                    F.array(
+                                                        F.lit('source'),
+                                                        F.lit('title'),
+                                                        F.lit('content_type'),
+                                                        F.lit('encoding'),
+                                                        F.lit('language'),
+                                                    ),
+                                                    key,
+                                                )
+                                                | ((key == F.lit('url')) & F.col("document.url").isNotNull())
+                                            )
+                                            | (
+                                                (key == F.lit('document_type'))
+                                                & F.col("document.document_type").isNotNull()
+                                            )
+                                        )
+                                        | ((key == F.lit('category_id')) & F.col("document.category_id").isNotNull())
+                                    )
+                                    | ((key == F.lit('file_type')) & F.col("document.file_type").isNotNull())
+                                ),
+                            ),
+                            F.map_filter(F.col("document.fields"), lambda key, value: (key != F.lit('meta'))),
                         ),
+                        lambda key, value: (F.trim(value) != F.lit('')),
                     ),
-                    F.col("document.fields"),
+                    F.map_from_entries(
+                        F.array(
+                            F.struct(
+                                F.lit('meta').alias("key"),
+                                F.concat_ws(
+                                    ' \x1e ',
+                                    F.transform(
+                                        F.array_sort(
+                                            F.map_keys(
+                                                F.map_filter(
+                                                    F.map_concat(
+                                                        F.map_filter(
+                                                            F.map_from_entries(
+                                                                F.array(
+                                                                    F.struct(
+                                                                        F.lit('source').alias("key"),
+                                                                        F.col("document.source").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('title').alias("key"),
+                                                                        F.col("document.title").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('url').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.url"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('content_type').alias("key"),
+                                                                        F.col("document.content_type").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('encoding').alias("key"),
+                                                                        F.col("document.encoding").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('language').alias("key"),
+                                                                        F.col("document.language").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('document_type').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.document_type"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('category_id').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.category_id"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('file_type').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.file_type"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                )
+                                                            ),
+                                                            lambda key, value: (
+                                                                (
+                                                                    (
+                                                                        (
+                                                                            F.array_contains(
+                                                                                F.array(
+                                                                                    F.lit('source'),
+                                                                                    F.lit('title'),
+                                                                                    F.lit('content_type'),
+                                                                                    F.lit('encoding'),
+                                                                                    F.lit('language'),
+                                                                                ),
+                                                                                key,
+                                                                            )
+                                                                            | (
+                                                                                (key == F.lit('url'))
+                                                                                & F.col("document.url").isNotNull()
+                                                                            )
+                                                                        )
+                                                                        | (
+                                                                            (key == F.lit('document_type'))
+                                                                            & F.col(
+                                                                                "document.document_type"
+                                                                            ).isNotNull()
+                                                                        )
+                                                                    )
+                                                                    | (
+                                                                        (key == F.lit('category_id'))
+                                                                        & F.col("document.category_id").isNotNull()
+                                                                    )
+                                                                )
+                                                                | (
+                                                                    (key == F.lit('file_type'))
+                                                                    & F.col("document.file_type").isNotNull()
+                                                                )
+                                                            ),
+                                                        ),
+                                                        F.map_filter(
+                                                            F.col("document.fields"),
+                                                            lambda key, value: (key != F.lit('meta')),
+                                                        ),
+                                                    ),
+                                                    lambda key, value: (F.trim(value) != F.lit('')),
+                                                )
+                                            )
+                                        ),
+                                        lambda item: F.regexp_replace(
+                                            F.element_at(
+                                                F.map_filter(
+                                                    F.map_concat(
+                                                        F.map_filter(
+                                                            F.map_from_entries(
+                                                                F.array(
+                                                                    F.struct(
+                                                                        F.lit('source').alias("key"),
+                                                                        F.col("document.source").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('title').alias("key"),
+                                                                        F.col("document.title").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('url').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.url"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('content_type').alias("key"),
+                                                                        F.col("document.content_type").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('encoding').alias("key"),
+                                                                        F.col("document.encoding").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('language').alias("key"),
+                                                                        F.col("document.language").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('document_type').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.document_type"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('category_id').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.category_id"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('file_type').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.file_type"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                )
+                                                            ),
+                                                            lambda key, value: (
+                                                                (
+                                                                    (
+                                                                        (
+                                                                            F.array_contains(
+                                                                                F.array(
+                                                                                    F.lit('source'),
+                                                                                    F.lit('title'),
+                                                                                    F.lit('content_type'),
+                                                                                    F.lit('encoding'),
+                                                                                    F.lit('language'),
+                                                                                ),
+                                                                                key,
+                                                                            )
+                                                                            | (
+                                                                                (key == F.lit('url'))
+                                                                                & F.col("document.url").isNotNull()
+                                                                            )
+                                                                        )
+                                                                        | (
+                                                                            (key == F.lit('document_type'))
+                                                                            & F.col(
+                                                                                "document.document_type"
+                                                                            ).isNotNull()
+                                                                        )
+                                                                    )
+                                                                    | (
+                                                                        (key == F.lit('category_id'))
+                                                                        & F.col("document.category_id").isNotNull()
+                                                                    )
+                                                                )
+                                                                | (
+                                                                    (key == F.lit('file_type'))
+                                                                    & F.col("document.file_type").isNotNull()
+                                                                )
+                                                            ),
+                                                        ),
+                                                        F.map_filter(
+                                                            F.col("document.fields"),
+                                                            lambda key, value: (key != F.lit('meta')),
+                                                        ),
+                                                    ),
+                                                    lambda key, value: (F.trim(value) != F.lit('')),
+                                                ),
+                                                item,
+                                            ),
+                                            '\x1e',
+                                            ' ',
+                                        ),
+                                    ),
+                                ).alias("value"),
+                            )
+                        )
+                    ),
                 ),
                 F.lit('document_type'),
             ).alias("document_type"),
             F.element_at(
                 F.map_concat(
                     F.map_filter(
-                        F.map_from_entries(
-                            F.array(
-                                F.struct(F.lit('source').alias("key"), F.col("document.source").alias("value")),
-                                F.struct(F.lit('title').alias("key"), F.col("document.title").alias("value")),
-                                F.struct(
-                                    F.lit('url').alias("key"),
-                                    F.coalesce(F.col("document.url"), F.lit('')).alias("value"),
-                                ),
-                                F.struct(
-                                    F.lit('content_type').alias("key"), F.col("document.content_type").alias("value")
-                                ),
-                                F.struct(F.lit('encoding').alias("key"), F.col("document.encoding").alias("value")),
-                                F.struct(F.lit('language').alias("key"), F.col("document.language").alias("value")),
-                                F.struct(
-                                    F.lit('document_type').alias("key"),
-                                    F.coalesce(F.col("document.document_type"), F.lit('')).alias("value"),
-                                ),
-                                F.struct(
-                                    F.lit('category_id').alias("key"),
-                                    F.coalesce(F.col("document.category_id"), F.lit('')).alias("value"),
-                                ),
-                                F.struct(
-                                    F.lit('file_type').alias("key"),
-                                    F.coalesce(F.col("document.file_type"), F.lit('')).alias("value"),
-                                ),
-                            )
-                        ),
-                        lambda key, value: (
-                            (
-                                (
-                                    (
-                                        F.array_contains(
-                                            F.array(
-                                                F.lit('source'),
-                                                F.lit('title'),
-                                                F.lit('content_type'),
-                                                F.lit('encoding'),
-                                                F.lit('language'),
-                                            ),
-                                            key,
-                                        )
-                                        | ((key == F.lit('url')) & F.col("document.url").isNotNull())
+                        F.map_concat(
+                            F.map_filter(
+                                F.map_from_entries(
+                                    F.array(
+                                        F.struct(F.lit('source').alias("key"), F.col("document.source").alias("value")),
+                                        F.struct(F.lit('title').alias("key"), F.col("document.title").alias("value")),
+                                        F.struct(
+                                            F.lit('url').alias("key"),
+                                            F.coalesce(F.col("document.url"), F.lit('')).alias("value"),
+                                        ),
+                                        F.struct(
+                                            F.lit('content_type').alias("key"),
+                                            F.col("document.content_type").alias("value"),
+                                        ),
+                                        F.struct(
+                                            F.lit('encoding').alias("key"), F.col("document.encoding").alias("value")
+                                        ),
+                                        F.struct(
+                                            F.lit('language').alias("key"), F.col("document.language").alias("value")
+                                        ),
+                                        F.struct(
+                                            F.lit('document_type').alias("key"),
+                                            F.coalesce(F.col("document.document_type"), F.lit('')).alias("value"),
+                                        ),
+                                        F.struct(
+                                            F.lit('category_id').alias("key"),
+                                            F.coalesce(F.col("document.category_id"), F.lit('')).alias("value"),
+                                        ),
+                                        F.struct(
+                                            F.lit('file_type').alias("key"),
+                                            F.coalesce(F.col("document.file_type"), F.lit('')).alias("value"),
+                                        ),
                                     )
-                                    | ((key == F.lit('document_type')) & F.col("document.document_type").isNotNull())
-                                )
-                                | ((key == F.lit('category_id')) & F.col("document.category_id").isNotNull())
-                            )
-                            | ((key == F.lit('file_type')) & F.col("document.file_type").isNotNull())
+                                ),
+                                lambda key, value: (
+                                    (
+                                        (
+                                            (
+                                                F.array_contains(
+                                                    F.array(
+                                                        F.lit('source'),
+                                                        F.lit('title'),
+                                                        F.lit('content_type'),
+                                                        F.lit('encoding'),
+                                                        F.lit('language'),
+                                                    ),
+                                                    key,
+                                                )
+                                                | ((key == F.lit('url')) & F.col("document.url").isNotNull())
+                                            )
+                                            | (
+                                                (key == F.lit('document_type'))
+                                                & F.col("document.document_type").isNotNull()
+                                            )
+                                        )
+                                        | ((key == F.lit('category_id')) & F.col("document.category_id").isNotNull())
+                                    )
+                                    | ((key == F.lit('file_type')) & F.col("document.file_type").isNotNull())
+                                ),
+                            ),
+                            F.map_filter(F.col("document.fields"), lambda key, value: (key != F.lit('meta'))),
                         ),
+                        lambda key, value: (F.trim(value) != F.lit('')),
                     ),
-                    F.col("document.fields"),
+                    F.map_from_entries(
+                        F.array(
+                            F.struct(
+                                F.lit('meta').alias("key"),
+                                F.concat_ws(
+                                    ' \x1e ',
+                                    F.transform(
+                                        F.array_sort(
+                                            F.map_keys(
+                                                F.map_filter(
+                                                    F.map_concat(
+                                                        F.map_filter(
+                                                            F.map_from_entries(
+                                                                F.array(
+                                                                    F.struct(
+                                                                        F.lit('source').alias("key"),
+                                                                        F.col("document.source").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('title').alias("key"),
+                                                                        F.col("document.title").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('url').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.url"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('content_type').alias("key"),
+                                                                        F.col("document.content_type").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('encoding').alias("key"),
+                                                                        F.col("document.encoding").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('language').alias("key"),
+                                                                        F.col("document.language").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('document_type').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.document_type"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('category_id').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.category_id"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('file_type').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.file_type"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                )
+                                                            ),
+                                                            lambda key, value: (
+                                                                (
+                                                                    (
+                                                                        (
+                                                                            F.array_contains(
+                                                                                F.array(
+                                                                                    F.lit('source'),
+                                                                                    F.lit('title'),
+                                                                                    F.lit('content_type'),
+                                                                                    F.lit('encoding'),
+                                                                                    F.lit('language'),
+                                                                                ),
+                                                                                key,
+                                                                            )
+                                                                            | (
+                                                                                (key == F.lit('url'))
+                                                                                & F.col("document.url").isNotNull()
+                                                                            )
+                                                                        )
+                                                                        | (
+                                                                            (key == F.lit('document_type'))
+                                                                            & F.col(
+                                                                                "document.document_type"
+                                                                            ).isNotNull()
+                                                                        )
+                                                                    )
+                                                                    | (
+                                                                        (key == F.lit('category_id'))
+                                                                        & F.col("document.category_id").isNotNull()
+                                                                    )
+                                                                )
+                                                                | (
+                                                                    (key == F.lit('file_type'))
+                                                                    & F.col("document.file_type").isNotNull()
+                                                                )
+                                                            ),
+                                                        ),
+                                                        F.map_filter(
+                                                            F.col("document.fields"),
+                                                            lambda key, value: (key != F.lit('meta')),
+                                                        ),
+                                                    ),
+                                                    lambda key, value: (F.trim(value) != F.lit('')),
+                                                )
+                                            )
+                                        ),
+                                        lambda item: F.regexp_replace(
+                                            F.element_at(
+                                                F.map_filter(
+                                                    F.map_concat(
+                                                        F.map_filter(
+                                                            F.map_from_entries(
+                                                                F.array(
+                                                                    F.struct(
+                                                                        F.lit('source').alias("key"),
+                                                                        F.col("document.source").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('title').alias("key"),
+                                                                        F.col("document.title").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('url').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.url"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('content_type').alias("key"),
+                                                                        F.col("document.content_type").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('encoding').alias("key"),
+                                                                        F.col("document.encoding").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('language').alias("key"),
+                                                                        F.col("document.language").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('document_type').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.document_type"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('category_id').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.category_id"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('file_type').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.file_type"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                )
+                                                            ),
+                                                            lambda key, value: (
+                                                                (
+                                                                    (
+                                                                        (
+                                                                            F.array_contains(
+                                                                                F.array(
+                                                                                    F.lit('source'),
+                                                                                    F.lit('title'),
+                                                                                    F.lit('content_type'),
+                                                                                    F.lit('encoding'),
+                                                                                    F.lit('language'),
+                                                                                ),
+                                                                                key,
+                                                                            )
+                                                                            | (
+                                                                                (key == F.lit('url'))
+                                                                                & F.col("document.url").isNotNull()
+                                                                            )
+                                                                        )
+                                                                        | (
+                                                                            (key == F.lit('document_type'))
+                                                                            & F.col(
+                                                                                "document.document_type"
+                                                                            ).isNotNull()
+                                                                        )
+                                                                    )
+                                                                    | (
+                                                                        (key == F.lit('category_id'))
+                                                                        & F.col("document.category_id").isNotNull()
+                                                                    )
+                                                                )
+                                                                | (
+                                                                    (key == F.lit('file_type'))
+                                                                    & F.col("document.file_type").isNotNull()
+                                                                )
+                                                            ),
+                                                        ),
+                                                        F.map_filter(
+                                                            F.col("document.fields"),
+                                                            lambda key, value: (key != F.lit('meta')),
+                                                        ),
+                                                    ),
+                                                    lambda key, value: (F.trim(value) != F.lit('')),
+                                                ),
+                                                item,
+                                            ),
+                                            '\x1e',
+                                            ' ',
+                                        ),
+                                    ),
+                                ).alias("value"),
+                            )
+                        )
+                    ),
                 ),
                 F.lit('category_id'),
             ).alias("category_id"),
             F.element_at(
                 F.map_concat(
                     F.map_filter(
-                        F.map_from_entries(
-                            F.array(
-                                F.struct(F.lit('source').alias("key"), F.col("document.source").alias("value")),
-                                F.struct(F.lit('title').alias("key"), F.col("document.title").alias("value")),
-                                F.struct(
-                                    F.lit('url').alias("key"),
-                                    F.coalesce(F.col("document.url"), F.lit('')).alias("value"),
-                                ),
-                                F.struct(
-                                    F.lit('content_type').alias("key"), F.col("document.content_type").alias("value")
-                                ),
-                                F.struct(F.lit('encoding').alias("key"), F.col("document.encoding").alias("value")),
-                                F.struct(F.lit('language').alias("key"), F.col("document.language").alias("value")),
-                                F.struct(
-                                    F.lit('document_type').alias("key"),
-                                    F.coalesce(F.col("document.document_type"), F.lit('')).alias("value"),
-                                ),
-                                F.struct(
-                                    F.lit('category_id').alias("key"),
-                                    F.coalesce(F.col("document.category_id"), F.lit('')).alias("value"),
-                                ),
-                                F.struct(
-                                    F.lit('file_type').alias("key"),
-                                    F.coalesce(F.col("document.file_type"), F.lit('')).alias("value"),
-                                ),
-                            )
-                        ),
-                        lambda key, value: (
-                            (
-                                (
-                                    (
-                                        F.array_contains(
-                                            F.array(
-                                                F.lit('source'),
-                                                F.lit('title'),
-                                                F.lit('content_type'),
-                                                F.lit('encoding'),
-                                                F.lit('language'),
-                                            ),
-                                            key,
-                                        )
-                                        | ((key == F.lit('url')) & F.col("document.url").isNotNull())
+                        F.map_concat(
+                            F.map_filter(
+                                F.map_from_entries(
+                                    F.array(
+                                        F.struct(F.lit('source').alias("key"), F.col("document.source").alias("value")),
+                                        F.struct(F.lit('title').alias("key"), F.col("document.title").alias("value")),
+                                        F.struct(
+                                            F.lit('url').alias("key"),
+                                            F.coalesce(F.col("document.url"), F.lit('')).alias("value"),
+                                        ),
+                                        F.struct(
+                                            F.lit('content_type').alias("key"),
+                                            F.col("document.content_type").alias("value"),
+                                        ),
+                                        F.struct(
+                                            F.lit('encoding').alias("key"), F.col("document.encoding").alias("value")
+                                        ),
+                                        F.struct(
+                                            F.lit('language').alias("key"), F.col("document.language").alias("value")
+                                        ),
+                                        F.struct(
+                                            F.lit('document_type').alias("key"),
+                                            F.coalesce(F.col("document.document_type"), F.lit('')).alias("value"),
+                                        ),
+                                        F.struct(
+                                            F.lit('category_id').alias("key"),
+                                            F.coalesce(F.col("document.category_id"), F.lit('')).alias("value"),
+                                        ),
+                                        F.struct(
+                                            F.lit('file_type').alias("key"),
+                                            F.coalesce(F.col("document.file_type"), F.lit('')).alias("value"),
+                                        ),
                                     )
-                                    | ((key == F.lit('document_type')) & F.col("document.document_type").isNotNull())
-                                )
-                                | ((key == F.lit('category_id')) & F.col("document.category_id").isNotNull())
-                            )
-                            | ((key == F.lit('file_type')) & F.col("document.file_type").isNotNull())
+                                ),
+                                lambda key, value: (
+                                    (
+                                        (
+                                            (
+                                                F.array_contains(
+                                                    F.array(
+                                                        F.lit('source'),
+                                                        F.lit('title'),
+                                                        F.lit('content_type'),
+                                                        F.lit('encoding'),
+                                                        F.lit('language'),
+                                                    ),
+                                                    key,
+                                                )
+                                                | ((key == F.lit('url')) & F.col("document.url").isNotNull())
+                                            )
+                                            | (
+                                                (key == F.lit('document_type'))
+                                                & F.col("document.document_type").isNotNull()
+                                            )
+                                        )
+                                        | ((key == F.lit('category_id')) & F.col("document.category_id").isNotNull())
+                                    )
+                                    | ((key == F.lit('file_type')) & F.col("document.file_type").isNotNull())
+                                ),
+                            ),
+                            F.map_filter(F.col("document.fields"), lambda key, value: (key != F.lit('meta'))),
                         ),
+                        lambda key, value: (F.trim(value) != F.lit('')),
                     ),
-                    F.col("document.fields"),
+                    F.map_from_entries(
+                        F.array(
+                            F.struct(
+                                F.lit('meta').alias("key"),
+                                F.concat_ws(
+                                    ' \x1e ',
+                                    F.transform(
+                                        F.array_sort(
+                                            F.map_keys(
+                                                F.map_filter(
+                                                    F.map_concat(
+                                                        F.map_filter(
+                                                            F.map_from_entries(
+                                                                F.array(
+                                                                    F.struct(
+                                                                        F.lit('source').alias("key"),
+                                                                        F.col("document.source").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('title').alias("key"),
+                                                                        F.col("document.title").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('url').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.url"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('content_type').alias("key"),
+                                                                        F.col("document.content_type").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('encoding').alias("key"),
+                                                                        F.col("document.encoding").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('language').alias("key"),
+                                                                        F.col("document.language").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('document_type').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.document_type"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('category_id').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.category_id"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('file_type').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.file_type"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                )
+                                                            ),
+                                                            lambda key, value: (
+                                                                (
+                                                                    (
+                                                                        (
+                                                                            F.array_contains(
+                                                                                F.array(
+                                                                                    F.lit('source'),
+                                                                                    F.lit('title'),
+                                                                                    F.lit('content_type'),
+                                                                                    F.lit('encoding'),
+                                                                                    F.lit('language'),
+                                                                                ),
+                                                                                key,
+                                                                            )
+                                                                            | (
+                                                                                (key == F.lit('url'))
+                                                                                & F.col("document.url").isNotNull()
+                                                                            )
+                                                                        )
+                                                                        | (
+                                                                            (key == F.lit('document_type'))
+                                                                            & F.col(
+                                                                                "document.document_type"
+                                                                            ).isNotNull()
+                                                                        )
+                                                                    )
+                                                                    | (
+                                                                        (key == F.lit('category_id'))
+                                                                        & F.col("document.category_id").isNotNull()
+                                                                    )
+                                                                )
+                                                                | (
+                                                                    (key == F.lit('file_type'))
+                                                                    & F.col("document.file_type").isNotNull()
+                                                                )
+                                                            ),
+                                                        ),
+                                                        F.map_filter(
+                                                            F.col("document.fields"),
+                                                            lambda key, value: (key != F.lit('meta')),
+                                                        ),
+                                                    ),
+                                                    lambda key, value: (F.trim(value) != F.lit('')),
+                                                )
+                                            )
+                                        ),
+                                        lambda item: F.regexp_replace(
+                                            F.element_at(
+                                                F.map_filter(
+                                                    F.map_concat(
+                                                        F.map_filter(
+                                                            F.map_from_entries(
+                                                                F.array(
+                                                                    F.struct(
+                                                                        F.lit('source').alias("key"),
+                                                                        F.col("document.source").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('title').alias("key"),
+                                                                        F.col("document.title").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('url').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.url"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('content_type').alias("key"),
+                                                                        F.col("document.content_type").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('encoding').alias("key"),
+                                                                        F.col("document.encoding").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('language').alias("key"),
+                                                                        F.col("document.language").alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('document_type').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.document_type"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('category_id').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.category_id"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                    F.struct(
+                                                                        F.lit('file_type').alias("key"),
+                                                                        F.coalesce(
+                                                                            F.col("document.file_type"), F.lit('')
+                                                                        ).alias("value"),
+                                                                    ),
+                                                                )
+                                                            ),
+                                                            lambda key, value: (
+                                                                (
+                                                                    (
+                                                                        (
+                                                                            F.array_contains(
+                                                                                F.array(
+                                                                                    F.lit('source'),
+                                                                                    F.lit('title'),
+                                                                                    F.lit('content_type'),
+                                                                                    F.lit('encoding'),
+                                                                                    F.lit('language'),
+                                                                                ),
+                                                                                key,
+                                                                            )
+                                                                            | (
+                                                                                (key == F.lit('url'))
+                                                                                & F.col("document.url").isNotNull()
+                                                                            )
+                                                                        )
+                                                                        | (
+                                                                            (key == F.lit('document_type'))
+                                                                            & F.col(
+                                                                                "document.document_type"
+                                                                            ).isNotNull()
+                                                                        )
+                                                                    )
+                                                                    | (
+                                                                        (key == F.lit('category_id'))
+                                                                        & F.col("document.category_id").isNotNull()
+                                                                    )
+                                                                )
+                                                                | (
+                                                                    (key == F.lit('file_type'))
+                                                                    & F.col("document.file_type").isNotNull()
+                                                                )
+                                                            ),
+                                                        ),
+                                                        F.map_filter(
+                                                            F.col("document.fields"),
+                                                            lambda key, value: (key != F.lit('meta')),
+                                                        ),
+                                                    ),
+                                                    lambda key, value: (F.trim(value) != F.lit('')),
+                                                ),
+                                                item,
+                                            ),
+                                            '\x1e',
+                                            ' ',
+                                        ),
+                                    ),
+                                ).alias("value"),
+                            )
+                        )
+                    ),
                 ),
                 F.lit('file_type'),
             ).alias("file_type"),
             F.map_concat(
                 F.map_filter(
-                    F.map_from_entries(
-                        F.array(
-                            F.struct(F.lit('source').alias("key"), F.col("document.source").alias("value")),
-                            F.struct(F.lit('title').alias("key"), F.col("document.title").alias("value")),
-                            F.struct(
-                                F.lit('url').alias("key"), F.coalesce(F.col("document.url"), F.lit('')).alias("value")
-                            ),
-                            F.struct(F.lit('content_type').alias("key"), F.col("document.content_type").alias("value")),
-                            F.struct(F.lit('encoding').alias("key"), F.col("document.encoding").alias("value")),
-                            F.struct(F.lit('language').alias("key"), F.col("document.language").alias("value")),
-                            F.struct(
-                                F.lit('document_type').alias("key"),
-                                F.coalesce(F.col("document.document_type"), F.lit('')).alias("value"),
-                            ),
-                            F.struct(
-                                F.lit('category_id').alias("key"),
-                                F.coalesce(F.col("document.category_id"), F.lit('')).alias("value"),
-                            ),
-                            F.struct(
-                                F.lit('file_type').alias("key"),
-                                F.coalesce(F.col("document.file_type"), F.lit('')).alias("value"),
-                            ),
-                        )
-                    ),
-                    lambda key, value: (
-                        (
-                            (
-                                (
-                                    F.array_contains(
-                                        F.array(
-                                            F.lit('source'),
-                                            F.lit('title'),
-                                            F.lit('content_type'),
-                                            F.lit('encoding'),
-                                            F.lit('language'),
-                                        ),
-                                        key,
-                                    )
-                                    | ((key == F.lit('url')) & F.col("document.url").isNotNull())
+                    F.map_concat(
+                        F.map_filter(
+                            F.map_from_entries(
+                                F.array(
+                                    F.struct(F.lit('source').alias("key"), F.col("document.source").alias("value")),
+                                    F.struct(F.lit('title').alias("key"), F.col("document.title").alias("value")),
+                                    F.struct(
+                                        F.lit('url').alias("key"),
+                                        F.coalesce(F.col("document.url"), F.lit('')).alias("value"),
+                                    ),
+                                    F.struct(
+                                        F.lit('content_type').alias("key"),
+                                        F.col("document.content_type").alias("value"),
+                                    ),
+                                    F.struct(F.lit('encoding').alias("key"), F.col("document.encoding").alias("value")),
+                                    F.struct(F.lit('language').alias("key"), F.col("document.language").alias("value")),
+                                    F.struct(
+                                        F.lit('document_type').alias("key"),
+                                        F.coalesce(F.col("document.document_type"), F.lit('')).alias("value"),
+                                    ),
+                                    F.struct(
+                                        F.lit('category_id').alias("key"),
+                                        F.coalesce(F.col("document.category_id"), F.lit('')).alias("value"),
+                                    ),
+                                    F.struct(
+                                        F.lit('file_type').alias("key"),
+                                        F.coalesce(F.col("document.file_type"), F.lit('')).alias("value"),
+                                    ),
                                 )
-                                | ((key == F.lit('document_type')) & F.col("document.document_type").isNotNull())
-                            )
-                            | ((key == F.lit('category_id')) & F.col("document.category_id").isNotNull())
-                        )
-                        | ((key == F.lit('file_type')) & F.col("document.file_type").isNotNull())
+                            ),
+                            lambda key, value: (
+                                (
+                                    (
+                                        (
+                                            F.array_contains(
+                                                F.array(
+                                                    F.lit('source'),
+                                                    F.lit('title'),
+                                                    F.lit('content_type'),
+                                                    F.lit('encoding'),
+                                                    F.lit('language'),
+                                                ),
+                                                key,
+                                            )
+                                            | ((key == F.lit('url')) & F.col("document.url").isNotNull())
+                                        )
+                                        | (
+                                            (key == F.lit('document_type'))
+                                            & F.col("document.document_type").isNotNull()
+                                        )
+                                    )
+                                    | ((key == F.lit('category_id')) & F.col("document.category_id").isNotNull())
+                                )
+                                | ((key == F.lit('file_type')) & F.col("document.file_type").isNotNull())
+                            ),
+                        ),
+                        F.map_filter(F.col("document.fields"), lambda key, value: (key != F.lit('meta'))),
                     ),
+                    lambda key, value: (F.trim(value) != F.lit('')),
                 ),
-                F.col("document.fields"),
+                F.map_from_entries(
+                    F.array(
+                        F.struct(
+                            F.lit('meta').alias("key"),
+                            F.concat_ws(
+                                ' \x1e ',
+                                F.transform(
+                                    F.array_sort(
+                                        F.map_keys(
+                                            F.map_filter(
+                                                F.map_concat(
+                                                    F.map_filter(
+                                                        F.map_from_entries(
+                                                            F.array(
+                                                                F.struct(
+                                                                    F.lit('source').alias("key"),
+                                                                    F.col("document.source").alias("value"),
+                                                                ),
+                                                                F.struct(
+                                                                    F.lit('title').alias("key"),
+                                                                    F.col("document.title").alias("value"),
+                                                                ),
+                                                                F.struct(
+                                                                    F.lit('url').alias("key"),
+                                                                    F.coalesce(F.col("document.url"), F.lit('')).alias(
+                                                                        "value"
+                                                                    ),
+                                                                ),
+                                                                F.struct(
+                                                                    F.lit('content_type').alias("key"),
+                                                                    F.col("document.content_type").alias("value"),
+                                                                ),
+                                                                F.struct(
+                                                                    F.lit('encoding').alias("key"),
+                                                                    F.col("document.encoding").alias("value"),
+                                                                ),
+                                                                F.struct(
+                                                                    F.lit('language').alias("key"),
+                                                                    F.col("document.language").alias("value"),
+                                                                ),
+                                                                F.struct(
+                                                                    F.lit('document_type').alias("key"),
+                                                                    F.coalesce(
+                                                                        F.col("document.document_type"), F.lit('')
+                                                                    ).alias("value"),
+                                                                ),
+                                                                F.struct(
+                                                                    F.lit('category_id').alias("key"),
+                                                                    F.coalesce(
+                                                                        F.col("document.category_id"), F.lit('')
+                                                                    ).alias("value"),
+                                                                ),
+                                                                F.struct(
+                                                                    F.lit('file_type').alias("key"),
+                                                                    F.coalesce(
+                                                                        F.col("document.file_type"), F.lit('')
+                                                                    ).alias("value"),
+                                                                ),
+                                                            )
+                                                        ),
+                                                        lambda key, value: (
+                                                            (
+                                                                (
+                                                                    (
+                                                                        F.array_contains(
+                                                                            F.array(
+                                                                                F.lit('source'),
+                                                                                F.lit('title'),
+                                                                                F.lit('content_type'),
+                                                                                F.lit('encoding'),
+                                                                                F.lit('language'),
+                                                                            ),
+                                                                            key,
+                                                                        )
+                                                                        | (
+                                                                            (key == F.lit('url'))
+                                                                            & F.col("document.url").isNotNull()
+                                                                        )
+                                                                    )
+                                                                    | (
+                                                                        (key == F.lit('document_type'))
+                                                                        & F.col("document.document_type").isNotNull()
+                                                                    )
+                                                                )
+                                                                | (
+                                                                    (key == F.lit('category_id'))
+                                                                    & F.col("document.category_id").isNotNull()
+                                                                )
+                                                            )
+                                                            | (
+                                                                (key == F.lit('file_type'))
+                                                                & F.col("document.file_type").isNotNull()
+                                                            )
+                                                        ),
+                                                    ),
+                                                    F.map_filter(
+                                                        F.col("document.fields"),
+                                                        lambda key, value: (key != F.lit('meta')),
+                                                    ),
+                                                ),
+                                                lambda key, value: (F.trim(value) != F.lit('')),
+                                            )
+                                        )
+                                    ),
+                                    lambda item: F.regexp_replace(
+                                        F.element_at(
+                                            F.map_filter(
+                                                F.map_concat(
+                                                    F.map_filter(
+                                                        F.map_from_entries(
+                                                            F.array(
+                                                                F.struct(
+                                                                    F.lit('source').alias("key"),
+                                                                    F.col("document.source").alias("value"),
+                                                                ),
+                                                                F.struct(
+                                                                    F.lit('title').alias("key"),
+                                                                    F.col("document.title").alias("value"),
+                                                                ),
+                                                                F.struct(
+                                                                    F.lit('url').alias("key"),
+                                                                    F.coalesce(F.col("document.url"), F.lit('')).alias(
+                                                                        "value"
+                                                                    ),
+                                                                ),
+                                                                F.struct(
+                                                                    F.lit('content_type').alias("key"),
+                                                                    F.col("document.content_type").alias("value"),
+                                                                ),
+                                                                F.struct(
+                                                                    F.lit('encoding').alias("key"),
+                                                                    F.col("document.encoding").alias("value"),
+                                                                ),
+                                                                F.struct(
+                                                                    F.lit('language').alias("key"),
+                                                                    F.col("document.language").alias("value"),
+                                                                ),
+                                                                F.struct(
+                                                                    F.lit('document_type').alias("key"),
+                                                                    F.coalesce(
+                                                                        F.col("document.document_type"), F.lit('')
+                                                                    ).alias("value"),
+                                                                ),
+                                                                F.struct(
+                                                                    F.lit('category_id').alias("key"),
+                                                                    F.coalesce(
+                                                                        F.col("document.category_id"), F.lit('')
+                                                                    ).alias("value"),
+                                                                ),
+                                                                F.struct(
+                                                                    F.lit('file_type').alias("key"),
+                                                                    F.coalesce(
+                                                                        F.col("document.file_type"), F.lit('')
+                                                                    ).alias("value"),
+                                                                ),
+                                                            )
+                                                        ),
+                                                        lambda key, value: (
+                                                            (
+                                                                (
+                                                                    (
+                                                                        F.array_contains(
+                                                                            F.array(
+                                                                                F.lit('source'),
+                                                                                F.lit('title'),
+                                                                                F.lit('content_type'),
+                                                                                F.lit('encoding'),
+                                                                                F.lit('language'),
+                                                                            ),
+                                                                            key,
+                                                                        )
+                                                                        | (
+                                                                            (key == F.lit('url'))
+                                                                            & F.col("document.url").isNotNull()
+                                                                        )
+                                                                    )
+                                                                    | (
+                                                                        (key == F.lit('document_type'))
+                                                                        & F.col("document.document_type").isNotNull()
+                                                                    )
+                                                                )
+                                                                | (
+                                                                    (key == F.lit('category_id'))
+                                                                    & F.col("document.category_id").isNotNull()
+                                                                )
+                                                            )
+                                                            | (
+                                                                (key == F.lit('file_type'))
+                                                                & F.col("document.file_type").isNotNull()
+                                                            )
+                                                        ),
+                                                    ),
+                                                    F.map_filter(
+                                                        F.col("document.fields"),
+                                                        lambda key, value: (key != F.lit('meta')),
+                                                    ),
+                                                ),
+                                                lambda key, value: (F.trim(value) != F.lit('')),
+                                            ),
+                                            item,
+                                        ),
+                                        '\x1e',
+                                        ' ',
+                                    ),
+                                ),
+                            ).alias("value"),
+                        )
+                    )
+                ),
             ).alias("fields"),
         )
         assert_schema(documents, DOCUMENT_SCHEMA, name="Document", mode="strict")

@@ -12,8 +12,8 @@ Search currently provides lexical retrieval over document content through LexInd
 document-search funnel. This design adds a separate, inexpensive metadata search lane.
 
 The new lane supports boolean term constraints over document fields, positional phrases such as
-title:"release notes", arbitrary caller-defined string fields, a metadata default scope for unqualified terms, and
-explicit content: clauses that reuse existing full-text content search.
+title:"release notes", arbitrary caller-defined string fields, an explicit `meta:` aggregate field, and body text
+delegated to the existing full-text content search.
 
 The design deliberately does not create a positional index for full document content. Content phrases are not part of
 this slice.
@@ -212,15 +212,22 @@ Canonical query syntax uses lowercase operators:
     category_id:docs
     title:"release notes" and content:upgrade
     title:guide or source:github
+    meta:guide
+    aurora beacon
 
 The parser requires lowercase operator tokens and rejects uppercase or mixed operators. A field name is an identifier
-followed by a colon. A value is one term or a quoted phrase. Whitespace between unqualified terms is an implicit `and`.
+followed by a colon. A value is one term or a quoted phrase. Whitespace between clauses is an implicit `and`.
 
-Unqualified terms and phrases use the metadata default scope:
+Explicit field prefixes select metadata fields. `meta:` is a generated searchable field containing all non-empty
+metadata values. Its source fields are sorted deterministically and separated by a positional gap, so a phrase cannot
+cross from one original field into another.
+
+Unprefixed terms and phrases are body text:
 
     release notes
 
-This does not search body content. Body content participates only when the query contains content:.
+This is delegated to `SearchDocuments` as ordinary free-form content. `content:` is an explicit spelling for the same
+body lane; both forms are combined in source order.
 
 content: is reserved and is not a Document.fields key. Its value is passed to the existing full-text query and scoring
 semantics. Quotes around a content value group the value for the field clause; they do not create content phrase
@@ -246,12 +253,15 @@ Callers parse raw text with `parse_field_search_query`, materialize the resultin
 `FieldSearchTerm` rows, and pass those typed rows to `SearchFields`. `SearchFields` analyzes metadata clauses with their field definitions, matches terms or
 positions against FieldIndex, applies boolean logic, and emits deterministic document-ID order.
 
-For a mixed and, it additionally converts the content: clause to the existing SearchQuery/scoring path, optionally
-restricts content scoring to metadata candidate IDs for efficiency, intersects metadata matches with content-scored IDs,
-and ranks the result using the existing content score and deterministic document-ID ties.
+For a mixed `and`, it creates a delegated child `SearchQuery` containing only the body text and projects field matches as
+query-scoped `document_filter_targets`. `SearchDocuments` applies those targets before overlap ranking, the 10,000
+filter cap, retrieval, and reranking. The existing full-corpus scoring and score-cache semantics remain unchanged.
+The published delegated result is nested in `FieldSearchResult` and its query identity is remapped to the parent field
+query ID.
 
-The metadata lane does not invent a relevance score. A metadata-only result is a constraint match. A content clause
-provides the lexical ranking signal.
+The metadata lane does not invent a relevance score. A metadata-only result is a constraint match. A body clause
+provides the lexical ranking signal through an optional nested `DocumentSearchResult`; metadata-only rows have a null
+nested result. A mixed query with no field matches delegates nothing and returns no rows.
 
 ## Performance and Storage
 
@@ -277,12 +287,12 @@ Absent custom keys simply produce no matching field rows. They must not be inter
 ## Testing and Evidence
 
 Evidence must prove that Document.fields is authoritative while all existing named Document fields remain present and are
-assigned during extraction; reserved and arbitrary fields flatten deterministically; stop-word removal preserves phrase
-gaps; title and custom-field phrases match positionally; unqualified queries search metadata only; content:upgrade
-preserves the existing full-text result behavior; title:"release notes" and content:upgrade intersects metadata matches
-with full-text results; no content-position index is generated; metadata-only results have deterministic document-ID
-ordering; mixed results retain existing content scores; and online and generated execution have equivalent schemas and
-results.
+assigned during extraction; reserved and arbitrary fields flatten deterministically; `meta` contains all searchable
+metadata values; field-boundary gaps prevent cross-field phrases; title and custom-field phrases match positionally;
+unprefixed queries delegate to body search; `content:upgrade` preserves the existing full-text result behavior;
+title:"release notes" and content:upgrade applies query-scoped filter targets before the filter cap; no
+content-position index is generated; metadata-only results have deterministic document-ID ordering; mixed results
+retain nested content results; and online and generated execution have equivalent schemas and results.
 
 ## Deferred Work
 

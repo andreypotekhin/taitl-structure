@@ -67,6 +67,7 @@ from examples.search.schemas.fields import (
     DocumentField,
     FieldProfile,
     FieldSearchClauseMatch,
+    FieldSearchDelegation,
     FieldSearchDocumentMatch,
     FieldSearchQuery,
     FieldSearchResult,
@@ -336,6 +337,7 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         AnalyzerPolicy,
         DocumentField,
         FieldProfile,
+        FieldSearchDelegation,
         FieldTerm,
         FieldSearchQuery,
         FieldSearchTerm,
@@ -1247,7 +1249,8 @@ def test_search_ranks_fixture_sentences_online_and_generated(spark, tmp_path) ->
     with generated_project(tmp_path, PACKAGE, files):
         text_schemas = __import__(f"{PACKAGE}.pyspark.schemas.text", fromlist=["DOCUMENT_SCHEMA"])
         search_schemas = __import__(
-            f"{PACKAGE}.pyspark.schemas.search", fromlist=["SEARCH_QUERY_SCHEMA", "DOCUMENT_SCORE_SCHEMA"]
+            f"{PACKAGE}.pyspark.schemas.search",
+            fromlist=["SEARCH_QUERY_SCHEMA", "DOCUMENT_SCORE_SCHEMA", "DOCUMENT_SEARCH_TARGET_SCHEMA"],
         )
         documents = spark.createDataFrame(_search_documents(), text_schemas.DOCUMENT_SCHEMA)
         queries = spark.createDataFrame(
@@ -1651,6 +1654,7 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
             streamed_document_scores=spark.createDataFrame([], search_schemas.DOCUMENT_SCORE_SCHEMA),
             document_overlap_scores=document_overlap_scores,
             document_filter_scores=document_filter_scores,
+            document_filter_targets=spark.createDataFrame([], search_schemas.DOCUMENT_SEARCH_TARGET_SCHEMA),
             document_terms=index.document_terms,
             section_terms=index.section_terms,
             paragraph_terms=index.paragraph_terms,
@@ -1746,7 +1750,7 @@ def _run_indexing(spark, documents, sentences, *, execution_mode: str, generated
         session(spark, execution_mode=execution_mode, generated_package=generated_package)
     )
     field_profiles = spark.createDataFrame(
-        [("*", "text", "metadata_text_v1", False, True, "metadata")],
+        [("*", "text", "metadata_text_v1", False, True)],
         schemas.FIELD_PROFILE_SCHEMA,
     )
     analyzer_policies = spark.createDataFrame(

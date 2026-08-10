@@ -14,7 +14,13 @@ from examples.search.schemas.indexing.lexical.index import (
 )
 from examples.search.schemas.relevance import DocumentPopularity, QueryDocumentSignals, RelevancePolicy
 from examples.search.schemas.scoring.overlap import DocumentOverlapScore
-from examples.search.schemas.search import DocumentScore, DocumentSearchResult, ScorePolicy, SearchQuery
+from examples.search.schemas.search import (
+    DocumentScore,
+    DocumentSearchResult,
+    DocumentSearchTarget,
+    ScorePolicy,
+    SearchQuery,
+)
 from examples.search.schemas.text import Document
 from examples.search.schemas.user import BandFallback, BandMembership
 from examples.search.transforms.searching.online.filtering import OnlineFiltering
@@ -35,6 +41,7 @@ class SearchDocuments(Transform):
     streamed_document_scores = input(DocumentScore, streaming=True)
     document_overlap_scores = input(DocumentOverlapScore)
     document_filter_scores = input(DocumentFilterScore)
+    document_filter_targets = input(DocumentSearchTarget, streaming=True)
     document_terms = input(DocumentTerm)
     section_terms = input(SectionTerm)
     paragraph_terms = input(ParagraphTerm)
@@ -55,6 +62,7 @@ class SearchDocuments(Transform):
         queries=queries,
         requests=requests,
         document_filter_scores=document_filter_scores,
+        document_filter_targets=document_filter_targets,
         document_terms=document_terms,
         score_policy=score_policy,
     )
@@ -62,6 +70,7 @@ class SearchDocuments(Transform):
     selected = SelectFilterTargets(
         document_filter_scores=document_filter_scores,
         online_document_filter_scores=filtered.online_document_filter_scores,
+        document_filter_targets=document_filter_targets,
         requests=requests,
         score_policy=score_policy,
     )

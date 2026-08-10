@@ -2,6 +2,7 @@
 # Source: examples.search.schemas.fields
 
 from pyspark.sql import types as T
+from examples.structure_generated.search.pyspark.schemas.search import DOCUMENT_SEARCH_RESULT_SCHEMA
 
 
 ANALYZER_POLICY_SCHEMA = T.StructType([
@@ -25,7 +26,11 @@ FIELD_PROFILE_SCHEMA = T.StructType([
     T.StructField("analyzer_policy", T.StringType(), False),
     T.StructField("phrase_enabled", T.BooleanType(), False),
     T.StructField("searchable", T.BooleanType(), False),
-    T.StructField("default_scope", T.StringType(), False),
+])
+
+FIELD_SEARCH_DELEGATION_SCHEMA = T.StructType([
+    T.StructField("query_id", T.StringType(), False),
+    T.StructField("delegated_query_id", T.StringType(), False),
 ])
 
 FIELD_TERM_SCHEMA = T.StructType([
@@ -43,8 +48,10 @@ FIELD_SEARCH_QUERY_SCHEMA = T.StructType([
     T.StructField("query_text", T.StringType(), False),
     T.StructField("content", T.StringType(), False),
     T.StructField("requested_at", T.TimestampType(), False),
+    T.StructField("labels", T.MapType(T.StringType(), T.LongType(), valueContainsNull=False), False),
+    T.StructField("is_question", T.BooleanType(), False),
+    T.StructField("is_time_sensitive", T.BooleanType(), False),
     T.StructField("language", T.StringType(), True),
-    T.StructField("default_scope", T.StringType(), False),
     T.StructField("operator", T.StringType(), False),
     T.StructField("clause_count", T.LongType(), False),
     T.StructField("requires_content", T.BooleanType(), False),
@@ -54,7 +61,7 @@ FIELD_SEARCH_TERM_SCHEMA = T.StructType([
     T.StructField("query_id", T.StringType(), False),
     T.StructField("clause_ordinal", T.LongType(), False),
     T.StructField("term_ordinal", T.LongType(), False),
-    T.StructField("field_name", T.StringType(), True),
+    T.StructField("field_name", T.StringType(), False),
     T.StructField("term", T.StringType(), False),
     T.StructField("term_count", T.LongType(), False),
     T.StructField("is_phrase", T.BooleanType(), False),
@@ -87,6 +94,6 @@ FIELD_SEARCH_DOCUMENT_MATCH_SCHEMA = T.StructType([
 FIELD_SEARCH_RESULT_SCHEMA = T.StructType([
     T.StructField("query_id", T.StringType(), False),
     T.StructField("document_id", T.StringType(), False),
-    T.StructField("score", T.DoubleType(), False),
     T.StructField("match_scope", T.StringType(), False),
+    T.StructField("document_result", DOCUMENT_SEARCH_RESULT_SCHEMA, True),
 ])

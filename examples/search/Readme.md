@@ -20,7 +20,7 @@ Focused boundary contracts are collected in the [Search example specifications](
 | Filtering | `Filtering`, `OnlineFiltering`, `SelectFilterTargets` | timestamped filter artifacts and document targets | Prefilter selected queries offline, resolve missing query groups online, and retain at most 10,000 simple-overlap document targets. |
 | Similarity | `CreateSimilarityQueries`, `ReduceSimilarityScores` | same-grain corpus pairs | Reuse the lexical index; BM25 stays directional. |
 | Feedback | `Impressions`, `Clicks`, `BuildRelevanceSignals` | daily facts and batch signals | Exposure-aware, attributed, propensity-corrected evidence. |
-| Presentation | `SearchSentences`, `SearchPassages`, `SearchDocuments` | deterministic ranks | Sentence and passage ranking are lexical; document ranking is staged retrieval, overlap narrowing, and reranking. |
+| Presentation | `SearchSentences`, `SearchPassages`, `SearchDocuments`, `SearchFields` | deterministic ranks and field constraints | Sentence and passage ranking are lexical; document ranking is staged retrieval, overlap narrowing, and reranking; field search delegates body text and applies metadata targets before the document caps. |
 | Experiments | `SelectExperimentScores`, experiment evaluators | comparable named runs | Named score variants flow through serving and evaluation. |
 | Evaluation | judged-quality and behavior evaluators | daily quality and serving metrics | Slice by labels and inclusive band hierarchies. |
 
@@ -31,8 +31,9 @@ Focused boundary contracts are collected in the [Search example specifications](
 `Document.fields` is the authoritative map for string metadata. `ExtractDocumentFields` copies its reserved values back
 to the preserved named `Document` fields and flattens arbitrary keys into `DocumentField` rows. `FieldIndex` removes
 configured metadata stop words while preserving their original positions, so a phrase such as
-`title:"release notes"` is checked against metadata only. Body content participates only when a caller parses an
-explicit `content:` clause and supplies the existing full-text score relation to `SearchFields`.
+`title:"release notes"` is checked against one metadata field. `DocumentFields` also generates the reserved `meta`
+field from all non-empty metadata values with positional gaps between source fields. Explicit field clauses are
+resolved by `SearchFields`; unprefixed text and explicit `content:` clauses are delegated to `SearchDocuments`.
 
 ```python
 from examples.search.transforms.all import *
@@ -427,8 +428,10 @@ eligible with zero feedback. Final rank is descending `rank_score`, then documen
 
 `SearchDocuments` uses the same free-form `SearchQuery` DataFrame, immutable documents, reusable index relations,
 timestamped score and filter relations, and `ScorePolicy`. `SelectFilterTargets` first limits simple-overlap targets to
-10,000 per query; `RetrieveDocuments` selects 1,000 composite lexical candidates; and `RerankDocuments` ranks and
-returns the top 100. The online stages share the offline schemas and query parsing.
+10,000 per query; a field-aware caller may additionally supply query-scoped `document_filter_targets`, which are applied
+before that cap. `RetrieveDocuments` selects 1,000 composite lexical candidates; and `RerankDocuments` ranks and
+returns the top 100. The online stages share the offline schemas and query parsing. Direct `SearchDocuments` callers
+without field restrictions should pass an empty `DocumentSearchTarget` relation.
 
 ```python
 ranked_documents = SearchDocuments(
@@ -439,6 +442,7 @@ ranked_documents = SearchDocuments(
     streamed_document_scores=streamed_document_scores,
     document_overlap_scores=scores.document_overlap_scores,
     document_filter_scores=document_filter_scores,
+    document_filter_targets=empty_document_filter_targets,
     document_terms=index.document_terms,
     section_terms=index.section_terms,
     paragraph_terms=index.paragraph_terms,
