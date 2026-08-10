@@ -101,6 +101,3 @@ class Scoring(Transform):
     section_bm25_scores = output(SectionBm25Score, bm25.section_bm25_scores)
     paragraph_bm25_scores = output(ParagraphBm25Score, bm25.paragraph_bm25_scores)
     sentence_bm25_scores = output(SentenceBm25Score, bm25.sentence_bm25_scores)
-
-
-__all__ = ["Scoring"]

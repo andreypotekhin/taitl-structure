@@ -18,9 +18,10 @@ from examples.search.schemas.scoring.overlap import DocumentOverlapScore
 from examples.search.schemas.search import DocumentScore, ScorePolicy
 from examples.search.schemas.text import Document
 from examples.search.schemas.user import BandFallback, BandMembership
-from examples.search.transforms.searching.search_docs.SearchDocuments import SearchDocuments
+from examples.search.transforms.searching.search_fields.delegate import BuildDelegations
 from examples.search.transforms.searching.search_fields.field_search import FieldSearch
-from examples.search.transforms.searching.search_fields.publish import PublishFieldResults
+from examples.search.transforms.searching.search_fields.publish import PublishFieldSearchResults
+from examples.search.transforms.searching.search_fields.search_docs.SearchDocuments import SearchDocuments
 from structure import Transform, input, output
 
 
@@ -56,17 +57,21 @@ class SearchFields(Transform):
         queries=queries,
         query_terms=query_terms,
         field_terms=field_terms,
+    )
+    delegation = BuildDelegations(
+        queries=resolved.delegatable_queries,
+        document_matches=resolved.document_matches,
         requests=requests,
     )
     delegated = SearchDocuments(
-        queries=resolved.body_queries,
+        queries=delegation.body_queries,
         documents=documents,
         document_scores=document_scores,
         streamed_documents=streamed_documents,
         streamed_document_scores=streamed_document_scores,
         document_overlap_scores=document_overlap_scores,
         document_filter_scores=document_filter_scores,
-        document_filter_targets=resolved.document_filter_targets,
+        document_filter_targets=delegation.document_filter_targets,
         document_terms=document_terms,
         section_terms=section_terms,
         paragraph_terms=paragraph_terms,
@@ -76,20 +81,17 @@ class SearchFields(Transform):
         paragraph_summary=paragraph_summary,
         sentence_summary=sentence_summary,
         score_policy=score_policy,
-        requests=resolved.delegated_requests,
+        requests=delegation.delegated_requests,
         band_memberships=band_memberships,
         query_document_signals=query_document_signals,
         document_popularity=document_popularity,
         band_fallbacks=band_fallbacks,
         policy=policy,
     )
-    published = PublishFieldResults(
+    published = PublishFieldSearchResults(
         queries=queries,
         document_matches=resolved.document_matches,
-        delegations=resolved.delegations,
+        delegations=delegation.delegations,
         document_results=delegated.results,
     )
     results = output(FieldSearchResult, published.results)
-
-
-__all__ = ["SearchFields"]

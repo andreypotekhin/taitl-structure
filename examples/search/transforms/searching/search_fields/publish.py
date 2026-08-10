@@ -11,7 +11,7 @@ from structure import Transform, input, output, step
 from structure.plugin.pyspark import inner_join, literal, where
 
 
-class PublishFieldResults(Transform):
+class PublishFieldSearchResults(Transform):
     """Wrap delegated document results with their parent field-query identity."""
 
     queries = input(FieldSearchQuery, streaming=True)
@@ -76,6 +76,3 @@ class PublishFieldResults(Transform):
             match_scope="metadata+content",
             document_result=self._parent_result(result, query),
         )
-
-
-__all__ = ["PublishFieldResults"]

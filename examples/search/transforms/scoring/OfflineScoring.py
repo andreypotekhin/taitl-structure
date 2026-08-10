@@ -96,6 +96,3 @@ class OfflineScoring(Transform):
     section_bm25_scores = output(SectionBm25Score, scored.section_bm25_scores)
     paragraph_bm25_scores = output(ParagraphBm25Score, scored.paragraph_bm25_scores)
     sentence_bm25_scores = output(SentenceBm25Score, scored.sentence_bm25_scores)
-
-
-__all__ = ["OfflineScoring"]

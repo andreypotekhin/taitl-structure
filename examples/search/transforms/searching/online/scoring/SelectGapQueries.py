@@ -57,6 +57,3 @@ class SelectGapQueries(Transform):
     def _is_fresh(score_at: object, requested_at: object, maximum_age_days: object, effective_at: object) -> object:
         age = datediff(requested_at, score_at)
         return (score_at <= requested_at) & (score_at >= effective_at) & (age >= 0) & (age <= maximum_age_days)
-
-
-__all__ = ["SelectGapQueries"]

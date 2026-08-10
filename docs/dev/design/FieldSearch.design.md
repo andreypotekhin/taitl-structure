@@ -254,8 +254,9 @@ Callers parse raw text with `parse_field_search_query`, materialize the resultin
 positions against FieldIndex, applies boolean logic, and emits deterministic document-ID order.
 
 For a mixed `and`, it creates a delegated child `SearchQuery` containing only the body text and projects field matches as
-query-scoped `document_filter_targets`. `SearchDocuments` applies those targets before overlap ranking, the 10,000
-filter cap, retrieval, and reranking. The existing full-corpus scoring and score-cache semantics remain unchanged.
+query-scoped `document_filter_targets`. A field-specific delegated document funnel applies those targets before overlap
+ranking, the 10,000 filter cap, retrieval, and reranking. Canonical `SearchDocuments` remains unchanged and field-unaware;
+the delegated funnel reuses its scoring, retrieval, and reranking stages while owning target-aware filtering.
 The published delegated result is nested in `FieldSearchResult` and its query identity is remapped to the parent field
 query ID.
 

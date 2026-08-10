@@ -9,6 +9,3 @@ class EnrichWithScores(Scoring):
     overlap = Scoring.overlap
     bm25 = Scoring.bm25
     selected = Scoring.selected
-
-
-__all__ = ["EnrichWithScores", "Scoring"]

@@ -48,6 +48,3 @@ class ExtractDocumentFields(Transform):
             analyzer_policy="metadata_text_v1",
             ordinal=field.ordinal,
         )
-
-
-__all__ = ["ExtractDocumentFields"]

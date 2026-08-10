@@ -1250,7 +1250,7 @@ def test_search_ranks_fixture_sentences_online_and_generated(spark, tmp_path) ->
         text_schemas = __import__(f"{PACKAGE}.pyspark.schemas.text", fromlist=["DOCUMENT_SCHEMA"])
         search_schemas = __import__(
             f"{PACKAGE}.pyspark.schemas.search",
-            fromlist=["SEARCH_QUERY_SCHEMA", "DOCUMENT_SCORE_SCHEMA", "DOCUMENT_SEARCH_TARGET_SCHEMA"],
+            fromlist=["SEARCH_QUERY_SCHEMA", "DOCUMENT_SCORE_SCHEMA"],
         )
         documents = spark.createDataFrame(_search_documents(), text_schemas.DOCUMENT_SCHEMA)
         queries = spark.createDataFrame(
@@ -1654,7 +1654,6 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
             streamed_document_scores=spark.createDataFrame([], search_schemas.DOCUMENT_SCORE_SCHEMA),
             document_overlap_scores=document_overlap_scores,
             document_filter_scores=document_filter_scores,
-            document_filter_targets=spark.createDataFrame([], search_schemas.DOCUMENT_SEARCH_TARGET_SCHEMA),
             document_terms=index.document_terms,
             section_terms=index.section_terms,
             paragraph_terms=index.paragraph_terms,

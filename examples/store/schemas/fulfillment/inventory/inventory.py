@@ -33,6 +33,3 @@ class LeadTime(Schema):
     product_id = string(nullable=False)
     days = integer(nullable=False)
     active = boolean(nullable=False)
-
-
-__all__ = ["InboundInventory", "InventoryPosition", "LeadTime"]

@@ -20,7 +20,7 @@ Focused boundary contracts are collected in the [Search example specifications](
 | Filtering | `Filtering`, `OnlineFiltering`, `SelectFilterTargets` | timestamped filter artifacts and document targets | Prefilter selected queries offline, resolve missing query groups online, and retain at most 10,000 simple-overlap document targets. |
 | Similarity | `CreateSimilarityQueries`, `ReduceSimilarityScores` | same-grain corpus pairs | Reuse the lexical index; BM25 stays directional. |
 | Feedback | `Impressions`, `Clicks`, `BuildRelevanceSignals` | daily facts and batch signals | Exposure-aware, attributed, propensity-corrected evidence. |
-| Presentation | `SearchSentences`, `SearchPassages`, `SearchDocuments`, `SearchFields` | deterministic ranks and field constraints | Sentence and passage ranking are lexical; document ranking is staged retrieval, overlap narrowing, and reranking; field search delegates body text and applies metadata targets before the document caps. |
+| Presentation | `SearchSentences`, `SearchPassages`, `SearchDocuments`, `SearchFields` | deterministic ranks and field constraints | Sentence and passage ranking are lexical; canonical document ranking is staged retrieval, overlap narrowing, and reranking; field search delegates body text through a target-aware companion funnel. |
 | Experiments | `SelectExperimentScores`, experiment evaluators | comparable named runs | Named score variants flow through serving and evaluation. |
 | Evaluation | judged-quality and behavior evaluators | daily quality and serving metrics | Slice by labels and inclusive band hierarchies. |
 
@@ -427,11 +427,11 @@ eligible with zero feedback. Final rank is descending `rank_score`, then documen
 100 cannot enter through feedback, and a no-history query preserves BM25 order.
 
 `SearchDocuments` uses the same free-form `SearchQuery` DataFrame, immutable documents, reusable index relations,
-timestamped score and filter relations, and `ScorePolicy`. `SelectFilterTargets` first limits simple-overlap targets to
-10,000 per query; a field-aware caller may additionally supply query-scoped `document_filter_targets`, which are applied
-before that cap. `RetrieveDocuments` selects 1,000 composite lexical candidates; and `RerankDocuments` ranks and
-returns the top 100. The online stages share the offline schemas and query parsing. Direct `SearchDocuments` callers
-without field restrictions should pass an empty `DocumentSearchTarget` relation.
+timestamped score and filter relations, and `ScorePolicy`. `SelectFilterTargets` limits simple-overlap targets to 10,000
+per query; `RetrieveDocuments` selects 1,000 composite lexical candidates; and `RerankDocuments` ranks and returns the
+top 100. The canonical online stages share the offline schemas and query parsing. `SearchFields` uses a companion
+target-aware document funnel under `transforms/searching/search_fields`; it applies field-projected document targets
+before the same filter cap while leaving this standalone funnel unchanged.
 
 ```python
 ranked_documents = SearchDocuments(
@@ -442,7 +442,6 @@ ranked_documents = SearchDocuments(
     streamed_document_scores=streamed_document_scores,
     document_overlap_scores=scores.document_overlap_scores,
     document_filter_scores=document_filter_scores,
-    document_filter_targets=empty_document_filter_targets,
     document_terms=index.document_terms,
     section_terms=index.section_terms,
     paragraph_terms=index.paragraph_terms,

@@ -77,6 +77,3 @@ class OnlineScoring(Transform):
     online_section_overlap_scores = output(SectionOverlapScore, scoring.section_overlap_scores)
     online_paragraph_overlap_scores = output(ParagraphOverlapScore, scoring.paragraph_overlap_scores)
     online_sentence_overlap_scores = output(SentenceOverlapScore, scoring.sentence_overlap_scores)
-
-
-__all__ = ["OnlineScoring"]

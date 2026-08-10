@@ -47,6 +47,3 @@ class SelectPopularQueries(Transform):
     def select_queries(self, query: PopularQueryCandidate) -> SearchQuery:
         where(query.popularity_rank <= self.maximum_queries)
         return SearchQuery.project(query)
-
-
-__all__ = ["SelectPopularQueries"]

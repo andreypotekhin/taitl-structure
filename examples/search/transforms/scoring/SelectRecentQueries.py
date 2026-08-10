@@ -39,6 +39,3 @@ class SelectRecentQueries(Transform):
         where((age >= 0) & (age <= self.recent_days))
         drop_duplicates(query.id)
         return SearchQuery.project(query)
-
-
-__all__ = ["SelectRecentQueries"]

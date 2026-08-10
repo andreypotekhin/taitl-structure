@@ -17,6 +17,3 @@ class MergeOfflineQueries(Transform):
         query: SearchQuery = union_all(recent)
         drop_duplicates(query.id)
         return SearchQuery.project(query)
-
-
-__all__ = ["MergeOfflineQueries"]

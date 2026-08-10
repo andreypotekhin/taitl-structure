@@ -74,35 +74,7 @@ from examples.structure_generated.search.pyspark.schemas.user import BAND_FALLBA
 
 
 class SelectGapQueries__examples_search_transforms_searching_online_filtering_SelectGapQueriesGenerated:
-    def _step_filtered_gap_select_targeted_queries_0(self, frames):
-        # Step method: filtered.gap.select_targeted_queries
-        filtered__gap__targeted_queries = frames["queries"].alias("search_query")
-        document_filter_targets_joined = frames["document_filter_targets"].alias("document_filter_targets")
-        filtered__gap__targeted_queries = filtered__gap__targeted_queries.join(
-            document_filter_targets_joined,
-            (F.col("document_filter_targets.query_id") == F.col("search_query.id")),
-            "inner",
-        )
-        if filtered__gap__targeted_queries.isStreaming:
-            filtered__gap__targeted_queries = filtered__gap__targeted_queries.dropDuplicatesWithinWatermark(["id"])
-        else:
-            filtered__gap__targeted_queries = filtered__gap__targeted_queries.dropDuplicates(["id"])
-        filtered__gap__targeted_queries = filtered__gap__targeted_queries.select(
-            F.col("search_query.id"),
-            F.col("search_query.queryset"),
-            F.col("search_query.content"),
-            F.col("search_query.requested_at"),
-            F.col("search_query.labels"),
-            F.col("search_query.is_question"),
-            F.col("search_query.is_time_sensitive"),
-            F.col("search_query.language"),
-        )
-        assert_schema(filtered__gap__targeted_queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
-        return {
-            "filtered__gap__targeted_queries": filtered__gap__targeted_queries,
-        }
-
-    def _step_filtered_gap_find_available_filters_1(self, frames):
+    def _step_filtered_gap_find_available_filters_0(self, frames):
         # Step method: filtered.gap.find_available_filters
         filtered__gap__filter_availability = frames["document_filter_scores"].alias("document_filter_score")
         requests_joined = frames["requests"].alias("requests")
@@ -152,7 +124,7 @@ class SelectGapQueries__examples_search_transforms_searching_online_filtering_Se
             "filtered__gap__filter_availability": filtered__gap__filter_availability,
         }
 
-    def _step_filtered_gap_select_gap_queries_2(self, frames):
+    def _step_filtered_gap_select_gap_queries_1(self, frames):
         # Step method: filtered.gap.select_gap_queries
         filtered__gap__gap_queries = frames["queries"].alias("search_query")
         filtered__gap__filter_availability_joined = frames["filtered__gap__filter_availability"].alias(
@@ -163,21 +135,8 @@ class SelectGapQueries__examples_search_transforms_searching_online_filtering_Se
             (F.col("search_query.id") == F.col("filtered__gap__filter_availability.query_id")),
             "left",
         )
-        filtered__gap__targeted_queries_2_joined = frames["filtered__gap__targeted_queries"].alias(
-            "filtered__gap__targeted_queries_2"
-        )
-        filtered__gap__gap_queries = filtered__gap__gap_queries.join(
-            filtered__gap__targeted_queries_2_joined,
-            (F.col("search_query.id") == F.col("filtered__gap__targeted_queries_2.id")),
-            "left",
-        )
         filtered__gap__gap_queries = filtered__gap__gap_queries.where(
-            (
-                (
-                    F.col("filtered__gap__filter_availability.query_id").isNull()
-                    | F.col("filtered__gap__targeted_queries_2.id").isNotNull()
-                )
-            )
+            (F.col("filtered__gap__filter_availability.query_id").isNull())
         )
         filtered__gap__gap_queries = filtered__gap__gap_queries.select(
             F.col("search_query.id"),
@@ -196,7 +155,7 @@ class SelectGapQueries__examples_search_transforms_searching_online_filtering_Se
 
 
 class FilterOverlapGenerated:
-    def _step_filtered_filtering_overlap_expand_query_terms_3(self, frames):
+    def _step_filtered_filtering_overlap_expand_query_terms_2(self, frames):
         # Step method: filtered.filtering.overlap.expand_query_terms
         filtered__filtering__overlap__expanded_query_terms = frames["filtered__gap__gap_queries"].alias("search_query")
         filtered__filtering__overlap__expanded_query_terms = filtered__filtering__overlap__expanded_query_terms.select(
@@ -239,184 +198,32 @@ class FilterOverlapGenerated:
             "filtered__filtering__overlap__expanded_query_terms": filtered__filtering__overlap__expanded_query_terms,
         }
 
-    def _step_filtered_filtering_overlap_select_targeted_queries_4(self, frames):
-        # Step method: filtered.filtering.overlap.select_targeted_queries
-        filtered__filtering__overlap__targeted_queries = frames["filtered__gap__gap_queries"].alias("search_query")
-        document_filter_targets_joined = frames["document_filter_targets"].alias("document_filter_targets")
-        filtered__filtering__overlap__targeted_queries = filtered__filtering__overlap__targeted_queries.join(
-            document_filter_targets_joined,
-            (F.col("document_filter_targets.query_id") == F.col("search_query.id")),
-            "inner",
-        )
-        if filtered__filtering__overlap__targeted_queries.isStreaming:
-            filtered__filtering__overlap__targeted_queries = (
-                filtered__filtering__overlap__targeted_queries.dropDuplicatesWithinWatermark(["id"])
-            )
-        else:
-            filtered__filtering__overlap__targeted_queries = (
-                filtered__filtering__overlap__targeted_queries.dropDuplicates(["id"])
-            )
-        filtered__filtering__overlap__targeted_queries = filtered__filtering__overlap__targeted_queries.select(
-            F.col("search_query.id"),
-            F.col("search_query.queryset"),
-            F.col("search_query.content"),
-            F.col("search_query.requested_at"),
-            F.col("search_query.labels"),
-            F.col("search_query.is_question"),
-            F.col("search_query.is_time_sensitive"),
-            F.col("search_query.language"),
-        )
-        assert_schema(
-            filtered__filtering__overlap__targeted_queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict"
-        )
-        return {
-            "filtered__filtering__overlap__targeted_queries": filtered__filtering__overlap__targeted_queries,
-        }
-
-    def _step_filtered_filtering_overlap_select_unrestricted_queries_5(self, frames):
-        # Step method: filtered.filtering.overlap.select_unrestricted_queries
-        filtered__filtering__overlap__unrestricted_queries = frames["filtered__gap__gap_queries"].alias("search_query")
-        document_filter_targets_joined = frames["document_filter_targets"].alias("document_filter_targets")
-        filtered__filtering__overlap__unrestricted_queries = filtered__filtering__overlap__unrestricted_queries.join(
-            document_filter_targets_joined,
-            (F.col("document_filter_targets.query_id") == F.col("search_query.id")),
-            "left",
-        )
-        filtered__filtering__overlap__unrestricted_queries = filtered__filtering__overlap__unrestricted_queries.where(
-            (F.col("document_filter_targets.query_id").isNull())
-        )
-        filtered__filtering__overlap__unrestricted_queries = filtered__filtering__overlap__unrestricted_queries.select(
-            F.col("search_query.id"),
-            F.col("search_query.queryset"),
-            F.col("search_query.content"),
-            F.col("search_query.requested_at"),
-            F.col("search_query.labels"),
-            F.col("search_query.is_question"),
-            F.col("search_query.is_time_sensitive"),
-            F.col("search_query.language"),
-        )
-        assert_schema(
-            filtered__filtering__overlap__unrestricted_queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict"
-        )
-        return {
-            "filtered__filtering__overlap__unrestricted_queries": filtered__filtering__overlap__unrestricted_queries,
-        }
-
-    def _step_filtered_filtering_overlap_match_unrestricted_documents_6(self, frames):
-        # Step method: filtered.filtering.overlap.match_unrestricted_documents
-        filtered__filtering__overlap__unrestricted_matches = frames[
-            "filtered__filtering__overlap__expanded_query_terms"
-        ].alias("query_term")
-        filtered__filtering__overlap__unrestricted_queries_joined = frames[
-            "filtered__filtering__overlap__unrestricted_queries"
-        ].alias("filtered__filtering__overlap__unrestricted_queries")
-        filtered__filtering__overlap__unrestricted_matches = filtered__filtering__overlap__unrestricted_matches.join(
-            filtered__filtering__overlap__unrestricted_queries_joined,
-            (F.col("filtered__filtering__overlap__unrestricted_queries.id") == F.col("query_term.query_id")),
-            "inner",
-        )
-        document_terms_2_joined = frames["document_terms"].alias("document_terms_2")
-        filtered__filtering__overlap__unrestricted_matches = filtered__filtering__overlap__unrestricted_matches.join(
-            document_terms_2_joined,
-            (F.col("document_terms_2.term") == F.col("query_term.token")),
-            "inner",
-        )
-        filtered__filtering__overlap__unrestricted_matches = (
-            filtered__filtering__overlap__unrestricted_matches.groupBy(
-                F.col("query_term.query_id").alias("query_id"),
-                F.col("document_terms_2.document_id").alias("document_id"),
-                F.lit(0).cast('bigint').alias("filter_rank"),
-            )
-            .agg(
-                F.countDistinct(F.col("query_term.token")).cast(T.LongType()).alias("matched_terms"),
-            )
-            .select(
-                F.col("query_id"),
-                F.col("document_id"),
-                F.col("matched_terms"),
-                F.col("filter_rank"),
-            )
-        )
-        assert_schema(
-            filtered__filtering__overlap__unrestricted_matches,
-            DOCUMENT_FILTER_MATCH_SCHEMA,
-            name="DocumentFilterMatch",
-            mode="strict",
-        )
-        return {
-            "filtered__filtering__overlap__unrestricted_matches": filtered__filtering__overlap__unrestricted_matches,
-        }
-
-    def _step_filtered_filtering_overlap_match_restricted_documents_7(self, frames):
-        # Step method: filtered.filtering.overlap.match_restricted_documents
-        filtered__filtering__overlap__restricted_matches = frames[
-            "filtered__filtering__overlap__expanded_query_terms"
-        ].alias("query_term")
-        filtered__filtering__overlap__targeted_queries_joined = frames[
-            "filtered__filtering__overlap__targeted_queries"
-        ].alias("filtered__filtering__overlap__targeted_queries")
-        filtered__filtering__overlap__restricted_matches = filtered__filtering__overlap__restricted_matches.join(
-            filtered__filtering__overlap__targeted_queries_joined,
-            (F.col("filtered__filtering__overlap__targeted_queries.id") == F.col("query_term.query_id")),
-            "inner",
-        )
-        document_terms_2_joined = frames["document_terms"].alias("document_terms_2")
-        filtered__filtering__overlap__restricted_matches = filtered__filtering__overlap__restricted_matches.join(
-            document_terms_2_joined,
-            (F.col("document_terms_2.term") == F.col("query_term.token")),
-            "inner",
-        )
-        document_filter_targets_3_joined = frames["document_filter_targets"].alias("document_filter_targets_3")
-        filtered__filtering__overlap__restricted_matches = filtered__filtering__overlap__restricted_matches.join(
-            document_filter_targets_3_joined,
-            (
-                (F.col("document_filter_targets_3.query_id") == F.col("query_term.query_id"))
-                & (F.col("document_filter_targets_3.document_id") == F.col("document_terms_2.document_id"))
-            ),
-            "inner",
-        )
-        filtered__filtering__overlap__restricted_matches = (
-            filtered__filtering__overlap__restricted_matches.groupBy(
-                F.col("query_term.query_id").alias("query_id"),
-                F.col("document_terms_2.document_id").alias("document_id"),
-                F.lit(0).cast('bigint').alias("filter_rank"),
-            )
-            .agg(
-                F.countDistinct(F.col("query_term.token")).cast(T.LongType()).alias("matched_terms"),
-            )
-            .select(
-                F.col("query_id"),
-                F.col("document_id"),
-                F.col("matched_terms"),
-                F.col("filter_rank"),
-            )
-        )
-        assert_schema(
-            filtered__filtering__overlap__restricted_matches,
-            DOCUMENT_FILTER_MATCH_SCHEMA,
-            name="DocumentFilterMatch",
-            mode="strict",
-        )
-        return {
-            "filtered__filtering__overlap__restricted_matches": filtered__filtering__overlap__restricted_matches,
-        }
-
-    def _step_filtered_filtering_overlap_merge_matches_8(self, frames):
-        # Step method: filtered.filtering.overlap.merge_matches
+    def _step_filtered_filtering_overlap_match_documents_3(self, frames):
+        # Step method: filtered.filtering.overlap.match_documents
         filtered__filtering__overlap__matched_documents = frames[
-            "filtered__filtering__overlap__unrestricted_matches"
-        ].alias("document_filter_match")
-        filtered__filtering__overlap__matched_documents = filtered__filtering__overlap__matched_documents.union(
-            frames["filtered__filtering__overlap__restricted_matches"]
+            "filtered__filtering__overlap__expanded_query_terms"
+        ].alias("query_term")
+        document_terms_joined = frames["document_terms"].alias("document_terms")
+        filtered__filtering__overlap__matched_documents = filtered__filtering__overlap__matched_documents.join(
+            document_terms_joined,
+            (F.col("document_terms.term") == F.col("query_term.token")),
+            "inner",
         )
-        filtered__filtering__overlap__matched_documents = filtered__filtering__overlap__matched_documents.alias(
-            "document_filter_match"
-        )
-        filtered__filtering__overlap__matched_documents = filtered__filtering__overlap__matched_documents.select(
-            F.col("query_id"),
-            F.col("document_id"),
-            F.col("matched_terms"),
-            F.col("filter_rank"),
+        filtered__filtering__overlap__matched_documents = (
+            filtered__filtering__overlap__matched_documents.groupBy(
+                F.col("query_term.query_id").alias("query_id"),
+                F.col("document_terms.document_id").alias("document_id"),
+                F.lit(0).cast('bigint').alias("filter_rank"),
+            )
+            .agg(
+                F.countDistinct(F.col("query_term.token")).cast(T.LongType()).alias("matched_terms"),
+            )
+            .select(
+                F.col("query_id"),
+                F.col("document_id"),
+                F.col("matched_terms"),
+                F.col("filter_rank"),
+            )
         )
         assert_schema(
             filtered__filtering__overlap__matched_documents,
@@ -428,7 +235,7 @@ class FilterOverlapGenerated:
             "filtered__filtering__overlap__matched_documents": filtered__filtering__overlap__matched_documents,
         }
 
-    def _step_filtered_filtering_overlap_rank_documents_9(self, frames):
+    def _step_filtered_filtering_overlap_rank_documents_4(self, frames):
         # Step method: filtered.filtering.overlap.rank_documents
         filtered__filtering__overlap__ranked_documents = frames[
             "filtered__filtering__overlap__matched_documents"
@@ -457,7 +264,7 @@ class FilterOverlapGenerated:
             "filtered__filtering__overlap__ranked_documents": filtered__filtering__overlap__ranked_documents,
         }
 
-    def _step_filtered_filtering_overlap_publish_filter_scores_10(self, frames):
+    def _step_filtered_filtering_overlap_publish_filter_scores_5(self, frames):
         # Step method: filtered.filtering.overlap.publish_filter_scores
         filtered__filtering__overlap__document_filter_scores = frames[
             "filtered__filtering__overlap__ranked_documents"
@@ -492,7 +299,7 @@ class FilterOverlapGenerated:
 
 
 class SelectFilterTargetsGenerated:
-    def _step_selected_merge_filter_scores_11(self, frames):
+    def _step_selected_merge_filter_scores_6(self, frames):
         # Step method: selected.merge_filter_scores
         selected__merged_filter_scores = frames["document_filter_scores"].alias("document_filter_score")
         selected__merged_filter_scores = selected__merged_filter_scores.union(
@@ -547,70 +354,13 @@ class SelectFilterTargetsGenerated:
             "selected__merged_filter_scores": selected__merged_filter_scores,
         }
 
-    def _step_selected_select_targeted_scores_12(self, frames):
-        # Step method: selected.select_targeted_scores
-        selected__targeted_filter_scores = frames["selected__merged_filter_scores"].alias("document_filter_score")
-        document_filter_targets_joined = frames["document_filter_targets"].alias("document_filter_targets")
-        selected__targeted_filter_scores = selected__targeted_filter_scores.join(
-            document_filter_targets_joined,
-            (
-                (F.col("document_filter_targets.query_id") == F.col("document_filter_score.query_id"))
-                & (F.col("document_filter_targets.document_id") == F.col("document_filter_score.document_id"))
-            ),
-            "inner",
-        )
-        selected__targeted_filter_scores = selected__targeted_filter_scores.select(
-            F.col("document_filter_score.query_id"),
-            F.col("document_filter_score.document_id"),
-            F.col("document_filter_score.scored_at"),
-            F.col("document_filter_score.matched_terms"),
-            F.col("document_filter_score.filter_rank"),
-        )
-        assert_schema(
-            selected__targeted_filter_scores, DOCUMENT_FILTER_SCORE_SCHEMA, name="DocumentFilterScore", mode="strict"
-        )
-        return {
-            "selected__targeted_filter_scores": selected__targeted_filter_scores,
-        }
-
-    def _step_selected_select_unrestricted_scores_13(self, frames):
-        # Step method: selected.select_unrestricted_scores
-        selected__unrestricted_filter_scores = frames["selected__merged_filter_scores"].alias("document_filter_score")
-        document_filter_targets_joined = frames["document_filter_targets"].alias("document_filter_targets")
-        selected__unrestricted_filter_scores = selected__unrestricted_filter_scores.join(
-            document_filter_targets_joined,
-            (F.col("document_filter_targets.query_id") == F.col("document_filter_score.query_id")),
-            "left",
-        )
-        selected__unrestricted_filter_scores = selected__unrestricted_filter_scores.where(
-            (F.col("document_filter_targets.query_id").isNull())
-        )
-        selected__unrestricted_filter_scores = selected__unrestricted_filter_scores.select(
-            F.col("document_filter_score.query_id"),
-            F.col("document_filter_score.document_id"),
-            F.col("document_filter_score.scored_at"),
-            F.col("document_filter_score.matched_terms"),
-            F.col("document_filter_score.filter_rank"),
-        )
-        assert_schema(
-            selected__unrestricted_filter_scores,
-            DOCUMENT_FILTER_SCORE_SCHEMA,
-            name="DocumentFilterScore",
-            mode="strict",
-        )
-        return {
-            "selected__unrestricted_filter_scores": selected__unrestricted_filter_scores,
-        }
-
-    def _step_selected_select_targets_14(self, frames):
+    def _step_selected_select_targets_7(self, frames):
         # Step method: selected.select_targets
-        selected__targets = frames["selected__unrestricted_filter_scores"].alias("document_filter_score")
-        selected__targets = selected__targets.union(frames["selected__targeted_filter_scores"])
-        selected__targets = selected__targets.alias("document_filter_score")
-        selected__targets = selected__targets.where(((F.col("filter_rank") <= F.lit(10000))))
+        selected__targets = frames["selected__merged_filter_scores"].alias("document_filter_score")
+        selected__targets = selected__targets.where(((F.col("document_filter_score.filter_rank") <= F.lit(10000))))
         selected__targets = selected__targets.select(
-            F.col("query_id"),
-            F.col("document_id"),
+            F.col("document_filter_score.query_id"),
+            F.col("document_filter_score.document_id"),
         )
         assert_schema(selected__targets, DOCUMENT_SEARCH_TARGET_SCHEMA, name="DocumentSearchTarget", mode="strict")
         return {
@@ -619,7 +369,7 @@ class SelectFilterTargetsGenerated:
 
 
 class SelectGapQueries__examples_search_transforms_searching_online_scoring_SelectGapQueriesGenerated:
-    def _step_scored_gap_find_available_documents_15(self, frames):
+    def _step_scored_gap_find_available_documents_8(self, frames):
         # Step method: scored.gap.find_available_documents
         scored__gap__document_availability = frames["document_scores"].alias("document_score")
         requests_joined = frames["requests"].alias("requests")
@@ -666,7 +416,7 @@ class SelectGapQueries__examples_search_transforms_searching_online_scoring_Sele
             "scored__gap__document_availability": scored__gap__document_availability,
         }
 
-    def _step_scored_gap_find_available_overlaps_16(self, frames):
+    def _step_scored_gap_find_available_overlaps_9(self, frames):
         # Step method: scored.gap.find_available_overlaps
         scored__gap__overlap_availability = frames["document_overlap_scores"].alias("document_overlap_score")
         requests_joined = frames["requests"].alias("requests")
@@ -716,7 +466,7 @@ class SelectGapQueries__examples_search_transforms_searching_online_scoring_Sele
             "scored__gap__overlap_availability": scored__gap__overlap_availability,
         }
 
-    def _step_scored_gap_select_gap_queries_17(self, frames):
+    def _step_scored_gap_select_gap_queries_10(self, frames):
         # Step method: scored.gap.select_gap_queries
         scored__gap__gap_queries = frames["queries"].alias("search_query")
         scored__gap__document_availability_joined = frames["scored__gap__document_availability"].alias(
@@ -760,7 +510,7 @@ class SelectGapQueries__examples_search_transforms_searching_online_scoring_Sele
 
 
 class ScoreBaseGenerated:
-    def _step_scored_scoring_overlap_expand_query_terms_18(self, frames):
+    def _step_scored_scoring_overlap_expand_query_terms_11(self, frames):
         # Step method: scored.scoring.overlap.expand_query_terms
         scored__scoring__overlap__expanded_query_terms = frames["scored__gap__gap_queries"].alias("search_query")
         scored__scoring__overlap__expanded_query_terms = scored__scoring__overlap__expanded_query_terms.withWatermark(
@@ -802,7 +552,7 @@ class ScoreBaseGenerated:
             "scored__scoring__overlap__expanded_query_terms": scored__scoring__overlap__expanded_query_terms,
         }
 
-    def _step_scored_scoring_overlap_count_query_terms_19(self, frames):
+    def _step_scored_scoring_overlap_count_query_terms_12(self, frames):
         # Step method: scored.scoring.overlap.count_query_terms
         scored__scoring__overlap__query_sizes = frames["scored__scoring__overlap__expanded_query_terms"].alias(
             "query_term"
@@ -826,7 +576,7 @@ class ScoreBaseGenerated:
             "scored__scoring__overlap__query_sizes": scored__scoring__overlap__query_sizes,
         }
 
-    def _step_scored_scoring_bm25_expand_query_terms_40(self, frames):
+    def _step_scored_scoring_bm25_expand_query_terms_33(self, frames):
         # Step method: scored.scoring.bm25.expand_query_terms
         scored__scoring__bm25__expanded_query_terms = frames["scored__gap__gap_queries"].alias("search_query")
         scored__scoring__bm25__expanded_query_terms = scored__scoring__bm25__expanded_query_terms.withWatermark(
@@ -866,7 +616,7 @@ class ScoreBaseGenerated:
             "scored__scoring__bm25__expanded_query_terms": scored__scoring__bm25__expanded_query_terms,
         }
 
-    def _step_scored_scoring_bm25_count_query_terms_41(self, frames):
+    def _step_scored_scoring_bm25_count_query_terms_34(self, frames):
         # Step method: scored.scoring.bm25.count_query_terms
         scored__scoring__bm25__query_sizes = frames["scored__scoring__bm25__expanded_query_terms"].alias("query_term")
         scored__scoring__bm25__query_sizes = (
@@ -888,7 +638,7 @@ class ScoreBaseGenerated:
 
 
 class ScoreOverlapGenerated:
-    def _step_scored_scoring_overlap_select_document_vocabulary_20(self, frames):
+    def _step_scored_scoring_overlap_select_document_vocabulary_13(self, frames):
         # Step method: scored.scoring.overlap.select_document_vocabulary
         scored__scoring__overlap__document_vocabulary = frames["document_terms"].alias("document_term")
         if scored__scoring__overlap__document_vocabulary.isStreaming:
@@ -915,7 +665,7 @@ class ScoreOverlapGenerated:
             "scored__scoring__overlap__document_vocabulary": scored__scoring__overlap__document_vocabulary,
         }
 
-    def _step_scored_scoring_overlap_select_section_vocabulary_21(self, frames):
+    def _step_scored_scoring_overlap_select_section_vocabulary_14(self, frames):
         # Step method: scored.scoring.overlap.select_section_vocabulary
         scored__scoring__overlap__section_vocabulary = frames["section_terms"].alias("section_term")
         if scored__scoring__overlap__section_vocabulary.isStreaming:
@@ -943,7 +693,7 @@ class ScoreOverlapGenerated:
             "scored__scoring__overlap__section_vocabulary": scored__scoring__overlap__section_vocabulary,
         }
 
-    def _step_scored_scoring_overlap_select_paragraph_vocabulary_22(self, frames):
+    def _step_scored_scoring_overlap_select_paragraph_vocabulary_15(self, frames):
         # Step method: scored.scoring.overlap.select_paragraph_vocabulary
         scored__scoring__overlap__paragraph_vocabulary = frames["paragraph_terms"].alias("paragraph_term")
         if scored__scoring__overlap__paragraph_vocabulary.isStreaming:
@@ -972,7 +722,7 @@ class ScoreOverlapGenerated:
             "scored__scoring__overlap__paragraph_vocabulary": scored__scoring__overlap__paragraph_vocabulary,
         }
 
-    def _step_scored_scoring_overlap_select_sentence_vocabulary_23(self, frames):
+    def _step_scored_scoring_overlap_select_sentence_vocabulary_16(self, frames):
         # Step method: scored.scoring.overlap.select_sentence_vocabulary
         scored__scoring__overlap__sentence_vocabulary = frames["sentence_terms"].alias("sentence_term")
         if scored__scoring__overlap__sentence_vocabulary.isStreaming:
@@ -1002,7 +752,7 @@ class ScoreOverlapGenerated:
             "scored__scoring__overlap__sentence_vocabulary": scored__scoring__overlap__sentence_vocabulary,
         }
 
-    def _step_scored_scoring_overlap_weight_document_query_terms_24(self, frames):
+    def _step_scored_scoring_overlap_weight_document_query_terms_17(self, frames):
         # Step method: scored.scoring.overlap.weight_document_query_terms
         scored__scoring__overlap__document_query_idfs = frames["scored__scoring__overlap__expanded_query_terms"].alias(
             "query_term"
@@ -1052,7 +802,7 @@ class ScoreOverlapGenerated:
             "scored__scoring__overlap__document_query_idfs": scored__scoring__overlap__document_query_idfs,
         }
 
-    def _step_scored_scoring_overlap_weight_section_query_terms_25(self, frames):
+    def _step_scored_scoring_overlap_weight_section_query_terms_18(self, frames):
         # Step method: scored.scoring.overlap.weight_section_query_terms
         scored__scoring__overlap__section_query_idfs = frames["scored__scoring__overlap__expanded_query_terms"].alias(
             "query_term"
@@ -1100,7 +850,7 @@ class ScoreOverlapGenerated:
             "scored__scoring__overlap__section_query_idfs": scored__scoring__overlap__section_query_idfs,
         }
 
-    def _step_scored_scoring_overlap_weight_paragraph_query_terms_26(self, frames):
+    def _step_scored_scoring_overlap_weight_paragraph_query_terms_19(self, frames):
         # Step method: scored.scoring.overlap.weight_paragraph_query_terms
         scored__scoring__overlap__paragraph_query_idfs = frames["scored__scoring__overlap__expanded_query_terms"].alias(
             "query_term"
@@ -1150,7 +900,7 @@ class ScoreOverlapGenerated:
             "scored__scoring__overlap__paragraph_query_idfs": scored__scoring__overlap__paragraph_query_idfs,
         }
 
-    def _step_scored_scoring_overlap_weight_sentence_query_terms_27(self, frames):
+    def _step_scored_scoring_overlap_weight_sentence_query_terms_20(self, frames):
         # Step method: scored.scoring.overlap.weight_sentence_query_terms
         scored__scoring__overlap__sentence_query_idfs = frames["scored__scoring__overlap__expanded_query_terms"].alias(
             "query_term"
@@ -1200,7 +950,7 @@ class ScoreOverlapGenerated:
             "scored__scoring__overlap__sentence_query_idfs": scored__scoring__overlap__sentence_query_idfs,
         }
 
-    def _step_scored_scoring_overlap_total_document_query_idf_28(self, frames):
+    def _step_scored_scoring_overlap_total_document_query_idf_21(self, frames):
         # Step method: scored.scoring.overlap.total_document_query_idf
         scored__scoring__overlap__document_query_totals = frames["scored__scoring__overlap__document_query_idfs"].alias(
             "query_term_idf"
@@ -1224,7 +974,7 @@ class ScoreOverlapGenerated:
             "scored__scoring__overlap__document_query_totals": scored__scoring__overlap__document_query_totals,
         }
 
-    def _step_scored_scoring_overlap_total_section_query_idf_29(self, frames):
+    def _step_scored_scoring_overlap_total_section_query_idf_22(self, frames):
         # Step method: scored.scoring.overlap.total_section_query_idf
         scored__scoring__overlap__section_query_totals = frames["scored__scoring__overlap__section_query_idfs"].alias(
             "query_term_idf"
@@ -1248,7 +998,7 @@ class ScoreOverlapGenerated:
             "scored__scoring__overlap__section_query_totals": scored__scoring__overlap__section_query_totals,
         }
 
-    def _step_scored_scoring_overlap_total_paragraph_query_idf_30(self, frames):
+    def _step_scored_scoring_overlap_total_paragraph_query_idf_23(self, frames):
         # Step method: scored.scoring.overlap.total_paragraph_query_idf
         scored__scoring__overlap__paragraph_query_totals = frames[
             "scored__scoring__overlap__paragraph_query_idfs"
@@ -1275,7 +1025,7 @@ class ScoreOverlapGenerated:
             "scored__scoring__overlap__paragraph_query_totals": scored__scoring__overlap__paragraph_query_totals,
         }
 
-    def _step_scored_scoring_overlap_total_sentence_query_idf_31(self, frames):
+    def _step_scored_scoring_overlap_total_sentence_query_idf_24(self, frames):
         # Step method: scored.scoring.overlap.total_sentence_query_idf
         scored__scoring__overlap__sentence_query_totals = frames["scored__scoring__overlap__sentence_query_idfs"].alias(
             "query_term_idf"
@@ -1299,7 +1049,7 @@ class ScoreOverlapGenerated:
             "scored__scoring__overlap__sentence_query_totals": scored__scoring__overlap__sentence_query_totals,
         }
 
-    def _step_scored_scoring_overlap_match_documents_32(self, frames):
+    def _step_scored_scoring_overlap_match_documents_25(self, frames):
         # Step method: scored.scoring.overlap.match_documents
         scored__scoring__overlap__document_overlap_matches = frames[
             "scored__scoring__overlap__expanded_query_terms"
@@ -1357,7 +1107,7 @@ class ScoreOverlapGenerated:
             "scored__scoring__overlap__document_overlap_matches": scored__scoring__overlap__document_overlap_matches,
         }
 
-    def _step_scored_scoring_overlap_match_sections_33(self, frames):
+    def _step_scored_scoring_overlap_match_sections_26(self, frames):
         # Step method: scored.scoring.overlap.match_sections
         scored__scoring__overlap__section_overlap_matches = frames[
             "scored__scoring__overlap__expanded_query_terms"
@@ -1417,7 +1167,7 @@ class ScoreOverlapGenerated:
             "scored__scoring__overlap__section_overlap_matches": scored__scoring__overlap__section_overlap_matches,
         }
 
-    def _step_scored_scoring_overlap_match_paragraphs_34(self, frames):
+    def _step_scored_scoring_overlap_match_paragraphs_27(self, frames):
         # Step method: scored.scoring.overlap.match_paragraphs
         scored__scoring__overlap__paragraph_overlap_matches = frames[
             "scored__scoring__overlap__expanded_query_terms"
@@ -1479,7 +1229,7 @@ class ScoreOverlapGenerated:
             "scored__scoring__overlap__paragraph_overlap_matches": scored__scoring__overlap__paragraph_overlap_matches,
         }
 
-    def _step_scored_scoring_overlap_match_sentences_35(self, frames):
+    def _step_scored_scoring_overlap_match_sentences_28(self, frames):
         # Step method: scored.scoring.overlap.match_sentences
         scored__scoring__overlap__sentence_overlap_matches = frames[
             "scored__scoring__overlap__expanded_query_terms"
@@ -1543,7 +1293,7 @@ class ScoreOverlapGenerated:
             "scored__scoring__overlap__sentence_overlap_matches": scored__scoring__overlap__sentence_overlap_matches,
         }
 
-    def _step_scored_scoring_overlap_publish_document_overlap_scores_36(self, frames):
+    def _step_scored_scoring_overlap_publish_document_overlap_scores_29(self, frames):
         # Step method: scored.scoring.overlap.publish_document_overlap_scores
         scored__scoring__overlap__document_overlap_scores = frames[
             "scored__scoring__overlap__document_overlap_matches"
@@ -1573,7 +1323,7 @@ class ScoreOverlapGenerated:
             "scored__scoring__overlap__document_overlap_scores": scored__scoring__overlap__document_overlap_scores,
         }
 
-    def _step_scored_scoring_overlap_publish_section_overlap_scores_37(self, frames):
+    def _step_scored_scoring_overlap_publish_section_overlap_scores_30(self, frames):
         # Step method: scored.scoring.overlap.publish_section_overlap_scores
         scored__scoring__overlap__section_overlap_scores = frames[
             "scored__scoring__overlap__section_overlap_matches"
@@ -1604,7 +1354,7 @@ class ScoreOverlapGenerated:
             "scored__scoring__overlap__section_overlap_scores": scored__scoring__overlap__section_overlap_scores,
         }
 
-    def _step_scored_scoring_overlap_publish_paragraph_overlap_scores_38(self, frames):
+    def _step_scored_scoring_overlap_publish_paragraph_overlap_scores_31(self, frames):
         # Step method: scored.scoring.overlap.publish_paragraph_overlap_scores
         scored__scoring__overlap__paragraph_overlap_scores = frames[
             "scored__scoring__overlap__paragraph_overlap_matches"
@@ -1636,7 +1386,7 @@ class ScoreOverlapGenerated:
             "scored__scoring__overlap__paragraph_overlap_scores": scored__scoring__overlap__paragraph_overlap_scores,
         }
 
-    def _step_scored_scoring_overlap_publish_sentence_overlap_scores_39(self, frames):
+    def _step_scored_scoring_overlap_publish_sentence_overlap_scores_32(self, frames):
         # Step method: scored.scoring.overlap.publish_sentence_overlap_scores
         scored__scoring__overlap__sentence_overlap_scores = frames[
             "scored__scoring__overlap__sentence_overlap_matches"
@@ -1671,7 +1421,7 @@ class ScoreOverlapGenerated:
 
 
 class ScoreBm25Generated:
-    def _step_scored_scoring_bm25_score_document_bm25_42(self, frames):
+    def _step_scored_scoring_bm25_score_document_bm25_35(self, frames):
         # Step method: scored.scoring.bm25.score_document_bm25
         scored__scoring__bm25__document_bm25_scores = frames["scored__scoring__bm25__expanded_query_terms"].alias(
             "query_term"
@@ -1749,7 +1499,7 @@ class ScoreBm25Generated:
             "scored__scoring__bm25__document_bm25_scores": scored__scoring__bm25__document_bm25_scores,
         }
 
-    def _step_scored_scoring_bm25_score_section_bm25_43(self, frames):
+    def _step_scored_scoring_bm25_score_section_bm25_36(self, frames):
         # Step method: scored.scoring.bm25.score_section_bm25
         scored__scoring__bm25__section_bm25_scores = frames["scored__scoring__bm25__expanded_query_terms"].alias(
             "query_term"
@@ -1829,7 +1579,7 @@ class ScoreBm25Generated:
             "scored__scoring__bm25__section_bm25_scores": scored__scoring__bm25__section_bm25_scores,
         }
 
-    def _step_scored_scoring_bm25_score_paragraph_bm25_44(self, frames):
+    def _step_scored_scoring_bm25_score_paragraph_bm25_37(self, frames):
         # Step method: scored.scoring.bm25.score_paragraph_bm25
         scored__scoring__bm25__paragraph_bm25_scores = frames["scored__scoring__bm25__expanded_query_terms"].alias(
             "query_term"
@@ -1911,7 +1661,7 @@ class ScoreBm25Generated:
             "scored__scoring__bm25__paragraph_bm25_scores": scored__scoring__bm25__paragraph_bm25_scores,
         }
 
-    def _step_scored_scoring_bm25_score_sentence_bm25_45(self, frames):
+    def _step_scored_scoring_bm25_score_sentence_bm25_38(self, frames):
         # Step method: scored.scoring.bm25.score_sentence_bm25
         scored__scoring__bm25__sentence_bm25_scores = frames["scored__scoring__bm25__expanded_query_terms"].alias(
             "query_term"
@@ -1997,7 +1747,7 @@ class ScoreBm25Generated:
 
 
 class SelectScoresGenerated:
-    def _step_scored_scoring_selected_score_documents_46(self, frames):
+    def _step_scored_scoring_selected_score_documents_39(self, frames):
         # Step method: scored.scoring.selected.score_documents
         scored__scoring__selected__document_scores = frames["scored__scoring__overlap__document_overlap_scores"].alias(
             "document_overlap_score"
@@ -2060,7 +1810,7 @@ class SelectScoresGenerated:
             "scored__scoring__selected__document_scores": scored__scoring__selected__document_scores,
         }
 
-    def _step_scored_scoring_selected_score_sections_47(self, frames):
+    def _step_scored_scoring_selected_score_sections_40(self, frames):
         # Step method: scored.scoring.selected.score_sections
         scored__scoring__selected__section_scores = frames["scored__scoring__overlap__section_overlap_scores"].alias(
             "section_overlap_score"
@@ -2130,7 +1880,7 @@ class SelectScoresGenerated:
             "scored__scoring__selected__section_scores": scored__scoring__selected__section_scores,
         }
 
-    def _step_scored_scoring_selected_score_paragraphs_48(self, frames):
+    def _step_scored_scoring_selected_score_paragraphs_41(self, frames):
         # Step method: scored.scoring.selected.score_paragraphs
         scored__scoring__selected__paragraph_scores = frames[
             "scored__scoring__overlap__paragraph_overlap_scores"
@@ -2203,7 +1953,7 @@ class SelectScoresGenerated:
             "scored__scoring__selected__paragraph_scores": scored__scoring__selected__paragraph_scores,
         }
 
-    def _step_scored_scoring_selected_score_sentences_49(self, frames):
+    def _step_scored_scoring_selected_score_sentences_42(self, frames):
         # Step method: scored.scoring.selected.score_sentences
         scored__scoring__selected__sentence_scores = frames["scored__scoring__overlap__sentence_overlap_scores"].alias(
             "sentence_overlap_score"
@@ -2281,7 +2031,7 @@ class SelectScoresGenerated:
 
 
 class RetrieveDocumentsGenerated:
-    def _step_retrieved_merge_stored_scores_50(self, frames):
+    def _step_retrieved_merge_stored_scores_43(self, frames):
         # Step method: retrieved.merge_stored_scores
         retrieved__stored_scores = frames["document_scores"].alias("document_score")
         retrieved__stored_scores = retrieved__stored_scores.union(frames["scored__scoring__selected__document_scores"])
@@ -2337,7 +2087,7 @@ class RetrieveDocumentsGenerated:
             "retrieved__stored_scores": retrieved__stored_scores,
         }
 
-    def _step_retrieved_merge_streamed_scores_51(self, frames):
+    def _step_retrieved_merge_streamed_scores_44(self, frames):
         # Step method: retrieved.merge_streamed_scores
         retrieved__streamed_scores = frames["streamed_document_scores"].alias("document_score")
         retrieved__streamed_scores = retrieved__streamed_scores.union(
@@ -2395,7 +2145,7 @@ class RetrieveDocumentsGenerated:
             "retrieved__streamed_scores": retrieved__streamed_scores,
         }
 
-    def _step_retrieved_select_stored_candidates_52(self, frames):
+    def _step_retrieved_select_stored_candidates_45(self, frames):
         # Step method: retrieved.select_stored_candidates
         retrieved__stored_candidates = frames["documents"].alias("document")
         retrieved__stored_scores_joined = frames["retrieved__stored_scores"].alias("retrieved__stored_scores")
@@ -2482,7 +2232,7 @@ class RetrieveDocumentsGenerated:
             "retrieved__stored_candidates": retrieved__stored_candidates,
         }
 
-    def _step_retrieved_select_streamed_candidates_53(self, frames):
+    def _step_retrieved_select_streamed_candidates_46(self, frames):
         # Step method: retrieved.select_streamed_candidates
         retrieved__streamed_candidates = frames["streamed_documents"].alias("document")
         retrieved__streamed_scores_joined = frames["retrieved__streamed_scores"].alias("retrieved__streamed_scores")
@@ -2569,7 +2319,7 @@ class RetrieveDocumentsGenerated:
             "retrieved__streamed_candidates": retrieved__streamed_candidates,
         }
 
-    def _step_retrieved_rank_candidates_54(self, frames):
+    def _step_retrieved_rank_candidates_47(self, frames):
         # Step method: retrieved.rank_candidates
         retrieved__candidates = frames["retrieved__stored_candidates"].alias("document_search_candidate")
         retrieved__candidates = retrieved__candidates.union(frames["retrieved__streamed_candidates"])
@@ -2606,7 +2356,7 @@ class RetrieveDocumentsGenerated:
 
 
 class RerankDocumentsGenerated:
-    def _step_reranked_select_fallback_options_55(self, frames):
+    def _step_reranked_select_fallback_options_48(self, frames):
         # Step method: reranked.select_fallback_options
         reranked__fallback_options = frames["retrieved__candidates"].alias("document_search_candidate")
         reranked__fallback_options = reranked__fallback_options.where(
@@ -2647,7 +2397,7 @@ class RerankDocumentsGenerated:
             "reranked__fallback_options": reranked__fallback_options,
         }
 
-    def _step_reranked_select_global_options_56(self, frames):
+    def _step_reranked_select_global_options_49(self, frames):
         # Step method: reranked.select_global_options
         reranked__global_options = frames["retrieved__candidates"].alias("document_search_candidate")
         reranked__global_options = reranked__global_options.where(
@@ -2682,7 +2432,7 @@ class RerankDocumentsGenerated:
             "reranked__global_options": reranked__global_options,
         }
 
-    def _step_reranked_merge_feedback_options_57(self, frames):
+    def _step_reranked_merge_feedback_options_50(self, frames):
         # Step method: reranked.merge_feedback_options
         reranked__feedback_options = frames["reranked__fallback_options"].alias("document_feedback_option")
         reranked__feedback_options = reranked__feedback_options.union(frames["reranked__global_options"])
@@ -2713,7 +2463,7 @@ class RerankDocumentsGenerated:
             "reranked__feedback_options": reranked__feedback_options,
         }
 
-    def _step_reranked_select_query_feedback_58(self, frames):
+    def _step_reranked_select_query_feedback_51(self, frames):
         # Step method: reranked.select_query_feedback
         reranked__query_feedback = frames["reranked__feedback_options"].alias("document_feedback_option")
         query_document_signals_joined = frames["query_document_signals"].alias("query_document_signals")
@@ -2861,7 +2611,7 @@ class RerankDocumentsGenerated:
             "reranked__query_feedback": reranked__query_feedback,
         }
 
-    def _step_reranked_select_popularity_feedback_59(self, frames):
+    def _step_reranked_select_popularity_feedback_52(self, frames):
         # Step method: reranked.select_popularity_feedback
         reranked__popularity_feedback = frames["reranked__feedback_options"].alias("document_feedback_option")
         document_popularity_joined = frames["document_popularity"].alias("document_popularity")
@@ -3006,7 +2756,7 @@ class RerankDocumentsGenerated:
             "reranked__popularity_feedback": reranked__popularity_feedback,
         }
 
-    def _step_reranked_score_candidates_60(self, frames):
+    def _step_reranked_score_candidates_53(self, frames):
         # Step method: reranked.score_candidates
         reranked__scored_candidates = frames["retrieved__candidates"].alias("document_search_candidate")
         reranked__scored_candidates = reranked__scored_candidates.where(
@@ -3101,7 +2851,7 @@ class RerankDocumentsGenerated:
             "reranked__scored_candidates": reranked__scored_candidates,
         }
 
-    def _step_reranked_normalize_score_61(self, frames):
+    def _step_reranked_normalize_score_54(self, frames):
         # Step method: reranked.normalize_score
         reranked__normalized_candidates = frames["reranked__scored_candidates"].alias("document_search_candidate")
         reranked__normalized_candidates = reranked__normalized_candidates.select(
@@ -3147,7 +2897,7 @@ class RerankDocumentsGenerated:
             "reranked__normalized_candidates": reranked__normalized_candidates,
         }
 
-    def _step_reranked_rank_results_62(self, frames):
+    def _step_reranked_rank_results_55(self, frames):
         # Step method: reranked.rank_results
         reranked__ranked_results = frames["reranked__normalized_candidates"].alias("document_search_candidate")
         reranked__ranked_results = reranked__ranked_results.select(
@@ -3183,7 +2933,7 @@ class RerankDocumentsGenerated:
             "reranked__ranked_results": reranked__ranked_results,
         }
 
-    def _step_reranked_select_results_63(self, frames):
+    def _step_reranked_select_results_56(self, frames):
         # Step method: reranked.select_results
         reranked__results = frames["reranked__ranked_results"].alias("document_search_result")
         reranked__results = reranked__results.where(((F.col("document_search_result.rank") <= F.lit(100))))
@@ -3232,7 +2982,6 @@ class SearchDocumentsGenerated(
         queries: DataFrame,
         requests: DataFrame,
         document_filter_scores: DataFrame,
-        document_filter_targets: DataFrame,
         score_policy: DataFrame,
         document_terms: DataFrame,
         document_scores: DataFrame,
@@ -3256,9 +3005,6 @@ class SearchDocumentsGenerated(
         assert_schema(queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
         assert_schema(requests, SEARCH_REQUEST_SCHEMA, name="SearchRequest", mode="strict")
         assert_schema(document_filter_scores, DOCUMENT_FILTER_SCORE_SCHEMA, name="DocumentFilterScore", mode="strict")
-        assert_schema(
-            document_filter_targets, DOCUMENT_SEARCH_TARGET_SCHEMA, name="DocumentSearchTarget", mode="strict"
-        )
         assert_schema(score_policy, SCORE_POLICY_SCHEMA, name="ScorePolicy", mode="strict")
         assert_schema(document_terms, DOCUMENT_TERM_SCHEMA, name="DocumentTerm", mode="strict")
         assert_schema(document_scores, DOCUMENT_SCORE_SCHEMA, name="DocumentScore", mode="strict")
@@ -3283,7 +3029,6 @@ class SearchDocumentsGenerated(
         _input_queries = queries
         _input_requests = requests
         _input_document_filter_scores = document_filter_scores
-        _input_document_filter_targets = document_filter_targets
         _input_score_policy = score_policy
         _input_document_terms = document_terms
         _input_document_scores = document_scores
@@ -3307,7 +3052,6 @@ class SearchDocumentsGenerated(
             "queries": queries,
             "requests": requests,
             "document_filter_scores": document_filter_scores,
-            "document_filter_targets": document_filter_targets,
             "score_policy": score_policy,
             "document_terms": document_terms,
             "document_scores": document_scores,
@@ -3330,7 +3074,6 @@ class SearchDocumentsGenerated(
             "input:queries": _input_queries,
             "input:requests": _input_requests,
             "input:document_filter_scores": _input_document_filter_scores,
-            "input:document_filter_targets": _input_document_filter_targets,
             "input:score_policy": _input_score_policy,
             "input:document_terms": _input_document_terms,
             "input:document_scores": _input_document_scores,
@@ -3351,70 +3094,63 @@ class SearchDocumentsGenerated(
             "input:band_fallbacks": _input_band_fallbacks,
             "input:policy": _input_policy,
         }
-        frames.update(self._step_filtered_gap_select_targeted_queries_0(frames))
-        frames.update(self._step_filtered_gap_find_available_filters_1(frames))
-        frames.update(self._step_filtered_gap_select_gap_queries_2(frames))
-        frames.update(self._step_filtered_filtering_overlap_expand_query_terms_3(frames))
-        frames.update(self._step_filtered_filtering_overlap_select_targeted_queries_4(frames))
-        frames.update(self._step_filtered_filtering_overlap_select_unrestricted_queries_5(frames))
-        frames.update(self._step_filtered_filtering_overlap_match_unrestricted_documents_6(frames))
-        frames.update(self._step_filtered_filtering_overlap_match_restricted_documents_7(frames))
-        frames.update(self._step_filtered_filtering_overlap_merge_matches_8(frames))
-        frames.update(self._step_filtered_filtering_overlap_rank_documents_9(frames))
-        frames.update(self._step_filtered_filtering_overlap_publish_filter_scores_10(frames))
-        frames.update(self._step_selected_merge_filter_scores_11(frames))
-        frames.update(self._step_selected_select_targeted_scores_12(frames))
-        frames.update(self._step_selected_select_unrestricted_scores_13(frames))
-        frames.update(self._step_selected_select_targets_14(frames))
-        frames.update(self._step_scored_gap_find_available_documents_15(frames))
-        frames.update(self._step_scored_gap_find_available_overlaps_16(frames))
-        frames.update(self._step_scored_gap_select_gap_queries_17(frames))
-        frames.update(self._step_scored_scoring_overlap_expand_query_terms_18(frames))
-        frames.update(self._step_scored_scoring_overlap_count_query_terms_19(frames))
-        frames.update(self._step_scored_scoring_overlap_select_document_vocabulary_20(frames))
-        frames.update(self._step_scored_scoring_overlap_select_section_vocabulary_21(frames))
-        frames.update(self._step_scored_scoring_overlap_select_paragraph_vocabulary_22(frames))
-        frames.update(self._step_scored_scoring_overlap_select_sentence_vocabulary_23(frames))
-        frames.update(self._step_scored_scoring_overlap_weight_document_query_terms_24(frames))
-        frames.update(self._step_scored_scoring_overlap_weight_section_query_terms_25(frames))
-        frames.update(self._step_scored_scoring_overlap_weight_paragraph_query_terms_26(frames))
-        frames.update(self._step_scored_scoring_overlap_weight_sentence_query_terms_27(frames))
-        frames.update(self._step_scored_scoring_overlap_total_document_query_idf_28(frames))
-        frames.update(self._step_scored_scoring_overlap_total_section_query_idf_29(frames))
-        frames.update(self._step_scored_scoring_overlap_total_paragraph_query_idf_30(frames))
-        frames.update(self._step_scored_scoring_overlap_total_sentence_query_idf_31(frames))
-        frames.update(self._step_scored_scoring_overlap_match_documents_32(frames))
-        frames.update(self._step_scored_scoring_overlap_match_sections_33(frames))
-        frames.update(self._step_scored_scoring_overlap_match_paragraphs_34(frames))
-        frames.update(self._step_scored_scoring_overlap_match_sentences_35(frames))
-        frames.update(self._step_scored_scoring_overlap_publish_document_overlap_scores_36(frames))
-        frames.update(self._step_scored_scoring_overlap_publish_section_overlap_scores_37(frames))
-        frames.update(self._step_scored_scoring_overlap_publish_paragraph_overlap_scores_38(frames))
-        frames.update(self._step_scored_scoring_overlap_publish_sentence_overlap_scores_39(frames))
-        frames.update(self._step_scored_scoring_bm25_expand_query_terms_40(frames))
-        frames.update(self._step_scored_scoring_bm25_count_query_terms_41(frames))
-        frames.update(self._step_scored_scoring_bm25_score_document_bm25_42(frames))
-        frames.update(self._step_scored_scoring_bm25_score_section_bm25_43(frames))
-        frames.update(self._step_scored_scoring_bm25_score_paragraph_bm25_44(frames))
-        frames.update(self._step_scored_scoring_bm25_score_sentence_bm25_45(frames))
-        frames.update(self._step_scored_scoring_selected_score_documents_46(frames))
-        frames.update(self._step_scored_scoring_selected_score_sections_47(frames))
-        frames.update(self._step_scored_scoring_selected_score_paragraphs_48(frames))
-        frames.update(self._step_scored_scoring_selected_score_sentences_49(frames))
-        frames.update(self._step_retrieved_merge_stored_scores_50(frames))
-        frames.update(self._step_retrieved_merge_streamed_scores_51(frames))
-        frames.update(self._step_retrieved_select_stored_candidates_52(frames))
-        frames.update(self._step_retrieved_select_streamed_candidates_53(frames))
-        frames.update(self._step_retrieved_rank_candidates_54(frames))
-        frames.update(self._step_reranked_select_fallback_options_55(frames))
-        frames.update(self._step_reranked_select_global_options_56(frames))
-        frames.update(self._step_reranked_merge_feedback_options_57(frames))
-        frames.update(self._step_reranked_select_query_feedback_58(frames))
-        frames.update(self._step_reranked_select_popularity_feedback_59(frames))
-        frames.update(self._step_reranked_score_candidates_60(frames))
-        frames.update(self._step_reranked_normalize_score_61(frames))
-        frames.update(self._step_reranked_rank_results_62(frames))
-        frames.update(self._step_reranked_select_results_63(frames))
+        frames.update(self._step_filtered_gap_find_available_filters_0(frames))
+        frames.update(self._step_filtered_gap_select_gap_queries_1(frames))
+        frames.update(self._step_filtered_filtering_overlap_expand_query_terms_2(frames))
+        frames.update(self._step_filtered_filtering_overlap_match_documents_3(frames))
+        frames.update(self._step_filtered_filtering_overlap_rank_documents_4(frames))
+        frames.update(self._step_filtered_filtering_overlap_publish_filter_scores_5(frames))
+        frames.update(self._step_selected_merge_filter_scores_6(frames))
+        frames.update(self._step_selected_select_targets_7(frames))
+        frames.update(self._step_scored_gap_find_available_documents_8(frames))
+        frames.update(self._step_scored_gap_find_available_overlaps_9(frames))
+        frames.update(self._step_scored_gap_select_gap_queries_10(frames))
+        frames.update(self._step_scored_scoring_overlap_expand_query_terms_11(frames))
+        frames.update(self._step_scored_scoring_overlap_count_query_terms_12(frames))
+        frames.update(self._step_scored_scoring_overlap_select_document_vocabulary_13(frames))
+        frames.update(self._step_scored_scoring_overlap_select_section_vocabulary_14(frames))
+        frames.update(self._step_scored_scoring_overlap_select_paragraph_vocabulary_15(frames))
+        frames.update(self._step_scored_scoring_overlap_select_sentence_vocabulary_16(frames))
+        frames.update(self._step_scored_scoring_overlap_weight_document_query_terms_17(frames))
+        frames.update(self._step_scored_scoring_overlap_weight_section_query_terms_18(frames))
+        frames.update(self._step_scored_scoring_overlap_weight_paragraph_query_terms_19(frames))
+        frames.update(self._step_scored_scoring_overlap_weight_sentence_query_terms_20(frames))
+        frames.update(self._step_scored_scoring_overlap_total_document_query_idf_21(frames))
+        frames.update(self._step_scored_scoring_overlap_total_section_query_idf_22(frames))
+        frames.update(self._step_scored_scoring_overlap_total_paragraph_query_idf_23(frames))
+        frames.update(self._step_scored_scoring_overlap_total_sentence_query_idf_24(frames))
+        frames.update(self._step_scored_scoring_overlap_match_documents_25(frames))
+        frames.update(self._step_scored_scoring_overlap_match_sections_26(frames))
+        frames.update(self._step_scored_scoring_overlap_match_paragraphs_27(frames))
+        frames.update(self._step_scored_scoring_overlap_match_sentences_28(frames))
+        frames.update(self._step_scored_scoring_overlap_publish_document_overlap_scores_29(frames))
+        frames.update(self._step_scored_scoring_overlap_publish_section_overlap_scores_30(frames))
+        frames.update(self._step_scored_scoring_overlap_publish_paragraph_overlap_scores_31(frames))
+        frames.update(self._step_scored_scoring_overlap_publish_sentence_overlap_scores_32(frames))
+        frames.update(self._step_scored_scoring_bm25_expand_query_terms_33(frames))
+        frames.update(self._step_scored_scoring_bm25_count_query_terms_34(frames))
+        frames.update(self._step_scored_scoring_bm25_score_document_bm25_35(frames))
+        frames.update(self._step_scored_scoring_bm25_score_section_bm25_36(frames))
+        frames.update(self._step_scored_scoring_bm25_score_paragraph_bm25_37(frames))
+        frames.update(self._step_scored_scoring_bm25_score_sentence_bm25_38(frames))
+        frames.update(self._step_scored_scoring_selected_score_documents_39(frames))
+        frames.update(self._step_scored_scoring_selected_score_sections_40(frames))
+        frames.update(self._step_scored_scoring_selected_score_paragraphs_41(frames))
+        frames.update(self._step_scored_scoring_selected_score_sentences_42(frames))
+        frames.update(self._step_retrieved_merge_stored_scores_43(frames))
+        frames.update(self._step_retrieved_merge_streamed_scores_44(frames))
+        frames.update(self._step_retrieved_select_stored_candidates_45(frames))
+        frames.update(self._step_retrieved_select_streamed_candidates_46(frames))
+        frames.update(self._step_retrieved_rank_candidates_47(frames))
+        frames.update(self._step_reranked_select_fallback_options_48(frames))
+        frames.update(self._step_reranked_select_global_options_49(frames))
+        frames.update(self._step_reranked_merge_feedback_options_50(frames))
+        frames.update(self._step_reranked_select_query_feedback_51(frames))
+        frames.update(self._step_reranked_select_popularity_feedback_52(frames))
+        frames.update(self._step_reranked_score_candidates_53(frames))
+        frames.update(self._step_reranked_normalize_score_54(frames))
+        frames.update(self._step_reranked_rank_results_55(frames))
+        frames.update(self._step_reranked_select_results_56(frames))
 
         # Step method: results
         results = frames["reranked__results"].alias("document_search_result")

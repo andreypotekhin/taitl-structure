@@ -8,3 +8,26 @@ from examples.store.transforms.recommender import Recommender
 from examples.store.transforms.taxonomy import ExpandProductTaxonomy
 from examples.store.transforms.orders.enrich import EnrichOrders
 from examples.store.transforms.personalization import BuildPersonalizedRecommendations
+from examples.store.transforms.evaluate import EvaluateRecommendationExperiment
+from examples.store.transforms.experiment import (
+    AssignRecommendationVariants,
+    RecordRecommendationExposures,
+    SelectActiveRecommendationExperiments,
+)
+
+__all__ = [
+    "AdvancedOrderAnalytics",
+    "AssignRecommendationVariants",
+    "BuildPersonalizedRecommendations",
+    "EvaluateRecommendationExperiment",
+    "EvaluateRecommendations",
+    "ExpandProductTaxonomy",
+    "EnrichOrders",
+    "Fulfillment",
+    "Merchandising",
+    "OrderAnalytics",
+    "PrepareCatalog",
+    "RecordRecommendationExposures",
+    "Recommender",
+    "SelectActiveRecommendationExperiments",
+]
