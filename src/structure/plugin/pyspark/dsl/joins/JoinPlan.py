@@ -25,3 +25,4 @@ class JoinPlan:
     dedupe: JoinDedupe | None = None
     temporal: JoinTemporal | None = None
     as_of: JoinAsOf | None = None
+    assert_singleton_in_batch: bool = False

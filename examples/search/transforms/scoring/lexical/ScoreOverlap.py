@@ -26,9 +26,18 @@ from examples.search.schemas.scoring.overlap import (
     SentenceOverlapScore,
 )
 from examples.search.schemas.search import ScorePolicy
-from examples.search.transforms.scoring.ScoreBase import ScoreBase
+from examples.search.transforms.scoring.lexical.ScoreBase import ScoreBase
 from structure import input, lane, output, step
-from structure.plugin.pyspark import coalesce, cross_join, drop_duplicates, group_by, inner_join, left_join, log
+from structure.plugin.pyspark import (
+    coalesce,
+    cross_join,
+    drop_duplicates,
+    group_by,
+    inner_join,
+    left_join,
+    log,
+    param_join,
+)
 from structure.plugin.pyspark import sum as sum_
 from structure.plugin.pyspark import when
 
@@ -260,7 +269,7 @@ class ScoreOverlap(ScoreBase):
 
     @step(input=[document_overlap_matches, score_policy], output=document_overlap_scores)
     def publish_document_overlap_scores(self, match: DocumentOverlapMatch, policy: ScorePolicy) -> DocumentOverlapScore:
-        cross_join(policy, allow_cartesian=True)
+        param_join(policy)
         return DocumentOverlapScore(
             query_id=match.query_id,
             document_id=match.document_id,
@@ -270,7 +279,7 @@ class ScoreOverlap(ScoreBase):
 
     @step(input=[section_overlap_matches, score_policy], output=section_overlap_scores)
     def publish_section_overlap_scores(self, match: SectionOverlapMatch, policy: ScorePolicy) -> SectionOverlapScore:
-        cross_join(policy, allow_cartesian=True)
+        param_join(policy)
         return SectionOverlapScore(
             query_id=match.query_id,
             document_id=match.document_id,
@@ -283,7 +292,7 @@ class ScoreOverlap(ScoreBase):
     def publish_paragraph_overlap_scores(
         self, match: ParagraphOverlapMatch, policy: ScorePolicy
     ) -> ParagraphOverlapScore:
-        cross_join(policy, allow_cartesian=True)
+        param_join(policy)
         return ParagraphOverlapScore(
             query_id=match.query_id,
             document_id=match.document_id,
@@ -295,7 +304,7 @@ class ScoreOverlap(ScoreBase):
 
     @step(input=[sentence_overlap_matches, score_policy], output=sentence_overlap_scores)
     def publish_sentence_overlap_scores(self, match: SentenceOverlapMatch, policy: ScorePolicy) -> SentenceOverlapScore:
-        cross_join(policy, allow_cartesian=True)
+        param_join(policy)
         return SentenceOverlapScore(
             query_id=match.query_id,
             document_id=match.document_id,

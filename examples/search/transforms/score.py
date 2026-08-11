@@ -1,6 +1,6 @@
 """Public production-score selection boundary."""
 
-from examples.search.transforms.scoring.Scoring import Scoring
+from examples.search.transforms.scoring.lexical.Scoring import Scoring
 
 
 class EnrichWithScores(Scoring):

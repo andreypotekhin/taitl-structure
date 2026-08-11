@@ -733,6 +733,7 @@ class MapPySparkStep:
             dedupe=dedupe,
             temporal=temporal,
             as_of=as_of,
+            assert_singleton_in_batch=join.assert_singleton_in_batch,
         )
 
     def _dedupe(

@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 from pyspark.sql import DataFrame, SparkSession
+from pyspark.sql import Window
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.search.runtime.schema_assert import (
@@ -12,6 +13,13 @@ from examples.structure_generated.search.runtime.schema_assert import (
     apply_plan_boundary,
     close_plan_boundaries,
 )
+from examples.structure_generated.search.pyspark.schemas.indexing_vector import (
+    DOCUMENT_VECTOR_CANDIDATE_SCHEMA,
+    VECTOR_INDEX_POLICY_SCHEMA,
+)
+from examples.structure_generated.search.pyspark.schemas.similarities_vector import (
+    DOCUMENT_FUSED_SIMILARITY_CANDIDATE_SCHEMA,
+)
 from examples.structure_generated.search.pyspark.schemas.similarity import (
     DOCUMENT_SIMILARITY_SCHEMA,
     INDEXED_SIMILAR_DOCUMENT_SCHEMA,
@@ -20,44 +28,288 @@ from examples.structure_generated.search.pyspark.schemas.similarity import (
 from examples.structure_generated.search.pyspark.schemas.text import DOCUMENT_SCHEMA
 
 
-class SearchSimilarityGenerated:
+class AdoptLexicalSimilarityGenerated:
+    def _step_lexical_adopt_documents_0(self, frames):
+        # Step method: lexical.adopt_documents
+        lexical__document_candidates = frames["document_similarities"].alias("document_similarity")
+        lexical__document_candidates = lexical__document_candidates.select(
+            F.col("document_similarity.left_document_id"),
+            F.col("document_similarity.right_document_id"),
+            F.col("document_similarity.rank").alias("lexical_rank"),
+            F.lit(None).cast(T.LongType()).alias("vector_rank"),
+            F.col("document_similarity.score_overlap"),
+            F.col("document_similarity.bm25_left_to_right"),
+            F.col("document_similarity.bm25_right_to_left"),
+            F.col("document_similarity.bm25_mean"),
+            F.lit(None).cast(T.DoubleType()).alias("vector_similarity"),
+            (F.lit(1.0) / (F.lit(60) + F.col("document_similarity.rank"))).alias("rrf_score"),
+            F.lit(60).cast(T.LongType()).alias("rrf_k"),
+            F.lit('').alias("experiment_id"),
+        )
+        assert_schema(
+            lexical__document_candidates,
+            DOCUMENT_FUSED_SIMILARITY_CANDIDATE_SCHEMA,
+            name="DocumentFusedSimilarityCandidate",
+            mode="strict",
+        )
+        return {
+            "lexical__document_candidates": lexical__document_candidates,
+        }
 
-    def __init__(self, *, spark: SparkSession, ctx=None):
-        self.spark = spark
-        self.ctx = ctx
 
-    def close(self) -> None:
-        close_plan_boundaries(self.spark)
+class AdoptVectorSimilarityGenerated:
+    def _step_vector_adopt_documents_1(self, frames):
+        # Step method: vector.adopt_documents
+        vector__adopted_document_candidates = frames["document_vector_candidates"].alias("document_vector_candidate")
+        vector__adopted_document_candidates = vector__adopted_document_candidates.select(
+            F.col("document_vector_candidate.query_document_id").alias("left_document_id"),
+            F.col("document_vector_candidate.document_id").alias("right_document_id"),
+            F.lit(None).cast(T.LongType()).alias("lexical_rank"),
+            F.col("document_vector_candidate.rank").alias("vector_rank"),
+            F.lit(None).cast(T.DoubleType()).alias("score_overlap"),
+            F.lit(None).cast(T.DoubleType()).alias("bm25_left_to_right"),
+            F.lit(None).cast(T.DoubleType()).alias("bm25_right_to_left"),
+            F.lit(None).cast(T.DoubleType()).alias("bm25_mean"),
+            F.col("document_vector_candidate.cosine_similarity").alias("vector_similarity"),
+            F.lit(0.0).alias("rrf_score"),
+            F.lit(0).cast(T.LongType()).alias("rrf_k"),
+            F.lit('').alias("experiment_id"),
+        )
+        assert_schema(
+            vector__adopted_document_candidates,
+            DOCUMENT_FUSED_SIMILARITY_CANDIDATE_SCHEMA,
+            name="DocumentFusedSimilarityCandidate",
+            mode="strict",
+        )
+        return {
+            "vector__adopted_document_candidates": vector__adopted_document_candidates,
+        }
 
-    def run(
-        self,
-        *,
-        query: DataFrame,
-        documents: DataFrame,
-        document_similarities: DataFrame,
-    ) -> TransformResult:
-        assert_schema(query, SIMILARITY_DOCUMENT_QUERY_SCHEMA, name="SimilarityDocumentQuery", mode="strict")
-        assert_schema(documents, DOCUMENT_SCHEMA, name="Document", mode="strict")
-        assert_schema(document_similarities, DOCUMENT_SIMILARITY_SCHEMA, name="DocumentSimilarity", mode="strict")
-        _input_query = query
-        _input_documents = documents
-        _input_document_similarities = document_similarities
 
-        # Step method: rank
-        query = query.alias("similarity_document_query")
-        document_similarities_joined = document_similarities.alias("document_similarities")
-        query = query.join(
-            document_similarities_joined,
-            (F.col("similarity_document_query.id") == F.col("document_similarities.left_document_id")),
+class FuseSimilarityGenerated:
+    def _step_fused_merge_documents_2(self, frames):
+        # Step method: fused.merge_documents
+        fused__merged_document_candidates = frames["lexical__document_candidates"].alias(
+            "document_fused_similarity_candidate"
+        )
+        fused__merged_document_candidates = fused__merged_document_candidates.union(
+            frames["vector__adopted_document_candidates"]
+        )
+        fused__merged_document_candidates = fused__merged_document_candidates.alias(
+            "document_fused_similarity_candidate"
+        )
+        fused__merged_document_candidates = fused__merged_document_candidates.select(
+            F.col("left_document_id"),
+            F.col("right_document_id"),
+            F.col("lexical_rank"),
+            F.col("vector_rank"),
+            F.col("score_overlap"),
+            F.col("bm25_left_to_right"),
+            F.col("bm25_right_to_left"),
+            F.col("bm25_mean"),
+            F.col("vector_similarity"),
+            F.col("rrf_score"),
+            F.col("rrf_k"),
+            F.col("experiment_id"),
+        )
+        assert_schema(
+            fused__merged_document_candidates,
+            DOCUMENT_FUSED_SIMILARITY_CANDIDATE_SCHEMA,
+            name="DocumentFusedSimilarityCandidate",
+            mode="strict",
+        )
+        return {
+            "fused__merged_document_candidates": fused__merged_document_candidates,
+        }
+
+    def _step_fused_fuse_documents_3(self, frames):
+        # Step method: fused.fuse_documents
+        fused__fused_document_candidates = frames["fused__merged_document_candidates"].alias(
+            "document_fused_similarity_candidate"
+        )
+        __structure_streaming_step = (
+            frames["fused__merged_document_candidates"].isStreaming or frames["vector_policy"].isStreaming
+        )
+        vector_policy_param_joined = frames["vector_policy"]
+        if not __structure_streaming_step:
+            vector_policy_param_joined_count = frames["vector_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
+            vector_policy_param_joined_count = vector_policy_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            vector_policy_param_joined = vector_policy_param_joined_count.crossJoin(frames["vector_policy"]).drop(
+                "__structure_exactly_one"
+            )
+        vector_policy_joined = vector_policy_param_joined.alias("vector_policy")
+        fused__fused_document_candidates = fused__fused_document_candidates.crossJoin(vector_policy_joined)
+        fused__fused_document_candidates = (
+            fused__fused_document_candidates.groupBy(
+                F.col("document_fused_similarity_candidate.left_document_id").alias("left_document_id"),
+                F.col("document_fused_similarity_candidate.right_document_id").alias("right_document_id"),
+                F.col("vector_policy.rrf_k").alias("rrf_k"),
+                F.col("vector_policy.experiment_id").alias("experiment_id"),
+            )
+            .agg(
+                F.max(F.col("document_fused_similarity_candidate.lexical_rank"))
+                .cast(T.LongType())
+                .alias("lexical_rank"),
+                F.max(F.col("document_fused_similarity_candidate.vector_rank")).cast(T.LongType()).alias("vector_rank"),
+                F.max(F.col("document_fused_similarity_candidate.score_overlap"))
+                .cast(T.DoubleType())
+                .alias("score_overlap"),
+                F.max(F.col("document_fused_similarity_candidate.bm25_left_to_right"))
+                .cast(T.DoubleType())
+                .alias("bm25_left_to_right"),
+                F.max(F.col("document_fused_similarity_candidate.bm25_right_to_left"))
+                .cast(T.DoubleType())
+                .alias("bm25_right_to_left"),
+                F.max(F.col("document_fused_similarity_candidate.bm25_mean")).cast(T.DoubleType()).alias("bm25_mean"),
+                F.max(F.col("document_fused_similarity_candidate.vector_similarity"))
+                .cast(T.DoubleType())
+                .alias("vector_similarity"),
+                F.max(F.col("document_fused_similarity_candidate.rrf_score")).cast(T.DoubleType()).alias("rrf_score"),
+            )
+            .select(
+                F.col("left_document_id"),
+                F.col("right_document_id"),
+                F.col("lexical_rank"),
+                F.col("vector_rank"),
+                F.col("score_overlap"),
+                F.col("bm25_left_to_right"),
+                F.col("bm25_right_to_left"),
+                F.col("bm25_mean"),
+                F.col("vector_similarity"),
+                F.col("rrf_score"),
+                F.col("rrf_k"),
+                F.col("experiment_id"),
+            )
+        )
+        assert_schema(
+            fused__fused_document_candidates,
+            DOCUMENT_FUSED_SIMILARITY_CANDIDATE_SCHEMA,
+            name="DocumentFusedSimilarityCandidate",
+            mode="strict",
+        )
+        return {
+            "fused__fused_document_candidates": fused__fused_document_candidates,
+        }
+
+    def _step_fused_score_documents_4(self, frames):
+        # Step method: fused.score_documents
+        fused__scored_document_candidates = frames["fused__fused_document_candidates"].alias(
+            "document_fused_similarity_candidate"
+        )
+        __structure_streaming_step = (
+            frames["fused__fused_document_candidates"].isStreaming or frames["vector_policy"].isStreaming
+        )
+        vector_policy_param_joined = frames["vector_policy"]
+        if not __structure_streaming_step:
+            vector_policy_param_joined_count = frames["vector_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
+            vector_policy_param_joined_count = vector_policy_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            vector_policy_param_joined = vector_policy_param_joined_count.crossJoin(frames["vector_policy"]).drop(
+                "__structure_exactly_one"
+            )
+        vector_policy_joined = vector_policy_param_joined.alias("vector_policy")
+        fused__scored_document_candidates = fused__scored_document_candidates.crossJoin(vector_policy_joined)
+        fused__scored_document_candidates = fused__scored_document_candidates.select(
+            F.col("document_fused_similarity_candidate.left_document_id"),
+            F.col("document_fused_similarity_candidate.right_document_id"),
+            F.col("document_fused_similarity_candidate.lexical_rank"),
+            F.col("document_fused_similarity_candidate.vector_rank"),
+            F.col("document_fused_similarity_candidate.score_overlap"),
+            F.col("document_fused_similarity_candidate.bm25_left_to_right"),
+            F.col("document_fused_similarity_candidate.bm25_right_to_left"),
+            F.col("document_fused_similarity_candidate.bm25_mean"),
+            F.col("document_fused_similarity_candidate.vector_similarity"),
+            (
+                F.coalesce(
+                    F.when(
+                        F.col("document_fused_similarity_candidate.lexical_rank").isNotNull(),
+                        (
+                            F.lit(1.0)
+                            / (F.col("vector_policy.rrf_k") + F.col("document_fused_similarity_candidate.lexical_rank"))
+                        ),
+                    ).otherwise(F.lit(0.0)),
+                    F.lit(0.0),
+                )
+                + F.coalesce(
+                    F.when(
+                        F.col("document_fused_similarity_candidate.vector_rank").isNotNull(),
+                        (
+                            F.lit(1.0)
+                            / (F.col("vector_policy.rrf_k") + F.col("document_fused_similarity_candidate.vector_rank"))
+                        ),
+                    ).otherwise(F.lit(0.0)),
+                    F.lit(0.0),
+                )
+            ).alias("rrf_score"),
+            F.col("document_fused_similarity_candidate.rrf_k"),
+            F.col("document_fused_similarity_candidate.experiment_id"),
+        )
+        assert_schema(
+            fused__scored_document_candidates,
+            DOCUMENT_FUSED_SIMILARITY_CANDIDATE_SCHEMA,
+            name="DocumentFusedSimilarityCandidate",
+            mode="strict",
+        )
+        return {
+            "fused__scored_document_candidates": fused__scored_document_candidates,
+        }
+
+    def _step_fused_publish_documents_5(self, frames):
+        # Step method: fused.publish_documents
+        fused__document_candidates = frames["fused__scored_document_candidates"].alias(
+            "document_fused_similarity_candidate"
+        )
+        fused__document_candidates = fused__document_candidates.select(
+            F.col("document_fused_similarity_candidate.left_document_id"),
+            F.col("document_fused_similarity_candidate.right_document_id"),
+            F.col("document_fused_similarity_candidate.lexical_rank"),
+            F.col("document_fused_similarity_candidate.vector_rank"),
+            F.col("document_fused_similarity_candidate.score_overlap"),
+            F.col("document_fused_similarity_candidate.bm25_left_to_right"),
+            F.col("document_fused_similarity_candidate.bm25_right_to_left"),
+            F.col("document_fused_similarity_candidate.bm25_mean"),
+            F.col("document_fused_similarity_candidate.vector_similarity"),
+            F.col("document_fused_similarity_candidate.rrf_score"),
+            F.col("document_fused_similarity_candidate.rrf_k"),
+            F.col("document_fused_similarity_candidate.experiment_id"),
+        )
+        assert_schema(
+            fused__document_candidates,
+            DOCUMENT_FUSED_SIMILARITY_CANDIDATE_SCHEMA,
+            name="DocumentFusedSimilarityCandidate",
+            mode="strict",
+        )
+        return {
+            "fused__document_candidates": fused__document_candidates,
+        }
+
+
+class RerankSimilarityGenerated:
+    def _step_reranked_rank_documents_6(self, frames):
+        # Step method: reranked.rank_documents
+        reranked__ranked_documents = frames["fused__document_candidates"].alias("document_fused_similarity_candidate")
+        query_joined = frames["query"].alias("query")
+        reranked__ranked_documents = reranked__ranked_documents.join(
+            query_joined,
+            (F.col("query.id") == F.col("document_fused_similarity_candidate.left_document_id")),
             "inner",
         )
-        documents_2_joined = documents.alias("documents_2")
-        query = query.join(
+        documents_2_joined = frames["documents"].alias("documents_2")
+        reranked__ranked_documents = reranked__ranked_documents.join(
             documents_2_joined,
-            (F.col("documents_2.id") == F.col("document_similarities.right_document_id")),
+            (F.col("documents_2.id") == F.col("document_fused_similarity_candidate.right_document_id")),
             "inner",
         )
-        query = query.select(
+        reranked__ranked_documents = reranked__ranked_documents.select(
             F.col("documents_2.id"),
             F.col("documents_2.collection_id"),
             F.col("documents_2.source"),
@@ -70,21 +322,39 @@ class SearchSimilarityGenerated:
             F.col("documents_2.created_at"),
             F.col("documents_2.published_at"),
             F.col("documents_2.harvested_at"),
-            F.col("similarity_document_query.id").alias("search_query_id"),
-            F.col("document_similarities.score_overlap"),
-            F.col("document_similarities.bm25_left_to_right").alias("score_bm25"),
+            F.col("query.id").alias("search_query_id"),
+            F.col("document_fused_similarity_candidate.score_overlap"),
+            F.col("document_fused_similarity_candidate.bm25_left_to_right").alias("score_bm25"),
             F.col("documents_2.document_type"),
             F.col("documents_2.category_id"),
             F.col("documents_2.file_type"),
             F.col("documents_2.fields"),
-            F.col("document_similarities.rank"),
+            F.row_number()
+            .over(
+                Window.partitionBy(F.col("document_fused_similarity_candidate.left_document_id")).orderBy(
+                    F.col("document_fused_similarity_candidate.rrf_score").desc_nulls_last(),
+                    F.col("document_fused_similarity_candidate.vector_similarity").desc_nulls_last(),
+                    F.col("document_fused_similarity_candidate.bm25_mean").desc_nulls_last(),
+                    F.col("document_fused_similarity_candidate.right_document_id").asc_nulls_first(),
+                )
+            )
+            .cast(T.LongType())
+            .alias("rank"),
         )
-        assert_schema(query, INDEXED_SIMILAR_DOCUMENT_SCHEMA, name="IndexedSimilarDocument", mode="strict")
+        assert_schema(
+            reranked__ranked_documents, INDEXED_SIMILAR_DOCUMENT_SCHEMA, name="IndexedSimilarDocument", mode="strict"
+        )
+        return {
+            "reranked__ranked_documents": reranked__ranked_documents,
+        }
 
-        # Step method: limit
-        query = query.alias("indexed_similar_document")
-        query = query.where(((F.col("indexed_similar_document.rank") <= F.lit(10))))
-        query = query.select(
+    def _step_reranked_limit_documents_7(self, frames):
+        # Step method: reranked.limit_documents
+        reranked__similar_documents = frames["reranked__ranked_documents"].alias("indexed_similar_document")
+        reranked__similar_documents = reranked__similar_documents.where(
+            ((F.col("indexed_similar_document.rank") <= F.lit(10)))
+        )
+        reranked__similar_documents = reranked__similar_documents.select(
             F.col("indexed_similar_document.id"),
             F.col("indexed_similar_document.collection_id"),
             F.col("indexed_similar_document.source"),
@@ -106,9 +376,66 @@ class SearchSimilarityGenerated:
             F.col("indexed_similar_document.fields"),
             F.col("indexed_similar_document.rank"),
         )
+        return {
+            "reranked__similar_documents": reranked__similar_documents,
+        }
+
+
+class SearchSimilarityGenerated(
+    AdoptLexicalSimilarityGenerated, AdoptVectorSimilarityGenerated, FuseSimilarityGenerated, RerankSimilarityGenerated
+):
+
+    def __init__(self, *, spark: SparkSession, ctx=None):
+        self.spark = spark
+        self.ctx = ctx
+
+    def close(self) -> None:
+        close_plan_boundaries(self.spark)
+
+    def run(
+        self,
+        *,
+        document_similarities: DataFrame,
+        document_vector_candidates: DataFrame,
+        vector_policy: DataFrame,
+        query: DataFrame,
+        documents: DataFrame,
+    ) -> TransformResult:
+        assert_schema(document_similarities, DOCUMENT_SIMILARITY_SCHEMA, name="DocumentSimilarity", mode="strict")
+        assert_schema(
+            document_vector_candidates, DOCUMENT_VECTOR_CANDIDATE_SCHEMA, name="DocumentVectorCandidate", mode="strict"
+        )
+        assert_schema(vector_policy, VECTOR_INDEX_POLICY_SCHEMA, name="VectorIndexPolicy", mode="strict")
+        assert_schema(query, SIMILARITY_DOCUMENT_QUERY_SCHEMA, name="SimilarityDocumentQuery", mode="strict")
+        assert_schema(documents, DOCUMENT_SCHEMA, name="Document", mode="strict")
+        _input_document_similarities = document_similarities
+        _input_document_vector_candidates = document_vector_candidates
+        _input_vector_policy = vector_policy
+        _input_query = query
+        _input_documents = documents
+        frames = {
+            "document_similarities": document_similarities,
+            "document_vector_candidates": document_vector_candidates,
+            "vector_policy": vector_policy,
+            "query": query,
+            "documents": documents,
+            "input:document_similarities": _input_document_similarities,
+            "input:document_vector_candidates": _input_document_vector_candidates,
+            "input:vector_policy": _input_vector_policy,
+            "input:query": _input_query,
+            "input:documents": _input_documents,
+        }
+        frames.update(self._step_lexical_adopt_documents_0(frames))
+        frames.update(self._step_vector_adopt_documents_1(frames))
+        frames.update(self._step_fused_merge_documents_2(frames))
+        frames.update(self._step_fused_fuse_documents_3(frames))
+        frames.update(self._step_fused_score_documents_4(frames))
+        frames.update(self._step_fused_publish_documents_5(frames))
+        frames.update(self._step_reranked_rank_documents_6(frames))
+        frames.update(self._step_reranked_limit_documents_7(frames))
 
         # Step method: similar_documents
-        similar_documents = query.alias("indexed_similar_document")
+        similar_documents = frames["reranked__similar_documents"].alias("indexed_similar_document")
         assert_schema(similar_documents, INDEXED_SIMILAR_DOCUMENT_SCHEMA, name="IndexedSimilarDocument", mode="strict")
         return TransformResult(
             {"similar_documents": similar_documents},

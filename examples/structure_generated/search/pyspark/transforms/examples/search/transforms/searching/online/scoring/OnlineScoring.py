@@ -59,13 +59,30 @@ class SelectGapQueriesGenerated:
     def _step_gap_find_available_documents_0(self, frames):
         # Step method: gap.find_available_documents
         gap__document_availability = frames["document_scores"].alias("document_score")
+        __structure_streaming_step = (
+            frames["document_scores"].isStreaming
+            or frames["requests"].isStreaming
+            or frames["score_policy"].isStreaming
+        )
         requests_joined = frames["requests"].alias("requests")
         gap__document_availability = gap__document_availability.join(
             requests_joined,
             (F.col("requests.query_id") == F.col("document_score.query_id")),
             "inner",
         )
-        score_policy_2_joined = frames["score_policy"].alias("score_policy_2")
+        score_policy_2_param_joined = frames["score_policy"]
+        if not __structure_streaming_step:
+            score_policy_2_param_joined_count = frames["score_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
+            score_policy_2_param_joined_count = score_policy_2_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            score_policy_2_param_joined = score_policy_2_param_joined_count.crossJoin(frames["score_policy"]).drop(
+                "__structure_exactly_one"
+            )
+        score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
         gap__document_availability = gap__document_availability.crossJoin(score_policy_2_joined)
         gap__document_availability = gap__document_availability.where(
             (
@@ -101,13 +118,30 @@ class SelectGapQueriesGenerated:
     def _step_gap_find_available_overlaps_1(self, frames):
         # Step method: gap.find_available_overlaps
         gap__overlap_availability = frames["document_overlap_scores"].alias("document_overlap_score")
+        __structure_streaming_step = (
+            frames["document_overlap_scores"].isStreaming
+            or frames["requests"].isStreaming
+            or frames["score_policy"].isStreaming
+        )
         requests_joined = frames["requests"].alias("requests")
         gap__overlap_availability = gap__overlap_availability.join(
             requests_joined,
             (F.col("requests.query_id") == F.col("document_overlap_score.query_id")),
             "inner",
         )
-        score_policy_2_joined = frames["score_policy"].alias("score_policy_2")
+        score_policy_2_param_joined = frames["score_policy"]
+        if not __structure_streaming_step:
+            score_policy_2_param_joined_count = frames["score_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
+            score_policy_2_param_joined_count = score_policy_2_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            score_policy_2_param_joined = score_policy_2_param_joined_count.crossJoin(frames["score_policy"]).drop(
+                "__structure_exactly_one"
+            )
+        score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
         gap__overlap_availability = gap__overlap_availability.crossJoin(score_policy_2_joined)
         gap__overlap_availability = gap__overlap_availability.where(
             (
@@ -902,7 +936,22 @@ class ScoreOverlapGenerated:
         scoring__overlap__document_overlap_scores = frames["scoring__overlap__document_overlap_matches"].alias(
             "document_overlap_match"
         )
-        score_policy_joined = frames["score_policy"].alias("score_policy")
+        __structure_streaming_step = (
+            frames["scoring__overlap__document_overlap_matches"].isStreaming or frames["score_policy"].isStreaming
+        )
+        score_policy_param_joined = frames["score_policy"]
+        if not __structure_streaming_step:
+            score_policy_param_joined_count = frames["score_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
+            score_policy_param_joined_count = score_policy_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            score_policy_param_joined = score_policy_param_joined_count.crossJoin(frames["score_policy"]).drop(
+                "__structure_exactly_one"
+            )
+        score_policy_joined = score_policy_param_joined.alias("score_policy")
         scoring__overlap__document_overlap_scores = scoring__overlap__document_overlap_scores.crossJoin(
             score_policy_joined
         )
@@ -932,7 +981,22 @@ class ScoreOverlapGenerated:
         scoring__overlap__section_overlap_scores = frames["scoring__overlap__section_overlap_matches"].alias(
             "section_overlap_match"
         )
-        score_policy_joined = frames["score_policy"].alias("score_policy")
+        __structure_streaming_step = (
+            frames["scoring__overlap__section_overlap_matches"].isStreaming or frames["score_policy"].isStreaming
+        )
+        score_policy_param_joined = frames["score_policy"]
+        if not __structure_streaming_step:
+            score_policy_param_joined_count = frames["score_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
+            score_policy_param_joined_count = score_policy_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            score_policy_param_joined = score_policy_param_joined_count.crossJoin(frames["score_policy"]).drop(
+                "__structure_exactly_one"
+            )
+        score_policy_joined = score_policy_param_joined.alias("score_policy")
         scoring__overlap__section_overlap_scores = scoring__overlap__section_overlap_scores.crossJoin(
             score_policy_joined
         )
@@ -963,7 +1027,22 @@ class ScoreOverlapGenerated:
         scoring__overlap__paragraph_overlap_scores = frames["scoring__overlap__paragraph_overlap_matches"].alias(
             "paragraph_overlap_match"
         )
-        score_policy_joined = frames["score_policy"].alias("score_policy")
+        __structure_streaming_step = (
+            frames["scoring__overlap__paragraph_overlap_matches"].isStreaming or frames["score_policy"].isStreaming
+        )
+        score_policy_param_joined = frames["score_policy"]
+        if not __structure_streaming_step:
+            score_policy_param_joined_count = frames["score_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
+            score_policy_param_joined_count = score_policy_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            score_policy_param_joined = score_policy_param_joined_count.crossJoin(frames["score_policy"]).drop(
+                "__structure_exactly_one"
+            )
+        score_policy_joined = score_policy_param_joined.alias("score_policy")
         scoring__overlap__paragraph_overlap_scores = scoring__overlap__paragraph_overlap_scores.crossJoin(
             score_policy_joined
         )
@@ -995,7 +1074,22 @@ class ScoreOverlapGenerated:
         scoring__overlap__sentence_overlap_scores = frames["scoring__overlap__sentence_overlap_matches"].alias(
             "sentence_overlap_match"
         )
-        score_policy_joined = frames["score_policy"].alias("score_policy")
+        __structure_streaming_step = (
+            frames["scoring__overlap__sentence_overlap_matches"].isStreaming or frames["score_policy"].isStreaming
+        )
+        score_policy_param_joined = frames["score_policy"]
+        if not __structure_streaming_step:
+            score_policy_param_joined_count = frames["score_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
+            score_policy_param_joined_count = score_policy_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            score_policy_param_joined = score_policy_param_joined_count.crossJoin(frames["score_policy"]).drop(
+                "__structure_exactly_one"
+            )
+        score_policy_joined = score_policy_param_joined.alias("score_policy")
         scoring__overlap__sentence_overlap_scores = scoring__overlap__sentence_overlap_scores.crossJoin(
             score_policy_joined
         )
@@ -1330,6 +1424,11 @@ class SelectScoresGenerated:
         scoring__selected__document_scores = frames["scoring__overlap__document_overlap_scores"].alias(
             "document_overlap_score"
         )
+        __structure_streaming_step = (
+            frames["scoring__overlap__document_overlap_scores"].isStreaming
+            or frames["scoring__bm25__document_bm25_scores"].isStreaming
+            or frames["score_policy"].isStreaming
+        )
         scoring__bm25__document_bm25_scores_joined = frames["scoring__bm25__document_bm25_scores"].alias(
             "scoring__bm25__document_bm25_scores"
         )
@@ -1344,7 +1443,19 @@ class SelectScoresGenerated:
             ),
             "inner",
         )
-        score_policy_2_joined = frames["score_policy"].alias("score_policy_2")
+        score_policy_2_param_joined = frames["score_policy"]
+        if not __structure_streaming_step:
+            score_policy_2_param_joined_count = frames["score_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
+            score_policy_2_param_joined_count = score_policy_2_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            score_policy_2_param_joined = score_policy_2_param_joined_count.crossJoin(frames["score_policy"]).drop(
+                "__structure_exactly_one"
+            )
+        score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
         scoring__selected__document_scores = scoring__selected__document_scores.crossJoin(score_policy_2_joined)
         scoring__selected__document_scores = scoring__selected__document_scores.select(
             F.col("document_overlap_score.query_id"),
@@ -1386,6 +1497,11 @@ class SelectScoresGenerated:
         scoring__selected__section_scores = frames["scoring__overlap__section_overlap_scores"].alias(
             "section_overlap_score"
         )
+        __structure_streaming_step = (
+            frames["scoring__overlap__section_overlap_scores"].isStreaming
+            or frames["scoring__bm25__section_bm25_scores"].isStreaming
+            or frames["score_policy"].isStreaming
+        )
         scoring__bm25__section_bm25_scores_joined = frames["scoring__bm25__section_bm25_scores"].alias(
             "scoring__bm25__section_bm25_scores"
         )
@@ -1397,7 +1513,19 @@ class SelectScoresGenerated:
             ),
             "inner",
         )
-        score_policy_2_joined = frames["score_policy"].alias("score_policy_2")
+        score_policy_2_param_joined = frames["score_policy"]
+        if not __structure_streaming_step:
+            score_policy_2_param_joined_count = frames["score_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
+            score_policy_2_param_joined_count = score_policy_2_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            score_policy_2_param_joined = score_policy_2_param_joined_count.crossJoin(frames["score_policy"]).drop(
+                "__structure_exactly_one"
+            )
+        score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
         scoring__selected__section_scores = scoring__selected__section_scores.crossJoin(score_policy_2_joined)
         scoring__selected__section_scores = scoring__selected__section_scores.select(
             F.col("section_overlap_score.query_id"),
@@ -1446,6 +1574,11 @@ class SelectScoresGenerated:
         scoring__selected__paragraph_scores = frames["scoring__overlap__paragraph_overlap_scores"].alias(
             "paragraph_overlap_score"
         )
+        __structure_streaming_step = (
+            frames["scoring__overlap__paragraph_overlap_scores"].isStreaming
+            or frames["scoring__bm25__paragraph_bm25_scores"].isStreaming
+            or frames["score_policy"].isStreaming
+        )
         scoring__bm25__paragraph_bm25_scores_joined = frames["scoring__bm25__paragraph_bm25_scores"].alias(
             "scoring__bm25__paragraph_bm25_scores"
         )
@@ -1460,7 +1593,19 @@ class SelectScoresGenerated:
             ),
             "inner",
         )
-        score_policy_2_joined = frames["score_policy"].alias("score_policy_2")
+        score_policy_2_param_joined = frames["score_policy"]
+        if not __structure_streaming_step:
+            score_policy_2_param_joined_count = frames["score_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
+            score_policy_2_param_joined_count = score_policy_2_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            score_policy_2_param_joined = score_policy_2_param_joined_count.crossJoin(frames["score_policy"]).drop(
+                "__structure_exactly_one"
+            )
+        score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
         scoring__selected__paragraph_scores = scoring__selected__paragraph_scores.crossJoin(score_policy_2_joined)
         scoring__selected__paragraph_scores = scoring__selected__paragraph_scores.select(
             F.col("paragraph_overlap_score.query_id"),
@@ -1512,6 +1657,11 @@ class SelectScoresGenerated:
         scoring__selected__sentence_scores = frames["scoring__overlap__sentence_overlap_scores"].alias(
             "sentence_overlap_score"
         )
+        __structure_streaming_step = (
+            frames["scoring__overlap__sentence_overlap_scores"].isStreaming
+            or frames["scoring__bm25__sentence_bm25_scores"].isStreaming
+            or frames["score_policy"].isStreaming
+        )
         scoring__bm25__sentence_bm25_scores_joined = frames["scoring__bm25__sentence_bm25_scores"].alias(
             "scoring__bm25__sentence_bm25_scores"
         )
@@ -1526,7 +1676,19 @@ class SelectScoresGenerated:
             ),
             "inner",
         )
-        score_policy_2_joined = frames["score_policy"].alias("score_policy_2")
+        score_policy_2_param_joined = frames["score_policy"]
+        if not __structure_streaming_step:
+            score_policy_2_param_joined_count = frames["score_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
+            score_policy_2_param_joined_count = score_policy_2_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            score_policy_2_param_joined = score_policy_2_param_joined_count.crossJoin(frames["score_policy"]).drop(
+                "__structure_exactly_one"
+            )
+        score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
         scoring__selected__sentence_scores = scoring__selected__sentence_scores.crossJoin(score_policy_2_joined)
         scoring__selected__sentence_scores = scoring__selected__sentence_scores.select(
             F.col("sentence_overlap_score.query_id"),

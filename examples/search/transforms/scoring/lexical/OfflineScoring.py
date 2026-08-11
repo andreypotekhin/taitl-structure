@@ -31,10 +31,10 @@ from examples.search.schemas.search import (
     SectionScore,
     SentenceScore,
 )
-from examples.search.transforms.scoring.MergeOfflineQueries import MergeOfflineQueries
-from examples.search.transforms.scoring.Scoring import Scoring
-from examples.search.transforms.scoring.SelectPopularQueries import SelectPopularQueries
-from examples.search.transforms.scoring.SelectRecentQueries import SelectRecentQueries
+from examples.search.transforms.scoring.lexical.MergeOfflineQueries import MergeOfflineQueries
+from examples.search.transforms.scoring.lexical.Scoring import Scoring
+from examples.search.transforms.scoring.lexical.SelectPopularQueries import SelectPopularQueries
+from examples.search.transforms.scoring.lexical.SelectRecentQueries import SelectRecentQueries
 from structure import Transform, input, output, parameter
 
 

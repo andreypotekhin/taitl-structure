@@ -13,13 +13,13 @@ from examples.search.schemas.user import BandMembership
 from structure import Transform, input, lane, output, step
 from structure.plugin.pyspark import (
     coalesce,
-    cross_join,
     datediff,
     drop_duplicates,
     event_time_between,
     inner_join,
     left_join,
     lower,
+    param_join,
     regexp_replace,
     row_number,
     trim,
@@ -62,7 +62,7 @@ class RetrieveDocuments(Transform):
     ) -> DocumentScore:
         candidate: DocumentScore = union_all(online)
         inner_join(request, on=request.query_id == candidate.query_id)
-        cross_join(policy, allow_cartesian=True)
+        param_join(policy)
         age = datediff(request.requested_at, candidate.scored_at)
         where(
             (candidate.scored_at <= request.requested_at)
@@ -87,7 +87,7 @@ class RetrieveDocuments(Transform):
     ) -> DocumentScore:
         candidate: DocumentScore = union_all(online)
         inner_join(request, on=request.query_id == candidate.query_id)
-        cross_join(policy, allow_cartesian=True)
+        param_join(policy)
         age = datediff(request.requested_at, candidate.scored_at)
         where(
             (candidate.scored_at <= request.requested_at)

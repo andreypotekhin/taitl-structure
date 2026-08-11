@@ -194,7 +194,9 @@ class RenderPySparkStep:
         sources: dict[str, str],
         target: str = "df",
     ) -> list[str]:
-        lines: list[str] = []
+        lines: list[str] = self._streaming_guard(step, sources=sources) if any(
+            join.assert_singleton_in_batch for join in step.joins
+        ) else []
         for join in step.joins:
             lines.extend(self._join(step, join, sources=sources, target=target))
         return lines
@@ -216,6 +218,13 @@ class RenderPySparkStep:
             return lines
 
         ordered_lines: list[str] = []
+        if any(
+            operation.kind == "join"
+            and operation.join is not None
+            and operation.join.assert_singleton_in_batch
+            for operation in step.operations
+        ):
+            ordered_lines.extend(self._streaming_guard(step, sources=sources))
         pending_filters: list[PySparkExpressionRecipe] = []
         prepared_sources = dict(sources)
         joined_scopes: set[str] = set()
@@ -1626,6 +1635,13 @@ class RenderPySparkStep:
             right = f"{right}.withWatermark({self._literal(watermark.column)}, {watermark.delay!r})"
         if join.strategy is not None:
             right = f'{right}.hint("{join.strategy.hint()}")'
+        if join.assert_singleton_in_batch:
+            prepared = f"{join.right_alias}_param_joined"
+            lines = [f"        {prepared} = {right}", "        if not __structure_streaming_step:"]
+            lines.extend(f"    {line}" for line in self._exactly_one(right, prepared, join.input_name, index=join.occurrence))
+            right = prepared
+        else:
+            lines = []
         right = f'{right}.alias("{join.right_alias}")'
         if join.dedupe is not None:
             right = self._dedupe(join, right=right)
@@ -1633,7 +1649,6 @@ class RenderPySparkStep:
             right = f"F.broadcast({right})"
         predicate = self._predicate(step, join)
         right_name = f"{join.right_alias}_joined"
-        lines = []
         row_id = None
         if join.as_of is not None:
             row_id = f"__structure_{join.left_alias}_{join.right_alias}_row"
@@ -1654,6 +1669,12 @@ class RenderPySparkStep:
         if join.as_of is not None:
             lines.extend(self._as_of(join, step=step, target=target, row_id=cast(str, row_id)))
         return lines
+
+    def _streaming_guard(self, step: PySparkStepRecipe | PySparkOutputRecipe, *, sources: dict[str, str]) -> list[str]:
+        frame_names = dict.fromkeys((step.source, *getattr(step, "input_sources", ())))
+        frames = [sources.get(source, source.removeprefix("input:")) for source in frame_names]
+        expression = " or ".join(f"{frame}.isStreaming" for frame in frames)
+        return [f"        __structure_streaming_step = {expression or 'False'}"]
 
     def _predicate(self, step: PySparkStepRecipe | PySparkOutputRecipe, join: PySparkJoinRecipe) -> str:
         aliases = self._scope_aliases(step, join)

@@ -6,7 +6,7 @@ from examples.search.schemas.evaluation.params import EvaluationParams
 from examples.search.schemas.search import DocumentSearchResult, SearchQuery
 from examples.search.transforms.evaluation.search_docs.ranking.eval_ranking import EvaluateDocumentRanking as Super
 from structure import input, step
-from structure.plugin.pyspark import cross_join, group_by, inner_join, where
+from structure.plugin.pyspark import cross_join, group_by, inner_join, param_join, where
 
 
 class EvaluateDocumentRanking(Super):
@@ -25,7 +25,7 @@ class EvaluateDocumentRanking(Super):
         """Select the already materialized policy for one requested band."""
 
         cross_join(batch, allow_cartesian=True)
-        cross_join(params, allow_cartesian=True)
+        param_join(params)
         inner_join(on=result.search_query_id == query.id)
         where(params.matches_band(result.band_id), params.matches_queryset(query))
         group_by(

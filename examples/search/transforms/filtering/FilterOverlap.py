@@ -5,7 +5,7 @@ from examples.search.schemas.indexing.lexical.index import DocumentTerm
 from examples.search.schemas.scoring.intermediate import QueryTerm, QueryToken
 from examples.search.schemas.search import ScorePolicy, SearchQuery
 from structure import Transform, input, lane, output, step
-from structure.plugin.pyspark import count_distinct, cross_join, group_by, inner_join, row_number, types, where
+from structure.plugin.pyspark import count_distinct, group_by, inner_join, param_join, row_number, types, where
 from structure.plugin.pyspark.dsl.expressions import literal
 
 
@@ -52,5 +52,5 @@ class FilterOverlap(Transform):
     @step(input=[ranked_documents, score_policy], output=document_filter_scores)
     def publish_filter_scores(self, document: DocumentFilterMatch, policy: ScorePolicy) -> DocumentFilterScore:
         where(document.filter_rank <= self.maximum_candidates)
-        cross_join(policy, allow_cartesian=True)
+        param_join(policy)
         return DocumentFilterScore.project(document)(scored_at=policy.scored_at)

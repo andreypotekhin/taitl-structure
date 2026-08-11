@@ -24,6 +24,7 @@ Most transformations start with the common rowset helpers: use `left_join(...)` 
 | Select one valid-time or nearest-time row | `temporal_one(...)` or `as_of_one(...)` |
 | Admit right-only rows | `right_join(...)` or `full_join(...)` |
 | Pair every row deliberately | `cross_join(..., allow_cartesian=True)` |
+| Join a parameter-style relation | `param_join(relation)` |
 
 ## Common rowset joins
 
@@ -116,11 +117,13 @@ rowset_join(
 | `right_join(on=...)` | Right-preserving join |
 | `full_join(on=...)` | Preserve both sides |
 | `cross_join(right, allow_cartesian=True)` | Explicit Cartesian product |
+| `param_join(right)` | Parameter-style Cartesian join with a batch-only singleton assertion |
 | `relation_alias(relation, name=...)` | Named self-join or repeated relation occurrence |
 
 Right and full joins can make left fields nullable; build the result with an explicit output Schema. A cross join must
-include `allow_cartesian=True` and does not accept `on=`. The alias must be a unique non-empty Python identifier within
-the step and does not execute or duplicate the relation.
+include `allow_cartesian=True` and does not accept `on=`. `param_join(right)` performs the singleton assertion only
+when the actual step is batch; use `cross_join(right, allow_cartesian=True)` when multiple rows are intentional. The
+alias must be a unique non-empty Python identifier within the step and does not execute or duplicate the relation.
 
 ```python
 class OrderWithCustomer(Schema):

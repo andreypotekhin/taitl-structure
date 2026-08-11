@@ -239,12 +239,12 @@ from examples.search.transforms.indexing import FieldIndex, Indexing
 from examples.search.transforms.labeling import CreateQueryLabels, Labeling, MergeQueryLabels
 from examples.search.transforms.relevance.BuildRelevanceSignals import BuildRelevanceSignals
 from examples.search.transforms.score import Scoring
-from examples.search.transforms.scoring.MergeOfflineQueries import MergeOfflineQueries
-from examples.search.transforms.scoring.OfflineScoring import OfflineScoring
-from examples.search.transforms.scoring.ScoreBm25 import ScoreBm25
-from examples.search.transforms.scoring.ScoreOverlap import ScoreOverlap
-from examples.search.transforms.scoring.SelectPopularQueries import SelectPopularQueries
-from examples.search.transforms.scoring.SelectRecentQueries import SelectRecentQueries
+from examples.search.transforms.scoring.lexical.MergeOfflineQueries import MergeOfflineQueries
+from examples.search.transforms.scoring.lexical.OfflineScoring import OfflineScoring
+from examples.search.transforms.scoring.lexical.ScoreBm25 import ScoreBm25
+from examples.search.transforms.scoring.lexical.ScoreOverlap import ScoreOverlap
+from examples.search.transforms.scoring.lexical.SelectPopularQueries import SelectPopularQueries
+from examples.search.transforms.scoring.lexical.SelectRecentQueries import SelectRecentQueries
 from examples.search.transforms.search import SearchDocuments, SearchPassages, SearchSentences
 from examples.search.transforms.searching.online.scoring import OnlineScoring
 from examples.search.transforms.searching.search_fields import SearchFields
@@ -588,13 +588,13 @@ TRANSFORMS = (
         CreateSimilarityQueries,
         "examples.search.transforms.similarities.CreateSimilarityQueries.CreateSimilarityQueries",
     ),
-    (ScoreOverlap, "examples.search.transforms.scoring.ScoreOverlap.ScoreOverlap"),
-    (ScoreBm25, "examples.search.transforms.scoring.ScoreBm25.ScoreBm25"),
-    (Scoring, "examples.search.transforms.scoring.Scoring.Scoring"),
-    (OfflineScoring, "examples.search.transforms.scoring.OfflineScoring.OfflineScoring"),
-    (MergeOfflineQueries, "examples.search.transforms.scoring.MergeOfflineQueries.MergeOfflineQueries"),
-    (SelectPopularQueries, "examples.search.transforms.scoring.SelectPopularQueries.SelectPopularQueries"),
-    (SelectRecentQueries, "examples.search.transforms.scoring.SelectRecentQueries.SelectRecentQueries"),
+    (ScoreOverlap, "examples.search.transforms.scoring.lexical.ScoreOverlap.ScoreOverlap"),
+    (ScoreBm25, "examples.search.transforms.scoring.lexical.ScoreBm25.ScoreBm25"),
+    (Scoring, "examples.search.transforms.scoring.lexical.Scoring.Scoring"),
+    (OfflineScoring, "examples.search.transforms.scoring.lexical.OfflineScoring.OfflineScoring"),
+    (MergeOfflineQueries, "examples.search.transforms.scoring.lexical.MergeOfflineQueries.MergeOfflineQueries"),
+    (SelectPopularQueries, "examples.search.transforms.scoring.lexical.SelectPopularQueries.SelectPopularQueries"),
+    (SelectRecentQueries, "examples.search.transforms.scoring.lexical.SelectRecentQueries.SelectRecentQueries"),
     (OnlineScoring, "examples.search.transforms.searching.online.scoring.OnlineScoring.OnlineScoring"),
     (
         Scoring001AdjustBm,
@@ -1149,6 +1149,20 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             query=documents.where("id = 'd-1'"),
             documents=documents,
             document_similarities=generated_similarities.document_similarities,
+        )
+        vector_schemas = __import__(
+            f"{PACKAGE}.pyspark.schemas.indexing.vector", fromlist=["VECTOR_INDEX_POLICY_SCHEMA"]
+        )
+        vector_policy = spark.createDataFrame(
+            [("lexical-only", 1, "fixture", "lexical-only", 10, 60)],
+            vector_schemas.VECTOR_INDEX_POLICY_SCHEMA,
+        )
+        empty_document_vectors = spark.createDataFrame(
+            [], vector_schemas.DOCUMENT_VECTOR_CANDIDATE_SCHEMA
+        )
+        similar_document_inputs.update(
+            document_vector_candidates=empty_document_vectors,
+            vector_policy=vector_policy,
         )
         online_similar_documents = (
             SearchSimilarity(

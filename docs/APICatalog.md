@@ -86,7 +86,7 @@ window helpers, and selected array/map higher-order functions.
 | Using-key joins | implemented | `join(on="key")`, `on=["k1", "k2"]` | Symbolic `on=` remains preferred | [Joins API](api/Joins.api.md) |
 | Full join diagnostics hardening | implemented | `how="full"` | Nullable sides are named clearly | [Joins API](api/Joins.api.md) |
 | Right join diagnostics hardening | implemented | `how="right"` | Rowset API exists; projection rules stay explicit | [Joins API](api/Joins.api.md) |
-| Cross join safety | implemented | `crossJoin`, `how="cross"` | Requires `allow_cartesian=True` | [Joins API](api/Joins.api.md) |
+| Cross join safety | implemented | `crossJoin`, `how="cross"` | Requires `allow_cartesian=True`; `param_join(...)` is the parameter shortcut with a batch-only singleton assertion | [Joins API](api/Joins.api.md) |
 | Join strategy directives | implemented | `broadcast`, `merge`, shuffle hints | Capability-checked PySpark hints | [Joins API](api/Joins.api.md) |
 | Join reordering | design-gated | Cost-based join planning | No public `join_order(...)` in the current profile; logical reordering needs dependency-safe predicate analysis and explainable selected order | [API Catalog Design Gates](dev/design/ApiCatalogDesignGates.design.md) |
 | Backward/forward as-of joins | implemented | Directional as-of matching | Selects the latest previous or earliest following qualifying right row | [Joins API](api/Joins.api.md) |

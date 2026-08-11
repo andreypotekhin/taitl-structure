@@ -64,9 +64,20 @@ class EvaluateDocumentRankingGenerated:
 
         # Step method: select_queries
         evaluated_queries = queries.alias("search_query")
+        __structure_streaming_step = queries.isStreaming or batch.isStreaming or params.isStreaming
         batch_joined = batch.alias("batch")
         evaluated_queries = evaluated_queries.crossJoin(batch_joined)
-        params_2_joined = params.alias("params_2")
+        params_2_param_joined = params
+        if not __structure_streaming_step:
+            params_2_param_joined_count = params.agg(F.count(F.lit(1)).alias("__structure_count"))
+            params_2_param_joined_count = params_2_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(params) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            params_2_param_joined = params_2_param_joined_count.crossJoin(params).drop("__structure_exactly_one")
+        params_2_joined = params_2_param_joined.alias("params_2")
         evaluated_queries = evaluated_queries.crossJoin(params_2_joined)
         evaluated_queries = evaluated_queries.where(
             (

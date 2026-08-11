@@ -71,9 +71,26 @@ class EvaluateDocSearchBehaviorGenerated:
 
         # Step method: select_requests
         selected_requests = requests.alias("search_request")
+        __structure_streaming_step = (
+            requests.isStreaming
+            or queries.isStreaming
+            or band_memberships.isStreaming
+            or batch.isStreaming
+            or params.isStreaming
+        )
         batch_joined = batch.alias("batch")
         selected_requests = selected_requests.crossJoin(batch_joined)
-        params_2_joined = params.alias("params_2")
+        params_2_param_joined = params
+        if not __structure_streaming_step:
+            params_2_param_joined_count = params.agg(F.count(F.lit(1)).alias("__structure_count"))
+            params_2_param_joined_count = params_2_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(params) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            params_2_param_joined = params_2_param_joined_count.crossJoin(params).drop("__structure_exactly_one")
+        params_2_joined = params_2_param_joined.alias("params_2")
         selected_requests = selected_requests.crossJoin(params_2_joined)
         queries_3_joined = queries.alias("queries_3")
         selected_requests = selected_requests.join(

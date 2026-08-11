@@ -55,7 +55,7 @@ def test_search_scoring_subpackage_transform_is_discovered_and_compiled() -> Non
     scoring = next(
         transform
         for transform in project.transforms
-        if transform.__module__ == "examples.search.transforms.scoring.Scoring" and transform.__name__ == "Scoring"
+        if transform.__module__ == "examples.search.transforms.scoring.lexical.Scoring" and transform.__name__ == "Scoring"
     )
 
     Compiler.frontend.compile()(scoring, config=config, materialize_schemas=False)
@@ -65,8 +65,8 @@ def test_search_documents_keeps_design_gated_streaming_lineage_explicit() -> Non
     """Search preserves streaming declarations while unsupported state keeps delivery batch-only."""
 
     from examples.search.transforms.filtering import Filtering
-    from examples.search.transforms.scoring.ScoreBase import ScoreBase
-    from examples.search.transforms.scoring.Scoring import Scoring
+    from examples.search.transforms.scoring.lexical.ScoreBase import ScoreBase
+    from examples.search.transforms.scoring.lexical.Scoring import Scoring
     from examples.search.transforms.searching.online.filtering import OnlineFiltering
     from examples.search.transforms.searching.online.filtering import SelectGapQueries as SelectFilterGaps
     from examples.search.transforms.searching.online.scoring import OnlineScoring, SelectGapQueries
@@ -318,7 +318,7 @@ def test_search_experiments_replace_production_stages() -> None:
         Searching001AdjustRerankDocuments,
         Searching001AdjustRerankSearchDocuments,
     )
-    from examples.search.transforms.scoring.Scoring import Scoring
+    from examples.search.transforms.scoring.lexical.Scoring import Scoring
 
     scoring = cast(TransformPlan, Compiler.frontend.compile()(Scoring001AdjustBm, materialize_schemas=False).analysis)
     searching = cast(

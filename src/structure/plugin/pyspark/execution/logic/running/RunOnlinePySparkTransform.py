@@ -220,6 +220,7 @@ class RunOnlinePySparkTransform:
         return df
 
     def _operations(self, step: PySparkStepRecipe | PySparkOutputRecipe, df, *, frames, functions, window, types):
+        streaming_step = self._is_streaming_step(step, frames)
         if not step.operations:
             for join in step.joins:
                 df = self._join(
@@ -230,6 +231,7 @@ class RunOnlinePySparkTransform:
                     functions=functions,
                     window=window,
                     watermarks=(),
+                    streaming_step=streaming_step,
                 )
             for filter in step.filters:
                 df = df.where(
@@ -251,6 +253,7 @@ class RunOnlinePySparkTransform:
                     functions=functions,
                     window=window,
                     watermarks=self._right_watermarks(step, operation.join),
+                    streaming_step=streaming_step,
                 )
                 joined_scopes.add(operation.join.input_name)
             if operation.kind == "filter" and operation.filter is not None:
@@ -405,6 +408,11 @@ class RunOnlinePySparkTransform:
                 if operation.watermark.scope == getattr(step, "source_scope", ""):
                     df = self._watermark(operation.watermark, df)
         return df
+
+    @staticmethod
+    def _is_streaming_step(step: PySparkStepRecipe | PySparkOutputRecipe, frames) -> bool:
+        sources = (step.source, *getattr(step, "input_sources", ()))
+        return any(bool(getattr(frames[source], "isStreaming", False)) for source in sources if source in frames)
 
     def _watermark(self, watermark: PySparkWatermarkRecipe, frame):
         return frame.withWatermark(watermark.column, watermark.delay)
@@ -1534,12 +1542,15 @@ class RunOnlinePySparkTransform:
         functions,
         window,
         watermarks: tuple[PySparkWatermarkRecipe, ...],
+        streaming_step: bool,
     ):
         row_id = None
         if join.as_of is not None:
             row_id = f"__structure_{join.left_alias}_{join.right_alias}_row"
             df = df.withColumn(row_id, functions.monotonically_increasing_id())
         right = frames[join.source]
+        if join.assert_singleton_in_batch and not streaming_step:
+            right = self._exactly_one(right, join.input_name, functions=functions)
         for watermark in watermarks:
             right = self._watermark(watermark, right)
         if join.strategy is not None:

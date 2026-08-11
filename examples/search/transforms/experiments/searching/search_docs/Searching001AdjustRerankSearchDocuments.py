@@ -11,7 +11,7 @@ from examples.search.transforms.searching.search_docs.obtain import RetrieveDocu
 from examples.search.transforms.searching.search_docs.rerank import RerankDocuments
 from examples.search.transforms.searching.search_docs.SearchDocuments import SearchDocuments
 from structure import output, step
-from structure.plugin.pyspark import coalesce, cross_join, left_join, where
+from structure.plugin.pyspark import coalesce, left_join, param_join, where
 
 
 class Searching001AdjustRerankDocuments(RerankDocuments):
@@ -50,7 +50,7 @@ class Searching001AdjustRerankDocuments(RerankDocuments):
             & (popularity.candidate_rank == candidate.candidate_rank)
             & (popularity.document_id == candidate.document_id),
         )
-        policy = cross_join(policy, allow_cartesian=True)
+        policy = param_join(policy)
         return DocumentSearchCandidate.project(candidate)(
             experiment_id="Searching001AdjustRerankSearchDocuments",
             score_feedback=0.9 * coalesce(query.query_feedback, 0.0)

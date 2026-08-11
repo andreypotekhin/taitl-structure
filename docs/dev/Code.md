@@ -245,3 +245,4 @@ Note: we are currently switching from CamelCase to underscored_lower in example 
 - Prefer single line for the calls can fit onto one line 
   - but keep complex declarations such as join, group_by, where, window, return constructors expanded
 - Only have __all__ exports in __init__.py, not in individual .py modules
+- Place reusable/general purpose static private methods to utility/helper classes. Prefer type hints.

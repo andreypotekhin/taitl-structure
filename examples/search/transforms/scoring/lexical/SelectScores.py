@@ -15,8 +15,8 @@ from examples.search.schemas.scoring.overlap import (
 from examples.search.schemas.search import DocumentScore, ParagraphScore, ScorePolicy, SectionScore, SentenceScore
 from structure import Transform, input, output, parameter, step
 from structure.plugin.pyspark import (
-    cross_join,
     inner_join,
+    param_join,
     rows_between,
     unbounded_following,
     unbounded_preceding,
@@ -49,7 +49,7 @@ class SelectScores(Transform):
         self, overlap: DocumentOverlapScore, bm25: DocumentBm25Score, policy: ScorePolicy
     ) -> DocumentScore:
         inner_join(on=(bm25.document_id == overlap.document_id) & (bm25.query_id == overlap.query_id))
-        cross_join(policy, allow_cartesian=True)
+        param_join(policy)
         maximum = window_max(
             bm25.score_bm25,
             over=window(
@@ -68,7 +68,7 @@ class SelectScores(Transform):
     @step(input=[section_overlap_scores, section_bm25_scores, score_policy], output=section_scores)
     def score_sections(self, overlap: SectionOverlapScore, bm25: SectionBm25Score, policy: ScorePolicy) -> SectionScore:
         inner_join(on=(bm25.section_id == overlap.section_id) & (bm25.query_id == overlap.query_id))
-        cross_join(policy, allow_cartesian=True)
+        param_join(policy)
         maximum = window_max(
             bm25.score_bm25,
             over=window(
@@ -89,7 +89,7 @@ class SelectScores(Transform):
         self, overlap: ParagraphOverlapScore, bm25: ParagraphBm25Score, policy: ScorePolicy
     ) -> ParagraphScore:
         inner_join(on=(bm25.paragraph_id == overlap.paragraph_id) & (bm25.query_id == overlap.query_id))
-        cross_join(policy, allow_cartesian=True)
+        param_join(policy)
         maximum = window_max(
             bm25.score_bm25,
             over=window(
@@ -110,7 +110,7 @@ class SelectScores(Transform):
         self, overlap: SentenceOverlapScore, bm25: SentenceBm25Score, policy: ScorePolicy
     ) -> SentenceScore:
         inner_join(on=(bm25.sentence_id == overlap.sentence_id) & (bm25.query_id == overlap.query_id))
-        cross_join(policy, allow_cartesian=True)
+        param_join(policy)
         maximum = window_max(
             bm25.score_bm25,
             over=window(

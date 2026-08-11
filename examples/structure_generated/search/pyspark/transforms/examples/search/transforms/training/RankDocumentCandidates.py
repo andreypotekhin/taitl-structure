@@ -45,6 +45,12 @@ class RankDocumentCandidatesGenerated:
 
         # Step method: rank
         ranked_candidates = candidates.alias("document_search_candidate")
+        __structure_streaming_step = (
+            candidates.isStreaming
+            or artifacts.isStreaming
+            or document_features.isStreaming
+            or query_features.isStreaming
+        )
         ranked_candidates_artifact_exactly_one_1_count = artifacts.agg(F.count(F.lit(1)).alias("__structure_count"))
         ranked_candidates_artifact_exactly_one_1_count = ranked_candidates_artifact_exactly_one_1_count.select(
             F.assert_true(
@@ -55,7 +61,21 @@ class RankDocumentCandidatesGenerated:
         ranked_candidates_artifact_exactly_one_1 = ranked_candidates_artifact_exactly_one_1_count.crossJoin(
             artifacts
         ).drop("__structure_exactly_one")
-        artifacts_joined = ranked_candidates_artifact_exactly_one_1.alias("artifacts")
+        artifacts_param_joined = ranked_candidates_artifact_exactly_one_1
+        if not __structure_streaming_step:
+            artifacts_param_joined_count = ranked_candidates_artifact_exactly_one_1.agg(
+                F.count(F.lit(1)).alias("__structure_count")
+            )
+            artifacts_param_joined_count = artifacts_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(artifact) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            artifacts_param_joined = artifacts_param_joined_count.crossJoin(
+                ranked_candidates_artifact_exactly_one_1
+            ).drop("__structure_exactly_one")
+        artifacts_joined = artifacts_param_joined.alias("artifacts")
         ranked_candidates = ranked_candidates.crossJoin(artifacts_joined)
         document_features_2_joined = document_features.alias("document_features_2")
         ranked_candidates = ranked_candidates.join(

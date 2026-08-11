@@ -30,9 +30,9 @@ from examples.search.schemas.search import (
     SectionScore,
     SentenceScore,
 )
-from examples.search.transforms.scoring.ScoreBm25 import ScoreBm25
-from examples.search.transforms.scoring.ScoreOverlap import ScoreOverlap
-from examples.search.transforms.scoring.SelectScores import SelectScores
+from examples.search.transforms.scoring.lexical.ScoreBm25 import ScoreBm25
+from examples.search.transforms.scoring.lexical.ScoreOverlap import ScoreOverlap
+from examples.search.transforms.scoring.lexical.SelectScores import SelectScores
 from structure import Transform, input, output, parameter
 
 

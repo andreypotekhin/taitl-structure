@@ -66,6 +66,8 @@ Rules:
 - `on` is required for every value except `"cross"`.
 - `on` is forbidden for `"cross"`.
 - `allow_cartesian=True` is required for `"cross"`.
+- `param_join(relation)` is a shortcut for an explicitly acknowledged cross join used for parameter-style relations;
+  it asserts singleton cardinality for batch steps and skips that assertion for streaming steps.
 - `strategy` is optional and follows Sprint 09 join strategy directive rules.
 - The return value is the joined right relation scope. The established no-assignment style is allowed when relation
   inference is unambiguous.
@@ -78,6 +80,7 @@ inner_join(on=customer.id == order.customer_id)
 right_join(on=customer.id == order.customer_id)
 full_join(on=customer.id == order.customer_id)
 cross_join(calendar_day, allow_cartesian=True)
+param_join(policy)
 ```
 
 Example:

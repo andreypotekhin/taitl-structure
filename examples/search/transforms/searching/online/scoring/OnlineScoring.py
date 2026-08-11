@@ -25,7 +25,7 @@ from examples.search.schemas.search import (
     SectionScore,
     SentenceScore,
 )
-from examples.search.transforms.scoring.Scoring import Scoring
+from examples.search.transforms.scoring.lexical.Scoring import Scoring
 from examples.search.transforms.searching.online.scoring.SelectGapQueries import SelectGapQueries
 from structure import Transform, input, output
 

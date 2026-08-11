@@ -7,7 +7,7 @@ from examples.search.schemas.evaluation.params import EvaluationParams
 from examples.search.schemas.search import SearchQuery
 from examples.search.transforms.evaluation.search_docs.behavior.eval_behavior import EvaluateDocSearchBehavior as Super
 from structure import input, step
-from structure.plugin.pyspark import cross_join, inner_join, where
+from structure.plugin.pyspark import cross_join, inner_join, param_join, where
 
 
 class EvaluateDocSearchBehavior(Super):
@@ -21,7 +21,7 @@ class EvaluateDocSearchBehavior(Super):
         self, request: SearchRequest, query: SearchQuery, batch: EvaluationBatch, params: EvaluationParams
     ) -> BehaviorRequest:
         cross_join(batch, allow_cartesian=True)
-        cross_join(params, allow_cartesian=True)
+        param_join(params)
         inner_join(on=query.id == request.query_id)
         where(
             params.matches_query(query),

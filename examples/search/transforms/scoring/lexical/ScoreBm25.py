@@ -17,7 +17,7 @@ from examples.search.schemas.scoring.bm25 import (
     SentenceBm25Score,
 )
 from examples.search.schemas.scoring.intermediate import QueryTerm
-from examples.search.transforms.scoring.ScoreBase import ScoreBase
+from examples.search.transforms.scoring.lexical.ScoreBase import ScoreBase
 from structure import input, output, parameter, step
 from structure.plugin.pyspark import cross_join, group_by, inner_join, log
 from structure.plugin.pyspark import sum as sum_

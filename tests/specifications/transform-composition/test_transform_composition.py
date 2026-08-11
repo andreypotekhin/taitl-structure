@@ -1346,7 +1346,7 @@ def test_inherited_lane_remains_available_to_override() -> None:
 
 def test_search_scoring_uses_stage_composition() -> None:
     from examples.search.transforms.score import EnrichWithScores
-    from examples.search.transforms.scoring.pipeline import Scoring
+    from examples.search.transforms.scoring.lexical.pipeline import Scoring
 
     for transform in (Scoring, EnrichWithScores):
         plan = _analysis(transform)

@@ -18,8 +18,8 @@ from examples.search.schemas.similarity import (
     SentenceSimilarity,
     SimilarityPolicy,
 )
-from examples.search.transforms.scoring.ScoreBm25 import ScoreBm25
-from examples.search.transforms.scoring.ScoreOverlap import ScoreOverlap
+from examples.search.transforms.scoring.lexical.ScoreBm25 import ScoreBm25
+from examples.search.transforms.scoring.lexical.ScoreOverlap import ScoreOverlap
 from examples.search.transforms.similarities.CreateSimilarityQueries import CreateSimilarityQueries
 from examples.search.transforms.similarities.ReduceSimilarityScores import ReduceSimilarityScores
 from structure import Transform, input, output

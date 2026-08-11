@@ -26,3 +26,4 @@ class PySparkJoinRecipe:
     dedupe: PySparkJoinDedupeRecipe | None = None
     temporal: PySparkJoinTemporalRecipe | None = None
     as_of: PySparkJoinAsOfRecipe | None = None
+    assert_singleton_in_batch: bool = False

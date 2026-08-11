@@ -35,11 +35,11 @@ RETIRED_TRANSFORMS = {
         "SecurityInventoryQuality",
     ),
     "search.score-overlap.score_overlap": (
-        "examples.search.transforms.scoring.ScoreOverlap",
+        "examples.search.transforms.scoring.lexical.ScoreOverlap",
         "ScoreOverlap",
     ),
     "search.score-bm25.score_bm25": (
-        "examples.search.transforms.scoring.ScoreBm25",
+        "examples.search.transforms.scoring.lexical.ScoreBm25",
         "ScoreBm25",
     ),
     "search.index.build": (
@@ -150,7 +150,7 @@ def test_search_cohort_band_matcher_prerequisites_are_typed() -> None:
 
 
 def test_search_bm25_scoring_is_typed_and_has_no_opaque_hook_boundary() -> None:
-    plan, traceability = _lowered("examples.search.transforms.scoring.ScoreBm25", "ScoreBm25")
+    plan, traceability = _lowered("examples.search.transforms.scoring.lexical.ScoreBm25", "ScoreBm25")
     scoring_steps = [
         _step(plan, "score_document_bm25"),
         _step(plan, "score_section_bm25"),
@@ -192,7 +192,6 @@ def test_search_similarity_query_construction_is_typed_and_has_no_opaque_hook_bo
     assert [_step(plan, "validate_policy").operations[0].kind] == ["require_all"]
     for step in build_steps:
         assert [operation.kind for operation in step.operations] == [
-            "exactly_one",
             "join",
             "join",
             "filter",

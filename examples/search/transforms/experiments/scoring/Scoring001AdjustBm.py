@@ -1,7 +1,7 @@
 """Experiment scoring001: slightly stronger BM25 term-frequency saturation."""
 
-from examples.search.transforms.scoring.ScoreBm25 import ScoreBm25
-from examples.search.transforms.scoring.Scoring import Scoring
+from examples.search.transforms.scoring.lexical.ScoreBm25 import ScoreBm25
+from examples.search.transforms.scoring.lexical.Scoring import Scoring
 
 
 class Scoring001AdjustBm(Scoring):

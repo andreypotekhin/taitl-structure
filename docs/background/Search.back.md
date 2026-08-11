@@ -258,6 +258,24 @@ The reranker uses `0.8 * query-document feedback + 0.2 * document popularity fee
 combines normalized lexical score and feedback with the caller's relevance-policy weights. A candidate outside the
 retrieved 1,000 cannot be promoted by feedback; a candidate inside that set can move into the returned top 100.
 
+### Field-Aware Document Search
+
+`SearchFields` is the independent entry point for queries that combine metadata constraints with body text. Explicit
+field prefixes address metadata, `meta:` searches the generated all-metadata field, and unprefixed text is ordinary
+body content. `content:` is an explicit spelling for that same body lane. A generated `meta` value preserves
+deterministic source-field order and inserts positional gaps, so metadata phrases cannot cross original field
+boundaries.
+
+When body text is present, `SearchFields` creates a child `SearchQuery` containing only the body content and delegates
+to a companion `SearchDocuments` funnel. For mixed `and` queries, field matches become
+`document_filter_targets(child_query_id, document_id)` and are applied before filter ranking and the 10,000-document
+cap. The companion reuses canonical scoring, retrieval, and feedback reranking, while canonical `SearchDocuments`
+remains field-unaware and unchanged for ordinary callers. The outer `FieldSearchResult` preserves the parent query ID
+and may carry the delegated `DocumentSearchResult` as nested evidence.
+
+Metadata-only queries remain in the positional field lane and do not invoke document search. A metadata/body `or`
+query is rejected because combining the two result populations requires an explicit ranking policy.
+
 ### Retrieval And Reranking Boundaries
 
 ```python

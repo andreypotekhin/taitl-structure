@@ -5,7 +5,7 @@ from examples.search.schemas.scoring.intermediate import ScoreQueryAvailability
 from examples.search.schemas.scoring.overlap import DocumentOverlapScore
 from examples.search.schemas.search import DocumentScore, ScorePolicy, SearchQuery
 from structure import Transform, input, lane, output, step
-from structure.plugin.pyspark import cross_join, datediff, drop_duplicates, inner_join, left_join, where
+from structure.plugin.pyspark import datediff, drop_duplicates, inner_join, left_join, param_join, where
 
 
 class SelectGapQueries(Transform):
@@ -26,7 +26,7 @@ class SelectGapQueries(Transform):
         self, score: DocumentScore, request: SearchRequest, policy: ScorePolicy
     ) -> ScoreQueryAvailability:
         inner_join(on=request.query_id == score.query_id)
-        cross_join(policy, allow_cartesian=True)
+        param_join(policy)
         where(self._is_fresh(score.scored_at, request.requested_at, policy.maximum_age_days, policy.effective_at))
         drop_duplicates(score.query_id)
         return ScoreQueryAvailability(query_id=score.query_id)
@@ -36,7 +36,7 @@ class SelectGapQueries(Transform):
         self, score: DocumentOverlapScore, request: SearchRequest, policy: ScorePolicy
     ) -> ScoreQueryAvailability:
         inner_join(on=request.query_id == score.query_id)
-        cross_join(policy, allow_cartesian=True)
+        param_join(policy)
         where(self._is_fresh(score.scored_at, request.requested_at, policy.maximum_age_days, policy.effective_at))
         drop_duplicates(score.query_id)
         return ScoreQueryAvailability(query_id=score.query_id)

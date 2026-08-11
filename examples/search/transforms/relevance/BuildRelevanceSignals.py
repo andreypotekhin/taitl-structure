@@ -12,13 +12,13 @@ from examples.search.schemas.user import BandFallback, BandMembership, UserBandM
 from structure import Transform, input, lane, output, step
 from structure.plugin.pyspark import (
     coalesce,
-    cross_join,
     datediff,
     exp,
     group_by,
     inner_join,
     left_join,
     log,
+    param_join,
     rows_between,
     sum,
     unbounded_following,
@@ -134,7 +134,7 @@ class BuildRelevanceSignals(Transform):
             & click.user_id.null_safe_eq(impression.user_id)
             & click.band_id.null_safe_eq(impression.band_id),
         )
-        policy = cross_join(policy, allow_cartesian=True)
+        policy = param_join(policy)
         clicks = coalesce(click.click_count, 0)
         clicked_impressions = coalesce(click.clicked_impression_count, 0)
         dwell_seconds = coalesce(click.dwell_seconds, 0.0)
@@ -181,7 +181,7 @@ class BuildRelevanceSignals(Transform):
             & click.user_id.null_safe_eq(impression.user_id)
             & click.band_id.null_safe_eq(impression.band_id),
         )
-        policy = cross_join(policy, allow_cartesian=True)
+        policy = param_join(policy)
         clicks = coalesce(click.click_count, 0)
         clicked_impressions = coalesce(click.clicked_impression_count, 0)
         dwell_seconds = coalesce(click.dwell_seconds, 0.0)
@@ -212,7 +212,7 @@ class BuildRelevanceSignals(Transform):
 
     @step(input=[query_signal_totals, policy], output=query_document_signals)
     def normalize_query(self, signal: QueryDocumentSignalTotals, policy: RelevancePolicy) -> QueryDocumentSignals:
-        policy = cross_join(policy, allow_cartesian=True)
+        policy = param_join(policy)
         dwell_score = log(1.0 + signal.ips_dwell_credit)
         maximum = window_max(
             dwell_score,
@@ -239,7 +239,7 @@ class BuildRelevanceSignals(Transform):
 
     @step(input=[popularity_totals, policy], output=document_popularity)
     def normalize_popularity(self, popularity: DocumentPopularityTotals, policy: RelevancePolicy) -> DocumentPopularity:
-        policy = cross_join(policy, allow_cartesian=True)
+        policy = param_join(policy)
         dwell_score = log(1.0 + popularity.ips_dwell_credit)
         maximum = window_max(
             dwell_score,

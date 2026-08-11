@@ -31,6 +31,8 @@ promise:
 - A row-admitting join can create rows without a current left row. `right_join(...)` and `full_join(...)` therefore
   require output construction that handles nullable sides explicitly.
 - A Cartesian join pairs every left row with every right row. `cross_join(...)` requires explicit acknowledgement.
+- `param_join(...)` is the parameter-style form for joining a relation through `cross_join(..., allow_cartesian=True)`;
+  it asserts singleton cardinality in batch execution and skips that assertion for streaming steps.
 
 Choose the narrowest operation that states the business intent, but use rowset joins when broad row cardinality is the
 intent. Structure never infers primary keys, uniqueness, business keys, or arbitrary row selection from schema fields.
@@ -84,6 +86,7 @@ inner_join(on=order.id == line.order_id)
 right_join(on=customer.id == reconciliation.customer_id)
 full_join(on=order.customer_id == customer.id)
 cross_join(calendar_day, allow_cartesian=True)
+param_join(policy)
 ```
 
 The helpers may receive an explicit relation as their first positional argument. The no-assignment style is valid when

@@ -1,22 +1,23 @@
 # Search Similarity Presentation
 
 
-`SearchSimilarity` presents same-grain corpus-neighbor relations as caller-friendly lookup results. It does not create
-an embedding service or impose product filters on the corpus.
+`SearchSimilarity` presents same-grain corpus-neighbor relations as caller-friendly lookup results. It adopts lexical
+and vector candidate lanes, fuses them with Reciprocal Rank Fusion (RRF), and reranks the fused candidates before
+joining corpus metadata. It does not create an embedding service or impose product filters on the corpus.
 
 
-The boundary accepts one source target, the corresponding corpus targets, and same-grain similarity pairs. It emits up
-to the configured result limit, preserving source identity and corpus metadata. Ranking follows the query-to-candidate
-directed BM25 direction, then overlap and stable target identifiers.
+The boundary accepts one source target, the corresponding corpus targets, lexical similarity pairs, ranked vector
+candidates, and the vector retrieval policy. It emits up to the configured result limit, preserving source identity and
+corpus metadata. Ranking follows RRF, then vector similarity, lexical evidence, and stable target identifiers.
 
 Document, section, paragraph, and sentence presentation remain grain-isolated. Title, source, language, and collection
 filters are caller decisions after similarity scoring.
 
 ## How it works
 
-Lexical similarity is the current portable baseline. BM25 remains directional and corpus-dependent, so the relation
-preserves inspectable source-to-candidate evidence rather than forcing one symmetric score. Vector similarity is an
-opt-in future lane that would fuse ranks with RRF rather than blend raw BM25 and cosine values.
+Lexical similarity remains the portable baseline. BM25 is directional and corpus-dependent, so the relation preserves
+inspectable source-to-candidate evidence rather than forcing one symmetric score. Vector candidates are an explicit
+lane; lexical-only callers supply an empty vector-candidate relation and a single RRF policy row.
 
 
 Same-grain relations are respected, self-pairs are absent, output limits are deterministic, and callers can inspect the

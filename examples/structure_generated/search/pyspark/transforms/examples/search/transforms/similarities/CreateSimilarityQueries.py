@@ -111,17 +111,22 @@ class CreateSimilarityQueriesGenerated:
 
         # Step method: build_document_queries
         document_query_text = document_terms.alias("document_term")
-        document_query_text_policy_exactly_one_1_count = valid_policy.agg(F.count(F.lit(1)).alias("__structure_count"))
-        document_query_text_policy_exactly_one_1_count = document_query_text_policy_exactly_one_1_count.select(
-            F.assert_true(
-                F.col("__structure_count") == F.lit(1),
-                'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-            ).alias("__structure_exactly_one")
+        __structure_streaming_step = (
+            document_terms.isStreaming or document_summary.isStreaming or valid_policy.isStreaming
         )
-        document_query_text_policy_exactly_one_1 = document_query_text_policy_exactly_one_1_count.crossJoin(
-            valid_policy
-        ).drop("__structure_exactly_one")
-        valid_policy_joined = document_query_text_policy_exactly_one_1.alias("valid_policy")
+        valid_policy_param_joined = valid_policy
+        if not __structure_streaming_step:
+            valid_policy_param_joined_count = valid_policy.agg(F.count(F.lit(1)).alias("__structure_count"))
+            valid_policy_param_joined_count = valid_policy_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            valid_policy_param_joined = valid_policy_param_joined_count.crossJoin(valid_policy).drop(
+                "__structure_exactly_one"
+            )
+        valid_policy_joined = valid_policy_param_joined.alias("valid_policy")
         document_query_text = document_query_text.crossJoin(valid_policy_joined)
         document_summary_2_joined = document_summary.alias("document_summary_2")
         document_query_text = document_query_text.crossJoin(document_summary_2_joined)
@@ -173,17 +178,22 @@ class CreateSimilarityQueriesGenerated:
 
         # Step method: build_section_queries
         section_query_text = section_terms.alias("section_term")
-        section_query_text_policy_exactly_one_1_count = valid_policy.agg(F.count(F.lit(1)).alias("__structure_count"))
-        section_query_text_policy_exactly_one_1_count = section_query_text_policy_exactly_one_1_count.select(
-            F.assert_true(
-                F.col("__structure_count") == F.lit(1),
-                'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-            ).alias("__structure_exactly_one")
+        __structure_streaming_step = (
+            section_terms.isStreaming or section_summary.isStreaming or valid_policy.isStreaming
         )
-        section_query_text_policy_exactly_one_1 = section_query_text_policy_exactly_one_1_count.crossJoin(
-            valid_policy
-        ).drop("__structure_exactly_one")
-        valid_policy_joined = section_query_text_policy_exactly_one_1.alias("valid_policy")
+        valid_policy_param_joined = valid_policy
+        if not __structure_streaming_step:
+            valid_policy_param_joined_count = valid_policy.agg(F.count(F.lit(1)).alias("__structure_count"))
+            valid_policy_param_joined_count = valid_policy_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            valid_policy_param_joined = valid_policy_param_joined_count.crossJoin(valid_policy).drop(
+                "__structure_exactly_one"
+            )
+        valid_policy_joined = valid_policy_param_joined.alias("valid_policy")
         section_query_text = section_query_text.crossJoin(valid_policy_joined)
         section_summary_2_joined = section_summary.alias("section_summary_2")
         section_query_text = section_query_text.crossJoin(section_summary_2_joined)
@@ -234,17 +244,22 @@ class CreateSimilarityQueriesGenerated:
 
         # Step method: build_paragraph_queries
         paragraph_query_text = paragraph_terms.alias("paragraph_term")
-        paragraph_query_text_policy_exactly_one_1_count = valid_policy.agg(F.count(F.lit(1)).alias("__structure_count"))
-        paragraph_query_text_policy_exactly_one_1_count = paragraph_query_text_policy_exactly_one_1_count.select(
-            F.assert_true(
-                F.col("__structure_count") == F.lit(1),
-                'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-            ).alias("__structure_exactly_one")
+        __structure_streaming_step = (
+            paragraph_terms.isStreaming or paragraph_summary.isStreaming or valid_policy.isStreaming
         )
-        paragraph_query_text_policy_exactly_one_1 = paragraph_query_text_policy_exactly_one_1_count.crossJoin(
-            valid_policy
-        ).drop("__structure_exactly_one")
-        valid_policy_joined = paragraph_query_text_policy_exactly_one_1.alias("valid_policy")
+        valid_policy_param_joined = valid_policy
+        if not __structure_streaming_step:
+            valid_policy_param_joined_count = valid_policy.agg(F.count(F.lit(1)).alias("__structure_count"))
+            valid_policy_param_joined_count = valid_policy_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            valid_policy_param_joined = valid_policy_param_joined_count.crossJoin(valid_policy).drop(
+                "__structure_exactly_one"
+            )
+        valid_policy_joined = valid_policy_param_joined.alias("valid_policy")
         paragraph_query_text = paragraph_query_text.crossJoin(valid_policy_joined)
         paragraph_summary_2_joined = paragraph_summary.alias("paragraph_summary_2")
         paragraph_query_text = paragraph_query_text.crossJoin(paragraph_summary_2_joined)
@@ -300,17 +315,22 @@ class CreateSimilarityQueriesGenerated:
 
         # Step method: build_sentence_queries
         sentence_query_text = sentence_terms.alias("sentence_term")
-        sentence_query_text_policy_exactly_one_1_count = valid_policy.agg(F.count(F.lit(1)).alias("__structure_count"))
-        sentence_query_text_policy_exactly_one_1_count = sentence_query_text_policy_exactly_one_1_count.select(
-            F.assert_true(
-                F.col("__structure_count") == F.lit(1),
-                'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-            ).alias("__structure_exactly_one")
+        __structure_streaming_step = (
+            sentence_terms.isStreaming or sentence_summary.isStreaming or valid_policy.isStreaming
         )
-        sentence_query_text_policy_exactly_one_1 = sentence_query_text_policy_exactly_one_1_count.crossJoin(
-            valid_policy
-        ).drop("__structure_exactly_one")
-        valid_policy_joined = sentence_query_text_policy_exactly_one_1.alias("valid_policy")
+        valid_policy_param_joined = valid_policy
+        if not __structure_streaming_step:
+            valid_policy_param_joined_count = valid_policy.agg(F.count(F.lit(1)).alias("__structure_count"))
+            valid_policy_param_joined_count = valid_policy_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            valid_policy_param_joined = valid_policy_param_joined_count.crossJoin(valid_policy).drop(
+                "__structure_exactly_one"
+            )
+        valid_policy_joined = valid_policy_param_joined.alias("valid_policy")
         sentence_query_text = sentence_query_text.crossJoin(valid_policy_joined)
         sentence_summary_2_joined = sentence_summary.alias("sentence_summary_2")
         sentence_query_text = sentence_query_text.crossJoin(sentence_summary_2_joined)

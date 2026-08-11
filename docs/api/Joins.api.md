@@ -28,6 +28,7 @@ and `e` denote a temporal predicate, event time, valid-from, and valid-to expres
 | `right_join(...)` | `join(..., how="right")` | `right_join(on=o.customer_id == c.id)` |
 | `full_join(...)` | `join(..., how="full")` | `full_join(on=o.customer_id == c.id)` |
 | `cross_join(...)` | `crossJoin` | `cross_join(calendar, allow_cartesian=True)` |
+| `param_join(...)` | `crossJoin` | `param_join(policy)` |
 | `relation_alias(...)` | DataFrame alias | `historical = relation_alias(customer, name="historical_customer")` |
 
 **Details And Differences**
@@ -35,7 +36,9 @@ and `e` denote a temporal predicate, event time, valid-from, and valid-to expres
 - `left_join(...)`, `inner_join(...)`, `right_join(...)`, `full_join(...)`, and `cross_join(...)` are shortcuts over
   `rowset_join(...)`.
 - Right and full joins can produce null left-side fields. Build their output with an explicit constructor or projection.
-- Cross joins require `allow_cartesian=True` and do not accept `on=`.
+- Cross joins require `allow_cartesian=True` and do not accept `on=`. `param_join(relation)` is the parameter-style
+  shortcut for `cross_join(relation, allow_cartesian=True)`; it asserts singleton cardinality for batch steps and
+  skips that assertion for streaming steps. Use `cross_join(...)` when multiple right-side rows are intentional.
 - Same-name key shorthand is supported: `left_join(on="customer_id")` and
   `inner_join(on=["tenant_id", "order_id"])`.
 - `relation_alias(...)` creates a named typed occurrence of the current rowset or an unjoined relation for a self join.

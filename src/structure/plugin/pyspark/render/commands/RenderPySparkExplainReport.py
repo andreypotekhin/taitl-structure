@@ -304,6 +304,8 @@ class RenderPySparkExplainReport:
         input_modes: dict[str, bool],
     ) -> str:
         parts = [f"{join.input_name} {join.method.value} {self._cardinality(join)}"]
+        if join.assert_singleton_in_batch:
+            parts.append("singleton=batch-only")
         if join.dedupe is not None:
             parts.append(f"dedupe={join.dedupe.direction}/{join.dedupe.ties.value}")
         if join.temporal is not None:

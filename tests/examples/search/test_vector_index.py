@@ -3,7 +3,17 @@ from examples.search.schemas.indexing.vector import (
     DocumentVectorIndexSummary,
     VectorIndexPolicy,
 )
-from examples.search.transforms.indexing.vector import ScoreVectors, VectorIndex
+from examples.search.transforms.indexing.vector import VectorIndex
+from examples.search.transforms.ranking.vector import RankVectors
+from examples.search.transforms.scoring.vector import ScoreVectors
+from examples.search.transforms.searching.search_similarity import (
+    AdoptLexicalParagraphs,
+    AdoptLexicalSimilarity,
+    AdoptVectorParagraphs,
+    AdoptVectorSimilarity,
+    FuseSimilarity,
+    RerankSimilarity,
+)
 from structure.core.compiler.api import Compiler
 
 
@@ -20,3 +30,10 @@ def test_vector_contract_declares_non_null_double_arrays_and_policy_fields() -> 
 def test_vector_index_and_scoring_transforms_compile() -> None:
     Compiler.frontend.compile()(VectorIndex, materialize_schemas=False)
     Compiler.frontend.compile()(ScoreVectors, materialize_schemas=False)
+    Compiler.frontend.compile()(RankVectors, materialize_schemas=False)
+    Compiler.frontend.compile()(FuseSimilarity, materialize_schemas=False)
+    Compiler.frontend.compile()(AdoptLexicalSimilarity, materialize_schemas=False)
+    Compiler.frontend.compile()(AdoptLexicalParagraphs, materialize_schemas=False)
+    Compiler.frontend.compile()(AdoptVectorSimilarity, materialize_schemas=False)
+    Compiler.frontend.compile()(AdoptVectorParagraphs, materialize_schemas=False)
+    Compiler.frontend.compile()(RerankSimilarity, materialize_schemas=False)

@@ -259,6 +259,7 @@ class BuildRelevanceSignalsGenerated:
 
         # Step method: summarize_query
         query_signal_totals = context_impressions.alias("context_daily_impressions")
+        __structure_streaming_step = context_impressions.isStreaming or context_clicks.isStreaming or policy.isStreaming
         context_clicks_joined = context_clicks.alias("context_clicks")
         query_signal_totals = query_signal_totals.join(
             context_clicks_joined,
@@ -289,7 +290,17 @@ class BuildRelevanceSignalsGenerated:
             ),
             "left",
         )
-        policy_2_joined = policy.alias("policy_2")
+        policy_2_param_joined = policy
+        if not __structure_streaming_step:
+            policy_2_param_joined_count = policy.agg(F.count(F.lit(1)).alias("__structure_count"))
+            policy_2_param_joined_count = policy_2_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            policy_2_param_joined = policy_2_param_joined_count.crossJoin(policy).drop("__structure_exactly_one")
+        policy_2_joined = policy_2_param_joined.alias("policy_2")
         query_signal_totals = query_signal_totals.crossJoin(policy_2_joined)
         query_signal_totals = (
             query_signal_totals.groupBy(
@@ -467,6 +478,7 @@ class BuildRelevanceSignalsGenerated:
 
         # Step method: summarize_popularity
         popularity_totals = context_impressions.alias("context_daily_impressions")
+        __structure_streaming_step = context_impressions.isStreaming or context_clicks.isStreaming or policy.isStreaming
         context_clicks_joined = context_clicks.alias("context_clicks")
         popularity_totals = popularity_totals.join(
             context_clicks_joined,
@@ -497,7 +509,17 @@ class BuildRelevanceSignalsGenerated:
             ),
             "left",
         )
-        policy_2_joined = policy.alias("policy_2")
+        policy_2_param_joined = policy
+        if not __structure_streaming_step:
+            policy_2_param_joined_count = policy.agg(F.count(F.lit(1)).alias("__structure_count"))
+            policy_2_param_joined_count = policy_2_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            policy_2_param_joined = policy_2_param_joined_count.crossJoin(policy).drop("__structure_exactly_one")
+        policy_2_joined = policy_2_param_joined.alias("policy_2")
         popularity_totals = popularity_totals.crossJoin(policy_2_joined)
         popularity_totals = (
             popularity_totals.groupBy(
@@ -673,7 +695,18 @@ class BuildRelevanceSignalsGenerated:
 
         # Step method: normalize_query
         query_document_signals = query_signal_totals.alias("query_document_signal_totals")
-        policy_joined = policy.alias("policy")
+        __structure_streaming_step = query_signal_totals.isStreaming or policy.isStreaming
+        policy_param_joined = policy
+        if not __structure_streaming_step:
+            policy_param_joined_count = policy.agg(F.count(F.lit(1)).alias("__structure_count"))
+            policy_param_joined_count = policy_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            policy_param_joined = policy_param_joined_count.crossJoin(policy).drop("__structure_exactly_one")
+        policy_joined = policy_param_joined.alias("policy")
         query_document_signals = query_document_signals.crossJoin(policy_joined)
         query_document_signals = query_document_signals.select(
             F.col("query_document_signal_totals.query"),
@@ -776,7 +809,18 @@ class BuildRelevanceSignalsGenerated:
 
         # Step method: normalize_popularity
         document_popularity = popularity_totals.alias("document_popularity_totals")
-        policy_joined = policy.alias("policy")
+        __structure_streaming_step = popularity_totals.isStreaming or policy.isStreaming
+        policy_param_joined = policy
+        if not __structure_streaming_step:
+            policy_param_joined_count = policy.agg(F.count(F.lit(1)).alias("__structure_count"))
+            policy_param_joined_count = policy_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            policy_param_joined = policy_param_joined_count.crossJoin(policy).drop("__structure_exactly_one")
+        policy_joined = policy_param_joined.alias("policy")
         document_popularity = document_popularity.crossJoin(policy_joined)
         document_popularity = document_popularity.select(
             F.col("document_popularity_totals.document_id"),

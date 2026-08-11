@@ -4,7 +4,7 @@ from examples.search.schemas.clicks import SearchRequest
 from examples.search.schemas.filtering import DocumentFilterScore
 from examples.search.schemas.search import DocumentSearchTarget, ScorePolicy
 from structure import Transform, input, lane, output, step
-from structure.plugin.pyspark import cross_join, datediff, drop_duplicates, inner_join, union_all, where
+from structure.plugin.pyspark import datediff, drop_duplicates, inner_join, param_join, union_all, where
 
 
 class SelectFilterTargets(Transform):
@@ -32,7 +32,7 @@ class SelectFilterTargets(Transform):
     ) -> DocumentFilterScore:
         candidate: DocumentFilterScore = union_all(online)
         inner_join(request, on=request.query_id == candidate.query_id)
-        cross_join(policy, allow_cartesian=True)
+        param_join(policy)
         age = datediff(request.requested_at, candidate.scored_at)
         where(
             (candidate.scored_at <= request.requested_at)

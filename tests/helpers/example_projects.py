@@ -796,6 +796,7 @@ def render_search_example() -> dict[str, str]:
             SentenceTermCount,
             TermText,
         )
+        from examples.search.schemas.indexing.vector import DocumentVectorCandidate, VectorIndexPolicy
         from examples.search.schemas.label import (
             Intent,
             IntentPattern,
@@ -870,6 +871,7 @@ def render_search_example() -> dict[str, str]:
             SentenceSimilarityPair,
             SentenceSimilarityQueryText,
         )
+        from examples.search.schemas.similarities.vector import DocumentFusedSimilarityCandidate
         from examples.search.schemas.similarity import (
             DocumentSimilarity,
             DocumentSimilarityQuery,
@@ -922,12 +924,12 @@ def render_search_example() -> dict[str, str]:
         from examples.search.transforms.labeling import CreateQueryLabels, Labeling, MergeQueryLabels
         from examples.search.transforms.relevance.BuildRelevanceSignals import BuildRelevanceSignals
         from examples.search.transforms.score import Scoring
-        from examples.search.transforms.scoring.MergeOfflineQueries import MergeOfflineQueries
-        from examples.search.transforms.scoring.OfflineScoring import OfflineScoring
-        from examples.search.transforms.scoring.ScoreBm25 import ScoreBm25
-        from examples.search.transforms.scoring.ScoreOverlap import ScoreOverlap
-        from examples.search.transforms.scoring.SelectPopularQueries import SelectPopularQueries
-        from examples.search.transforms.scoring.SelectRecentQueries import SelectRecentQueries
+        from examples.search.transforms.scoring.lexical.MergeOfflineQueries import MergeOfflineQueries
+        from examples.search.transforms.scoring.lexical.OfflineScoring import OfflineScoring
+        from examples.search.transforms.scoring.lexical.ScoreBm25 import ScoreBm25
+        from examples.search.transforms.scoring.lexical.ScoreOverlap import ScoreOverlap
+        from examples.search.transforms.scoring.lexical.SelectPopularQueries import SelectPopularQueries
+        from examples.search.transforms.scoring.lexical.SelectRecentQueries import SelectRecentQueries
         from examples.search.transforms.search import SearchDocuments, SearchFields, SearchSentences
         from examples.search.transforms.searching.online.scoring import OnlineScoring
         from examples.search.transforms.searching.search_similarity import SearchSimilarity
@@ -1164,6 +1166,8 @@ def render_search_example() -> dict[str, str]:
                 ParagraphSimilarity,
                 SentenceSimilarity,
             ],
+            "examples.search.schemas.indexing.vector": [DocumentVectorCandidate, VectorIndexPolicy],
+            "examples.search.schemas.similarities.vector": [DocumentFusedSimilarityCandidate],
             "examples.search.schemas.similarities.intermediate": [
                 DocumentSimilarityCandidate,
                 DocumentSimilarityPair,
@@ -1204,13 +1208,13 @@ def render_search_example() -> dict[str, str]:
                 CreateSimilarityQueries,
                 "examples.search.transforms.similarities.CreateSimilarityQueries.CreateSimilarityQueries",
             ),
-            (ScoreOverlap, "examples.search.transforms.scoring.ScoreOverlap.ScoreOverlap"),
-            (ScoreBm25, "examples.search.transforms.scoring.ScoreBm25.ScoreBm25"),
-            (Scoring, "examples.search.transforms.scoring.Scoring.Scoring"),
-            (OfflineScoring, "examples.search.transforms.scoring.OfflineScoring.OfflineScoring"),
-            (MergeOfflineQueries, "examples.search.transforms.scoring.MergeOfflineQueries.MergeOfflineQueries"),
-            (SelectPopularQueries, "examples.search.transforms.scoring.SelectPopularQueries.SelectPopularQueries"),
-            (SelectRecentQueries, "examples.search.transforms.scoring.SelectRecentQueries.SelectRecentQueries"),
+            (ScoreOverlap, "examples.search.transforms.scoring.lexical.ScoreOverlap.ScoreOverlap"),
+            (ScoreBm25, "examples.search.transforms.scoring.lexical.ScoreBm25.ScoreBm25"),
+            (Scoring, "examples.search.transforms.scoring.lexical.Scoring.Scoring"),
+            (OfflineScoring, "examples.search.transforms.scoring.lexical.OfflineScoring.OfflineScoring"),
+            (MergeOfflineQueries, "examples.search.transforms.scoring.lexical.MergeOfflineQueries.MergeOfflineQueries"),
+            (SelectPopularQueries, "examples.search.transforms.scoring.lexical.SelectPopularQueries.SelectPopularQueries"),
+            (SelectRecentQueries, "examples.search.transforms.scoring.lexical.SelectRecentQueries.SelectRecentQueries"),
             (OnlineScoring, "examples.search.transforms.searching.online.scoring.OnlineScoring.OnlineScoring"),
             (
                 Scoring001AdjustBm,

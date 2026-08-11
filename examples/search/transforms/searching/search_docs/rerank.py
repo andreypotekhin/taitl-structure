@@ -13,9 +13,9 @@ from examples.search.transforms.searching.search_docs.obtain import RetrieveDocu
 from structure import Transform, input, lane, output, step
 from structure.plugin.pyspark import (
     coalesce,
-    cross_join,
     inner_join,
     left_join,
+    param_join,
     row_number,
     rows_between,
     select_first_qualified,
@@ -55,7 +55,7 @@ class RerankDocuments(Transform):
     ) -> DocumentFeedbackOption:
         where(candidate.candidate_rank <= RetrieveDocuments.maximum_candidates, candidate.user_band_id.is_not_null())
         inner_join(fallback, on=fallback.user_band_id == candidate.user_band_id)
-        policy = cross_join(policy, allow_cartesian=True)
+        policy = param_join(policy)
         return DocumentFeedbackOption.project(candidate)(
             feedback_band_id=fallback.user_band_fallback_id,
             fallback_ordinal=fallback.ordinal,
@@ -67,7 +67,7 @@ class RerankDocuments(Transform):
         self, candidate: DocumentSearchCandidate, policy: RelevancePolicy
     ) -> DocumentFeedbackOption:
         where(candidate.candidate_rank <= RetrieveDocuments.maximum_candidates, candidate.user_band_id.is_null())
-        policy = cross_join(policy, allow_cartesian=True)
+        policy = param_join(policy)
         return DocumentFeedbackOption.project(candidate)(
             feedback_band_id=literal(None),
             fallback_ordinal=0,
@@ -165,7 +165,7 @@ class RerankDocuments(Transform):
             & (popularity.candidate_rank == candidate.candidate_rank)
             & (popularity.document_id == candidate.document_id),
         )
-        policy = cross_join(policy, allow_cartesian=True)
+        policy = param_join(policy)
         return DocumentSearchCandidate.project(candidate)(
             score_feedback=0.8 * coalesce(query.query_feedback, 0.0)
             + 0.2 * coalesce(popularity.popularity_feedback, 0.0),

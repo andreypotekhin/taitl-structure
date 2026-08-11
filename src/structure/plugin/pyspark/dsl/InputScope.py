@@ -285,6 +285,7 @@ def rowset_join(
     hint: JoinHint | str | None = None,
     strategy: JoinStrategy | str | None = None,
     allow_cartesian: bool = False,
+    _assert_singleton_in_batch: bool = False,
 ) -> Relation:
     """Join an explicitly passed rowset relation."""
     ...
@@ -300,6 +301,7 @@ def rowset_join(
     hint: JoinHint | str | None = None,
     strategy: JoinStrategy | str | None = None,
     allow_cartesian: bool = False,
+    _assert_singleton_in_batch: bool = False,
 ) -> InputScope:
     """Join an inferred or keyword-provided rowset relation."""
     ...
@@ -315,6 +317,7 @@ def rowset_join(
     hint: JoinHint | str | None = None,
     strategy: JoinStrategy | str | None = None,
     allow_cartesian: bool = False,
+    _assert_singleton_in_batch: bool = False,
 ) -> Relation | InputScope:
     """Add a general rowset join that may change row cardinality.
 
@@ -388,6 +391,7 @@ def rowset_join(
         hint=hint,
         strategy=strategy,
         method=JoinMethod.ROWSET,
+        assert_singleton_in_batch=_assert_singleton_in_batch,
     )
     _record_scoped_join(context, relation, join)
     return relation
@@ -552,14 +556,51 @@ def cross_join(
     Example:
         joined = cross_join(calendar, allow_cartesian=True)
     """
+    return _cross_join(
+        relation,
+        right=right,
+        allow_cartesian=allow_cartesian,
+        strategy=strategy,
+        assert_singleton_in_batch=False,
+    )
+
+
+def _cross_join(
+    relation: Relation | None = None,
+    *,
+    right: Relation | None = None,
+    allow_cartesian: bool = False,
+    strategy: JoinStrategy | None = None,
+    assert_singleton_in_batch: bool,
+) -> Relation | InputScope:
     if relation is None:
-        return rowset_join(right=right, how=Join.CROSS, strategy=strategy, allow_cartesian=allow_cartesian)
+        return rowset_join(
+            right=right,
+            how=Join.CROSS,
+            strategy=strategy,
+            allow_cartesian=allow_cartesian,
+            _assert_singleton_in_batch=assert_singleton_in_batch,
+        )
     return rowset_join(
         relation,
         right=right,
         how=Join.CROSS,
         strategy=strategy,
         allow_cartesian=allow_cartesian,
+        _assert_singleton_in_batch=assert_singleton_in_batch,
+    )
+
+
+def param_join(relation: Relation) -> Relation:
+    """Join a parameter-style relation and assert it is singleton in batch.
+
+    The singleton assertion is skipped when the actual step is streaming. Use
+    ``cross_join(relation, allow_cartesian=True)`` when multiple parameter rows
+    are intentional.
+    """
+    return cast(
+        Relation,
+        _cross_join(relation, allow_cartesian=True, assert_singleton_in_batch=True),
     )
 
 

@@ -55,6 +55,23 @@ results = RerankDocuments(candidates=candidates, ...).results
 The sketch shows the semantic handoff, not a complete caller invocation. The full transform also carries query,
 request, policy, score, user-band, and feedback relations through those stages.
 
+## Field-search delegation
+
+Canonical `SearchDocuments` is field-unaware and keeps the ordinary cache-aware filtering contract. `SearchFields`
+delegates body text by creating a child `SearchQuery` and child request whose content contains only the body portion of
+the field-aware query. The child ID is distinct from the parent because its content and cache identity differ; published
+`FieldSearchResult` rows expose the parent ID and may contain the nested document result with its parent ID remapped.
+
+When metadata clauses are present, `SearchFields` also sends
+`document_filter_targets(query_id=delegated_child_id, document_id=...)` to a companion document-search funnel under
+`searching/search_fields`. The companion inherits the canonical stages and replaces filtering and target selection so
+that target-bearing queries are restricted before filter ranking and the 10,000-document cap. Ordinary direct
+`SearchDocuments` queries continue through the canonical path with no target relation.
+
+This separation keeps field syntax, metadata phrase matching, and parent/child publication at `SearchFields`, while
+keeping document scoring, retrieval, and feedback reranking reusable and field-unaware. Full-corpus score
+normalization and score-cache semantics are unchanged by delegation.
+
 The pipeline is batch-oriented in this example. Candidate identity, score version, query key, and effective
 snapshot travel through every stage. A candidate outside the admitted set cannot be introduced by feedback or
 reranking; a missing optional artifact selects the lexical baseline.
@@ -73,6 +90,7 @@ The decisions below keep this topic inspectable when an implementation or provid
 | Caps | Global cap; per-stage cap; caller-owned | Per-stage cap | Each boundary has a measurable contract. |
 | Feedback | Create; rerank; promote admitted | Promote within admitted pool | Cold-start rows remain eligible. |
 | Streaming | Claim streaming; reject requests; batch until proof | Batch-only boundary | Claim only proven state. |
+| Field delegation | Teach `SearchDocuments` field syntax; intersect after retrieval; target-aware companion | Target-aware companion | Metadata targets must constrain filter ranking before its cap while canonical document search remains reusable. |
 
 
 Failures must identify stage, query, candidate, cap, and snapshot. Useful examples cover empty history,

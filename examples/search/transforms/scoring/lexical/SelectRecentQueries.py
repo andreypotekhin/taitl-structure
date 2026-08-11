@@ -4,11 +4,11 @@ from examples.search.schemas.clicks import DailyImpressions
 from examples.search.schemas.search import ScorePolicy, SearchQuery
 from structure import Transform, input, output, parameter, step
 from structure.plugin.pyspark import (
-    cross_join,
     datediff,
     drop_duplicates,
     inner_join,
     lower,
+    param_join,
     regexp_replace,
     trim,
     where,
@@ -34,7 +34,7 @@ class SelectRecentQueries(Transform):
         impression_query = lower(regexp_replace(trim(impression.query), pattern=r"\s+", replacement=" "))
         query_text = lower(regexp_replace(trim(query.content), pattern=r"\s+", replacement=" "))
         inner_join(query, on=impression_query == query_text)
-        cross_join(policy, allow_cartesian=True)
+        param_join(policy)
         age = datediff(policy.scored_at, impression.window.end)
         where((age >= 0) & (age <= self.recent_days))
         drop_duplicates(query.id)

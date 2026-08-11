@@ -6,7 +6,7 @@ from examples.search.schemas.evaluation.params import EvaluationParams
 from examples.search.schemas.search import SearchQuery
 from examples.search.transforms.evaluation.search_docs.ranking.eval_ranking import EvaluateDocumentRanking as Super
 from structure import input, step
-from structure.plugin.pyspark import cross_join, where
+from structure.plugin.pyspark import cross_join, param_join, where
 
 
 class EvaluateDocumentRanking(Super):
@@ -19,7 +19,7 @@ class EvaluateDocumentRanking(Super):
         self, query: SearchQuery, batch: EvaluationBatch, params: EvaluationParams
     ) -> EvaluationQuery:
         cross_join(batch, allow_cartesian=True)
-        cross_join(params, allow_cartesian=True)
+        param_join(params)
         where(params.matches_query(query))
         return EvaluationQuery(
             window=batch.window,

@@ -560,8 +560,50 @@ def test_cross_join_renders_cross_join_call() -> None:
 
     assert recipe.joins[0].method is JoinMethod.ROWSET
     assert recipe.joins[0].how is Join.CROSS
+    assert recipe.joins[0].assert_singleton_in_batch is False
     assert ".crossJoin(products_joined)" in text
     assert '".cross"' not in text
+
+
+def test_param_join_records_a_batch_singleton_cross_join() -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(Order)
+        products = input(Product)
+        enriched = output(Enriched)
+
+        def add_product(self, order: Order, product: Product) -> Enriched:
+            param_join(product)
+            return Enriched(id=order.id, product_name=product.name)
+
+    recipe = _recipe(AddProduct).steps[0]
+
+    assert [operation.kind for operation in recipe.operations] == ["join"]
+    assert recipe.joins[0].how is Join.CROSS
+    assert recipe.joins[0].assert_singleton_in_batch is True
+
+
+def test_param_join_renders_runtime_batch_singleton_guard() -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(Order)
+        products = input(Product)
+        enriched = output(Enriched)
+
+        def add_product(self, order: Order, product: Product) -> Enriched:
+            param_join(product)
+            return Enriched(id=order.id, product_name=product.name)
+
+    text = PySpark.render.step()(
+        _recipe(AddProduct).steps[0],
+        current="orders",
+        sources={"orders": "orders", "products": "products"},
+    )
+
+    assert "__structure_streaming_step = orders.isStreaming or products.isStreaming" in text
+    assert "if not __structure_streaming_step:" in text
+    assert "F.assert_true(F.col(\"__structure_count\") == F.lit(1)" in text
+    assert text.index("if not __structure_streaming_step:") < text.index("orders = orders.crossJoin")
 
 
 def test_deduped_lookup_join_records_policy_and_renders_deterministic_lookup() -> None:

@@ -4,7 +4,7 @@ from examples.search.schemas.clicks import SearchRequest
 from examples.search.schemas.filtering import DocumentFilterScore, FilterQueryAvailability
 from examples.search.schemas.search import ScorePolicy, SearchQuery
 from structure import Transform, input, lane, output, step
-from structure.plugin.pyspark import cross_join, datediff, drop_duplicates, inner_join, left_join, where
+from structure.plugin.pyspark import datediff, drop_duplicates, inner_join, left_join, param_join, where
 
 
 class SelectGapQueries(Transform):
@@ -26,7 +26,7 @@ class SelectGapQueries(Transform):
         policy: ScorePolicy,
     ) -> FilterQueryAvailability:
         inner_join(request, on=request.query_id == score.query_id)
-        cross_join(policy, allow_cartesian=True)
+        param_join(policy)
         age = datediff(request.requested_at, score.scored_at)
         where(
             (score.scored_at <= request.requested_at)

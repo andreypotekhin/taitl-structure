@@ -33,9 +33,9 @@ from structure.plugin.pyspark import (
     collect_list,
     concat_ws,
     cross_join,
-    exactly_one,
     group_by,
     map_from_entries,
+    param_join,
     require_all,
     size,
     types,
@@ -217,8 +217,7 @@ class CreateSimilarityQueries(Transform):
         summary: DocumentIndexSummary | SectionIndexSummary | ParagraphIndexSummary | SentenceIndexSummary,
         term: DocumentTerm | SectionTerm | ParagraphTerm | SentenceTerm,
     ) -> None:
-        exactly_one(policy)
-        cross_join(policy, allow_cartesian=True)
+        param_join(policy)
         cross_join(summary, allow_cartesian=True)
         where(
             policy.max_document_frequency_ratio.is_null()
