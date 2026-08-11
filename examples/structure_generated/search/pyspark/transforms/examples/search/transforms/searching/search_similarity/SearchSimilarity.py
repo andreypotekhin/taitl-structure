@@ -13,17 +13,15 @@ from examples.structure_generated.search.runtime.schema_assert import (
     apply_plan_boundary,
     close_plan_boundaries,
 )
-from examples.structure_generated.search.pyspark.schemas.indexing_vector import (
-    DOCUMENT_VECTOR_CANDIDATE_SCHEMA,
-    VECTOR_INDEX_POLICY_SCHEMA,
-)
+from examples.structure_generated.search.pyspark.schemas.indexing_vector import DOCUMENT_VECTOR_CANDIDATE_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.similarities_vector import (
     DOCUMENT_FUSED_SIMILARITY_CANDIDATE_SCHEMA,
 )
 from examples.structure_generated.search.pyspark.schemas.similarity import (
     DOCUMENT_SIMILARITY_SCHEMA,
-    INDEXED_SIMILAR_DOCUMENT_SCHEMA,
+    HYBRID_INDEXED_SIMILAR_DOCUMENT_SCHEMA,
     SIMILARITY_DOCUMENT_QUERY_SCHEMA,
+    SIMILARITY_FUSION_POLICY_SCHEMA,
 )
 from examples.structure_generated.search.pyspark.schemas.text import DOCUMENT_SCHEMA
 
@@ -32,6 +30,28 @@ class AdoptLexicalSimilarityGenerated:
     def _step_lexical_adopt_documents_0(self, frames):
         # Step method: lexical.adopt_documents
         lexical__document_candidates = frames["document_similarities"].alias("document_similarity")
+        lexical__document_candidates_require_unique_0_duplicates = lexical__document_candidates.groupBy(
+            F.col("document_similarity.left_document_id"), F.col("document_similarity.right_document_id")
+        ).agg(F.count(F.lit(1)).alias("__structure_count"))
+        lexical__document_candidates_require_unique_0_duplicates = (
+            lexical__document_candidates_require_unique_0_duplicates.where(F.col("__structure_count") > F.lit(1))
+        )
+        lexical__document_candidates_require_unique_0_violations = (
+            lexical__document_candidates_require_unique_0_duplicates.agg(
+                F.count(F.lit(1)).alias("__structure_violations")
+            )
+        )
+        lexical__document_candidates_require_unique_0_assertion = (
+            lexical__document_candidates_require_unique_0_violations.select(
+                F.assert_true(
+                    F.col("__structure_violations") == F.lit(0),
+                    'REL-E0702: require_unique(...) found duplicate keys; see docs/Diagnostics.md#rel-e0702',
+                ).alias("__structure_require_unique")
+            )
+        )
+        lexical__document_candidates = lexical__document_candidates_require_unique_0_assertion.crossJoin(
+            lexical__document_candidates
+        ).drop("__structure_require_unique")
         lexical__document_candidates = lexical__document_candidates.select(
             F.col("document_similarity.left_document_id"),
             F.col("document_similarity.right_document_id"),
@@ -42,8 +62,12 @@ class AdoptLexicalSimilarityGenerated:
             F.col("document_similarity.bm25_right_to_left"),
             F.col("document_similarity.bm25_mean"),
             F.lit(None).cast(T.DoubleType()).alias("vector_similarity"),
-            (F.lit(1.0) / (F.lit(60) + F.col("document_similarity.rank"))).alias("rrf_score"),
-            F.lit(60).cast(T.LongType()).alias("rrf_k"),
+            F.lit(None).cast(T.StringType()).alias("vector_backend"),
+            F.lit(None).cast(T.StringType()).alias("vector_model_id"),
+            F.lit(None).cast(T.LongType()).alias("vector_dimension"),
+            F.lit(None).cast(T.StringType()).alias("vector_content_revision"),
+            F.lit(0.0).alias("rrf_score"),
+            F.lit(0).cast(T.LongType()).alias("rrf_k"),
             F.lit('').alias("experiment_id"),
         )
         assert_schema(
@@ -61,6 +85,28 @@ class AdoptVectorSimilarityGenerated:
     def _step_vector_adopt_documents_1(self, frames):
         # Step method: vector.adopt_documents
         vector__adopted_document_candidates = frames["document_vector_candidates"].alias("document_vector_candidate")
+        vector__adopted_document_candidates_require_unique_0_duplicates = vector__adopted_document_candidates.groupBy(
+            F.col("document_vector_candidate.query_document_id"), F.col("document_vector_candidate.document_id")
+        ).agg(F.count(F.lit(1)).alias("__structure_count"))
+        vector__adopted_document_candidates_require_unique_0_duplicates = (
+            vector__adopted_document_candidates_require_unique_0_duplicates.where(F.col("__structure_count") > F.lit(1))
+        )
+        vector__adopted_document_candidates_require_unique_0_violations = (
+            vector__adopted_document_candidates_require_unique_0_duplicates.agg(
+                F.count(F.lit(1)).alias("__structure_violations")
+            )
+        )
+        vector__adopted_document_candidates_require_unique_0_assertion = (
+            vector__adopted_document_candidates_require_unique_0_violations.select(
+                F.assert_true(
+                    F.col("__structure_violations") == F.lit(0),
+                    'REL-E0702: require_unique(...) found duplicate keys; see docs/Diagnostics.md#rel-e0702',
+                ).alias("__structure_require_unique")
+            )
+        )
+        vector__adopted_document_candidates = vector__adopted_document_candidates_require_unique_0_assertion.crossJoin(
+            vector__adopted_document_candidates
+        ).drop("__structure_require_unique")
         vector__adopted_document_candidates = vector__adopted_document_candidates.select(
             F.col("document_vector_candidate.query_document_id").alias("left_document_id"),
             F.col("document_vector_candidate.document_id").alias("right_document_id"),
@@ -71,6 +117,10 @@ class AdoptVectorSimilarityGenerated:
             F.lit(None).cast(T.DoubleType()).alias("bm25_right_to_left"),
             F.lit(None).cast(T.DoubleType()).alias("bm25_mean"),
             F.col("document_vector_candidate.cosine_similarity").alias("vector_similarity"),
+            F.col("document_vector_candidate.vector_backend"),
+            F.col("document_vector_candidate.model_id").alias("vector_model_id"),
+            F.col("document_vector_candidate.dimension").alias("vector_dimension"),
+            F.col("document_vector_candidate.content_revision").alias("vector_content_revision"),
             F.lit(0.0).alias("rrf_score"),
             F.lit(0).cast(T.LongType()).alias("rrf_k"),
             F.lit('').alias("experiment_id"),
@@ -87,7 +137,51 @@ class AdoptVectorSimilarityGenerated:
 
 
 class FuseSimilarityGenerated:
-    def _step_fused_merge_documents_2(self, frames):
+    def _step_fused_validate_policy_2(self, frames):
+        # Step method: fused.validate_policy
+        fused__valid_policy = frames["fusion_policy"].alias("similarity_fusion_policy")
+        fused__valid_policy_require_all_0_violations = fused__valid_policy.where(
+            ~F.coalesce(
+                (
+                    (
+                        (
+                            (F.col("similarity_fusion_policy.rrf_k") > F.lit(0))
+                            & (F.col("similarity_fusion_policy.maximum_lexical_candidates") > F.lit(0))
+                        )
+                        & (F.col("similarity_fusion_policy.maximum_vector_candidates") > F.lit(0))
+                    )
+                    & (F.col("similarity_fusion_policy.maximum_results") > F.lit(0))
+                ),
+                F.lit(False),
+            )
+        ).agg(F.count(F.lit(1)).alias("__structure_violations"))
+        fused__valid_policy_require_all_0_assertion = fused__valid_policy_require_all_0_violations.select(
+            F.assert_true(
+                F.col("__structure_violations") == F.lit(0),
+                (
+                    'REL-E0703: require_all(...) found rows that do not satisfy the predicate; see'
+                    'docs/Diagnostics.md#rel-e0703'
+                ),
+            ).alias("__structure_require_all")
+        )
+        fused__valid_policy = fused__valid_policy_require_all_0_assertion.crossJoin(fused__valid_policy).drop(
+            "__structure_require_all"
+        )
+        fused__valid_policy = fused__valid_policy.select(
+            F.col("similarity_fusion_policy.rrf_k"),
+            F.col("similarity_fusion_policy.maximum_lexical_candidates"),
+            F.col("similarity_fusion_policy.maximum_vector_candidates"),
+            F.col("similarity_fusion_policy.maximum_results"),
+            F.col("similarity_fusion_policy.experiment_id"),
+        )
+        assert_schema(
+            fused__valid_policy, SIMILARITY_FUSION_POLICY_SCHEMA, name="SimilarityFusionPolicy", mode="strict"
+        )
+        return {
+            "fused__valid_policy": fused__valid_policy,
+        }
+
+    def _step_fused_merge_documents_3(self, frames):
         # Step method: fused.merge_documents
         fused__merged_document_candidates = frames["lexical__document_candidates"].alias(
             "document_fused_similarity_candidate"
@@ -108,6 +202,10 @@ class FuseSimilarityGenerated:
             F.col("bm25_right_to_left"),
             F.col("bm25_mean"),
             F.col("vector_similarity"),
+            F.col("vector_backend"),
+            F.col("vector_model_id"),
+            F.col("vector_dimension"),
+            F.col("vector_content_revision"),
             F.col("rrf_score"),
             F.col("rrf_k"),
             F.col("experiment_id"),
@@ -122,34 +220,52 @@ class FuseSimilarityGenerated:
             "fused__merged_document_candidates": fused__merged_document_candidates,
         }
 
-    def _step_fused_fuse_documents_3(self, frames):
+    def _step_fused_fuse_documents_4(self, frames):
         # Step method: fused.fuse_documents
         fused__fused_document_candidates = frames["fused__merged_document_candidates"].alias(
             "document_fused_similarity_candidate"
         )
         __structure_streaming_step = (
-            frames["fused__merged_document_candidates"].isStreaming or frames["vector_policy"].isStreaming
+            frames["fused__merged_document_candidates"].isStreaming or frames["fused__valid_policy"].isStreaming
         )
-        vector_policy_param_joined = frames["vector_policy"]
-        if not __structure_streaming_step:
-            vector_policy_param_joined_count = frames["vector_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
-            vector_policy_param_joined_count = vector_policy_param_joined_count.select(
+        fused__fused_document_candidates_policy_exactly_one_1_count = frames["fused__valid_policy"].agg(
+            F.count(F.lit(1)).alias("__structure_count")
+        )
+        fused__fused_document_candidates_policy_exactly_one_1_count = (
+            fused__fused_document_candidates_policy_exactly_one_1_count.select(
                 F.assert_true(
                     F.col("__structure_count") == F.lit(1),
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            vector_policy_param_joined = vector_policy_param_joined_count.crossJoin(frames["vector_policy"]).drop(
+        )
+        fused__fused_document_candidates_policy_exactly_one_1 = (
+            fused__fused_document_candidates_policy_exactly_one_1_count.crossJoin(frames["fused__valid_policy"]).drop(
                 "__structure_exactly_one"
             )
-        vector_policy_joined = vector_policy_param_joined.alias("vector_policy")
-        fused__fused_document_candidates = fused__fused_document_candidates.crossJoin(vector_policy_joined)
+        )
+        fused__valid_policy_param_joined = fused__fused_document_candidates_policy_exactly_one_1
+        if not __structure_streaming_step:
+            fused__valid_policy_param_joined_count = fused__fused_document_candidates_policy_exactly_one_1.agg(
+                F.count(F.lit(1)).alias("__structure_count")
+            )
+            fused__valid_policy_param_joined_count = fused__valid_policy_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            fused__valid_policy_param_joined = fused__valid_policy_param_joined_count.crossJoin(
+                fused__fused_document_candidates_policy_exactly_one_1
+            ).drop("__structure_exactly_one")
+        fused__valid_policy_joined = fused__valid_policy_param_joined.alias("fused__valid_policy")
+        fused__fused_document_candidates = fused__fused_document_candidates.crossJoin(fused__valid_policy_joined)
         fused__fused_document_candidates = (
             fused__fused_document_candidates.groupBy(
                 F.col("document_fused_similarity_candidate.left_document_id").alias("left_document_id"),
                 F.col("document_fused_similarity_candidate.right_document_id").alias("right_document_id"),
-                F.col("vector_policy.rrf_k").alias("rrf_k"),
-                F.col("vector_policy.experiment_id").alias("experiment_id"),
+                F.col("fused__valid_policy.rrf_k").alias("rrf_k"),
+                F.col("fused__valid_policy.experiment_id").alias("experiment_id"),
             )
             .agg(
                 F.max(F.col("document_fused_similarity_candidate.lexical_rank"))
@@ -169,6 +285,18 @@ class FuseSimilarityGenerated:
                 F.max(F.col("document_fused_similarity_candidate.vector_similarity"))
                 .cast(T.DoubleType())
                 .alias("vector_similarity"),
+                F.max(F.col("document_fused_similarity_candidate.vector_backend"))
+                .cast(T.StringType())
+                .alias("vector_backend"),
+                F.max(F.col("document_fused_similarity_candidate.vector_model_id"))
+                .cast(T.StringType())
+                .alias("vector_model_id"),
+                F.max(F.col("document_fused_similarity_candidate.vector_dimension"))
+                .cast(T.LongType())
+                .alias("vector_dimension"),
+                F.max(F.col("document_fused_similarity_candidate.vector_content_revision"))
+                .cast(T.StringType())
+                .alias("vector_content_revision"),
                 F.max(F.col("document_fused_similarity_candidate.rrf_score")).cast(T.DoubleType()).alias("rrf_score"),
             )
             .select(
@@ -181,6 +309,10 @@ class FuseSimilarityGenerated:
                 F.col("bm25_right_to_left"),
                 F.col("bm25_mean"),
                 F.col("vector_similarity"),
+                F.col("vector_backend"),
+                F.col("vector_model_id"),
+                F.col("vector_dimension"),
+                F.col("vector_content_revision"),
                 F.col("rrf_score"),
                 F.col("rrf_k"),
                 F.col("experiment_id"),
@@ -196,28 +328,46 @@ class FuseSimilarityGenerated:
             "fused__fused_document_candidates": fused__fused_document_candidates,
         }
 
-    def _step_fused_score_documents_4(self, frames):
+    def _step_fused_score_documents_5(self, frames):
         # Step method: fused.score_documents
         fused__scored_document_candidates = frames["fused__fused_document_candidates"].alias(
             "document_fused_similarity_candidate"
         )
         __structure_streaming_step = (
-            frames["fused__fused_document_candidates"].isStreaming or frames["vector_policy"].isStreaming
+            frames["fused__fused_document_candidates"].isStreaming or frames["fused__valid_policy"].isStreaming
         )
-        vector_policy_param_joined = frames["vector_policy"]
-        if not __structure_streaming_step:
-            vector_policy_param_joined_count = frames["vector_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
-            vector_policy_param_joined_count = vector_policy_param_joined_count.select(
+        fused__scored_document_candidates_policy_exactly_one_1_count = frames["fused__valid_policy"].agg(
+            F.count(F.lit(1)).alias("__structure_count")
+        )
+        fused__scored_document_candidates_policy_exactly_one_1_count = (
+            fused__scored_document_candidates_policy_exactly_one_1_count.select(
                 F.assert_true(
                     F.col("__structure_count") == F.lit(1),
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            vector_policy_param_joined = vector_policy_param_joined_count.crossJoin(frames["vector_policy"]).drop(
+        )
+        fused__scored_document_candidates_policy_exactly_one_1 = (
+            fused__scored_document_candidates_policy_exactly_one_1_count.crossJoin(frames["fused__valid_policy"]).drop(
                 "__structure_exactly_one"
             )
-        vector_policy_joined = vector_policy_param_joined.alias("vector_policy")
-        fused__scored_document_candidates = fused__scored_document_candidates.crossJoin(vector_policy_joined)
+        )
+        fused__valid_policy_param_joined = fused__scored_document_candidates_policy_exactly_one_1
+        if not __structure_streaming_step:
+            fused__valid_policy_param_joined_count = fused__scored_document_candidates_policy_exactly_one_1.agg(
+                F.count(F.lit(1)).alias("__structure_count")
+            )
+            fused__valid_policy_param_joined_count = fused__valid_policy_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            fused__valid_policy_param_joined = fused__valid_policy_param_joined_count.crossJoin(
+                fused__scored_document_candidates_policy_exactly_one_1
+            ).drop("__structure_exactly_one")
+        fused__valid_policy_joined = fused__valid_policy_param_joined.alias("fused__valid_policy")
+        fused__scored_document_candidates = fused__scored_document_candidates.crossJoin(fused__valid_policy_joined)
         fused__scored_document_candidates = fused__scored_document_candidates.select(
             F.col("document_fused_similarity_candidate.left_document_id"),
             F.col("document_fused_similarity_candidate.right_document_id"),
@@ -228,13 +378,20 @@ class FuseSimilarityGenerated:
             F.col("document_fused_similarity_candidate.bm25_right_to_left"),
             F.col("document_fused_similarity_candidate.bm25_mean"),
             F.col("document_fused_similarity_candidate.vector_similarity"),
+            F.col("document_fused_similarity_candidate.vector_backend"),
+            F.col("document_fused_similarity_candidate.vector_model_id"),
+            F.col("document_fused_similarity_candidate.vector_dimension"),
+            F.col("document_fused_similarity_candidate.vector_content_revision"),
             (
                 F.coalesce(
                     F.when(
                         F.col("document_fused_similarity_candidate.lexical_rank").isNotNull(),
                         (
                             F.lit(1.0)
-                            / (F.col("vector_policy.rrf_k") + F.col("document_fused_similarity_candidate.lexical_rank"))
+                            / (
+                                F.col("fused__valid_policy.rrf_k")
+                                + F.col("document_fused_similarity_candidate.lexical_rank")
+                            )
                         ),
                     ).otherwise(F.lit(0.0)),
                     F.lit(0.0),
@@ -244,7 +401,10 @@ class FuseSimilarityGenerated:
                         F.col("document_fused_similarity_candidate.vector_rank").isNotNull(),
                         (
                             F.lit(1.0)
-                            / (F.col("vector_policy.rrf_k") + F.col("document_fused_similarity_candidate.vector_rank"))
+                            / (
+                                F.col("fused__valid_policy.rrf_k")
+                                + F.col("document_fused_similarity_candidate.vector_rank")
+                            )
                         ),
                     ).otherwise(F.lit(0.0)),
                     F.lit(0.0),
@@ -263,10 +423,65 @@ class FuseSimilarityGenerated:
             "fused__scored_document_candidates": fused__scored_document_candidates,
         }
 
-    def _step_fused_publish_documents_5(self, frames):
+    def _step_fused_publish_documents_6(self, frames):
         # Step method: fused.publish_documents
         fused__document_candidates = frames["fused__scored_document_candidates"].alias(
             "document_fused_similarity_candidate"
+        )
+        __structure_streaming_step = (
+            frames["fused__scored_document_candidates"].isStreaming or frames["fused__valid_policy"].isStreaming
+        )
+        fused__document_candidates_policy_exactly_one_1_count = frames["fused__valid_policy"].agg(
+            F.count(F.lit(1)).alias("__structure_count")
+        )
+        fused__document_candidates_policy_exactly_one_1_count = (
+            fused__document_candidates_policy_exactly_one_1_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+        )
+        fused__document_candidates_policy_exactly_one_1 = (
+            fused__document_candidates_policy_exactly_one_1_count.crossJoin(frames["fused__valid_policy"]).drop(
+                "__structure_exactly_one"
+            )
+        )
+        fused__valid_policy_param_joined = fused__document_candidates_policy_exactly_one_1
+        if not __structure_streaming_step:
+            fused__valid_policy_param_joined_count = fused__document_candidates_policy_exactly_one_1.agg(
+                F.count(F.lit(1)).alias("__structure_count")
+            )
+            fused__valid_policy_param_joined_count = fused__valid_policy_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            fused__valid_policy_param_joined = fused__valid_policy_param_joined_count.crossJoin(
+                fused__document_candidates_policy_exactly_one_1
+            ).drop("__structure_exactly_one")
+        fused__valid_policy_joined = fused__valid_policy_param_joined.alias("fused__valid_policy")
+        fused__document_candidates = fused__document_candidates.crossJoin(fused__valid_policy_joined)
+        fused__document_candidates = fused__document_candidates.where(
+            (
+                (
+                    F.col("document_fused_similarity_candidate.lexical_rank").isNull()
+                    | (
+                        F.col("document_fused_similarity_candidate.lexical_rank")
+                        <= F.col("fused__valid_policy.maximum_lexical_candidates")
+                    )
+                )
+            )
+            & (
+                (
+                    F.col("document_fused_similarity_candidate.vector_rank").isNull()
+                    | (
+                        F.col("document_fused_similarity_candidate.vector_rank")
+                        <= F.col("fused__valid_policy.maximum_vector_candidates")
+                    )
+                )
+            )
         )
         fused__document_candidates = fused__document_candidates.select(
             F.col("document_fused_similarity_candidate.left_document_id"),
@@ -278,6 +493,10 @@ class FuseSimilarityGenerated:
             F.col("document_fused_similarity_candidate.bm25_right_to_left"),
             F.col("document_fused_similarity_candidate.bm25_mean"),
             F.col("document_fused_similarity_candidate.vector_similarity"),
+            F.col("document_fused_similarity_candidate.vector_backend"),
+            F.col("document_fused_similarity_candidate.vector_model_id"),
+            F.col("document_fused_similarity_candidate.vector_dimension"),
+            F.col("document_fused_similarity_candidate.vector_content_revision"),
             F.col("document_fused_similarity_candidate.rrf_score"),
             F.col("document_fused_similarity_candidate.rrf_k"),
             F.col("document_fused_similarity_candidate.experiment_id"),
@@ -294,7 +513,7 @@ class FuseSimilarityGenerated:
 
 
 class RerankSimilarityGenerated:
-    def _step_reranked_rank_documents_6(self, frames):
+    def _step_reranked_rank_documents_7(self, frames):
         # Step method: reranked.rank_documents
         reranked__ranked_documents = frames["fused__document_candidates"].alias("document_fused_similarity_candidate")
         query_joined = frames["query"].alias("query")
@@ -329,6 +548,16 @@ class RerankSimilarityGenerated:
             F.col("documents_2.category_id"),
             F.col("documents_2.file_type"),
             F.col("documents_2.fields"),
+            F.col("document_fused_similarity_candidate.lexical_rank"),
+            F.col("document_fused_similarity_candidate.vector_rank"),
+            F.col("document_fused_similarity_candidate.vector_similarity"),
+            F.col("document_fused_similarity_candidate.rrf_k"),
+            F.col("document_fused_similarity_candidate.rrf_score"),
+            F.col("document_fused_similarity_candidate.vector_backend"),
+            F.col("document_fused_similarity_candidate.vector_model_id"),
+            F.col("document_fused_similarity_candidate.vector_dimension"),
+            F.col("document_fused_similarity_candidate.vector_content_revision"),
+            F.col("document_fused_similarity_candidate.experiment_id"),
             F.row_number()
             .over(
                 Window.partitionBy(F.col("document_fused_similarity_candidate.left_document_id")).orderBy(
@@ -342,39 +571,87 @@ class RerankSimilarityGenerated:
             .alias("rank"),
         )
         assert_schema(
-            reranked__ranked_documents, INDEXED_SIMILAR_DOCUMENT_SCHEMA, name="IndexedSimilarDocument", mode="strict"
+            reranked__ranked_documents,
+            HYBRID_INDEXED_SIMILAR_DOCUMENT_SCHEMA,
+            name="HybridIndexedSimilarDocument",
+            mode="strict",
         )
         return {
             "reranked__ranked_documents": reranked__ranked_documents,
         }
 
-    def _step_reranked_limit_documents_7(self, frames):
+    def _step_reranked_limit_documents_8(self, frames):
         # Step method: reranked.limit_documents
-        reranked__similar_documents = frames["reranked__ranked_documents"].alias("indexed_similar_document")
+        reranked__similar_documents = frames["reranked__ranked_documents"].alias("hybrid_indexed_similar_document")
+        __structure_streaming_step = (
+            frames["reranked__ranked_documents"].isStreaming or frames["fusion_policy"].isStreaming
+        )
+        reranked__similar_documents_policy_exactly_one_1_count = frames["fusion_policy"].agg(
+            F.count(F.lit(1)).alias("__structure_count")
+        )
+        reranked__similar_documents_policy_exactly_one_1_count = (
+            reranked__similar_documents_policy_exactly_one_1_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+        )
+        reranked__similar_documents_policy_exactly_one_1 = (
+            reranked__similar_documents_policy_exactly_one_1_count.crossJoin(frames["fusion_policy"]).drop(
+                "__structure_exactly_one"
+            )
+        )
+        fusion_policy_param_joined = reranked__similar_documents_policy_exactly_one_1
+        if not __structure_streaming_step:
+            fusion_policy_param_joined_count = reranked__similar_documents_policy_exactly_one_1.agg(
+                F.count(F.lit(1)).alias("__structure_count")
+            )
+            fusion_policy_param_joined_count = fusion_policy_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            fusion_policy_param_joined = fusion_policy_param_joined_count.crossJoin(
+                reranked__similar_documents_policy_exactly_one_1
+            ).drop("__structure_exactly_one")
+        fusion_policy_joined = fusion_policy_param_joined.alias("fusion_policy")
+        reranked__similar_documents = reranked__similar_documents.crossJoin(fusion_policy_joined)
         reranked__similar_documents = reranked__similar_documents.where(
-            ((F.col("indexed_similar_document.rank") <= F.lit(10)))
+            ((F.col("hybrid_indexed_similar_document.rank") <= F.col("fusion_policy.maximum_results")))
         )
         reranked__similar_documents = reranked__similar_documents.select(
-            F.col("indexed_similar_document.id"),
-            F.col("indexed_similar_document.collection_id"),
-            F.col("indexed_similar_document.source"),
-            F.col("indexed_similar_document.title"),
-            F.col("indexed_similar_document.url"),
-            F.col("indexed_similar_document.content"),
-            F.col("indexed_similar_document.content_type"),
-            F.col("indexed_similar_document.encoding"),
-            F.col("indexed_similar_document.language"),
-            F.col("indexed_similar_document.created_at"),
-            F.col("indexed_similar_document.published_at"),
-            F.col("indexed_similar_document.harvested_at"),
-            F.col("indexed_similar_document.search_query_id"),
-            F.col("indexed_similar_document.score_overlap"),
-            F.col("indexed_similar_document.score_bm25"),
-            F.col("indexed_similar_document.document_type"),
-            F.col("indexed_similar_document.category_id"),
-            F.col("indexed_similar_document.file_type"),
-            F.col("indexed_similar_document.fields"),
-            F.col("indexed_similar_document.rank"),
+            F.col("hybrid_indexed_similar_document.id"),
+            F.col("hybrid_indexed_similar_document.collection_id"),
+            F.col("hybrid_indexed_similar_document.source"),
+            F.col("hybrid_indexed_similar_document.title"),
+            F.col("hybrid_indexed_similar_document.url"),
+            F.col("hybrid_indexed_similar_document.content"),
+            F.col("hybrid_indexed_similar_document.content_type"),
+            F.col("hybrid_indexed_similar_document.encoding"),
+            F.col("hybrid_indexed_similar_document.language"),
+            F.col("hybrid_indexed_similar_document.created_at"),
+            F.col("hybrid_indexed_similar_document.published_at"),
+            F.col("hybrid_indexed_similar_document.harvested_at"),
+            F.col("hybrid_indexed_similar_document.search_query_id"),
+            F.col("hybrid_indexed_similar_document.score_overlap"),
+            F.col("hybrid_indexed_similar_document.score_bm25"),
+            F.col("hybrid_indexed_similar_document.document_type"),
+            F.col("hybrid_indexed_similar_document.category_id"),
+            F.col("hybrid_indexed_similar_document.file_type"),
+            F.col("hybrid_indexed_similar_document.fields"),
+            F.col("hybrid_indexed_similar_document.lexical_rank"),
+            F.col("hybrid_indexed_similar_document.vector_rank"),
+            F.col("hybrid_indexed_similar_document.vector_similarity"),
+            F.col("hybrid_indexed_similar_document.rrf_k"),
+            F.col("hybrid_indexed_similar_document.rrf_score"),
+            F.col("hybrid_indexed_similar_document.vector_backend"),
+            F.col("hybrid_indexed_similar_document.vector_model_id"),
+            F.col("hybrid_indexed_similar_document.vector_dimension"),
+            F.col("hybrid_indexed_similar_document.vector_content_revision"),
+            F.col("hybrid_indexed_similar_document.experiment_id"),
+            F.col("hybrid_indexed_similar_document.rank"),
         )
         return {
             "reranked__similar_documents": reranked__similar_documents,
@@ -397,7 +674,7 @@ class SearchSimilarityGenerated(
         *,
         document_similarities: DataFrame,
         document_vector_candidates: DataFrame,
-        vector_policy: DataFrame,
+        fusion_policy: DataFrame,
         query: DataFrame,
         documents: DataFrame,
     ) -> TransformResult:
@@ -405,40 +682,46 @@ class SearchSimilarityGenerated(
         assert_schema(
             document_vector_candidates, DOCUMENT_VECTOR_CANDIDATE_SCHEMA, name="DocumentVectorCandidate", mode="strict"
         )
-        assert_schema(vector_policy, VECTOR_INDEX_POLICY_SCHEMA, name="VectorIndexPolicy", mode="strict")
+        assert_schema(fusion_policy, SIMILARITY_FUSION_POLICY_SCHEMA, name="SimilarityFusionPolicy", mode="strict")
         assert_schema(query, SIMILARITY_DOCUMENT_QUERY_SCHEMA, name="SimilarityDocumentQuery", mode="strict")
         assert_schema(documents, DOCUMENT_SCHEMA, name="Document", mode="strict")
         _input_document_similarities = document_similarities
         _input_document_vector_candidates = document_vector_candidates
-        _input_vector_policy = vector_policy
+        _input_fusion_policy = fusion_policy
         _input_query = query
         _input_documents = documents
         frames = {
             "document_similarities": document_similarities,
             "document_vector_candidates": document_vector_candidates,
-            "vector_policy": vector_policy,
+            "fusion_policy": fusion_policy,
             "query": query,
             "documents": documents,
             "input:document_similarities": _input_document_similarities,
             "input:document_vector_candidates": _input_document_vector_candidates,
-            "input:vector_policy": _input_vector_policy,
+            "input:fusion_policy": _input_fusion_policy,
             "input:query": _input_query,
             "input:documents": _input_documents,
         }
         frames.update(self._step_lexical_adopt_documents_0(frames))
         frames.update(self._step_vector_adopt_documents_1(frames))
-        frames.update(self._step_fused_merge_documents_2(frames))
-        frames.update(self._step_fused_fuse_documents_3(frames))
-        frames.update(self._step_fused_score_documents_4(frames))
-        frames.update(self._step_fused_publish_documents_5(frames))
-        frames.update(self._step_reranked_rank_documents_6(frames))
-        frames.update(self._step_reranked_limit_documents_7(frames))
+        frames.update(self._step_fused_validate_policy_2(frames))
+        frames.update(self._step_fused_merge_documents_3(frames))
+        frames.update(self._step_fused_fuse_documents_4(frames))
+        frames.update(self._step_fused_score_documents_5(frames))
+        frames.update(self._step_fused_publish_documents_6(frames))
+        frames.update(self._step_reranked_rank_documents_7(frames))
+        frames.update(self._step_reranked_limit_documents_8(frames))
 
         # Step method: similar_documents
-        similar_documents = frames["reranked__similar_documents"].alias("indexed_similar_document")
-        assert_schema(similar_documents, INDEXED_SIMILAR_DOCUMENT_SCHEMA, name="IndexedSimilarDocument", mode="strict")
+        similar_documents = frames["reranked__similar_documents"].alias("hybrid_indexed_similar_document")
+        assert_schema(
+            similar_documents,
+            HYBRID_INDEXED_SIMILAR_DOCUMENT_SCHEMA,
+            name="HybridIndexedSimilarDocument",
+            mode="strict",
+        )
         return TransformResult(
             {"similar_documents": similar_documents},
             single=True,
-            schema={"similar_documents": INDEXED_SIMILAR_DOCUMENT_SCHEMA},
+            schema={"similar_documents": HYBRID_INDEXED_SIMILAR_DOCUMENT_SCHEMA},
         )

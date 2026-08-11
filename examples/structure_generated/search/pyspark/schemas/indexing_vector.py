@@ -4,7 +4,39 @@
 from pyspark.sql import types as T
 
 
+DOCUMENT_VECTOR_SCORE_SCHEMA = T.StructType([
+    T.StructField("query_id", T.StringType(), False),
+    T.StructField("query_document_id", T.StringType(), False),
+    T.StructField("document_id", T.StringType(), False),
+    T.StructField("cosine_similarity", T.DoubleType(), False),
+    T.StructField("model_id", T.StringType(), False),
+    T.StructField("dimension", T.LongType(), False),
+    T.StructField("content_revision", T.StringType(), False),
+    T.StructField("experiment_id", T.StringType(), False),
+    T.StructField("vector_backend", T.StringType(), False),
+])
+
 DOCUMENT_VECTOR_CANDIDATE_SCHEMA = T.StructType(DOCUMENT_VECTOR_SCORE_SCHEMA.fields + [
+    T.StructField("rank", T.LongType(), False),
+])
+
+PARAGRAPH_VECTOR_SCORE_SCHEMA = T.StructType([
+    T.StructField("query_id", T.StringType(), False),
+    T.StructField("query_document_id", T.StringType(), False),
+    T.StructField("query_section_id", T.StringType(), False),
+    T.StructField("query_paragraph_id", T.StringType(), False),
+    T.StructField("document_id", T.StringType(), False),
+    T.StructField("section_id", T.StringType(), False),
+    T.StructField("paragraph_id", T.StringType(), False),
+    T.StructField("cosine_similarity", T.DoubleType(), False),
+    T.StructField("model_id", T.StringType(), False),
+    T.StructField("dimension", T.LongType(), False),
+    T.StructField("content_revision", T.StringType(), False),
+    T.StructField("experiment_id", T.StringType(), False),
+    T.StructField("vector_backend", T.StringType(), False),
+])
+
+PARAGRAPH_VECTOR_CANDIDATE_SCHEMA = T.StructType(PARAGRAPH_VECTOR_SCORE_SCHEMA.fields + [
     T.StructField("rank", T.LongType(), False),
 ])
 

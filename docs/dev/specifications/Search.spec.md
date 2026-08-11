@@ -237,7 +237,10 @@ preserves both directed BM25 values, their mean, and overlap, and excludes self-
 corpus-dependent; its mean is an inspection value, not a probability. An optional maximum document-frequency ratio
 prunes common terms at each grain. Similarity does not impose hidden title, source, language, or collection filters.
 
-The current implementation is lexical-only. The adopted vector branch is described in the Future bifurcations section.
+The lexical similarity relations remain the portable baseline. `SearchSimilarity` and
+`SearchSimilarityParagraphs` additionally accept provider-neutral ranked vector candidates and combine the lanes with
+RRF. The bundled exact vector index is a reference producer; caller-owned ANN services may emit the same candidate
+contract. Document search remains on its separate lexical/feedback path.
 
 ## Cohorts, Labels, Experiments, and Training
 
@@ -336,22 +339,25 @@ operational ownership.
 
 ## Future Bifurcations
 
-These choices are recorded for future implementation but are not current Search behavior.
+Model execution and hosted ANN operation remain outside Search; the typed exact reference and candidate-fusion behavior
+are current similarity behavior.
 
 ### Vector index and Reciprocal Rank Fusion
 
-The adopted plan `P08052602.Search-vector-index-and-rrf.plan.md` proposes caller-supplied, validated document and
-paragraph embeddings with model ID, dimension, content revision, and experiment ID. It proposes
-cosine similarity, rejection of empty or zero-norm vectors, exact top-K retrieval, and separate similarity and document
-retrieval policies.
+The adopted plan `P08052602.Search-vector-index-and-rrf.plan.md` provides caller-supplied, validated document and
+paragraph embeddings with model ID, dimension, content revision, and experiment ID. It provides cosine similarity,
+rejection of empty or zero-norm vectors, exact top-K retrieval, and a separate `SimilarityFusionPolicy` for candidate
+windows and presentation. The follow-up plan `P08102602.Similarity-search-hybrid-and-ann-backends.plan.md` records the
+provider-neutral candidate boundary.
 
 Lexical and vector candidates would remain separate ranked lanes. Reciprocal Rank Fusion would contribute
 `1 / (rrf_k + rank)` for each available lane, with equal weights and `rrf_k = 60` by default. A candidate found in only
 one lane would remain eligible; a candidate found in both would retain both ranks and component scores. Fusion would
 occur before feedback reranking. Sections and sentences would remain lexical-only in the first slice.
 
-The source tree currently has no vector schema, index, scorer, or RRF implementation. Do not describe vector retrieval
-as available until the plan's generated/online parity, validation, and judged-evaluation evidence exists.
+The exact backend is an example/reference implementation, not a hosted ANN service. Callers can substitute HNSW or
+another ANN producer by emitting the same ranked candidate relation; model execution, persistence, refresh scheduling,
+and production ANN operations remain outside Structure.
 
 ### Structured Streaming document search
 

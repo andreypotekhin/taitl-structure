@@ -796,7 +796,13 @@ def render_search_example() -> dict[str, str]:
             SentenceTermCount,
             TermText,
         )
-        from examples.search.schemas.indexing.vector import DocumentVectorCandidate, VectorIndexPolicy
+        from examples.search.schemas.indexing.vector import (
+            DocumentVectorCandidate,
+            DocumentVectorScore,
+            ParagraphVectorCandidate,
+            ParagraphVectorScore,
+            VectorIndexPolicy,
+        )
         from examples.search.schemas.label import (
             Intent,
             IntentPattern,
@@ -871,10 +877,15 @@ def render_search_example() -> dict[str, str]:
             SentenceSimilarityPair,
             SentenceSimilarityQueryText,
         )
-        from examples.search.schemas.similarities.vector import DocumentFusedSimilarityCandidate
+        from examples.search.schemas.similarities.vector import (
+            DocumentFusedSimilarityCandidate,
+            ParagraphFusedSimilarityCandidate,
+        )
         from examples.search.schemas.similarity import (
             DocumentSimilarity,
             DocumentSimilarityQuery,
+            HybridIndexedSimilarDocument,
+            HybridIndexedSimilarParagraph,
             IndexedSimilarDocument,
             IndexedSimilarParagraph,
             IndexedSimilarSection,
@@ -886,6 +897,7 @@ def render_search_example() -> dict[str, str]:
             SentenceSimilarity,
             SentenceSimilarityQuery,
             SimilarityDocumentQuery,
+            SimilarityFusionPolicy,
             SimilarityParagraphQuery,
             SimilarityPolicy,
             SimilaritySectionQuery,
@@ -932,7 +944,7 @@ def render_search_example() -> dict[str, str]:
         from examples.search.transforms.scoring.lexical.SelectRecentQueries import SelectRecentQueries
         from examples.search.transforms.search import SearchDocuments, SearchFields, SearchSentences
         from examples.search.transforms.searching.online.scoring import OnlineScoring
-        from examples.search.transforms.searching.search_similarity import SearchSimilarity
+        from examples.search.transforms.searching.search_similarity import SearchSimilarity, SearchSimilarityParagraphs
         from examples.search.transforms.similarities.CreateSimilarityQueries import CreateSimilarityQueries
         from examples.search.transforms.similarities.ReduceSimilarityScores import ReduceSimilarityScores
         from examples.search.transforms.similarities.Similarities import Similarities
@@ -1149,6 +1161,7 @@ def render_search_example() -> dict[str, str]:
             ],
             "examples.search.schemas.similarity": [
                 SimilarityPolicy,
+                SimilarityFusionPolicy,
                 SimilarityDocumentQuery,
                 SimilaritySectionQuery,
                 SimilarityParagraphQuery,
@@ -1158,6 +1171,8 @@ def render_search_example() -> dict[str, str]:
                 ParagraphSimilarityQuery,
                 SentenceSimilarityQuery,
                 DocumentSimilarity,
+                HybridIndexedSimilarDocument,
+                HybridIndexedSimilarParagraph,
                 IndexedSimilarDocument,
                 IndexedSimilarSection,
                 IndexedSimilarParagraph,
@@ -1166,8 +1181,17 @@ def render_search_example() -> dict[str, str]:
                 ParagraphSimilarity,
                 SentenceSimilarity,
             ],
-            "examples.search.schemas.indexing.vector": [DocumentVectorCandidate, VectorIndexPolicy],
-            "examples.search.schemas.similarities.vector": [DocumentFusedSimilarityCandidate],
+            "examples.search.schemas.indexing.vector": [
+                DocumentVectorScore,
+                DocumentVectorCandidate,
+                ParagraphVectorScore,
+                ParagraphVectorCandidate,
+                VectorIndexPolicy,
+            ],
+            "examples.search.schemas.similarities.vector": [
+                DocumentFusedSimilarityCandidate,
+                ParagraphFusedSimilarityCandidate,
+            ],
             "examples.search.schemas.similarities.intermediate": [
                 DocumentSimilarityCandidate,
                 DocumentSimilarityPair,
@@ -1228,6 +1252,10 @@ def render_search_example() -> dict[str, str]:
             (
                 SearchSimilarity,
                 "examples.search.transforms.searching.search_similarity.SearchSimilarity.SearchSimilarity",
+            ),
+            (
+                SearchSimilarityParagraphs,
+                "examples.search.transforms.searching.search_similarity.SearchSimilarityParagraphs.SearchSimilarityParagraphs",
             ),
             (SimilarSections, "examples.search.transforms.similarities.SimilarSections.SimilarSections"),
             (SimilarParagraphs, "examples.search.transforms.similarities.SimilarParagraphs.SimilarParagraphs"),

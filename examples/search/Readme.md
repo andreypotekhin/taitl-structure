@@ -185,6 +185,7 @@ do not interpret either score as a calibrated relevance probability.
 1. Turn corpus vocabularies into similarity queries.
 2. Score queries with the shared lexical index.
 3. Reduce directed scores to one pair per target pair.
+4. Optionally adopt provider-produced vector candidates, fuse the lanes with RRF, and present inspectable hybrid rows.
 
 ### Build and score similarity queries
 
@@ -210,12 +211,16 @@ directional and corpus-dependent, so `bm25_mean` is a convenience for inspection
 at each grain. This controls common-token candidate growth without imposing a hidden threshold. The similarity family
 does not require title, source, language, or collection matches; callers apply those business filters after scoring.
 
-`Similarity` turns document-pair results into a query-document lookup. Supply a one-row `Document` DataFrame, the corpus
-`Document` rows, and `ReduceSimilarityScores.document_similarities`; it returns up to its fixed `maximum_results` (10 by
-default). Results rank by the query-to-candidate BM25 direction, then overlap and document id. Each `IndexedSimilarDocument`
-preserves corpus metadata and sets `search_query_id` to the query document id. `SimilarSections`, `SimilarParagraphs`, and
-`SimilarSentences` apply the same ranking rule to a one-row section, paragraph, or sentence and their corresponding
-same-grain similarity pairs.
+`SearchSimilarity` turns document-pair results into a hybrid query-document lookup. Supply the one-row query document,
+corpus `Document` rows, lexical similarity pairs, provider-neutral `DocumentVectorCandidate` rows, and one
+`SimilarityFusionPolicy`. The bundled exact vector path emits these candidates with `vector_backend="exact_reference"`;
+a caller-owned HNSW/ANN implementation can emit the same relation. The policy controls `rrf_k`, independent lexical and
+vector candidate windows, the final result limit, and experiment identity. A lexical-only regression run can pass an
+empty vector relation without a fabricated vector-index policy. Results preserve lexical/vector ranks, RRF score,
+vector provenance, lexical evidence, and corpus metadata in `HybridIndexedSimilarDocument`.
+
+`SearchSimilarityParagraphs` applies the same staged contract to document-local paragraphs. Sections and sentences remain
+on their existing lexical-only presentation paths in this example.
 
 ```python
 similarity_queries = CreateSimilarityQueries(

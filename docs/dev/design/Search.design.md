@@ -228,10 +228,12 @@ replacement for explicit judged evaluation.
 
 ## Similarity
 
-Similarity reuses the lexical index rather than a separate embedding system. It creates a query from each target's
-vocabulary, scores it at the same text grain, and reduces directed scores into bounded same-grain neighbors. The output
-keeps overlap, both BM25 directions, and their mean for inspection. BM25 remains directional and corpus-dependent;
-its mean is a convenience value, not a probability.
+Similarity reuses the lexical index for its portable baseline. It creates a query from each target's vocabulary, scores
+it at the same text grain, and reduces directed scores into bounded same-grain neighbors. `SearchSimilarity` can then
+adopt provider-neutral ranked vector candidates and fuse the lanes with RRF. The bundled exact vector index is a
+reference producer; callers may substitute an HNSW/ANN service that emits the same candidate contract. Hybrid results
+retain overlap, both BM25 directions, lexical/vector ranks, RRF score, vector similarity, and backend/model/revision
+provenance for inspection.
 
 Candidate pruning may exclude terms above a caller-provided maximum document-frequency ratio. Similarity does not apply
 hidden title, source, language, or collection filters. Callers add those product constraints after scoring.
@@ -313,7 +315,7 @@ narrowest corresponding raw boundary to steps.
 The following work is explicitly outside this design slice:
 
 - adaptive passage chunking and caller-configurable context radii;
-- embeddings, vector search, answer-model invocation, and cross-document answer-context assembly;
+- model invocation, hosted ANN operation, answer-model invocation, and cross-document answer-context assembly;
 - ERR, which the existing four-grade judgment contract can support later without migration;
 - Accuracy@N, because the proposed definition duplicates Precision@N;
 - experiment comparison and interleaving, which require experiment-arm and displayed-result-ownership facts;

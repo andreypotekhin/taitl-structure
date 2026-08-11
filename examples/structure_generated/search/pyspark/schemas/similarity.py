@@ -9,6 +9,14 @@ SIMILARITY_POLICY_SCHEMA = T.StructType([
     T.StructField("max_document_frequency_ratio", T.DoubleType(), True),
 ])
 
+SIMILARITY_FUSION_POLICY_SCHEMA = T.StructType([
+    T.StructField("rrf_k", T.LongType(), False),
+    T.StructField("maximum_lexical_candidates", T.LongType(), False),
+    T.StructField("maximum_vector_candidates", T.LongType(), False),
+    T.StructField("maximum_results", T.LongType(), False),
+    T.StructField("experiment_id", T.StringType(), False),
+])
+
 SIMILARITY_DOCUMENT_QUERY_SCHEMA = T.StructType(DOCUMENT_SCHEMA.fields)
 
 SIMILARITY_SECTION_QUERY_SCHEMA = T.StructType(SECTION_SCHEMA.fields + [
@@ -54,6 +62,36 @@ DOCUMENT_SIMILARITY_SCHEMA = T.StructType([
     T.StructField("bm25_left_to_right", T.DoubleType(), False),
     T.StructField("bm25_right_to_left", T.DoubleType(), False),
     T.StructField("bm25_mean", T.DoubleType(), False),
+])
+
+HYBRID_INDEXED_SIMILAR_DOCUMENT_SCHEMA = T.StructType(DOCUMENT_SCHEMA.fields + [
+    T.StructField("lexical_rank", T.LongType(), True),
+    T.StructField("vector_rank", T.LongType(), True),
+    T.StructField("vector_similarity", T.DoubleType(), True),
+    T.StructField("rrf_k", T.LongType(), False),
+    T.StructField("rrf_score", T.DoubleType(), False),
+    T.StructField("vector_backend", T.StringType(), True),
+    T.StructField("vector_model_id", T.StringType(), True),
+    T.StructField("vector_dimension", T.LongType(), True),
+    T.StructField("vector_content_revision", T.StringType(), True),
+    T.StructField("experiment_id", T.StringType(), False),
+    T.StructField("rank", T.LongType(), False),
+])
+
+HYBRID_INDEXED_SIMILAR_PARAGRAPH_SCHEMA = T.StructType(PARAGRAPH_SCHEMA.fields + [
+    T.StructField("lexical_rank", T.LongType(), True),
+    T.StructField("vector_rank", T.LongType(), True),
+    T.StructField("score_overlap", T.DoubleType(), True),
+    T.StructField("score_bm25", T.DoubleType(), True),
+    T.StructField("vector_similarity", T.DoubleType(), True),
+    T.StructField("rrf_k", T.LongType(), False),
+    T.StructField("rrf_score", T.DoubleType(), False),
+    T.StructField("vector_backend", T.StringType(), True),
+    T.StructField("vector_model_id", T.StringType(), True),
+    T.StructField("vector_dimension", T.LongType(), True),
+    T.StructField("vector_content_revision", T.StringType(), True),
+    T.StructField("experiment_id", T.StringType(), False),
+    T.StructField("rank", T.LongType(), False),
 ])
 
 INDEXED_SIMILAR_DOCUMENT_SCHEMA = T.StructType(DOCUMENT_SCHEMA.fields + [

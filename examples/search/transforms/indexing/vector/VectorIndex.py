@@ -11,7 +11,7 @@ from examples.search.schemas.indexing.vector import (
 )
 from examples.search.transforms.lib.Vectors import Vectors
 from structure import Transform, input, lane, output, step
-from structure.plugin.pyspark import count, group_by, param_join, require_all
+from structure.plugin.pyspark import count, group_by, param_join, require_all, require_unique
 
 
 class VectorIndex(Transform):
@@ -36,6 +36,7 @@ class VectorIndex(Transform):
         self, embedding: DocumentVectorEmbedding, policy: VectorIndexPolicy
     ) -> DocumentVectorIndex:
         param_join(policy)
+        require_unique(embedding.document_id)
         require_all(Vectors.valid_embedding(embedding, policy))
         return DocumentVectorIndex.project(embedding)
 
@@ -44,6 +45,7 @@ class VectorIndex(Transform):
         self, embedding: ParagraphVectorEmbedding, policy: VectorIndexPolicy
     ) -> ParagraphVectorIndex:
         param_join(policy)
+        require_unique(embedding.document_id, embedding.section_id, embedding.paragraph_id)
         require_all(Vectors.valid_embedding(embedding, policy))
         return ParagraphVectorIndex.project(embedding)
 

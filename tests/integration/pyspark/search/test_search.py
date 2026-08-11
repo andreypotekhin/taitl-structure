@@ -192,6 +192,7 @@ from examples.search.schemas.similarities.intermediate import (
 from examples.search.schemas.similarity import (
     DocumentSimilarity,
     DocumentSimilarityQuery,
+    HybridIndexedSimilarDocument,
     IndexedSimilarDocument,
     IndexedSimilarParagraph,
     IndexedSimilarSection,
@@ -203,6 +204,7 @@ from examples.search.schemas.similarity import (
     SentenceSimilarity,
     SentenceSimilarityQuery,
     SimilarityDocumentQuery,
+    SimilarityFusionPolicy,
     SimilarityParagraphQuery,
     SimilarityPolicy,
     SimilaritySectionQuery,
@@ -453,6 +455,7 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
     ],
     "examples.search.schemas.similarity": [
         SimilarityPolicy,
+        SimilarityFusionPolicy,
         SimilarityDocumentQuery,
         SimilaritySectionQuery,
         SimilarityParagraphQuery,
@@ -462,6 +465,7 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         ParagraphSimilarityQuery,
         SentenceSimilarityQuery,
         DocumentSimilarity,
+        HybridIndexedSimilarDocument,
         IndexedSimilarDocument,
         IndexedSimilarSection,
         IndexedSimilarParagraph,
@@ -1151,24 +1155,25 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             document_similarities=generated_similarities.document_similarities,
         )
         vector_schemas = __import__(
-            f"{PACKAGE}.pyspark.schemas.indexing.vector", fromlist=["VECTOR_INDEX_POLICY_SCHEMA"]
+            f"{PACKAGE}.pyspark.schemas.indexing.vector", fromlist=["DOCUMENT_VECTOR_CANDIDATE_SCHEMA"]
         )
-        vector_policy = spark.createDataFrame(
-            [("lexical-only", 1, "fixture", "lexical-only", 10, 60)],
-            vector_schemas.VECTOR_INDEX_POLICY_SCHEMA,
+        similarity_schemas = __import__(
+            f"{PACKAGE}.pyspark.schemas.similarity", fromlist=["SIMILARITY_FUSION_POLICY_SCHEMA"]
+        )
+        fusion_policy = spark.createDataFrame(
+            [(60, 10, 10, 10, "lexical-regression")],
+            similarity_schemas.SIMILARITY_FUSION_POLICY_SCHEMA,
         )
         empty_document_vectors = spark.createDataFrame(
             [], vector_schemas.DOCUMENT_VECTOR_CANDIDATE_SCHEMA
         )
         similar_document_inputs.update(
             document_vector_candidates=empty_document_vectors,
-            vector_policy=vector_policy,
+            fusion_policy=fusion_policy,
         )
         online_similar_documents = (
             SearchSimilarity(
-                query=similar_document_inputs["query"],
-                documents=documents,
-                document_similarities=online_similarities.document_similarities,
+                **{**similar_document_inputs, "document_similarities": online_similarities.document_similarities}
             )
             .run(session(spark, execution_mode="online"))
             .similar_documents
@@ -1182,6 +1187,30 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
         best_match = single(generated_similar_documents, lambda row: row["rank"] == 1)
         assert best_match["id"] == "d-2"
         assert best_match["search_query_id"] == "d-1"
+
+        ann_document_vectors = spark.createDataFrame(
+            [("ann:q-d-1", "d-1", "d-3", 0.99, "fixture-embed", 3, "rev-1", "ann-run", "hnsw", 1)],
+            vector_schemas.DOCUMENT_VECTOR_CANDIDATE_SCHEMA,
+        )
+        hybrid_inputs = {**similar_document_inputs, "document_vector_candidates": ann_document_vectors}
+        online_hybrid_documents = (
+            SearchSimilarity(
+                **{**hybrid_inputs, "document_similarities": online_similarities.document_similarities}
+            )
+            .run(session(spark, execution_mode="online"))
+            .similar_documents
+        )
+        generated_hybrid_documents = (
+            SearchSimilarity(**hybrid_inputs)
+            .run(session(spark, execution_mode="generated", generated_package=PACKAGE))
+            .similar_documents
+        )
+        assert rows(online_hybrid_documents, "rank", "id") == rows(generated_hybrid_documents, "rank", "id")
+        ann_match = single(generated_hybrid_documents, lambda row: row["id"] == "d-3")
+        assert ann_match["vector_backend"] == "hnsw"
+        assert ann_match["vector_rank"] == 1
+        assert ann_match["vector_similarity"] == pytest.approx(0.99)
+        assert ann_match["rrf_k"] == 60
 
         similar_sections = (
             SimilarSections(

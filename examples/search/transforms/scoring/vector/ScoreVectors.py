@@ -49,6 +49,7 @@ class ScoreVectors(Transform):
             dimension=policy.dimension,
             content_revision=policy.content_revision,
             experiment_id=policy.experiment_id,
+            vector_backend="exact_reference",
         )
 
     @step(input=[paragraph_queries, paragraph_index, valid_policy], output=paragraph_scores)
@@ -77,4 +78,5 @@ class ScoreVectors(Transform):
             dimension=policy.dimension,
             content_revision=policy.content_revision,
             experiment_id=policy.experiment_id,
+            vector_backend="exact_reference",
         )

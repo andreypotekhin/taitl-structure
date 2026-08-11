@@ -7,8 +7,9 @@ joining corpus metadata. It does not create an embedding service or impose produ
 
 
 The boundary accepts one source target, the corresponding corpus targets, lexical similarity pairs, ranked vector
-candidates, and the vector retrieval policy. It emits up to the configured result limit, preserving source identity and
-corpus metadata. Ranking follows RRF, then vector similarity, lexical evidence, and stable target identifiers.
+candidates, and a separate fusion policy. The vector candidate relation is provider-neutral: the bundled exact
+implementation is a reference producer, while a caller-owned HNSW/ANN service can emit the same contract. It emits up
+to the configured result limit, preserving source identity, corpus metadata, and ranking evidence.
 
 Document, section, paragraph, and sentence presentation remain grain-isolated. Title, source, language, and collection
 filters are caller decisions after similarity scoring.
@@ -17,7 +18,10 @@ filters are caller decisions after similarity scoring.
 
 Lexical similarity remains the portable baseline. BM25 is directional and corpus-dependent, so the relation preserves
 inspectable source-to-candidate evidence rather than forcing one symmetric score. Vector candidates are an explicit
-lane; lexical-only callers supply an empty vector-candidate relation and a single RRF policy row.
+lane; the normal invocation supplies candidates from an index provider, while the lexical regression path may pass an
+empty vector-candidate relation without inventing vector model or index identity. RRF uses `1 / (rrf_k + rank)` for each
+available lane, and the result retains lexical rank, vector rank, vector similarity, backend, model, dimension, and
+content-revision evidence.
 
 
 Same-grain relations are respected, self-pairs are absent, output limits are deterministic, and callers can inspect the
@@ -29,8 +33,8 @@ evidence that caused a neighbor to rank.
 | Source | A source target and its grain are explicit. |
 | Candidate | A neighbor has the same declared grain and compatible snapshot identity. |
 | Metadata | Document/section/paragraph/sentence parentage remains inspectable. |
-| Ordering | Similarity score is followed by canonical candidate identity. |
-| Limit | The limit applies per source and is deterministic under ties. |
+| Ordering | RRF, vector similarity, lexical evidence, and canonical candidate identity. |
+| Limit | Independent lexical/vector windows and a final per-source limit are explicit policy fields. |
 | Filters | Eligibility filters run before publication and do not erase evidence fields. |
 
 Similarity is directed at the evidence level: source A may retain a reason that is not identical to source B's

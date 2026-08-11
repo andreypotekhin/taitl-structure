@@ -37,10 +37,11 @@ deterministic rank tie-breakers, and must remain equivalent in online and genera
 grain, effective snapshot, null policy, and failure evidence are part of its contract even when the implementation
 provider changes.
 
-The current Search implementation is lexical. Vector retrieval and Reciprocal Rank Fusion remain architecture
-alternatives rather than available behavior because their additional index state and score calibration would change
-the evidence contract. SearchDocuments remains batch-only until bounded streaming state and append-only finalization
-are proven.
+The Search example has a lexical baseline and a bounded hybrid similarity path. `SearchSimilarity` consumes
+provider-neutral vector candidates, fuses them with lexical candidates using RRF, and retains lane evidence in its
+output. The bundled exact vector index is a transparent reference backend; caller-owned HNSW/ANN services can replace
+that producer at the candidate-relation boundary. SearchDocuments remains batch-only until bounded streaming state and
+append-only finalization are proven.
 
 ## Architecture map
 

@@ -11,6 +11,16 @@ class SimilarityPolicy(Schema):
     max_document_frequency_ratio = double(nullable=True)
 
 
+class SimilarityFusionPolicy(Schema):
+    """One policy row for lexical/vector candidate fusion and presentation."""
+
+    rrf_k = long(nullable=False)
+    maximum_lexical_candidates = long(nullable=False)
+    maximum_vector_candidates = long(nullable=False)
+    maximum_results = long(nullable=False)
+    experiment_id = string(nullable=False)
+
+
 class SimilarityDocumentQuery(Document):
     """One caller-supplied document whose corpus neighbours are requested."""
 
@@ -72,6 +82,22 @@ class IndexedSimilarDocument(Document):
     rank = long(nullable=False)
 
 
+class HybridIndexedSimilarDocument(Document):
+    """A document result with inspectable lexical/vector fusion evidence."""
+
+    lexical_rank = long(nullable=True)
+    vector_rank = long(nullable=True)
+    vector_similarity = double(nullable=True)
+    rrf_k = long(nullable=False)
+    rrf_score = double(nullable=False)
+    vector_backend = string(nullable=True)
+    vector_model_id = string(nullable=True)
+    vector_dimension = long(nullable=True)
+    vector_content_revision = string(nullable=True)
+    experiment_id = string(nullable=False)
+    rank = long(nullable=False)
+
+
 class IndexedSimilarSection(Section):
     """A corpus section ranked for one query section by directed BM25."""
 
@@ -87,6 +113,24 @@ class IndexedSimilarParagraph(Paragraph):
     search_query_id = string(nullable=True)
     score_overlap = double(nullable=True)
     score_bm25 = double(nullable=True)
+    rank = long(nullable=False)
+
+
+class HybridIndexedSimilarParagraph(Paragraph):
+    """A paragraph result with inspectable lexical/vector fusion evidence."""
+
+    lexical_rank = long(nullable=True)
+    vector_rank = long(nullable=True)
+    score_overlap = double(nullable=True)
+    score_bm25 = double(nullable=True)
+    vector_similarity = double(nullable=True)
+    rrf_k = long(nullable=False)
+    rrf_score = double(nullable=False)
+    vector_backend = string(nullable=True)
+    vector_model_id = string(nullable=True)
+    vector_dimension = long(nullable=True)
+    vector_content_revision = string(nullable=True)
+    experiment_id = string(nullable=False)
     rank = long(nullable=False)
 
 

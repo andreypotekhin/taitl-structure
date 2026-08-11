@@ -76,9 +76,12 @@ class DocumentVectorScore(Schema):
     dimension = long(nullable=False)
     content_revision = string(nullable=False)
     experiment_id = string(nullable=False)
+    vector_backend = string(nullable=False)
 
 
 class DocumentVectorCandidate(DocumentVectorScore):
+    """Provider-neutral ranked document neighbors for downstream similarity fusion."""
+
     rank = long(nullable=False)
 
 
@@ -95,7 +98,10 @@ class ParagraphVectorScore(Schema):
     dimension = long(nullable=False)
     content_revision = string(nullable=False)
     experiment_id = string(nullable=False)
+    vector_backend = string(nullable=False)
 
 
 class ParagraphVectorCandidate(ParagraphVectorScore):
+    """Provider-neutral ranked paragraph neighbors for downstream similarity fusion."""
+
     rank = long(nullable=False)

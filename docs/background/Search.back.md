@@ -37,7 +37,9 @@ served result list
 target document and corpus index
   -> same-grain similarity query
   -> directed scores
-  -> bounded similarity pair
+  -> bounded lexical pair
+  -> optional vector candidates
+  -> RRF hybrid similarity result
 
 served ranking + judgments
   -> behavior metrics or judgment metrics
@@ -423,10 +425,12 @@ inspect why a signal was eligible, zeroed, or omitted.
 
 ## Similarity
 
-Similarity reuses the lexical index rather than introducing an embedding model. It creates a query from each target's
-vocabulary, scores targets at the same text grain, and reduces directed scores into bounded same-grain neighbors. The
-result retains overlap, both directed BM25 scores, and their mean for inspection. The mean is a convenience value, not
-a probability.
+Similarity reuses the lexical index for its portable baseline. It creates a query from each target's vocabulary, scores
+targets at the same text grain, and reduces directed scores into bounded same-grain neighbors. `SearchSimilarity` can
+then adopt provider-neutral ranked vector candidates and fuse the lanes with RRF. The bundled exact vector index is a
+reference producer; callers may substitute an HNSW/ANN service that emits the same candidate contract. Hybrid results
+retain overlap, both BM25 directions, lexical/vector ranks, RRF score, vector similarity, and backend/model/revision
+provenance for inspection.
 
 ### Same-Grain Similarity
 
