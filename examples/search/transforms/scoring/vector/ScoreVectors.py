@@ -1,23 +1,17 @@
 """Score exact vector-index candidates with cosine similarity."""
 
-from examples.search.schemas.indexing.vector import (
-    DocumentVectorIndex,
-    DocumentVectorQuery,
-    DocumentVectorScore,
-    ParagraphVectorIndex,
-    ParagraphVectorQuery,
-    ParagraphVectorScore,
-    VectorIndexPolicy,
-)
-from examples.search.transforms.lib.Vectors import Vectors
-from structure import Transform, input, lane, output, step
-from structure.plugin.pyspark import coalesce, cross_join, param_join, require_all, where
+from examples.search.schemas.indexing.vector import *
+from examples.search.schemas.search import *
+from examples.search.transforms.lib.Vectors import *
+from structure import *
+from structure.plugin.pyspark import *
 
 
 class ScoreVectors(Transform):
     """Produce same-grain exact vector scores without driver collection."""
 
     policy = input(VectorIndexPolicy)
+    score_policy = input(ScorePolicy)
     document_queries = input(DocumentVectorQuery)
     document_index = input(DocumentVectorIndex)
     paragraph_queries = input(ParagraphVectorQuery)
@@ -31,18 +25,23 @@ class ScoreVectors(Transform):
         validated = require_all(Vectors.valid_policy(policy))
         return VectorIndexPolicy.project(validated)
 
-    @step(input=[document_queries, document_index, valid_policy], output=document_scores)
+    @step(input=[document_queries, document_index, valid_policy, score_policy], output=document_scores)
     def score_documents(
-        self, query: DocumentVectorQuery, index: DocumentVectorIndex, policy: VectorIndexPolicy
+        self,
+        query: DocumentVectorQuery,
+        index: DocumentVectorIndex,
+        policy: VectorIndexPolicy,
+        score_policy: ScorePolicy,
     ) -> DocumentVectorScore:
         param_join(policy)
+        param_join(score_policy)
         cross_join(index, allow_cartesian=True)
         require_all(Vectors.valid_pair(query, index, policy))
-        where(query.document_id != index.document_id)
+        where(query.query_document_id.is_null() | (query.query_document_id != index.document_id))
         cosine = Vectors.cosine(query.vector, index.vector)
         return DocumentVectorScore(
             query_id=query.query_id,
-            query_document_id=query.document_id,
+            query_document_id=query.query_document_id,
             document_id=index.document_id,
             cosine_similarity=coalesce(cosine, 0.0),
             model_id=policy.model_id,
@@ -50,13 +49,19 @@ class ScoreVectors(Transform):
             content_revision=policy.content_revision,
             experiment_id=policy.experiment_id,
             vector_backend="exact_reference",
+            scored_at=score_policy.scored_at,
         )
 
-    @step(input=[paragraph_queries, paragraph_index, valid_policy], output=paragraph_scores)
+    @step(input=[paragraph_queries, paragraph_index, valid_policy, score_policy], output=paragraph_scores)
     def score_paragraphs(
-        self, query: ParagraphVectorQuery, index: ParagraphVectorIndex, policy: VectorIndexPolicy
+        self,
+        query: ParagraphVectorQuery,
+        index: ParagraphVectorIndex,
+        policy: VectorIndexPolicy,
+        score_policy: ScorePolicy,
     ) -> ParagraphVectorScore:
         param_join(policy)
+        param_join(score_policy)
         cross_join(index, allow_cartesian=True)
         require_all(Vectors.valid_pair(query, index, policy))
         where(
@@ -79,4 +84,5 @@ class ScoreVectors(Transform):
             content_revision=policy.content_revision,
             experiment_id=policy.experiment_id,
             vector_backend="exact_reference",
+            scored_at=score_policy.scored_at,
         )

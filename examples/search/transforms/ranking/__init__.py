@@ -1,5 +1,4 @@
 """Search ranking transforms."""
 
-from examples.search.transforms.ranking.vector import RankVectors
-
-__all__ = ["RankVectors"]
+from examples.search.transforms.ranking.Ranking import *
+from examples.search.transforms.ranking.vector import *

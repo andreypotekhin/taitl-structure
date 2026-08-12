@@ -111,7 +111,8 @@ physical DataFrame order:
 
 - `SearchSentences` ranks matching sentences by BM25, overlap, document ID, and sentence ID.
 - `SearchPassages` ranks matching paragraphs by BM25, overlap, document ID, and paragraph ID.
-- `SearchDocuments` retrieves a lexical candidate set before applying feedback-aware reranking.
+- `SearchDocuments` retrieves a lexical candidate set by default and can fuse a caller-owned vector candidate lane
+  with RRF before applying feedback-aware reranking.
 
 Every query in one batch remains independently ranked. The deterministic identifier tie-breakers ensure equal lexical
 scores do not produce a nondeterministic result order.
@@ -196,8 +197,9 @@ changing lexical ranking semantics.
 Document search is a bounded funnel. Offline `Filtering` precomputes filter artifacts for a caller-selected query
 subset. Serving `OnlineFiltering` fills only query groups that lack a usable artifact, and `SelectFilterTargets` merges
 cached and online rows before retaining the top 10,000 documents per query. `OnlineScoring` fills missing or invalid
-lexical score groups. `RetrieveDocuments` retains the top 1,000 filtered document candidates, `RerankDocuments` applies
-feedback to those candidates, and only then does it retain the final top 100.
+lexical score groups. `RetrieveDocuments` materializes lexical and vector candidate lanes without ranking them.
+`FuseDocumentCandidates` ranks the lexical lane, deduplicates document identities, applies RRF, and retains the fused
+top 1,000. `RerankDocuments` applies feedback to those candidates, and only then does it retain the final top 100.
 
 The filter and scoring artifacts have separate purposes. A `DocumentFilterScore` contains a simple distinct-term match
 count, deterministic filter rank, and `scored_at`; it is a cheap admission boundary. A unified `DocumentScore` contains
@@ -251,7 +253,9 @@ SelectFilterTargets — merge valid cached + online rows; retain 10,000
         ↓
 OnlineScoring — calculate missing/stale composite lexical scores
         ↓
-RetrieveDocuments — retain top 1,000 filtered documents
+RetrieveDocuments — materialize lexical and vector candidate lanes
+        ↓
+FuseDocumentCandidates — rank lexical candidates, apply RRF, retain top 1,000
         ↓
 RerankDocuments — feedback score, deterministic rank, retain top 100
 ```
@@ -311,12 +315,13 @@ class SearchDocuments(Transform):
         )
 ```
 
-The concrete Search pipeline uses separate filtering, target selection, lexical scoring, retrieval, and rerank stages.
-The invariant is that feedback enriches an admitted lexical candidate set; it does not create new candidates outside
-that set.
+The concrete Search pipeline uses separate filtering, target selection, lexical scoring, retrieval, optional vector
+fusion, and rerank stages. The invariant is that feedback enriches an admitted candidate set; it does not create new
+candidates outside that set. In vector-enabled mode, a candidate can be admitted by the vector lane without a lexical
+overlap row, and the provider/model identity is checked before fusion.
 
 Within a candidate set, BM25 is normalized by the query's maximum candidate score. Caller-supplied relevance-policy
-weights combine that normalized lexical score with feedback evidence. A document with no feedback remains eligible and
+weights combine that normalized retrieval score with feedback evidence. A document with no feedback remains eligible and
 has zero feedback contribution. IDF-weighted overlap contributes both to the composite lexical score and to the earlier
 simple-overlap admission boundary; the two uses have different granularity and cost, but share normalized query terms.
 
@@ -425,7 +430,7 @@ inspect why a signal was eligible, zeroed, or omitted.
 
 ## Similarity
 
-Similarity reuses the lexical index for its portable baseline. It creates a query from each target's vocabulary, scores
+Similarity Search reuses the lexical index for its portable baseline. It creates a query from each target's vocabulary, scores
 targets at the same text grain, and reduces directed scores into bounded same-grain neighbors. `SearchSimilarity` can
 then adopt provider-neutral ranked vector candidates and fuse the lanes with RRF. The bundled exact vector index is a
 reference producer; callers may substitute an HNSW/ANN service that emits the same candidate contract. Hybrid results
@@ -513,8 +518,10 @@ judgment pool; monitor a deployed version through its own request and impression
 
 ## Boundaries and Deferred Work
 
-The Search example is intentionally not a crawler, a document store, an answer service, a prompt assembler, an
-embedding or vector-search implementation, or a streaming-job framework. It also does not prescribe adaptive passage
+The Search example is intentionally not a crawler, a document store, an answer service, a prompt assembler, a model
+execution service, a hosted ANN service, or a streaming-job framework. It accepts caller-produced embeddings for its
+bounded exact vector and opt-in document-search candidate paths, but does not own embedding production or vector
+persistence. It also does not prescribe adaptive passage
 chunking, configurable context radii, experiment comparison, counterfactual policy evaluation, or session
 reformulation metrics.
 

@@ -1,15 +1,9 @@
 """Rank and bound exact vector scores."""
 
-from examples.search.schemas.indexing.vector import (
-    DocumentVectorCandidate,
-    DocumentVectorScore,
-    ParagraphVectorCandidate,
-    ParagraphVectorScore,
-    VectorIndexPolicy,
-)
-from examples.search.transforms.lib.Vectors import Vectors
-from structure import Transform, input, lane, output, step
-from structure.plugin.pyspark import param_join, require_all, row_number, where
+from examples.search.schemas.indexing.vector import *
+from examples.search.transforms.lib.Vectors import *
+from structure import *
+from structure.plugin.pyspark import *
 
 
 class RankVectors(Transform):

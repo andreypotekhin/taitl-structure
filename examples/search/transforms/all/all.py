@@ -1,67 +1,28 @@
 """Complete pre-serving search-artifact build."""
 
-from examples.search.schemas.analytics import (
-    CorpusStatistics,
-    CorpusVocabulary,
-    DocumentProfile,
-    DocumentStatistics,
-    ParagraphStatistics,
-    SectionStatistics,
-    SentenceStatistics,
-    SimilarDocument,
-)
-from examples.search.schemas.clicks import DailyClicks, DailyImpressions
+from examples.search.schemas.analytics import *
+from examples.search.schemas.clicks import *
 from examples.search.schemas.fields import *
-from examples.search.schemas.indexing.lexical.index import (
-    DocumentIndexSummary,
-    DocumentTerm,
-    ParagraphIndexSummary,
-    ParagraphTerm,
-    SectionIndexSummary,
-    SectionTerm,
-    SentenceIndexSummary,
-    SentenceTerm,
-)
-from examples.search.schemas.label import Intent, IntentPattern, QueryLabel
-from examples.search.schemas.relevance import DocumentPopularity, QueryDocumentSignals, RelevancePolicy
-from examples.search.schemas.scoring.bm25 import (
-    DocumentBm25Score,
-    ParagraphBm25Score,
-    SectionBm25Score,
-    SentenceBm25Score,
-)
-from examples.search.schemas.scoring.overlap import (
-    DocumentOverlapScore,
-    ParagraphOverlapScore,
-    SectionOverlapScore,
-    SentenceOverlapScore,
-)
-from examples.search.schemas.search import (
-    DocumentScore,
-    ParagraphScore,
-    ScorePolicy,
-    SearchQuery,
-    SectionScore,
-    SentenceScore,
-)
-from examples.search.schemas.similarity import (
-    DocumentSimilarity,
-    ParagraphSimilarity,
-    SectionSimilarity,
-    SentenceSimilarity,
-    SimilarityPolicy,
-)
-from examples.search.schemas.text import Document, Paragraph, Section, Sentence
-from examples.search.schemas.user import Band, BandFallback, BandMembership, User, UserBand, UserBandMembership
-from examples.search.transforms.chunking import Chunking
-from examples.search.transforms.cohorts import ResolveCohortBands
-from examples.search.transforms.fields import ExtractDocumentFields
-from examples.search.transforms.indexing import Indexing
-from examples.search.transforms.labeling import Labeling
-from examples.search.transforms.relevance.BuildRelevanceSignals import BuildRelevanceSignals
-from examples.search.transforms.scoring import OfflineScoring
-from examples.search.transforms.similarities import Similarities
-from examples.search.transforms.stats import AnalyzeText, CorpusText, ProfileDocuments
+from examples.search.schemas.indexing.lexical.index import *
+from examples.search.schemas.indexing.vector import *
+from examples.search.schemas.label import *
+from examples.search.schemas.relevance import *
+from examples.search.schemas.scoring.bm25 import *
+from examples.search.schemas.scoring.overlap import *
+from examples.search.schemas.search import *
+from examples.search.schemas.similarity import *
+from examples.search.schemas.text import *
+from examples.search.schemas.user import *
+from examples.search.transforms.chunking import *
+from examples.search.transforms.cohorts import *
+from examples.search.transforms.fields import *
+from examples.search.transforms.indexing import *
+from examples.search.transforms.labeling import *
+from examples.search.transforms.offline.ranking import *
+from examples.search.transforms.offline.scoring.lexical import *
+from examples.search.transforms.relevance.BuildRelevanceSignals import *
+from examples.search.transforms.similarities import *
+from examples.search.transforms.stats import *
 from structure import *
 
 
@@ -79,6 +40,11 @@ class All(Transform):
     bands = input(Band)
     policy = input(RelevancePolicy)
     score_policy = input(ScorePolicy)
+    document_vector_queries = input(DocumentVectorQuery, streaming=True)
+    document_vector_index = input(DocumentVectorIndex)
+    paragraph_vector_queries = input(ParagraphVectorQuery)
+    paragraph_vector_index = input(ParagraphVectorIndex)
+    vector_policy = input(VectorIndexPolicy)
     similarity_policy = input(SimilarityPolicy)
     field_profiles = input(FieldProfile)
     analyzer_policies = input(AnalyzerPolicy)
@@ -122,7 +88,18 @@ class All(Transform):
         paragraph_summary=indexed.paragraph_summary,
         sentence_summary=indexed.sentence_summary,
         score_policy=score_policy,
+        document_vector_queries=document_vector_queries,
+        document_vector_index=document_vector_index,
+        paragraph_vector_queries=paragraph_vector_queries,
+        paragraph_vector_index=paragraph_vector_index,
+        vector_policy=vector_policy,
         maximum_offline_queries=maximum_offline_queries,
+    )
+
+    ranked = OfflineRanking(
+        policy=vector_policy,
+        document_scores=scored.document_vector_scores,
+        paragraph_scores=scored.paragraph_vector_scores,
     )
 
     cohorts = ResolveCohortBands(users=users, bands=bands)
@@ -188,6 +165,8 @@ class All(Transform):
     section_bm25_scores = output(SectionBm25Score, scored.section_bm25_scores)
     paragraph_bm25_scores = output(ParagraphBm25Score, scored.paragraph_bm25_scores)
     sentence_bm25_scores = output(SentenceBm25Score, scored.sentence_bm25_scores)
+    document_vector_candidates = output(DocumentVectorCandidate, ranked.document_vector_candidates)
+    paragraph_vector_candidates = output(ParagraphVectorCandidate, ranked.paragraph_vector_candidates)
     document_similarities = output(DocumentSimilarity, similarities.document_similarities)
     section_similarities = output(SectionSimilarity, similarities.section_similarities)
     paragraph_similarities = output(ParagraphSimilarity, similarities.paragraph_similarities)

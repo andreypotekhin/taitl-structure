@@ -9,7 +9,7 @@ from examples.search.schemas.search import (
     QueryDocumentFeedback,
 )
 from examples.search.schemas.user import BandFallback
-from examples.search.transforms.searching.search_docs.obtain import RetrieveDocuments
+from examples.search.transforms.searching.search_docs.retrieve import RetrieveDocuments
 from structure import Transform, input, lane, output, step
 from structure.plugin.pyspark import (
     coalesce,
@@ -30,7 +30,7 @@ from structure.plugin.pyspark.dsl.expressions import literal
 
 
 class RerankDocuments(Transform):
-    """Rerank lexical candidates and return the set of search results."""
+    """Rerank fused retrieval candidates and return the set of search results."""
 
     maximum_results = 100
 
@@ -176,10 +176,10 @@ class RerankDocuments(Transform):
 
     @step(input=scored_candidates, output=normalized_candidates)
     def normalize_score(self, candidate: DocumentSearchCandidate) -> DocumentSearchCandidate:
-        """Normalize lexical scores inside one query, band, and experiment ranking."""
+        """Normalize retrieval scores inside one query, band, and experiment ranking."""
 
         maximum = window_max(
-            candidate.score,
+            candidate.retrieval_score,
             over=window(
                 partition_by=(candidate.search_query_id, candidate.user_band_id, candidate.experiment_id),
                 order_by=candidate.document_id,

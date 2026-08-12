@@ -94,8 +94,15 @@ class DocumentSearchResult(Schema):
     title = string(nullable=False)
     url = string(nullable=True)
     score = double(nullable=False)
+    retrieval_score = double(nullable=False)
     score_feedback = double(nullable=False)
     score_rank = double(nullable=False)
+    lexical_rank = long(nullable=True)
+    vector_rank = long(nullable=True)
+    vector_similarity = double(nullable=True)
+    rrf_score = double(nullable=False)
+    rrf_k = long(nullable=False)
+    vector_backend = string(nullable=True)
 
 
 class DocumentSearchCandidate(Schema):
@@ -109,10 +116,17 @@ class DocumentSearchCandidate(Schema):
     title = string(nullable=False)
     url = string(nullable=True)
     score = double(nullable=False)
+    retrieval_score = double(nullable=False)
     score_feedback = double(nullable=False)
     score_rank = double(nullable=False)
     score_weight = double(nullable=False)
     feedback_weight = double(nullable=False)
+    lexical_rank = long(nullable=True)
+    vector_rank = long(nullable=True)
+    vector_similarity = double(nullable=True)
+    rrf_score = double(nullable=False)
+    rrf_k = long(nullable=False)
+    vector_backend = string(nullable=True)
 
 
 class DocumentFeedbackOption(DocumentSearchCandidate):

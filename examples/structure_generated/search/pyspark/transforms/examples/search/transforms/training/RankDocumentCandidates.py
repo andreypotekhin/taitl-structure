@@ -51,30 +51,16 @@ class RankDocumentCandidatesGenerated:
             or document_features.isStreaming
             or query_features.isStreaming
         )
-        ranked_candidates_artifact_exactly_one_1_count = artifacts.agg(F.count(F.lit(1)).alias("__structure_count"))
-        ranked_candidates_artifact_exactly_one_1_count = ranked_candidates_artifact_exactly_one_1_count.select(
-            F.assert_true(
-                F.col("__structure_count") == F.lit(1),
-                'REL-E0701: exactly_one(artifact) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-            ).alias("__structure_exactly_one")
-        )
-        ranked_candidates_artifact_exactly_one_1 = ranked_candidates_artifact_exactly_one_1_count.crossJoin(
-            artifacts
-        ).drop("__structure_exactly_one")
-        artifacts_param_joined = ranked_candidates_artifact_exactly_one_1
+        artifacts_param_joined = artifacts
         if not __structure_streaming_step:
-            artifacts_param_joined_count = ranked_candidates_artifact_exactly_one_1.agg(
-                F.count(F.lit(1)).alias("__structure_count")
-            )
+            artifacts_param_joined_count = artifacts.agg(F.count(F.lit(1)).alias("__structure_count"))
             artifacts_param_joined_count = artifacts_param_joined_count.select(
                 F.assert_true(
                     F.col("__structure_count") == F.lit(1),
                     'REL-E0701: exactly_one(artifact) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            artifacts_param_joined = artifacts_param_joined_count.crossJoin(
-                ranked_candidates_artifact_exactly_one_1
-            ).drop("__structure_exactly_one")
+            artifacts_param_joined = artifacts_param_joined_count.crossJoin(artifacts).drop("__structure_exactly_one")
         artifacts_joined = artifacts_param_joined.alias("artifacts")
         ranked_candidates = ranked_candidates.crossJoin(artifacts_joined)
         document_features_2_joined = document_features.alias("document_features_2")
@@ -89,7 +75,7 @@ class RankDocumentCandidatesGenerated:
             (F.col("query_features_3.query_id") == F.col("document_search_candidate.search_query_id")),
             "inner",
         )
-        ranked_candidates_require_all_4_violations = ranked_candidates.where(
+        ranked_candidates_require_all_3_violations = ranked_candidates.where(
             ~F.coalesce(
                 (
                     (
@@ -107,7 +93,7 @@ class RankDocumentCandidatesGenerated:
                 F.lit(False),
             )
         ).agg(F.count(F.lit(1)).alias("__structure_violations"))
-        ranked_candidates_require_all_4_assertion = ranked_candidates_require_all_4_violations.select(
+        ranked_candidates_require_all_3_assertion = ranked_candidates_require_all_3_violations.select(
             F.assert_true(
                 F.col("__structure_violations") == F.lit(0),
                 (
@@ -116,7 +102,7 @@ class RankDocumentCandidatesGenerated:
                 ),
             ).alias("__structure_require_all")
         )
-        ranked_candidates = ranked_candidates_require_all_4_assertion.crossJoin(ranked_candidates).drop(
+        ranked_candidates = ranked_candidates_require_all_3_assertion.crossJoin(ranked_candidates).drop(
             "__structure_require_all"
         )
         ranked_candidates = ranked_candidates.select(
@@ -130,6 +116,7 @@ class RankDocumentCandidatesGenerated:
             F.col("document_search_candidate.title"),
             F.col("document_search_candidate.url"),
             F.col("document_search_candidate.score"),
+            F.col("document_search_candidate.retrieval_score"),
             F.col("document_search_candidate.score_feedback"),
             (
                 F.col("artifacts.intercept")
@@ -236,6 +223,12 @@ class RankDocumentCandidatesGenerated:
             ).alias("score_rank"),
             F.col("document_search_candidate.score_weight"),
             F.col("document_search_candidate.feedback_weight"),
+            F.col("document_search_candidate.lexical_rank"),
+            F.col("document_search_candidate.vector_rank"),
+            F.col("document_search_candidate.vector_similarity"),
+            F.col("document_search_candidate.rrf_score"),
+            F.col("document_search_candidate.rrf_k"),
+            F.col("document_search_candidate.vector_backend"),
         )
 
         # Step method: ranked_candidates

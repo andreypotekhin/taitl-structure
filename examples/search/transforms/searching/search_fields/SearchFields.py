@@ -1,28 +1,20 @@
 """Metadata search with automatic delegation of body clauses to SearchDocuments."""
 
-from examples.search.schemas.clicks import SearchRequest
-from examples.search.schemas.fields import FieldSearchQuery, FieldSearchResult, FieldSearchTerm, FieldTerm
-from examples.search.schemas.filtering import DocumentFilterScore
-from examples.search.schemas.indexing.lexical.index import (
-    DocumentIndexSummary,
-    DocumentTerm,
-    ParagraphIndexSummary,
-    ParagraphTerm,
-    SectionIndexSummary,
-    SectionTerm,
-    SentenceIndexSummary,
-    SentenceTerm,
-)
-from examples.search.schemas.relevance import DocumentPopularity, QueryDocumentSignals, RelevancePolicy
-from examples.search.schemas.scoring.overlap import DocumentOverlapScore
-from examples.search.schemas.search import DocumentScore, ScorePolicy
-from examples.search.schemas.text import Document
-from examples.search.schemas.user import BandFallback, BandMembership
-from examples.search.transforms.searching.search_fields.delegate import BuildDelegations
-from examples.search.transforms.searching.search_fields.field_search import FieldSearch
-from examples.search.transforms.searching.search_fields.publish import PublishFieldSearchResults
-from examples.search.transforms.searching.search_fields.search_docs.SearchDocuments import SearchDocuments
-from structure import Transform, input, output
+from examples.search.schemas.clicks import *
+from examples.search.schemas.fields import *
+from examples.search.schemas.filtering import *
+from examples.search.schemas.indexing.lexical.index import *
+from examples.search.schemas.indexing.vector import *
+from examples.search.schemas.relevance import *
+from examples.search.schemas.scoring.overlap import *
+from examples.search.schemas.search import *
+from examples.search.schemas.text import *
+from examples.search.schemas.user import *
+from examples.search.transforms.searching.search_fields.custom.search_docs.SearchDocuments import *
+from examples.search.transforms.searching.search_fields.delegate import *
+from examples.search.transforms.searching.search_fields.field_search import *
+from examples.search.transforms.searching.search_fields.publish import *
+from structure import *
 
 
 class SearchFields(Transform):
@@ -47,6 +39,11 @@ class SearchFields(Transform):
     paragraph_summary = input(ParagraphIndexSummary)
     sentence_summary = input(SentenceIndexSummary)
     score_policy = input(ScorePolicy)
+    document_vector_embeddings = input(SearchQueryVectorEmbedding, streaming=True)
+    document_vector_index = input(DocumentVectorIndex)
+    paragraph_vector_queries = input(ParagraphVectorQuery)
+    paragraph_vector_index = input(ParagraphVectorIndex)
+    vector_policy = input(VectorIndexPolicy)
     band_memberships = input(BandMembership)
     query_document_signals = input(QueryDocumentSignals)
     document_popularity = input(DocumentPopularity)
@@ -81,6 +78,11 @@ class SearchFields(Transform):
         paragraph_summary=paragraph_summary,
         sentence_summary=sentence_summary,
         score_policy=score_policy,
+        document_vector_embeddings=document_vector_embeddings,
+        document_vector_index=document_vector_index,
+        paragraph_vector_queries=paragraph_vector_queries,
+        paragraph_vector_index=paragraph_vector_index,
+        vector_policy=vector_policy,
         requests=delegation.delegated_requests,
         band_memberships=band_memberships,
         query_document_signals=query_document_signals,

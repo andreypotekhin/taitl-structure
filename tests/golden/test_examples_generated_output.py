@@ -55,7 +55,7 @@ def test_search_scoring_subpackage_transform_is_discovered_and_compiled() -> Non
     scoring = next(
         transform
         for transform in project.transforms
-        if transform.__module__ == "examples.search.transforms.scoring.lexical.Scoring" and transform.__name__ == "Scoring"
+        if transform.__module__ == "examples.search.transforms.scoring.Scoring" and transform.__name__ == "Scoring"
     )
 
     Compiler.frontend.compile()(scoring, config=config, materialize_schemas=False)
@@ -65,11 +65,11 @@ def test_search_documents_keeps_design_gated_streaming_lineage_explicit() -> Non
     """Search preserves streaming declarations while unsupported state keeps delivery batch-only."""
 
     from examples.search.transforms.filtering import Filtering
+    from examples.search.transforms.online.filtering import OnlineFiltering
+    from examples.search.transforms.online.filtering import SelectGapQueries as SelectFilterGaps
+    from examples.search.transforms.online.scoring.lexical import OnlineScoring, SelectGapQueries
     from examples.search.transforms.scoring.lexical.ScoreBase import ScoreBase
-    from examples.search.transforms.scoring.lexical.Scoring import Scoring
-    from examples.search.transforms.searching.online.filtering import OnlineFiltering
-    from examples.search.transforms.searching.online.filtering import SelectGapQueries as SelectFilterGaps
-    from examples.search.transforms.searching.online.scoring import OnlineScoring, SelectGapQueries
+    from examples.search.transforms.scoring.Scoring import Scoring
     from examples.search.transforms.searching.search_docs import RerankDocuments, RetrieveDocuments, SelectFilterTargets
     from examples.search.transforms.searching.search_docs.SearchDocuments import SearchDocuments
 
@@ -107,13 +107,13 @@ def test_search_generated_owner_names_are_unique_across_nested_modules() -> None
 
     assert len(classes) == len(set(classes))
     assert (
-        "SelectGapQueries__examples_search_transforms_searching_online_filtering_SelectGapQueriesGenerated" in classes
+        "SelectGapQueries__examples_search_transforms_online_filtering_SelectGapQueriesGenerated" in classes
     )
-    assert "SelectGapQueries__examples_search_transforms_searching_online_scoring_SelectGapQueriesGenerated" in classes
+    assert "SelectGapQueries__examples_search_transforms_online_scoring_lexical_SelectGapQueriesGenerated" in classes
 
 
-def test_search_documents_filters_obtains_then_reranks_and_returns() -> None:
-    """Document search separates online filtering, target selection, retrieval, and reranking."""
+def test_search_documents_filters_retrieves_fuses_then_reranks_and_returns() -> None:
+    """Document search exposes distinct filtering, retrieval, fusion, and reranking stages."""
 
     from examples.search.transforms.searching.search_docs import RerankDocuments, RetrieveDocuments, SelectFilterTargets
     from examples.search.transforms.searching.search_docs.SearchDocuments import SearchDocuments
@@ -125,6 +125,7 @@ def test_search_documents_filters_obtains_then_reranks_and_returns() -> None:
         < stages.index("selected")
         < stages.index("scored")
         < stages.index("retrieved")
+        < stages.index("fused")
         < stages.index("reranked")
     )
     assert SelectFilterTargets.maximum_candidates == 10000
@@ -166,6 +167,15 @@ def test_search_all_builds_the_complete_offline_artifact_graph() -> None:
         SectionTerm,
         SentenceIndexSummary,
         SentenceTerm,
+    )
+    from examples.search.schemas.indexing.vector import (
+        DocumentVectorCandidate,
+        DocumentVectorIndex,
+        DocumentVectorQuery,
+        ParagraphVectorCandidate,
+        ParagraphVectorIndex,
+        ParagraphVectorQuery,
+        VectorIndexPolicy,
     )
     from examples.search.schemas.label import Intent, IntentPattern, QueryLabel
     from examples.search.schemas.relevance import DocumentPopularity, QueryDocumentSignals, RelevancePolicy
@@ -213,6 +223,11 @@ def test_search_all_builds_the_complete_offline_artifact_graph() -> None:
         ("patterns", IntentPattern),
         ("query_labels", QueryLabel),
         ("daily_impressions", DailyImpressions),
+        ("vector_policy", VectorIndexPolicy),
+        ("document_vector_queries", DocumentVectorQuery),
+        ("document_vector_index", DocumentVectorIndex),
+        ("paragraph_vector_queries", ParagraphVectorQuery),
+        ("paragraph_vector_index", ParagraphVectorIndex),
         ("users", User),
         ("bands", Band),
         ("daily_clicks", DailyClicks),
@@ -253,6 +268,8 @@ def test_search_all_builds_the_complete_offline_artifact_graph() -> None:
         ("section_bm25_scores", SectionBm25Score),
         ("paragraph_bm25_scores", ParagraphBm25Score),
         ("sentence_bm25_scores", SentenceBm25Score),
+        ("document_vector_candidates", DocumentVectorCandidate),
+        ("paragraph_vector_candidates", ParagraphVectorCandidate),
         ("document_similarities", DocumentSimilarity),
         ("section_similarities", SectionSimilarity),
         ("paragraph_similarities", ParagraphSimilarity),
@@ -318,7 +335,7 @@ def test_search_experiments_replace_production_stages() -> None:
         Searching001AdjustRerankDocuments,
         Searching001AdjustRerankSearchDocuments,
     )
-    from examples.search.transforms.scoring.lexical.Scoring import Scoring
+    from examples.search.transforms.scoring.Scoring import Scoring
 
     scoring = cast(TransformPlan, Compiler.frontend.compile()(Scoring001AdjustBm, materialize_schemas=False).analysis)
     searching = cast(
@@ -326,7 +343,12 @@ def test_search_experiments_replace_production_stages() -> None:
         Compiler.frontend.compile()(Searching001AdjustRerankSearchDocuments, materialize_schemas=False).analysis,
     )
 
-    assert {step.name.split(".")[0] for step in scoring.steps} == {"overlap", "bm25", "selected"}
+    assert {step.name.split(".")[0] for step in scoring.steps} == {
+        "overlap",
+        "bm25",
+        "selected",
+        "vector",
+    }
     parameters = getattr(Scoring001AdjustBm.bm25, "_structure_bound_parameters")
     assert parameters["k1"] == 1.35
     assert parameters["b"] == 0.70

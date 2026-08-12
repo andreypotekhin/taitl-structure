@@ -111,6 +111,22 @@ from examples.search.schemas.indexing.lexical.intermediate import (
     SentenceTermCount,
     TermText,
 )
+from examples.search.schemas.indexing.vector import (
+    DocumentVectorCandidate,
+    DocumentVectorEmbedding,
+    DocumentVectorIndex,
+    DocumentVectorIndexSummary,
+    DocumentVectorQuery,
+    DocumentVectorScore,
+    ParagraphVectorEmbedding,
+    ParagraphVectorIndex,
+    ParagraphVectorIndexSummary,
+    ParagraphVectorQuery,
+    ParagraphVectorScore,
+    SearchQueryVectorEmbedding,
+    SimilarityDocumentVectorEmbedding,
+    VectorIndexPolicy,
+)
 from examples.search.schemas.label import (
     Intent,
     IntentPattern,
@@ -189,6 +205,7 @@ from examples.search.schemas.similarities.intermediate import (
     SentenceSimilarityPair,
     SentenceSimilarityQueryText,
 )
+from examples.search.schemas.similarities.vector import DocumentFusedSimilarityCandidate
 from examples.search.schemas.similarity import (
     DocumentSimilarity,
     DocumentSimilarityQuery,
@@ -239,16 +256,16 @@ from examples.search.transforms.features import BuildDocumentFeatures, BuildQuer
 from examples.search.transforms.fields import ExtractDocumentFields
 from examples.search.transforms.indexing import FieldIndex, Indexing
 from examples.search.transforms.labeling import CreateQueryLabels, Labeling, MergeQueryLabels
+from examples.search.transforms.offline.scoring.lexical.MergeOfflineQueries import MergeOfflineQueries
+from examples.search.transforms.offline.scoring.lexical.OfflineScoring import OfflineScoring
+from examples.search.transforms.online.scoring.lexical import OnlineScoring
 from examples.search.transforms.relevance.BuildRelevanceSignals import BuildRelevanceSignals
 from examples.search.transforms.score import Scoring
-from examples.search.transforms.scoring.lexical.MergeOfflineQueries import MergeOfflineQueries
-from examples.search.transforms.scoring.lexical.OfflineScoring import OfflineScoring
 from examples.search.transforms.scoring.lexical.ScoreBm25 import ScoreBm25
 from examples.search.transforms.scoring.lexical.ScoreOverlap import ScoreOverlap
 from examples.search.transforms.scoring.lexical.SelectPopularQueries import SelectPopularQueries
 from examples.search.transforms.scoring.lexical.SelectRecentQueries import SelectRecentQueries
 from examples.search.transforms.search import SearchDocuments, SearchPassages, SearchSentences
-from examples.search.transforms.searching.online.scoring import OnlineScoring
 from examples.search.transforms.searching.search_fields import SearchFields
 from examples.search.transforms.searching.search_similarity import SearchSimilarity
 from examples.search.transforms.similarities.CreateSimilarityQueries import CreateSimilarityQueries
@@ -334,6 +351,22 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         ParagraphIndexSummary,
         SentenceTerm,
         SentenceIndexSummary,
+    ],
+    "examples.search.schemas.indexing.vector": [
+        DocumentVectorEmbedding,
+        ParagraphVectorEmbedding,
+        DocumentVectorQuery,
+        SearchQueryVectorEmbedding,
+        SimilarityDocumentVectorEmbedding,
+        DocumentVectorIndex,
+        ParagraphVectorIndex,
+        ParagraphVectorQuery,
+        DocumentVectorIndexSummary,
+        ParagraphVectorIndexSummary,
+        DocumentVectorScore,
+        DocumentVectorCandidate,
+        ParagraphVectorScore,
+        VectorIndexPolicy,
     ],
     "examples.search.schemas.fields": [
         AnalyzerPolicy,
@@ -488,6 +521,7 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         ParagraphSimilarityQueryText,
         SentenceSimilarityQueryText,
     ],
+    "examples.search.schemas.similarities.vector": [DocumentFusedSimilarityCandidate],
     "examples.search.schemas.text": [
         Document,
         Section,
@@ -594,12 +628,12 @@ TRANSFORMS = (
     ),
     (ScoreOverlap, "examples.search.transforms.scoring.lexical.ScoreOverlap.ScoreOverlap"),
     (ScoreBm25, "examples.search.transforms.scoring.lexical.ScoreBm25.ScoreBm25"),
-    (Scoring, "examples.search.transforms.scoring.lexical.Scoring.Scoring"),
-    (OfflineScoring, "examples.search.transforms.scoring.lexical.OfflineScoring.OfflineScoring"),
-    (MergeOfflineQueries, "examples.search.transforms.scoring.lexical.MergeOfflineQueries.MergeOfflineQueries"),
+    (Scoring, "examples.search.transforms.scoring.Scoring.Scoring"),
+    (OfflineScoring, "examples.search.transforms.offline.scoring.lexical.OfflineScoring.OfflineScoring"),
+    (MergeOfflineQueries, "examples.search.transforms.offline.scoring.lexical.MergeOfflineQueries.MergeOfflineQueries"),
     (SelectPopularQueries, "examples.search.transforms.scoring.lexical.SelectPopularQueries.SelectPopularQueries"),
     (SelectRecentQueries, "examples.search.transforms.scoring.lexical.SelectRecentQueries.SelectRecentQueries"),
-    (OnlineScoring, "examples.search.transforms.searching.online.scoring.OnlineScoring.OnlineScoring"),
+    (OnlineScoring, "examples.search.transforms.online.scoring.lexical.OnlineScoring.OnlineScoring"),
     (
         Scoring001AdjustBm,
         "examples.search.transforms.experiments.scoring.Scoring001AdjustBm.Scoring001AdjustBm",
@@ -1155,7 +1189,12 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             document_similarities=generated_similarities.document_similarities,
         )
         vector_schemas = __import__(
-            f"{PACKAGE}.pyspark.schemas.indexing.vector", fromlist=["DOCUMENT_VECTOR_CANDIDATE_SCHEMA"]
+            f"{PACKAGE}.pyspark.schemas.indexing_vector",
+            fromlist=[
+                "DOCUMENT_SIMILARITY_VECTOR_EMBEDDING_SCHEMA",
+                "DOCUMENT_VECTOR_INDEX_SCHEMA",
+                "VECTOR_INDEX_POLICY_SCHEMA",
+            ],
         )
         similarity_schemas = __import__(
             f"{PACKAGE}.pyspark.schemas.similarity", fromlist=["SIMILARITY_FUSION_POLICY_SCHEMA"]
@@ -1164,11 +1203,19 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             [(60, 10, 10, 10, "lexical-regression")],
             similarity_schemas.SIMILARITY_FUSION_POLICY_SCHEMA,
         )
-        empty_document_vectors = spark.createDataFrame(
-            [], vector_schemas.DOCUMENT_VECTOR_CANDIDATE_SCHEMA
+        empty_document_embeddings = spark.createDataFrame(
+            [], vector_schemas.DOCUMENT_SIMILARITY_VECTOR_EMBEDDING_SCHEMA
+        )
+        empty_document_index = spark.createDataFrame([], vector_schemas.DOCUMENT_VECTOR_INDEX_SCHEMA)
+        vector_policy = spark.createDataFrame(
+            [("fixture-embed", 3, "rev-1", "search-v1", 1000, 60)],
+            vector_schemas.VECTOR_INDEX_POLICY_SCHEMA,
         )
         similar_document_inputs.update(
-            document_vector_candidates=empty_document_vectors,
+            document_vector_embeddings=empty_document_embeddings,
+            document_vector_index=empty_document_index,
+            score_policy=score_policy,
+            vector_policy=vector_policy,
             fusion_policy=fusion_policy,
         )
         online_similar_documents = (
@@ -1188,11 +1235,23 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
         assert best_match["id"] == "d-2"
         assert best_match["search_query_id"] == "d-1"
 
-        ann_document_vectors = spark.createDataFrame(
-            [("ann:q-d-1", "d-1", "d-3", 0.99, "fixture-embed", 3, "rev-1", "ann-run", "hnsw", 1)],
-            vector_schemas.DOCUMENT_VECTOR_CANDIDATE_SCHEMA,
+        ann_query_embeddings = spark.createDataFrame(
+            [([1.0, 0.0, 0.0], "fixture-embed", 3, "rev-1", "search-v1", "d-1")],
+            vector_schemas.DOCUMENT_SIMILARITY_VECTOR_EMBEDDING_SCHEMA,
         )
-        hybrid_inputs = {**similar_document_inputs, "document_vector_candidates": ann_document_vectors}
+        ann_document_index = spark.createDataFrame(
+            [
+                ([1.0, 0.0, 0.0], "fixture-embed", 3, "rev-1", "search-v1", "d-1"),
+                ([0.8, 0.6, 0.0], "fixture-embed", 3, "rev-1", "search-v1", "d-2"),
+                ([0.99, 0.1, 0.0], "fixture-embed", 3, "rev-1", "search-v1", "d-3"),
+            ],
+            vector_schemas.DOCUMENT_VECTOR_INDEX_SCHEMA,
+        )
+        hybrid_inputs = {
+            **similar_document_inputs,
+            "document_vector_embeddings": ann_query_embeddings,
+            "document_vector_index": ann_document_index,
+        }
         online_hybrid_documents = (
             SearchSimilarity(
                 **{**hybrid_inputs, "document_similarities": online_similarities.document_similarities}
@@ -1207,9 +1266,9 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
         )
         assert rows(online_hybrid_documents, "rank", "id") == rows(generated_hybrid_documents, "rank", "id")
         ann_match = single(generated_hybrid_documents, lambda row: row["id"] == "d-3")
-        assert ann_match["vector_backend"] == "hnsw"
+        assert ann_match["vector_backend"] == "exact_reference"
         assert ann_match["vector_rank"] == 1
-        assert ann_match["vector_similarity"] == pytest.approx(0.99)
+        assert ann_match["vector_similarity"] == pytest.approx(0.99 / (0.99**2 + 0.1**2) ** 0.5)
         assert ann_match["rrf_k"] == 60
 
         similar_sections = (
@@ -1610,6 +1669,16 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
         search_schemas = __import__(
             f"{PACKAGE}.pyspark.schemas.search", fromlist=["SEARCH_QUERY_SCHEMA", "DOCUMENT_SCORE_SCHEMA"]
         )
+        vector_schemas = __import__(
+            f"{PACKAGE}.pyspark.schemas.indexing_vector",
+            fromlist=[
+                "DOCUMENT_SEARCH_VECTOR_EMBEDDING_SCHEMA",
+                "DOCUMENT_VECTOR_INDEX_SCHEMA",
+                "PARAGRAPH_VECTOR_INDEX_SCHEMA",
+                "PARAGRAPH_VECTOR_QUERY_SCHEMA",
+                "VECTOR_INDEX_POLICY_SCHEMA",
+            ],
+        )
         overlap_schemas = __import__(f"{PACKAGE}.pyspark.schemas.overlap", fromlist=["DOCUMENT_OVERLAP_SCORE_SCHEMA"])
         filtering_schemas = __import__(
             f"{PACKAGE}.pyspark.schemas.filtering", fromlist=["DOCUMENT_FILTER_SCORE_SCHEMA"]
@@ -1708,6 +1777,16 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
             score_policy=spark.createDataFrame(
                 [(30, scored_at, scored_at, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0)],
                 search_schemas.SCORE_POLICY_SCHEMA,
+            ),
+            document_vector_embeddings=spark.createDataFrame(
+                [], vector_schemas.DOCUMENT_SEARCH_VECTOR_EMBEDDING_SCHEMA
+            ),
+            document_vector_index=spark.createDataFrame([], vector_schemas.DOCUMENT_VECTOR_INDEX_SCHEMA),
+            paragraph_vector_queries=spark.createDataFrame([], vector_schemas.PARAGRAPH_VECTOR_QUERY_SCHEMA),
+            paragraph_vector_index=spark.createDataFrame([], vector_schemas.PARAGRAPH_VECTOR_INDEX_SCHEMA),
+            vector_policy=spark.createDataFrame(
+                [("fixture-embed", 3, "rev-1", "search-v1", 1000, 60)],
+                vector_schemas.VECTOR_INDEX_POLICY_SCHEMA,
             ),
             requests=spark.createDataFrame(
                 [

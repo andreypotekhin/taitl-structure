@@ -17,6 +17,7 @@ Focused boundary contracts are collected in the [Search example specifications](
 | Chunking | `Chunking` | sections, paragraphs, sentences | Plain-text hierarchy. |
 | Indexing | `Chunking`, `ExtractDocumentFields`, `Indexing` | content terms plus positional metadata postings | `Indexing` owns `LexIndex` and its `FieldIndex` child; field postings serve boolean/phrase metadata constraints. |
 | Scoring | `OfflineScoring`, `Scoring`, `OnlineScoring` | timestamped score relations | Score popular and seven-day recent queries offline; fill ad-hoc gaps online and persist bridge rows in the same relations. |
+| Ranking | `OfflineRanking`, `Ranking`, `OnlineRanking` | bounded vector candidate relations | Rank raw vector scores for offline cache generation and online document search with the same `VectorIndexPolicy.maximum_candidates` limit. |
 | Filtering | `Filtering`, `OnlineFiltering`, `SelectFilterTargets` | timestamped filter artifacts and document targets | Prefilter selected queries offline, resolve missing query groups online, and retain at most 10,000 simple-overlap document targets. |
 | Similarity | `CreateSimilarityQueries`, `ReduceSimilarityScores` | same-grain corpus pairs | Reuse the lexical index; BM25 stays directional. |
 | Feedback | `Impressions`, `Clicks`, `BuildRelevanceSignals` | daily facts and batch signals | Exposure-aware, attributed, propensity-corrected evidence. |
@@ -26,7 +27,7 @@ Focused boundary contracts are collected in the [Search example specifications](
 
 ## Build search artifacts
 
-`All` workflow is the a one-call pre-serving build. It accepts corpus documents, one similarity policy, one `ScorePolicy`, field profiles and analyzer policies, queries and label configuration, persisted daily feedback facts, user/band catalogs, and one relevance policy. It emits the extracted document sections, paragraphs, sentences, enriched documents and fields, corpus statistics, blocked near-duplicate candidates, lexical and field indexes, similarity pairs, labeled queries, overlap/BM25 scores, user cohorts and relevance signals. `OfflineScoring` caps by 1000 most popular queries plus every query observed in the preceeding seven days.
+`All` workflow is a one-call pre-serving build. It accepts corpus documents, one similarity policy, one `ScorePolicy`, field profiles and analyzer policies, queries and label configuration, persisted daily feedback facts, user/band catalogs, and one relevance policy. It emits the extracted document sections, paragraphs, sentences, enriched documents and fields, corpus statistics, blocked near-duplicate candidates, lexical and field indexes, similarity pairs, labeled queries, overlap/BM25 scores, offline-ranked vector candidates, user cohorts and relevance signals. `OfflineScoring` caps by 1000 most popular queries plus every query observed in the preceeding seven days; `OfflineRanking` applies `VectorIndexPolicy.maximum_candidates` after deterministic ranking.
 
 `Document.fields` is the authoritative map for string metadata. `ExtractDocumentFields` copies its reserved values back
 to the preserved named `Document` fields and flattens arbitrary keys into `DocumentField` rows. `FieldIndex` removes
@@ -146,10 +147,9 @@ Document, section, paragraph, and sentence rows deliberately have independent st
 
 `ScoreBase` declares the shared query and four target-grain index inputs. `ScoreOverlap` and `ScoreBm25` independently
 inherit that base when callers need reusable score families directly. `SelectScores` joins overlap and BM25 outputs
-into score rows, while `Scoring` stages `ScoreOverlap`, `ScoreBm25`, and `SelectScores` as the app-facing scoring
-composition and owns the score `experiment_id`. Together they accept a DataFrame conforming to `SearchQuery` and
-reusable indexes, emit separate overlap/BM25 score families, and preserve the distinction between lexical scoring and
-result presentation.
+into score rows, while `Scoring` stages those transforms together with exact vector scoring and ranking as the app-facing
+scoring composition. Together they accept reusable lexical/vector indexes and emit timestamped lexical and vector
+evidence while preserving the distinction between scoring and result presentation.
 
 `Scoring` accepts a caller-supplied DataFrame conforming to `SearchQuery` (`id`, `queryset`, `content`, and immutable
 `requested_at`) plus matching index artifacts and creates a score row for every document, section, paragraph, and sentence that shares a keyword with the
@@ -212,12 +212,11 @@ at each grain. This controls common-token candidate growth without imposing a hi
 does not require title, source, language, or collection matches; callers apply those business filters after scoring.
 
 `SearchSimilarity` turns document-pair results into a hybrid query-document lookup. Supply the one-row query document,
-corpus `Document` rows, lexical similarity pairs, provider-neutral `DocumentVectorCandidate` rows, and one
-`SimilarityFusionPolicy`. The bundled exact vector path emits these candidates with `vector_backend="exact_reference"`;
-a caller-owned HNSW/ANN implementation can emit the same relation. The policy controls `rrf_k`, independent lexical and
-vector candidate windows, the final result limit, and experiment identity. A lexical-only regression run can pass an
-empty vector relation without a fabricated vector-index policy. Results preserve lexical/vector ranks, RRF score,
-vector provenance, lexical evidence, and corpus metadata in `HybridIndexedSimilarDocument`.
+corpus `Document` rows, lexical similarity pairs, provider-produced `SimilarityDocumentVectorEmbedding` rows, the
+matching `DocumentVectorIndex`, score/vector policies, and one `SimilarityFusionPolicy`. The exact vector stage infers
+the source document query, excludes that source document, joins scores back to corpus `Document` rows, and emits
+`vector_backend="exact_reference"`. Results preserve lexical/vector ranks, RRF score, vector provenance, lexical
+evidence, and corpus metadata in `HybridIndexedSimilarDocument`.
 
 `SearchSimilarityParagraphs` applies the same staged contract to document-local paragraphs. Sections and sentences remain
 on their existing lexical-only presentation paths in this example.
@@ -412,29 +411,31 @@ document_popularity = signals.document_popularity
 
 ### Retrieve and rerank
 
-`SearchDocuments` composes `OnlineFiltering`, `SelectFilterTargets`, `OnlineScoring`, `RetrieveDocuments`, and `RerankDocuments` as explicit
-stages. `Filtering` can precompute timestamped `DocumentFilterScore` rows for selected queries; `OnlineFiltering`
+`SearchDocuments` composes `OnlineFiltering`, `SelectFilterTargets`, `OnlineScoring`, `RetrieveDocuments`,
+`FuseDocumentCandidates`, and `RerankDocuments` as explicit stages. `Filtering` can precompute timestamped
+`DocumentFilterScore` rows for selected queries; `OnlineFiltering`
 fills missing query groups at serving time; and `SelectFilterTargets` retains the top 10,000 simple-overlap matches per
-query. `RetrieveDocuments` admits up to 1,000 candidates by composite lexical score, while `RerankDocuments` applies
-feedback and emits the final top 100.
+query. `Ranking` bounds raw vector scores before `RetrieveDocuments` joins them to ordinary `Document` rows; lexical and vector lanes then enter `FuseDocumentCandidates`, which ranks lexical candidates,
+deduplicates document identities, applies document-level RRF when vector candidates are supplied, and retains the fused
+top 1,000; `RerankDocuments` applies feedback and emits the final top 100.
 
-Feedback combines 80% of the normalized query-document signal with 20% global document popularity. Within each BM25
+Feedback combines 80% of the normalized query-document signal with 20% global document popularity. Within each retrieved
 candidate set, the reranker calculates:
 
 ```text
-normalized_score = score / max(score)
+    normalized_score = retrieval_score / max(retrieval_score)
 feedback = 0.8 * query_document_score + 0.2 * document_popularity_score
 rank_score = policy.score_weight * normalized_score + policy.feedback_weight * feedback
 ```
 
-The fixture policy uses a 30-day half-life and 70/30 lexical-feedback weights. Documents without feedback remain
-eligible with zero feedback. Final rank is descending `rank_score`, then document ID. A candidate outside the BM25 top
-100 cannot enter through feedback, and a no-history query preserves BM25 order.
+The fixture policy uses a 30-day half-life and 70/30 retrieval-feedback weights. Documents without feedback remain
+eligible with zero feedback. Final rank is descending `rank_score`, then document ID. A candidate outside the fused top
+1,000 cannot enter through feedback, and a no-history lexical query preserves lexical order.
 
 `SearchDocuments` uses the same free-form `SearchQuery` DataFrame, immutable documents, reusable index relations,
 timestamped score and filter relations, and `ScorePolicy`. `SelectFilterTargets` limits simple-overlap targets to 10,000
-per query; `RetrieveDocuments` selects 1,000 composite lexical candidates; and `RerankDocuments` ranks and returns the
-top 100. The canonical online stages share the offline schemas and query parsing. `SearchFields` uses a companion
+per query; `Ranking` bounds vector scores, `RetrieveDocuments` joins them to documents, and lexical candidates are admitted alongside them; and
+`FuseDocumentCandidates` deduplicates them before `RerankDocuments` ranks and returns the top 100. The canonical online stages share the offline schemas and query parsing. `SearchFields` uses a companion
 target-aware document funnel under `transforms/searching/search_fields`; it applies field-projected document targets
 before the same filter cap while leaving this standalone funnel unchanged.
 
@@ -468,8 +469,10 @@ ranked_documents = SearchDocuments(
 first_page = ranked_documents.where("rank <= 20").orderBy("rank")
 ```
 
-`DocumentSearchResult` exposes candidate rank, final rank, BM25, feedback, and final rank score so a serving layer can
-explain movement without reconstructing the scoring path.
+`DocumentSearchResult` exposes candidate rank, final rank, lexical/vector lane evidence, RRF score, feedback, and final
+rank score so a serving layer can explain movement without reconstructing the scoring path. Pass
+`SearchQueryVectorEmbedding` rows, a matching `DocumentVectorIndex`, and `VectorIndexPolicy` to `SearchDocuments`.
+The vector lane is fused before feedback reranking; a vector-only candidate does not need a lexical overlap row.
 
 ## Passage Search
 
@@ -683,7 +686,8 @@ Use `transforms/training/all/training.Training` as an offline-training endpoint.
 
 - The corpus and relevance snapshots are batch inputs, because similarity distributions and decayed normalization need bounded
   input sets.
-- Document search candidate set is BM25-only. This prevents popularity from promoting unrelated documents.
+- Document search candidate admission is lexical-only by default and can opt into a bounded lexical/vector RRF lane.
+  This prevents popularity or feedback from promoting unrelated documents.
 - All rank orders have explicit identifier tie-breakers. Consumers must paginate by emitted rank, not DataFrame order.
 - Similarity flow uses title prefix, source, and language as a candidate block before measuring the distance, avoiding
   an unrestricted self-Cartesian join.

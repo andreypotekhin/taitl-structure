@@ -1,5 +1,3 @@
-"""Exact vector scoring transforms."""
+"""Exact document-search vector scoring."""
 
-from examples.search.transforms.scoring.vector.ScoreVectors import ScoreVectors
-
-__all__ = ["ScoreVectors"]
+from examples.search.transforms.scoring.vector.ScoreVectors import *

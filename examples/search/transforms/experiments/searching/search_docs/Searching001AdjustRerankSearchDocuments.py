@@ -7,8 +7,8 @@ from examples.search.schemas.search import (
     PopularityFeedback,
     QueryDocumentFeedback,
 )
-from examples.search.transforms.searching.search_docs.obtain import RetrieveDocuments
 from examples.search.transforms.searching.search_docs.rerank import RerankDocuments
+from examples.search.transforms.searching.search_docs.retrieve import RetrieveDocuments
 from examples.search.transforms.searching.search_docs.SearchDocuments import SearchDocuments
 from structure import output, step
 from structure.plugin.pyspark import coalesce, left_join, param_join, where
@@ -65,7 +65,7 @@ class Searching001AdjustRerankSearchDocuments(SearchDocuments):
     """Run document search with the searching001 reranking stage."""
 
     reranked = Searching001AdjustRerankDocuments(
-        candidates=SearchDocuments.retrieved.candidates,
+        candidates=SearchDocuments.fused.candidates,
         query_document_signals=SearchDocuments.query_document_signals,
         document_popularity=SearchDocuments.document_popularity,
         band_fallbacks=SearchDocuments.band_fallbacks,

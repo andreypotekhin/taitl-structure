@@ -12,7 +12,7 @@ Currently, we only maintain annotated code for these code dirs and their subdirs
 - examples/search/transforms/labeling
 - examples/search/transforms/scoring
 - examples/search/transforms/relevance
-- examples/search/transforms/searching/online
+- examples/search/transforms/online
 - examples/search/transforms/searching/search_docs
 - examples/search/transforms/training
 - examples/store/transforms/catalog

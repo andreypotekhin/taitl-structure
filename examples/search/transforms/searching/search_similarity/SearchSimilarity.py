@@ -1,18 +1,16 @@
 """Staged similarity-search workflow."""
 
-from examples.search.schemas.indexing.vector import DocumentVectorCandidate
-from examples.search.schemas.similarity import (
-    DocumentSimilarity,
-    HybridIndexedSimilarDocument,
-    SimilarityDocumentQuery,
-    SimilarityFusionPolicy,
-)
-from examples.search.schemas.text import Document
-from examples.search.transforms.searching.search_similarity.adopt_lexical import AdoptLexicalSimilarity
-from examples.search.transforms.searching.search_similarity.adopt_vector import AdoptVectorSimilarity
-from examples.search.transforms.searching.search_similarity.fusion import FuseSimilarity
-from examples.search.transforms.searching.search_similarity.rerank import RerankSimilarity
-from structure import Transform, input, output
+from examples.search.schemas.indexing.vector import *
+from examples.search.schemas.search import *
+from examples.search.schemas.similarity import *
+from examples.search.schemas.text import *
+from examples.search.transforms.scoring.similarity import *
+from examples.search.transforms.searching.search_similarity.adopt_lexical import *
+from examples.search.transforms.searching.search_similarity.adopt_vector import *
+from examples.search.transforms.searching.search_similarity.fusion import *
+from examples.search.transforms.searching.search_similarity.rerank import *
+from examples.search.transforms.vectorization import *
+from structure import *
 
 
 class SearchSimilarity(Transform):
@@ -21,11 +19,28 @@ class SearchSimilarity(Transform):
     query = input(SimilarityDocumentQuery)
     documents = input(Document)
     document_similarities = input(DocumentSimilarity)
-    document_vector_candidates = input(DocumentVectorCandidate)
+    document_vector_embeddings = input(SimilarityDocumentVectorEmbedding)
+    document_vector_index = input(DocumentVectorIndex)
+    score_policy = input(ScorePolicy)
+    vector_policy = input(VectorIndexPolicy)
     fusion_policy = input(SimilarityFusionPolicy)
 
     lexical = AdoptLexicalSimilarity(document_similarities=document_similarities)
-    vector = AdoptVectorSimilarity(document_candidates=document_vector_candidates)
+    vectorized = VectorizeSimilarityDocumentQueries(
+        queries=query,
+        embeddings=document_vector_embeddings,
+    )
+    scored = ScoreDocumentVectors(
+        policy=vector_policy,
+        score_policy=score_policy,
+        queries=vectorized.vector_queries,
+        document_index=document_vector_index,
+    )
+    vector = AdoptVectorSimilarity(
+        document_scores=scored.document_scores,
+        query=query,
+        documents=documents,
+    )
 
     fused = FuseSimilarity(
         policy=fusion_policy,

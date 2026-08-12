@@ -29,6 +29,15 @@ from examples.structure_generated.search.pyspark.schemas.index import (
     SENTENCE_INDEX_SUMMARY_SCHEMA,
     SENTENCE_TERM_SCHEMA,
 )
+from examples.structure_generated.search.pyspark.schemas.indexing_vector import (
+    DOCUMENT_VECTOR_INDEX_SCHEMA,
+    DOCUMENT_VECTOR_QUERY_SCHEMA,
+    DOCUMENT_VECTOR_SCORE_SCHEMA,
+    PARAGRAPH_VECTOR_INDEX_SCHEMA,
+    PARAGRAPH_VECTOR_QUERY_SCHEMA,
+    PARAGRAPH_VECTOR_SCORE_SCHEMA,
+    VECTOR_INDEX_POLICY_SCHEMA,
+)
 from examples.structure_generated.search.pyspark.schemas.overlap import (
     DOCUMENT_OVERLAP_SCORE_SCHEMA,
     PARAGRAPH_OVERLAP_SCORE_SCHEMA,
@@ -1449,12 +1458,528 @@ class SelectScoresGenerated:
                 + (F.col("score_policy_2.sentence_overlap_weight") * F.col("sentence_overlap_score.score_overlap"))
             ).alias("score"),
         )
+        assert_schema(selected__sentence_scores, SENTENCE_SCORE_SCHEMA, name="SentenceScore", mode="strict")
         return {
             "selected__sentence_scores": selected__sentence_scores,
         }
 
 
-class Scoring001AdjustBmGenerated(ScoreBaseGenerated, ScoreOverlapGenerated, ScoreBm25Generated, SelectScoresGenerated):
+class ScoreVectorsGenerated:
+    def _step_vector_validate_policy_32(self, frames):
+        # Step method: vector.validate_policy
+        vector__valid_policy = frames["vector_policy"].alias("vector_index_policy")
+        vector__valid_policy_require_all_0_violations = vector__valid_policy.where(
+            ~F.coalesce(
+                (
+                    (
+                        (
+                            (
+                                (
+                                    (F.col("vector_index_policy.model_id") != F.lit(''))
+                                    & (F.col("vector_index_policy.dimension") > F.lit(0))
+                                )
+                                & (F.col("vector_index_policy.content_revision") != F.lit(''))
+                            )
+                            & (F.col("vector_index_policy.experiment_id") != F.lit(''))
+                        )
+                        & (F.col("vector_index_policy.maximum_candidates") > F.lit(0))
+                    )
+                    & (F.col("vector_index_policy.rrf_k") > F.lit(0))
+                ),
+                F.lit(False),
+            )
+        ).agg(F.count(F.lit(1)).alias("__structure_violations"))
+        vector__valid_policy_require_all_0_assertion = vector__valid_policy_require_all_0_violations.select(
+            F.assert_true(
+                F.col("__structure_violations") == F.lit(0),
+                (
+                    'REL-E0703: require_all(...) found rows that do not satisfy the predicate; see'
+                    'docs/Diagnostics.md#rel-e0703'
+                ),
+            ).alias("__structure_require_all")
+        )
+        vector__valid_policy = vector__valid_policy_require_all_0_assertion.crossJoin(vector__valid_policy).drop(
+            "__structure_require_all"
+        )
+        vector__valid_policy = vector__valid_policy.select(
+            F.col("vector_index_policy.model_id"),
+            F.col("vector_index_policy.dimension"),
+            F.col("vector_index_policy.content_revision"),
+            F.col("vector_index_policy.experiment_id"),
+            F.col("vector_index_policy.maximum_candidates"),
+            F.col("vector_index_policy.rrf_k"),
+        )
+        assert_schema(vector__valid_policy, VECTOR_INDEX_POLICY_SCHEMA, name="VectorIndexPolicy", mode="strict")
+        return {
+            "vector__valid_policy": vector__valid_policy,
+        }
+
+    def _step_vector_score_documents_33(self, frames):
+        # Step method: vector.score_documents
+        vector__document_scores = frames["document_vector_queries"].alias("document_vector_query")
+        __structure_streaming_step = (
+            frames["document_vector_queries"].isStreaming
+            or frames["document_vector_index"].isStreaming
+            or frames["vector__valid_policy"].isStreaming
+            or frames["score_policy"].isStreaming
+        )
+        vector__valid_policy_param_joined = frames["vector__valid_policy"]
+        if not __structure_streaming_step:
+            vector__valid_policy_param_joined_count = frames["vector__valid_policy"].agg(
+                F.count(F.lit(1)).alias("__structure_count")
+            )
+            vector__valid_policy_param_joined_count = vector__valid_policy_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            vector__valid_policy_param_joined = vector__valid_policy_param_joined_count.crossJoin(
+                frames["vector__valid_policy"]
+            ).drop("__structure_exactly_one")
+        vector__valid_policy_joined = vector__valid_policy_param_joined.alias("vector__valid_policy")
+        vector__document_scores = vector__document_scores.crossJoin(vector__valid_policy_joined)
+        score_policy_2_param_joined = frames["score_policy"]
+        if not __structure_streaming_step:
+            score_policy_2_param_joined_count = frames["score_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
+            score_policy_2_param_joined_count = score_policy_2_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(score_policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            score_policy_2_param_joined = score_policy_2_param_joined_count.crossJoin(frames["score_policy"]).drop(
+                "__structure_exactly_one"
+            )
+        score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
+        vector__document_scores = vector__document_scores.crossJoin(score_policy_2_joined)
+        document_vector_index_3_joined = frames["document_vector_index"].alias("document_vector_index_3")
+        vector__document_scores = vector__document_scores.crossJoin(document_vector_index_3_joined)
+        vector__document_scores_require_all_3_violations = vector__document_scores.where(
+            ~F.coalesce(
+                (
+                    (
+                        (
+                            (
+                                (
+                                    (
+                                        (
+                                            (
+                                                (
+                                                    (
+                                                        F.col("document_vector_query.model_id")
+                                                        == F.col("vector__valid_policy.model_id")
+                                                    )
+                                                    & (
+                                                        F.col("document_vector_index_3.model_id")
+                                                        == F.col("vector__valid_policy.model_id")
+                                                    )
+                                                )
+                                                & (
+                                                    F.col("document_vector_query.dimension")
+                                                    == F.col("vector__valid_policy.dimension")
+                                                )
+                                            )
+                                            & (
+                                                F.col("document_vector_index_3.dimension")
+                                                == F.col("vector__valid_policy.dimension")
+                                            )
+                                        )
+                                        & (
+                                            F.col("document_vector_query.content_revision")
+                                            == F.col("vector__valid_policy.content_revision")
+                                        )
+                                    )
+                                    & (
+                                        F.col("document_vector_index_3.content_revision")
+                                        == F.col("vector__valid_policy.content_revision")
+                                    )
+                                )
+                                & (
+                                    F.col("document_vector_query.experiment_id")
+                                    == F.col("vector__valid_policy.experiment_id")
+                                )
+                            )
+                            & (
+                                F.col("document_vector_index_3.experiment_id")
+                                == F.col("vector__valid_policy.experiment_id")
+                            )
+                        )
+                        & (
+                            (
+                                (
+                                    (
+                                        F.col("document_vector_query.dimension")
+                                        == F.size(F.col("document_vector_query.vector"))
+                                    )
+                                    & (F.size(F.col("document_vector_query.vector")) > F.lit(0))
+                                )
+                                & (
+                                    F.size(
+                                        F.filter(
+                                            F.col("document_vector_query.vector"),
+                                            lambda item: (
+                                                (F.isnan(item) | (item > F.lit(1.7976931348623157e308)))
+                                                | (item < F.lit(-1.7976931348623157e308))
+                                            ),
+                                        )
+                                    )
+                                    == F.lit(0)
+                                )
+                            )
+                            & (
+                                F.sqrt(
+                                    F.aggregate(
+                                        F.col("document_vector_query.vector"),
+                                        F.lit(0.0),
+                                        lambda acc, item: (acc + (item * item)),
+                                    )
+                                )
+                                > F.lit(0.0)
+                            )
+                        )
+                    )
+                    & (
+                        (
+                            (
+                                (
+                                    F.col("document_vector_index_3.dimension")
+                                    == F.size(F.col("document_vector_index_3.vector"))
+                                )
+                                & (F.size(F.col("document_vector_index_3.vector")) > F.lit(0))
+                            )
+                            & (
+                                F.size(
+                                    F.filter(
+                                        F.col("document_vector_index_3.vector"),
+                                        lambda item: (
+                                            (F.isnan(item) | (item > F.lit(1.7976931348623157e308)))
+                                            | (item < F.lit(-1.7976931348623157e308))
+                                        ),
+                                    )
+                                )
+                                == F.lit(0)
+                            )
+                        )
+                        & (
+                            F.sqrt(
+                                F.aggregate(
+                                    F.col("document_vector_index_3.vector"),
+                                    F.lit(0.0),
+                                    lambda acc, item: (acc + (item * item)),
+                                )
+                            )
+                            > F.lit(0.0)
+                        )
+                    )
+                ),
+                F.lit(False),
+            )
+        ).agg(F.count(F.lit(1)).alias("__structure_violations"))
+        vector__document_scores_require_all_3_assertion = vector__document_scores_require_all_3_violations.select(
+            F.assert_true(
+                F.col("__structure_violations") == F.lit(0),
+                (
+                    'REL-E0703: require_all(...) found rows that do not satisfy the predicate; see'
+                    'docs/Diagnostics.md#rel-e0703'
+                ),
+            ).alias("__structure_require_all")
+        )
+        vector__document_scores = vector__document_scores_require_all_3_assertion.crossJoin(
+            vector__document_scores
+        ).drop("__structure_require_all")
+        vector__document_scores = vector__document_scores.where(
+            (
+                (
+                    F.col("document_vector_query.query_document_id").isNull()
+                    | (F.col("document_vector_query.query_document_id") != F.col("document_vector_index_3.document_id"))
+                )
+            )
+        )
+        vector__document_scores = vector__document_scores.select(
+            F.col("document_vector_query.query_id"),
+            F.col("document_vector_query.query_document_id"),
+            F.col("document_vector_index_3.document_id"),
+            F.coalesce(
+                (
+                    F.aggregate(
+                        F.zip_with(
+                            F.col("document_vector_query.vector"),
+                            F.col("document_vector_index_3.vector"),
+                            lambda left_item, right_item: (left_item * right_item),
+                        ),
+                        F.lit(0.0),
+                        lambda acc, item: (acc + item),
+                    )
+                    / (
+                        F.sqrt(
+                            F.aggregate(
+                                F.col("document_vector_query.vector"),
+                                F.lit(0.0),
+                                lambda acc, item: (acc + (item * item)),
+                            )
+                        )
+                        * F.sqrt(
+                            F.aggregate(
+                                F.col("document_vector_index_3.vector"),
+                                F.lit(0.0),
+                                lambda acc, item: (acc + (item * item)),
+                            )
+                        )
+                    )
+                ),
+                F.lit(0.0),
+            ).alias("cosine_similarity"),
+            F.col("vector__valid_policy.model_id"),
+            F.col("vector__valid_policy.dimension"),
+            F.col("vector__valid_policy.content_revision"),
+            F.col("vector__valid_policy.experiment_id"),
+            F.lit('exact_reference').alias("vector_backend"),
+            F.col("score_policy_2.scored_at"),
+        )
+        assert_schema(vector__document_scores, DOCUMENT_VECTOR_SCORE_SCHEMA, name="DocumentVectorScore", mode="strict")
+        return {
+            "vector__document_scores": vector__document_scores,
+        }
+
+    def _step_vector_score_paragraphs_34(self, frames):
+        # Step method: vector.score_paragraphs
+        vector__paragraph_scores = frames["paragraph_vector_queries"].alias("paragraph_vector_query")
+        __structure_streaming_step = (
+            frames["paragraph_vector_queries"].isStreaming
+            or frames["paragraph_vector_index"].isStreaming
+            or frames["vector__valid_policy"].isStreaming
+            or frames["score_policy"].isStreaming
+        )
+        vector__valid_policy_param_joined = frames["vector__valid_policy"]
+        if not __structure_streaming_step:
+            vector__valid_policy_param_joined_count = frames["vector__valid_policy"].agg(
+                F.count(F.lit(1)).alias("__structure_count")
+            )
+            vector__valid_policy_param_joined_count = vector__valid_policy_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            vector__valid_policy_param_joined = vector__valid_policy_param_joined_count.crossJoin(
+                frames["vector__valid_policy"]
+            ).drop("__structure_exactly_one")
+        vector__valid_policy_joined = vector__valid_policy_param_joined.alias("vector__valid_policy")
+        vector__paragraph_scores = vector__paragraph_scores.crossJoin(vector__valid_policy_joined)
+        score_policy_2_param_joined = frames["score_policy"]
+        if not __structure_streaming_step:
+            score_policy_2_param_joined_count = frames["score_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
+            score_policy_2_param_joined_count = score_policy_2_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(score_policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            score_policy_2_param_joined = score_policy_2_param_joined_count.crossJoin(frames["score_policy"]).drop(
+                "__structure_exactly_one"
+            )
+        score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
+        vector__paragraph_scores = vector__paragraph_scores.crossJoin(score_policy_2_joined)
+        paragraph_vector_index_3_joined = frames["paragraph_vector_index"].alias("paragraph_vector_index_3")
+        vector__paragraph_scores = vector__paragraph_scores.crossJoin(paragraph_vector_index_3_joined)
+        vector__paragraph_scores_require_all_3_violations = vector__paragraph_scores.where(
+            ~F.coalesce(
+                (
+                    (
+                        (
+                            (
+                                (
+                                    (
+                                        (
+                                            (
+                                                (
+                                                    (
+                                                        F.col("paragraph_vector_query.model_id")
+                                                        == F.col("vector__valid_policy.model_id")
+                                                    )
+                                                    & (
+                                                        F.col("paragraph_vector_index_3.model_id")
+                                                        == F.col("vector__valid_policy.model_id")
+                                                    )
+                                                )
+                                                & (
+                                                    F.col("paragraph_vector_query.dimension")
+                                                    == F.col("vector__valid_policy.dimension")
+                                                )
+                                            )
+                                            & (
+                                                F.col("paragraph_vector_index_3.dimension")
+                                                == F.col("vector__valid_policy.dimension")
+                                            )
+                                        )
+                                        & (
+                                            F.col("paragraph_vector_query.content_revision")
+                                            == F.col("vector__valid_policy.content_revision")
+                                        )
+                                    )
+                                    & (
+                                        F.col("paragraph_vector_index_3.content_revision")
+                                        == F.col("vector__valid_policy.content_revision")
+                                    )
+                                )
+                                & (
+                                    F.col("paragraph_vector_query.experiment_id")
+                                    == F.col("vector__valid_policy.experiment_id")
+                                )
+                            )
+                            & (
+                                F.col("paragraph_vector_index_3.experiment_id")
+                                == F.col("vector__valid_policy.experiment_id")
+                            )
+                        )
+                        & (
+                            (
+                                (
+                                    (
+                                        F.col("paragraph_vector_query.dimension")
+                                        == F.size(F.col("paragraph_vector_query.vector"))
+                                    )
+                                    & (F.size(F.col("paragraph_vector_query.vector")) > F.lit(0))
+                                )
+                                & (
+                                    F.size(
+                                        F.filter(
+                                            F.col("paragraph_vector_query.vector"),
+                                            lambda item: (
+                                                (F.isnan(item) | (item > F.lit(1.7976931348623157e308)))
+                                                | (item < F.lit(-1.7976931348623157e308))
+                                            ),
+                                        )
+                                    )
+                                    == F.lit(0)
+                                )
+                            )
+                            & (
+                                F.sqrt(
+                                    F.aggregate(
+                                        F.col("paragraph_vector_query.vector"),
+                                        F.lit(0.0),
+                                        lambda acc, item: (acc + (item * item)),
+                                    )
+                                )
+                                > F.lit(0.0)
+                            )
+                        )
+                    )
+                    & (
+                        (
+                            (
+                                (
+                                    F.col("paragraph_vector_index_3.dimension")
+                                    == F.size(F.col("paragraph_vector_index_3.vector"))
+                                )
+                                & (F.size(F.col("paragraph_vector_index_3.vector")) > F.lit(0))
+                            )
+                            & (
+                                F.size(
+                                    F.filter(
+                                        F.col("paragraph_vector_index_3.vector"),
+                                        lambda item: (
+                                            (F.isnan(item) | (item > F.lit(1.7976931348623157e308)))
+                                            | (item < F.lit(-1.7976931348623157e308))
+                                        ),
+                                    )
+                                )
+                                == F.lit(0)
+                            )
+                        )
+                        & (
+                            F.sqrt(
+                                F.aggregate(
+                                    F.col("paragraph_vector_index_3.vector"),
+                                    F.lit(0.0),
+                                    lambda acc, item: (acc + (item * item)),
+                                )
+                            )
+                            > F.lit(0.0)
+                        )
+                    )
+                ),
+                F.lit(False),
+            )
+        ).agg(F.count(F.lit(1)).alias("__structure_violations"))
+        vector__paragraph_scores_require_all_3_assertion = vector__paragraph_scores_require_all_3_violations.select(
+            F.assert_true(
+                F.col("__structure_violations") == F.lit(0),
+                (
+                    'REL-E0703: require_all(...) found rows that do not satisfy the predicate; see'
+                    'docs/Diagnostics.md#rel-e0703'
+                ),
+            ).alias("__structure_require_all")
+        )
+        vector__paragraph_scores = vector__paragraph_scores_require_all_3_assertion.crossJoin(
+            vector__paragraph_scores
+        ).drop("__structure_require_all")
+        vector__paragraph_scores = vector__paragraph_scores.where(
+            (
+                (
+                    (
+                        (F.col("paragraph_vector_query.document_id") != F.col("paragraph_vector_index_3.document_id"))
+                        | (F.col("paragraph_vector_query.section_id") != F.col("paragraph_vector_index_3.section_id"))
+                    )
+                    | (F.col("paragraph_vector_query.paragraph_id") != F.col("paragraph_vector_index_3.paragraph_id"))
+                )
+            )
+        )
+        vector__paragraph_scores = vector__paragraph_scores.select(
+            F.col("paragraph_vector_query.query_id"),
+            F.col("paragraph_vector_query.document_id").alias("query_document_id"),
+            F.col("paragraph_vector_query.section_id").alias("query_section_id"),
+            F.col("paragraph_vector_query.paragraph_id").alias("query_paragraph_id"),
+            F.col("paragraph_vector_index_3.document_id"),
+            F.col("paragraph_vector_index_3.section_id"),
+            F.col("paragraph_vector_index_3.paragraph_id"),
+            F.coalesce(
+                (
+                    F.aggregate(
+                        F.zip_with(
+                            F.col("paragraph_vector_query.vector"),
+                            F.col("paragraph_vector_index_3.vector"),
+                            lambda left_item, right_item: (left_item * right_item),
+                        ),
+                        F.lit(0.0),
+                        lambda acc, item: (acc + item),
+                    )
+                    / (
+                        F.sqrt(
+                            F.aggregate(
+                                F.col("paragraph_vector_query.vector"),
+                                F.lit(0.0),
+                                lambda acc, item: (acc + (item * item)),
+                            )
+                        )
+                        * F.sqrt(
+                            F.aggregate(
+                                F.col("paragraph_vector_index_3.vector"),
+                                F.lit(0.0),
+                                lambda acc, item: (acc + (item * item)),
+                            )
+                        )
+                    )
+                ),
+                F.lit(0.0),
+            ).alias("cosine_similarity"),
+            F.col("vector__valid_policy.model_id"),
+            F.col("vector__valid_policy.dimension"),
+            F.col("vector__valid_policy.content_revision"),
+            F.col("vector__valid_policy.experiment_id"),
+            F.lit('exact_reference').alias("vector_backend"),
+            F.col("score_policy_2.scored_at"),
+        )
+        return {
+            "vector__paragraph_scores": vector__paragraph_scores,
+        }
+
+
+class Scoring001AdjustBmGenerated(
+    ScoreBaseGenerated, ScoreOverlapGenerated, ScoreBm25Generated, SelectScoresGenerated, ScoreVectorsGenerated
+):
 
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
@@ -1476,6 +2001,11 @@ class Scoring001AdjustBmGenerated(ScoreBaseGenerated, ScoreOverlapGenerated, Sco
         paragraph_summary: DataFrame,
         sentence_summary: DataFrame,
         score_policy: DataFrame,
+        vector_policy: DataFrame,
+        document_vector_queries: DataFrame,
+        document_vector_index: DataFrame,
+        paragraph_vector_queries: DataFrame,
+        paragraph_vector_index: DataFrame,
     ) -> TransformResult:
         assert_schema(queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
         assert_schema(document_terms, DOCUMENT_TERM_SCHEMA, name="DocumentTerm", mode="strict")
@@ -1487,6 +2017,13 @@ class Scoring001AdjustBmGenerated(ScoreBaseGenerated, ScoreOverlapGenerated, Sco
         assert_schema(paragraph_summary, PARAGRAPH_INDEX_SUMMARY_SCHEMA, name="ParagraphIndexSummary", mode="strict")
         assert_schema(sentence_summary, SENTENCE_INDEX_SUMMARY_SCHEMA, name="SentenceIndexSummary", mode="strict")
         assert_schema(score_policy, SCORE_POLICY_SCHEMA, name="ScorePolicy", mode="strict")
+        assert_schema(vector_policy, VECTOR_INDEX_POLICY_SCHEMA, name="VectorIndexPolicy", mode="strict")
+        assert_schema(document_vector_queries, DOCUMENT_VECTOR_QUERY_SCHEMA, name="DocumentVectorQuery", mode="strict")
+        assert_schema(document_vector_index, DOCUMENT_VECTOR_INDEX_SCHEMA, name="DocumentVectorIndex", mode="strict")
+        assert_schema(
+            paragraph_vector_queries, PARAGRAPH_VECTOR_QUERY_SCHEMA, name="ParagraphVectorQuery", mode="strict"
+        )
+        assert_schema(paragraph_vector_index, PARAGRAPH_VECTOR_INDEX_SCHEMA, name="ParagraphVectorIndex", mode="strict")
         _input_queries = queries
         _input_document_terms = document_terms
         _input_section_terms = section_terms
@@ -1497,6 +2034,11 @@ class Scoring001AdjustBmGenerated(ScoreBaseGenerated, ScoreOverlapGenerated, Sco
         _input_paragraph_summary = paragraph_summary
         _input_sentence_summary = sentence_summary
         _input_score_policy = score_policy
+        _input_vector_policy = vector_policy
+        _input_document_vector_queries = document_vector_queries
+        _input_document_vector_index = document_vector_index
+        _input_paragraph_vector_queries = paragraph_vector_queries
+        _input_paragraph_vector_index = paragraph_vector_index
         frames = {
             "queries": queries,
             "document_terms": document_terms,
@@ -1508,6 +2050,11 @@ class Scoring001AdjustBmGenerated(ScoreBaseGenerated, ScoreOverlapGenerated, Sco
             "paragraph_summary": paragraph_summary,
             "sentence_summary": sentence_summary,
             "score_policy": score_policy,
+            "vector_policy": vector_policy,
+            "document_vector_queries": document_vector_queries,
+            "document_vector_index": document_vector_index,
+            "paragraph_vector_queries": paragraph_vector_queries,
+            "paragraph_vector_index": paragraph_vector_index,
             "input:queries": _input_queries,
             "input:document_terms": _input_document_terms,
             "input:section_terms": _input_section_terms,
@@ -1518,6 +2065,11 @@ class Scoring001AdjustBmGenerated(ScoreBaseGenerated, ScoreOverlapGenerated, Sco
             "input:paragraph_summary": _input_paragraph_summary,
             "input:sentence_summary": _input_sentence_summary,
             "input:score_policy": _input_score_policy,
+            "input:vector_policy": _input_vector_policy,
+            "input:document_vector_queries": _input_document_vector_queries,
+            "input:document_vector_index": _input_document_vector_index,
+            "input:paragraph_vector_queries": _input_paragraph_vector_queries,
+            "input:paragraph_vector_index": _input_paragraph_vector_index,
         }
         frames.update(self._step_overlap_expand_query_terms_0(frames))
         frames.update(self._step_overlap_count_query_terms_1(frames))
@@ -1551,6 +2103,9 @@ class Scoring001AdjustBmGenerated(ScoreBaseGenerated, ScoreOverlapGenerated, Sco
         frames.update(self._step_selected_score_sections_29(frames))
         frames.update(self._step_selected_score_paragraphs_30(frames))
         frames.update(self._step_selected_score_sentences_31(frames))
+        frames.update(self._step_vector_validate_policy_32(frames))
+        frames.update(self._step_vector_score_documents_33(frames))
+        frames.update(self._step_vector_score_paragraphs_34(frames))
 
         # Step method: document_scores
         document_scores = frames["selected__document_scores"].alias("document_score")
@@ -1605,6 +2160,16 @@ class Scoring001AdjustBmGenerated(ScoreBaseGenerated, ScoreOverlapGenerated, Sco
         # Step method: sentence_bm25_scores
         sentence_bm25_scores = frames["bm25__sentence_bm25_scores"].alias("sentence_bm25_score")
         assert_schema(sentence_bm25_scores, SENTENCE_BM25_SCORE_SCHEMA, name="SentenceBm25Score", mode="strict")
+
+        # Step method: document_vector_scores
+        document_vector_scores = frames["vector__document_scores"].alias("document_vector_score")
+        assert_schema(document_vector_scores, DOCUMENT_VECTOR_SCORE_SCHEMA, name="DocumentVectorScore", mode="strict")
+
+        # Step method: paragraph_vector_scores
+        paragraph_vector_scores = frames["vector__paragraph_scores"].alias("paragraph_vector_score")
+        assert_schema(
+            paragraph_vector_scores, PARAGRAPH_VECTOR_SCORE_SCHEMA, name="ParagraphVectorScore", mode="strict"
+        )
         return TransformResult(
             {
                 "document_scores": document_scores,
@@ -1619,6 +2184,8 @@ class Scoring001AdjustBmGenerated(ScoreBaseGenerated, ScoreOverlapGenerated, Sco
                 "section_bm25_scores": section_bm25_scores,
                 "paragraph_bm25_scores": paragraph_bm25_scores,
                 "sentence_bm25_scores": sentence_bm25_scores,
+                "document_vector_scores": document_vector_scores,
+                "paragraph_vector_scores": paragraph_vector_scores,
             },
             single=False,
             schema={
@@ -1634,5 +2201,7 @@ class Scoring001AdjustBmGenerated(ScoreBaseGenerated, ScoreOverlapGenerated, Sco
                 "section_bm25_scores": SECTION_BM25_SCORE_SCHEMA,
                 "paragraph_bm25_scores": PARAGRAPH_BM25_SCORE_SCHEMA,
                 "sentence_bm25_scores": SENTENCE_BM25_SCORE_SCHEMA,
+                "document_vector_scores": DOCUMENT_VECTOR_SCORE_SCHEMA,
+                "paragraph_vector_scores": PARAGRAPH_VECTOR_SCORE_SCHEMA,
             },
         )

@@ -4,7 +4,7 @@ from examples.search.schemas.features import DocumentFeatures, QueryFeatures
 from examples.search.schemas.search import DocumentSearchCandidate
 from examples.search.schemas.training import RankingArtifact
 from structure import Transform, input, output, step
-from structure.plugin.pyspark import coalesce, element_at, exactly_one, inner_join, param_join, require_all, types
+from structure.plugin.pyspark import coalesce, element_at, inner_join, param_join, require_all, types
 
 
 class RankDocumentCandidates(Transform):
@@ -24,7 +24,6 @@ class RankDocumentCandidates(Transform):
         document: DocumentFeatures,
         query: QueryFeatures,
     ) -> DocumentSearchCandidate:
-        exactly_one(artifact)
         artifact = param_join(artifact)
         inner_join(document, on=document.document_id == candidate.document_id)
         inner_join(query, on=query.query_id == candidate.search_query_id)

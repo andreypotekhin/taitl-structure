@@ -12,7 +12,7 @@ from examples.search.schemas.similarity import (
 )
 from examples.search.schemas.text import Document, Paragraph
 from structure import Transform, input, lane, output, step
-from structure.plugin.pyspark import exactly_one, inner_join, param_join, row_number, where
+from structure.plugin.pyspark import inner_join, param_join, row_number, where
 
 
 class RerankSimilarity(Transform):
@@ -63,7 +63,6 @@ class RerankSimilarity(Transform):
     def limit_documents(
         self, candidate: HybridIndexedSimilarDocument, policy: SimilarityFusionPolicy
     ) -> HybridIndexedSimilarDocument:
-        exactly_one(policy)
         param_join(policy)
         where(candidate.rank <= policy.maximum_results)
         return HybridIndexedSimilarDocument.project(candidate)
@@ -132,7 +131,6 @@ class RerankSimilarityParagraphs(Transform):
     def limit_paragraphs(
         self, paragraph: HybridIndexedSimilarParagraph, policy: SimilarityFusionPolicy
     ) -> HybridIndexedSimilarParagraph:
-        exactly_one(policy)
         param_join(policy)
         where(paragraph.rank <= policy.maximum_results)
         return HybridIndexedSimilarParagraph.project(paragraph)

@@ -180,20 +180,24 @@ Document retrieval uses the following explicit funnel:
     OnlineScoring
       -> cached and online composite lexical scores
     RetrieveDocuments
-      -> at most 1,000 lexical document candidates per query/context/experiment
+      -> unranked lexical and provider-ranked vector candidate lanes
+    FuseDocumentCandidates
+      -> lexical rank, document-level deduplication, RRF, and at most 1,000 fused candidates
     RerankDocuments
       -> feedback enrichment, final rank, and at most 100 results
 
 The filter counts distinct normalized query terms shared with a document. Ties are ordered by document ID. It is an
 early performance boundary, not the final relevance score. The final lexical candidate set is selected before feedback
-is applied, so feedback cannot invent a document absent from the admitted candidate set. The final cap is applied only
-after feedback reranking, allowing a candidate ranked 101 through 1,000 lexically to move into the returned top 100.
+is applied, so feedback cannot invent a document absent from the admitted candidate set. When the caller supplies a
+validated vector lane, vector candidates are fused with lexical candidates before feedback and a vector-only candidate
+may enter without a lexical overlap row. The final cap is applied only after feedback reranking, allowing a candidate
+ranked 101 through 1,000 in the fused lane to move into the returned top 100.
 
 For a candidate, feedback is:
 
     0.8 * query-document feedback + 0.2 * document-popularity feedback
 
-The reranker combines normalized lexical score and feedback using `RelevancePolicy.score_weight` and
+The reranker combines normalized retrieval score and feedback using `RelevancePolicy.score_weight` and
 `RelevancePolicy.feedback_weight`. Missing feedback contributes zero. Final ties are deterministic by document ID.
 
 ### Sentence presentation
@@ -350,10 +354,11 @@ rejection of empty or zero-norm vectors, exact top-K retrieval, and a separate `
 windows and presentation. The follow-up plan `P08102602.Similarity-search-hybrid-and-ann-backends.plan.md` records the
 provider-neutral candidate boundary.
 
-Lexical and vector candidates would remain separate ranked lanes. Reciprocal Rank Fusion would contribute
+Lexical and vector candidates remain separate ranked lanes for similarity and the opt-in document-search path.
+Reciprocal Rank Fusion contributes
 `1 / (rrf_k + rank)` for each available lane, with equal weights and `rrf_k = 60` by default. A candidate found in only
-one lane would remain eligible; a candidate found in both would retain both ranks and component scores. Fusion would
-occur before feedback reranking. Sections and sentences would remain lexical-only in the first slice.
+one lane remains eligible; a candidate found in both retains both ranks and component scores. Fusion occurs before
+feedback reranking. Sections and sentences remain lexical-only in the first slice.
 
 The exact backend is an example/reference implementation, not a hosted ANN service. Callers can substitute HNSW or
 another ANN producer by emitting the same ranked candidate relation; model execution, persistence, refresh scheduling,

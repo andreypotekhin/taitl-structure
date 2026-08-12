@@ -1,6 +1,6 @@
 """Search presentation transforms."""
 
-from examples.search.transforms.searching.online import OnlineFiltering, OnlineScoring
+from examples.search.transforms.online import OnlineFiltering, OnlineScoring
 from examples.search.transforms.searching.search_docs import (
     RerankDocuments,
     RetrieveDocuments,

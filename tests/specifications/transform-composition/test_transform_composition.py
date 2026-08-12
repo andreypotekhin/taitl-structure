@@ -1346,7 +1346,7 @@ def test_inherited_lane_remains_available_to_override() -> None:
 
 def test_search_scoring_uses_stage_composition() -> None:
     from examples.search.transforms.score import EnrichWithScores
-    from examples.search.transforms.scoring.lexical.pipeline import Scoring
+    from examples.search.transforms.scoring.Scoring import Scoring
 
     for transform in (Scoring, EnrichWithScores):
         plan = _analysis(transform)
@@ -1364,8 +1364,10 @@ def test_search_scoring_uses_stage_composition() -> None:
             "section_bm25_scores",
             "paragraph_bm25_scores",
             "sentence_bm25_scores",
+            "document_vector_scores",
+            "paragraph_vector_scores",
         ]
-        assert [step.name for step in plan.steps][-4:] == [
+        assert [step.name for step in plan.steps if step.name.startswith("selected.score_")] == [
             "selected.score_documents",
             "selected.score_sections",
             "selected.score_paragraphs",

@@ -122,10 +122,17 @@ DOCUMENT_SEARCH_CANDIDATE_SCHEMA = T.StructType([
     T.StructField("title", T.StringType(), False),
     T.StructField("url", T.StringType(), True),
     T.StructField("score", T.DoubleType(), False),
+    T.StructField("retrieval_score", T.DoubleType(), False),
     T.StructField("score_feedback", T.DoubleType(), False),
     T.StructField("score_rank", T.DoubleType(), False),
     T.StructField("score_weight", T.DoubleType(), False),
     T.StructField("feedback_weight", T.DoubleType(), False),
+    T.StructField("lexical_rank", T.LongType(), True),
+    T.StructField("vector_rank", T.LongType(), True),
+    T.StructField("vector_similarity", T.DoubleType(), True),
+    T.StructField("rrf_score", T.DoubleType(), False),
+    T.StructField("rrf_k", T.LongType(), False),
+    T.StructField("vector_backend", T.StringType(), True),
 ])
 
 DOCUMENT_SEARCH_RESULT_SCHEMA = T.StructType([
@@ -139,6 +146,13 @@ DOCUMENT_SEARCH_RESULT_SCHEMA = T.StructType([
     T.StructField("title", T.StringType(), False),
     T.StructField("url", T.StringType(), True),
     T.StructField("score", T.DoubleType(), False),
+    T.StructField("retrieval_score", T.DoubleType(), False),
     T.StructField("score_feedback", T.DoubleType(), False),
     T.StructField("score_rank", T.DoubleType(), False),
+    T.StructField("lexical_rank", T.LongType(), True),
+    T.StructField("vector_rank", T.LongType(), True),
+    T.StructField("vector_similarity", T.DoubleType(), True),
+    T.StructField("rrf_score", T.DoubleType(), False),
+    T.StructField("rrf_k", T.LongType(), False),
+    T.StructField("vector_backend", T.StringType(), True),
 ])

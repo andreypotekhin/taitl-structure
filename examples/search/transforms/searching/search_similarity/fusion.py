@@ -7,7 +7,7 @@ from examples.search.schemas.similarities.vector import (
 from examples.search.schemas.similarity import SimilarityFusionPolicy
 from examples.search.transforms.lib.Rrf import Rrf
 from structure import Transform, input, lane, output, step
-from structure.plugin.pyspark import exactly_one, group_by, max, param_join, require_all, union_all, where
+from structure.plugin.pyspark import group_by, max, param_join, require_all, union_all, where
 
 
 class FuseSimilarity(Transform):
@@ -43,7 +43,6 @@ class FuseSimilarity(Transform):
     def fuse_documents(
         self, candidate: DocumentFusedSimilarityCandidate, policy: SimilarityFusionPolicy
     ) -> DocumentFusedSimilarityCandidate:
-        exactly_one(policy)
         param_join(policy)
         group_by(
             left_document_id=candidate.left_document_id,
@@ -74,7 +73,6 @@ class FuseSimilarity(Transform):
     def score_documents(
         self, candidate: DocumentFusedSimilarityCandidate, policy: SimilarityFusionPolicy
     ) -> DocumentFusedSimilarityCandidate:
-        exactly_one(policy)
         param_join(policy)
         return DocumentFusedSimilarityCandidate.project(candidate)(
             rrf_score=Rrf.score(candidate.lexical_rank, candidate.vector_rank, policy.rrf_k)
@@ -84,7 +82,6 @@ class FuseSimilarity(Transform):
     def publish_documents(
         self, candidate: DocumentFusedSimilarityCandidate, policy: SimilarityFusionPolicy
     ) -> DocumentFusedSimilarityCandidate:
-        exactly_one(policy)
         param_join(policy)
         where(candidate.lexical_rank.is_null() | (candidate.lexical_rank <= policy.maximum_lexical_candidates))
         where(candidate.vector_rank.is_null() | (candidate.vector_rank <= policy.maximum_vector_candidates))
@@ -124,7 +121,6 @@ class FuseSimilarityParagraphs(Transform):
     def fuse_paragraphs(
         self, candidate: ParagraphFusedSimilarityCandidate, policy: SimilarityFusionPolicy
     ) -> ParagraphFusedSimilarityCandidate:
-        exactly_one(policy)
         param_join(policy)
         group_by(
             left_document_id=candidate.left_document_id,
@@ -163,7 +159,6 @@ class FuseSimilarityParagraphs(Transform):
     def score_paragraphs(
         self, candidate: ParagraphFusedSimilarityCandidate, policy: SimilarityFusionPolicy
     ) -> ParagraphFusedSimilarityCandidate:
-        exactly_one(policy)
         param_join(policy)
         return ParagraphFusedSimilarityCandidate.project(candidate)(
             rrf_score=Rrf.score(candidate.lexical_rank, candidate.vector_rank, policy.rrf_k)
@@ -173,7 +168,6 @@ class FuseSimilarityParagraphs(Transform):
     def publish_paragraphs(
         self, candidate: ParagraphFusedSimilarityCandidate, policy: SimilarityFusionPolicy
     ) -> ParagraphFusedSimilarityCandidate:
-        exactly_one(policy)
         param_join(policy)
         where(candidate.lexical_rank.is_null() | (candidate.lexical_rank <= policy.maximum_lexical_candidates))
         where(candidate.vector_rank.is_null() | (candidate.vector_rank <= policy.maximum_vector_candidates))

@@ -1,7 +1,7 @@
 """Typed caller-owned vector-index artifacts for Search."""
 
 from structure import Schema
-from structure.plugin.pyspark import array, double, long, string
+from structure.plugin.pyspark import array, double, long, string, timestamp
 
 
 class VectorEmbedding(Schema):
@@ -25,8 +25,22 @@ class ParagraphVectorEmbedding(VectorEmbedding):
 
 
 class DocumentVectorQuery(VectorEmbedding):
+    """Normalized document-level vector query shared by Search scoring paths."""
+
     query_id = string(nullable=False)
-    document_id = string(nullable=False)
+    query_document_id = string(nullable=True)
+
+
+class SearchQueryVectorEmbedding(VectorEmbedding):
+    """Provider-produced embedding for one SearchQuery."""
+
+    query_id = string(nullable=False)
+
+
+class SimilarityDocumentVectorEmbedding(VectorEmbedding):
+    """Provider-produced embedding for one source similarity document."""
+
+    query_id = string(nullable=False)
 
 
 class ParagraphVectorQuery(VectorEmbedding):
@@ -69,7 +83,7 @@ class ParagraphVectorIndexSummary(DocumentVectorIndexSummary):
 
 class DocumentVectorScore(Schema):
     query_id = string(nullable=False)
-    query_document_id = string(nullable=False)
+    query_document_id = string(nullable=True)
     document_id = string(nullable=False)
     cosine_similarity = double(nullable=False)
     model_id = string(nullable=False)
@@ -77,6 +91,7 @@ class DocumentVectorScore(Schema):
     content_revision = string(nullable=False)
     experiment_id = string(nullable=False)
     vector_backend = string(nullable=False)
+    scored_at = timestamp(nullable=False)
 
 
 class DocumentVectorCandidate(DocumentVectorScore):
@@ -99,6 +114,7 @@ class ParagraphVectorScore(Schema):
     content_revision = string(nullable=False)
     experiment_id = string(nullable=False)
     vector_backend = string(nullable=False)
+    scored_at = timestamp(nullable=False)
 
 
 class ParagraphVectorCandidate(ParagraphVectorScore):
