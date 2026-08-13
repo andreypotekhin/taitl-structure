@@ -11,6 +11,7 @@ class CompilerInputCollector:
                 schema=declaration.schema,
                 ordinal=ordinal,
                 streaming=declaration.streaming,
+                optional=declaration.optional,
                 aliases=declaration.aliases,
                 streaming_declared=declaration.streaming_declared,
             )

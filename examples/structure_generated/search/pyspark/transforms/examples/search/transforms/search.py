@@ -172,9 +172,24 @@ class SelectGapQueries__examples_search_transforms_online_filtering_SelectGapQue
             (F.col("search_query.id") == F.col("filtered__gap__filter_availability.query_id")),
             "left",
         )
-        filtered__gap__gap_queries = filtered__gap__gap_queries.where(
-            (F.col("filtered__gap__filter_availability.query_id").isNull())
+        document_filter_targets_2_joined = frames["document_filter_targets"].alias("document_filter_targets_2")
+        filtered__gap__gap_queries = filtered__gap__gap_queries.join(
+            document_filter_targets_2_joined,
+            (F.col("search_query.id") == F.col("document_filter_targets_2.query_id")),
+            "left",
         )
+        filtered__gap__gap_queries = filtered__gap__gap_queries.where(
+            (
+                (
+                    F.col("filtered__gap__filter_availability.query_id").isNull()
+                    | F.col("document_filter_targets_2.query_id").isNotNull()
+                )
+            )
+        )
+        if filtered__gap__gap_queries.isStreaming:
+            filtered__gap__gap_queries = filtered__gap__gap_queries.dropDuplicatesWithinWatermark(["id"])
+        else:
+            filtered__gap__gap_queries = filtered__gap__gap_queries.dropDuplicates(["id"])
         filtered__gap__gap_queries = filtered__gap__gap_queries.select(
             F.col("search_query.id"),
             F.col("search_query.queryset"),
@@ -436,21 +451,36 @@ class SelectFilterTargetsGenerated:
     def _step_filtered_selected_select_targets_7(self, frames):
         # Step method: filtered.selected.select_targets
         filtered__selected__targets = frames["filtered__selected__merged_filter_scores"].alias("document_filter_score")
+        document_filter_targets_joined = frames["document_filter_targets"].alias("document_filter_targets")
+        filtered__selected__targets = filtered__selected__targets.join(
+            document_filter_targets_joined,
+            (F.col("document_filter_targets.query_id") == F.col("document_filter_score.query_id")),
+            "left",
+        )
         filtered__selected__targets = filtered__selected__targets.where(
-            ((F.col("document_filter_score.filter_rank") <= F.lit(10000)))
+            (
+                (
+                    F.col("document_filter_targets.query_id").isNull()
+                    | (F.col("document_filter_targets.document_id") == F.col("document_filter_score.document_id"))
+                )
+            )
+            & ((F.col("document_filter_score.filter_rank") <= F.lit(10000)))
         )
         filtered__selected__targets = filtered__selected__targets.select(
             F.col("document_filter_score.query_id"),
             F.col("document_filter_score.document_id"),
-            F.sha2(
-                F.concat_ws(
-                    '\x1f',
-                    F.lit('document-filter-targets-v1'),
-                    F.col("document_filter_score.query_id"),
-                    F.col("document_filter_score.scored_at").cast('string'),
-                    F.lit('10000'),
+            F.coalesce(
+                F.col("document_filter_targets.scope_id"),
+                F.sha2(
+                    F.concat_ws(
+                        '\x1f',
+                        F.lit('document-filter-targets-v1'),
+                        F.col("document_filter_score.query_id"),
+                        F.col("document_filter_score.scored_at").cast('string'),
+                        F.lit('10000'),
+                    ),
+                    256,
                 ),
-                256,
             ).alias("scope_id"),
         )
         assert_schema(
@@ -6826,6 +6856,7 @@ class SearchDocumentsGenerated(
         requests: DataFrame,
         document_filter_scores: DataFrame,
         score_policy: DataFrame,
+        document_filter_targets: DataFrame | None = None,
         document_terms: DataFrame,
         document_vector_embeddings: DataFrame,
         inference_policy: DataFrame,
@@ -6857,6 +6888,14 @@ class SearchDocumentsGenerated(
         assert_schema(requests, SEARCH_REQUEST_SCHEMA, name="SearchRequest", mode="strict")
         assert_schema(document_filter_scores, DOCUMENT_FILTER_SCORE_SCHEMA, name="DocumentFilterScore", mode="strict")
         assert_schema(score_policy, SCORE_POLICY_SCHEMA, name="ScorePolicy", mode="strict")
+        document_filter_targets = (
+            self.spark.createDataFrame([], DOCUMENT_SEARCH_TARGET_SCHEMA)
+            if document_filter_targets is None
+            else document_filter_targets
+        )
+        assert_schema(
+            document_filter_targets, DOCUMENT_SEARCH_TARGET_SCHEMA, name="DocumentSearchTarget", mode="strict"
+        )
         assert_schema(document_terms, DOCUMENT_TERM_SCHEMA, name="DocumentTerm", mode="strict")
         assert_schema(
             document_vector_embeddings,
@@ -6898,6 +6937,7 @@ class SearchDocumentsGenerated(
         _input_requests = requests
         _input_document_filter_scores = document_filter_scores
         _input_score_policy = score_policy
+        _input_document_filter_targets = document_filter_targets
         _input_document_terms = document_terms
         _input_document_vector_embeddings = document_vector_embeddings
         _input_inference_policy = inference_policy
@@ -6929,6 +6969,7 @@ class SearchDocumentsGenerated(
             "requests": requests,
             "document_filter_scores": document_filter_scores,
             "score_policy": score_policy,
+            "document_filter_targets": document_filter_targets,
             "document_terms": document_terms,
             "document_vector_embeddings": document_vector_embeddings,
             "inference_policy": inference_policy,
@@ -6959,6 +7000,7 @@ class SearchDocumentsGenerated(
             "input:requests": _input_requests,
             "input:document_filter_scores": _input_document_filter_scores,
             "input:score_policy": _input_score_policy,
+            "input:document_filter_targets": _input_document_filter_targets,
             "input:document_terms": _input_document_terms,
             "input:document_vector_embeddings": _input_document_vector_embeddings,
             "input:inference_policy": _input_inference_policy,

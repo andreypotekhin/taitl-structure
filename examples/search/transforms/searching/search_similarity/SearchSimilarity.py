@@ -26,16 +26,19 @@ class SearchSimilarity(Transform):
     fusion_policy = input(SimilarityFusionPolicy)
 
     lexical = AdoptLexicalSimilarity(document_similarities=document_similarities)
+
     vectorized = VectorizeSimilarityDocumentQueries(
         queries=query,
         embeddings=document_vector_embeddings,
     )
+
     scored = ScoreDocumentVectors(
         policy=vector_policy,
         score_policy=score_policy,
         queries=vectorized.vector_queries,
         document_index=document_vector_index,
     )
+
     vector = AdoptVectorSimilarity(
         document_scores=scored.document_scores,
         query=query,

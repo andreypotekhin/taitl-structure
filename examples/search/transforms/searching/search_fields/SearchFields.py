@@ -11,7 +11,7 @@ from examples.search.schemas.scoring.overlap import *
 from examples.search.schemas.search import *
 from examples.search.schemas.text import *
 from examples.search.schemas.user import *
-from examples.search.transforms.searching.search_fields.custom.search_docs.SearchDocuments import *
+from examples.search.transforms.searching.search_docs.SearchDocuments import SearchDocuments
 from examples.search.transforms.searching.search_fields.delegate import *
 from examples.search.transforms.searching.search_fields.field_search import *
 from examples.search.transforms.searching.search_fields.publish import *

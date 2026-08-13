@@ -42,7 +42,7 @@ _DEFAULT_STREAMING: bool = cast(bool, _DefaultFalse())
 
 
 @overload
-def input(value: type[Schema], *, streaming: bool = False) -> InputDeclaration:
+def input(value: type[Schema], *, streaming: bool = False, optional: bool = False) -> InputDeclaration:
     """Declare an external transform input from a schema class."""
     ...
 
@@ -57,6 +57,7 @@ def input(
     value: type[Schema] | InputDeclaration | OutputDeclaration,
     *,
     streaming: bool = _DEFAULT_STREAMING,
+    optional: bool = False,
 ) -> InputDeclaration | BindingSelector:
     """Declare or select a transform input.
 
@@ -64,6 +65,8 @@ def input(
         value: Schema class for a new input declaration, or an existing input
             declaration to select for a binding.
         streaming: Whether the input is an unbounded streaming relation.
+        optional: Whether callers may omit the input; omitted inputs are
+            materialized as empty typed relations by the execution backend.
 
     Returns:
         An ``InputDeclaration`` for class attributes, or a ``BindingSelector``
@@ -78,13 +81,15 @@ def input(
         streaming = False
     if not isinstance(streaming, bool):
         raise TypeError("input(streaming=...) must be a Boolean")
+    if not isinstance(optional, bool):
+        raise TypeError("input(optional=...) must be a Boolean")
     if isinstance(value, (InputDeclaration, OutputDeclaration)):
-        if streaming:
-            raise TypeError("input(existing_input, streaming=...) is invalid; set streaming on the declaration")
+        if streaming or optional:
+            raise TypeError("input(existing_declaration, streaming/optional=...) is invalid; set it on the declaration")
         return BindingSelector("input", value)
     if not isinstance(value, type) or not issubclass(value, Schema):
         raise TypeError("input(...) requires a Schema class")
-    return InputDeclaration(schema=value, streaming=streaming, streaming_declared=declared)
+    return InputDeclaration(schema=value, streaming=streaming, optional=optional, streaming_declared=declared)
 
 
 @overload

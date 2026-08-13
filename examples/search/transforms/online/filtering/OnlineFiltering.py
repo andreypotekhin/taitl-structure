@@ -18,12 +18,14 @@ class OnlineFiltering(Transform):
     document_filter_scores = input(DocumentFilterScore)
     document_terms = input(DocumentTerm)
     score_policy = input(ScorePolicy)
+    document_filter_targets = input(DocumentSearchTarget, streaming=True, optional=True)
 
     gap = SelectGapQueries(
         queries=queries,
         requests=requests,
         document_filter_scores=document_filter_scores,
         score_policy=score_policy,
+        document_filter_targets=document_filter_targets,
     )
 
     filtering = Filtering(
@@ -36,6 +38,7 @@ class OnlineFiltering(Transform):
         document_filter_scores=document_filter_scores,
         online_document_filter_scores=filtering.document_filter_scores,
         requests=requests,
+        document_filter_targets=document_filter_targets,
         score_policy=score_policy,
     )
 

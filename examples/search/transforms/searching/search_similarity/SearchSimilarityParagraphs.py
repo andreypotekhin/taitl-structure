@@ -26,17 +26,20 @@ class SearchSimilarityParagraphs(Transform):
     similar_paragraphs = output(HybridIndexedSimilarParagraph)
 
     lexical = AdoptLexicalParagraphs(paragraph_similarities=paragraph_similarities)
+
     scored = ScoreParagraphVectors(
         policy=vector_policy,
         score_policy=score_policy,
         queries=paragraph_vector_queries,
         paragraph_index=paragraph_vector_index,
     )
+
     vector = AdoptVectorParagraphs(
         paragraph_scores=scored.paragraph_scores,
         query=query,
         paragraphs=paragraphs,
     )
+
     fused = FuseSimilarityParagraphs(
         policy=policy,
         paragraph_lexical_candidates=lexical.paragraph_candidates,

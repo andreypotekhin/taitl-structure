@@ -2,7 +2,7 @@
 
 from examples.search.schemas.clicks import SearchRequest
 from examples.search.schemas.filtering import DocumentFilterScore, FilterQueryAvailability
-from examples.search.schemas.search import ScorePolicy, SearchQuery
+from examples.search.schemas.search import DocumentSearchTarget, ScorePolicy, SearchQuery
 from structure import Transform, input, lane, output, step
 from structure.plugin.pyspark import datediff, drop_duplicates, inner_join, left_join, param_join, where
 
@@ -14,6 +14,7 @@ class SelectGapQueries(Transform):
     requests = input(SearchRequest, streaming=True)
     document_filter_scores = input(DocumentFilterScore)
     score_policy = input(ScorePolicy)
+    document_filter_targets = input(DocumentSearchTarget, streaming=True, optional=True)
 
     filter_availability = lane(FilterQueryAvailability)
     gap_queries = output(SearchQuery)
@@ -37,12 +38,15 @@ class SelectGapQueries(Transform):
         drop_duplicates(score.query_id)
         return FilterQueryAvailability(query_id=score.query_id)
 
-    @step(input=[queries, filter_availability], output=gap_queries)
+    @step(input=[queries, filter_availability, document_filter_targets], output=gap_queries)
     def select_gap_queries(
         self,
         query: SearchQuery,
         availability: FilterQueryAvailability,
+        target: DocumentSearchTarget,
     ) -> SearchQuery:
         left_join(availability, on=query.id == availability.query_id)
-        where(availability.query_id.is_null())
+        left_join(target, on=query.id == target.query_id)
+        where(availability.query_id.is_null() | target.query_id.is_not_null())
+        drop_duplicates(query.id)
         return SearchQuery.project(query)

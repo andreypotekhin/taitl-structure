@@ -31,6 +31,7 @@ class SearchDocuments(Transform):
     paragraph_vector_scores = input(ParagraphVectorScore)
     streamed_documents = input(Document, streaming=True)
     streamed_document_scores = input(DocumentScore, streaming=True)
+    document_filter_targets = input(DocumentSearchTarget, streaming=True, optional=True)
     document_overlap_scores = input(DocumentOverlapScore)
     document_filter_scores = input(DocumentFilterScore)
     document_terms = input(DocumentTerm)
@@ -60,6 +61,7 @@ class SearchDocuments(Transform):
         requests=requests,
         document_filter_scores=document_filter_scores,
         document_terms=document_terms,
+        document_filter_targets=document_filter_targets,
         score_policy=score_policy,
     )
 

@@ -12,12 +12,14 @@ class MapPySparkInput:
         ordinal: int,
         streaming: bool,
         aliases: tuple[str, ...] = (),
+        optional: bool = False,
     ) -> PySparkInputRecipe:
         return PySparkInputRecipe(
             name=name,
             schema=schema,
             ordinal=ordinal,
             streaming=streaming,
+            optional=optional,
             aliases=aliases,
             validation=PySparkValidationRecipe(
                 target=name,

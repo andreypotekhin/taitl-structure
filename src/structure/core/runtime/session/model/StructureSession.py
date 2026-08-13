@@ -217,7 +217,8 @@ class StructureSession:
         else:
             declared = set(type(invocation)._structure_inputs)
         bound = set(invocation._structure_bound_inputs)
-        missing = sorted(declared - bound)
+        optional = {input.name for input in artifact.transform_plan.inputs if input.optional}
+        missing = sorted(declared - bound - optional)
         if missing:
             raise self._input_error(
                 invocation,

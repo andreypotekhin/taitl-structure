@@ -286,7 +286,7 @@
       "kind": "function",
       "module": "structure.core.dsl.model.transforms.transform_api",
       "qualname": "input",
-      "signature": "(value: 'type[Schema] | InputDeclaration | OutputDeclaration', *, streaming: 'bool' = False) -> 'InputDeclaration | BindingSelector'"
+      "signature": "(value: 'type[Schema] | InputDeclaration | OutputDeclaration', *, streaming: 'bool' = False, optional: 'bool' = False) -> 'InputDeclaration | BindingSelector'"
     },
     "lane": {
       "dataclass_fields": [],

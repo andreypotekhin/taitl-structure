@@ -43,6 +43,7 @@ class LowerPySparkPlan:
                 input.ordinal,
                 cast(bool, input.streaming),
                 input.aliases,
+                input.optional,
             )
             for input in plan.inputs
         )

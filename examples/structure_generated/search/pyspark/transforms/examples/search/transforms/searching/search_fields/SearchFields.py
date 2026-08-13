@@ -519,8 +519,6 @@ class SelectGapQueries__examples_search_transforms_online_filtering_SelectGapQue
             "delegated__filtered__gap__filter_availability": delegated__filtered__gap__filter_availability,
         }
 
-
-class SelectGapQueries__examples_search_transforms_searching_search_fields_custom_online_filtering_SelectGapQueriesGenerated:
     def _step_delegated_filtered_gap_select_gap_queries_11(self, frames):
         # Step method: delegated.filtered.gap.select_gap_queries
         delegated__filtered__gap__gap_queries = frames["delegation__body_queries"].alias("search_query")
@@ -570,7 +568,7 @@ class SelectGapQueries__examples_search_transforms_searching_search_fields_custo
         }
 
 
-class FilterOverlap__examples_search_transforms_filtering_FilterOverlapGenerated:
+class FilterOverlapGenerated:
     def _step_delegated_filtered_filtering_overlap_expand_query_terms_12(self, frames):
         # Step method: delegated.filtered.filtering.overlap.expand_query_terms
         delegated__filtered__filtering__overlap__expanded_query_terms = frames[
@@ -623,6 +621,45 @@ class FilterOverlap__examples_search_transforms_filtering_FilterOverlapGenerated
         )
         return {
             "delegated__filtered__filtering__overlap__expanded_query_terms": delegated__filtered__filtering__overlap__expanded_query_terms,
+        }
+
+    def _step_delegated_filtered_filtering_overlap_match_documents_13(self, frames):
+        # Step method: delegated.filtered.filtering.overlap.match_documents
+        delegated__filtered__filtering__overlap__matched_documents = frames[
+            "delegated__filtered__filtering__overlap__expanded_query_terms"
+        ].alias("query_term")
+        document_terms_joined = frames["document_terms"].alias("document_terms")
+        delegated__filtered__filtering__overlap__matched_documents = (
+            delegated__filtered__filtering__overlap__matched_documents.join(
+                document_terms_joined,
+                (F.col("document_terms.term") == F.col("query_term.token")),
+                "inner",
+            )
+        )
+        delegated__filtered__filtering__overlap__matched_documents = (
+            delegated__filtered__filtering__overlap__matched_documents.groupBy(
+                F.col("query_term.query_id").alias("query_id"),
+                F.col("document_terms.document_id").alias("document_id"),
+                F.lit(0).cast('bigint').alias("filter_rank"),
+            )
+            .agg(
+                F.countDistinct(F.col("query_term.token")).cast(T.LongType()).alias("matched_terms"),
+            )
+            .select(
+                F.col("query_id"),
+                F.col("document_id"),
+                F.col("matched_terms"),
+                F.col("filter_rank"),
+            )
+        )
+        assert_schema(
+            delegated__filtered__filtering__overlap__matched_documents,
+            DOCUMENT_FILTER_MATCH_SCHEMA,
+            name="DocumentFilterMatch",
+            mode="strict",
+        )
+        return {
+            "delegated__filtered__filtering__overlap__matched_documents": delegated__filtered__filtering__overlap__matched_documents,
         }
 
     def _step_delegated_filtered_filtering_overlap_rank_documents_14(self, frames):
@@ -706,71 +743,7 @@ class FilterOverlap__examples_search_transforms_filtering_FilterOverlapGenerated
         }
 
 
-class FilterOverlap__examples_search_transforms_searching_search_fields_custom_filtering_FilterOverlapGenerated:
-    def _step_delegated_filtered_filtering_overlap_match_documents_13(self, frames):
-        # Step method: delegated.filtered.filtering.overlap.match_documents
-        delegated__filtered__filtering__overlap__matched_documents = frames[
-            "delegated__filtered__filtering__overlap__expanded_query_terms"
-        ].alias("query_term")
-        document_terms_joined = frames["document_terms"].alias("document_terms")
-        delegated__filtered__filtering__overlap__matched_documents = (
-            delegated__filtered__filtering__overlap__matched_documents.join(
-                document_terms_joined,
-                (F.col("document_terms.term") == F.col("query_term.token")),
-                "inner",
-            )
-        )
-        delegation__document_filter_targets_2_joined = frames["delegation__document_filter_targets"].alias(
-            "delegation__document_filter_targets_2"
-        )
-        delegated__filtered__filtering__overlap__matched_documents = (
-            delegated__filtered__filtering__overlap__matched_documents.join(
-                delegation__document_filter_targets_2_joined,
-                (F.col("delegation__document_filter_targets_2.query_id") == F.col("query_term.query_id")),
-                "left",
-            )
-        )
-        delegated__filtered__filtering__overlap__matched_documents = (
-            delegated__filtered__filtering__overlap__matched_documents.where(
-                (
-                    (
-                        F.col("delegation__document_filter_targets_2.query_id").isNull()
-                        | (
-                            F.col("delegation__document_filter_targets_2.document_id")
-                            == F.col("document_terms.document_id")
-                        )
-                    )
-                )
-            )
-        )
-        delegated__filtered__filtering__overlap__matched_documents = (
-            delegated__filtered__filtering__overlap__matched_documents.groupBy(
-                F.col("query_term.query_id").alias("query_id"),
-                F.col("document_terms.document_id").alias("document_id"),
-                F.lit(0).cast('bigint').alias("filter_rank"),
-            )
-            .agg(
-                F.countDistinct(F.col("query_term.token")).cast(T.LongType()).alias("matched_terms"),
-            )
-            .select(
-                F.col("query_id"),
-                F.col("document_id"),
-                F.col("matched_terms"),
-                F.col("filter_rank"),
-            )
-        )
-        assert_schema(
-            delegated__filtered__filtering__overlap__matched_documents,
-            DOCUMENT_FILTER_MATCH_SCHEMA,
-            name="DocumentFilterMatch",
-            mode="strict",
-        )
-        return {
-            "delegated__filtered__filtering__overlap__matched_documents": delegated__filtered__filtering__overlap__matched_documents,
-        }
-
-
-class SelectFilterTargets__examples_search_transforms_online_filtering_SelectFilterTargetsGenerated:
+class SelectFilterTargetsGenerated:
     def _step_delegated_filtered_selected_merge_filter_scores_16(self, frames):
         # Step method: delegated.filtered.selected.merge_filter_scores
         delegated__filtered__selected__merged_filter_scores = frames["document_filter_scores"].alias(
@@ -870,8 +843,6 @@ class SelectFilterTargets__examples_search_transforms_online_filtering_SelectFil
             "delegated__filtered__selected__merged_filter_scores": delegated__filtered__selected__merged_filter_scores,
         }
 
-
-class SelectFilterTargets__examples_search_transforms_searching_search_fields_custom_search_docs_SelectFilterTargetsGenerated:
     def _step_delegated_filtered_selected_select_targets_17(self, frames):
         # Step method: delegated.filtered.selected.select_targets
         delegated__filtered__selected__targets = frames["delegated__filtered__selected__merged_filter_scores"].alias(
@@ -8231,11 +8202,8 @@ class SearchFieldsGenerated(
     FieldSearchGenerated,
     BuildDelegationsGenerated,
     SelectGapQueries__examples_search_transforms_online_filtering_SelectGapQueriesGenerated,
-    SelectGapQueries__examples_search_transforms_searching_search_fields_custom_online_filtering_SelectGapQueriesGenerated,
-    FilterOverlap__examples_search_transforms_filtering_FilterOverlapGenerated,
-    FilterOverlap__examples_search_transforms_searching_search_fields_custom_filtering_FilterOverlapGenerated,
-    SelectFilterTargets__examples_search_transforms_online_filtering_SelectFilterTargetsGenerated,
-    SelectFilterTargets__examples_search_transforms_searching_search_fields_custom_search_docs_SelectFilterTargetsGenerated,
+    FilterOverlapGenerated,
+    SelectFilterTargetsGenerated,
     SelectQueryGapsGenerated,
     SelectDocumentGapsGenerated,
     InferenceGenerated,

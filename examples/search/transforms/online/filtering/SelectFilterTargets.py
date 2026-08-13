@@ -5,7 +5,16 @@ from examples.search.schemas.filtering import DocumentFilterScore
 from examples.search.schemas.search import DocumentSearchTarget, ScorePolicy
 from examples.search.transforms.lib.TargetScope import target_scope_id
 from structure import Transform, input, lane, output, step
-from structure.plugin.pyspark import datediff, drop_duplicates, inner_join, param_join, union_all, where
+from structure.plugin.pyspark import (
+    coalesce,
+    datediff,
+    drop_duplicates,
+    inner_join,
+    left_join,
+    param_join,
+    union_all,
+    where,
+)
 
 
 class SelectFilterTargets(Transform):
@@ -16,6 +25,7 @@ class SelectFilterTargets(Transform):
     document_filter_scores = input(DocumentFilterScore)
     online_document_filter_scores = input(DocumentFilterScore)
     requests = input(SearchRequest, streaming=True)
+    document_filter_targets = input(DocumentSearchTarget, streaming=True, optional=True)
     score_policy = input(ScorePolicy)
     merged_filter_scores = lane(DocumentFilterScore)
     targets = output(DocumentSearchTarget)
@@ -44,9 +54,13 @@ class SelectFilterTargets(Transform):
         drop_duplicates(candidate.query_id, candidate.document_id)
         return DocumentFilterScore.project(candidate)
 
-    @step(input=merged_filter_scores, output=targets)
-    def select_targets(self, document: DocumentFilterScore) -> DocumentSearchTarget:
+    @step(input=[merged_filter_scores, document_filter_targets], output=targets)
+    def select_targets(
+        self, document: DocumentFilterScore, target: DocumentSearchTarget
+    ) -> DocumentSearchTarget:
+        left_join(target, on=target.query_id == document.query_id)
+        where(target.query_id.is_null() | (target.document_id == document.document_id))
         where(document.filter_rank <= self.maximum_candidates)
         return DocumentSearchTarget.project(document)(
-            scope_id=target_scope_id(document.query_id, document.scored_at, self.maximum_candidates)
+            scope_id=coalesce(target.scope_id, target_scope_id(document.query_id, document.scored_at, self.maximum_candidates))
         )

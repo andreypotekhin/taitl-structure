@@ -179,6 +179,7 @@ class ComposeTransformGraph:
                 streaming_declared = (
                     value.streaming_declared if isinstance(value, InputDeclaration) else input_plan.streaming_declared
                 )
+                optional = value.optional if isinstance(value, InputDeclaration) else input_plan.optional
                 existing = inputs.get(source)
                 if existing is not None and existing.schema is not input_plan.schema:
                     raise self._error(
@@ -196,6 +197,7 @@ class ComposeTransformGraph:
                     streaming=streaming,
                     aliases=aliases,
                     streaming_declared=streaming_declared,
+                    optional=optional,
                 )
             effective_outputs[stage.name] = {
                 output.name: output

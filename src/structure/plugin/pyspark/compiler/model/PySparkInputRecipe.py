@@ -13,4 +13,5 @@ class PySparkInputRecipe:
     ordinal: int
     validation: PySparkValidationRecipe
     streaming: bool = False
+    optional: bool = False
     aliases: tuple[str, ...] = ()

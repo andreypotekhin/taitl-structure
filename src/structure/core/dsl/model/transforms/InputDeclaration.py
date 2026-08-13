@@ -25,6 +25,7 @@ class InputDeclaration:
     schema: type[Schema]
     name: str = ""
     streaming: bool = False
+    optional: bool = False
     aliases: tuple[str, ...] = ()
     streaming_declared: bool = False
 

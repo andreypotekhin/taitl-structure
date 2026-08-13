@@ -122,6 +122,7 @@ class ComposeTransformPlans:
                         if isinstance(bound_value, InputDeclaration)
                         else input_plan.streaming_declared
                     )
+                    optional = bound_value.optional if isinstance(bound_value, InputDeclaration) else input_plan.optional
                     existing = inputs.get(source)
                     if existing is not None and existing.schema is not input_plan.schema:
                         raise self._error(
@@ -139,6 +140,7 @@ class ComposeTransformPlans:
                         streaming=streaming,
                         aliases=aliases,
                         streaming_declared=streaming_declared,
+                        optional=optional,
                     )
                     external[(index, input_plan.name)] = source
                     continue
