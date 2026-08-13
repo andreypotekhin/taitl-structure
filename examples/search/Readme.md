@@ -18,7 +18,7 @@ Focused boundary contracts are collected in the [Search example specifications](
 | Indexing | `Chunking`, `ExtractDocumentFields`, `Indexing` | content terms plus positional metadata postings | `Indexing` owns `LexIndex` and its `FieldIndex` child; field postings serve boolean/phrase metadata constraints. |
 | Scoring | `OfflineScoring`, `Scoring`, `OnlineScoring` | timestamped score relations | Score popular and seven-day recent queries offline; fill ad-hoc gaps online and persist bridge rows in the same relations. |
 | Vectorization | `OfflineVectorization`, `Vectorization`, `OnlineVectorization` | query/document embeddings and inference statuses | Reuse compatible cache rows, infer only gaps, and emit successful embeddings for caller-owned persistence. |
-| Ranking | `RankVectors` | bounded vector candidate relations | Rank the authoritative raw vector-score relation for offline artifacts and online document search with the same `VectorIndexPolicy.maximum_candidates` limit. |
+| Ranking | `RankVectors`, `FuseDocuments` | bounded vector and hybrid candidate relations | `RankVectors` remains the standalone offline artifact ranker; online document search ranks and caps both lexical/vector lanes in `FuseDocuments`. |
 | Filtering | `Filtering`, `OnlineFiltering`, `SelectFilterTargets` | timestamped filter artifacts and document targets | Prefilter selected queries offline, resolve missing query groups online, and retain at most 10,000 simple-overlap document targets. |
 | Similarity | `similarity.lexical` materializer | same-grain corpus candidates | Reuse the lexical index; BM25 stays directional. |
 | Feedback | `Impressions`, `Clicks`, `BuildRelevanceSignals` | daily facts and batch signals | Exposure-aware, attributed, propensity-corrected evidence. |
@@ -28,7 +28,7 @@ Focused boundary contracts are collected in the [Search example specifications](
 
 ## Build search artifacts
 
-`All` workflow is a one-call pre-serving build. It accepts corpus documents, one similarity policy, one `ScorePolicy`, field profiles and analyzer policies, queries and label configuration, persisted daily feedback facts, user/band catalogs, one relevance policy, an optional query-embedding cache, a document-vector cache, a `VectorIndexPolicy`, and an `InferencePolicy`. `OfflineVectorization` reuses compatible rows and invokes the configured inference adapter for missing query/document vectors with `streaming=False`; its embedding and status outputs can be persisted for later runs. `OfflineScoring` caps by 1000 most popular queries plus every query observed in the preceding seven days; `RankVectors` applies `VectorIndexPolicy.maximum_candidates` after deterministic ranking. Raw vector scores are also published so serving can merge them with online scores before ranking.
+`All` workflow is a one-call pre-serving build. It accepts corpus documents, one similarity policy, one `ScorePolicy`, field profiles and analyzer policies, queries and label configuration, persisted daily feedback facts, user/band catalogs, one relevance policy, an optional query-embedding cache, a document-vector cache, a `VectorIndexPolicy`, and an `InferencePolicy`. `OfflineVectorization` reuses compatible rows and invokes the configured inference adapter for missing query/document vectors with `streaming=False`; its embedding and status outputs can be persisted for later runs. `OfflineScoring` caps by 1000 most popular queries plus every query observed in the preceding seven days; standalone `RankVectors` applies `VectorIndexPolicy.maximum_candidates` after deterministic ranking for offline candidate artifacts. Raw vector scores are also published so serving can merge them with online scores before ranking.
 
 `Document.fields` is the authoritative map for string metadata. `ExtractDocumentFields` copies its reserved values back
 to the preserved named `Document` fields and flattens arbitrary keys into `DocumentField` rows. `FieldIndex` removes
@@ -421,11 +421,11 @@ document_popularity = signals.document_popularity
 ### Retrieve and rerank
 
 `SearchDocuments` composes `OnlineFiltering` (including target selection), `OnlineVectorization` (including
-cache-merge/vector-query stages), `OnlineScoring` (including request-valid target-scoped lexical/vector score merging), `RankVectors`, `RetrieveDocuments`,
-`FuseDocumentCandidates`, and `RerankDocuments` as explicit stages. `Filtering` can precompute timestamped
+cache-merge/vector-query stages), `OnlineScoring` (including request-valid target-scoped lexical/vector score merging), `RetrieveDocuments`,
+`FuseDocuments`, and `RerankDocuments` as explicit stages. `Filtering` can precompute timestamped
 `DocumentFilterScore` rows for selected queries; `OnlineFiltering`
 fills missing query groups at serving time; and `SelectFilterTargets` retains the top 10,000 simple-overlap matches per
-query. `RankVectors` bounds the authoritative merged vector scores before `RetrieveDocuments` joins them to ordinary `Document` rows; lexical and vector lanes then enter `FuseDocumentCandidates`, which ranks lexical candidates,
+query. `RetrieveDocuments` joins raw vector scores and lexical scores to ordinary `Document` rows; lexical and vector lanes then enter `FuseDocuments`, which ranks and bounds both lanes,
 deduplicates document identities, applies document-level RRF when vector candidates are supplied, and retains the fused
 top 1,000; `RerankDocuments` applies feedback and emits the final top 100.
 
@@ -446,9 +446,8 @@ eligible with zero feedback. Final rank is descending `rank_score`, then documen
 timestamped score and filter relations, and `ScorePolicy`. `OnlineFiltering` limits simple-overlap targets to 10,000
 per query; `OnlineVectorization` fills missing query embeddings and vectors only for those selected documents using
 `InferencePolicy`; `OnlineScoring` receives those targets and merges stored, streamed, and newly calculated lexical
-scores plus valid cached and newly calculated vector scores within the same scope; `RankVectors` bounds the merged vector relation, `RetrieveDocuments` joins it to
-documents, and lexical candidates are admitted alongside them; and
-`FuseDocumentCandidates` deduplicates them before `RerankDocuments` ranks and returns the top 100. The canonical online stages share the offline schemas and query parsing. `SearchDocuments` exposes only document-grain scoring/index inputs; `GapPolicy` controls which cached score lanes can trigger online recomputation. The reusable `OnlineScoring`/`Scoring` stages remain all-grain and can be composed separately when section, paragraph, or sentence scoring is needed. `SearchFields` delegates to the same direct document-search funnel and supplies field-projected targets through the optional `document_filter_targets` input; omitted or empty targets preserve unrestricted document search.
+scores plus valid cached and newly calculated vector scores within the same scope; `RetrieveDocuments` joins them to
+documents, and lexical/vector candidates are admitted alongside one another; `FuseDocuments` deduplicates and RRF-fuses them before `RerankDocuments` ranks and returns the top 100. The canonical online stages share the offline schemas and query parsing. `SearchDocuments` exposes only document-grain scoring/index inputs; `GapPolicy` controls which cached score lanes can trigger online recomputation. The reusable `OnlineScoring`/`Scoring` stages remain all-grain and can be composed separately when section, paragraph, or sentence scoring is needed. `SearchFields` delegates to the same direct document-search funnel and supplies field-projected targets through the optional `document_filter_targets` input; omitted or empty targets preserve unrestricted document search.
 
 For document-only serving, provide a `GapPolicy` row with document lexical, document-overlap, and document-vector lanes enabled and paragraph-vector gaps disabled. `SearchDocuments` exposes only the document-grain inputs shown here:
 

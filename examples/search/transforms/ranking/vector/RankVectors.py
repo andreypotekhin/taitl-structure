@@ -9,9 +9,9 @@ from structure.plugin.pyspark import *
 class RankVectors(Transform):
     """Rank same-grain vector scores deterministically and apply the candidate bound."""
 
-    policy = input(VectorIndexPolicy)
     document_scores = input(DocumentVectorScore)
     paragraph_scores = input(ParagraphVectorScore)
+    policy = input(VectorIndexPolicy)
     valid_policy = lane(VectorIndexPolicy)
     ranked_document_candidates = lane(DocumentVectorCandidate)
     ranked_paragraph_candidates = lane(ParagraphVectorCandidate)

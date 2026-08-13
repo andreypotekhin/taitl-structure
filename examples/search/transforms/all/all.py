@@ -31,7 +31,12 @@ from structure import *
 
 
 class All(Transform):
-    """Build every corpus, query, cohort, and feedback artifact before result presentation."""
+    """
+        Offline creation of artifacts for corpus, query, similarity, labels, scores, cohorts, and relevance.
+        These artifacts serve as inputs/pre-build caches for online retrieval, such as. SearchDocuments, SearchFields.
+        This code is for demonstration purpose - in real system it is more justified to call the stages
+        independently (or by ochestration engine) and persists results between the stages.
+    """
 
     documents = input(Document)
     queries = input(SearchQuery)
@@ -58,6 +63,7 @@ class All(Transform):
     chunked = Chunking(documents=documents)
     extracted = ExtractDocumentFields(source_documents=documents)
     profiled = ProfileDocuments(documents=extracted.documents)
+
     indexed = Indexing(
         documents=extracted.documents,
         sentences=chunked.sentences,

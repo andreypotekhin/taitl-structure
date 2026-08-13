@@ -8,13 +8,15 @@ from structure.plugin.pyspark import group_by, max, param_join, row_number, unio
 from structure.plugin.pyspark.dsl.expressions import literal
 
 
-class FuseDocumentCandidates(Transform):
-    """Rank lexical candidates, fuse retrieval lanes, and bound the result set."""
+class FuseDocuments(Transform):
+    """Rank, merge, and bound lexical and vector document candidates."""
 
     lexical_candidates = input(DocumentSearchCandidate)
     vector_candidates = input(DocumentSearchCandidate)
     policy = input(VectorIndexPolicy)
     ranked_lexical_candidates = lane(DocumentSearchCandidate)
+    ranked_vector_candidates = lane(DocumentSearchCandidate)
+    selected_vector_candidates = lane(DocumentSearchCandidate)
     merged_candidates = lane(DocumentSearchCandidate)
     fused_candidates = lane(DocumentSearchCandidate)
     scored_candidates = lane(DocumentSearchCandidate)
@@ -35,7 +37,25 @@ class FuseDocumentCandidates(Transform):
             retrieval_score=candidate.score,
         )
 
-    @step(input=[ranked_lexical_candidates, vector_candidates], output=merged_candidates)
+    @step(input=vector_candidates, output=ranked_vector_candidates)
+    def rank_vector_candidates(
+        self, candidate: DocumentSearchCandidate
+    ) -> DocumentSearchCandidate:
+        rank = row_number(
+            partition_by=(candidate.search_query_id, candidate.user_band_id, candidate.experiment_id),
+            order_by=(candidate.vector_similarity.desc_nulls_last(), candidate.document_id.asc_nulls_first()),
+        )
+        return DocumentSearchCandidate.project(candidate)(vector_rank=rank)
+
+    @step(input=[ranked_vector_candidates, policy], output=selected_vector_candidates)
+    def select_vector_candidates(
+        self, candidate: DocumentSearchCandidate, policy: VectorIndexPolicy
+    ) -> DocumentSearchCandidate:
+        param_join(policy)
+        where(candidate.vector_rank <= policy.maximum_candidates)
+        return DocumentSearchCandidate.project(candidate)
+
+    @step(input=[ranked_lexical_candidates, selected_vector_candidates], output=merged_candidates)
     def merge_candidates(
         self, lexical: DocumentSearchCandidate, vector: DocumentSearchCandidate
     ) -> DocumentSearchCandidate:

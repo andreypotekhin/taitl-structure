@@ -5,7 +5,7 @@ from structure.plugin.pyspark import *
 
 
 class Experiment(Schema):
-    """One named caller-managed Search experiment."""
+    """A single run of a named experiment."""
 
     experiment_id = string(nullable=False)
     name = string(nullable=False)

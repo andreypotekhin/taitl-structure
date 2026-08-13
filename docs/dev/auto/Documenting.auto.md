@@ -56,21 +56,6 @@ and code as source of truth.
 - Apply annotated source authoring style to Recipe documents. The intro sections are around problem/solution,
 with one centence for each. Include scenario table and details, if needed, as in recipes/EarliestRows.md.
 
-#### End-User documentation tips 
-- Use caution/consider alternative wording on corporate speak such as 'owns', 'boundary', 'intentional'
-'downstream'
-- Avoid added qualifiers when not the point of the statement, such as 'complete', 'bounded', 'valid'
-- Do not assume the reader actually reads headings - add heading text or its idea to body text if not already there.
-- Avoid formalisms like 'the following'. 
-- In Reference documents, 
-  - ensure concept is defined/purpose is explained before showing code snippet.
-  - avoid folding several statements into a quick paragraph. Consider bullet lists and examples.
-  - avoid overloading a sentence with several statements.
-- In Recipe documents, avoid excess use of word 'recipe' (reader already realizes that).
-- Code examples use wildcard imports, to save lines.
-- Do not assume example apps code in known/can be referred as-is to the user. 
-  - Ex: 'Keep tenant and other scope keys in the predicate.' - tenant is part of example app, not part of the project.  
-
 ### Developer documentation - Top-level
 Location: docs/dev/ (top level)
 Follow instructions in Documenting.md and Style.md
@@ -78,6 +63,27 @@ Follow instructions in Documenting.md and Style.md
 ### Developer documentation - Other
 Location: docs/dev/ subdirs
 Follow instructions in Documenting.md and Style.md
+
+### Documentation style 
+
+#### Documentation tips - general 
+- Use caution/consider alternative wording for corporate-speak such as 'owns', 'boundary', 'intentional', 'downstream'
+- Avoid added qualifiers when not the point of the statement, such as 'complete', 'bounded', 'valid'
+- Do not assume the reader actually reads headings - repeat heading text or its idea to body text if not already there.
+- Code examples use wildcard imports, to save lines.
+- Do not assume example apps code is known/can be referred as-is to the reader. 
+  - Ex: 'Keep tenant and other scope keys in the predicate.' - tenant is part of example app, not part of the project.  
+
+#### End-User documentation tips 
+- In Reference documents: 
+  - ensure concept is defined/purpose is explained before showing code snippet.
+  - avoid folding several statements into a quick paragraph. Consider bullet lists and examples.
+  - avoid overloading a sentence with several statements.
+- In Recipe documents: avoid excess use of word 'recipe' (reader already realizes that).
+
+#### Developer documentation tips 
+- Use caution/consider alternative wording for corporate-speak such as 'owns', 'boundary', 'intentional', 'downstream'
+- Avoid added qualifiers when not the point of the statement, such as 'intentional', 'complete', 'bounded', 'valid'
 
 ## Documentation pipeline
 
@@ -101,6 +107,6 @@ They propagate bottom to top: from code changes to outer documents.
   relevant to developers.
 
 ### Notes for synchronizing
-- Avoid placing new content at top or at random place of the document. Think of best place for the top-to-bottom reader,
-who is trying to build understanding.
+- Avoid placing the new content at top or at a random place of the document. 
+Think of best place for the top-to-bottom reader, who is trying to build understanding.
 - In code examples, use wildcard imports to save lines.

@@ -79,11 +79,10 @@ The application is split into caller-owned boundaries and typed Structure stages
         -> SearchSentences, SearchPassages, or SearchDocuments
         -> caller-owned serving, persistence, citation, or answer generation
 
-`All` is the one-call offline composition for corpus, query, similarity, labels, scores, cohorts, and relevance
-artifacts. It intentionally excludes event aggregation, presentation, evaluation, experiments, training, and feature
-engineering. Callers compose those boundaries explicitly.
+`All` is the one-call offline workflow for corpus, query, similarity, labels, scores, cohorts, and relevance
+artifacts. Callers compose those boundaries explicitly.
 
-The application uses small typed compositions rather than one opaque search transform. The major boundaries are:
+The application uses smaller typed compositions as stages. The major are:
 
 | Boundary | Implemented contract |
 | --- | --- |

@@ -11,7 +11,7 @@ from structure.plugin.pyspark.dsl.expressions import *
 
 
 class RetrieveDocuments(Transform):
-    """Materialize lexical and vector candidate lanes for a given query."""
+    """Materialize lexical and vector candidates."""
 
     maximum_candidates = 1000
 
@@ -22,12 +22,12 @@ class RetrieveDocuments(Transform):
     requests = input(SearchRequest, streaming=True)
     band_memberships = input(BandMembership)
     score_policy = input(ScorePolicy)
-    document_vector_candidates = input(DocumentVectorCandidate)
+    document_vector_scores = input(DocumentVectorScore)
     vector_policy = input(VectorIndexPolicy)
     prefilter_targets = input(DocumentSearchTarget, streaming=True)
     stored_candidates = lane(DocumentSearchCandidate)
     streamed_candidates = lane(DocumentSearchCandidate)
-    vector_search_candidates = output(DocumentSearchCandidate)
+    vector_candidates = output(DocumentSearchCandidate)
     candidates = output(DocumentSearchCandidate)
 
     @step(
@@ -74,19 +74,19 @@ class RetrieveDocuments(Transform):
         )
 
     @step(
-        input=[document_vector_candidates, documents, queries, requests, band_memberships, vector_policy],
-        output=vector_search_candidates,
+        input=[document_vector_scores, documents, queries, requests, band_memberships, vector_policy],
+        output=vector_candidates,
     )
     def select_vector_candidates(
         self,
-        vector: DocumentVectorCandidate,
+        vector: DocumentVectorScore,
         document: Document,
         query: SearchQuery,
         request: SearchRequest,
         band: BandMembership,
         policy: VectorIndexPolicy,
     ) -> DocumentSearchCandidate:
-        """Rank vector scores into document candidates without a lexical target row."""
+        """Join vector scores to documents."""
 
         param_join(policy)
         inner_join(document, on=document.id == vector.document_id)
@@ -101,7 +101,6 @@ class RetrieveDocuments(Transform):
             & vector.experiment_id.null_safe_eq(request.experiment_id)
             & (query.requested_at == request.requested_at)
             & event_time_between(query.requested_at, request.requested_at, upper="0 seconds")
-            & (vector.rank <= policy.maximum_candidates)
         )
         return DocumentSearchCandidate.project(document)(
             search_query_id=query.id,
@@ -118,7 +117,7 @@ class RetrieveDocuments(Transform):
             score_weight=0.0,
             feedback_weight=0.0,
             lexical_rank=None,
-            vector_rank=vector.rank,
+            vector_rank=None,
             vector_similarity=vector.cosine_similarity,
             rrf_score=0.0,
             rrf_k=0,

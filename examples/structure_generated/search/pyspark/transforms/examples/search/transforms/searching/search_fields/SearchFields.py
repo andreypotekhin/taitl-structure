@@ -46,12 +46,10 @@ from examples.structure_generated.search.pyspark.schemas.index import (
     SENTENCE_TERM_SCHEMA,
 )
 from examples.structure_generated.search.pyspark.schemas.indexing_vector import (
-    DOCUMENT_VECTOR_CANDIDATE_SCHEMA,
     DOCUMENT_VECTOR_EMBEDDING_SCHEMA,
     DOCUMENT_VECTOR_INDEX_SCHEMA,
     DOCUMENT_VECTOR_QUERY_SCHEMA,
     DOCUMENT_VECTOR_SCORE_SCHEMA,
-    PARAGRAPH_VECTOR_CANDIDATE_SCHEMA,
     PARAGRAPH_VECTOR_INDEX_SCHEMA,
     PARAGRAPH_VECTOR_QUERY_SCHEMA,
     PARAGRAPH_VECTOR_SCORE_SCHEMA,
@@ -6308,310 +6306,8 @@ class MergeParagraphVectorScoresGenerated:
         }
 
 
-class RankVectorsGenerated:
-    def _step_delegated_ranked_validate_policy_79(self, frames):
-        # Step method: delegated.ranked.validate_policy
-        delegated__ranked__valid_policy = frames["vector_policy"].alias("vector_index_policy")
-        delegated__ranked__valid_policy_require_all_0_violations = delegated__ranked__valid_policy.where(
-            ~F.coalesce(
-                (
-                    (
-                        (
-                            (
-                                (
-                                    (F.col("vector_index_policy.model_id") != F.lit(''))
-                                    & (F.col("vector_index_policy.dimension") > F.lit(0))
-                                )
-                                & (F.col("vector_index_policy.content_revision") != F.lit(''))
-                            )
-                            & (F.col("vector_index_policy.experiment_id") != F.lit(''))
-                        )
-                        & (F.col("vector_index_policy.maximum_candidates") > F.lit(0))
-                    )
-                    & (F.col("vector_index_policy.rrf_k") > F.lit(0))
-                ),
-                F.lit(False),
-            )
-        ).agg(F.count(F.lit(1)).alias("__structure_violations"))
-        delegated__ranked__valid_policy_require_all_0_assertion = delegated__ranked__valid_policy_require_all_0_violations.select(
-            F.assert_true(
-                F.col("__structure_violations") == F.lit(0),
-                'REL-E0703: require_all(...) found rows that do not satisfy the predicate; see docs/Diagnostics.md#rel-e0703',
-            ).alias("__structure_require_all")
-        )
-        delegated__ranked__valid_policy = delegated__ranked__valid_policy_require_all_0_assertion.crossJoin(
-            delegated__ranked__valid_policy
-        ).drop("__structure_require_all")
-        delegated__ranked__valid_policy = delegated__ranked__valid_policy.select(
-            F.col("vector_index_policy.model_id"),
-            F.col("vector_index_policy.dimension"),
-            F.col("vector_index_policy.content_revision"),
-            F.col("vector_index_policy.experiment_id"),
-            F.col("vector_index_policy.maximum_candidates"),
-            F.col("vector_index_policy.rrf_k"),
-        )
-        assert_schema(
-            delegated__ranked__valid_policy, VECTOR_INDEX_POLICY_SCHEMA, name="VectorIndexPolicy", mode="strict"
-        )
-        return {
-            "delegated__ranked__valid_policy": delegated__ranked__valid_policy,
-        }
-
-    def _step_delegated_ranked_rank_documents_80(self, frames):
-        # Step method: delegated.ranked.rank_documents
-        delegated__ranked__ranked_document_candidates = frames["delegated__scored__merged_vectors__scores"].alias(
-            "document_vector_score"
-        )
-        __structure_streaming_step = (
-            frames["delegated__scored__merged_vectors__scores"].isStreaming
-            or frames["delegated__ranked__valid_policy"].isStreaming
-        )
-        delegated__ranked__valid_policy_param_joined = frames["delegated__ranked__valid_policy"]
-        if not __structure_streaming_step:
-            delegated__ranked__valid_policy_param_joined_count = frames["delegated__ranked__valid_policy"].agg(
-                F.count(F.lit(1)).alias("__structure_count")
-            )
-            delegated__ranked__valid_policy_param_joined_count = (
-                delegated__ranked__valid_policy_param_joined_count.select(
-                    F.assert_true(
-                        F.col("__structure_count") == F.lit(1),
-                        'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                    ).alias("__structure_exactly_one")
-                )
-            )
-            delegated__ranked__valid_policy_param_joined = delegated__ranked__valid_policy_param_joined_count.crossJoin(
-                frames["delegated__ranked__valid_policy"]
-            ).drop("__structure_exactly_one")
-        delegated__ranked__valid_policy_joined = delegated__ranked__valid_policy_param_joined.alias(
-            "delegated__ranked__valid_policy"
-        )
-        delegated__ranked__ranked_document_candidates = delegated__ranked__ranked_document_candidates.crossJoin(
-            delegated__ranked__valid_policy_joined
-        )
-        delegated__ranked__ranked_document_candidates = delegated__ranked__ranked_document_candidates.select(
-            F.col("document_vector_score.query_id"),
-            F.col("document_vector_score.query_document_id"),
-            F.col("document_vector_score.document_id"),
-            F.col("document_vector_score.scope_id"),
-            F.col("document_vector_score.cosine_similarity"),
-            F.col("document_vector_score.model_id"),
-            F.col("document_vector_score.dimension"),
-            F.col("document_vector_score.content_revision"),
-            F.col("document_vector_score.experiment_id"),
-            F.col("document_vector_score.vector_backend"),
-            F.col("document_vector_score.scored_at"),
-            F.row_number()
-            .over(
-                Window.partitionBy(F.col("document_vector_score.query_id")).orderBy(
-                    F.col("document_vector_score.cosine_similarity").desc_nulls_last(),
-                    F.col("document_vector_score.document_id").asc_nulls_first(),
-                )
-            )
-            .cast(T.LongType())
-            .alias("rank"),
-        )
-        assert_schema(
-            delegated__ranked__ranked_document_candidates,
-            DOCUMENT_VECTOR_CANDIDATE_SCHEMA,
-            name="DocumentVectorCandidate",
-            mode="strict",
-        )
-        return {
-            "delegated__ranked__ranked_document_candidates": delegated__ranked__ranked_document_candidates,
-        }
-
-    def _step_delegated_ranked_publish_documents_81(self, frames):
-        # Step method: delegated.ranked.publish_documents
-        delegated__ranked__document_candidates = frames["delegated__ranked__ranked_document_candidates"].alias(
-            "document_vector_candidate"
-        )
-        __structure_streaming_step = (
-            frames["delegated__ranked__ranked_document_candidates"].isStreaming
-            or frames["delegated__ranked__valid_policy"].isStreaming
-        )
-        delegated__ranked__valid_policy_param_joined = frames["delegated__ranked__valid_policy"]
-        if not __structure_streaming_step:
-            delegated__ranked__valid_policy_param_joined_count = frames["delegated__ranked__valid_policy"].agg(
-                F.count(F.lit(1)).alias("__structure_count")
-            )
-            delegated__ranked__valid_policy_param_joined_count = (
-                delegated__ranked__valid_policy_param_joined_count.select(
-                    F.assert_true(
-                        F.col("__structure_count") == F.lit(1),
-                        'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                    ).alias("__structure_exactly_one")
-                )
-            )
-            delegated__ranked__valid_policy_param_joined = delegated__ranked__valid_policy_param_joined_count.crossJoin(
-                frames["delegated__ranked__valid_policy"]
-            ).drop("__structure_exactly_one")
-        delegated__ranked__valid_policy_joined = delegated__ranked__valid_policy_param_joined.alias(
-            "delegated__ranked__valid_policy"
-        )
-        delegated__ranked__document_candidates = delegated__ranked__document_candidates.crossJoin(
-            delegated__ranked__valid_policy_joined
-        )
-        delegated__ranked__document_candidates = delegated__ranked__document_candidates.where(
-            ((F.col("document_vector_candidate.rank") <= F.col("delegated__ranked__valid_policy.maximum_candidates")))
-        )
-        delegated__ranked__document_candidates = delegated__ranked__document_candidates.select(
-            F.col("document_vector_candidate.query_id"),
-            F.col("document_vector_candidate.query_document_id"),
-            F.col("document_vector_candidate.document_id"),
-            F.col("document_vector_candidate.scope_id"),
-            F.col("document_vector_candidate.cosine_similarity"),
-            F.col("document_vector_candidate.model_id"),
-            F.col("document_vector_candidate.dimension"),
-            F.col("document_vector_candidate.content_revision"),
-            F.col("document_vector_candidate.experiment_id"),
-            F.col("document_vector_candidate.vector_backend"),
-            F.col("document_vector_candidate.scored_at"),
-            F.col("document_vector_candidate.rank"),
-        )
-        assert_schema(
-            delegated__ranked__document_candidates,
-            DOCUMENT_VECTOR_CANDIDATE_SCHEMA,
-            name="DocumentVectorCandidate",
-            mode="strict",
-        )
-        return {
-            "delegated__ranked__document_candidates": delegated__ranked__document_candidates,
-        }
-
-    def _step_delegated_ranked_rank_paragraphs_82(self, frames):
-        # Step method: delegated.ranked.rank_paragraphs
-        delegated__ranked__ranked_paragraph_candidates = frames[
-            "delegated__scored__merged_paragraph_vectors__scores"
-        ].alias("paragraph_vector_score")
-        __structure_streaming_step = (
-            frames["delegated__scored__merged_paragraph_vectors__scores"].isStreaming
-            or frames["delegated__ranked__valid_policy"].isStreaming
-        )
-        delegated__ranked__valid_policy_param_joined = frames["delegated__ranked__valid_policy"]
-        if not __structure_streaming_step:
-            delegated__ranked__valid_policy_param_joined_count = frames["delegated__ranked__valid_policy"].agg(
-                F.count(F.lit(1)).alias("__structure_count")
-            )
-            delegated__ranked__valid_policy_param_joined_count = (
-                delegated__ranked__valid_policy_param_joined_count.select(
-                    F.assert_true(
-                        F.col("__structure_count") == F.lit(1),
-                        'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                    ).alias("__structure_exactly_one")
-                )
-            )
-            delegated__ranked__valid_policy_param_joined = delegated__ranked__valid_policy_param_joined_count.crossJoin(
-                frames["delegated__ranked__valid_policy"]
-            ).drop("__structure_exactly_one")
-        delegated__ranked__valid_policy_joined = delegated__ranked__valid_policy_param_joined.alias(
-            "delegated__ranked__valid_policy"
-        )
-        delegated__ranked__ranked_paragraph_candidates = delegated__ranked__ranked_paragraph_candidates.crossJoin(
-            delegated__ranked__valid_policy_joined
-        )
-        delegated__ranked__ranked_paragraph_candidates = delegated__ranked__ranked_paragraph_candidates.select(
-            F.col("paragraph_vector_score.query_id"),
-            F.col("paragraph_vector_score.query_document_id"),
-            F.col("paragraph_vector_score.query_section_id"),
-            F.col("paragraph_vector_score.query_paragraph_id"),
-            F.col("paragraph_vector_score.document_id"),
-            F.col("paragraph_vector_score.section_id"),
-            F.col("paragraph_vector_score.paragraph_id"),
-            F.col("paragraph_vector_score.scope_id"),
-            F.col("paragraph_vector_score.cosine_similarity"),
-            F.col("paragraph_vector_score.model_id"),
-            F.col("paragraph_vector_score.dimension"),
-            F.col("paragraph_vector_score.content_revision"),
-            F.col("paragraph_vector_score.experiment_id"),
-            F.col("paragraph_vector_score.vector_backend"),
-            F.col("paragraph_vector_score.scored_at"),
-            F.row_number()
-            .over(
-                Window.partitionBy(F.col("paragraph_vector_score.query_id")).orderBy(
-                    F.col("paragraph_vector_score.cosine_similarity").desc_nulls_last(),
-                    F.col("paragraph_vector_score.document_id").asc_nulls_first(),
-                    F.col("paragraph_vector_score.section_id").asc_nulls_first(),
-                    F.col("paragraph_vector_score.paragraph_id").asc_nulls_first(),
-                )
-            )
-            .cast(T.LongType())
-            .alias("rank"),
-        )
-        assert_schema(
-            delegated__ranked__ranked_paragraph_candidates,
-            PARAGRAPH_VECTOR_CANDIDATE_SCHEMA,
-            name="ParagraphVectorCandidate",
-            mode="strict",
-        )
-        return {
-            "delegated__ranked__ranked_paragraph_candidates": delegated__ranked__ranked_paragraph_candidates,
-        }
-
-    def _step_delegated_ranked_publish_paragraphs_83(self, frames):
-        # Step method: delegated.ranked.publish_paragraphs
-        delegated__ranked__paragraph_candidates = frames["delegated__ranked__ranked_paragraph_candidates"].alias(
-            "paragraph_vector_candidate"
-        )
-        __structure_streaming_step = (
-            frames["delegated__ranked__ranked_paragraph_candidates"].isStreaming
-            or frames["delegated__ranked__valid_policy"].isStreaming
-        )
-        delegated__ranked__valid_policy_param_joined = frames["delegated__ranked__valid_policy"]
-        if not __structure_streaming_step:
-            delegated__ranked__valid_policy_param_joined_count = frames["delegated__ranked__valid_policy"].agg(
-                F.count(F.lit(1)).alias("__structure_count")
-            )
-            delegated__ranked__valid_policy_param_joined_count = (
-                delegated__ranked__valid_policy_param_joined_count.select(
-                    F.assert_true(
-                        F.col("__structure_count") == F.lit(1),
-                        'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                    ).alias("__structure_exactly_one")
-                )
-            )
-            delegated__ranked__valid_policy_param_joined = delegated__ranked__valid_policy_param_joined_count.crossJoin(
-                frames["delegated__ranked__valid_policy"]
-            ).drop("__structure_exactly_one")
-        delegated__ranked__valid_policy_joined = delegated__ranked__valid_policy_param_joined.alias(
-            "delegated__ranked__valid_policy"
-        )
-        delegated__ranked__paragraph_candidates = delegated__ranked__paragraph_candidates.crossJoin(
-            delegated__ranked__valid_policy_joined
-        )
-        delegated__ranked__paragraph_candidates = delegated__ranked__paragraph_candidates.where(
-            ((F.col("paragraph_vector_candidate.rank") <= F.col("delegated__ranked__valid_policy.maximum_candidates")))
-        )
-        delegated__ranked__paragraph_candidates = delegated__ranked__paragraph_candidates.select(
-            F.col("paragraph_vector_candidate.query_id"),
-            F.col("paragraph_vector_candidate.query_document_id"),
-            F.col("paragraph_vector_candidate.query_section_id"),
-            F.col("paragraph_vector_candidate.query_paragraph_id"),
-            F.col("paragraph_vector_candidate.document_id"),
-            F.col("paragraph_vector_candidate.section_id"),
-            F.col("paragraph_vector_candidate.paragraph_id"),
-            F.col("paragraph_vector_candidate.scope_id"),
-            F.col("paragraph_vector_candidate.cosine_similarity"),
-            F.col("paragraph_vector_candidate.model_id"),
-            F.col("paragraph_vector_candidate.dimension"),
-            F.col("paragraph_vector_candidate.content_revision"),
-            F.col("paragraph_vector_candidate.experiment_id"),
-            F.col("paragraph_vector_candidate.vector_backend"),
-            F.col("paragraph_vector_candidate.scored_at"),
-            F.col("paragraph_vector_candidate.rank"),
-        )
-        assert_schema(
-            delegated__ranked__paragraph_candidates,
-            PARAGRAPH_VECTOR_CANDIDATE_SCHEMA,
-            name="ParagraphVectorCandidate",
-            mode="strict",
-        )
-        return {
-            "delegated__ranked__paragraph_candidates": delegated__ranked__paragraph_candidates,
-        }
-
-
 class RetrieveDocumentsGenerated:
-    def _step_delegated_retrieved_select_stored_candidates_84(self, frames):
+    def _step_delegated_retrieved_select_stored_candidates_79(self, frames):
         # Step method: delegated.retrieved.select_stored_candidates
         delegated__retrieved__stored_candidates = frames["documents"].alias("document")
         delegated__scored__merged__scores_joined = frames["delegated__scored__merged__scores"].alias(
@@ -6720,7 +6416,7 @@ class RetrieveDocumentsGenerated:
             "delegated__retrieved__stored_candidates": delegated__retrieved__stored_candidates,
         }
 
-    def _step_delegated_retrieved_select_streamed_candidates_85(self, frames):
+    def _step_delegated_retrieved_select_streamed_candidates_80(self, frames):
         # Step method: delegated.retrieved.select_streamed_candidates
         delegated__retrieved__streamed_candidates = frames["streamed_documents"].alias("document")
         delegated__scored__merged__scores_joined = frames["delegated__scored__merged__scores"].alias(
@@ -6829,7 +6525,7 @@ class RetrieveDocumentsGenerated:
             "delegated__retrieved__streamed_candidates": delegated__retrieved__streamed_candidates,
         }
 
-    def _step_delegated_retrieved_merge_candidates_86(self, frames):
+    def _step_delegated_retrieved_merge_candidates_81(self, frames):
         # Step method: delegated.retrieved.merge_candidates
         delegated__retrieved__candidates = frames["delegated__retrieved__stored_candidates"].alias(
             "document_search_candidate"
@@ -6871,13 +6567,13 @@ class RetrieveDocumentsGenerated:
             "delegated__retrieved__candidates": delegated__retrieved__candidates,
         }
 
-    def _step_delegated_retrieved_select_vector_candidates_87(self, frames):
+    def _step_delegated_retrieved_select_vector_candidates_82(self, frames):
         # Step method: delegated.retrieved.select_vector_candidates
-        delegated__retrieved__vector_search_candidates = frames["delegated__ranked__document_candidates"].alias(
-            "document_vector_candidate"
+        delegated__retrieved__vector_candidates = frames["delegated__scored__merged_vectors__scores"].alias(
+            "document_vector_score"
         )
         __structure_streaming_step = (
-            frames["delegated__ranked__document_candidates"].isStreaming
+            frames["delegated__scored__merged_vectors__scores"].isStreaming
             or frames["documents"].isStreaming
             or frames["delegation__body_queries"].isStreaming
             or frames["delegation__delegated_requests"].isStreaming
@@ -6897,36 +6593,36 @@ class RetrieveDocumentsGenerated:
                 "__structure_exactly_one"
             )
         vector_policy_joined = vector_policy_param_joined.alias("vector_policy")
-        delegated__retrieved__vector_search_candidates = delegated__retrieved__vector_search_candidates.crossJoin(
+        delegated__retrieved__vector_candidates = delegated__retrieved__vector_candidates.crossJoin(
             vector_policy_joined
         )
         documents_2_joined = frames["documents"].alias("documents_2")
-        delegated__retrieved__vector_search_candidates = delegated__retrieved__vector_search_candidates.join(
+        delegated__retrieved__vector_candidates = delegated__retrieved__vector_candidates.join(
             documents_2_joined,
-            (F.col("documents_2.id") == F.col("document_vector_candidate.document_id")),
+            (F.col("documents_2.id") == F.col("document_vector_score.document_id")),
             "inner",
         )
         delegation__body_queries_3_joined = frames["delegation__body_queries"].alias("delegation__body_queries_3")
-        delegated__retrieved__vector_search_candidates = delegated__retrieved__vector_search_candidates.join(
+        delegated__retrieved__vector_candidates = delegated__retrieved__vector_candidates.join(
             delegation__body_queries_3_joined,
-            (F.col("delegation__body_queries_3.id") == F.col("document_vector_candidate.query_id")),
+            (F.col("delegation__body_queries_3.id") == F.col("document_vector_score.query_id")),
             "inner",
         )
         delegation__delegated_requests_4_joined = frames["delegation__delegated_requests"].alias(
             "delegation__delegated_requests_4"
         )
-        delegated__retrieved__vector_search_candidates = delegated__retrieved__vector_search_candidates.join(
+        delegated__retrieved__vector_candidates = delegated__retrieved__vector_candidates.join(
             delegation__delegated_requests_4_joined,
             (F.col("delegation__delegated_requests_4.query_id") == F.col("delegation__body_queries_3.id")),
             "inner",
         )
         band_memberships_5_joined = frames["band_memberships"].alias("band_memberships_5")
-        delegated__retrieved__vector_search_candidates = delegated__retrieved__vector_search_candidates.join(
+        delegated__retrieved__vector_candidates = delegated__retrieved__vector_candidates.join(
             band_memberships_5_joined,
             (F.col("band_memberships_5.user_id") == F.col("delegation__delegated_requests_4.user_id")),
             "left",
         )
-        delegated__retrieved__vector_search_candidates = delegated__retrieved__vector_search_candidates.where(
+        delegated__retrieved__vector_candidates = delegated__retrieved__vector_candidates.where(
             (
                 (
                     (
@@ -6934,53 +6630,41 @@ class RetrieveDocumentsGenerated:
                             (
                                 (
                                     (
-                                        (
-                                            (
-                                                F.col("document_vector_candidate.model_id")
-                                                == F.col("vector_policy.model_id")
-                                            )
-                                            & (
-                                                F.col("document_vector_candidate.dimension")
-                                                == F.col("vector_policy.dimension")
-                                            )
-                                        )
-                                        & (
-                                            F.col("document_vector_candidate.content_revision")
-                                            == F.col("vector_policy.content_revision")
-                                        )
+                                        (F.col("document_vector_score.model_id") == F.col("vector_policy.model_id"))
+                                        & (F.col("document_vector_score.dimension") == F.col("vector_policy.dimension"))
                                     )
                                     & (
-                                        F.col("document_vector_candidate.experiment_id")
-                                        == F.col("vector_policy.experiment_id")
+                                        F.col("document_vector_score.content_revision")
+                                        == F.col("vector_policy.content_revision")
                                     )
                                 )
-                                & F.col("document_vector_candidate.experiment_id").eqNullSafe(
-                                    F.col("delegation__delegated_requests_4.experiment_id")
-                                )
+                                & (F.col("document_vector_score.experiment_id") == F.col("vector_policy.experiment_id"))
                             )
-                            & (
-                                F.col("delegation__body_queries_3.requested_at")
-                                == F.col("delegation__delegated_requests_4.requested_at")
+                            & F.col("document_vector_score.experiment_id").eqNullSafe(
+                                F.col("delegation__delegated_requests_4.experiment_id")
                             )
                         )
                         & (
-                            (
-                                F.col("delegation__delegated_requests_4.requested_at")
-                                >= (F.col("delegation__body_queries_3.requested_at") - F.expr("INTERVAL 0 seconds"))
-                            )
-                            & (
-                                F.col("delegation__delegated_requests_4.requested_at")
-                                <= (F.col("delegation__body_queries_3.requested_at") + F.expr("INTERVAL 0 seconds"))
-                            )
+                            F.col("delegation__body_queries_3.requested_at")
+                            == F.col("delegation__delegated_requests_4.requested_at")
                         )
                     )
-                    & (F.col("document_vector_candidate.rank") <= F.col("vector_policy.maximum_candidates"))
+                    & (
+                        (
+                            F.col("delegation__delegated_requests_4.requested_at")
+                            >= (F.col("delegation__body_queries_3.requested_at") - F.expr("INTERVAL 0 seconds"))
+                        )
+                        & (
+                            F.col("delegation__delegated_requests_4.requested_at")
+                            <= (F.col("delegation__body_queries_3.requested_at") + F.expr("INTERVAL 0 seconds"))
+                        )
+                    )
                 )
             )
         )
-        delegated__retrieved__vector_search_candidates = delegated__retrieved__vector_search_candidates.select(
+        delegated__retrieved__vector_candidates = delegated__retrieved__vector_candidates.select(
             F.col("delegation__body_queries_3.id").alias("search_query_id"),
-            F.col("document_vector_candidate.experiment_id"),
+            F.col("document_vector_score.experiment_id"),
             F.coalesce(F.col("band_memberships_5.user_band_id"), F.lit(None)).alias("user_band_id"),
             F.col("band_memberships_5.band_id"),
             F.lower(F.regexp_replace(F.trim(F.col("delegation__body_queries_3.content")), '\\s+', ' ')).alias("query"),
@@ -6995,25 +6679,25 @@ class RetrieveDocumentsGenerated:
             F.lit(0.0).alias("score_weight"),
             F.lit(0.0).alias("feedback_weight"),
             F.lit(None).cast(T.LongType()).alias("lexical_rank"),
-            F.col("document_vector_candidate.rank").alias("vector_rank"),
-            F.col("document_vector_candidate.cosine_similarity").alias("vector_similarity"),
+            F.lit(None).cast(T.LongType()).alias("vector_rank"),
+            F.col("document_vector_score.cosine_similarity").alias("vector_similarity"),
             F.lit(0.0).alias("rrf_score"),
             F.lit(0).cast(T.LongType()).alias("rrf_k"),
-            F.col("document_vector_candidate.vector_backend"),
+            F.col("document_vector_score.vector_backend"),
         )
         assert_schema(
-            delegated__retrieved__vector_search_candidates,
+            delegated__retrieved__vector_candidates,
             DOCUMENT_SEARCH_CANDIDATE_SCHEMA,
             name="DocumentSearchCandidate",
             mode="strict",
         )
         return {
-            "delegated__retrieved__vector_search_candidates": delegated__retrieved__vector_search_candidates,
+            "delegated__retrieved__vector_candidates": delegated__retrieved__vector_candidates,
         }
 
 
-class FuseDocumentCandidatesGenerated:
-    def _step_delegated_fused_rank_lexical_candidates_88(self, frames):
+class FuseDocumentsGenerated:
+    def _step_delegated_fused_rank_lexical_candidates_83(self, frames):
         # Step method: delegated.fused.rank_lexical_candidates
         delegated__fused__ranked_lexical_candidates = frames["delegated__retrieved__candidates"].alias(
             "document_search_candidate"
@@ -7075,13 +6759,123 @@ class FuseDocumentCandidatesGenerated:
             "delegated__fused__ranked_lexical_candidates": delegated__fused__ranked_lexical_candidates,
         }
 
-    def _step_delegated_fused_merge_candidates_89(self, frames):
+    def _step_delegated_fused_rank_vector_candidates_84(self, frames):
+        # Step method: delegated.fused.rank_vector_candidates
+        delegated__fused__ranked_vector_candidates = frames["delegated__retrieved__vector_candidates"].alias(
+            "document_search_candidate"
+        )
+        delegated__fused__ranked_vector_candidates = delegated__fused__ranked_vector_candidates.select(
+            F.col("document_search_candidate.search_query_id"),
+            F.col("document_search_candidate.experiment_id"),
+            F.col("document_search_candidate.user_band_id"),
+            F.col("document_search_candidate.band_id"),
+            F.col("document_search_candidate.query"),
+            F.col("document_search_candidate.candidate_rank"),
+            F.col("document_search_candidate.document_id"),
+            F.col("document_search_candidate.title"),
+            F.col("document_search_candidate.url"),
+            F.col("document_search_candidate.score"),
+            F.col("document_search_candidate.retrieval_score"),
+            F.col("document_search_candidate.score_feedback"),
+            F.col("document_search_candidate.score_rank"),
+            F.col("document_search_candidate.score_weight"),
+            F.col("document_search_candidate.feedback_weight"),
+            F.col("document_search_candidate.lexical_rank"),
+            F.row_number()
+            .over(
+                Window.partitionBy(
+                    F.col("document_search_candidate.search_query_id"),
+                    F.col("document_search_candidate.user_band_id"),
+                    F.col("document_search_candidate.experiment_id"),
+                ).orderBy(
+                    F.col("document_search_candidate.vector_similarity").desc_nulls_last(),
+                    F.col("document_search_candidate.document_id").asc_nulls_first(),
+                )
+            )
+            .cast(T.LongType())
+            .alias("vector_rank"),
+            F.col("document_search_candidate.vector_similarity"),
+            F.col("document_search_candidate.rrf_score"),
+            F.col("document_search_candidate.rrf_k"),
+            F.col("document_search_candidate.vector_backend"),
+        )
+        assert_schema(
+            delegated__fused__ranked_vector_candidates,
+            DOCUMENT_SEARCH_CANDIDATE_SCHEMA,
+            name="DocumentSearchCandidate",
+            mode="strict",
+        )
+        return {
+            "delegated__fused__ranked_vector_candidates": delegated__fused__ranked_vector_candidates,
+        }
+
+    def _step_delegated_fused_select_vector_candidates_85(self, frames):
+        # Step method: delegated.fused.select_vector_candidates
+        delegated__fused__selected_vector_candidates = frames["delegated__fused__ranked_vector_candidates"].alias(
+            "document_search_candidate"
+        )
+        __structure_streaming_step = (
+            frames["delegated__fused__ranked_vector_candidates"].isStreaming or frames["vector_policy"].isStreaming
+        )
+        vector_policy_param_joined = frames["vector_policy"]
+        if not __structure_streaming_step:
+            vector_policy_param_joined_count = frames["vector_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
+            vector_policy_param_joined_count = vector_policy_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            vector_policy_param_joined = vector_policy_param_joined_count.crossJoin(frames["vector_policy"]).drop(
+                "__structure_exactly_one"
+            )
+        vector_policy_joined = vector_policy_param_joined.alias("vector_policy")
+        delegated__fused__selected_vector_candidates = delegated__fused__selected_vector_candidates.crossJoin(
+            vector_policy_joined
+        )
+        delegated__fused__selected_vector_candidates = delegated__fused__selected_vector_candidates.where(
+            ((F.col("document_search_candidate.vector_rank") <= F.col("vector_policy.maximum_candidates")))
+        )
+        delegated__fused__selected_vector_candidates = delegated__fused__selected_vector_candidates.select(
+            F.col("document_search_candidate.search_query_id"),
+            F.col("document_search_candidate.experiment_id"),
+            F.col("document_search_candidate.user_band_id"),
+            F.col("document_search_candidate.band_id"),
+            F.col("document_search_candidate.query"),
+            F.col("document_search_candidate.candidate_rank"),
+            F.col("document_search_candidate.document_id"),
+            F.col("document_search_candidate.title"),
+            F.col("document_search_candidate.url"),
+            F.col("document_search_candidate.score"),
+            F.col("document_search_candidate.retrieval_score"),
+            F.col("document_search_candidate.score_feedback"),
+            F.col("document_search_candidate.score_rank"),
+            F.col("document_search_candidate.score_weight"),
+            F.col("document_search_candidate.feedback_weight"),
+            F.col("document_search_candidate.lexical_rank"),
+            F.col("document_search_candidate.vector_rank"),
+            F.col("document_search_candidate.vector_similarity"),
+            F.col("document_search_candidate.rrf_score"),
+            F.col("document_search_candidate.rrf_k"),
+            F.col("document_search_candidate.vector_backend"),
+        )
+        assert_schema(
+            delegated__fused__selected_vector_candidates,
+            DOCUMENT_SEARCH_CANDIDATE_SCHEMA,
+            name="DocumentSearchCandidate",
+            mode="strict",
+        )
+        return {
+            "delegated__fused__selected_vector_candidates": delegated__fused__selected_vector_candidates,
+        }
+
+    def _step_delegated_fused_merge_candidates_86(self, frames):
         # Step method: delegated.fused.merge_candidates
         delegated__fused__merged_candidates = frames["delegated__fused__ranked_lexical_candidates"].alias(
             "document_search_candidate"
         )
         delegated__fused__merged_candidates = delegated__fused__merged_candidates.union(
-            frames["delegated__retrieved__vector_search_candidates"]
+            frames["delegated__fused__selected_vector_candidates"]
         )
         delegated__fused__merged_candidates = delegated__fused__merged_candidates.alias("document_search_candidate")
         delegated__fused__merged_candidates = delegated__fused__merged_candidates.select(
@@ -7117,7 +6911,7 @@ class FuseDocumentCandidatesGenerated:
             "delegated__fused__merged_candidates": delegated__fused__merged_candidates,
         }
 
-    def _step_delegated_fused_fuse_candidates_90(self, frames):
+    def _step_delegated_fused_fuse_candidates_87(self, frames):
         # Step method: delegated.fused.fuse_candidates
         delegated__fused__fused_candidates = frames["delegated__fused__merged_candidates"].alias(
             "document_search_candidate"
@@ -7199,7 +6993,7 @@ class FuseDocumentCandidatesGenerated:
             "delegated__fused__fused_candidates": delegated__fused__fused_candidates,
         }
 
-    def _step_delegated_fused_score_candidates_91(self, frames):
+    def _step_delegated_fused_score_candidates_88(self, frames):
         # Step method: delegated.fused.score_candidates
         delegated__fused__scored_candidates = frames["delegated__fused__fused_candidates"].alias(
             "document_search_candidate"
@@ -7295,7 +7089,7 @@ class FuseDocumentCandidatesGenerated:
             "delegated__fused__scored_candidates": delegated__fused__scored_candidates,
         }
 
-    def _step_delegated_fused_rank_candidates_92(self, frames):
+    def _step_delegated_fused_rank_candidates_89(self, frames):
         # Step method: delegated.fused.rank_candidates
         delegated__fused__ranked_candidates = frames["delegated__fused__scored_candidates"].alias(
             "document_search_candidate"
@@ -7367,7 +7161,7 @@ class FuseDocumentCandidatesGenerated:
             "delegated__fused__ranked_candidates": delegated__fused__ranked_candidates,
         }
 
-    def _step_delegated_fused_select_candidates_93(self, frames):
+    def _step_delegated_fused_select_candidates_90(self, frames):
         # Step method: delegated.fused.select_candidates
         delegated__fused__candidates = frames["delegated__fused__ranked_candidates"].alias("document_search_candidate")
         __structure_streaming_step = (
@@ -7425,7 +7219,7 @@ class FuseDocumentCandidatesGenerated:
 
 
 class RerankDocumentsGenerated:
-    def _step_delegated_reranked_select_fallback_options_94(self, frames):
+    def _step_delegated_reranked_select_fallback_options_91(self, frames):
         # Step method: delegated.reranked.select_fallback_options
         delegated__reranked__fallback_options = frames["delegated__fused__candidates"].alias(
             "document_search_candidate"
@@ -7495,7 +7289,7 @@ class RerankDocumentsGenerated:
             "delegated__reranked__fallback_options": delegated__reranked__fallback_options,
         }
 
-    def _step_delegated_reranked_select_global_options_95(self, frames):
+    def _step_delegated_reranked_select_global_options_92(self, frames):
         # Step method: delegated.reranked.select_global_options
         delegated__reranked__global_options = frames["delegated__fused__candidates"].alias("document_search_candidate")
         __structure_streaming_step = frames["delegated__fused__candidates"].isStreaming or frames["policy"].isStreaming
@@ -7551,7 +7345,7 @@ class RerankDocumentsGenerated:
             "delegated__reranked__global_options": delegated__reranked__global_options,
         }
 
-    def _step_delegated_reranked_merge_feedback_options_96(self, frames):
+    def _step_delegated_reranked_merge_feedback_options_93(self, frames):
         # Step method: delegated.reranked.merge_feedback_options
         delegated__reranked__feedback_options = frames["delegated__reranked__fallback_options"].alias(
             "document_feedback_option"
@@ -7596,7 +7390,7 @@ class RerankDocumentsGenerated:
             "delegated__reranked__feedback_options": delegated__reranked__feedback_options,
         }
 
-    def _step_delegated_reranked_select_query_feedback_97(self, frames):
+    def _step_delegated_reranked_select_query_feedback_94(self, frames):
         # Step method: delegated.reranked.select_query_feedback
         delegated__reranked__query_feedback = frames["delegated__reranked__feedback_options"].alias(
             "document_feedback_option"
@@ -7753,7 +7547,7 @@ class RerankDocumentsGenerated:
             "delegated__reranked__query_feedback": delegated__reranked__query_feedback,
         }
 
-    def _step_delegated_reranked_select_popularity_feedback_98(self, frames):
+    def _step_delegated_reranked_select_popularity_feedback_95(self, frames):
         # Step method: delegated.reranked.select_popularity_feedback
         delegated__reranked__popularity_feedback = frames["delegated__reranked__feedback_options"].alias(
             "document_feedback_option"
@@ -7911,7 +7705,7 @@ class RerankDocumentsGenerated:
             "delegated__reranked__popularity_feedback": delegated__reranked__popularity_feedback,
         }
 
-    def _step_delegated_reranked_score_candidates_99(self, frames):
+    def _step_delegated_reranked_score_candidates_96(self, frames):
         # Step method: delegated.reranked.score_candidates
         delegated__reranked__scored_candidates = frames["delegated__fused__candidates"].alias(
             "document_search_candidate"
@@ -8044,7 +7838,7 @@ class RerankDocumentsGenerated:
             "delegated__reranked__scored_candidates": delegated__reranked__scored_candidates,
         }
 
-    def _step_delegated_reranked_normalize_score_100(self, frames):
+    def _step_delegated_reranked_normalize_score_97(self, frames):
         # Step method: delegated.reranked.normalize_score
         delegated__reranked__normalized_candidates = frames["delegated__reranked__scored_candidates"].alias(
             "document_search_candidate"
@@ -8099,7 +7893,7 @@ class RerankDocumentsGenerated:
             "delegated__reranked__normalized_candidates": delegated__reranked__normalized_candidates,
         }
 
-    def _step_delegated_reranked_rank_results_101(self, frames):
+    def _step_delegated_reranked_rank_results_98(self, frames):
         # Step method: delegated.reranked.rank_results
         delegated__reranked__ranked_results = frames["delegated__reranked__normalized_candidates"].alias(
             "document_search_candidate"
@@ -8147,7 +7941,7 @@ class RerankDocumentsGenerated:
             "delegated__reranked__ranked_results": delegated__reranked__ranked_results,
         }
 
-    def _step_delegated_reranked_select_results_102(self, frames):
+    def _step_delegated_reranked_select_results_99(self, frames):
         # Step method: delegated.reranked.select_results
         delegated__reranked__results = frames["delegated__reranked__ranked_results"].alias("document_search_result")
         delegated__reranked__results = delegated__reranked__results.where(
@@ -8183,7 +7977,7 @@ class RerankDocumentsGenerated:
 
 
 class PublishFieldSearchResultsGenerated:
-    def _step_published_publish_metadata_103(self, frames):
+    def _step_published_publish_metadata_100(self, frames):
         # Step method: published.publish_metadata
         published__results = frames["resolved__document_matches"].alias("field_search_document_match")
         queries_joined = frames["queries"].alias("queries")
@@ -8215,7 +8009,7 @@ class PublishFieldSearchResultsGenerated:
             "published__results": published__results,
         }
 
-    def _step_published_publish_content_104(self, frames):
+    def _step_published_publish_content_101(self, frames):
         # Step method: published.publish_content
         published__results = frames["queries"].alias("field_search_query")
         delegation__delegations_joined = frames["delegation__delegations"].alias("delegation__delegations")
@@ -8267,7 +8061,7 @@ class PublishFieldSearchResultsGenerated:
             "published__results": published__results,
         }
 
-    def _step_published_publish_mixed_105(self, frames):
+    def _step_published_publish_mixed_102(self, frames):
         # Step method: published.publish_mixed
         published__results = frames["resolved__document_matches"].alias("field_search_document_match")
         queries_joined = frames["queries"].alias("queries")
@@ -8363,9 +8157,8 @@ class SearchFieldsGenerated(
     MergeDocumentScoresGenerated,
     MergeDocumentVectorScoresGenerated,
     MergeParagraphVectorScoresGenerated,
-    RankVectorsGenerated,
     RetrieveDocumentsGenerated,
-    FuseDocumentCandidatesGenerated,
+    FuseDocumentsGenerated,
     RerankDocumentsGenerated,
     PublishFieldSearchResultsGenerated,
 ):
@@ -8661,33 +8454,30 @@ class SearchFieldsGenerated(
         frames.update(self._step_delegated_scored_merged_paragraph_vectors_select_cached_scores_76(frames))
         frames.update(self._step_delegated_scored_merged_paragraph_vectors_select_online_scores_77(frames))
         frames.update(self._step_delegated_scored_merged_paragraph_vectors_merge_scores_78(frames))
-        frames.update(self._step_delegated_ranked_validate_policy_79(frames))
-        frames.update(self._step_delegated_ranked_rank_documents_80(frames))
-        frames.update(self._step_delegated_ranked_publish_documents_81(frames))
-        frames.update(self._step_delegated_ranked_rank_paragraphs_82(frames))
-        frames.update(self._step_delegated_ranked_publish_paragraphs_83(frames))
-        frames.update(self._step_delegated_retrieved_select_stored_candidates_84(frames))
-        frames.update(self._step_delegated_retrieved_select_streamed_candidates_85(frames))
-        frames.update(self._step_delegated_retrieved_merge_candidates_86(frames))
-        frames.update(self._step_delegated_retrieved_select_vector_candidates_87(frames))
-        frames.update(self._step_delegated_fused_rank_lexical_candidates_88(frames))
-        frames.update(self._step_delegated_fused_merge_candidates_89(frames))
-        frames.update(self._step_delegated_fused_fuse_candidates_90(frames))
-        frames.update(self._step_delegated_fused_score_candidates_91(frames))
-        frames.update(self._step_delegated_fused_rank_candidates_92(frames))
-        frames.update(self._step_delegated_fused_select_candidates_93(frames))
-        frames.update(self._step_delegated_reranked_select_fallback_options_94(frames))
-        frames.update(self._step_delegated_reranked_select_global_options_95(frames))
-        frames.update(self._step_delegated_reranked_merge_feedback_options_96(frames))
-        frames.update(self._step_delegated_reranked_select_query_feedback_97(frames))
-        frames.update(self._step_delegated_reranked_select_popularity_feedback_98(frames))
-        frames.update(self._step_delegated_reranked_score_candidates_99(frames))
-        frames.update(self._step_delegated_reranked_normalize_score_100(frames))
-        frames.update(self._step_delegated_reranked_rank_results_101(frames))
-        frames.update(self._step_delegated_reranked_select_results_102(frames))
-        frames.update(self._step_published_publish_metadata_103(frames))
-        frames.update(self._step_published_publish_content_104(frames))
-        frames.update(self._step_published_publish_mixed_105(frames))
+        frames.update(self._step_delegated_retrieved_select_stored_candidates_79(frames))
+        frames.update(self._step_delegated_retrieved_select_streamed_candidates_80(frames))
+        frames.update(self._step_delegated_retrieved_merge_candidates_81(frames))
+        frames.update(self._step_delegated_retrieved_select_vector_candidates_82(frames))
+        frames.update(self._step_delegated_fused_rank_lexical_candidates_83(frames))
+        frames.update(self._step_delegated_fused_rank_vector_candidates_84(frames))
+        frames.update(self._step_delegated_fused_select_vector_candidates_85(frames))
+        frames.update(self._step_delegated_fused_merge_candidates_86(frames))
+        frames.update(self._step_delegated_fused_fuse_candidates_87(frames))
+        frames.update(self._step_delegated_fused_score_candidates_88(frames))
+        frames.update(self._step_delegated_fused_rank_candidates_89(frames))
+        frames.update(self._step_delegated_fused_select_candidates_90(frames))
+        frames.update(self._step_delegated_reranked_select_fallback_options_91(frames))
+        frames.update(self._step_delegated_reranked_select_global_options_92(frames))
+        frames.update(self._step_delegated_reranked_merge_feedback_options_93(frames))
+        frames.update(self._step_delegated_reranked_select_query_feedback_94(frames))
+        frames.update(self._step_delegated_reranked_select_popularity_feedback_95(frames))
+        frames.update(self._step_delegated_reranked_score_candidates_96(frames))
+        frames.update(self._step_delegated_reranked_normalize_score_97(frames))
+        frames.update(self._step_delegated_reranked_rank_results_98(frames))
+        frames.update(self._step_delegated_reranked_select_results_99(frames))
+        frames.update(self._step_published_publish_metadata_100(frames))
+        frames.update(self._step_published_publish_content_101(frames))
+        frames.update(self._step_published_publish_mixed_102(frames))
 
         # Step method: results
         results = frames["published__results"].alias("field_search_result")

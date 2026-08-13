@@ -11,7 +11,7 @@ from examples.search.transforms.ranking import *
 from examples.search.transforms.ranking.vector import *
 from examples.search.transforms.scoring.similarity import *
 from examples.search.transforms.scoring.vector import *
-from examples.search.transforms.searching.search_docs.fusion import *
+from examples.search.transforms.searching.search_docs.fuse import *
 from examples.search.transforms.searching.search_docs.SearchDocuments import *
 from examples.search.transforms.searching.search_similarity import *
 from examples.search.transforms.searching.search_similarity.paragraphs import (
@@ -65,8 +65,29 @@ def test_vector_index_and_scoring_transforms_compile() -> None:
     Compiler.frontend.compile()(RerankSimilarity, materialize_schemas=False)
     Compiler.frontend.compile()(SearchSimilarity, materialize_schemas=False)
     Compiler.frontend.compile()(ParagraphSearchSimilarity, materialize_schemas=False)
-    Compiler.frontend.compile()(FuseDocumentCandidates, materialize_schemas=False)
+    Compiler.frontend.compile()(FuseDocuments, materialize_schemas=False)
     Compiler.frontend.compile()(SearchDocuments, materialize_schemas=False)
+
+
+def test_document_search_fuses_raw_vector_scores_with_lexical_candidates() -> None:
+    search_plan = cast(TransformPlan, Compiler.frontend.compile()(SearchDocuments, materialize_schemas=False).analysis)
+    retrieve = next(stage for stage in SearchDocuments._structure_stages.values() if stage.name == "retrieved")
+    fuse = next(stage for stage in SearchDocuments._structure_stages.values() if stage.name == "fused")
+
+    assert getattr(retrieve.invocation._structure_bound_inputs["document_vector_scores"], "schema") is DocumentVectorScore
+    assert "document_vector_candidates" not in retrieve.invocation._structure_bound_inputs
+    assert "ranked" not in SearchDocuments._structure_stages
+    assert type(fuse.invocation).__name__ == "FuseDocuments"
+    assert {input.name for input in search_plan.inputs} >= {"document_vector_scores"}
+
+
+def test_fuse_documents_ranks_and_bounds_vector_candidates() -> None:
+    plan = cast(TransformPlan, Compiler.frontend.compile()(FuseDocuments, materialize_schemas=False).analysis)
+    assert [step.name for step in plan.steps[:3]] == [
+        "rank_lexical_candidates",
+        "rank_vector_candidates",
+        "select_vector_candidates",
+    ]
 
 
 def test_online_vector_score_merge_invalidates_groups_before_deduplication() -> None:

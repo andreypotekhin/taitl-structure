@@ -88,7 +88,7 @@ def test_posexplode_struct_records_traceability_dependency() -> None:
     dependencies = {dependency.target: dependency for dependency in traceability.static_dataflow}
 
     dependency = dependencies["expand.posexplode_struct[0].term"]
-    assert dependency.sources == ("similarity.terms",)
+    assert dependency.sources == ("documents.terms",)
     assert dependency.operation == "posexplode_struct"
     assert dependency.detail["schema"] == "ExpandedTerm"
 

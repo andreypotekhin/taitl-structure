@@ -1,4 +1,4 @@
-"""Two-stage BM25 and implicit-feedback document search."""
+"""Hybrid BM25, vector and implicit-feedback document search."""
 
 from examples.search.schemas.clicks import *
 from examples.search.schemas.filtering import *
@@ -13,8 +13,7 @@ from examples.search.schemas.user import *
 from examples.search.transforms.online.filtering import *
 from examples.search.transforms.online.scoring.lexical import *
 from examples.search.transforms.online.vectorization import *
-from examples.search.transforms.ranking.vector import RankVectors
-from examples.search.transforms.searching.search_docs.fusion import *
+from examples.search.transforms.searching.search_docs.fuse import *
 from examples.search.transforms.searching.search_docs.rerank import *
 from examples.search.transforms.searching.search_docs.retrieve import *
 from examples.search.transforms.vectorization import *
@@ -22,7 +21,7 @@ from structure import *
 
 
 class SearchDocuments(Transform):
-    """Filter, retrieve, fuse, rerank, and return document search results."""
+    """Full-text document search."""
 
     queries = input(SearchQuery, streaming=True)
     documents = input(Document)
@@ -84,12 +83,6 @@ class SearchDocuments(Transform):
         vector_policy=vector_policy,
     )
 
-    ranked = RankVectors(
-        policy=vector_policy,
-        document_scores=scored.document_vector_scores,
-        paragraph_scores=scored.paragraph_vector_scores,
-    )
-
     retrieved = RetrieveDocuments(
         queries=queries,
         documents=documents,
@@ -98,14 +91,14 @@ class SearchDocuments(Transform):
         requests=requests,
         band_memberships=band_memberships,
         score_policy=score_policy,
-        document_vector_candidates=ranked.document_candidates,
+        document_vector_scores=scored.document_vector_scores,
         vector_policy=vector_policy,
         prefilter_targets=filtered.targets,
     )
 
-    fused = FuseDocumentCandidates(
+    fused = FuseDocuments(
         lexical_candidates=retrieved.candidates,
-        vector_candidates=retrieved.vector_search_candidates,
+        vector_candidates=retrieved.vector_candidates,
         policy=vector_policy,
     )
 

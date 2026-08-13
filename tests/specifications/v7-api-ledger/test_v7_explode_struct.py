@@ -169,7 +169,7 @@ def test_explode_struct_records_traceability_dependency() -> None:
     dependencies = {dependency.target: dependency for dependency in traceability.static_dataflow}
 
     dependency = dependencies["expand.explode_struct[0].term"]
-    assert dependency.sources == ("similarity.terms",)
+    assert dependency.sources == ("documents.terms",)
     assert dependency.operation == "explode_struct"
     assert dependency.detail["schema"] == "ExplodedTerm"
     assert dependency.detail["ordinal"] is None
@@ -231,7 +231,7 @@ def test_explode_outer_struct_records_traceability_dependency() -> None:
     dependencies = {dependency.target: dependency for dependency in traceability.static_dataflow}
 
     dependency = dependencies["expand.explode_outer_struct[0].term"]
-    assert dependency.sources == ("similarity.terms",)
+    assert dependency.sources == ("documents.terms",)
     assert dependency.operation == "explode_outer_struct"
     assert dependency.detail["schema"] == "OuterExplodedTerm"
     assert dependency.detail["ordinal"] is None
@@ -294,7 +294,7 @@ def test_posexplode_outer_struct_records_traceability_dependency() -> None:
     dependencies = {dependency.target: dependency for dependency in traceability.static_dataflow}
 
     dependency = dependencies["expand.posexplode_outer_struct[0].term"]
-    assert dependency.sources == ("similarity.terms",)
+    assert dependency.sources == ("documents.terms",)
     assert dependency.operation == "posexplode_outer_struct"
     assert dependency.detail["schema"] == "OuterPositionedTerm"
     assert dependency.detail["ordinal"] == "ordinal"
@@ -372,7 +372,7 @@ def test_inline_outer_struct_explain_and_traceability_name_precise_kind() -> Non
     assert "operations: inline_outer_struct(row_multiplying scope=term schema=OuterExplodedTerm)" in text
     assert "STREAM-E0801: batch_only in expand (inline_outer_struct term)" not in text
     dependency = dependencies["expand.inline_outer_struct[0].term"]
-    assert dependency.sources == ("similarity.terms",)
+    assert dependency.sources == ("documents.terms",)
     assert dependency.operation == "inline_outer_struct"
 
 
