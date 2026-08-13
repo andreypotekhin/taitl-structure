@@ -14,7 +14,7 @@ from structure import Transform, input, output
 
 
 class OnlineVectorization(Transform):
-    """Resolve only request queries and documents admitted by filter targets."""
+    """Resolve only request queries and similarity admitted by filter targets."""
 
     queries = input(SearchQuery, streaming=True)
     documents = input(Document)
@@ -49,11 +49,13 @@ class OnlineVectorization(Transform):
         inferred=vectorized.query_embeddings,
         policy=inference_policy,
     )
+
     merged_documents = MergeDocumentVectors(
         cached=document_vector_index,
         inferred=vectorized.document_embeddings,
         policy=vector_policy,
     )
+
     query_vectors = VectorizeSearchQueries(
         queries=queries,
         embeddings=merged_queries.embeddings,

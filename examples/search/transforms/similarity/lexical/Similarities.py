@@ -1,4 +1,4 @@
-"""Search similarity pipeline."""
+"""Materialize lexical same-grain similarity candidates."""
 
 from examples.search.schemas.indexing.lexical.index import (
     DocumentIndexSummary,
@@ -21,13 +21,13 @@ from examples.search.schemas.similarity import (
 from examples.search.transforms.scoring.lexical.AllScoringTargets import AllScoringTargets
 from examples.search.transforms.scoring.lexical.ScoreBm25 import ScoreBm25
 from examples.search.transforms.scoring.lexical.ScoreOverlap import ScoreOverlap
-from examples.search.transforms.similarities.CreateSimilarityQueries import CreateSimilarityQueries
-from examples.search.transforms.similarities.ReduceSimilarityScores import ReduceSimilarityScores
+from examples.search.transforms.similarity.lexical.queries import CreateSimilarityQueries
+from examples.search.transforms.similarity.lexical.reduce import ReduceSimilarityScores
 from structure import Transform, input, output
 
 
 class Similarities(Transform):
-    """Create same-grain corpus similarity pairs from reusable lexical indexes."""
+    """Materialize same-grain corpus similarity pairs from lexical indexes."""
 
     policy = input(SimilarityPolicy)
     score_policy = input(ScorePolicy)

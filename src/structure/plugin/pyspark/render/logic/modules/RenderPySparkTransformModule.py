@@ -236,12 +236,14 @@ class RenderPySparkTransformModule:
         source_name = source_transform.rsplit(".", 1)[1]
         fields = self._mirror_fields(plan)
         lines = [f"class {class_name}:", "", "    def __init__(self, *, spark: SparkSession, ctx=None,"]
-        for input in plan.inputs:
+        for input in self._public_inputs(plan):
             suffix = " = None" if input.optional else ""
             lines.append(f"        {input.name}: DataFrame | None{suffix}," if input.optional else f"        {input.name}: DataFrame,")
         lines.extend(["    ):", "        self.spark = spark", "        self.ctx = ctx", "        self._ran = False"])
         for input in plan.inputs:
-            if input.optional:
+            if input.internal:
+                lines.append(f"        {input.name} = self.spark.createDataFrame([], {self._schema.constant_name(input.schema)})")
+            elif input.optional:
                 lines.append(f"        if {input.name} is None:")
                 lines.append(f"            {input.name} = self.spark.createDataFrame([], {self._schema.constant_name(input.schema)})")
             lines.append(f"        self.{fields[f'input:{input.name}']} = {input.name}")
@@ -451,7 +453,7 @@ class RenderPySparkTransformModule:
         )
         lines.extend(["", "    def close(self) -> None:", "        close_plan_boundaries(self.spark)"])
         lines.extend(["", "    def run(", "        self,", "        *,"])
-        for input in plan.inputs:
+        for input in self._public_inputs(plan):
             lines.append(
                 f"        {input.name}: DataFrame | None = None,"
                 if input.optional
@@ -459,7 +461,11 @@ class RenderPySparkTransformModule:
             )
         lines.extend(["    ) -> TransformResult:"])
         for input in plan.inputs:
-            if input.optional:
+            if input.internal:
+                lines.append(
+                    f"        {input.name} = self.spark.createDataFrame([], {self._schema.constant_name(input.schema)})"
+                )
+            elif input.optional:
                 lines.append(
                     f"        {input.name} = self.spark.createDataFrame([], {self._schema.constant_name(input.schema)})"
                     f" if {input.name} is None else {input.name}"
@@ -580,7 +586,7 @@ class RenderPySparkTransformModule:
         )
         lines.extend(["", "    def close(self) -> None:", "        close_plan_boundaries(self.spark)"])
         lines.extend(["", "    def run(", "        self,", "        *,"])
-        for input in plan.inputs:
+        for input in self._public_inputs(plan):
             lines.append(
                 f"        {input.name}: DataFrame | None = None,"
                 if input.optional
@@ -588,7 +594,11 @@ class RenderPySparkTransformModule:
             )
         lines.extend(["    ) -> TransformResult:"])
         for input in plan.inputs:
-            if input.optional:
+            if input.internal:
+                lines.append(
+                    f"        {input.name} = self.spark.createDataFrame([], {self._schema.constant_name(input.schema)})"
+                )
+            elif input.optional:
                 lines.append(
                     f"        {input.name} = self.spark.createDataFrame([], {self._schema.constant_name(input.schema)})"
                     f" if {input.name} is None else {input.name}"
@@ -1060,6 +1070,9 @@ class RenderPySparkTransformModule:
 
     def _raw_input_name(self, name: str) -> str:
         return f"_input_{name}"
+
+    def _public_inputs(self, plan: PySparkExecutionPlan):
+        return tuple(input for input in plan.inputs if not input.internal)
 
     def _validation(self, validation: PySparkValidationRecipe, *, target: str | None = None) -> list[str]:
         schema = self._schema.constant_name(validation.schema)

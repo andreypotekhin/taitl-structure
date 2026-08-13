@@ -15,6 +15,7 @@ class TransformPlan:
     inputs: tuple[InputPlan, ...]
     steps: tuple[StepPlan, ...]
     outputs: tuple[OutputPlan, ...]
+    internal_inputs: tuple[InputPlan, ...] = ()
     options: dict[str, object] | None = None
     diagnostics: tuple[Any, ...] = ()
     streaming_boundaries: tuple[StreamingBoundaryPlan, ...] = ()

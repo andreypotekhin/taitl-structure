@@ -39,7 +39,7 @@ def test_posexplode_array_is_typed_and_optimizer_visible() -> None:
     assert operation.scalar_generator is not None
     assert operation.scalar_generator.value_field == "value"
     assert operation.scalar_generator.ordinal == "ordinal"
-    rendered = render_pyspark_step(_lowered().steps[0], current="documents", sources={"documents": "documents"})
+    rendered = render_pyspark_step(_lowered().steps[0], current="similarity", sources={"similarity": "similarity"})
     assert "F.posexplode(F.col(\"document.values\"))" in rendered
 
 

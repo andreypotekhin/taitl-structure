@@ -15,3 +15,4 @@ class PySparkInputRecipe:
     streaming: bool = False
     optional: bool = False
     aliases: tuple[str, ...] = ()
+    internal: bool = False

@@ -144,7 +144,7 @@ def test_explode_struct_records_a_row_expanding_operation() -> None:
 
 
 def test_explode_struct_renders_public_pyspark_generator_source() -> None:
-    rendered = render_pyspark_step(_lowered().steps[0], current="documents", sources={"documents": "documents"})
+    rendered = render_pyspark_step(_lowered().steps[0], current="similarity", sources={"similarity": "similarity"})
 
     assert 'F.explode(F.col("document.terms")).alias("__structure_term_1_item")' in rendered
     assert 'F.col("__structure_term_1_item.token")' in rendered
@@ -169,7 +169,7 @@ def test_explode_struct_records_traceability_dependency() -> None:
     dependencies = {dependency.target: dependency for dependency in traceability.static_dataflow}
 
     dependency = dependencies["expand.explode_struct[0].term"]
-    assert dependency.sources == ("documents.terms",)
+    assert dependency.sources == ("similarity.terms",)
     assert dependency.operation == "explode_struct"
     assert dependency.detail["schema"] == "ExplodedTerm"
     assert dependency.detail["ordinal"] is None
@@ -206,7 +206,7 @@ def test_explode_outer_struct_records_an_outer_row_expanding_operation() -> None
 
 
 def test_explode_outer_struct_renders_public_pyspark_generator_source() -> None:
-    rendered = render_pyspark_step(_outer_lowered().steps[0], current="documents", sources={"documents": "documents"})
+    rendered = render_pyspark_step(_outer_lowered().steps[0], current="similarity", sources={"similarity": "similarity"})
 
     assert 'F.explode_outer(F.col("document.terms")).alias("__structure_term_1_item")' in rendered
     assert 'F.col("__structure_term_1_item.token")' in rendered
@@ -231,7 +231,7 @@ def test_explode_outer_struct_records_traceability_dependency() -> None:
     dependencies = {dependency.target: dependency for dependency in traceability.static_dataflow}
 
     dependency = dependencies["expand.explode_outer_struct[0].term"]
-    assert dependency.sources == ("documents.terms",)
+    assert dependency.sources == ("similarity.terms",)
     assert dependency.operation == "explode_outer_struct"
     assert dependency.detail["schema"] == "OuterExplodedTerm"
     assert dependency.detail["ordinal"] is None
@@ -265,8 +265,8 @@ def test_posexplode_outer_struct_records_an_outer_ordinal_operation() -> None:
 def test_posexplode_outer_struct_renders_public_pyspark_generator_source() -> None:
     rendered = render_pyspark_step(
         _outer_positioned_lowered().steps[0],
-        current="documents",
-        sources={"documents": "documents"},
+        current="similarity",
+        sources={"similarity": "similarity"},
     )
 
     assert (
@@ -294,7 +294,7 @@ def test_posexplode_outer_struct_records_traceability_dependency() -> None:
     dependencies = {dependency.target: dependency for dependency in traceability.static_dataflow}
 
     dependency = dependencies["expand.posexplode_outer_struct[0].term"]
-    assert dependency.sources == ("documents.terms",)
+    assert dependency.sources == ("similarity.terms",)
     assert dependency.operation == "posexplode_outer_struct"
     assert dependency.detail["schema"] == "OuterPositionedTerm"
     assert dependency.detail["ordinal"] == "ordinal"
@@ -336,7 +336,7 @@ def test_inline_struct_records_a_row_expanding_operation() -> None:
 
 
 def test_inline_struct_renders_public_pyspark_generator_source() -> None:
-    rendered = render_pyspark_step(_inline_lowered().steps[0], current="documents", sources={"documents": "documents"})
+    rendered = render_pyspark_step(_inline_lowered().steps[0], current="similarity", sources={"similarity": "similarity"})
 
     assert (
         'F.inline(F.col("document.terms")).alias("__structure_term_1_pos_token", "__structure_term_1_pos_weight")'
@@ -372,7 +372,7 @@ def test_inline_outer_struct_explain_and_traceability_name_precise_kind() -> Non
     assert "operations: inline_outer_struct(row_multiplying scope=term schema=OuterExplodedTerm)" in text
     assert "STREAM-E0801: batch_only in expand (inline_outer_struct term)" not in text
     dependency = dependencies["expand.inline_outer_struct[0].term"]
-    assert dependency.sources == ("documents.terms",)
+    assert dependency.sources == ("similarity.terms",)
     assert dependency.operation == "inline_outer_struct"
 
 

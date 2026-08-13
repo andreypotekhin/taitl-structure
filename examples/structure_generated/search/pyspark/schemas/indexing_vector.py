@@ -23,7 +23,7 @@ SEARCH_QUERY_VECTOR_EMBEDDING_SCHEMA = T.StructType(VECTOR_EMBEDDING_SCHEMA.fiel
     T.StructField("query_id", T.StringType(), False),
 ])
 
-SIMILARITY_DOCUMENT_VECTOR_EMBEDDING_SCHEMA = T.StructType(VECTOR_EMBEDDING_SCHEMA.fields + [
+SIMILARITY_QUERY_EMBEDDING_SCHEMA = T.StructType(VECTOR_EMBEDDING_SCHEMA.fields + [
     T.StructField("query_id", T.StringType(), False),
 ])
 

@@ -1,4 +1,4 @@
-"""Normalize provider embeddings keyed by source similarity documents."""
+"""Normalize provider embeddings keyed by source similarity search queries."""
 
 from examples.search.schemas.indexing.vector import *
 from examples.search.schemas.similarity import *
@@ -6,16 +6,16 @@ from structure import *
 from structure.plugin.pyspark import *
 
 
-class VectorizeSimilarityDocumentQueries(Transform):
-    """Bind provider-produced embeddings to source-document identity."""
+class VectorizeSimilarityQueries(Transform):
+    """Bind provider-produced embeddings to source-query identity."""
 
-    queries = input(SimilarityDocumentQuery)
-    embeddings = input(SimilarityDocumentVectorEmbedding)
+    queries = input(SimilaritySearchQuery)
+    embeddings = input(SimilarityQueryEmbedding)
     vector_queries = output(DocumentVectorQuery)
 
     @step(input=[queries, embeddings], output=vector_queries)
     def bind_query(
-        self, query: SimilarityDocumentQuery, embedding: SimilarityDocumentVectorEmbedding
+        self, query: SimilaritySearchQuery, embedding: SimilarityQueryEmbedding
     ) -> DocumentVectorQuery:
         inner_join(on=query.id == embedding.query_id)
         return DocumentVectorQuery.project(embedding)(

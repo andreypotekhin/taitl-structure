@@ -59,7 +59,7 @@ def test_posexplode_struct_records_a_row_expanding_operation() -> None:
 
 
 def test_posexplode_struct_renders_public_pyspark_generator_source() -> None:
-    rendered = render_pyspark_step(_lowered().steps[0], current="documents", sources={"documents": "documents"})
+    rendered = render_pyspark_step(_lowered().steps[0], current="similarity", sources={"similarity": "similarity"})
 
     assert (
         'F.posexplode(F.col("document.terms")).alias("__structure_term_1_pos", "__structure_term_1_item")'
@@ -88,7 +88,7 @@ def test_posexplode_struct_records_traceability_dependency() -> None:
     dependencies = {dependency.target: dependency for dependency in traceability.static_dataflow}
 
     dependency = dependencies["expand.posexplode_struct[0].term"]
-    assert dependency.sources == ("documents.terms",)
+    assert dependency.sources == ("similarity.terms",)
     assert dependency.operation == "posexplode_struct"
     assert dependency.detail["schema"] == "ExpandedTerm"
 

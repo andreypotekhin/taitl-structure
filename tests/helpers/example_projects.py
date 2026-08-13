@@ -810,7 +810,7 @@ def render_search_example() -> dict[str, str]:
             ParagraphVectorQuery,
             ParagraphVectorScore,
             SearchQueryVectorEmbedding,
-            SimilarityDocumentVectorEmbedding,
+            SimilarityQueryEmbedding,
             VectorIndexPolicy,
         )
         from examples.search.schemas.inference import (
@@ -867,6 +867,7 @@ def render_search_example() -> dict[str, str]:
             DocumentSearchCandidate,
             DocumentSearchResult,
             DocumentSearchTarget,
+            GapPolicy,
             ParagraphScore,
             ParagraphSearchTarget,
             PopularityFeedback,
@@ -901,22 +902,18 @@ def render_search_example() -> dict[str, str]:
         from examples.search.schemas.similarity import (
             DocumentSimilarity,
             DocumentSimilarityQuery,
-            HybridIndexedSimilarDocument,
-            HybridIndexedSimilarParagraph,
             IndexedSimilarDocument,
             IndexedSimilarParagraph,
-            IndexedSimilarSection,
-            IndexedSimilarSentence,
             ParagraphSimilarity,
             ParagraphSimilarityQuery,
             SectionSimilarity,
             SectionSimilarityQuery,
             SentenceSimilarity,
             SentenceSimilarityQuery,
-            SimilarityDocumentQuery,
             SimilarityFusionPolicy,
             SimilarityParagraphQuery,
             SimilarityPolicy,
+            SimilaritySearchQuery,
             SimilaritySectionQuery,
             SimilaritySentenceQuery,
         )
@@ -961,13 +958,13 @@ def render_search_example() -> dict[str, str]:
         from examples.search.transforms.scoring.lexical.SelectPopularQueries import SelectPopularQueries
         from examples.search.transforms.scoring.lexical.SelectRecentQueries import SelectRecentQueries
         from examples.search.transforms.search import SearchDocuments, SearchFields, SearchSentences
-        from examples.search.transforms.searching.search_similarity import SearchSimilarity, SearchSimilarityParagraphs
-        from examples.search.transforms.similarities.CreateSimilarityQueries import CreateSimilarityQueries
-        from examples.search.transforms.similarities.ReduceSimilarityScores import ReduceSimilarityScores
-        from examples.search.transforms.similarities.Similarities import Similarities
-        from examples.search.transforms.similarities.SimilarParagraphs import SimilarParagraphs
-        from examples.search.transforms.similarities.SimilarSections import SimilarSections
-        from examples.search.transforms.similarities.SimilarSentences import SimilarSentences
+        from examples.search.transforms.searching.search_similarity import SearchSimilarity
+        from examples.search.transforms.searching.search_similarity.paragraphs import (
+            SearchSimilarity as ParagraphSearchSimilarity,
+        )
+        from examples.search.transforms.similarity.lexical.queries import CreateSimilarityQueries
+        from examples.search.transforms.similarity.lexical.reduce import ReduceSimilarityScores
+        from examples.search.transforms.similarity.lexical.Similarities import Similarities
         from examples.search.transforms.stats.AnalyzeText import AnalyzeText
         from examples.search.transforms.stats.CorpusText import CorpusText
         from examples.search.transforms.stats.ProfileDocuments import ProfileDocuments
@@ -1022,6 +1019,7 @@ def render_search_example() -> dict[str, str]:
                 ParagraphSearchTarget,
                 SentenceSearchTarget,
                 ScorePolicy,
+                GapPolicy,
                 QueryPopularity,
                 DocumentScore,
                 SectionScore,
@@ -1186,7 +1184,7 @@ def render_search_example() -> dict[str, str]:
             "examples.search.schemas.similarity": [
                 SimilarityPolicy,
                 SimilarityFusionPolicy,
-                SimilarityDocumentQuery,
+                SimilaritySearchQuery,
                 SimilaritySectionQuery,
                 SimilarityParagraphQuery,
                 SimilaritySentenceQuery,
@@ -1195,12 +1193,8 @@ def render_search_example() -> dict[str, str]:
                 ParagraphSimilarityQuery,
                 SentenceSimilarityQuery,
                 DocumentSimilarity,
-                HybridIndexedSimilarDocument,
-                HybridIndexedSimilarParagraph,
                 IndexedSimilarDocument,
-                IndexedSimilarSection,
                 IndexedSimilarParagraph,
-                IndexedSimilarSentence,
                 SectionSimilarity,
                 ParagraphSimilarity,
                 SentenceSimilarity,
@@ -1210,7 +1204,7 @@ def render_search_example() -> dict[str, str]:
                 ParagraphVectorEmbedding,
                 DocumentVectorQuery,
                 SearchQueryVectorEmbedding,
-                SimilarityDocumentVectorEmbedding,
+                SimilarityQueryEmbedding,
                 ParagraphVectorQuery,
                 DocumentVectorIndex,
                 ParagraphVectorIndex,
@@ -1264,7 +1258,7 @@ def render_search_example() -> dict[str, str]:
             (SearchFields, "examples.search.transforms.searching.search_fields.SearchFields.SearchFields"),
             (
                 CreateSimilarityQueries,
-                "examples.search.transforms.similarities.CreateSimilarityQueries.CreateSimilarityQueries",
+                "examples.search.transforms.similarity.lexical.queries.CreateSimilarityQueries",
             ),
             (ScoreOverlap, "examples.search.transforms.scoring.lexical.ScoreOverlap.ScoreOverlap"),
             (ScoreBm25, "examples.search.transforms.scoring.lexical.ScoreBm25.ScoreBm25"),
@@ -1280,20 +1274,17 @@ def render_search_example() -> dict[str, str]:
             ),
             (
                 ReduceSimilarityScores,
-                "examples.search.transforms.similarities.ReduceSimilarityScores.ReduceSimilarityScores",
+                "examples.search.transforms.similarity.lexical.reduce.ReduceSimilarityScores",
             ),
-            (Similarities, "examples.search.transforms.similarities.Similarities.Similarities"),
+            (Similarities, "examples.search.transforms.similarity.lexical.Similarities"),
             (
                 SearchSimilarity,
                 "examples.search.transforms.searching.search_similarity.SearchSimilarity.SearchSimilarity",
             ),
             (
-                SearchSimilarityParagraphs,
-                "examples.search.transforms.searching.search_similarity.SearchSimilarityParagraphs.SearchSimilarityParagraphs",
+                ParagraphSearchSimilarity,
+                "examples.search.transforms.searching.search_similarity.paragraphs.SearchSimilarity.SearchSimilarity",
             ),
-            (SimilarSections, "examples.search.transforms.similarities.SimilarSections.SimilarSections"),
-            (SimilarParagraphs, "examples.search.transforms.similarities.SimilarParagraphs.SimilarParagraphs"),
-            (SimilarSentences, "examples.search.transforms.similarities.SimilarSentences.SimilarSentences"),
             (ResolveCohortBands, "examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands"),
             (MergeQueryLabels, "examples.search.transforms.labeling.MergeQueryLabels.MergeQueryLabels"),
             (CreateQueryLabels, "examples.search.transforms.labeling.CreateQueryLabels.CreateQueryLabels"),

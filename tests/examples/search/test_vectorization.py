@@ -3,8 +3,10 @@ from typing import cast
 from examples.search.transforms.inference import Inference
 from examples.search.transforms.offline.vectorization import OfflineVectorization
 from examples.search.transforms.online.filtering import SelectGapQueries as SelectFilterGaps
+from examples.search.transforms.online.scoring.lexical import OnlineScoring
 from examples.search.transforms.online.vectorization import OnlineVectorization
 from examples.search.transforms.searching.search_docs.SearchDocuments import SearchDocuments
+from examples.search.transforms.searching.search_fields.SearchFields import SearchFields
 from examples.search.transforms.vectorization import Vectorization
 from structure.core.compiler.api import Compiler
 from structure.plugin.api.v1.model import TransformPlan
@@ -30,3 +32,45 @@ def test_online_filter_gap_selection_accepts_optional_extra_filter_targets() -> 
     plan = cast(TransformPlan, Compiler.frontend.compile()(SelectFilterGaps, materialize_schemas=False).analysis)
     target = next(input for input in plan.inputs if input.name == "document_filter_targets")
     assert target.optional is True
+
+
+def test_document_search_does_not_declare_non_document_score_inputs() -> None:
+    plan = cast(TransformPlan, Compiler.frontend.compile()(SearchDocuments, materialize_schemas=False).analysis)
+    declared = {input.name for input in plan.inputs}
+    assert not declared.intersection(
+        {
+            "section_terms",
+            "paragraph_terms",
+            "sentence_terms",
+            "section_summary",
+            "paragraph_summary",
+            "sentence_summary",
+            "paragraph_vector_queries",
+            "paragraph_vector_index",
+            "paragraph_vector_scores",
+        }
+    )
+    assert all(input.name.startswith("__optional_") for input in plan.internal_inputs)
+
+
+def test_field_search_does_not_declare_non_document_score_inputs() -> None:
+    declared = set(SearchFields._structure_inputs)
+    assert not declared.intersection(
+        {
+            "paragraph_vector_scores",
+            "section_terms",
+            "paragraph_terms",
+            "sentence_terms",
+            "section_summary",
+            "paragraph_summary",
+            "sentence_summary",
+            "paragraph_vector_queries",
+            "paragraph_vector_index",
+        }
+    )
+
+
+def test_online_scoring_exposes_gap_policy() -> None:
+    plan = cast(TransformPlan, Compiler.frontend.compile()(OnlineScoring, materialize_schemas=False).analysis)
+    gap_policy = next(input for input in plan.inputs if input.name == "gap_policy")
+    assert gap_policy.optional is False

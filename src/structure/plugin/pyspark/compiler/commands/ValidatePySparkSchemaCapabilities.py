@@ -13,7 +13,10 @@ class ValidatePySparkSchemaCapabilities:
             self._schema(schema, capabilities=capabilities, visited=set())
 
     def _schemas(self, plan: TransformPlan) -> set[type[Schema]]:
-        schemas = {cast(type[Schema], input.schema) for input in plan.inputs}
+        schemas = {
+            cast(type[Schema], input.schema)
+            for input in (*plan.inputs, *plan.internal_inputs)
+        }
         schemas.update(cast(type[Schema], step.input_schema) for step in plan.steps)
         schemas.update(cast(type[Schema], step.output_schema) for step in plan.steps)
         schemas.update(cast(type[Schema], result.schema) for step in plan.steps for result in step.results)

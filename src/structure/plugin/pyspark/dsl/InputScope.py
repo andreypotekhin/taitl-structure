@@ -592,11 +592,13 @@ def _cross_join(
 
 
 def param_join(relation: Relation) -> Relation:
-    """Join a parameter-style relation and assert it is singleton in batch.
+    """Join a parameter-style relation consisting of exactly one row.
 
-    The singleton assertion is skipped when the actual step is streaming. Use
-    ``cross_join(relation, allow_cartesian=True)`` when multiple parameter rows
-    are intentional.
+    This method is equivalent of an exactly_one(relation) assertion
+    followed by a cross-join(relation, allow_cartesian=True).
+    The assertion is skipped when the actual step is streaming. Use
+    ``cross_join(relation, allow_cartesian=True)`` when passing multiple
+     parameter rows.
     """
     return cast(
         Relation,

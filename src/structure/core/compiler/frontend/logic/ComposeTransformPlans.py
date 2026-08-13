@@ -47,7 +47,7 @@ class ComposeTransformPlans:
         stage_plans = tuple(compile_stage(stage.transform_class) for stage in stages)
 
         labels = self._labels(stages)
-        inputs, external, streaming_boundaries = self._inputs(
+        inputs, internal_inputs, external, streaming_boundaries = self._inputs(
             name,
             stages,
             stage_plans,
@@ -68,6 +68,7 @@ class ComposeTransformPlans:
             inputs=tuple(inputs),
             steps=tuple(steps),
             outputs=tuple(outputs),
+            internal_inputs=tuple(internal_inputs),
             options=Transform.resolve_transform_options(
                 wrapper_class.__dict__.get("_structure_transform_options", {}) if wrapper_class is not None else {},
                 inputs=inputs,
@@ -88,13 +89,15 @@ class ComposeTransformPlans:
         wrapper_class: type[Transform] | None,
         allow_stream_to_batch: bool,
         stream_to_batch_policy: str,
-    ) -> tuple[list[InputPlan], dict[tuple[int, str], str], list[StreamingBoundaryPlan]]:
+    ) -> tuple[list[InputPlan], list[InputPlan], dict[tuple[int, str], str], list[StreamingBoundaryPlan]]:
         external: dict[tuple[int, str], str] = {}
         inputs: dict[str, InputPlan] = {}
+        internal_inputs: dict[str, InputPlan] = {}
         streaming_boundaries: list[StreamingBoundaryPlan] = []
         current_outputs: tuple[OutputPlan, ...] = ()
 
         for index, (stage, plan) in enumerate(zip(stages, stage_plans, strict=True)):
+            internal_inputs.update({input.name: input for input in plan.internal_inputs})
             bound = stage.invocation._structure_bound_inputs
             for input_plan in plan.inputs:
                 candidates = self._matching_outputs(input_plan, current_outputs)
@@ -186,6 +189,19 @@ class ComposeTransformPlans:
                                 context=violation.context,
                             )
                     continue
+                if input_plan.optional:
+                    source = self._internal_name(index, input_plan.name)
+                    internal_inputs[source] = InputPlan(
+                        name=source,
+                        schema=input_plan.schema,
+                        ordinal=0,
+                        streaming=input_plan.streaming,
+                        aliases=input_plan.aliases,
+                        streaming_declared=input_plan.streaming_declared,
+                        optional=True,
+                    )
+                    external[(index, input_plan.name)] = source
+                    continue
                 raise self._error(
                     pipeline_name,
                     f"{stage.transform_class.__name__}.{input_plan.name} is not supplied.",
@@ -214,7 +230,15 @@ class ComposeTransformPlans:
                 outputs=self._effective_outputs(plan, effective_inputs),
             )
 
-        return [replace(input, ordinal=ordinal) for ordinal, input in enumerate(inputs.values())], external, streaming_boundaries
+        return (
+            [replace(input, ordinal=ordinal) for ordinal, input in enumerate(inputs.values())],
+            [replace(input, ordinal=ordinal) for ordinal, input in enumerate(internal_inputs.values())],
+            external,
+            streaming_boundaries,
+        )
+
+    def _internal_name(self, index: int, input_name: str) -> str:
+        return f"__optional_stage_{index}_{input_name}"
 
     def _matching_outputs(self, input_plan: InputPlan, outputs: tuple[OutputPlan, ...]) -> tuple[OutputPlan, ...]:
         matches = [output for output in outputs if output.schema is input_plan.schema]
@@ -357,6 +381,9 @@ class ComposeTransformPlans:
         current_outputs: dict[str, OutputPlan],
     ) -> dict[str, str]:
         sources: dict[str, str] = {}
+        for internal in plan.internal_inputs:
+            sources[internal.name] = internal.name
+            sources[f"input:{internal.name}"] = internal.name
         for input_plan in plan.inputs:
             external_name = external.get((index, input_plan.name))
             if external_name is not None:

@@ -1,4 +1,4 @@
-"""Chunk caller-provided documents into span-only sections and paragraphs."""
+"""Chunk caller-provided similarity into span-only sections and paragraphs."""
 
 from examples.search.schemas.chunking.intermediate import (
     ExpandedDocumentLine,
@@ -40,7 +40,7 @@ from structure.plugin.pyspark import (
 
 
 class DocumentChunking(Transform):
-    """Chunk caller-provided documents into document-local half-open spans."""
+    """Chunk caller-provided similarity into document-local half-open spans."""
 
     documents = input(Document)
     marked_lines = lane(MarkedDocumentLine)

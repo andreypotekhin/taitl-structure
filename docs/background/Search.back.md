@@ -444,37 +444,17 @@ reference producer; callers may substitute an HNSW/ANN service that emits the sa
 retain overlap, both BM25 directions, lexical/vector ranks, RRF score, vector similarity, and backend/model/revision
 provenance for inspection.
 
-### Same-Grain Similarity
+### Same-Grain Candidate Materialization
 
-```python
-class SimilarParagraphs(Transform):
-    query = input(SimilarityParagraphQuery)
-    paragraphs = input(Paragraph)
-    scores = input(ParagraphSimilarityScore)
-    similar = output(SimilarParagraph)
+The lexical materializer under `examples/search/transforms/similarity/lexical/` creates tagged self-queries, scores
+document, section, paragraph, and sentence targets, and reduces reciprocal directed scores into bounded candidate
+relations. It is an offline artifact producer; it does not present pure-lexical similarity-search results.
 
-    def publish(
-        self,
-        query: SimilarityParagraphQuery,
-        paragraph: Paragraph,
-        score: ParagraphSimilarityScore,
-    ) -> SimilarParagraph:
-        inner_join(
-            score,
-            on=(score.query_id == query.id)
-            & (score.target_id == paragraph.id),
-        )
-        return SimilarParagraph(
-            source_id=query.source_id,
-            target_id=paragraph.id,
-            forward_bm25=score.forward_bm25,
-            reverse_bm25=score.reverse_bm25,
-            mean_score=(score.forward_bm25 + score.reverse_bm25) / 2,
-        )
-```
-
-The target and query must use the same text grain. Similarity does not imply semantic equivalence, an embedding score,
-or a calibrated probability. It is a bounded, inspectable lexical relationship.
+`SearchSimilarity` and its paragraph variant are the similarity-search boundaries. They consume lexical candidates plus
+vector candidates, fuse the lanes with RRF, and publish `IndexedSimilarDocument` or `IndexedSimilarParagraph`. The target
+and query must use the same text grain. Similarity does not imply semantic equivalence, an embedding score, or a calibrated
+probability. It is a bounded, inspectable relationship whose vector lane may be supplied by an exact reference producer
+or a caller-owned ANN provider.
 
 Callers may prune common terms through a maximum document-frequency ratio and may apply source, language, access, or
 collection restrictions appropriate to their product. Such constraints are application policy, not hidden similarity

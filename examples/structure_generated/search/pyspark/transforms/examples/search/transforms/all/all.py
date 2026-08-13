@@ -14710,7 +14710,7 @@ class CorpusTextGenerated:
         corpus__corpus_statistics = frames["analyzed__document_statistics"].alias("document_statistics")
         corpus__corpus_statistics = (
             corpus__corpus_statistics.groupBy(
-                F.lit('all documents').alias("corpus"),
+                F.lit('all similarity').alias("corpus"),
             )
             .agg(
                 F.count(F.lit(1)).cast(T.LongType()).alias("document_count"),
@@ -14760,7 +14760,7 @@ class CorpusTextGenerated:
         corpus__corpus_vocabulary = frames["indexed__lexical__document_terms"].alias("document_term")
         corpus__corpus_vocabulary = (
             corpus__corpus_vocabulary.groupBy(
-                F.lit('all documents').alias("corpus"),
+                F.lit('all similarity').alias("corpus"),
             )
             .agg(
                 F.approx_count_distinct(F.col("document_term.term"))

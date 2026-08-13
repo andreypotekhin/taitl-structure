@@ -40,12 +40,15 @@ class LowerPySparkPlan:
             self._inputs.map(
                 input.name,
                 cast(type[Schema], input.schema),
-                input.ordinal,
+                ordinal,
                 cast(bool, input.streaming),
                 input.aliases,
                 input.optional,
+                internal,
             )
-            for input in plan.inputs
+            for ordinal, (input, internal) in enumerate(
+                (*((input, False) for input in plan.inputs), *((input, True) for input in plan.internal_inputs))
+            )
         )
         boundary_frames = self._boundary_frames(plan)
         steps = tuple(

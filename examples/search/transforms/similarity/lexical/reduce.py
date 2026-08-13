@@ -55,6 +55,7 @@ class ReduceSimilarityScores(Transform):
     section_bm25_scores = input(SectionBm25Score)
     paragraph_bm25_scores = input(ParagraphBm25Score)
     sentence_bm25_scores = input(SentenceBm25Score)
+
     document_similarities = output(DocumentSimilarity)
     section_similarities = output(SectionSimilarity)
     paragraph_similarities = output(ParagraphSimilarity)

@@ -50,7 +50,7 @@ class ComposeTransformGraph:
         self._validate_references(wrapper_class, stages)
 
         stage_by_name = {stage.name: stage for stage in stages}
-        inputs, streaming_boundaries = self._inputs(
+        inputs, internal_inputs, streaming_boundaries = self._inputs(
             wrapper_class,
             stages,
             stage_plans,
@@ -70,6 +70,7 @@ class ComposeTransformGraph:
             inputs=tuple(inputs),
             steps=tuple(steps),
             outputs=tuple(outputs),
+            internal_inputs=tuple(internal_inputs),
             options=Transform.resolve_transform_options(
                 wrapper_class.__dict__.get("_structure_transform_options", {}),
                 inputs=inputs,
@@ -106,22 +107,37 @@ class ComposeTransformGraph:
         *,
         allow_stream_to_batch: bool,
         stream_to_batch_policy: str,
-    ) -> tuple[list[InputPlan], list[StreamingBoundaryPlan]]:
+    ) -> tuple[list[InputPlan], list[InputPlan], list[StreamingBoundaryPlan]]:
         inputs: dict[str, InputPlan] = {}
+        internal_inputs: dict[str, InputPlan] = {}
         streaming_boundaries: list[StreamingBoundaryPlan] = []
         plans = {stage.name: plan for stage, plan in zip(stages, stage_plans, strict=True)}
         effective_outputs: dict[str, dict[str, OutputPlan]] = {}
         for stage, plan in zip(stages, stage_plans, strict=True):
+            internal_inputs.update({input.name: input for input in plan.internal_inputs})
             bound = stage.invocation._structure_bound_inputs
             input_modes: dict[str, bool] = {}
             for input_plan in plan.inputs:
                 value = bound.get(input_plan.name)
                 if value is None:
-                    raise self._error(
-                        wrapper_class.__name__,
-                        f"{type(stage.invocation).__name__}.{input_plan.name} is not supplied.",
-                        "Pass every stage input from a wrapper input or an earlier stage output.",
+                    if not input_plan.optional:
+                        raise self._error(
+                            wrapper_class.__name__,
+                            f"{type(stage.invocation).__name__}.{input_plan.name} is not supplied.",
+                            "Pass every required stage input from a wrapper input or an earlier stage output.",
+                        )
+                    source = self._internal_name(stage, input_plan.name)
+                    internal_inputs[source] = InputPlan(
+                        name=source,
+                        schema=input_plan.schema,
+                        ordinal=0,
+                        streaming=input_plan.streaming,
+                        aliases=input_plan.aliases,
+                        streaming_declared=input_plan.streaming_declared,
+                        optional=True,
                     )
+                    input_modes[input_plan.name] = bool(input_plan.streaming)
+                    continue
                 if isinstance(value, StageOutputReference):
                     if input_plan.schema is not value.schema:
                         raise self._error(
@@ -203,7 +219,16 @@ class ComposeTransformGraph:
                 output.name: output
                 for output in self._effective_outputs(plan, input_modes)
             }
-        return [replace(input, ordinal=ordinal) for ordinal, input in enumerate(inputs.values())], streaming_boundaries
+        return (
+            [replace(input, ordinal=ordinal) for ordinal, input in enumerate(inputs.values())],
+            [replace(input, ordinal=ordinal) for ordinal, input in enumerate(internal_inputs.values())],
+            streaming_boundaries,
+        )
+
+    def _internal_name(self, stage: StageDeclaration, input_name: str) -> str:
+        label = stage.name or type(stage.invocation).__name__
+        label = re.sub(r"[^A-Za-z0-9_]", "_", label)
+        return f"__optional_{label}_{input_name}"
 
     def _external_name(
         self,
@@ -261,7 +286,7 @@ class ComposeTransformGraph:
 
             input_modes = {}
             for input_plan in plan.inputs:
-                value = stage.invocation._structure_bound_inputs[input_plan.name]
+                value = stage.invocation._structure_bound_inputs.get(input_plan.name)
                 if isinstance(value, StageOutputReference):
                     upstream = output_sources.get((stage_by_name.get(value.stage.name, value.stage), value.name))
                     input_modes[input_plan.name] = bool(upstream and upstream.streaming)
@@ -307,9 +332,23 @@ class ComposeTransformGraph:
         stage_by_name: Mapping[str, StageDeclaration],
     ) -> dict[str, str]:
         sources: dict[str, str] = {}
+        for internal in plan.internal_inputs:
+            sources[internal.name] = internal.name
+            sources[f"input:{internal.name}"] = internal.name
         bound = stage.invocation._structure_bound_inputs
         for input_plan in plan.inputs:
-            value = bound[input_plan.name]
+            value = bound.get(input_plan.name)
+            if value is None:
+                if not input_plan.optional:
+                    raise self._error(
+                        wrapper_class.__name__,
+                        f"{stage.name}.{input_plan.name} is not supplied.",
+                        "Pass every required stage input from a wrapper input or an earlier stage output.",
+                    )
+                source = self._internal_name(stage, input_plan.name)
+                sources[input_plan.name] = source
+                sources[f"input:{input_plan.name}"] = source
+                continue
             if isinstance(value, StageOutputReference):
                 upstream = output_sources.get((stage_by_name.get(value.stage.name, value.stage), value.name))
                 if upstream is None:

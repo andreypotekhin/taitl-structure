@@ -12,7 +12,7 @@ from structure.plugin.pyspark.render.commands.RenderPySparkStep import render_py
 ROOT = Path(__file__).resolve().parents[3]
 INVENTORY = ROOT / "docs/dev/specifications/ExampleRawHookInventory.json"
 COMPOSED_TRANSFORMS = {
-    "search.rerank-documents.score_candidates": (
+    "search.rerank-similarity.score_candidates": (
         "examples.search.transforms.searching.search_docs.SearchDocuments",
         "SearchDocuments",
     ),
@@ -47,11 +47,11 @@ RETIRED_TRANSFORMS = {
         "Indexing",
     ),
     "search.create-similarity-queries.build": (
-        "examples.search.transforms.similarities.CreateSimilarityQueries",
+        "examples.search.transforms.similarity.lexical.queries",
         "CreateSimilarityQueries",
     ),
     "search.reduce-similarity-scores.reduce": (
-        "examples.search.transforms.similarities.ReduceSimilarityScores",
+        "examples.search.transforms.similarity.lexical.reduce",
         "ReduceSimilarityScores",
     ),
     "search.build-relevance-signals.expand_impressions": (
@@ -62,7 +62,7 @@ RETIRED_TRANSFORMS = {
         "examples.search.transforms.relevance.BuildRelevanceSignals",
         "BuildRelevanceSignals",
     ),
-    "search.rerank-documents.score_candidates": (
+    "search.rerank-similarity.score_candidates": (
         "examples.search.transforms.searching.search_docs.SearchDocuments",
         "SearchDocuments",
     ),
@@ -177,7 +177,7 @@ def test_search_bm25_scoring_is_typed_and_has_no_opaque_hook_boundary() -> None:
 
 def test_search_similarity_query_construction_is_typed_and_has_no_opaque_hook_boundary() -> None:
     plan, traceability = _lowered(
-        "examples.search.transforms.similarities.CreateSimilarityQueries",
+        "examples.search.transforms.similarity.lexical.queries",
         "CreateSimilarityQueries",
     )
     build_steps = [
@@ -241,7 +241,7 @@ def test_search_index_build_keeps_materialization_private_and_typed() -> None:
 
 def test_search_similarity_score_reduction_is_typed_and_has_no_opaque_hook_boundary() -> None:
     plan, traceability = _lowered(
-        "examples.search.transforms.similarities.ReduceSimilarityScores",
+        "examples.search.transforms.similarity.lexical.reduce",
         "ReduceSimilarityScores",
     )
 

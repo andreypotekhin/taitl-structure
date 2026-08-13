@@ -21,7 +21,7 @@ class SimilarityFusionPolicy(Schema):
     experiment_id = string(nullable=False)
 
 
-class SimilarityDocumentQuery(Document):
+class SimilaritySearchQuery(Document):
     """One caller-supplied document whose corpus neighbours are requested."""
 
 
@@ -77,12 +77,6 @@ class DocumentSimilarity(Schema):
 
 
 class IndexedSimilarDocument(Document):
-    """A corpus document ranked for one query document by directed BM25."""
-
-    rank = long(nullable=False)
-
-
-class HybridIndexedSimilarDocument(Document):
     """A document result with inspectable lexical/vector fusion evidence."""
 
     lexical_rank = long(nullable=True)
@@ -98,25 +92,7 @@ class HybridIndexedSimilarDocument(Document):
     rank = long(nullable=False)
 
 
-class IndexedSimilarSection(Section):
-    """A corpus section ranked for one query section by directed BM25."""
-
-    search_query_id = string(nullable=True)
-    score_overlap = double(nullable=True)
-    score_bm25 = double(nullable=True)
-    rank = long(nullable=False)
-
-
 class IndexedSimilarParagraph(Paragraph):
-    """A corpus paragraph ranked for one query paragraph by directed BM25."""
-
-    search_query_id = string(nullable=True)
-    score_overlap = double(nullable=True)
-    score_bm25 = double(nullable=True)
-    rank = long(nullable=False)
-
-
-class HybridIndexedSimilarParagraph(Paragraph):
     """A paragraph result with inspectable lexical/vector fusion evidence."""
 
     lexical_rank = long(nullable=True)
@@ -131,15 +107,6 @@ class HybridIndexedSimilarParagraph(Paragraph):
     vector_dimension = long(nullable=True)
     vector_content_revision = string(nullable=True)
     experiment_id = string(nullable=False)
-    rank = long(nullable=False)
-
-
-class IndexedSimilarSentence(Sentence):
-    """A corpus sentence ranked for one query sentence by directed BM25."""
-
-    search_query_id = string(nullable=True)
-    score_overlap = double(nullable=True)
-    score_bm25 = double(nullable=True)
     rank = long(nullable=False)
 
 

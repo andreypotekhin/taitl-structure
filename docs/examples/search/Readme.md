@@ -26,7 +26,7 @@ separate specification or discussion. Annotated source remains the place for lin
 - Relevance — exposure-aware feedback snapshots.
 - Scoring — lexical score families and offline coverage.
 - Searching, SearchPassages, SearchSentences, and SearchSimilarity — presentation boundaries.
-- Similarities — same-grain corpus similarity.
+- `similarity.lexical` — same-grain corpus candidate materialization.
 - Statistics, CorpusText, and ProfileDocuments — descriptive corpus facts.
 - Training — optional offline ranking artifacts.
 

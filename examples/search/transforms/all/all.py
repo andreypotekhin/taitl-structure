@@ -25,7 +25,7 @@ from examples.search.transforms.offline.scoring.lexical import *
 from examples.search.transforms.offline.vectorization import *
 from examples.search.transforms.ranking.vector import RankVectors
 from examples.search.transforms.relevance.BuildRelevanceSignals import *
-from examples.search.transforms.similarities import *
+from examples.search.transforms.similarity.lexical import *
 from examples.search.transforms.stats import *
 from structure import *
 

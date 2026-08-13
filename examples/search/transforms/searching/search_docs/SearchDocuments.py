@@ -28,25 +28,17 @@ class SearchDocuments(Transform):
     documents = input(Document)
     document_scores = input(DocumentScore)
     document_vector_scores = input(DocumentVectorScore)
-    paragraph_vector_scores = input(ParagraphVectorScore)
     streamed_documents = input(Document, streaming=True)
     streamed_document_scores = input(DocumentScore, streaming=True)
     document_filter_targets = input(DocumentSearchTarget, streaming=True, optional=True)
     document_overlap_scores = input(DocumentOverlapScore)
     document_filter_scores = input(DocumentFilterScore)
     document_terms = input(DocumentTerm)
-    section_terms = input(SectionTerm)
-    paragraph_terms = input(ParagraphTerm)
-    sentence_terms = input(SentenceTerm)
     document_summary = input(DocumentIndexSummary)
-    section_summary = input(SectionIndexSummary)
-    paragraph_summary = input(ParagraphIndexSummary)
-    sentence_summary = input(SentenceIndexSummary)
     score_policy = input(ScorePolicy)
+    gap_policy = input(GapPolicy)
     document_vector_embeddings = input(SearchQueryVectorEmbedding, streaming=True)
     document_vector_index = input(DocumentVectorIndex)
-    paragraph_vector_queries = input(ParagraphVectorQuery)
-    paragraph_vector_index = input(ParagraphVectorIndex)
     vector_policy = input(VectorIndexPolicy)
     inference_policy = input(InferencePolicy)
     requests = input(SearchRequest, streaming=True)
@@ -81,22 +73,14 @@ class SearchDocuments(Transform):
         streamed_document_scores=streamed_document_scores,
         cached_document_scores=document_scores,
         cached_document_vector_scores=document_vector_scores,
-        cached_paragraph_vector_scores=paragraph_vector_scores,
         cached_document_overlap_scores=document_overlap_scores,
         prefilter_targets=filtered.targets,
         document_terms=document_terms,
-        section_terms=section_terms,
-        paragraph_terms=paragraph_terms,
-        sentence_terms=sentence_terms,
         document_summary=document_summary,
-        section_summary=section_summary,
-        paragraph_summary=paragraph_summary,
-        sentence_summary=sentence_summary,
         score_policy=score_policy,
+        gap_policy=gap_policy,
         document_vector_queries=vectorized.vector_queries,
         document_vector_index=vectorized.document_embeddings,
-        paragraph_vector_queries=paragraph_vector_queries,
-        paragraph_vector_index=paragraph_vector_index,
         vector_policy=vector_policy,
     )
 

@@ -17,7 +17,7 @@ SIMILARITY_FUSION_POLICY_SCHEMA = T.StructType([
     T.StructField("experiment_id", T.StringType(), False),
 ])
 
-SIMILARITY_DOCUMENT_QUERY_SCHEMA = T.StructType(DOCUMENT_SCHEMA.fields)
+SIMILARITY_SEARCH_QUERY_SCHEMA = T.StructType(DOCUMENT_SCHEMA.fields)
 
 SIMILARITY_SECTION_QUERY_SCHEMA = T.StructType(SECTION_SCHEMA.fields + [
     T.StructField("search_query_id", T.StringType(), True),
@@ -64,58 +64,33 @@ DOCUMENT_SIMILARITY_SCHEMA = T.StructType([
     T.StructField("bm25_mean", T.DoubleType(), False),
 ])
 
-HYBRID_INDEXED_SIMILAR_DOCUMENT_SCHEMA = T.StructType(DOCUMENT_SCHEMA.fields + [
-    T.StructField("lexical_rank", T.LongType(), True),
-    T.StructField("vector_rank", T.LongType(), True),
-    T.StructField("vector_similarity", T.DoubleType(), True),
-    T.StructField("rrf_k", T.LongType(), False),
-    T.StructField("rrf_score", T.DoubleType(), False),
-    T.StructField("vector_backend", T.StringType(), True),
-    T.StructField("vector_model_id", T.StringType(), True),
-    T.StructField("vector_dimension", T.LongType(), True),
-    T.StructField("vector_content_revision", T.StringType(), True),
-    T.StructField("experiment_id", T.StringType(), False),
-    T.StructField("rank", T.LongType(), False),
-])
-
-HYBRID_INDEXED_SIMILAR_PARAGRAPH_SCHEMA = T.StructType(PARAGRAPH_SCHEMA.fields + [
-    T.StructField("lexical_rank", T.LongType(), True),
-    T.StructField("vector_rank", T.LongType(), True),
-    T.StructField("score_overlap", T.DoubleType(), True),
-    T.StructField("score_bm25", T.DoubleType(), True),
-    T.StructField("vector_similarity", T.DoubleType(), True),
-    T.StructField("rrf_k", T.LongType(), False),
-    T.StructField("rrf_score", T.DoubleType(), False),
-    T.StructField("vector_backend", T.StringType(), True),
-    T.StructField("vector_model_id", T.StringType(), True),
-    T.StructField("vector_dimension", T.LongType(), True),
-    T.StructField("vector_content_revision", T.StringType(), True),
-    T.StructField("experiment_id", T.StringType(), False),
-    T.StructField("rank", T.LongType(), False),
-])
-
 INDEXED_SIMILAR_DOCUMENT_SCHEMA = T.StructType(DOCUMENT_SCHEMA.fields + [
-    T.StructField("rank", T.LongType(), False),
-])
-
-INDEXED_SIMILAR_SECTION_SCHEMA = T.StructType(SECTION_SCHEMA.fields + [
-    T.StructField("search_query_id", T.StringType(), True),
-    T.StructField("score_overlap", T.DoubleType(), True),
-    T.StructField("score_bm25", T.DoubleType(), True),
+    T.StructField("lexical_rank", T.LongType(), True),
+    T.StructField("vector_rank", T.LongType(), True),
+    T.StructField("vector_similarity", T.DoubleType(), True),
+    T.StructField("rrf_k", T.LongType(), False),
+    T.StructField("rrf_score", T.DoubleType(), False),
+    T.StructField("vector_backend", T.StringType(), True),
+    T.StructField("vector_model_id", T.StringType(), True),
+    T.StructField("vector_dimension", T.LongType(), True),
+    T.StructField("vector_content_revision", T.StringType(), True),
+    T.StructField("experiment_id", T.StringType(), False),
     T.StructField("rank", T.LongType(), False),
 ])
 
 INDEXED_SIMILAR_PARAGRAPH_SCHEMA = T.StructType(PARAGRAPH_SCHEMA.fields + [
-    T.StructField("search_query_id", T.StringType(), True),
+    T.StructField("lexical_rank", T.LongType(), True),
+    T.StructField("vector_rank", T.LongType(), True),
     T.StructField("score_overlap", T.DoubleType(), True),
     T.StructField("score_bm25", T.DoubleType(), True),
-    T.StructField("rank", T.LongType(), False),
-])
-
-INDEXED_SIMILAR_SENTENCE_SCHEMA = T.StructType(SENTENCE_SCHEMA.fields + [
-    T.StructField("search_query_id", T.StringType(), True),
-    T.StructField("score_overlap", T.DoubleType(), True),
-    T.StructField("score_bm25", T.DoubleType(), True),
+    T.StructField("vector_similarity", T.DoubleType(), True),
+    T.StructField("rrf_k", T.LongType(), False),
+    T.StructField("rrf_score", T.DoubleType(), False),
+    T.StructField("vector_backend", T.StringType(), True),
+    T.StructField("vector_model_id", T.StringType(), True),
+    T.StructField("vector_dimension", T.LongType(), True),
+    T.StructField("vector_content_revision", T.StringType(), True),
+    T.StructField("experiment_id", T.StringType(), False),
     T.StructField("rank", T.LongType(), False),
 ])
 

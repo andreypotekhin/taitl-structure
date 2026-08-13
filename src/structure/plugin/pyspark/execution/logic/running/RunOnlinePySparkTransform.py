@@ -76,7 +76,10 @@ class RunOnlinePySparkTransform:
         inputs = dict(invocation._structure_bound_inputs)
         self._backend_target = plan.backend.target
         for input in plan.inputs:
-            if input.name not in inputs:
+            if input.internal:
+                schema = self._schema.materialize()(input.schema, types=T)
+                inputs[input.name] = session.spark.createDataFrame([], schema)
+            elif input.name not in inputs:
                 if not input.optional:
                     raise ValueError(f"Missing required input {input.name!r}.")
                 schema = self._schema.materialize()(input.schema, types=T)

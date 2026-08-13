@@ -17,7 +17,7 @@ from examples.structure_generated.search.pyspark.schemas.indexing_vector import 
     DOCUMENT_VECTOR_INDEX_SCHEMA,
     DOCUMENT_VECTOR_QUERY_SCHEMA,
     DOCUMENT_VECTOR_SCORE_SCHEMA,
-    SIMILARITY_DOCUMENT_VECTOR_EMBEDDING_SCHEMA,
+    SIMILARITY_QUERY_EMBEDDING_SCHEMA,
     VECTOR_INDEX_POLICY_SCHEMA,
 )
 from examples.structure_generated.search.pyspark.schemas.search import SCORE_POLICY_SCHEMA
@@ -26,9 +26,9 @@ from examples.structure_generated.search.pyspark.schemas.similarities_vector imp
 )
 from examples.structure_generated.search.pyspark.schemas.similarity import (
     DOCUMENT_SIMILARITY_SCHEMA,
-    HYBRID_INDEXED_SIMILAR_DOCUMENT_SCHEMA,
-    SIMILARITY_DOCUMENT_QUERY_SCHEMA,
+    INDEXED_SIMILAR_DOCUMENT_SCHEMA,
     SIMILARITY_FUSION_POLICY_SCHEMA,
+    SIMILARITY_SEARCH_QUERY_SCHEMA,
 )
 from examples.structure_generated.search.pyspark.schemas.text import DOCUMENT_SCHEMA
 
@@ -88,24 +88,24 @@ class AdoptLexicalSimilarityGenerated:
         }
 
 
-class VectorizeSimilarityDocumentQueriesGenerated:
+class VectorizeSimilarityQueriesGenerated:
     def _step_vectorized_bind_query_1(self, frames):
         # Step method: vectorized.bind_query
-        vectorized__vector_queries = frames["query"].alias("similarity_document_query")
-        document_vector_embeddings_joined = frames["document_vector_embeddings"].alias("document_vector_embeddings")
+        vectorized__vector_queries = frames["query"].alias("similarity_search_query")
+        query_vector_embeddings_joined = frames["query_vector_embeddings"].alias("query_vector_embeddings")
         vectorized__vector_queries = vectorized__vector_queries.join(
-            document_vector_embeddings_joined,
-            (F.col("similarity_document_query.id") == F.col("document_vector_embeddings.query_id")),
+            query_vector_embeddings_joined,
+            (F.col("similarity_search_query.id") == F.col("query_vector_embeddings.query_id")),
             "inner",
         )
         vectorized__vector_queries = vectorized__vector_queries.select(
-            F.col("document_vector_embeddings.vector"),
-            F.col("document_vector_embeddings.model_id"),
-            F.col("document_vector_embeddings.dimension"),
-            F.col("document_vector_embeddings.content_revision"),
-            F.col("document_vector_embeddings.experiment_id"),
-            F.col("similarity_document_query.id").alias("query_id"),
-            F.col("similarity_document_query.id").alias("query_document_id"),
+            F.col("query_vector_embeddings.vector"),
+            F.col("query_vector_embeddings.model_id"),
+            F.col("query_vector_embeddings.dimension"),
+            F.col("query_vector_embeddings.content_revision"),
+            F.col("query_vector_embeddings.experiment_id"),
+            F.col("similarity_search_query.id").alias("query_id"),
+            F.col("similarity_search_query.id").alias("query_document_id"),
         )
         assert_schema(
             vectorized__vector_queries, DOCUMENT_VECTOR_QUERY_SCHEMA, name="DocumentVectorQuery", mode="strict"
@@ -861,10 +861,7 @@ class RerankSimilarityGenerated:
             .alias("rank"),
         )
         assert_schema(
-            reranked__ranked_documents,
-            HYBRID_INDEXED_SIMILAR_DOCUMENT_SCHEMA,
-            name="HybridIndexedSimilarDocument",
-            mode="strict",
+            reranked__ranked_documents, INDEXED_SIMILAR_DOCUMENT_SCHEMA, name="IndexedSimilarDocument", mode="strict"
         )
         return {
             "reranked__ranked_documents": reranked__ranked_documents,
@@ -872,7 +869,7 @@ class RerankSimilarityGenerated:
 
     def _step_reranked_limit_documents_11(self, frames):
         # Step method: reranked.limit_documents
-        reranked__similar_documents = frames["reranked__ranked_documents"].alias("hybrid_indexed_similar_document")
+        reranked__similar_documents = frames["reranked__ranked_documents"].alias("indexed_similar_document")
         __structure_streaming_step = (
             frames["reranked__ranked_documents"].isStreaming or frames["fusion_policy"].isStreaming
         )
@@ -891,39 +888,39 @@ class RerankSimilarityGenerated:
         fusion_policy_joined = fusion_policy_param_joined.alias("fusion_policy")
         reranked__similar_documents = reranked__similar_documents.crossJoin(fusion_policy_joined)
         reranked__similar_documents = reranked__similar_documents.where(
-            ((F.col("hybrid_indexed_similar_document.rank") <= F.col("fusion_policy.maximum_results")))
+            ((F.col("indexed_similar_document.rank") <= F.col("fusion_policy.maximum_results")))
         )
         reranked__similar_documents = reranked__similar_documents.select(
-            F.col("hybrid_indexed_similar_document.id"),
-            F.col("hybrid_indexed_similar_document.collection_id"),
-            F.col("hybrid_indexed_similar_document.source"),
-            F.col("hybrid_indexed_similar_document.title"),
-            F.col("hybrid_indexed_similar_document.url"),
-            F.col("hybrid_indexed_similar_document.content"),
-            F.col("hybrid_indexed_similar_document.content_type"),
-            F.col("hybrid_indexed_similar_document.encoding"),
-            F.col("hybrid_indexed_similar_document.language"),
-            F.col("hybrid_indexed_similar_document.created_at"),
-            F.col("hybrid_indexed_similar_document.published_at"),
-            F.col("hybrid_indexed_similar_document.harvested_at"),
-            F.col("hybrid_indexed_similar_document.search_query_id"),
-            F.col("hybrid_indexed_similar_document.score_overlap"),
-            F.col("hybrid_indexed_similar_document.score_bm25"),
-            F.col("hybrid_indexed_similar_document.document_type"),
-            F.col("hybrid_indexed_similar_document.category_id"),
-            F.col("hybrid_indexed_similar_document.file_type"),
-            F.col("hybrid_indexed_similar_document.fields"),
-            F.col("hybrid_indexed_similar_document.lexical_rank"),
-            F.col("hybrid_indexed_similar_document.vector_rank"),
-            F.col("hybrid_indexed_similar_document.vector_similarity"),
-            F.col("hybrid_indexed_similar_document.rrf_k"),
-            F.col("hybrid_indexed_similar_document.rrf_score"),
-            F.col("hybrid_indexed_similar_document.vector_backend"),
-            F.col("hybrid_indexed_similar_document.vector_model_id"),
-            F.col("hybrid_indexed_similar_document.vector_dimension"),
-            F.col("hybrid_indexed_similar_document.vector_content_revision"),
-            F.col("hybrid_indexed_similar_document.experiment_id"),
-            F.col("hybrid_indexed_similar_document.rank"),
+            F.col("indexed_similar_document.id"),
+            F.col("indexed_similar_document.collection_id"),
+            F.col("indexed_similar_document.source"),
+            F.col("indexed_similar_document.title"),
+            F.col("indexed_similar_document.url"),
+            F.col("indexed_similar_document.content"),
+            F.col("indexed_similar_document.content_type"),
+            F.col("indexed_similar_document.encoding"),
+            F.col("indexed_similar_document.language"),
+            F.col("indexed_similar_document.created_at"),
+            F.col("indexed_similar_document.published_at"),
+            F.col("indexed_similar_document.harvested_at"),
+            F.col("indexed_similar_document.search_query_id"),
+            F.col("indexed_similar_document.score_overlap"),
+            F.col("indexed_similar_document.score_bm25"),
+            F.col("indexed_similar_document.document_type"),
+            F.col("indexed_similar_document.category_id"),
+            F.col("indexed_similar_document.file_type"),
+            F.col("indexed_similar_document.fields"),
+            F.col("indexed_similar_document.lexical_rank"),
+            F.col("indexed_similar_document.vector_rank"),
+            F.col("indexed_similar_document.vector_similarity"),
+            F.col("indexed_similar_document.rrf_k"),
+            F.col("indexed_similar_document.rrf_score"),
+            F.col("indexed_similar_document.vector_backend"),
+            F.col("indexed_similar_document.vector_model_id"),
+            F.col("indexed_similar_document.vector_dimension"),
+            F.col("indexed_similar_document.vector_content_revision"),
+            F.col("indexed_similar_document.experiment_id"),
+            F.col("indexed_similar_document.rank"),
         )
         return {
             "reranked__similar_documents": reranked__similar_documents,
@@ -932,7 +929,7 @@ class RerankSimilarityGenerated:
 
 class SearchSimilarityGenerated(
     AdoptLexicalSimilarityGenerated,
-    VectorizeSimilarityDocumentQueriesGenerated,
+    VectorizeSimilarityQueriesGenerated,
     ScoreDocumentVectorsGenerated,
     AdoptVectorSimilarityGenerated,
     FuseSimilarityGenerated,
@@ -951,7 +948,7 @@ class SearchSimilarityGenerated(
         *,
         document_similarities: DataFrame,
         query: DataFrame,
-        document_vector_embeddings: DataFrame,
+        query_vector_embeddings: DataFrame,
         vector_policy: DataFrame,
         score_policy: DataFrame,
         document_vector_index: DataFrame,
@@ -959,12 +956,9 @@ class SearchSimilarityGenerated(
         fusion_policy: DataFrame,
     ) -> TransformResult:
         assert_schema(document_similarities, DOCUMENT_SIMILARITY_SCHEMA, name="DocumentSimilarity", mode="strict")
-        assert_schema(query, SIMILARITY_DOCUMENT_QUERY_SCHEMA, name="SimilarityDocumentQuery", mode="strict")
+        assert_schema(query, SIMILARITY_SEARCH_QUERY_SCHEMA, name="SimilaritySearchQuery", mode="strict")
         assert_schema(
-            document_vector_embeddings,
-            SIMILARITY_DOCUMENT_VECTOR_EMBEDDING_SCHEMA,
-            name="SimilarityDocumentVectorEmbedding",
-            mode="strict",
+            query_vector_embeddings, SIMILARITY_QUERY_EMBEDDING_SCHEMA, name="SimilarityQueryEmbedding", mode="strict"
         )
         assert_schema(vector_policy, VECTOR_INDEX_POLICY_SCHEMA, name="VectorIndexPolicy", mode="strict")
         assert_schema(score_policy, SCORE_POLICY_SCHEMA, name="ScorePolicy", mode="strict")
@@ -973,7 +967,7 @@ class SearchSimilarityGenerated(
         assert_schema(fusion_policy, SIMILARITY_FUSION_POLICY_SCHEMA, name="SimilarityFusionPolicy", mode="strict")
         _input_document_similarities = document_similarities
         _input_query = query
-        _input_document_vector_embeddings = document_vector_embeddings
+        _input_query_vector_embeddings = query_vector_embeddings
         _input_vector_policy = vector_policy
         _input_score_policy = score_policy
         _input_document_vector_index = document_vector_index
@@ -982,7 +976,7 @@ class SearchSimilarityGenerated(
         frames = {
             "document_similarities": document_similarities,
             "query": query,
-            "document_vector_embeddings": document_vector_embeddings,
+            "query_vector_embeddings": query_vector_embeddings,
             "vector_policy": vector_policy,
             "score_policy": score_policy,
             "document_vector_index": document_vector_index,
@@ -990,7 +984,7 @@ class SearchSimilarityGenerated(
             "fusion_policy": fusion_policy,
             "input:document_similarities": _input_document_similarities,
             "input:query": _input_query,
-            "input:document_vector_embeddings": _input_document_vector_embeddings,
+            "input:query_vector_embeddings": _input_query_vector_embeddings,
             "input:vector_policy": _input_vector_policy,
             "input:score_policy": _input_score_policy,
             "input:document_vector_index": _input_document_vector_index,
@@ -1011,15 +1005,10 @@ class SearchSimilarityGenerated(
         frames.update(self._step_reranked_limit_documents_11(frames))
 
         # Step method: similar_documents
-        similar_documents = frames["reranked__similar_documents"].alias("hybrid_indexed_similar_document")
-        assert_schema(
-            similar_documents,
-            HYBRID_INDEXED_SIMILAR_DOCUMENT_SCHEMA,
-            name="HybridIndexedSimilarDocument",
-            mode="strict",
-        )
+        similar_documents = frames["reranked__similar_documents"].alias("indexed_similar_document")
+        assert_schema(similar_documents, INDEXED_SIMILAR_DOCUMENT_SCHEMA, name="IndexedSimilarDocument", mode="strict")
         return TransformResult(
             {"similar_documents": similar_documents},
             single=True,
-            schema={"similar_documents": HYBRID_INDEXED_SIMILAR_DOCUMENT_SCHEMA},
+            schema={"similar_documents": INDEXED_SIMILAR_DOCUMENT_SCHEMA},
         )

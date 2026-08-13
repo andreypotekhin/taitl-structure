@@ -216,7 +216,7 @@ def test_search_all_builds_the_complete_offline_artifact_graph() -> None:
     plan = Compiler.frontend.compile()(All, materialize_schemas=False).analysis
     assert isinstance(plan, TransformPlan)
     assert [(item.name, item.schema) for item in plan.inputs] == [
-        ("documents", Document),
+        ("similarity", Document),
         ("field_profiles", FieldProfile),
         ("analyzer_policies", AnalyzerPolicy),
         ("similarity_policy", SimilarityPolicy),
@@ -323,7 +323,7 @@ def test_search_all_training_endpoint_builds_features_and_training_data() -> Non
     assert TrainingPipeline.__name__ == "TrainingPipeline"
     assert callable(training_examples)
     assert [(item.name, item.schema) for item in plan.inputs] == [
-        ("documents", Document),
+        ("similarity", Document),
         ("queries", SearchQuery),
         ("document_scores", DocumentScore),
         ("judgments", DocumentRelevanceJudgment),

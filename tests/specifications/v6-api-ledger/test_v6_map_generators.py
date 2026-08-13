@@ -61,7 +61,7 @@ def test_posexplode_map_is_typed_and_optimizer_visible() -> None:
     assert operation.map_generator.key_field == "key"
     assert operation.map_generator.value_field == "value"
     assert operation.map_generator.ordinal == "ordinal"
-    rendered = render_pyspark_step(_lowered().steps[0], current="documents", sources={"documents": "documents"})
+    rendered = render_pyspark_step(_lowered().steps[0], current="similarity", sources={"similarity": "similarity"})
     assert 'F.posexplode(F.col("document.attributes"))' in rendered
 
 
@@ -82,8 +82,8 @@ def test_explode_map_renders_two_named_generated_fields() -> None:
 
     rendered = render_pyspark_step(
         cast(PySparkExecutionPlan, Compiler.frontend.compile()(Expand, materialize_schemas=False).lowered).steps[0],
-        current="documents",
-        sources={"documents": "documents"},
+        current="similarity",
+        sources={"similarity": "similarity"},
     )
     assert 'F.explode(F.col("document.attributes"))' in rendered
     assert "__structure_attribute_1_key" in rendered

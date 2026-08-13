@@ -81,6 +81,7 @@ from examples.structure_generated.search.pyspark.schemas.search import (
     DOCUMENT_SEARCH_CANDIDATE_SCHEMA,
     DOCUMENT_SEARCH_RESULT_SCHEMA,
     DOCUMENT_SEARCH_TARGET_SCHEMA,
+    GAP_POLICY_SCHEMA,
     PARAGRAPH_SCORE_SCHEMA,
     POPULARITY_FEEDBACK_SCHEMA,
     QUERY_DOCUMENT_FEEDBACK_SCHEMA,
@@ -1288,6 +1289,7 @@ class SelectGapQueries__examples_search_transforms_online_scoring_lexical_Select
             or frames["document_scores"].isStreaming
             or frames["requests"].isStreaming
             or frames["score_policy"].isStreaming
+            or frames["gap_policy"].isStreaming
         )
         document_scores_joined = frames["document_scores"].alias("document_scores")
         scored__gap__document_availability = scored__gap__document_availability.join(
@@ -1321,25 +1323,42 @@ class SelectGapQueries__examples_search_transforms_online_scoring_lexical_Select
             )
         score_policy_3_joined = score_policy_3_param_joined.alias("score_policy_3")
         scored__gap__document_availability = scored__gap__document_availability.crossJoin(score_policy_3_joined)
+        gap_policy_4_param_joined = frames["gap_policy"]
+        if not __structure_streaming_step:
+            gap_policy_4_param_joined_count = frames["gap_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
+            gap_policy_4_param_joined_count = gap_policy_4_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(gaps) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            gap_policy_4_param_joined = gap_policy_4_param_joined_count.crossJoin(frames["gap_policy"]).drop(
+                "__structure_exactly_one"
+            )
+        gap_policy_4_joined = gap_policy_4_param_joined.alias("gap_policy_4")
+        scored__gap__document_availability = scored__gap__document_availability.crossJoin(gap_policy_4_joined)
         scored__gap__document_availability = scored__gap__document_availability.where(
             (
                 (
-                    F.col("document_scores.document_id").isNull()
-                    | ~(
-                        (
+                    F.col("gap_policy_4.document_scores")
+                    & (
+                        F.col("document_scores.document_id").isNull()
+                        | ~(
                             (
                                 (
-                                    (F.col("document_scores.scored_at") <= F.col("requests_2.requested_at"))
-                                    & (F.col("document_scores.scored_at") >= F.col("score_policy_3.effective_at"))
+                                    (
+                                        (F.col("document_scores.scored_at") <= F.col("requests_2.requested_at"))
+                                        & (F.col("document_scores.scored_at") >= F.col("score_policy_3.effective_at"))
+                                    )
+                                    & (
+                                        F.datediff(F.col("requests_2.requested_at"), F.col("document_scores.scored_at"))
+                                        >= F.lit(0)
+                                    )
                                 )
                                 & (
                                     F.datediff(F.col("requests_2.requested_at"), F.col("document_scores.scored_at"))
-                                    >= F.lit(0)
+                                    <= F.col("score_policy_3.maximum_age_days")
                                 )
-                            )
-                            & (
-                                F.datediff(F.col("requests_2.requested_at"), F.col("document_scores.scored_at"))
-                                <= F.col("score_policy_3.maximum_age_days")
                             )
                         )
                     )
@@ -1373,6 +1392,7 @@ class SelectGapQueries__examples_search_transforms_online_scoring_lexical_Select
             or frames["document_overlap_scores"].isStreaming
             or frames["requests"].isStreaming
             or frames["score_policy"].isStreaming
+            or frames["gap_policy"].isStreaming
         )
         document_overlap_scores_joined = frames["document_overlap_scores"].alias("document_overlap_scores")
         scored__gap__overlap_availability = scored__gap__overlap_availability.join(
@@ -1406,30 +1426,49 @@ class SelectGapQueries__examples_search_transforms_online_scoring_lexical_Select
             )
         score_policy_3_joined = score_policy_3_param_joined.alias("score_policy_3")
         scored__gap__overlap_availability = scored__gap__overlap_availability.crossJoin(score_policy_3_joined)
+        gap_policy_4_param_joined = frames["gap_policy"]
+        if not __structure_streaming_step:
+            gap_policy_4_param_joined_count = frames["gap_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
+            gap_policy_4_param_joined_count = gap_policy_4_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(gaps) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            gap_policy_4_param_joined = gap_policy_4_param_joined_count.crossJoin(frames["gap_policy"]).drop(
+                "__structure_exactly_one"
+            )
+        gap_policy_4_joined = gap_policy_4_param_joined.alias("gap_policy_4")
+        scored__gap__overlap_availability = scored__gap__overlap_availability.crossJoin(gap_policy_4_joined)
         scored__gap__overlap_availability = scored__gap__overlap_availability.where(
             (
                 (
-                    F.col("document_overlap_scores.document_id").isNull()
-                    | ~(
-                        (
+                    F.col("gap_policy_4.document_overlap_scores")
+                    & (
+                        F.col("document_overlap_scores.document_id").isNull()
+                        | ~(
                             (
                                 (
-                                    (F.col("document_overlap_scores.scored_at") <= F.col("requests_2.requested_at"))
+                                    (
+                                        (F.col("document_overlap_scores.scored_at") <= F.col("requests_2.requested_at"))
+                                        & (
+                                            F.col("document_overlap_scores.scored_at")
+                                            >= F.col("score_policy_3.effective_at")
+                                        )
+                                    )
                                     & (
-                                        F.col("document_overlap_scores.scored_at")
-                                        >= F.col("score_policy_3.effective_at")
+                                        F.datediff(
+                                            F.col("requests_2.requested_at"), F.col("document_overlap_scores.scored_at")
+                                        )
+                                        >= F.lit(0)
                                     )
                                 )
                                 & (
                                     F.datediff(
                                         F.col("requests_2.requested_at"), F.col("document_overlap_scores.scored_at")
                                     )
-                                    >= F.lit(0)
+                                    <= F.col("score_policy_3.maximum_age_days")
                                 )
-                            )
-                            & (
-                                F.datediff(F.col("requests_2.requested_at"), F.col("document_overlap_scores.scored_at"))
-                                <= F.col("score_policy_3.maximum_age_days")
                             )
                         )
                     )
@@ -1464,6 +1503,7 @@ class SelectGapQueries__examples_search_transforms_online_scoring_lexical_Select
             or frames["requests"].isStreaming
             or frames["score_policy"].isStreaming
             or frames["vector_policy"].isStreaming
+            or frames["gap_policy"].isStreaming
         )
         document_vector_scores_joined = frames["document_vector_scores"].alias("document_vector_scores")
         scored__gap__vector_availability = scored__gap__vector_availability.join(
@@ -1513,12 +1553,27 @@ class SelectGapQueries__examples_search_transforms_online_scoring_lexical_Select
             )
         vector_policy_4_joined = vector_policy_4_param_joined.alias("vector_policy_4")
         scored__gap__vector_availability = scored__gap__vector_availability.crossJoin(vector_policy_4_joined)
+        gap_policy_5_param_joined = frames["gap_policy"]
+        if not __structure_streaming_step:
+            gap_policy_5_param_joined_count = frames["gap_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
+            gap_policy_5_param_joined_count = gap_policy_5_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(gaps) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            gap_policy_5_param_joined = gap_policy_5_param_joined_count.crossJoin(frames["gap_policy"]).drop(
+                "__structure_exactly_one"
+            )
+        gap_policy_5_joined = gap_policy_5_param_joined.alias("gap_policy_5")
+        scored__gap__vector_availability = scored__gap__vector_availability.crossJoin(gap_policy_5_joined)
         scored__gap__vector_availability = scored__gap__vector_availability.where(
             (
                 (
-                    F.col("document_vector_scores.document_id").isNull()
-                    | ~(
-                        (
+                    F.col("gap_policy_5.document_vector_scores")
+                    & (
+                        F.col("document_vector_scores.document_id").isNull()
+                        | ~(
                             (
                                 (
                                     (
@@ -1527,12 +1582,21 @@ class SelectGapQueries__examples_search_transforms_online_scoring_lexical_Select
                                                 (
                                                     (
                                                         (
-                                                            F.col("document_vector_scores.scored_at")
-                                                            <= F.col("requests_2.requested_at")
+                                                            (
+                                                                F.col("document_vector_scores.scored_at")
+                                                                <= F.col("requests_2.requested_at")
+                                                            )
+                                                            & (
+                                                                F.col("document_vector_scores.scored_at")
+                                                                >= F.col("score_policy_3.effective_at")
+                                                            )
                                                         )
                                                         & (
-                                                            F.col("document_vector_scores.scored_at")
-                                                            >= F.col("score_policy_3.effective_at")
+                                                            F.datediff(
+                                                                F.col("requests_2.requested_at"),
+                                                                F.col("document_vector_scores.scored_at"),
+                                                            )
+                                                            >= F.lit(0)
                                                         )
                                                     )
                                                     & (
@@ -1540,39 +1604,32 @@ class SelectGapQueries__examples_search_transforms_online_scoring_lexical_Select
                                                             F.col("requests_2.requested_at"),
                                                             F.col("document_vector_scores.scored_at"),
                                                         )
-                                                        >= F.lit(0)
+                                                        <= F.col("score_policy_3.maximum_age_days")
                                                     )
                                                 )
                                                 & (
-                                                    F.datediff(
-                                                        F.col("requests_2.requested_at"),
-                                                        F.col("document_vector_scores.scored_at"),
-                                                    )
-                                                    <= F.col("score_policy_3.maximum_age_days")
+                                                    F.col("document_vector_scores.model_id")
+                                                    == F.col("vector_policy_4.model_id")
                                                 )
                                             )
                                             & (
-                                                F.col("document_vector_scores.model_id")
-                                                == F.col("vector_policy_4.model_id")
+                                                F.col("document_vector_scores.dimension")
+                                                == F.col("vector_policy_4.dimension")
                                             )
                                         )
                                         & (
-                                            F.col("document_vector_scores.dimension")
-                                            == F.col("vector_policy_4.dimension")
+                                            F.col("document_vector_scores.content_revision")
+                                            == F.col("vector_policy_4.content_revision")
                                         )
                                     )
                                     & (
-                                        F.col("document_vector_scores.content_revision")
-                                        == F.col("vector_policy_4.content_revision")
+                                        F.col("document_vector_scores.experiment_id")
+                                        == F.col("vector_policy_4.experiment_id")
                                     )
                                 )
-                                & (
-                                    F.col("document_vector_scores.experiment_id")
-                                    == F.col("vector_policy_4.experiment_id")
+                                & F.col("document_vector_scores.experiment_id").eqNullSafe(
+                                    F.col("requests_2.experiment_id")
                                 )
-                            )
-                            & F.col("document_vector_scores.experiment_id").eqNullSafe(
-                                F.col("requests_2.experiment_id")
                             )
                         )
                     )
@@ -1605,20 +1662,32 @@ class SelectGapQueries__examples_search_transforms_online_scoring_lexical_Select
         )
         __structure_streaming_step = (
             frames["filtered__selected__targets"].isStreaming
-            or frames["paragraph_vector_scores"].isStreaming
+            or frames["__optional_scored_cached_paragraph_vector_scores"].isStreaming
             or frames["requests"].isStreaming
             or frames["score_policy"].isStreaming
             or frames["vector_policy"].isStreaming
+            or frames["gap_policy"].isStreaming
         )
-        paragraph_vector_scores_joined = frames["paragraph_vector_scores"].alias("paragraph_vector_scores")
+        __optional_scored_cached_paragraph_vector_scores_joined = frames[
+            "__optional_scored_cached_paragraph_vector_scores"
+        ].alias("__optional_scored_cached_paragraph_vector_scores")
         scored__gap__paragraph_vector_availability = scored__gap__paragraph_vector_availability.join(
-            paragraph_vector_scores_joined,
+            __optional_scored_cached_paragraph_vector_scores_joined,
             (
                 (
-                    (F.col("paragraph_vector_scores.query_id") == F.col("document_search_target.query_id"))
-                    & (F.col("paragraph_vector_scores.document_id") == F.col("document_search_target.document_id"))
+                    (
+                        F.col("__optional_scored_cached_paragraph_vector_scores.query_id")
+                        == F.col("document_search_target.query_id")
+                    )
+                    & (
+                        F.col("__optional_scored_cached_paragraph_vector_scores.document_id")
+                        == F.col("document_search_target.document_id")
+                    )
                 )
-                & (F.col("paragraph_vector_scores.scope_id") == F.col("document_search_target.scope_id"))
+                & (
+                    F.col("__optional_scored_cached_paragraph_vector_scores.scope_id")
+                    == F.col("document_search_target.scope_id")
+                )
             ),
             "left",
         )
@@ -1662,12 +1731,29 @@ class SelectGapQueries__examples_search_transforms_online_scoring_lexical_Select
         scored__gap__paragraph_vector_availability = scored__gap__paragraph_vector_availability.crossJoin(
             vector_policy_4_joined
         )
+        gap_policy_5_param_joined = frames["gap_policy"]
+        if not __structure_streaming_step:
+            gap_policy_5_param_joined_count = frames["gap_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
+            gap_policy_5_param_joined_count = gap_policy_5_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(gaps) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            gap_policy_5_param_joined = gap_policy_5_param_joined_count.crossJoin(frames["gap_policy"]).drop(
+                "__structure_exactly_one"
+            )
+        gap_policy_5_joined = gap_policy_5_param_joined.alias("gap_policy_5")
+        scored__gap__paragraph_vector_availability = scored__gap__paragraph_vector_availability.crossJoin(
+            gap_policy_5_joined
+        )
         scored__gap__paragraph_vector_availability = scored__gap__paragraph_vector_availability.where(
             (
                 (
-                    F.col("paragraph_vector_scores.document_id").isNull()
-                    | ~(
-                        (
+                    F.col("gap_policy_5.paragraph_vector_scores")
+                    & (
+                        F.col("__optional_scored_cached_paragraph_vector_scores.document_id").isNull()
+                        | ~(
                             (
                                 (
                                     (
@@ -1676,52 +1762,62 @@ class SelectGapQueries__examples_search_transforms_online_scoring_lexical_Select
                                                 (
                                                     (
                                                         (
-                                                            F.col("paragraph_vector_scores.scored_at")
-                                                            <= F.col("requests_2.requested_at")
+                                                            (
+                                                                F.col(
+                                                                    "__optional_scored_cached_paragraph_vector_scores.scored_at"
+                                                                )
+                                                                <= F.col("requests_2.requested_at")
+                                                            )
+                                                            & (
+                                                                F.col(
+                                                                    "__optional_scored_cached_paragraph_vector_scores.scored_at"
+                                                                )
+                                                                >= F.col("score_policy_3.effective_at")
+                                                            )
                                                         )
                                                         & (
-                                                            F.col("paragraph_vector_scores.scored_at")
-                                                            >= F.col("score_policy_3.effective_at")
+                                                            F.datediff(
+                                                                F.col("requests_2.requested_at"),
+                                                                F.col(
+                                                                    "__optional_scored_cached_paragraph_vector_scores.scored_at"
+                                                                ),
+                                                            )
+                                                            >= F.lit(0)
                                                         )
                                                     )
                                                     & (
                                                         F.datediff(
                                                             F.col("requests_2.requested_at"),
-                                                            F.col("paragraph_vector_scores.scored_at"),
+                                                            F.col(
+                                                                "__optional_scored_cached_paragraph_vector_scores.scored_at"
+                                                            ),
                                                         )
-                                                        >= F.lit(0)
+                                                        <= F.col("score_policy_3.maximum_age_days")
                                                     )
                                                 )
                                                 & (
-                                                    F.datediff(
-                                                        F.col("requests_2.requested_at"),
-                                                        F.col("paragraph_vector_scores.scored_at"),
-                                                    )
-                                                    <= F.col("score_policy_3.maximum_age_days")
+                                                    F.col("__optional_scored_cached_paragraph_vector_scores.model_id")
+                                                    == F.col("vector_policy_4.model_id")
                                                 )
                                             )
                                             & (
-                                                F.col("paragraph_vector_scores.model_id")
-                                                == F.col("vector_policy_4.model_id")
+                                                F.col("__optional_scored_cached_paragraph_vector_scores.dimension")
+                                                == F.col("vector_policy_4.dimension")
                                             )
                                         )
                                         & (
-                                            F.col("paragraph_vector_scores.dimension")
-                                            == F.col("vector_policy_4.dimension")
+                                            F.col("__optional_scored_cached_paragraph_vector_scores.content_revision")
+                                            == F.col("vector_policy_4.content_revision")
                                         )
                                     )
                                     & (
-                                        F.col("paragraph_vector_scores.content_revision")
-                                        == F.col("vector_policy_4.content_revision")
+                                        F.col("__optional_scored_cached_paragraph_vector_scores.experiment_id")
+                                        == F.col("vector_policy_4.experiment_id")
                                     )
                                 )
-                                & (
-                                    F.col("paragraph_vector_scores.experiment_id")
-                                    == F.col("vector_policy_4.experiment_id")
+                                & F.col("__optional_scored_cached_paragraph_vector_scores.experiment_id").eqNullSafe(
+                                    F.col("requests_2.experiment_id")
                                 )
-                            )
-                            & F.col("paragraph_vector_scores.experiment_id").eqNullSafe(
-                                F.col("requests_2.experiment_id")
                             )
                         )
                     )
@@ -1972,7 +2068,7 @@ class ScoreOverlapGenerated:
 
     def _step_scored_scoring_overlap_select_section_vocabulary_28(self, frames):
         # Step method: scored.scoring.overlap.select_section_vocabulary
-        scored__scoring__overlap__section_vocabulary = frames["section_terms"].alias("section_term")
+        scored__scoring__overlap__section_vocabulary = frames["__optional_scored_section_terms"].alias("section_term")
         if scored__scoring__overlap__section_vocabulary.isStreaming:
             scored__scoring__overlap__section_vocabulary = (
                 scored__scoring__overlap__section_vocabulary.dropDuplicatesWithinWatermark(["term"])
@@ -2000,7 +2096,9 @@ class ScoreOverlapGenerated:
 
     def _step_scored_scoring_overlap_select_paragraph_vocabulary_29(self, frames):
         # Step method: scored.scoring.overlap.select_paragraph_vocabulary
-        scored__scoring__overlap__paragraph_vocabulary = frames["paragraph_terms"].alias("paragraph_term")
+        scored__scoring__overlap__paragraph_vocabulary = frames["__optional_scored_paragraph_terms"].alias(
+            "paragraph_term"
+        )
         if scored__scoring__overlap__paragraph_vocabulary.isStreaming:
             scored__scoring__overlap__paragraph_vocabulary = (
                 scored__scoring__overlap__paragraph_vocabulary.dropDuplicatesWithinWatermark(["term"])
@@ -2029,7 +2127,9 @@ class ScoreOverlapGenerated:
 
     def _step_scored_scoring_overlap_select_sentence_vocabulary_30(self, frames):
         # Step method: scored.scoring.overlap.select_sentence_vocabulary
-        scored__scoring__overlap__sentence_vocabulary = frames["sentence_terms"].alias("sentence_term")
+        scored__scoring__overlap__sentence_vocabulary = frames["__optional_scored_sentence_terms"].alias(
+            "sentence_term"
+        )
         if scored__scoring__overlap__sentence_vocabulary.isStreaming:
             scored__scoring__overlap__sentence_vocabulary = (
                 scored__scoring__overlap__sentence_vocabulary.dropDuplicatesWithinWatermark(["term"])
@@ -2120,9 +2220,11 @@ class ScoreOverlapGenerated:
             (F.col("scored__scoring__overlap__section_vocabulary.term") == F.col("query_term.token")),
             "left",
         )
-        section_summary_2_joined = frames["section_summary"].alias("section_summary_2")
+        __optional_scored_section_summary_2_joined = frames["__optional_scored_section_summary"].alias(
+            "__optional_scored_section_summary_2"
+        )
         scored__scoring__overlap__section_query_idfs = scored__scoring__overlap__section_query_idfs.crossJoin(
-            section_summary_2_joined
+            __optional_scored_section_summary_2_joined
         )
         scored__scoring__overlap__section_query_idfs = scored__scoring__overlap__section_query_idfs.select(
             F.col("query_term.query_id"),
@@ -2133,7 +2235,7 @@ class ScoreOverlapGenerated:
                     + (
                         (
                             (
-                                F.col("section_summary_2.target_count")
+                                F.col("__optional_scored_section_summary_2.target_count")
                                 - F.coalesce(
                                     F.col("scored__scoring__overlap__section_vocabulary.target_frequency"), F.lit(0)
                                 )
@@ -2168,9 +2270,11 @@ class ScoreOverlapGenerated:
             (F.col("scored__scoring__overlap__paragraph_vocabulary.term") == F.col("query_term.token")),
             "left",
         )
-        paragraph_summary_2_joined = frames["paragraph_summary"].alias("paragraph_summary_2")
+        __optional_scored_paragraph_summary_2_joined = frames["__optional_scored_paragraph_summary"].alias(
+            "__optional_scored_paragraph_summary_2"
+        )
         scored__scoring__overlap__paragraph_query_idfs = scored__scoring__overlap__paragraph_query_idfs.crossJoin(
-            paragraph_summary_2_joined
+            __optional_scored_paragraph_summary_2_joined
         )
         scored__scoring__overlap__paragraph_query_idfs = scored__scoring__overlap__paragraph_query_idfs.select(
             F.col("query_term.query_id"),
@@ -2181,7 +2285,7 @@ class ScoreOverlapGenerated:
                     + (
                         (
                             (
-                                F.col("paragraph_summary_2.target_count")
+                                F.col("__optional_scored_paragraph_summary_2.target_count")
                                 - F.coalesce(
                                     F.col("scored__scoring__overlap__paragraph_vocabulary.target_frequency"), F.lit(0)
                                 )
@@ -2218,9 +2322,11 @@ class ScoreOverlapGenerated:
             (F.col("scored__scoring__overlap__sentence_vocabulary.term") == F.col("query_term.token")),
             "left",
         )
-        sentence_summary_2_joined = frames["sentence_summary"].alias("sentence_summary_2")
+        __optional_scored_sentence_summary_2_joined = frames["__optional_scored_sentence_summary"].alias(
+            "__optional_scored_sentence_summary_2"
+        )
         scored__scoring__overlap__sentence_query_idfs = scored__scoring__overlap__sentence_query_idfs.crossJoin(
-            sentence_summary_2_joined
+            __optional_scored_sentence_summary_2_joined
         )
         scored__scoring__overlap__sentence_query_idfs = scored__scoring__overlap__sentence_query_idfs.select(
             F.col("query_term.query_id"),
@@ -2231,7 +2337,7 @@ class ScoreOverlapGenerated:
                     + (
                         (
                             (
-                                F.col("sentence_summary_2.target_count")
+                                F.col("__optional_scored_sentence_summary_2.target_count")
                                 - F.coalesce(
                                     F.col("scored__scoring__overlap__sentence_vocabulary.target_frequency"), F.lit(0)
                                 )
@@ -2430,10 +2536,12 @@ class ScoreOverlapGenerated:
         scored__scoring__overlap__section_overlap_matches = frames[
             "scored__scoring__overlap__expanded_query_terms"
         ].alias("query_term")
-        section_terms_joined = frames["section_terms"].alias("section_terms")
+        __optional_scored_section_terms_joined = frames["__optional_scored_section_terms"].alias(
+            "__optional_scored_section_terms"
+        )
         scored__scoring__overlap__section_overlap_matches = scored__scoring__overlap__section_overlap_matches.join(
-            section_terms_joined,
-            (F.col("section_terms.term") == F.col("query_term.token")),
+            __optional_scored_section_terms_joined,
+            (F.col("__optional_scored_section_terms.term") == F.col("query_term.token")),
             "inner",
         )
         filtered__selected__targets_2_joined = frames["filtered__selected__targets"].alias(
@@ -2443,7 +2551,10 @@ class ScoreOverlapGenerated:
             filtered__selected__targets_2_joined,
             (
                 (F.col("filtered__selected__targets_2.query_id") == F.col("query_term.query_id"))
-                & (F.col("filtered__selected__targets_2.document_id") == F.col("section_terms.document_id"))
+                & (
+                    F.col("filtered__selected__targets_2.document_id")
+                    == F.col("__optional_scored_section_terms.document_id")
+                )
             ),
             "inner",
         )
@@ -2469,8 +2580,8 @@ class ScoreOverlapGenerated:
         scored__scoring__overlap__section_overlap_matches = (
             scored__scoring__overlap__section_overlap_matches.groupBy(
                 F.col("query_term.query_id").alias("query_id"),
-                F.col("section_terms.document_id").alias("document_id"),
-                F.col("section_terms.section_id").alias("section_id"),
+                F.col("__optional_scored_section_terms.document_id").alias("document_id"),
+                F.col("__optional_scored_section_terms.section_id").alias("section_id"),
                 F.col("filtered__selected__targets_2.scope_id").alias("scope_id"),
                 F.col("scored__scoring__overlap__section_query_totals_4.query_idf").alias("query_idf"),
             )
@@ -2503,10 +2614,12 @@ class ScoreOverlapGenerated:
         scored__scoring__overlap__paragraph_overlap_matches = frames[
             "scored__scoring__overlap__expanded_query_terms"
         ].alias("query_term")
-        paragraph_terms_joined = frames["paragraph_terms"].alias("paragraph_terms")
+        __optional_scored_paragraph_terms_joined = frames["__optional_scored_paragraph_terms"].alias(
+            "__optional_scored_paragraph_terms"
+        )
         scored__scoring__overlap__paragraph_overlap_matches = scored__scoring__overlap__paragraph_overlap_matches.join(
-            paragraph_terms_joined,
-            (F.col("paragraph_terms.term") == F.col("query_term.token")),
+            __optional_scored_paragraph_terms_joined,
+            (F.col("__optional_scored_paragraph_terms.term") == F.col("query_term.token")),
             "inner",
         )
         filtered__selected__targets_2_joined = frames["filtered__selected__targets"].alias(
@@ -2516,7 +2629,10 @@ class ScoreOverlapGenerated:
             filtered__selected__targets_2_joined,
             (
                 (F.col("filtered__selected__targets_2.query_id") == F.col("query_term.query_id"))
-                & (F.col("filtered__selected__targets_2.document_id") == F.col("paragraph_terms.document_id"))
+                & (
+                    F.col("filtered__selected__targets_2.document_id")
+                    == F.col("__optional_scored_paragraph_terms.document_id")
+                )
             ),
             "inner",
         )
@@ -2542,9 +2658,9 @@ class ScoreOverlapGenerated:
         scored__scoring__overlap__paragraph_overlap_matches = (
             scored__scoring__overlap__paragraph_overlap_matches.groupBy(
                 F.col("query_term.query_id").alias("query_id"),
-                F.col("paragraph_terms.document_id").alias("document_id"),
-                F.col("paragraph_terms.section_id").alias("section_id"),
-                F.col("paragraph_terms.paragraph_id").alias("paragraph_id"),
+                F.col("__optional_scored_paragraph_terms.document_id").alias("document_id"),
+                F.col("__optional_scored_paragraph_terms.section_id").alias("section_id"),
+                F.col("__optional_scored_paragraph_terms.paragraph_id").alias("paragraph_id"),
                 F.col("filtered__selected__targets_2.scope_id").alias("scope_id"),
                 F.col("scored__scoring__overlap__paragraph_query_totals_4.query_idf").alias("query_idf"),
             )
@@ -2578,10 +2694,12 @@ class ScoreOverlapGenerated:
         scored__scoring__overlap__sentence_overlap_matches = frames[
             "scored__scoring__overlap__expanded_query_terms"
         ].alias("query_term")
-        sentence_terms_joined = frames["sentence_terms"].alias("sentence_terms")
+        __optional_scored_sentence_terms_joined = frames["__optional_scored_sentence_terms"].alias(
+            "__optional_scored_sentence_terms"
+        )
         scored__scoring__overlap__sentence_overlap_matches = scored__scoring__overlap__sentence_overlap_matches.join(
-            sentence_terms_joined,
-            (F.col("sentence_terms.term") == F.col("query_term.token")),
+            __optional_scored_sentence_terms_joined,
+            (F.col("__optional_scored_sentence_terms.term") == F.col("query_term.token")),
             "inner",
         )
         filtered__selected__targets_2_joined = frames["filtered__selected__targets"].alias(
@@ -2591,7 +2709,10 @@ class ScoreOverlapGenerated:
             filtered__selected__targets_2_joined,
             (
                 (F.col("filtered__selected__targets_2.query_id") == F.col("query_term.query_id"))
-                & (F.col("filtered__selected__targets_2.document_id") == F.col("sentence_terms.document_id"))
+                & (
+                    F.col("filtered__selected__targets_2.document_id")
+                    == F.col("__optional_scored_sentence_terms.document_id")
+                )
             ),
             "inner",
         )
@@ -2617,10 +2738,10 @@ class ScoreOverlapGenerated:
         scored__scoring__overlap__sentence_overlap_matches = (
             scored__scoring__overlap__sentence_overlap_matches.groupBy(
                 F.col("query_term.query_id").alias("query_id"),
-                F.col("sentence_terms.document_id").alias("document_id"),
-                F.col("sentence_terms.section_id").alias("section_id"),
-                F.col("sentence_terms.paragraph_id").alias("paragraph_id"),
-                F.col("sentence_terms.sentence_id").alias("sentence_id"),
+                F.col("__optional_scored_sentence_terms.document_id").alias("document_id"),
+                F.col("__optional_scored_sentence_terms.section_id").alias("section_id"),
+                F.col("__optional_scored_sentence_terms.paragraph_id").alias("paragraph_id"),
+                F.col("__optional_scored_sentence_terms.sentence_id").alias("sentence_id"),
                 F.col("filtered__selected__targets_2.scope_id").alias("scope_id"),
                 F.col("scored__scoring__overlap__sentence_query_totals_4.query_idf").alias("query_idf"),
             )
@@ -2982,10 +3103,12 @@ class ScoreBm25Generated:
         scored__scoring__bm25__section_bm25_scores = frames["scored__scoring__bm25__expanded_query_terms"].alias(
             "query_term"
         )
-        section_terms_joined = frames["section_terms"].alias("section_terms")
+        __optional_scored_section_terms_joined = frames["__optional_scored_section_terms"].alias(
+            "__optional_scored_section_terms"
+        )
         scored__scoring__bm25__section_bm25_scores = scored__scoring__bm25__section_bm25_scores.join(
-            section_terms_joined,
-            (F.col("section_terms.term") == F.col("query_term.token")),
+            __optional_scored_section_terms_joined,
+            (F.col("__optional_scored_section_terms.term") == F.col("query_term.token")),
             "inner",
         )
         filtered__selected__targets_2_joined = frames["filtered__selected__targets"].alias(
@@ -2995,19 +3118,24 @@ class ScoreBm25Generated:
             filtered__selected__targets_2_joined,
             (
                 (F.col("filtered__selected__targets_2.query_id") == F.col("query_term.query_id"))
-                & (F.col("filtered__selected__targets_2.document_id") == F.col("section_terms.document_id"))
+                & (
+                    F.col("filtered__selected__targets_2.document_id")
+                    == F.col("__optional_scored_section_terms.document_id")
+                )
             ),
             "inner",
         )
-        section_summary_3_joined = frames["section_summary"].alias("section_summary_3")
+        __optional_scored_section_summary_3_joined = frames["__optional_scored_section_summary"].alias(
+            "__optional_scored_section_summary_3"
+        )
         scored__scoring__bm25__section_bm25_scores = scored__scoring__bm25__section_bm25_scores.crossJoin(
-            section_summary_3_joined
+            __optional_scored_section_summary_3_joined
         )
         scored__scoring__bm25__section_bm25_scores = (
             scored__scoring__bm25__section_bm25_scores.groupBy(
                 F.col("query_term.query_id").alias("query_id"),
-                F.col("section_terms.document_id").alias("document_id"),
-                F.col("section_terms.section_id").alias("section_id"),
+                F.col("__optional_scored_section_terms.document_id").alias("document_id"),
+                F.col("__optional_scored_section_terms.section_id").alias("section_id"),
                 F.col("filtered__selected__targets_2.scope_id").alias("scope_id"),
             )
             .agg(
@@ -3021,28 +3149,28 @@ class ScoreBm25Generated:
                                         + (
                                             (
                                                 (
-                                                    F.col("section_summary_3.target_count")
-                                                    - F.col("section_terms.target_frequency")
+                                                    F.col("__optional_scored_section_summary_3.target_count")
+                                                    - F.col("__optional_scored_section_terms.target_frequency")
                                                 )
                                                 + F.lit(0.5)
                                             )
-                                            / (F.col("section_terms.target_frequency") + F.lit(0.5))
+                                            / (F.col("__optional_scored_section_terms.target_frequency") + F.lit(0.5))
                                         )
                                     )
                                 )
-                                * F.col("section_terms.term_frequency")
+                                * F.col("__optional_scored_section_terms.term_frequency")
                             )
                             * F.lit(2.2)
                         )
                         / (
-                            F.col("section_terms.term_frequency")
+                            F.col("__optional_scored_section_terms.term_frequency")
                             + (
                                 F.lit(1.2)
                                 * (
                                     F.lit(0.25)
                                     + (
-                                        (F.lit(0.75) * F.col("section_terms.target_term_count"))
-                                        / F.col("section_summary_3.average_target_length")
+                                        (F.lit(0.75) * F.col("__optional_scored_section_terms.target_term_count"))
+                                        / F.col("__optional_scored_section_summary_3.average_target_length")
                                     )
                                 )
                             )
@@ -3075,10 +3203,12 @@ class ScoreBm25Generated:
         scored__scoring__bm25__paragraph_bm25_scores = frames["scored__scoring__bm25__expanded_query_terms"].alias(
             "query_term"
         )
-        paragraph_terms_joined = frames["paragraph_terms"].alias("paragraph_terms")
+        __optional_scored_paragraph_terms_joined = frames["__optional_scored_paragraph_terms"].alias(
+            "__optional_scored_paragraph_terms"
+        )
         scored__scoring__bm25__paragraph_bm25_scores = scored__scoring__bm25__paragraph_bm25_scores.join(
-            paragraph_terms_joined,
-            (F.col("paragraph_terms.term") == F.col("query_term.token")),
+            __optional_scored_paragraph_terms_joined,
+            (F.col("__optional_scored_paragraph_terms.term") == F.col("query_term.token")),
             "inner",
         )
         filtered__selected__targets_2_joined = frames["filtered__selected__targets"].alias(
@@ -3088,20 +3218,25 @@ class ScoreBm25Generated:
             filtered__selected__targets_2_joined,
             (
                 (F.col("filtered__selected__targets_2.query_id") == F.col("query_term.query_id"))
-                & (F.col("filtered__selected__targets_2.document_id") == F.col("paragraph_terms.document_id"))
+                & (
+                    F.col("filtered__selected__targets_2.document_id")
+                    == F.col("__optional_scored_paragraph_terms.document_id")
+                )
             ),
             "inner",
         )
-        paragraph_summary_3_joined = frames["paragraph_summary"].alias("paragraph_summary_3")
+        __optional_scored_paragraph_summary_3_joined = frames["__optional_scored_paragraph_summary"].alias(
+            "__optional_scored_paragraph_summary_3"
+        )
         scored__scoring__bm25__paragraph_bm25_scores = scored__scoring__bm25__paragraph_bm25_scores.crossJoin(
-            paragraph_summary_3_joined
+            __optional_scored_paragraph_summary_3_joined
         )
         scored__scoring__bm25__paragraph_bm25_scores = (
             scored__scoring__bm25__paragraph_bm25_scores.groupBy(
                 F.col("query_term.query_id").alias("query_id"),
-                F.col("paragraph_terms.document_id").alias("document_id"),
-                F.col("paragraph_terms.section_id").alias("section_id"),
-                F.col("paragraph_terms.paragraph_id").alias("paragraph_id"),
+                F.col("__optional_scored_paragraph_terms.document_id").alias("document_id"),
+                F.col("__optional_scored_paragraph_terms.section_id").alias("section_id"),
+                F.col("__optional_scored_paragraph_terms.paragraph_id").alias("paragraph_id"),
                 F.col("filtered__selected__targets_2.scope_id").alias("scope_id"),
             )
             .agg(
@@ -3115,28 +3250,28 @@ class ScoreBm25Generated:
                                         + (
                                             (
                                                 (
-                                                    F.col("paragraph_summary_3.target_count")
-                                                    - F.col("paragraph_terms.target_frequency")
+                                                    F.col("__optional_scored_paragraph_summary_3.target_count")
+                                                    - F.col("__optional_scored_paragraph_terms.target_frequency")
                                                 )
                                                 + F.lit(0.5)
                                             )
-                                            / (F.col("paragraph_terms.target_frequency") + F.lit(0.5))
+                                            / (F.col("__optional_scored_paragraph_terms.target_frequency") + F.lit(0.5))
                                         )
                                     )
                                 )
-                                * F.col("paragraph_terms.term_frequency")
+                                * F.col("__optional_scored_paragraph_terms.term_frequency")
                             )
                             * F.lit(2.2)
                         )
                         / (
-                            F.col("paragraph_terms.term_frequency")
+                            F.col("__optional_scored_paragraph_terms.term_frequency")
                             + (
                                 F.lit(1.2)
                                 * (
                                     F.lit(0.25)
                                     + (
-                                        (F.lit(0.75) * F.col("paragraph_terms.target_term_count"))
-                                        / F.col("paragraph_summary_3.average_target_length")
+                                        (F.lit(0.75) * F.col("__optional_scored_paragraph_terms.target_term_count"))
+                                        / F.col("__optional_scored_paragraph_summary_3.average_target_length")
                                     )
                                 )
                             )
@@ -3170,10 +3305,12 @@ class ScoreBm25Generated:
         scored__scoring__bm25__sentence_bm25_scores = frames["scored__scoring__bm25__expanded_query_terms"].alias(
             "query_term"
         )
-        sentence_terms_joined = frames["sentence_terms"].alias("sentence_terms")
+        __optional_scored_sentence_terms_joined = frames["__optional_scored_sentence_terms"].alias(
+            "__optional_scored_sentence_terms"
+        )
         scored__scoring__bm25__sentence_bm25_scores = scored__scoring__bm25__sentence_bm25_scores.join(
-            sentence_terms_joined,
-            (F.col("sentence_terms.term") == F.col("query_term.token")),
+            __optional_scored_sentence_terms_joined,
+            (F.col("__optional_scored_sentence_terms.term") == F.col("query_term.token")),
             "inner",
         )
         filtered__selected__targets_2_joined = frames["filtered__selected__targets"].alias(
@@ -3183,21 +3320,26 @@ class ScoreBm25Generated:
             filtered__selected__targets_2_joined,
             (
                 (F.col("filtered__selected__targets_2.query_id") == F.col("query_term.query_id"))
-                & (F.col("filtered__selected__targets_2.document_id") == F.col("sentence_terms.document_id"))
+                & (
+                    F.col("filtered__selected__targets_2.document_id")
+                    == F.col("__optional_scored_sentence_terms.document_id")
+                )
             ),
             "inner",
         )
-        sentence_summary_3_joined = frames["sentence_summary"].alias("sentence_summary_3")
+        __optional_scored_sentence_summary_3_joined = frames["__optional_scored_sentence_summary"].alias(
+            "__optional_scored_sentence_summary_3"
+        )
         scored__scoring__bm25__sentence_bm25_scores = scored__scoring__bm25__sentence_bm25_scores.crossJoin(
-            sentence_summary_3_joined
+            __optional_scored_sentence_summary_3_joined
         )
         scored__scoring__bm25__sentence_bm25_scores = (
             scored__scoring__bm25__sentence_bm25_scores.groupBy(
                 F.col("query_term.query_id").alias("query_id"),
-                F.col("sentence_terms.document_id").alias("document_id"),
-                F.col("sentence_terms.section_id").alias("section_id"),
-                F.col("sentence_terms.paragraph_id").alias("paragraph_id"),
-                F.col("sentence_terms.sentence_id").alias("sentence_id"),
+                F.col("__optional_scored_sentence_terms.document_id").alias("document_id"),
+                F.col("__optional_scored_sentence_terms.section_id").alias("section_id"),
+                F.col("__optional_scored_sentence_terms.paragraph_id").alias("paragraph_id"),
+                F.col("__optional_scored_sentence_terms.sentence_id").alias("sentence_id"),
                 F.col("filtered__selected__targets_2.scope_id").alias("scope_id"),
             )
             .agg(
@@ -3211,28 +3353,28 @@ class ScoreBm25Generated:
                                         + (
                                             (
                                                 (
-                                                    F.col("sentence_summary_3.target_count")
-                                                    - F.col("sentence_terms.target_frequency")
+                                                    F.col("__optional_scored_sentence_summary_3.target_count")
+                                                    - F.col("__optional_scored_sentence_terms.target_frequency")
                                                 )
                                                 + F.lit(0.5)
                                             )
-                                            / (F.col("sentence_terms.target_frequency") + F.lit(0.5))
+                                            / (F.col("__optional_scored_sentence_terms.target_frequency") + F.lit(0.5))
                                         )
                                     )
                                 )
-                                * F.col("sentence_terms.term_frequency")
+                                * F.col("__optional_scored_sentence_terms.term_frequency")
                             )
                             * F.lit(2.2)
                         )
                         / (
-                            F.col("sentence_terms.term_frequency")
+                            F.col("__optional_scored_sentence_terms.term_frequency")
                             + (
                                 F.lit(1.2)
                                 * (
                                     F.lit(0.25)
                                     + (
-                                        (F.lit(0.75) * F.col("sentence_terms.target_term_count"))
-                                        / F.col("sentence_summary_3.average_target_length")
+                                        (F.lit(0.75) * F.col("__optional_scored_sentence_terms.target_term_count"))
+                                        / F.col("__optional_scored_sentence_summary_3.average_target_length")
                                     )
                                 )
                             )
@@ -3987,10 +4129,12 @@ class ScoreVectorsGenerated:
 
     def _step_scored_scoring_vector_score_paragraphs_59(self, frames):
         # Step method: scored.scoring.vector.score_paragraphs
-        scored__scoring__vector__paragraph_scores = frames["paragraph_vector_queries"].alias("paragraph_vector_query")
+        scored__scoring__vector__paragraph_scores = frames["__optional_scored_paragraph_vector_queries"].alias(
+            "paragraph_vector_query"
+        )
         __structure_streaming_step = (
-            frames["paragraph_vector_queries"].isStreaming
-            or frames["paragraph_vector_index"].isStreaming
+            frames["__optional_scored_paragraph_vector_queries"].isStreaming
+            or frames["__optional_scored_paragraph_vector_index"].isStreaming
             or frames["filtered__selected__targets"].isStreaming
             or frames["scored__scoring__vector__valid_policy"].isStreaming
             or frames["score_policy"].isStreaming
@@ -4035,9 +4179,11 @@ class ScoreVectorsGenerated:
         scored__scoring__vector__paragraph_scores = scored__scoring__vector__paragraph_scores.crossJoin(
             score_policy_2_joined
         )
-        paragraph_vector_index_3_joined = frames["paragraph_vector_index"].alias("paragraph_vector_index_3")
+        __optional_scored_paragraph_vector_index_3_joined = frames["__optional_scored_paragraph_vector_index"].alias(
+            "__optional_scored_paragraph_vector_index_3"
+        )
         scored__scoring__vector__paragraph_scores = scored__scoring__vector__paragraph_scores.crossJoin(
-            paragraph_vector_index_3_joined
+            __optional_scored_paragraph_vector_index_3_joined
         )
         filtered__selected__targets_4_joined = frames["filtered__selected__targets"].alias(
             "filtered__selected__targets_4"
@@ -4046,7 +4192,10 @@ class ScoreVectorsGenerated:
             filtered__selected__targets_4_joined,
             (
                 (F.col("filtered__selected__targets_4.query_id") == F.col("paragraph_vector_query.query_id"))
-                & (F.col("filtered__selected__targets_4.document_id") == F.col("paragraph_vector_index_3.document_id"))
+                & (
+                    F.col("filtered__selected__targets_4.document_id")
+                    == F.col("__optional_scored_paragraph_vector_index_3.document_id")
+                )
             ),
             "inner",
         )
@@ -4067,7 +4216,7 @@ class ScoreVectorsGenerated:
                                                             == F.col("scored__scoring__vector__valid_policy.model_id")
                                                         )
                                                         & (
-                                                            F.col("paragraph_vector_index_3.model_id")
+                                                            F.col("__optional_scored_paragraph_vector_index_3.model_id")
                                                             == F.col("scored__scoring__vector__valid_policy.model_id")
                                                         )
                                                     )
@@ -4077,7 +4226,7 @@ class ScoreVectorsGenerated:
                                                     )
                                                 )
                                                 & (
-                                                    F.col("paragraph_vector_index_3.dimension")
+                                                    F.col("__optional_scored_paragraph_vector_index_3.dimension")
                                                     == F.col("scored__scoring__vector__valid_policy.dimension")
                                                 )
                                             )
@@ -4087,7 +4236,7 @@ class ScoreVectorsGenerated:
                                             )
                                         )
                                         & (
-                                            F.col("paragraph_vector_index_3.content_revision")
+                                            F.col("__optional_scored_paragraph_vector_index_3.content_revision")
                                             == F.col("scored__scoring__vector__valid_policy.content_revision")
                                         )
                                     )
@@ -4097,7 +4246,7 @@ class ScoreVectorsGenerated:
                                     )
                                 )
                                 & (
-                                    F.col("paragraph_vector_index_3.experiment_id")
+                                    F.col("__optional_scored_paragraph_vector_index_3.experiment_id")
                                     == F.col("scored__scoring__vector__valid_policy.experiment_id")
                                 )
                             )
@@ -4139,15 +4288,15 @@ class ScoreVectorsGenerated:
                             (
                                 (
                                     (
-                                        F.col("paragraph_vector_index_3.dimension")
-                                        == F.size(F.col("paragraph_vector_index_3.vector"))
+                                        F.col("__optional_scored_paragraph_vector_index_3.dimension")
+                                        == F.size(F.col("__optional_scored_paragraph_vector_index_3.vector"))
                                     )
-                                    & (F.size(F.col("paragraph_vector_index_3.vector")) > F.lit(0))
+                                    & (F.size(F.col("__optional_scored_paragraph_vector_index_3.vector")) > F.lit(0))
                                 )
                                 & (
                                     F.size(
                                         F.filter(
-                                            F.col("paragraph_vector_index_3.vector"),
+                                            F.col("__optional_scored_paragraph_vector_index_3.vector"),
                                             lambda item: (
                                                 (F.isnan(item) | (item > F.lit(1.7976931348623157e308)))
                                                 | (item < F.lit(-1.7976931348623157e308))
@@ -4160,7 +4309,7 @@ class ScoreVectorsGenerated:
                             & (
                                 F.sqrt(
                                     F.aggregate(
-                                        F.col("paragraph_vector_index_3.vector"),
+                                        F.col("__optional_scored_paragraph_vector_index_3.vector"),
                                         F.lit(0.0),
                                         lambda acc, item: (acc + (item * item)),
                                     )
@@ -4188,10 +4337,19 @@ class ScoreVectorsGenerated:
             (
                 (
                     (
-                        (F.col("paragraph_vector_query.document_id") != F.col("paragraph_vector_index_3.document_id"))
-                        | (F.col("paragraph_vector_query.section_id") != F.col("paragraph_vector_index_3.section_id"))
+                        (
+                            F.col("paragraph_vector_query.document_id")
+                            != F.col("__optional_scored_paragraph_vector_index_3.document_id")
+                        )
+                        | (
+                            F.col("paragraph_vector_query.section_id")
+                            != F.col("__optional_scored_paragraph_vector_index_3.section_id")
+                        )
                     )
-                    | (F.col("paragraph_vector_query.paragraph_id") != F.col("paragraph_vector_index_3.paragraph_id"))
+                    | (
+                        F.col("paragraph_vector_query.paragraph_id")
+                        != F.col("__optional_scored_paragraph_vector_index_3.paragraph_id")
+                    )
                 )
             )
         )
@@ -4200,16 +4358,16 @@ class ScoreVectorsGenerated:
             F.col("paragraph_vector_query.document_id").alias("query_document_id"),
             F.col("paragraph_vector_query.section_id").alias("query_section_id"),
             F.col("paragraph_vector_query.paragraph_id").alias("query_paragraph_id"),
-            F.col("paragraph_vector_index_3.document_id"),
-            F.col("paragraph_vector_index_3.section_id"),
-            F.col("paragraph_vector_index_3.paragraph_id"),
+            F.col("__optional_scored_paragraph_vector_index_3.document_id"),
+            F.col("__optional_scored_paragraph_vector_index_3.section_id"),
+            F.col("__optional_scored_paragraph_vector_index_3.paragraph_id"),
             F.col("filtered__selected__targets_4.scope_id"),
             F.coalesce(
                 (
                     F.aggregate(
                         F.zip_with(
                             F.col("paragraph_vector_query.vector"),
-                            F.col("paragraph_vector_index_3.vector"),
+                            F.col("__optional_scored_paragraph_vector_index_3.vector"),
                             lambda left_item, right_item: (left_item * right_item),
                         ),
                         F.lit(0.0),
@@ -4225,7 +4383,7 @@ class ScoreVectorsGenerated:
                         )
                         * F.sqrt(
                             F.aggregate(
-                                F.col("paragraph_vector_index_3.vector"),
+                                F.col("__optional_scored_paragraph_vector_index_3.vector"),
                                 F.lit(0.0),
                                 lambda acc, item: (acc + (item * item)),
                             )
@@ -4722,11 +4880,11 @@ class MergeParagraphVectorScoresGenerated:
 
     def _step_scored_merged_paragraph_vectors_select_cached_scores_66(self, frames):
         # Step method: scored.merged_paragraph_vectors.select_cached_scores
-        scored__merged_paragraph_vectors__cached_scores = frames["paragraph_vector_scores"].alias(
-            "paragraph_vector_score"
-        )
+        scored__merged_paragraph_vectors__cached_scores = frames[
+            "__optional_scored_cached_paragraph_vector_scores"
+        ].alias("paragraph_vector_score")
         __structure_streaming_step = (
-            frames["paragraph_vector_scores"].isStreaming
+            frames["__optional_scored_cached_paragraph_vector_scores"].isStreaming
             or frames["scored__merged_paragraph_vectors__invalidated"].isStreaming
             or frames["requests"].isStreaming
             or frames["filtered__selected__targets"].isStreaming
@@ -6869,16 +7027,8 @@ class Searching001AdjustRerankSearchDocumentsGenerated(
         document_scores: DataFrame,
         document_overlap_scores: DataFrame,
         document_vector_scores: DataFrame,
-        paragraph_vector_scores: DataFrame,
-        section_terms: DataFrame,
-        paragraph_terms: DataFrame,
-        sentence_terms: DataFrame,
+        gap_policy: DataFrame,
         document_summary: DataFrame,
-        section_summary: DataFrame,
-        paragraph_summary: DataFrame,
-        sentence_summary: DataFrame,
-        paragraph_vector_queries: DataFrame,
-        paragraph_vector_index: DataFrame,
         streamed_document_scores: DataFrame,
         streamed_documents: DataFrame,
         band_memberships: DataFrame,
@@ -6915,20 +7065,8 @@ class Searching001AdjustRerankSearchDocumentsGenerated(
             document_overlap_scores, DOCUMENT_OVERLAP_SCORE_SCHEMA, name="DocumentOverlapScore", mode="strict"
         )
         assert_schema(document_vector_scores, DOCUMENT_VECTOR_SCORE_SCHEMA, name="DocumentVectorScore", mode="strict")
-        assert_schema(
-            paragraph_vector_scores, PARAGRAPH_VECTOR_SCORE_SCHEMA, name="ParagraphVectorScore", mode="strict"
-        )
-        assert_schema(section_terms, SECTION_TERM_SCHEMA, name="SectionTerm", mode="strict")
-        assert_schema(paragraph_terms, PARAGRAPH_TERM_SCHEMA, name="ParagraphTerm", mode="strict")
-        assert_schema(sentence_terms, SENTENCE_TERM_SCHEMA, name="SentenceTerm", mode="strict")
+        assert_schema(gap_policy, GAP_POLICY_SCHEMA, name="GapPolicy", mode="strict")
         assert_schema(document_summary, DOCUMENT_INDEX_SUMMARY_SCHEMA, name="DocumentIndexSummary", mode="strict")
-        assert_schema(section_summary, SECTION_INDEX_SUMMARY_SCHEMA, name="SectionIndexSummary", mode="strict")
-        assert_schema(paragraph_summary, PARAGRAPH_INDEX_SUMMARY_SCHEMA, name="ParagraphIndexSummary", mode="strict")
-        assert_schema(sentence_summary, SENTENCE_INDEX_SUMMARY_SCHEMA, name="SentenceIndexSummary", mode="strict")
-        assert_schema(
-            paragraph_vector_queries, PARAGRAPH_VECTOR_QUERY_SCHEMA, name="ParagraphVectorQuery", mode="strict"
-        )
-        assert_schema(paragraph_vector_index, PARAGRAPH_VECTOR_INDEX_SCHEMA, name="ParagraphVectorIndex", mode="strict")
         assert_schema(streamed_document_scores, DOCUMENT_SCORE_SCHEMA, name="DocumentScore", mode="strict")
         assert_schema(streamed_documents, DOCUMENT_SCHEMA, name="Document", mode="strict")
         assert_schema(band_memberships, BAND_MEMBERSHIP_SCHEMA, name="BandMembership", mode="strict")
@@ -6936,6 +7074,51 @@ class Searching001AdjustRerankSearchDocumentsGenerated(
         assert_schema(document_popularity, DOCUMENT_POPULARITY_SCHEMA, name="DocumentPopularity", mode="strict")
         assert_schema(band_fallbacks, BAND_FALLBACK_SCHEMA, name="BandFallback", mode="strict")
         assert_schema(policy, RELEVANCE_POLICY_SCHEMA, name="RelevancePolicy", mode="strict")
+        __optional_scored_cached_paragraph_vector_scores = self.spark.createDataFrame([], PARAGRAPH_VECTOR_SCORE_SCHEMA)
+        assert_schema(
+            __optional_scored_cached_paragraph_vector_scores,
+            PARAGRAPH_VECTOR_SCORE_SCHEMA,
+            name="ParagraphVectorScore",
+            mode="strict",
+        )
+        __optional_scored_section_terms = self.spark.createDataFrame([], SECTION_TERM_SCHEMA)
+        assert_schema(__optional_scored_section_terms, SECTION_TERM_SCHEMA, name="SectionTerm", mode="strict")
+        __optional_scored_paragraph_terms = self.spark.createDataFrame([], PARAGRAPH_TERM_SCHEMA)
+        assert_schema(__optional_scored_paragraph_terms, PARAGRAPH_TERM_SCHEMA, name="ParagraphTerm", mode="strict")
+        __optional_scored_sentence_terms = self.spark.createDataFrame([], SENTENCE_TERM_SCHEMA)
+        assert_schema(__optional_scored_sentence_terms, SENTENCE_TERM_SCHEMA, name="SentenceTerm", mode="strict")
+        __optional_scored_section_summary = self.spark.createDataFrame([], SECTION_INDEX_SUMMARY_SCHEMA)
+        assert_schema(
+            __optional_scored_section_summary, SECTION_INDEX_SUMMARY_SCHEMA, name="SectionIndexSummary", mode="strict"
+        )
+        __optional_scored_paragraph_summary = self.spark.createDataFrame([], PARAGRAPH_INDEX_SUMMARY_SCHEMA)
+        assert_schema(
+            __optional_scored_paragraph_summary,
+            PARAGRAPH_INDEX_SUMMARY_SCHEMA,
+            name="ParagraphIndexSummary",
+            mode="strict",
+        )
+        __optional_scored_sentence_summary = self.spark.createDataFrame([], SENTENCE_INDEX_SUMMARY_SCHEMA)
+        assert_schema(
+            __optional_scored_sentence_summary,
+            SENTENCE_INDEX_SUMMARY_SCHEMA,
+            name="SentenceIndexSummary",
+            mode="strict",
+        )
+        __optional_scored_paragraph_vector_queries = self.spark.createDataFrame([], PARAGRAPH_VECTOR_QUERY_SCHEMA)
+        assert_schema(
+            __optional_scored_paragraph_vector_queries,
+            PARAGRAPH_VECTOR_QUERY_SCHEMA,
+            name="ParagraphVectorQuery",
+            mode="strict",
+        )
+        __optional_scored_paragraph_vector_index = self.spark.createDataFrame([], PARAGRAPH_VECTOR_INDEX_SCHEMA)
+        assert_schema(
+            __optional_scored_paragraph_vector_index,
+            PARAGRAPH_VECTOR_INDEX_SCHEMA,
+            name="ParagraphVectorIndex",
+            mode="strict",
+        )
         _input_queries = queries
         _input_requests = requests
         _input_document_filter_scores = document_filter_scores
@@ -6950,16 +7133,8 @@ class Searching001AdjustRerankSearchDocumentsGenerated(
         _input_document_scores = document_scores
         _input_document_overlap_scores = document_overlap_scores
         _input_document_vector_scores = document_vector_scores
-        _input_paragraph_vector_scores = paragraph_vector_scores
-        _input_section_terms = section_terms
-        _input_paragraph_terms = paragraph_terms
-        _input_sentence_terms = sentence_terms
+        _input_gap_policy = gap_policy
         _input_document_summary = document_summary
-        _input_section_summary = section_summary
-        _input_paragraph_summary = paragraph_summary
-        _input_sentence_summary = sentence_summary
-        _input_paragraph_vector_queries = paragraph_vector_queries
-        _input_paragraph_vector_index = paragraph_vector_index
         _input_streamed_document_scores = streamed_document_scores
         _input_streamed_documents = streamed_documents
         _input_band_memberships = band_memberships
@@ -6967,6 +7142,15 @@ class Searching001AdjustRerankSearchDocumentsGenerated(
         _input_document_popularity = document_popularity
         _input_band_fallbacks = band_fallbacks
         _input_policy = policy
+        _input___optional_scored_cached_paragraph_vector_scores = __optional_scored_cached_paragraph_vector_scores
+        _input___optional_scored_section_terms = __optional_scored_section_terms
+        _input___optional_scored_paragraph_terms = __optional_scored_paragraph_terms
+        _input___optional_scored_sentence_terms = __optional_scored_sentence_terms
+        _input___optional_scored_section_summary = __optional_scored_section_summary
+        _input___optional_scored_paragraph_summary = __optional_scored_paragraph_summary
+        _input___optional_scored_sentence_summary = __optional_scored_sentence_summary
+        _input___optional_scored_paragraph_vector_queries = __optional_scored_paragraph_vector_queries
+        _input___optional_scored_paragraph_vector_index = __optional_scored_paragraph_vector_index
         frames = {
             "queries": queries,
             "requests": requests,
@@ -6982,16 +7166,8 @@ class Searching001AdjustRerankSearchDocumentsGenerated(
             "document_scores": document_scores,
             "document_overlap_scores": document_overlap_scores,
             "document_vector_scores": document_vector_scores,
-            "paragraph_vector_scores": paragraph_vector_scores,
-            "section_terms": section_terms,
-            "paragraph_terms": paragraph_terms,
-            "sentence_terms": sentence_terms,
+            "gap_policy": gap_policy,
             "document_summary": document_summary,
-            "section_summary": section_summary,
-            "paragraph_summary": paragraph_summary,
-            "sentence_summary": sentence_summary,
-            "paragraph_vector_queries": paragraph_vector_queries,
-            "paragraph_vector_index": paragraph_vector_index,
             "streamed_document_scores": streamed_document_scores,
             "streamed_documents": streamed_documents,
             "band_memberships": band_memberships,
@@ -6999,6 +7175,15 @@ class Searching001AdjustRerankSearchDocumentsGenerated(
             "document_popularity": document_popularity,
             "band_fallbacks": band_fallbacks,
             "policy": policy,
+            "__optional_scored_cached_paragraph_vector_scores": __optional_scored_cached_paragraph_vector_scores,
+            "__optional_scored_section_terms": __optional_scored_section_terms,
+            "__optional_scored_paragraph_terms": __optional_scored_paragraph_terms,
+            "__optional_scored_sentence_terms": __optional_scored_sentence_terms,
+            "__optional_scored_section_summary": __optional_scored_section_summary,
+            "__optional_scored_paragraph_summary": __optional_scored_paragraph_summary,
+            "__optional_scored_sentence_summary": __optional_scored_sentence_summary,
+            "__optional_scored_paragraph_vector_queries": __optional_scored_paragraph_vector_queries,
+            "__optional_scored_paragraph_vector_index": __optional_scored_paragraph_vector_index,
             "input:queries": _input_queries,
             "input:requests": _input_requests,
             "input:document_filter_scores": _input_document_filter_scores,
@@ -7013,16 +7198,8 @@ class Searching001AdjustRerankSearchDocumentsGenerated(
             "input:document_scores": _input_document_scores,
             "input:document_overlap_scores": _input_document_overlap_scores,
             "input:document_vector_scores": _input_document_vector_scores,
-            "input:paragraph_vector_scores": _input_paragraph_vector_scores,
-            "input:section_terms": _input_section_terms,
-            "input:paragraph_terms": _input_paragraph_terms,
-            "input:sentence_terms": _input_sentence_terms,
+            "input:gap_policy": _input_gap_policy,
             "input:document_summary": _input_document_summary,
-            "input:section_summary": _input_section_summary,
-            "input:paragraph_summary": _input_paragraph_summary,
-            "input:sentence_summary": _input_sentence_summary,
-            "input:paragraph_vector_queries": _input_paragraph_vector_queries,
-            "input:paragraph_vector_index": _input_paragraph_vector_index,
             "input:streamed_document_scores": _input_streamed_document_scores,
             "input:streamed_documents": _input_streamed_documents,
             "input:band_memberships": _input_band_memberships,
@@ -7030,6 +7207,15 @@ class Searching001AdjustRerankSearchDocumentsGenerated(
             "input:document_popularity": _input_document_popularity,
             "input:band_fallbacks": _input_band_fallbacks,
             "input:policy": _input_policy,
+            "input:__optional_scored_cached_paragraph_vector_scores": _input___optional_scored_cached_paragraph_vector_scores,
+            "input:__optional_scored_section_terms": _input___optional_scored_section_terms,
+            "input:__optional_scored_paragraph_terms": _input___optional_scored_paragraph_terms,
+            "input:__optional_scored_sentence_terms": _input___optional_scored_sentence_terms,
+            "input:__optional_scored_section_summary": _input___optional_scored_section_summary,
+            "input:__optional_scored_paragraph_summary": _input___optional_scored_paragraph_summary,
+            "input:__optional_scored_sentence_summary": _input___optional_scored_sentence_summary,
+            "input:__optional_scored_paragraph_vector_queries": _input___optional_scored_paragraph_vector_queries,
+            "input:__optional_scored_paragraph_vector_index": _input___optional_scored_paragraph_vector_index,
         }
         frames.update(self._step_filtered_gap_find_available_filters_0(frames))
         frames.update(self._step_filtered_gap_select_gap_queries_1(frames))

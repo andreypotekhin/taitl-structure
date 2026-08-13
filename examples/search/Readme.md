@@ -20,7 +20,7 @@ Focused boundary contracts are collected in the [Search example specifications](
 | Vectorization | `OfflineVectorization`, `Vectorization`, `OnlineVectorization` | query/document embeddings and inference statuses | Reuse compatible cache rows, infer only gaps, and emit successful embeddings for caller-owned persistence. |
 | Ranking | `RankVectors` | bounded vector candidate relations | Rank the authoritative raw vector-score relation for offline artifacts and online document search with the same `VectorIndexPolicy.maximum_candidates` limit. |
 | Filtering | `Filtering`, `OnlineFiltering`, `SelectFilterTargets` | timestamped filter artifacts and document targets | Prefilter selected queries offline, resolve missing query groups online, and retain at most 10,000 simple-overlap document targets. |
-| Similarity | `CreateSimilarityQueries`, `ReduceSimilarityScores` | same-grain corpus pairs | Reuse the lexical index; BM25 stays directional. |
+| Similarity | `similarity.lexical` materializer | same-grain corpus candidates | Reuse the lexical index; BM25 stays directional. |
 | Feedback | `Impressions`, `Clicks`, `BuildRelevanceSignals` | daily facts and batch signals | Exposure-aware, attributed, propensity-corrected evidence. |
 | Presentation | `SearchSentences`, `SearchPassages`, `SearchDocuments`, `SearchFields` | deterministic ranks and field constraints | Sentence and passage ranking are lexical; document ranking is staged retrieval, overlap narrowing, and reranking; field search delegates body text through `SearchDocuments` with an optional query-scoped target restriction. |
 | Experiments | `SelectExperimentScores`, experiment evaluators | comparable named runs | Named score variants flow through serving and evaluation. |
@@ -196,7 +196,8 @@ do not interpret either score as a calibrated relevance probability.
 
 ### Build and score similarity queries
 
-`CreateSimilarityQueries` and `ReduceSimilarityScores` reuse those same artifacts for corpus self-similarity. The first
+`similarity.lexical` materialization stages reuse those same artifacts for corpus self-similarity. `CreateSimilarityQueries`
+first
 turns each document, section, paragraph, and sentence vocabulary into a tagged query; pass the combined query rows to
 `ScoreOverlap` and `ScoreBm25`, then give their directed score rows to the reducer. The reducer returns at most 10
 neighbors per source target and grain, ordered by descending source-to-candidate BM25, descending overlap, and candidate
@@ -211,22 +212,23 @@ directional and corpus-dependent, so `bm25_mean` is a convenience for inspection
 - `CreateSimilarityQueries` emits tagged queries and their source target rows.
 - `ReduceSimilarityScores` emits ranked document, section, paragraph, and sentence neighbor relations, bounded to 10
   rows per source target.
-- `Similarity` and the focused section/paragraph/sentence transforms emit top-ranked lookup results.
+- `Similarities` emits offline candidate relations. It is not a serving or presentation transform.
 
 `SimilarityPolicy.max_document_frequency_ratio` is a one-row, caller-supplied optional candidate-pruning setting.
 `null` retains every normalized term; a value in `(0, 1]` excludes terms occurring in more than that fraction of targets
 at each grain. This controls common-token candidate growth without imposing a hidden threshold. The similarity family
 does not require title, source, language, or collection matches; callers apply those business filters after scoring.
 
-`SearchSimilarity` turns document-pair results into a hybrid query-document lookup. Supply the one-row query document,
-corpus `Document` rows, lexical similarity pairs, provider-produced `SimilarityDocumentVectorEmbedding` rows, the
+`SearchSimilarity` is the vector or hybrid query-document lookup. Supply the one-row query document,
+corpus `Document` rows, lexical similarity pairs, provider-produced `SimilarityQueryEmbedding` rows, the
 matching `DocumentVectorIndex`, score/vector policies, and one `SimilarityFusionPolicy`. The exact vector stage infers
 the source document query, excludes that source document, joins scores back to corpus `Document` rows, and emits
 `vector_backend="exact_reference"`. Results preserve lexical/vector ranks, RRF score, vector provenance, lexical
-evidence, and corpus metadata in `HybridIndexedSimilarDocument`.
+evidence, and corpus metadata in `IndexedSimilarDocument`.
 
-`SearchSimilarityParagraphs` applies the same staged contract to document-local paragraphs. Sections and sentences remain
-on their existing lexical-only presentation paths in this example.
+The paragraph `SearchSimilarity` funnel under `search_similarity/paragraphs` applies the same staged contract to
+document-local paragraphs. Sections and sentences have lexical materialization relations but no similarity-search
+presentation transform.
 
 ```python
 similarity_queries = CreateSimilarityQueries(
@@ -440,32 +442,30 @@ The fixture policy uses a 30-day half-life and 70/30 retrieval-feedback weights.
 eligible with zero feedback. Final rank is descending `rank_score`, then document ID. A candidate outside the fused top
 1,000 cannot enter through feedback, and a no-history lexical query preserves lexical order.
 
-`SearchDocuments` uses the same free-form `SearchQuery` DataFrame, immutable documents, reusable index relations,
+`SearchDocuments` uses the same free-form `SearchQuery` DataFrame, immutable documents, reusable document-grain index relations,
 timestamped score and filter relations, and `ScorePolicy`. `OnlineFiltering` limits simple-overlap targets to 10,000
 per query; `OnlineVectorization` fills missing query embeddings and vectors only for those selected documents using
 `InferencePolicy`; `OnlineScoring` receives those targets and merges stored, streamed, and newly calculated lexical
 scores plus valid cached and newly calculated vector scores within the same scope; `RankVectors` bounds the merged vector relation, `RetrieveDocuments` joins it to
 documents, and lexical candidates are admitted alongside them; and
-`FuseDocumentCandidates` deduplicates them before `RerankDocuments` ranks and returns the top 100. The canonical online stages share the offline schemas and query parsing. `SearchFields` delegates to the same `SearchDocuments` funnel and supplies field-projected targets through the optional `document_filter_targets` input; omitted or empty targets preserve unrestricted document search.
+`FuseDocumentCandidates` deduplicates them before `RerankDocuments` ranks and returns the top 100. The canonical online stages share the offline schemas and query parsing. `SearchDocuments` exposes only document-grain scoring/index inputs; `GapPolicy` controls which cached score lanes can trigger online recomputation. The reusable `OnlineScoring`/`Scoring` stages remain all-grain and can be composed separately when section, paragraph, or sentence scoring is needed. `SearchFields` delegates to the same direct document-search funnel and supplies field-projected targets through the optional `document_filter_targets` input; omitted or empty targets preserve unrestricted document search.
+
+For document-only serving, provide a `GapPolicy` row with document lexical, document-overlap, and document-vector lanes enabled and paragraph-vector gaps disabled. `SearchDocuments` exposes only the document-grain inputs shown here:
 
 ```python
 ranked_documents = SearchDocuments(
     queries=queries,
     documents=documents,
     document_scores=scores.document_scores,
+    document_vector_scores=scores.document_vector_scores,
     streamed_documents=streamed_documents,
     streamed_document_scores=streamed_document_scores,
     document_overlap_scores=scores.document_overlap_scores,
     document_filter_scores=document_filter_scores,
     document_terms=index.document_terms,
-    section_terms=index.section_terms,
-    paragraph_terms=index.paragraph_terms,
-    sentence_terms=index.sentence_terms,
     document_summary=index.document_summary,
-    section_summary=index.section_summary,
-    paragraph_summary=index.paragraph_summary,
-    sentence_summary=index.sentence_summary,
     score_policy=score_policy,
+    gap_policy=gap_policy,
     document_vector_embeddings=query_vector_embeddings,
     document_vector_index=document_vector_index,
     vector_policy=vector_policy,

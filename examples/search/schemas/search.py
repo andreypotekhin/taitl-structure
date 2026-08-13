@@ -31,6 +31,15 @@ class ScorePolicy(Schema):
     sentence_overlap_weight = double(nullable=False)
 
 
+class GapPolicy(Schema):
+    """Select cached score lanes that may trigger online score resolution."""
+
+    document_scores = boolean(nullable=False)
+    document_overlap_scores = boolean(nullable=False)
+    document_vector_scores = boolean(nullable=False)
+    paragraph_vector_scores = boolean(nullable=False)
+
+
 class QueryPopularity(Schema):
     """Aggregated offline popularity for one normalized query."""
 

@@ -94,7 +94,7 @@ The application uses small typed compositions rather than one opaque search tran
 | `SearchSentences` | Emits deterministic sentence matches ranked by score evidence. |
 | `SearchPassages` | Emits ranked paragraphs with same-section neighboring context. |
 | `SearchDocuments` | Filters, obtains, and feedback-reranks document candidates through explicit bounded stages. |
-| `Similarity` | Reuses lexical artifacts for same-grain directed scoring and reciprocal corpus pairs. |
+| `similarity/lexical` | Reuses lexical artifacts for same-grain directed scoring and reciprocal corpus candidates. |
 | feedback transforms | Converts impression/click events into daily facts and batch relevance snapshots. |
 | evaluation transforms | Measures judged document quality and observed served behavior as separate facets. |
 | experiments/training | Adds explicit score variants and an optional offline, manually promoted model branch. |
@@ -239,16 +239,17 @@ precision, recall, or corpus coverage.
 
 ## Similarity
 
-Similarity creates a query from each target's normalized vocabulary, scores it against the same-grain lexical index,
-and reduces directed scores to bounded same-grain neighbor relations. It returns up to 10 neighbors per source target,
+Lexical similarity creates a query from each target's normalized vocabulary, scores it against the same-grain lexical
+index, and reduces directed scores to bounded same-grain candidate relations. It returns up to 10 neighbors per source target,
 preserves both directed BM25 values, their mean, and overlap, and excludes self-pairs. BM25 is directional and
 corpus-dependent; its mean is an inspection value, not a probability. An optional maximum document-frequency ratio
 prunes common terms at each grain. Similarity does not impose hidden title, source, language, or collection filters.
 
-The lexical similarity relations remain the portable baseline. `SearchSimilarity` and
-`SearchSimilarityParagraphs` additionally accept provider-neutral ranked vector candidates and combine the lanes with
-RRF. The bundled exact vector index is a reference producer; caller-owned ANN services may emit the same candidate
-contract. Document search remains on its separate lexical/feedback path.
+The lexical similarity relations remain the reusable baseline. `SearchSimilarity` and the paragraph
+`SearchSimilarity` funnel under `search_similarity/paragraphs` accept provider-neutral ranked vector candidates and
+combine the lanes with RRF. The bundled exact vector index is a reference producer;
+caller-owned ANN services may emit the same candidate contract. Document search remains on its separate
+lexical/feedback path.
 
 ## Cohorts, Labels, Experiments, and Training
 

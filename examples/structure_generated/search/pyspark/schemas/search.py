@@ -59,6 +59,13 @@ SCORE_POLICY_SCHEMA = T.StructType([
     T.StructField("sentence_overlap_weight", T.DoubleType(), False),
 ])
 
+GAP_POLICY_SCHEMA = T.StructType([
+    T.StructField("document_scores", T.BooleanType(), False),
+    T.StructField("document_overlap_scores", T.BooleanType(), False),
+    T.StructField("document_vector_scores", T.BooleanType(), False),
+    T.StructField("paragraph_vector_scores", T.BooleanType(), False),
+])
+
 QUERY_POPULARITY_SCHEMA = T.StructType([
     T.StructField("query", T.StringType(), False),
     T.StructField("impression_count", T.LongType(), False),

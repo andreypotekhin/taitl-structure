@@ -37,8 +37,8 @@ class SearchQueryVectorEmbedding(VectorEmbedding):
     query_id = string(nullable=False)
 
 
-class SimilarityDocumentVectorEmbedding(VectorEmbedding):
-    """Provider-produced embedding for one source similarity document."""
+class SimilarityQueryEmbedding(VectorEmbedding):
+    """Provider-produced embedding for one source similarity search query."""
 
     query_id = string(nullable=False)
 

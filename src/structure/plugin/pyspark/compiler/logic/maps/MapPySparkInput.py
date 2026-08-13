@@ -13,6 +13,7 @@ class MapPySparkInput:
         streaming: bool,
         aliases: tuple[str, ...] = (),
         optional: bool = False,
+        internal: bool = False,
     ) -> PySparkInputRecipe:
         return PySparkInputRecipe(
             name=name,
@@ -21,6 +22,7 @@ class MapPySparkInput:
             streaming=streaming,
             optional=optional,
             aliases=aliases,
+            internal=internal,
             validation=PySparkValidationRecipe(
                 target=name,
                 schema=schema,

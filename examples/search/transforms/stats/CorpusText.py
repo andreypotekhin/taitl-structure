@@ -14,9 +14,9 @@ class CorpusText(Transform):
 
     @step(input=document_statistics, output=corpus_statistics)
     def corpus_stats(self, row: DocumentStatistics) -> CorpusStatistics:
-        group_by(corpus="all documents")
+        group_by(corpus="all similarity")
         return CorpusStatistics(
-            corpus="all documents",
+            corpus="all similarity",
             document_count=count(),
             average_sections_per_document=avg(row.section_count),
             average_paragraphs_per_document=avg(row.paragraph_count),
@@ -30,8 +30,8 @@ class CorpusText(Transform):
 
     @step(input=document_terms, output=corpus_vocabulary)
     def corpus_vocabulary_stats(self, term: DocumentTerm) -> CorpusVocabulary:
-        group_by(corpus="all documents")
+        group_by(corpus="all similarity")
         return CorpusVocabulary(
-            corpus="all documents",
+            corpus="all similarity",
             estimated_distinct_words=approx_count_distinct(term.term),
         )

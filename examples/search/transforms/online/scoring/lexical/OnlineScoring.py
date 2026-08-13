@@ -23,20 +23,21 @@ class OnlineScoring(Transform):
     streamed_document_scores = input(DocumentScore, streaming=True)
     cached_document_overlap_scores = input(DocumentOverlapScore)
     cached_document_vector_scores = input(DocumentVectorScore)
-    cached_paragraph_vector_scores = input(ParagraphVectorScore)
+    cached_paragraph_vector_scores = input(ParagraphVectorScore, optional=True)
     document_terms = input(DocumentTerm)
-    section_terms = input(SectionTerm)
-    paragraph_terms = input(ParagraphTerm)
-    sentence_terms = input(SentenceTerm)
+    section_terms = input(SectionTerm, optional=True)
+    paragraph_terms = input(ParagraphTerm, optional=True)
+    sentence_terms = input(SentenceTerm, optional=True)
     document_summary = input(DocumentIndexSummary)
-    section_summary = input(SectionIndexSummary)
-    paragraph_summary = input(ParagraphIndexSummary)
-    sentence_summary = input(SentenceIndexSummary)
+    section_summary = input(SectionIndexSummary, optional=True)
+    paragraph_summary = input(ParagraphIndexSummary, optional=True)
+    sentence_summary = input(SentenceIndexSummary, optional=True)
     score_policy = input(ScorePolicy)
+    gap_policy = input(GapPolicy)
     document_vector_queries = input(DocumentVectorQuery, streaming=True)
     document_vector_index = input(DocumentVectorIndex)
-    paragraph_vector_queries = input(ParagraphVectorQuery)
-    paragraph_vector_index = input(ParagraphVectorIndex)
+    paragraph_vector_queries = input(ParagraphVectorQuery, optional=True)
+    paragraph_vector_index = input(ParagraphVectorIndex, optional=True)
     vector_policy = input(VectorIndexPolicy)
 
     gap = SelectGapQueries(
@@ -48,6 +49,7 @@ class OnlineScoring(Transform):
         paragraph_vector_scores=cached_paragraph_vector_scores,
         prefilter_targets=prefilter_targets,
         score_policy=score_policy,
+        gap_policy=gap_policy,
         vector_policy=vector_policy,
     )
 

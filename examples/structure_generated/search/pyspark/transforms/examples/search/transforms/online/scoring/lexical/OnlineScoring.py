@@ -57,6 +57,7 @@ from examples.structure_generated.search.pyspark.schemas.scoring_intermediate im
 from examples.structure_generated.search.pyspark.schemas.search import (
     DOCUMENT_SCORE_SCHEMA,
     DOCUMENT_SEARCH_TARGET_SCHEMA,
+    GAP_POLICY_SCHEMA,
     PARAGRAPH_SCORE_SCHEMA,
     SCORE_POLICY_SCHEMA,
     SEARCH_QUERY_SCHEMA,
@@ -74,6 +75,7 @@ class SelectGapQueriesGenerated:
             or frames["cached_document_scores"].isStreaming
             or frames["requests"].isStreaming
             or frames["score_policy"].isStreaming
+            or frames["gap_policy"].isStreaming
         )
         cached_document_scores_joined = frames["cached_document_scores"].alias("cached_document_scores")
         gap__document_availability = gap__document_availability.join(
@@ -107,30 +109,49 @@ class SelectGapQueriesGenerated:
             )
         score_policy_3_joined = score_policy_3_param_joined.alias("score_policy_3")
         gap__document_availability = gap__document_availability.crossJoin(score_policy_3_joined)
+        gap_policy_4_param_joined = frames["gap_policy"]
+        if not __structure_streaming_step:
+            gap_policy_4_param_joined_count = frames["gap_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
+            gap_policy_4_param_joined_count = gap_policy_4_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(gaps) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            gap_policy_4_param_joined = gap_policy_4_param_joined_count.crossJoin(frames["gap_policy"]).drop(
+                "__structure_exactly_one"
+            )
+        gap_policy_4_joined = gap_policy_4_param_joined.alias("gap_policy_4")
+        gap__document_availability = gap__document_availability.crossJoin(gap_policy_4_joined)
         gap__document_availability = gap__document_availability.where(
             (
                 (
-                    F.col("cached_document_scores.document_id").isNull()
-                    | ~(
-                        (
+                    F.col("gap_policy_4.document_scores")
+                    & (
+                        F.col("cached_document_scores.document_id").isNull()
+                        | ~(
                             (
                                 (
-                                    (F.col("cached_document_scores.scored_at") <= F.col("requests_2.requested_at"))
+                                    (
+                                        (F.col("cached_document_scores.scored_at") <= F.col("requests_2.requested_at"))
+                                        & (
+                                            F.col("cached_document_scores.scored_at")
+                                            >= F.col("score_policy_3.effective_at")
+                                        )
+                                    )
                                     & (
-                                        F.col("cached_document_scores.scored_at")
-                                        >= F.col("score_policy_3.effective_at")
+                                        F.datediff(
+                                            F.col("requests_2.requested_at"), F.col("cached_document_scores.scored_at")
+                                        )
+                                        >= F.lit(0)
                                     )
                                 )
                                 & (
                                     F.datediff(
                                         F.col("requests_2.requested_at"), F.col("cached_document_scores.scored_at")
                                     )
-                                    >= F.lit(0)
+                                    <= F.col("score_policy_3.maximum_age_days")
                                 )
-                            )
-                            & (
-                                F.datediff(F.col("requests_2.requested_at"), F.col("cached_document_scores.scored_at"))
-                                <= F.col("score_policy_3.maximum_age_days")
                             )
                         )
                     )
@@ -159,6 +180,7 @@ class SelectGapQueriesGenerated:
             or frames["cached_document_overlap_scores"].isStreaming
             or frames["requests"].isStreaming
             or frames["score_policy"].isStreaming
+            or frames["gap_policy"].isStreaming
         )
         cached_document_overlap_scores_joined = frames["cached_document_overlap_scores"].alias(
             "cached_document_overlap_scores"
@@ -197,21 +219,45 @@ class SelectGapQueriesGenerated:
             )
         score_policy_3_joined = score_policy_3_param_joined.alias("score_policy_3")
         gap__overlap_availability = gap__overlap_availability.crossJoin(score_policy_3_joined)
+        gap_policy_4_param_joined = frames["gap_policy"]
+        if not __structure_streaming_step:
+            gap_policy_4_param_joined_count = frames["gap_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
+            gap_policy_4_param_joined_count = gap_policy_4_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(gaps) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            gap_policy_4_param_joined = gap_policy_4_param_joined_count.crossJoin(frames["gap_policy"]).drop(
+                "__structure_exactly_one"
+            )
+        gap_policy_4_joined = gap_policy_4_param_joined.alias("gap_policy_4")
+        gap__overlap_availability = gap__overlap_availability.crossJoin(gap_policy_4_joined)
         gap__overlap_availability = gap__overlap_availability.where(
             (
                 (
-                    F.col("cached_document_overlap_scores.document_id").isNull()
-                    | ~(
-                        (
+                    F.col("gap_policy_4.document_overlap_scores")
+                    & (
+                        F.col("cached_document_overlap_scores.document_id").isNull()
+                        | ~(
                             (
                                 (
                                     (
-                                        F.col("cached_document_overlap_scores.scored_at")
-                                        <= F.col("requests_2.requested_at")
+                                        (
+                                            F.col("cached_document_overlap_scores.scored_at")
+                                            <= F.col("requests_2.requested_at")
+                                        )
+                                        & (
+                                            F.col("cached_document_overlap_scores.scored_at")
+                                            >= F.col("score_policy_3.effective_at")
+                                        )
                                     )
                                     & (
-                                        F.col("cached_document_overlap_scores.scored_at")
-                                        >= F.col("score_policy_3.effective_at")
+                                        F.datediff(
+                                            F.col("requests_2.requested_at"),
+                                            F.col("cached_document_overlap_scores.scored_at"),
+                                        )
+                                        >= F.lit(0)
                                     )
                                 )
                                 & (
@@ -219,14 +265,8 @@ class SelectGapQueriesGenerated:
                                         F.col("requests_2.requested_at"),
                                         F.col("cached_document_overlap_scores.scored_at"),
                                     )
-                                    >= F.lit(0)
+                                    <= F.col("score_policy_3.maximum_age_days")
                                 )
-                            )
-                            & (
-                                F.datediff(
-                                    F.col("requests_2.requested_at"), F.col("cached_document_overlap_scores.scored_at")
-                                )
-                                <= F.col("score_policy_3.maximum_age_days")
                             )
                         )
                     )
@@ -256,6 +296,7 @@ class SelectGapQueriesGenerated:
             or frames["requests"].isStreaming
             or frames["score_policy"].isStreaming
             or frames["vector_policy"].isStreaming
+            or frames["gap_policy"].isStreaming
         )
         cached_document_vector_scores_joined = frames["cached_document_vector_scores"].alias(
             "cached_document_vector_scores"
@@ -310,12 +351,27 @@ class SelectGapQueriesGenerated:
             )
         vector_policy_4_joined = vector_policy_4_param_joined.alias("vector_policy_4")
         gap__vector_availability = gap__vector_availability.crossJoin(vector_policy_4_joined)
+        gap_policy_5_param_joined = frames["gap_policy"]
+        if not __structure_streaming_step:
+            gap_policy_5_param_joined_count = frames["gap_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
+            gap_policy_5_param_joined_count = gap_policy_5_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(gaps) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            gap_policy_5_param_joined = gap_policy_5_param_joined_count.crossJoin(frames["gap_policy"]).drop(
+                "__structure_exactly_one"
+            )
+        gap_policy_5_joined = gap_policy_5_param_joined.alias("gap_policy_5")
+        gap__vector_availability = gap__vector_availability.crossJoin(gap_policy_5_joined)
         gap__vector_availability = gap__vector_availability.where(
             (
                 (
-                    F.col("cached_document_vector_scores.document_id").isNull()
-                    | ~(
-                        (
+                    F.col("gap_policy_5.document_vector_scores")
+                    & (
+                        F.col("cached_document_vector_scores.document_id").isNull()
+                        | ~(
                             (
                                 (
                                     (
@@ -324,12 +380,21 @@ class SelectGapQueriesGenerated:
                                                 (
                                                     (
                                                         (
-                                                            F.col("cached_document_vector_scores.scored_at")
-                                                            <= F.col("requests_2.requested_at")
+                                                            (
+                                                                F.col("cached_document_vector_scores.scored_at")
+                                                                <= F.col("requests_2.requested_at")
+                                                            )
+                                                            & (
+                                                                F.col("cached_document_vector_scores.scored_at")
+                                                                >= F.col("score_policy_3.effective_at")
+                                                            )
                                                         )
                                                         & (
-                                                            F.col("cached_document_vector_scores.scored_at")
-                                                            >= F.col("score_policy_3.effective_at")
+                                                            F.datediff(
+                                                                F.col("requests_2.requested_at"),
+                                                                F.col("cached_document_vector_scores.scored_at"),
+                                                            )
+                                                            >= F.lit(0)
                                                         )
                                                     )
                                                     & (
@@ -337,39 +402,32 @@ class SelectGapQueriesGenerated:
                                                             F.col("requests_2.requested_at"),
                                                             F.col("cached_document_vector_scores.scored_at"),
                                                         )
-                                                        >= F.lit(0)
+                                                        <= F.col("score_policy_3.maximum_age_days")
                                                     )
                                                 )
                                                 & (
-                                                    F.datediff(
-                                                        F.col("requests_2.requested_at"),
-                                                        F.col("cached_document_vector_scores.scored_at"),
-                                                    )
-                                                    <= F.col("score_policy_3.maximum_age_days")
+                                                    F.col("cached_document_vector_scores.model_id")
+                                                    == F.col("vector_policy_4.model_id")
                                                 )
                                             )
                                             & (
-                                                F.col("cached_document_vector_scores.model_id")
-                                                == F.col("vector_policy_4.model_id")
+                                                F.col("cached_document_vector_scores.dimension")
+                                                == F.col("vector_policy_4.dimension")
                                             )
                                         )
                                         & (
-                                            F.col("cached_document_vector_scores.dimension")
-                                            == F.col("vector_policy_4.dimension")
+                                            F.col("cached_document_vector_scores.content_revision")
+                                            == F.col("vector_policy_4.content_revision")
                                         )
                                     )
                                     & (
-                                        F.col("cached_document_vector_scores.content_revision")
-                                        == F.col("vector_policy_4.content_revision")
+                                        F.col("cached_document_vector_scores.experiment_id")
+                                        == F.col("vector_policy_4.experiment_id")
                                     )
                                 )
-                                & (
-                                    F.col("cached_document_vector_scores.experiment_id")
-                                    == F.col("vector_policy_4.experiment_id")
+                                & F.col("cached_document_vector_scores.experiment_id").eqNullSafe(
+                                    F.col("requests_2.experiment_id")
                                 )
-                            )
-                            & F.col("cached_document_vector_scores.experiment_id").eqNullSafe(
-                                F.col("requests_2.experiment_id")
                             )
                         )
                     )
@@ -399,6 +457,7 @@ class SelectGapQueriesGenerated:
             or frames["requests"].isStreaming
             or frames["score_policy"].isStreaming
             or frames["vector_policy"].isStreaming
+            or frames["gap_policy"].isStreaming
         )
         cached_paragraph_vector_scores_joined = frames["cached_paragraph_vector_scores"].alias(
             "cached_paragraph_vector_scores"
@@ -453,12 +512,27 @@ class SelectGapQueriesGenerated:
             )
         vector_policy_4_joined = vector_policy_4_param_joined.alias("vector_policy_4")
         gap__paragraph_vector_availability = gap__paragraph_vector_availability.crossJoin(vector_policy_4_joined)
+        gap_policy_5_param_joined = frames["gap_policy"]
+        if not __structure_streaming_step:
+            gap_policy_5_param_joined_count = frames["gap_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
+            gap_policy_5_param_joined_count = gap_policy_5_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(gaps) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            gap_policy_5_param_joined = gap_policy_5_param_joined_count.crossJoin(frames["gap_policy"]).drop(
+                "__structure_exactly_one"
+            )
+        gap_policy_5_joined = gap_policy_5_param_joined.alias("gap_policy_5")
+        gap__paragraph_vector_availability = gap__paragraph_vector_availability.crossJoin(gap_policy_5_joined)
         gap__paragraph_vector_availability = gap__paragraph_vector_availability.where(
             (
                 (
-                    F.col("cached_paragraph_vector_scores.document_id").isNull()
-                    | ~(
-                        (
+                    F.col("gap_policy_5.paragraph_vector_scores")
+                    & (
+                        F.col("cached_paragraph_vector_scores.document_id").isNull()
+                        | ~(
                             (
                                 (
                                     (
@@ -467,12 +541,21 @@ class SelectGapQueriesGenerated:
                                                 (
                                                     (
                                                         (
-                                                            F.col("cached_paragraph_vector_scores.scored_at")
-                                                            <= F.col("requests_2.requested_at")
+                                                            (
+                                                                F.col("cached_paragraph_vector_scores.scored_at")
+                                                                <= F.col("requests_2.requested_at")
+                                                            )
+                                                            & (
+                                                                F.col("cached_paragraph_vector_scores.scored_at")
+                                                                >= F.col("score_policy_3.effective_at")
+                                                            )
                                                         )
                                                         & (
-                                                            F.col("cached_paragraph_vector_scores.scored_at")
-                                                            >= F.col("score_policy_3.effective_at")
+                                                            F.datediff(
+                                                                F.col("requests_2.requested_at"),
+                                                                F.col("cached_paragraph_vector_scores.scored_at"),
+                                                            )
+                                                            >= F.lit(0)
                                                         )
                                                     )
                                                     & (
@@ -480,39 +563,32 @@ class SelectGapQueriesGenerated:
                                                             F.col("requests_2.requested_at"),
                                                             F.col("cached_paragraph_vector_scores.scored_at"),
                                                         )
-                                                        >= F.lit(0)
+                                                        <= F.col("score_policy_3.maximum_age_days")
                                                     )
                                                 )
                                                 & (
-                                                    F.datediff(
-                                                        F.col("requests_2.requested_at"),
-                                                        F.col("cached_paragraph_vector_scores.scored_at"),
-                                                    )
-                                                    <= F.col("score_policy_3.maximum_age_days")
+                                                    F.col("cached_paragraph_vector_scores.model_id")
+                                                    == F.col("vector_policy_4.model_id")
                                                 )
                                             )
                                             & (
-                                                F.col("cached_paragraph_vector_scores.model_id")
-                                                == F.col("vector_policy_4.model_id")
+                                                F.col("cached_paragraph_vector_scores.dimension")
+                                                == F.col("vector_policy_4.dimension")
                                             )
                                         )
                                         & (
-                                            F.col("cached_paragraph_vector_scores.dimension")
-                                            == F.col("vector_policy_4.dimension")
+                                            F.col("cached_paragraph_vector_scores.content_revision")
+                                            == F.col("vector_policy_4.content_revision")
                                         )
                                     )
                                     & (
-                                        F.col("cached_paragraph_vector_scores.content_revision")
-                                        == F.col("vector_policy_4.content_revision")
+                                        F.col("cached_paragraph_vector_scores.experiment_id")
+                                        == F.col("vector_policy_4.experiment_id")
                                     )
                                 )
-                                & (
-                                    F.col("cached_paragraph_vector_scores.experiment_id")
-                                    == F.col("vector_policy_4.experiment_id")
+                                & F.col("cached_paragraph_vector_scores.experiment_id").eqNullSafe(
+                                    F.col("requests_2.experiment_id")
                                 )
-                            )
-                            & F.col("cached_paragraph_vector_scores.experiment_id").eqNullSafe(
-                                F.col("requests_2.experiment_id")
                             )
                         )
                     )
@@ -3692,22 +3768,23 @@ class OnlineScoringGenerated(
         cached_document_scores: DataFrame,
         cached_document_overlap_scores: DataFrame,
         cached_document_vector_scores: DataFrame,
-        cached_paragraph_vector_scores: DataFrame,
+        cached_paragraph_vector_scores: DataFrame | None = None,
         prefilter_targets: DataFrame,
         score_policy: DataFrame,
+        gap_policy: DataFrame,
         vector_policy: DataFrame,
         document_terms: DataFrame,
-        section_terms: DataFrame,
-        paragraph_terms: DataFrame,
-        sentence_terms: DataFrame,
+        section_terms: DataFrame | None = None,
+        paragraph_terms: DataFrame | None = None,
+        sentence_terms: DataFrame | None = None,
         document_summary: DataFrame,
-        section_summary: DataFrame,
-        paragraph_summary: DataFrame,
-        sentence_summary: DataFrame,
+        section_summary: DataFrame | None = None,
+        paragraph_summary: DataFrame | None = None,
+        sentence_summary: DataFrame | None = None,
         document_vector_queries: DataFrame,
         document_vector_index: DataFrame,
-        paragraph_vector_queries: DataFrame,
-        paragraph_vector_index: DataFrame,
+        paragraph_vector_queries: DataFrame | None = None,
+        paragraph_vector_index: DataFrame | None = None,
         streamed_document_scores: DataFrame,
     ) -> TransformResult:
         assert_schema(queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
@@ -3719,24 +3796,60 @@ class OnlineScoringGenerated(
         assert_schema(
             cached_document_vector_scores, DOCUMENT_VECTOR_SCORE_SCHEMA, name="DocumentVectorScore", mode="strict"
         )
+        cached_paragraph_vector_scores = (
+            self.spark.createDataFrame([], PARAGRAPH_VECTOR_SCORE_SCHEMA)
+            if cached_paragraph_vector_scores is None
+            else cached_paragraph_vector_scores
+        )
         assert_schema(
             cached_paragraph_vector_scores, PARAGRAPH_VECTOR_SCORE_SCHEMA, name="ParagraphVectorScore", mode="strict"
         )
         assert_schema(prefilter_targets, DOCUMENT_SEARCH_TARGET_SCHEMA, name="DocumentSearchTarget", mode="strict")
         assert_schema(score_policy, SCORE_POLICY_SCHEMA, name="ScorePolicy", mode="strict")
+        assert_schema(gap_policy, GAP_POLICY_SCHEMA, name="GapPolicy", mode="strict")
         assert_schema(vector_policy, VECTOR_INDEX_POLICY_SCHEMA, name="VectorIndexPolicy", mode="strict")
         assert_schema(document_terms, DOCUMENT_TERM_SCHEMA, name="DocumentTerm", mode="strict")
+        section_terms = self.spark.createDataFrame([], SECTION_TERM_SCHEMA) if section_terms is None else section_terms
         assert_schema(section_terms, SECTION_TERM_SCHEMA, name="SectionTerm", mode="strict")
+        paragraph_terms = (
+            self.spark.createDataFrame([], PARAGRAPH_TERM_SCHEMA) if paragraph_terms is None else paragraph_terms
+        )
         assert_schema(paragraph_terms, PARAGRAPH_TERM_SCHEMA, name="ParagraphTerm", mode="strict")
+        sentence_terms = (
+            self.spark.createDataFrame([], SENTENCE_TERM_SCHEMA) if sentence_terms is None else sentence_terms
+        )
         assert_schema(sentence_terms, SENTENCE_TERM_SCHEMA, name="SentenceTerm", mode="strict")
         assert_schema(document_summary, DOCUMENT_INDEX_SUMMARY_SCHEMA, name="DocumentIndexSummary", mode="strict")
+        section_summary = (
+            self.spark.createDataFrame([], SECTION_INDEX_SUMMARY_SCHEMA) if section_summary is None else section_summary
+        )
         assert_schema(section_summary, SECTION_INDEX_SUMMARY_SCHEMA, name="SectionIndexSummary", mode="strict")
+        paragraph_summary = (
+            self.spark.createDataFrame([], PARAGRAPH_INDEX_SUMMARY_SCHEMA)
+            if paragraph_summary is None
+            else paragraph_summary
+        )
         assert_schema(paragraph_summary, PARAGRAPH_INDEX_SUMMARY_SCHEMA, name="ParagraphIndexSummary", mode="strict")
+        sentence_summary = (
+            self.spark.createDataFrame([], SENTENCE_INDEX_SUMMARY_SCHEMA)
+            if sentence_summary is None
+            else sentence_summary
+        )
         assert_schema(sentence_summary, SENTENCE_INDEX_SUMMARY_SCHEMA, name="SentenceIndexSummary", mode="strict")
         assert_schema(document_vector_queries, DOCUMENT_VECTOR_QUERY_SCHEMA, name="DocumentVectorQuery", mode="strict")
         assert_schema(document_vector_index, DOCUMENT_VECTOR_INDEX_SCHEMA, name="DocumentVectorIndex", mode="strict")
+        paragraph_vector_queries = (
+            self.spark.createDataFrame([], PARAGRAPH_VECTOR_QUERY_SCHEMA)
+            if paragraph_vector_queries is None
+            else paragraph_vector_queries
+        )
         assert_schema(
             paragraph_vector_queries, PARAGRAPH_VECTOR_QUERY_SCHEMA, name="ParagraphVectorQuery", mode="strict"
+        )
+        paragraph_vector_index = (
+            self.spark.createDataFrame([], PARAGRAPH_VECTOR_INDEX_SCHEMA)
+            if paragraph_vector_index is None
+            else paragraph_vector_index
         )
         assert_schema(paragraph_vector_index, PARAGRAPH_VECTOR_INDEX_SCHEMA, name="ParagraphVectorIndex", mode="strict")
         assert_schema(streamed_document_scores, DOCUMENT_SCORE_SCHEMA, name="DocumentScore", mode="strict")
@@ -3748,6 +3861,7 @@ class OnlineScoringGenerated(
         _input_cached_paragraph_vector_scores = cached_paragraph_vector_scores
         _input_prefilter_targets = prefilter_targets
         _input_score_policy = score_policy
+        _input_gap_policy = gap_policy
         _input_vector_policy = vector_policy
         _input_document_terms = document_terms
         _input_section_terms = section_terms
@@ -3771,6 +3885,7 @@ class OnlineScoringGenerated(
             "cached_paragraph_vector_scores": cached_paragraph_vector_scores,
             "prefilter_targets": prefilter_targets,
             "score_policy": score_policy,
+            "gap_policy": gap_policy,
             "vector_policy": vector_policy,
             "document_terms": document_terms,
             "section_terms": section_terms,
@@ -3793,6 +3908,7 @@ class OnlineScoringGenerated(
             "input:cached_paragraph_vector_scores": _input_cached_paragraph_vector_scores,
             "input:prefilter_targets": _input_prefilter_targets,
             "input:score_policy": _input_score_policy,
+            "input:gap_policy": _input_gap_policy,
             "input:vector_policy": _input_vector_policy,
             "input:document_terms": _input_document_terms,
             "input:section_terms": _input_section_terms,

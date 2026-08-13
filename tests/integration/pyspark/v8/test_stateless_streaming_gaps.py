@@ -144,7 +144,7 @@ def test_v8_struct_generator_restarts_online_and_generated(spark, tmp_path) -> N
             ]
 
             for mode in ("online", "generated"):
-                source = stream_root / mode / "documents"
+                source = stream_root / mode / "similarity"
                 _write_parquet(spark, source, [_document("d-1", [("spark", 2), ("stream", 3)])], schemas.DOCUMENT_SCHEMA)
                 first = _run_single_stream_once(
                     spark,
@@ -325,7 +325,7 @@ def _render_generator_project() -> dict[str, str]:
     for path, source in tuple(files.items()):
         if "/pyspark/transforms/" in path:
             files[path] = source.replace(
-                '        assert_schema(documents, DOCUMENT_SCHEMA, name="Document", mode="strict")\n',
+                '        assert_schema(similarity, DOCUMENT_SCHEMA, name="Document", mode="strict")\n',
                 "",
             )
     return files

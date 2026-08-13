@@ -7,7 +7,7 @@ from structure import Transform, input, output
 
 
 class Chunking(Transform):
-    """Chunk documents into pieces."""
+    """Chunk similarity into pieces."""
 
     documents = input(Document)
     sections = output(Section)

@@ -1,4 +1,4 @@
-"""Select online target documents without compatible cached embeddings."""
+"""Select online target similarity without compatible cached embeddings."""
 
 from examples.search.schemas.indexing.vector import DocumentVectorIndex
 from examples.search.schemas.inference import InferencePolicy

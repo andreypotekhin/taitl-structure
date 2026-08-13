@@ -124,7 +124,7 @@ from examples.search.schemas.indexing.vector import (
     ParagraphVectorQuery,
     ParagraphVectorScore,
     SearchQueryVectorEmbedding,
-    SimilarityDocumentVectorEmbedding,
+    SimilarityQueryEmbedding,
     VectorIndexPolicy,
 )
 from examples.search.schemas.label import (
@@ -176,6 +176,7 @@ from examples.search.schemas.search import (
     DocumentSearchCandidate,
     DocumentSearchResult,
     DocumentSearchTarget,
+    GapPolicy,
     ParagraphContext,
     ParagraphScore,
     ParagraphSearchTarget,
@@ -209,21 +210,18 @@ from examples.search.schemas.similarities.vector import DocumentFusedSimilarityC
 from examples.search.schemas.similarity import (
     DocumentSimilarity,
     DocumentSimilarityQuery,
-    HybridIndexedSimilarDocument,
     IndexedSimilarDocument,
     IndexedSimilarParagraph,
-    IndexedSimilarSection,
-    IndexedSimilarSentence,
     ParagraphSimilarity,
     ParagraphSimilarityQuery,
     SectionSimilarity,
     SectionSimilarityQuery,
     SentenceSimilarity,
     SentenceSimilarityQuery,
-    SimilarityDocumentQuery,
     SimilarityFusionPolicy,
     SimilarityParagraphQuery,
     SimilarityPolicy,
+    SimilaritySearchQuery,
     SimilaritySectionQuery,
     SimilaritySentenceQuery,
 )
@@ -269,12 +267,9 @@ from examples.search.transforms.scoring.lexical.SelectRecentQueries import Selec
 from examples.search.transforms.search import SearchDocuments, SearchPassages, SearchSentences
 from examples.search.transforms.searching.search_fields import SearchFields
 from examples.search.transforms.searching.search_similarity import SearchSimilarity
-from examples.search.transforms.similarities.CreateSimilarityQueries import CreateSimilarityQueries
-from examples.search.transforms.similarities.ReduceSimilarityScores import ReduceSimilarityScores
-from examples.search.transforms.similarities.Similarities import Similarities
-from examples.search.transforms.similarities.SimilarParagraphs import SimilarParagraphs
-from examples.search.transforms.similarities.SimilarSections import SimilarSections
-from examples.search.transforms.similarities.SimilarSentences import SimilarSentences
+from examples.search.transforms.similarity.lexical.queries import CreateSimilarityQueries
+from examples.search.transforms.similarity.lexical.reduce import ReduceSimilarityScores
+from examples.search.transforms.similarity.lexical.Similarities import Similarities
 from examples.search.transforms.stats.AnalyzeText import AnalyzeText
 from examples.search.transforms.stats.CorpusText import CorpusText
 from examples.search.transforms.stats.ProfileDocuments import ProfileDocuments
@@ -305,6 +300,7 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         ParagraphSearchTarget,
         SentenceSearchTarget,
         ScorePolicy,
+        GapPolicy,
         QueryPopularity,
         SentenceSearchResult,
         PassageSearchResult,
@@ -358,7 +354,7 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         ParagraphVectorEmbedding,
         DocumentVectorQuery,
         SearchQueryVectorEmbedding,
-        SimilarityDocumentVectorEmbedding,
+        SimilarityQueryEmbedding,
         DocumentVectorIndex,
         ParagraphVectorIndex,
         ParagraphVectorQuery,
@@ -490,7 +486,7 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
     "examples.search.schemas.similarity": [
         SimilarityPolicy,
         SimilarityFusionPolicy,
-        SimilarityDocumentQuery,
+        SimilaritySearchQuery,
         SimilaritySectionQuery,
         SimilarityParagraphQuery,
         SimilaritySentenceQuery,
@@ -499,11 +495,8 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         ParagraphSimilarityQuery,
         SentenceSimilarityQuery,
         DocumentSimilarity,
-        HybridIndexedSimilarDocument,
         IndexedSimilarDocument,
-        IndexedSimilarSection,
         IndexedSimilarParagraph,
-        IndexedSimilarSentence,
         SectionSimilarity,
         ParagraphSimilarity,
         SentenceSimilarity,
@@ -625,7 +618,7 @@ TRANSFORMS = (
     ),
     (
         CreateSimilarityQueries,
-        "examples.search.transforms.similarities.CreateSimilarityQueries.CreateSimilarityQueries",
+        "examples.search.transforms.similarity.lexical.queries.CreateSimilarityQueries",
     ),
     (ScoreOverlap, "examples.search.transforms.scoring.lexical.ScoreOverlap.ScoreOverlap"),
     (ScoreBm25, "examples.search.transforms.scoring.lexical.ScoreBm25.ScoreBm25"),
@@ -641,16 +634,13 @@ TRANSFORMS = (
     ),
     (
         ReduceSimilarityScores,
-        "examples.search.transforms.similarities.ReduceSimilarityScores.ReduceSimilarityScores",
+        "examples.search.transforms.similarity.lexical.reduce.ReduceSimilarityScores",
     ),
-    (Similarities, "examples.search.transforms.similarities.Similarities.Similarities"),
+    (Similarities, "examples.search.transforms.similarity.lexical.Similarities"),
     (
         SearchSimilarity,
         "examples.search.transforms.searching.search_similarity.SearchSimilarity.SearchSimilarity",
     ),
-    (SimilarSections, "examples.search.transforms.similarities.SimilarSections.SimilarSections"),
-    (SimilarParagraphs, "examples.search.transforms.similarities.SimilarParagraphs.SimilarParagraphs"),
-    (SimilarSentences, "examples.search.transforms.similarities.SimilarSentences.SimilarSentences"),
     (ResolveCohortBands, "examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands"),
 )
 
@@ -829,7 +819,7 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
                     "structure",
                     "Structure Guide Revised",
                     "https://example.test/guide-revised",
-                    "# Introduction\nStructure makes typed Spark transformations readable.\n\n# Analysis\nThis guide measures documents clearly.",
+                    "# Introduction\nStructure makes typed Spark transformations readable.\n\n# Analysis\nThis guide measures similarity clearly.",
                     "text/plain",
                     "utf-8",
                     "en",
@@ -1196,7 +1186,7 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
         vector_schemas = __import__(
             f"{PACKAGE}.pyspark.schemas.indexing_vector",
             fromlist=[
-                "DOCUMENT_SIMILARITY_VECTOR_EMBEDDING_SCHEMA",
+                "SIMILARITY_QUERY_EMBEDDING_SCHEMA",
                 "DOCUMENT_VECTOR_INDEX_SCHEMA",
                 "VECTOR_INDEX_POLICY_SCHEMA",
             ],
@@ -1208,8 +1198,8 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             [(60, 10, 10, 10, "lexical-regression")],
             similarity_schemas.SIMILARITY_FUSION_POLICY_SCHEMA,
         )
-        empty_document_embeddings = spark.createDataFrame(
-            [], vector_schemas.DOCUMENT_SIMILARITY_VECTOR_EMBEDDING_SCHEMA
+        empty_query_embeddings = spark.createDataFrame(
+            [], vector_schemas.SIMILARITY_QUERY_EMBEDDING_SCHEMA
         )
         empty_document_index = spark.createDataFrame([], vector_schemas.DOCUMENT_VECTOR_INDEX_SCHEMA)
         vector_policy = spark.createDataFrame(
@@ -1217,7 +1207,7 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             vector_schemas.VECTOR_INDEX_POLICY_SCHEMA,
         )
         similar_document_inputs.update(
-            document_vector_embeddings=empty_document_embeddings,
+            query_vector_embeddings=empty_query_embeddings,
             document_vector_index=empty_document_index,
             score_policy=score_policy,
             vector_policy=vector_policy,
@@ -1242,7 +1232,7 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
 
         ann_query_embeddings = spark.createDataFrame(
             [([1.0, 0.0, 0.0], "fixture-embed", 3, "rev-1", "search-v1", "d-1")],
-            vector_schemas.DOCUMENT_SIMILARITY_VECTOR_EMBEDDING_SCHEMA,
+            vector_schemas.SIMILARITY_QUERY_EMBEDDING_SCHEMA,
         )
         ann_document_index = spark.createDataFrame(
             [
@@ -1254,7 +1244,7 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
         )
         hybrid_inputs = {
             **similar_document_inputs,
-            "document_vector_embeddings": ann_query_embeddings,
+            "query_vector_embeddings": ann_query_embeddings,
             "document_vector_index": ann_document_index,
         }
         online_hybrid_documents = (
@@ -1275,41 +1265,6 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
         assert ann_match["vector_rank"] == 1
         assert ann_match["vector_similarity"] == pytest.approx(0.99 / (0.99**2 + 0.1**2) ** 0.5)
         assert ann_match["rrf_k"] == 60
-
-        similar_sections = (
-            SimilarSections(
-                query=generated_segments.sections.where("document_id = 'd-1' AND ordinal = 1"),
-                sections=generated_segments.sections,
-                section_similarities=generated_similarities.section_similarities,
-            )
-            .run(session(spark, execution_mode="generated", generated_package=PACKAGE))
-            .similar_sections
-        )
-        similar_paragraphs = (
-            SimilarParagraphs(
-                query=generated_segments.paragraphs.where("document_id = 'd-1'").limit(1),
-                paragraphs=generated_segments.paragraphs,
-                paragraph_similarities=generated_similarities.paragraph_similarities,
-            )
-            .run(session(spark, execution_mode="generated", generated_package=PACKAGE))
-            .similar_paragraphs
-        )
-        similar_sentences = (
-            SimilarSentences(
-                query=generated_segments.sentences.where("document_id = 'd-1'").limit(1),
-                sentences=generated_segments.sentences,
-                sentence_similarities=generated_similarities.sentence_similarities,
-            )
-            .run(session(spark, execution_mode="generated", generated_package=PACKAGE))
-            .similar_sentences
-        )
-        assert all(cast(int, row["rank"]) <= SimilarSections.maximum_results for row in rows(similar_sections, "rank"))
-        assert all(
-            cast(int, row["rank"]) <= SimilarParagraphs.maximum_results for row in rows(similar_paragraphs, "rank")
-        )
-        assert all(
-            cast(int, row["rank"]) <= SimilarSentences.maximum_results for row in rows(similar_sentences, "rank")
-        )
 
         search_inputs = dict(
             queries=queries,
@@ -1778,29 +1733,24 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
             documents=documents,
             document_scores=document_scores,
             document_vector_scores=spark.createDataFrame([], search_schemas.DOCUMENT_VECTOR_SCORE_SCHEMA),
-            paragraph_vector_scores=spark.createDataFrame([], search_schemas.PARAGRAPH_VECTOR_SCORE_SCHEMA),
             streamed_documents=spark.createDataFrame([], text_schemas.DOCUMENT_SCHEMA),
             streamed_document_scores=spark.createDataFrame([], search_schemas.DOCUMENT_SCORE_SCHEMA),
             document_overlap_scores=document_overlap_scores,
             document_filter_scores=document_filter_scores,
             document_terms=index.document_terms,
-            section_terms=index.section_terms,
-            paragraph_terms=index.paragraph_terms,
-            sentence_terms=index.sentence_terms,
             document_summary=index.document_summary,
-            section_summary=index.section_summary,
-            paragraph_summary=index.paragraph_summary,
-            sentence_summary=index.sentence_summary,
             score_policy=spark.createDataFrame(
                 [(30, scored_at, scored_at, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0)],
                 search_schemas.SCORE_POLICY_SCHEMA,
+            ),
+            gap_policy=spark.createDataFrame(
+                [(True, True, True, False)],
+                search_schemas.GAP_POLICY_SCHEMA,
             ),
             document_vector_embeddings=spark.createDataFrame(
                 [], vector_schemas.DOCUMENT_SEARCH_VECTOR_EMBEDDING_SCHEMA
             ),
             document_vector_index=spark.createDataFrame([], vector_schemas.DOCUMENT_VECTOR_INDEX_SCHEMA),
-            paragraph_vector_queries=spark.createDataFrame([], vector_schemas.PARAGRAPH_VECTOR_QUERY_SCHEMA),
-            paragraph_vector_index=spark.createDataFrame([], vector_schemas.PARAGRAPH_VECTOR_INDEX_SCHEMA),
             vector_policy=spark.createDataFrame(
                 [("fixture-embed", 3, "rev-1", "search-v1", 1000, 60)],
                 vector_schemas.VECTOR_INDEX_POLICY_SCHEMA,
@@ -1846,7 +1796,7 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
 
 
 def _search_documents() -> list[tuple[object, ...]]:
-    with (FIXTURES / "documents.csv").open(newline="", encoding="utf-8") as source:
+    with (FIXTURES / "similarity.csv").open(newline="", encoding="utf-8") as source:
         return [
             (
                 row["id"],

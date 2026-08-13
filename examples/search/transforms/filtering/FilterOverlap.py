@@ -10,7 +10,7 @@ from structure.plugin.pyspark.dsl.expressions import literal
 
 
 class FilterOverlap(Transform):
-    """Rank documents by distinct query terms before expensive lexical scoring."""
+    """Rank similarity by distinct query terms before expensive lexical scoring."""
 
     maximum_candidates = 10000
 

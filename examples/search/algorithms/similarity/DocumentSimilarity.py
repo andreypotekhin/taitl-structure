@@ -1,4 +1,4 @@
-"""Rank corpus documents from canonical lexical-similarity pairs."""
+"""Rank corpus similarity from canonical lexical-similarity pairs."""
 
 from __future__ import annotations
 

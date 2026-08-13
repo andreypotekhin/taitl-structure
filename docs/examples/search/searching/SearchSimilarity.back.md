@@ -11,8 +11,9 @@ candidates, and a separate fusion policy. The vector candidate relation is provi
 implementation is a reference producer, while a caller-owned HNSW/ANN service can emit the same contract. It emits up
 to the configured result limit, preserving source identity, corpus metadata, and ranking evidence.
 
-Document, section, paragraph, and sentence presentation remain grain-isolated. Title, source, language, and collection
-filters are caller decisions after similarity scoring.
+Document and paragraph similarity search remain grain-isolated. Sections and sentences are available as lexical
+materialization grains, but have no vector/hybrid presentation boundary. Title, source, language, and collection filters
+are caller decisions before candidate publication.
 
 ## How it works
 

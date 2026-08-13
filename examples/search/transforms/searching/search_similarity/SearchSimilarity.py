@@ -16,10 +16,10 @@ from structure import *
 class SearchSimilarity(Transform):
     """Adopt lexical/vector candidates, fuse them, rerank them, and present the results."""
 
-    query = input(SimilarityDocumentQuery)
+    query = input(SimilaritySearchQuery)
     documents = input(Document)
     document_similarities = input(DocumentSimilarity)
-    document_vector_embeddings = input(SimilarityDocumentVectorEmbedding)
+    query_vector_embeddings = input(SimilarityQueryEmbedding)
     document_vector_index = input(DocumentVectorIndex)
     score_policy = input(ScorePolicy)
     vector_policy = input(VectorIndexPolicy)
@@ -27,28 +27,28 @@ class SearchSimilarity(Transform):
 
     lexical = AdoptLexicalSimilarity(document_similarities=document_similarities)
 
-    vectorized = VectorizeSimilarityDocumentQueries(
+    vectorized = VectorizeSimilarityQueries(
         queries=query,
-        embeddings=document_vector_embeddings,
+        embeddings=query_vector_embeddings,
     )
 
     scored = ScoreDocumentVectors(
-        policy=vector_policy,
         score_policy=score_policy,
         queries=vectorized.vector_queries,
         document_index=document_vector_index,
+        policy=vector_policy,
     )
 
     vector = AdoptVectorSimilarity(
-        document_scores=scored.document_scores,
         query=query,
         documents=documents,
+        document_scores=scored.document_scores,
     )
 
     fused = FuseSimilarity(
-        policy=fusion_policy,
         document_lexical_candidates=lexical.document_candidates,
         document_vector_candidates=vector.adopted_document_candidates,
+        policy=fusion_policy,
     )
 
     reranked = RerankSimilarity(
@@ -58,4 +58,4 @@ class SearchSimilarity(Transform):
         policy=fusion_policy,
     )
 
-    similar_documents = output(HybridIndexedSimilarDocument, reranked.similar_documents)
+    similar_documents = output(IndexedSimilarDocument, reranked.similar_documents)

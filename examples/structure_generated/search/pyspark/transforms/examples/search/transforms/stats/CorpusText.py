@@ -44,7 +44,7 @@ class CorpusTextGenerated:
         corpus_statistics = document_statistics.alias("document_statistics")
         corpus_statistics = (
             corpus_statistics.groupBy(
-                F.lit('all documents').alias("corpus"),
+                F.lit('all similarity').alias("corpus"),
             )
             .agg(
                 F.count(F.lit(1)).cast(T.LongType()).alias("document_count"),
@@ -90,7 +90,7 @@ class CorpusTextGenerated:
         corpus_vocabulary = document_terms.alias("document_term")
         corpus_vocabulary = (
             corpus_vocabulary.groupBy(
-                F.lit('all documents').alias("corpus"),
+                F.lit('all similarity').alias("corpus"),
             )
             .agg(
                 F.approx_count_distinct(F.col("document_term.term"))

@@ -1,7 +1,9 @@
-# Search Corpus Similarity
+# Offline Lexical Similarity Materialization
 
 
-The similarity boundary finds related documents, sections, paragraphs, and sentences by reusing the lexical index.
+The lexical materializer finds related documents, sections, paragraphs, and sentences by reusing the lexical index. It
+builds reusable candidate relations for a later vector or hybrid similarity-search boundary; it does not publish pure
+lexical search results.
 
 
 Each indexed target becomes a tagged same-grain query. Directed overlap and BM25 scores are reduced into reciprocal
@@ -12,9 +14,9 @@ An optional maximum document-frequency ratio prunes common terms. Similarity doe
 
 ## How it works
 
-Query creation, shared scoring, reciprocal reduction, and presentation are separate boundaries so callers can persist
-or inspect intermediate evidence. A separate embedding system was deferred; if added, lexical and vector candidate
-lanes must remain visible and combine by Reciprocal Rank Fusion.
+Query creation, shared scoring, and reciprocal reduction are separate stages so callers can persist or inspect
+intermediate evidence. `SearchSimilarity` consumes the document or paragraph relations together with vector candidates
+and combines the lanes by Reciprocal Rank Fusion.
 
 The symmetric pair is a presentation convenience, not a claim that BM25 itself is symmetric or calibrated.
 

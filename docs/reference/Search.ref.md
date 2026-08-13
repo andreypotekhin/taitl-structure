@@ -20,7 +20,7 @@ Structure core operations. The source declarations live under `examples/search/s
 | Build a lexical index | `Indexing` | Terms and summaries at four grains |
 | Score a query batch | `Scoring`, `ScoreOverlap`, `ScoreBm25`, `SelectScores` | Overlap and BM25 score relations |
 | Search sentences/passages/documents | `SearchSentences`, `SearchPassages`, `SearchDocuments` | Ranked results |
-| Find similar corpus items | Similarity query, score, and reducer transforms | Ranked same-grain pairs |
+| Find similar corpus items | Lexical similarity materializer plus vector/hybrid search | Ranked same-grain candidates/results |
 | Turn interactions into evidence | `Impressions`, `Clicks`, `BuildRelevanceSignals` | Daily facts and signals |
 | Measure quality and serving | evaluator transforms | Judged-quality and behavior summaries |
 
@@ -262,16 +262,16 @@ Retaining both ranks lets a caller distinguish lexical admission from feedback-d
 
 ## Similarity
 
-`CreateSimilarityQueries` turns document, section, paragraph, and sentence vocabularies into tagged queries. Score those
-queries with the shared lexical index, then call `ReduceSimilarityScores`.
+The lexical `queries.py` and `reduce.py` stages turn document, section, paragraph, and sentence vocabularies into tagged
+queries, score them with the shared lexical index, and materialize candidate relations.
 
 The reducer returns at most 10 neighbors per source target and grain, ordered by source-to-candidate BM25, overlap, and
 candidate identifiers. It retains both BM25 directions, their arithmetic mean, and the bounded overlap coefficient.
 `bm25_mean` is useful for inspection, not a calibrated probability.
 
-`Similarity`, `SimilarSections`, `SimilarParagraphs`, and `SimilarSentences` present a one-row query against same-grain
-pairs. `SimilarityPolicy.max_document_frequency_ratio` explicitly controls common-token pruning; null retains every
-normalized term.
+`Similarities` materializes same-grain candidate relations for an offline corpus snapshot. It is not a query-time
+presentation boundary. `SimilarityPolicy.max_document_frequency_ratio` explicitly controls common-token pruning; null
+retains every normalized term.
 
 ```python
 similarities = Similarities(
@@ -289,7 +289,8 @@ similarities = Similarities(
 neighbors = similarities.document_similarities
 ```
 
-Use the matching grain in each call; do not feed document statistics into a sentence-similarity reducer.
+Use the matching grain in each call; do not feed document statistics into a sentence-similarity reducer. Feed the
+document or paragraph relation to `SearchSimilarity` when vector or hybrid similarity search is required.
 
 Similarity is a directed lexical comparison. The reducer keeps the source-to-candidate BM25 direction, the reverse
 direction, their arithmetic mean, and the symmetric overlap coefficient. `bm25_mean` is a convenience for inspection;
@@ -299,7 +300,7 @@ The same-grain rule matters: document pairs are compared with document statistic
 statistics, and so on. A document-level match is not a substitute for a sentence-level match. The similarity policy's
 frequency-ratio setting is the explicit candidate-pruning control; the pipeline does not hide a common-token threshold.
 
-## Sentence and passage presentation
+## Sentence and passage search
 
 `SearchSentences` accepts `SearchQuery`, the original `Document` rows, immutable sentence boundaries, and
 `sentence_scores`. It returns one-based
@@ -454,7 +455,7 @@ The most useful persisted handoff boundaries are:
 | Target-grain terms and summaries | Offline and online scoring, similarity queries |
 | `DocumentFilterScore` and `DocumentSearchTarget` | Search-document candidate admission |
 | `DocumentScore` and other grain scores | Sentence, passage, and document presentation |
-| Similarity pairs | Same-grain related-content presentation |
+| Similarity pairs | Same-grain lexical candidates for vector/hybrid search |
 | Daily impressions and attributed clicks | Relevance signal snapshots and behavior evaluation |
 | Query-document and document-popularity signals | Document reranking and feedback analysis |
 
