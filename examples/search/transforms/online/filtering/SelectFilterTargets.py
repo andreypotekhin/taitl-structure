@@ -1,14 +1,15 @@
-"""Cached and online simple-overlap document filtering."""
+"""Merge usable filter artifacts and expose bounded document targets."""
 
 from examples.search.schemas.clicks import SearchRequest
 from examples.search.schemas.filtering import DocumentFilterScore
 from examples.search.schemas.search import DocumentSearchTarget, ScorePolicy
+from examples.search.transforms.lib.TargetScope import target_scope_id
 from structure import Transform, input, lane, output, step
 from structure.plugin.pyspark import datediff, drop_duplicates, inner_join, param_join, union_all, where
 
 
 class SelectFilterTargets(Transform):
-    """Merge usable filter artifacts and expose bounded document targets."""
+    """Merge current filter artifacts and expose bounded document targets."""
 
     maximum_candidates = 10000
 
@@ -46,4 +47,6 @@ class SelectFilterTargets(Transform):
     @step(input=merged_filter_scores, output=targets)
     def select_targets(self, document: DocumentFilterScore) -> DocumentSearchTarget:
         where(document.filter_rank <= self.maximum_candidates)
-        return DocumentSearchTarget.project(document)
+        return DocumentSearchTarget.project(document)(
+            scope_id=target_scope_id(document.query_id, document.scored_at, self.maximum_candidates)
+        )

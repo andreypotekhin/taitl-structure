@@ -18,6 +18,7 @@ from examples.search.schemas.similarity import (
     SentenceSimilarity,
     SimilarityPolicy,
 )
+from examples.search.transforms.scoring.lexical.AllScoringTargets import AllScoringTargets
 from examples.search.transforms.scoring.lexical.ScoreBm25 import ScoreBm25
 from examples.search.transforms.scoring.lexical.ScoreOverlap import ScoreOverlap
 from examples.search.transforms.similarities.CreateSimilarityQueries import CreateSimilarityQueries
@@ -55,6 +56,11 @@ class Similarities(Transform):
         sentence_summary=sentence_summary,
     )
 
+    scoring_targets = AllScoringTargets(
+        queries=queries.queries,
+        document_terms=document_terms,
+    )
+
     overlap = ScoreOverlap(
         queries=queries.queries,
         document_terms=document_terms,
@@ -66,6 +72,7 @@ class Similarities(Transform):
         paragraph_summary=paragraph_summary,
         sentence_summary=sentence_summary,
         score_policy=score_policy,
+        targets=scoring_targets.targets,
     )
 
     bm25 = ScoreBm25(
@@ -78,6 +85,7 @@ class Similarities(Transform):
         paragraph_summary=paragraph_summary,
         sentence_terms=sentence_terms,
         sentence_summary=sentence_summary,
+        targets=scoring_targets.targets,
     )
 
     reduced = ReduceSimilarityScores(

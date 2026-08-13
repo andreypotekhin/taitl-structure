@@ -25,7 +25,7 @@ from examples.search.schemas.scoring.overlap import (
     SectionOverlapScore,
     SentenceOverlapScore,
 )
-from examples.search.schemas.search import ScorePolicy
+from examples.search.schemas.search import DocumentSearchTarget, ScorePolicy
 from examples.search.transforms.scoring.lexical.ScoreBase import ScoreBase
 from structure import input, lane, output, step
 from structure.plugin.pyspark import (
@@ -168,59 +168,66 @@ class ScoreOverlap(ScoreBase):
         return QueryIdfTotal(query_id=term.query_id, query_idf=sum_(term.idf))
 
     @step(
-        input=[ScoreBase.expanded_query_terms, ScoreBase.document_terms, document_query_idfs, document_query_totals],
+        input=[ScoreBase.expanded_query_terms, ScoreBase.document_terms, ScoreBase.targets, document_query_idfs, document_query_totals],
         output=document_overlap_matches,
     )
     def match_documents(
-        self, query: QueryTerm, term: DocumentTerm, weight: QueryTermIdf, total: QueryIdfTotal
+        self, query: QueryTerm, term: DocumentTerm, target: DocumentSearchTarget, weight: QueryTermIdf, total: QueryIdfTotal
     ) -> DocumentOverlapMatch:
         inner_join(on=term.term == query.token)
+        inner_join(target, on=(target.query_id == query.query_id) & (target.document_id == term.document_id))
         inner_join(on=(weight.query_id == query.query_id) & (weight.token == query.token))
         inner_join(on=total.query_id == query.query_id)
         group_by(
             query_id=query.query_id,
             document_id=term.document_id,
+            scope_id=target.scope_id,
             query_idf=total.query_idf,
         )
         return DocumentOverlapMatch(
             query_id=query.query_id,
             document_id=term.document_id,
+            scope_id=target.scope_id,
             query_idf=total.query_idf,
             matched_idf=sum_(weight.idf),
         )
 
     @step(
-        input=[ScoreBase.expanded_query_terms, ScoreBase.section_terms, section_query_idfs, section_query_totals],
+        input=[ScoreBase.expanded_query_terms, ScoreBase.section_terms, ScoreBase.targets, section_query_idfs, section_query_totals],
         output=section_overlap_matches,
     )
     def match_sections(
-        self, query: QueryTerm, term: SectionTerm, weight: QueryTermIdf, total: QueryIdfTotal
+        self, query: QueryTerm, term: SectionTerm, target: DocumentSearchTarget, weight: QueryTermIdf, total: QueryIdfTotal
     ) -> SectionOverlapMatch:
         inner_join(on=term.term == query.token)
+        inner_join(target, on=(target.query_id == query.query_id) & (target.document_id == term.document_id))
         inner_join(on=(weight.query_id == query.query_id) & (weight.token == query.token))
         inner_join(on=total.query_id == query.query_id)
         group_by(
             query_id=query.query_id,
             document_id=term.document_id,
             section_id=term.section_id,
+            scope_id=target.scope_id,
             query_idf=total.query_idf,
         )
         return SectionOverlapMatch(
             query_id=query.query_id,
             document_id=term.document_id,
             section_id=term.section_id,
+            scope_id=target.scope_id,
             query_idf=total.query_idf,
             matched_idf=sum_(weight.idf),
         )
 
     @step(
-        input=[ScoreBase.expanded_query_terms, ScoreBase.paragraph_terms, paragraph_query_idfs, paragraph_query_totals],
+        input=[ScoreBase.expanded_query_terms, ScoreBase.paragraph_terms, ScoreBase.targets, paragraph_query_idfs, paragraph_query_totals],
         output=paragraph_overlap_matches,
     )
     def match_paragraphs(
-        self, query: QueryTerm, term: ParagraphTerm, weight: QueryTermIdf, total: QueryIdfTotal
+        self, query: QueryTerm, term: ParagraphTerm, target: DocumentSearchTarget, weight: QueryTermIdf, total: QueryIdfTotal
     ) -> ParagraphOverlapMatch:
         inner_join(on=term.term == query.token)
+        inner_join(target, on=(target.query_id == query.query_id) & (target.document_id == term.document_id))
         inner_join(on=(weight.query_id == query.query_id) & (weight.token == query.token))
         inner_join(on=total.query_id == query.query_id)
         group_by(
@@ -228,6 +235,7 @@ class ScoreOverlap(ScoreBase):
             document_id=term.document_id,
             section_id=term.section_id,
             paragraph_id=term.paragraph_id,
+            scope_id=target.scope_id,
             query_idf=total.query_idf,
         )
         return ParagraphOverlapMatch(
@@ -235,18 +243,20 @@ class ScoreOverlap(ScoreBase):
             document_id=term.document_id,
             section_id=term.section_id,
             paragraph_id=term.paragraph_id,
+            scope_id=target.scope_id,
             query_idf=total.query_idf,
             matched_idf=sum_(weight.idf),
         )
 
     @step(
-        input=[ScoreBase.expanded_query_terms, ScoreBase.sentence_terms, sentence_query_idfs, sentence_query_totals],
+        input=[ScoreBase.expanded_query_terms, ScoreBase.sentence_terms, ScoreBase.targets, sentence_query_idfs, sentence_query_totals],
         output=sentence_overlap_matches,
     )
     def match_sentences(
-        self, query: QueryTerm, term: SentenceTerm, weight: QueryTermIdf, total: QueryIdfTotal
+        self, query: QueryTerm, term: SentenceTerm, target: DocumentSearchTarget, weight: QueryTermIdf, total: QueryIdfTotal
     ) -> SentenceOverlapMatch:
         inner_join(on=term.term == query.token)
+        inner_join(target, on=(target.query_id == query.query_id) & (target.document_id == term.document_id))
         inner_join(on=(weight.query_id == query.query_id) & (weight.token == query.token))
         inner_join(on=total.query_id == query.query_id)
         group_by(
@@ -255,6 +265,7 @@ class ScoreOverlap(ScoreBase):
             section_id=term.section_id,
             paragraph_id=term.paragraph_id,
             sentence_id=term.sentence_id,
+            scope_id=target.scope_id,
             query_idf=total.query_idf,
         )
         return SentenceOverlapMatch(
@@ -263,47 +274,61 @@ class ScoreOverlap(ScoreBase):
             section_id=term.section_id,
             paragraph_id=term.paragraph_id,
             sentence_id=term.sentence_id,
+            scope_id=target.scope_id,
             query_idf=total.query_idf,
             matched_idf=sum_(weight.idf),
         )
 
-    @step(input=[document_overlap_matches, score_policy], output=document_overlap_scores)
-    def publish_document_overlap_scores(self, match: DocumentOverlapMatch, policy: ScorePolicy) -> DocumentOverlapScore:
+    @step(input=[document_overlap_matches, ScoreBase.targets, score_policy], output=document_overlap_scores)
+    def publish_document_overlap_scores(
+        self, match: DocumentOverlapMatch, target: DocumentSearchTarget, policy: ScorePolicy
+    ) -> DocumentOverlapScore:
+        inner_join(target, on=(target.query_id == match.query_id) & (target.document_id == match.document_id))
         param_join(policy)
         return DocumentOverlapScore(
             query_id=match.query_id,
             document_id=match.document_id,
+            scope_id=target.scope_id,
             scored_at=policy.scored_at,
             score_overlap=self._overlap_score(match),
         )
 
-    @step(input=[section_overlap_matches, score_policy], output=section_overlap_scores)
-    def publish_section_overlap_scores(self, match: SectionOverlapMatch, policy: ScorePolicy) -> SectionOverlapScore:
+    @step(input=[section_overlap_matches, ScoreBase.targets, score_policy], output=section_overlap_scores)
+    def publish_section_overlap_scores(
+        self, match: SectionOverlapMatch, target: DocumentSearchTarget, policy: ScorePolicy
+    ) -> SectionOverlapScore:
+        inner_join(target, on=(target.query_id == match.query_id) & (target.document_id == match.document_id))
         param_join(policy)
         return SectionOverlapScore(
             query_id=match.query_id,
             document_id=match.document_id,
             section_id=match.section_id,
+            scope_id=target.scope_id,
             scored_at=policy.scored_at,
             score_overlap=self._overlap_score(match),
         )
 
-    @step(input=[paragraph_overlap_matches, score_policy], output=paragraph_overlap_scores)
+    @step(input=[paragraph_overlap_matches, ScoreBase.targets, score_policy], output=paragraph_overlap_scores)
     def publish_paragraph_overlap_scores(
-        self, match: ParagraphOverlapMatch, policy: ScorePolicy
+        self, match: ParagraphOverlapMatch, target: DocumentSearchTarget, policy: ScorePolicy
     ) -> ParagraphOverlapScore:
+        inner_join(target, on=(target.query_id == match.query_id) & (target.document_id == match.document_id))
         param_join(policy)
         return ParagraphOverlapScore(
             query_id=match.query_id,
             document_id=match.document_id,
             section_id=match.section_id,
             paragraph_id=match.paragraph_id,
+            scope_id=target.scope_id,
             scored_at=policy.scored_at,
             score_overlap=self._overlap_score(match),
         )
 
-    @step(input=[sentence_overlap_matches, score_policy], output=sentence_overlap_scores)
-    def publish_sentence_overlap_scores(self, match: SentenceOverlapMatch, policy: ScorePolicy) -> SentenceOverlapScore:
+    @step(input=[sentence_overlap_matches, ScoreBase.targets, score_policy], output=sentence_overlap_scores)
+    def publish_sentence_overlap_scores(
+        self, match: SentenceOverlapMatch, target: DocumentSearchTarget, policy: ScorePolicy
+    ) -> SentenceOverlapScore:
+        inner_join(target, on=(target.query_id == match.query_id) & (target.document_id == match.document_id))
         param_join(policy)
         return SentenceOverlapScore(
             query_id=match.query_id,
@@ -311,6 +336,7 @@ class ScoreOverlap(ScoreBase):
             section_id=match.section_id,
             paragraph_id=match.paragraph_id,
             sentence_id=match.sentence_id,
+            scope_id=target.scope_id,
             scored_at=policy.scored_at,
             score_overlap=self._overlap_score(match),
         )

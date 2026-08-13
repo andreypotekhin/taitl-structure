@@ -162,6 +162,7 @@ class PopularityFeedback(Schema):
 class DocumentSearchTarget(Schema):
     query_id = string(nullable=False)
     document_id = string(nullable=False)
+    scope_id = string(nullable=False)
 
 
 class SectionSearchTarget(DocumentSearchTarget):

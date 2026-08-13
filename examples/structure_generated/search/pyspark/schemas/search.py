@@ -30,6 +30,7 @@ SENTENCE_SEARCH_RESULT_SCHEMA = T.StructType([
 DOCUMENT_SEARCH_TARGET_SCHEMA = T.StructType([
     T.StructField("query_id", T.StringType(), False),
     T.StructField("document_id", T.StringType(), False),
+    T.StructField("scope_id", T.StringType(), False),
 ])
 
 SECTION_SEARCH_TARGET_SCHEMA = T.StructType(DOCUMENT_SEARCH_TARGET_SCHEMA.fields + [

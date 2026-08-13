@@ -36,7 +36,11 @@ from examples.structure_generated.search.pyspark.schemas.scoring_intermediate im
     SECTION_OVERLAP_MATCH_SCHEMA,
     SENTENCE_OVERLAP_MATCH_SCHEMA,
 )
-from examples.structure_generated.search.pyspark.schemas.search import SCORE_POLICY_SCHEMA, SEARCH_QUERY_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.search import (
+    DOCUMENT_SEARCH_TARGET_SCHEMA,
+    SCORE_POLICY_SCHEMA,
+    SEARCH_QUERY_SCHEMA,
+)
 
 
 class ScoreBaseGenerated:
@@ -417,33 +421,44 @@ class ScoreOverlapGenerated(ScoreBaseGenerated):
             (F.col("document_terms.term") == F.col("query_term.token")),
             "inner",
         )
-        document_query_idfs_2_joined = frames["document_query_idfs"].alias("document_query_idfs_2")
+        targets_2_joined = frames["targets"].alias("targets_2")
         document_overlap_matches = document_overlap_matches.join(
-            document_query_idfs_2_joined,
+            targets_2_joined,
             (
-                (F.col("document_query_idfs_2.query_id") == F.col("query_term.query_id"))
-                & (F.col("document_query_idfs_2.token") == F.col("query_term.token"))
+                (F.col("targets_2.query_id") == F.col("query_term.query_id"))
+                & (F.col("targets_2.document_id") == F.col("document_terms.document_id"))
             ),
             "inner",
         )
-        document_query_totals_3_joined = frames["document_query_totals"].alias("document_query_totals_3")
+        document_query_idfs_3_joined = frames["document_query_idfs"].alias("document_query_idfs_3")
         document_overlap_matches = document_overlap_matches.join(
-            document_query_totals_3_joined,
-            (F.col("document_query_totals_3.query_id") == F.col("query_term.query_id")),
+            document_query_idfs_3_joined,
+            (
+                (F.col("document_query_idfs_3.query_id") == F.col("query_term.query_id"))
+                & (F.col("document_query_idfs_3.token") == F.col("query_term.token"))
+            ),
+            "inner",
+        )
+        document_query_totals_4_joined = frames["document_query_totals"].alias("document_query_totals_4")
+        document_overlap_matches = document_overlap_matches.join(
+            document_query_totals_4_joined,
+            (F.col("document_query_totals_4.query_id") == F.col("query_term.query_id")),
             "inner",
         )
         document_overlap_matches = (
             document_overlap_matches.groupBy(
                 F.col("query_term.query_id").alias("query_id"),
                 F.col("document_terms.document_id").alias("document_id"),
-                F.col("document_query_totals_3.query_idf").alias("query_idf"),
+                F.col("targets_2.scope_id").alias("scope_id"),
+                F.col("document_query_totals_4.query_idf").alias("query_idf"),
             )
             .agg(
-                F.sum(F.col("document_query_idfs_2.idf")).cast(T.DoubleType()).alias("matched_idf"),
+                F.sum(F.col("document_query_idfs_3.idf")).cast(T.DoubleType()).alias("matched_idf"),
             )
             .select(
                 F.col("query_id"),
                 F.col("document_id"),
+                F.col("scope_id"),
                 F.col("query_idf"),
                 F.col("matched_idf"),
             )
@@ -464,19 +479,28 @@ class ScoreOverlapGenerated(ScoreBaseGenerated):
             (F.col("section_terms.term") == F.col("query_term.token")),
             "inner",
         )
-        section_query_idfs_2_joined = frames["section_query_idfs"].alias("section_query_idfs_2")
+        targets_2_joined = frames["targets"].alias("targets_2")
         section_overlap_matches = section_overlap_matches.join(
-            section_query_idfs_2_joined,
+            targets_2_joined,
             (
-                (F.col("section_query_idfs_2.query_id") == F.col("query_term.query_id"))
-                & (F.col("section_query_idfs_2.token") == F.col("query_term.token"))
+                (F.col("targets_2.query_id") == F.col("query_term.query_id"))
+                & (F.col("targets_2.document_id") == F.col("section_terms.document_id"))
             ),
             "inner",
         )
-        section_query_totals_3_joined = frames["section_query_totals"].alias("section_query_totals_3")
+        section_query_idfs_3_joined = frames["section_query_idfs"].alias("section_query_idfs_3")
         section_overlap_matches = section_overlap_matches.join(
-            section_query_totals_3_joined,
-            (F.col("section_query_totals_3.query_id") == F.col("query_term.query_id")),
+            section_query_idfs_3_joined,
+            (
+                (F.col("section_query_idfs_3.query_id") == F.col("query_term.query_id"))
+                & (F.col("section_query_idfs_3.token") == F.col("query_term.token"))
+            ),
+            "inner",
+        )
+        section_query_totals_4_joined = frames["section_query_totals"].alias("section_query_totals_4")
+        section_overlap_matches = section_overlap_matches.join(
+            section_query_totals_4_joined,
+            (F.col("section_query_totals_4.query_id") == F.col("query_term.query_id")),
             "inner",
         )
         section_overlap_matches = (
@@ -484,14 +508,16 @@ class ScoreOverlapGenerated(ScoreBaseGenerated):
                 F.col("query_term.query_id").alias("query_id"),
                 F.col("section_terms.document_id").alias("document_id"),
                 F.col("section_terms.section_id").alias("section_id"),
-                F.col("section_query_totals_3.query_idf").alias("query_idf"),
+                F.col("targets_2.scope_id").alias("scope_id"),
+                F.col("section_query_totals_4.query_idf").alias("query_idf"),
             )
             .agg(
-                F.sum(F.col("section_query_idfs_2.idf")).cast(T.DoubleType()).alias("matched_idf"),
+                F.sum(F.col("section_query_idfs_3.idf")).cast(T.DoubleType()).alias("matched_idf"),
             )
             .select(
                 F.col("query_id"),
                 F.col("document_id"),
+                F.col("scope_id"),
                 F.col("query_idf"),
                 F.col("matched_idf"),
                 F.col("section_id"),
@@ -511,19 +537,28 @@ class ScoreOverlapGenerated(ScoreBaseGenerated):
             (F.col("paragraph_terms.term") == F.col("query_term.token")),
             "inner",
         )
-        paragraph_query_idfs_2_joined = frames["paragraph_query_idfs"].alias("paragraph_query_idfs_2")
+        targets_2_joined = frames["targets"].alias("targets_2")
         paragraph_overlap_matches = paragraph_overlap_matches.join(
-            paragraph_query_idfs_2_joined,
+            targets_2_joined,
             (
-                (F.col("paragraph_query_idfs_2.query_id") == F.col("query_term.query_id"))
-                & (F.col("paragraph_query_idfs_2.token") == F.col("query_term.token"))
+                (F.col("targets_2.query_id") == F.col("query_term.query_id"))
+                & (F.col("targets_2.document_id") == F.col("paragraph_terms.document_id"))
             ),
             "inner",
         )
-        paragraph_query_totals_3_joined = frames["paragraph_query_totals"].alias("paragraph_query_totals_3")
+        paragraph_query_idfs_3_joined = frames["paragraph_query_idfs"].alias("paragraph_query_idfs_3")
         paragraph_overlap_matches = paragraph_overlap_matches.join(
-            paragraph_query_totals_3_joined,
-            (F.col("paragraph_query_totals_3.query_id") == F.col("query_term.query_id")),
+            paragraph_query_idfs_3_joined,
+            (
+                (F.col("paragraph_query_idfs_3.query_id") == F.col("query_term.query_id"))
+                & (F.col("paragraph_query_idfs_3.token") == F.col("query_term.token"))
+            ),
+            "inner",
+        )
+        paragraph_query_totals_4_joined = frames["paragraph_query_totals"].alias("paragraph_query_totals_4")
+        paragraph_overlap_matches = paragraph_overlap_matches.join(
+            paragraph_query_totals_4_joined,
+            (F.col("paragraph_query_totals_4.query_id") == F.col("query_term.query_id")),
             "inner",
         )
         paragraph_overlap_matches = (
@@ -532,14 +567,16 @@ class ScoreOverlapGenerated(ScoreBaseGenerated):
                 F.col("paragraph_terms.document_id").alias("document_id"),
                 F.col("paragraph_terms.section_id").alias("section_id"),
                 F.col("paragraph_terms.paragraph_id").alias("paragraph_id"),
-                F.col("paragraph_query_totals_3.query_idf").alias("query_idf"),
+                F.col("targets_2.scope_id").alias("scope_id"),
+                F.col("paragraph_query_totals_4.query_idf").alias("query_idf"),
             )
             .agg(
-                F.sum(F.col("paragraph_query_idfs_2.idf")).cast(T.DoubleType()).alias("matched_idf"),
+                F.sum(F.col("paragraph_query_idfs_3.idf")).cast(T.DoubleType()).alias("matched_idf"),
             )
             .select(
                 F.col("query_id"),
                 F.col("document_id"),
+                F.col("scope_id"),
                 F.col("query_idf"),
                 F.col("matched_idf"),
                 F.col("section_id"),
@@ -562,19 +599,28 @@ class ScoreOverlapGenerated(ScoreBaseGenerated):
             (F.col("sentence_terms.term") == F.col("query_term.token")),
             "inner",
         )
-        sentence_query_idfs_2_joined = frames["sentence_query_idfs"].alias("sentence_query_idfs_2")
+        targets_2_joined = frames["targets"].alias("targets_2")
         sentence_overlap_matches = sentence_overlap_matches.join(
-            sentence_query_idfs_2_joined,
+            targets_2_joined,
             (
-                (F.col("sentence_query_idfs_2.query_id") == F.col("query_term.query_id"))
-                & (F.col("sentence_query_idfs_2.token") == F.col("query_term.token"))
+                (F.col("targets_2.query_id") == F.col("query_term.query_id"))
+                & (F.col("targets_2.document_id") == F.col("sentence_terms.document_id"))
             ),
             "inner",
         )
-        sentence_query_totals_3_joined = frames["sentence_query_totals"].alias("sentence_query_totals_3")
+        sentence_query_idfs_3_joined = frames["sentence_query_idfs"].alias("sentence_query_idfs_3")
         sentence_overlap_matches = sentence_overlap_matches.join(
-            sentence_query_totals_3_joined,
-            (F.col("sentence_query_totals_3.query_id") == F.col("query_term.query_id")),
+            sentence_query_idfs_3_joined,
+            (
+                (F.col("sentence_query_idfs_3.query_id") == F.col("query_term.query_id"))
+                & (F.col("sentence_query_idfs_3.token") == F.col("query_term.token"))
+            ),
+            "inner",
+        )
+        sentence_query_totals_4_joined = frames["sentence_query_totals"].alias("sentence_query_totals_4")
+        sentence_overlap_matches = sentence_overlap_matches.join(
+            sentence_query_totals_4_joined,
+            (F.col("sentence_query_totals_4.query_id") == F.col("query_term.query_id")),
             "inner",
         )
         sentence_overlap_matches = (
@@ -584,14 +630,16 @@ class ScoreOverlapGenerated(ScoreBaseGenerated):
                 F.col("sentence_terms.section_id").alias("section_id"),
                 F.col("sentence_terms.paragraph_id").alias("paragraph_id"),
                 F.col("sentence_terms.sentence_id").alias("sentence_id"),
-                F.col("sentence_query_totals_3.query_idf").alias("query_idf"),
+                F.col("targets_2.scope_id").alias("scope_id"),
+                F.col("sentence_query_totals_4.query_idf").alias("query_idf"),
             )
             .agg(
-                F.sum(F.col("sentence_query_idfs_2.idf")).cast(T.DoubleType()).alias("matched_idf"),
+                F.sum(F.col("sentence_query_idfs_3.idf")).cast(T.DoubleType()).alias("matched_idf"),
             )
             .select(
                 F.col("query_id"),
                 F.col("document_id"),
+                F.col("scope_id"),
                 F.col("query_idf"),
                 F.col("matched_idf"),
                 F.col("section_id"),
@@ -610,26 +658,38 @@ class ScoreOverlapGenerated(ScoreBaseGenerated):
         # Step method: publish_document_overlap_scores
         document_overlap_scores = frames["document_overlap_matches"].alias("document_overlap_match")
         __structure_streaming_step = (
-            frames["document_overlap_matches"].isStreaming or frames["score_policy"].isStreaming
+            frames["document_overlap_matches"].isStreaming
+            or frames["targets"].isStreaming
+            or frames["score_policy"].isStreaming
         )
-        score_policy_param_joined = frames["score_policy"]
+        targets_joined = frames["targets"].alias("targets")
+        document_overlap_scores = document_overlap_scores.join(
+            targets_joined,
+            (
+                (F.col("targets.query_id") == F.col("document_overlap_match.query_id"))
+                & (F.col("targets.document_id") == F.col("document_overlap_match.document_id"))
+            ),
+            "inner",
+        )
+        score_policy_2_param_joined = frames["score_policy"]
         if not __structure_streaming_step:
-            score_policy_param_joined_count = frames["score_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
-            score_policy_param_joined_count = score_policy_param_joined_count.select(
+            score_policy_2_param_joined_count = frames["score_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
+            score_policy_2_param_joined_count = score_policy_2_param_joined_count.select(
                 F.assert_true(
                     F.col("__structure_count") == F.lit(1),
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            score_policy_param_joined = score_policy_param_joined_count.crossJoin(frames["score_policy"]).drop(
+            score_policy_2_param_joined = score_policy_2_param_joined_count.crossJoin(frames["score_policy"]).drop(
                 "__structure_exactly_one"
             )
-        score_policy_joined = score_policy_param_joined.alias("score_policy")
-        document_overlap_scores = document_overlap_scores.crossJoin(score_policy_joined)
+        score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
+        document_overlap_scores = document_overlap_scores.crossJoin(score_policy_2_joined)
         document_overlap_scores = document_overlap_scores.select(
             F.col("document_overlap_match.query_id"),
             F.col("document_overlap_match.document_id"),
-            F.col("score_policy.scored_at"),
+            F.col("targets.scope_id"),
+            F.col("score_policy_2.scored_at"),
             F.when(
                 (F.col("document_overlap_match.query_idf") > F.lit(0.0)),
                 (F.col("document_overlap_match.matched_idf") / F.col("document_overlap_match.query_idf")),
@@ -647,26 +707,40 @@ class ScoreOverlapGenerated(ScoreBaseGenerated):
     def _step_publish_section_overlap_scores_19(self, frames):
         # Step method: publish_section_overlap_scores
         section_overlap_scores = frames["section_overlap_matches"].alias("section_overlap_match")
-        __structure_streaming_step = frames["section_overlap_matches"].isStreaming or frames["score_policy"].isStreaming
-        score_policy_param_joined = frames["score_policy"]
+        __structure_streaming_step = (
+            frames["section_overlap_matches"].isStreaming
+            or frames["targets"].isStreaming
+            or frames["score_policy"].isStreaming
+        )
+        targets_joined = frames["targets"].alias("targets")
+        section_overlap_scores = section_overlap_scores.join(
+            targets_joined,
+            (
+                (F.col("targets.query_id") == F.col("section_overlap_match.query_id"))
+                & (F.col("targets.document_id") == F.col("section_overlap_match.document_id"))
+            ),
+            "inner",
+        )
+        score_policy_2_param_joined = frames["score_policy"]
         if not __structure_streaming_step:
-            score_policy_param_joined_count = frames["score_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
-            score_policy_param_joined_count = score_policy_param_joined_count.select(
+            score_policy_2_param_joined_count = frames["score_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
+            score_policy_2_param_joined_count = score_policy_2_param_joined_count.select(
                 F.assert_true(
                     F.col("__structure_count") == F.lit(1),
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            score_policy_param_joined = score_policy_param_joined_count.crossJoin(frames["score_policy"]).drop(
+            score_policy_2_param_joined = score_policy_2_param_joined_count.crossJoin(frames["score_policy"]).drop(
                 "__structure_exactly_one"
             )
-        score_policy_joined = score_policy_param_joined.alias("score_policy")
-        section_overlap_scores = section_overlap_scores.crossJoin(score_policy_joined)
+        score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
+        section_overlap_scores = section_overlap_scores.crossJoin(score_policy_2_joined)
         section_overlap_scores = section_overlap_scores.select(
             F.col("section_overlap_match.query_id"),
             F.col("section_overlap_match.document_id"),
+            F.col("targets.scope_id"),
             F.col("section_overlap_match.section_id"),
-            F.col("score_policy.scored_at"),
+            F.col("score_policy_2.scored_at"),
             F.when(
                 (F.col("section_overlap_match.query_idf") > F.lit(0.0)),
                 (F.col("section_overlap_match.matched_idf") / F.col("section_overlap_match.query_idf")),
@@ -683,28 +757,40 @@ class ScoreOverlapGenerated(ScoreBaseGenerated):
         # Step method: publish_paragraph_overlap_scores
         paragraph_overlap_scores = frames["paragraph_overlap_matches"].alias("paragraph_overlap_match")
         __structure_streaming_step = (
-            frames["paragraph_overlap_matches"].isStreaming or frames["score_policy"].isStreaming
+            frames["paragraph_overlap_matches"].isStreaming
+            or frames["targets"].isStreaming
+            or frames["score_policy"].isStreaming
         )
-        score_policy_param_joined = frames["score_policy"]
+        targets_joined = frames["targets"].alias("targets")
+        paragraph_overlap_scores = paragraph_overlap_scores.join(
+            targets_joined,
+            (
+                (F.col("targets.query_id") == F.col("paragraph_overlap_match.query_id"))
+                & (F.col("targets.document_id") == F.col("paragraph_overlap_match.document_id"))
+            ),
+            "inner",
+        )
+        score_policy_2_param_joined = frames["score_policy"]
         if not __structure_streaming_step:
-            score_policy_param_joined_count = frames["score_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
-            score_policy_param_joined_count = score_policy_param_joined_count.select(
+            score_policy_2_param_joined_count = frames["score_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
+            score_policy_2_param_joined_count = score_policy_2_param_joined_count.select(
                 F.assert_true(
                     F.col("__structure_count") == F.lit(1),
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            score_policy_param_joined = score_policy_param_joined_count.crossJoin(frames["score_policy"]).drop(
+            score_policy_2_param_joined = score_policy_2_param_joined_count.crossJoin(frames["score_policy"]).drop(
                 "__structure_exactly_one"
             )
-        score_policy_joined = score_policy_param_joined.alias("score_policy")
-        paragraph_overlap_scores = paragraph_overlap_scores.crossJoin(score_policy_joined)
+        score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
+        paragraph_overlap_scores = paragraph_overlap_scores.crossJoin(score_policy_2_joined)
         paragraph_overlap_scores = paragraph_overlap_scores.select(
             F.col("paragraph_overlap_match.query_id"),
             F.col("paragraph_overlap_match.document_id"),
+            F.col("targets.scope_id"),
             F.col("paragraph_overlap_match.section_id"),
             F.col("paragraph_overlap_match.paragraph_id"),
-            F.col("score_policy.scored_at"),
+            F.col("score_policy_2.scored_at"),
             F.when(
                 (F.col("paragraph_overlap_match.query_idf") > F.lit(0.0)),
                 (F.col("paragraph_overlap_match.matched_idf") / F.col("paragraph_overlap_match.query_idf")),
@@ -723,29 +809,41 @@ class ScoreOverlapGenerated(ScoreBaseGenerated):
         # Step method: publish_sentence_overlap_scores
         sentence_overlap_scores = frames["sentence_overlap_matches"].alias("sentence_overlap_match")
         __structure_streaming_step = (
-            frames["sentence_overlap_matches"].isStreaming or frames["score_policy"].isStreaming
+            frames["sentence_overlap_matches"].isStreaming
+            or frames["targets"].isStreaming
+            or frames["score_policy"].isStreaming
         )
-        score_policy_param_joined = frames["score_policy"]
+        targets_joined = frames["targets"].alias("targets")
+        sentence_overlap_scores = sentence_overlap_scores.join(
+            targets_joined,
+            (
+                (F.col("targets.query_id") == F.col("sentence_overlap_match.query_id"))
+                & (F.col("targets.document_id") == F.col("sentence_overlap_match.document_id"))
+            ),
+            "inner",
+        )
+        score_policy_2_param_joined = frames["score_policy"]
         if not __structure_streaming_step:
-            score_policy_param_joined_count = frames["score_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
-            score_policy_param_joined_count = score_policy_param_joined_count.select(
+            score_policy_2_param_joined_count = frames["score_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
+            score_policy_2_param_joined_count = score_policy_2_param_joined_count.select(
                 F.assert_true(
                     F.col("__structure_count") == F.lit(1),
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            score_policy_param_joined = score_policy_param_joined_count.crossJoin(frames["score_policy"]).drop(
+            score_policy_2_param_joined = score_policy_2_param_joined_count.crossJoin(frames["score_policy"]).drop(
                 "__structure_exactly_one"
             )
-        score_policy_joined = score_policy_param_joined.alias("score_policy")
-        sentence_overlap_scores = sentence_overlap_scores.crossJoin(score_policy_joined)
+        score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
+        sentence_overlap_scores = sentence_overlap_scores.crossJoin(score_policy_2_joined)
         sentence_overlap_scores = sentence_overlap_scores.select(
             F.col("sentence_overlap_match.query_id"),
             F.col("sentence_overlap_match.document_id"),
+            F.col("targets.scope_id"),
             F.col("sentence_overlap_match.section_id"),
             F.col("sentence_overlap_match.paragraph_id"),
             F.col("sentence_overlap_match.sentence_id"),
-            F.col("score_policy.scored_at"),
+            F.col("score_policy_2.scored_at"),
             F.when(
                 (F.col("sentence_overlap_match.query_idf") > F.lit(0.0)),
                 (F.col("sentence_overlap_match.matched_idf") / F.col("sentence_overlap_match.query_idf")),
@@ -768,6 +866,7 @@ class ScoreOverlapGenerated(ScoreBaseGenerated):
         self,
         *,
         queries: DataFrame,
+        targets: DataFrame,
         document_terms: DataFrame,
         section_terms: DataFrame,
         paragraph_terms: DataFrame,
@@ -779,6 +878,7 @@ class ScoreOverlapGenerated(ScoreBaseGenerated):
         score_policy: DataFrame,
     ) -> TransformResult:
         assert_schema(queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
+        assert_schema(targets, DOCUMENT_SEARCH_TARGET_SCHEMA, name="DocumentSearchTarget", mode="strict")
         assert_schema(document_terms, DOCUMENT_TERM_SCHEMA, name="DocumentTerm", mode="strict")
         assert_schema(section_terms, SECTION_TERM_SCHEMA, name="SectionTerm", mode="strict")
         assert_schema(paragraph_terms, PARAGRAPH_TERM_SCHEMA, name="ParagraphTerm", mode="strict")
@@ -789,6 +889,7 @@ class ScoreOverlapGenerated(ScoreBaseGenerated):
         assert_schema(sentence_summary, SENTENCE_INDEX_SUMMARY_SCHEMA, name="SentenceIndexSummary", mode="strict")
         assert_schema(score_policy, SCORE_POLICY_SCHEMA, name="ScorePolicy", mode="strict")
         _input_queries = queries
+        _input_targets = targets
         _input_document_terms = document_terms
         _input_section_terms = section_terms
         _input_paragraph_terms = paragraph_terms
@@ -800,6 +901,7 @@ class ScoreOverlapGenerated(ScoreBaseGenerated):
         _input_score_policy = score_policy
         frames = {
             "queries": queries,
+            "targets": targets,
             "document_terms": document_terms,
             "section_terms": section_terms,
             "paragraph_terms": paragraph_terms,
@@ -810,6 +912,7 @@ class ScoreOverlapGenerated(ScoreBaseGenerated):
             "sentence_summary": sentence_summary,
             "score_policy": score_policy,
             "input:queries": _input_queries,
+            "input:targets": _input_targets,
             "input:document_terms": _input_document_terms,
             "input:section_terms": _input_section_terms,
             "input:paragraph_terms": _input_paragraph_terms,

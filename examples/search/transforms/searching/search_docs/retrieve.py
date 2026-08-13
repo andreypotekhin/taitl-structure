@@ -17,10 +17,7 @@ class RetrieveDocuments(Transform):
 
     queries = input(SearchQuery, streaming=True)
     documents = input(Document)
-    document_scores = input(DocumentScore)
     streamed_documents = input(Document, streaming=True)
-    streamed_document_scores = input(DocumentScore, streaming=True)
-    online_streamed_document_scores = input(DocumentScore, streaming=True)
     online_document_scores = input(DocumentScore, streaming=True)
     requests = input(SearchRequest, streaming=True)
     band_memberships = input(BandMembership)
@@ -28,62 +25,13 @@ class RetrieveDocuments(Transform):
     document_vector_candidates = input(DocumentVectorCandidate)
     vector_policy = input(VectorIndexPolicy)
     prefilter_targets = input(DocumentSearchTarget, streaming=True)
-    stored_scores = lane(DocumentScore)
-    streamed_scores = lane(DocumentScore)
     stored_candidates = lane(DocumentSearchCandidate)
     streamed_candidates = lane(DocumentSearchCandidate)
     vector_search_candidates = output(DocumentSearchCandidate)
     candidates = output(DocumentSearchCandidate)
 
-    @step(input=[document_scores, online_document_scores, requests, score_policy], output=stored_scores)
-    def merge_stored_scores(
-        self,
-        stored: DocumentScore,
-        online: DocumentScore,
-        request: SearchRequest,
-        policy: ScorePolicy,
-    ) -> DocumentScore:
-        candidate: DocumentScore = union_all(online)
-        inner_join(request, on=request.query_id == candidate.query_id)
-        param_join(policy)
-        age = datediff(request.requested_at, candidate.scored_at)
-        where(
-            (candidate.scored_at <= request.requested_at)
-            & (candidate.scored_at >= policy.effective_at)
-            & (age >= 0)
-            & (age <= policy.maximum_age_days)
-            & candidate.experiment_id.null_safe_eq(request.experiment_id)
-        )
-        drop_duplicates(candidate.query_id, candidate.document_id, candidate.experiment_id)
-        return DocumentScore.project(candidate)
-
     @step(
-        input=[streamed_document_scores, online_streamed_document_scores, requests, score_policy],
-        output=streamed_scores,
-    )
-    def merge_streamed_scores(
-        self,
-        streamed: DocumentScore,
-        online: DocumentScore,
-        request: SearchRequest,
-        policy: ScorePolicy,
-    ) -> DocumentScore:
-        candidate: DocumentScore = union_all(online)
-        inner_join(request, on=request.query_id == candidate.query_id)
-        param_join(policy)
-        age = datediff(request.requested_at, candidate.scored_at)
-        where(
-            (candidate.scored_at <= request.requested_at)
-            & (candidate.scored_at >= policy.effective_at)
-            & (age >= 0)
-            & (age <= policy.maximum_age_days)
-            & candidate.experiment_id.null_safe_eq(request.experiment_id)
-        )
-        drop_duplicates(candidate.query_id, candidate.document_id, candidate.experiment_id)
-        return DocumentScore.project(candidate)
-
-    @step(
-        input=[documents, stored_scores, queries, requests, band_memberships, prefilter_targets],
+        input=[documents, online_document_scores, queries, requests, band_memberships, prefilter_targets],
         output=stored_candidates,
     )
     def select_stored_candidates(
@@ -100,7 +48,7 @@ class RetrieveDocuments(Transform):
         return self._candidate(document, score, query, request, band, target)
 
     @step(
-        input=[streamed_documents, streamed_scores, queries, requests, band_memberships, prefilter_targets],
+        input=[streamed_documents, online_document_scores, queries, requests, band_memberships, prefilter_targets],
         output=streamed_candidates,
     )
     def select_streamed_candidates(

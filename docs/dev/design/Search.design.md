@@ -64,14 +64,16 @@ BM25_g(q, x, t) = idf_g(t) * tf_g(t, x) * (k1 + 1)
 BM25_g(q, x) = sum(BM25_g(q, x, t) for t in Q ∩ T(x))
 ```
 
-`SelectScores` first normalizes BM25 within the ranking scope of each grain, then combines the signals using independent
-caller-supplied `ScorePolicy` weights:
+`SelectScores` first restricts score construction to the selected `DocumentSearchTarget` relation. It then normalizes
+BM25 within that target-local ranking scope for each grain, and combines the signals using independent caller-supplied
+`ScorePolicy` weights. The index summary still supplies corpus-level IDF, target counts, and average lengths; the
+prefilter changes the scored population and normalization denominator, not the corpus statistics:
 
 ```text
-B̂_document       = BM25_document / max(BM25_document for the query)
-B̂_section        = BM25_section / max(BM25_section for the query and document)
-B̂_paragraph      = BM25_paragraph / max(BM25_paragraph for the query, document, and section)
-B̂_sentence       = BM25_sentence / max(BM25_sentence for the query, document, section, and paragraph)
+B̂_document       = BM25_document / max(BM25_document for the target scope and query)
+B̂_section        = BM25_section / max(BM25_section for the target scope, query, and document)
+B̂_paragraph      = BM25_paragraph / max(BM25_paragraph for the target scope, query, document, and section)
+B̂_sentence       = BM25_sentence / max(BM25_sentence for the target scope, query, document, section, and paragraph)
 
 S_g(q, x) = policy.<g>_bm25_weight * B̂_g(q, x)
           + policy.<g>_overlap_weight * O_g(q, x)
@@ -114,9 +116,11 @@ OnlineFiltering (serving, missing/stale query groups)
 SelectFilterTargets
     └─ cached + online filter rows, top 10,000 documents/query
 OnlineScoring
-    └─ cached + online composite lexical score rows
+    └─ target-scoped cached + online lexical/vector score rows
+RankVectors
+    └─ one ranked vector lane over the merged score population
 RetrieveDocuments
-    └─ top 1,000 document candidates/query by composite lexical score
+    └─ top 1,000 document candidates/query from the selected target scope
 RerankDocuments
     └─ feedback-enriched ranking, then top 100 final results/query/context
 ```
@@ -135,8 +139,11 @@ later than the request, no older than `ScorePolicy.maximum_age_days`, and no ear
 The online transform computes only those gaps from the reusable document-term index. `SelectFilterTargets` applies the
 same validity checks to cached and online rows, merges them, and retains ranks 1 through 10,000.
 
-`OnlineScoring` independently resolves missing or invalid document lexical score groups from the reusable indexes.
-`RetrieveDocuments` joins composite document scores to the selected filter targets and retains ranks 1 through 1,000.
+`OnlineScoring` receives the selected filter targets as its candidate universe. It independently resolves missing or
+invalid lexical/vector score rows from the reusable indexes, and every score join is restricted to that universe. A
+target scope is part of score/cache identity, so rows from another filter snapshot cannot be mixed into the request.
+Cached and newly computed vector rows are merged before `RankVectors` runs once over the complete authoritative group.
+`RetrieveDocuments` retains the selected targets as a defense-in-depth admission check and keeps ranks 1 through 1,000.
 `RerankDocuments` cannot create new candidates: it only enriches those 1,000 with feedback. For a candidate, its feedback
 is `0.8 * query_document_feedback + 0.2 * document_popularity_feedback`, and the reranker applies the caller's
 `RelevancePolicy` lexical/feedback weights before deterministic ranking. The final cap is applied after reranking, so

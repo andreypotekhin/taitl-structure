@@ -351,6 +351,7 @@ class ScoreDocumentVectorsGenerated:
             F.col("document_vector_query.query_id"),
             F.col("document_vector_query.query_document_id"),
             F.col("document_vector_index_3.document_id"),
+            F.lit('similarity-v1').alias("scope_id"),
             F.coalesce(
                 (
                     F.aggregate(

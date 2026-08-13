@@ -155,10 +155,12 @@ Missing vocabulary terms use `df_g(t) = 0`; a zero denominator produces `0`. BM2
         / (tf_g(t, x) + k1 * (1 - b + b * length_g(x) / average_length_g))
     )
 
-`SelectScores` normalizes BM25 inside the rank scope for the grain and combines it with overlap using independent
-`ScorePolicy` weights. The normalized scopes are query for documents, query/document for sections,
-query/document/section for paragraphs, and query/document/section/paragraph for sentences. A zero BM25 maximum
-normalizes to `0`. Scores are lexical evidence, not calibrated relevance probabilities.
+`SelectScores` restricts score construction to the selected `DocumentSearchTarget` relation, then normalizes BM25
+inside that target-local rank scope for the grain and combines it with overlap using independent `ScorePolicy` weights.
+The normalized scopes are target-scope/query for documents, target-scope/query/document for sections,
+target-scope/query/document/section for paragraphs, and target-scope/query/document/section/paragraph for sentences.
+The index summary still supplies corpus-level IDF and average-length statistics. A zero BM25 maximum normalizes to `0`.
+Scores are lexical evidence, not calibrated relevance probabilities.
 
 `OfflineScoring` precomputes the configured popular query population and every query observed during the preceding
 seven days. `OnlineScoring` resolves missing or stale query groups at request time. A score is usable only when it is
@@ -178,9 +180,11 @@ Document retrieval uses the following explicit funnel:
     SelectFilterTargets
       -> at most 10,000 simple-overlap document targets per query
     OnlineScoring
-      -> cached and online composite lexical scores
+      -> one request-valid target-scoped composite lexical score relation and one request-valid vector score relation
+    RankVectors
+      -> one bounded vector candidate lane from the merged vector scores
     RetrieveDocuments
-      -> unranked lexical and provider-ranked vector candidate lanes
+      -> unranked lexical and ranked vector candidate lanes
     FuseDocumentCandidates
       -> lexical rank, document-level deduplication, RRF, and at most 1,000 fused candidates
     RerankDocuments
@@ -344,7 +348,11 @@ operational ownership.
 ## Future Bifurcations
 
 Model execution and hosted ANN operation remain outside Search; the typed exact reference and candidate-fusion behavior
-are current similarity behavior.
+are current similarity behavior. Search vectorization now provides a typed adapter boundary for model execution: the
+offline and online facets reuse compatible embeddings, infer only gaps, and emit successful embeddings and inference
+statuses for caller-owned persistence. `SearchDocuments` runs `OnlineVectorization` after filter-target selection so
+uncached documents are limited to the bounded serving target set. `InferencePolicy` carries provider/model identity and
+permits arbitrary vector dimensions; the bundled deterministic adapter uses dimension 100 for tests and development.
 
 ### Vector index and Reciprocal Rank Fusion
 

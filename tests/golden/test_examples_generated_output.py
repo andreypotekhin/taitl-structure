@@ -122,7 +122,6 @@ def test_search_documents_filters_retrieves_fuses_then_reranks_and_returns() -> 
     stages = [step.name.split(".", 1)[0] for step in plan.steps]
     assert (
         stages.index("filtered")
-        < stages.index("selected")
         < stages.index("scored")
         < stages.index("retrieved")
         < stages.index("fused")
@@ -158,6 +157,7 @@ def test_search_all_builds_the_complete_offline_artifact_graph() -> None:
     )
     from examples.search.schemas.clicks import DailyClicks, DailyImpressions
     from examples.search.schemas.fields import AnalyzerPolicy, DocumentField, FieldProfile, FieldTerm
+    from examples.search.schemas.filtering import DocumentFilterScore
     from examples.search.schemas.indexing.lexical.index import (
         DocumentIndexSummary,
         DocumentTerm,
@@ -171,12 +171,15 @@ def test_search_all_builds_the_complete_offline_artifact_graph() -> None:
     from examples.search.schemas.indexing.vector import (
         DocumentVectorCandidate,
         DocumentVectorIndex,
-        DocumentVectorQuery,
+        DocumentVectorScore,
         ParagraphVectorCandidate,
         ParagraphVectorIndex,
         ParagraphVectorQuery,
+        ParagraphVectorScore,
+        SearchQueryVectorEmbedding,
         VectorIndexPolicy,
     )
+    from examples.search.schemas.inference import DocumentInferenceStatus, InferencePolicy, QueryInferenceStatus
     from examples.search.schemas.label import Intent, IntentPattern, QueryLabel
     from examples.search.schemas.relevance import DocumentPopularity, QueryDocumentSignals, RelevancePolicy
     from examples.search.schemas.scoring.bm25 import (
@@ -222,10 +225,11 @@ def test_search_all_builds_the_complete_offline_artifact_graph() -> None:
         ("intents", Intent),
         ("patterns", IntentPattern),
         ("query_labels", QueryLabel),
-        ("daily_impressions", DailyImpressions),
-        ("vector_policy", VectorIndexPolicy),
-        ("document_vector_queries", DocumentVectorQuery),
+        ("inference_policy", InferencePolicy),
+        ("query_vector_embeddings", SearchQueryVectorEmbedding),
         ("document_vector_index", DocumentVectorIndex),
+        ("vector_policy", VectorIndexPolicy),
+        ("daily_impressions", DailyImpressions),
         ("paragraph_vector_queries", ParagraphVectorQuery),
         ("paragraph_vector_index", ParagraphVectorIndex),
         ("users", User),
@@ -255,7 +259,12 @@ def test_search_all_builds_the_complete_offline_artifact_graph() -> None:
         ("paragraph_summary", ParagraphIndexSummary),
         ("sentence_terms", SentenceTerm),
         ("sentence_summary", SentenceIndexSummary),
+        ("query_vector_embeddings_out", SearchQueryVectorEmbedding),
+        ("document_vector_embeddings_out", DocumentVectorIndex),
+        ("query_inference_status", QueryInferenceStatus),
+        ("document_inference_status", DocumentInferenceStatus),
         ("labeled_queries", SearchQuery),
+        ("document_filter_scores", DocumentFilterScore),
         ("document_scores", DocumentScore),
         ("section_scores", SectionScore),
         ("paragraph_scores", ParagraphScore),
@@ -268,6 +277,8 @@ def test_search_all_builds_the_complete_offline_artifact_graph() -> None:
         ("section_bm25_scores", SectionBm25Score),
         ("paragraph_bm25_scores", ParagraphBm25Score),
         ("sentence_bm25_scores", SentenceBm25Score),
+        ("document_vector_scores", DocumentVectorScore),
+        ("paragraph_vector_scores", ParagraphVectorScore),
         ("document_vector_candidates", DocumentVectorCandidate),
         ("paragraph_vector_candidates", ParagraphVectorCandidate),
         ("document_similarities", DocumentSimilarity),

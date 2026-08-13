@@ -3,8 +3,9 @@
 from examples.search.schemas.clicks import SearchRequest
 from examples.search.schemas.filtering import DocumentFilterScore
 from examples.search.schemas.indexing.lexical.index import DocumentTerm
-from examples.search.schemas.search import ScorePolicy, SearchQuery
+from examples.search.schemas.search import DocumentSearchTarget, ScorePolicy, SearchQuery
 from examples.search.transforms.filtering.Filtering import Filtering
+from examples.search.transforms.online.filtering.SelectFilterTargets import SelectFilterTargets
 from examples.search.transforms.online.filtering.SelectGapQueries import SelectGapQueries
 from structure import Transform, input, output
 
@@ -31,4 +32,12 @@ class OnlineFiltering(Transform):
         score_policy=score_policy,
     )
 
+    selected = SelectFilterTargets(
+        document_filter_scores=document_filter_scores,
+        online_document_filter_scores=filtering.document_filter_scores,
+        requests=requests,
+        score_policy=score_policy,
+    )
+
     online_document_filter_scores = output(DocumentFilterScore, filtering.document_filter_scores)
+    targets = output(DocumentSearchTarget, selected.targets)

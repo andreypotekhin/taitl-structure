@@ -4,15 +4,16 @@ from examples.search.schemas.clicks import *
 from examples.search.schemas.filtering import *
 from examples.search.schemas.indexing.lexical.index import *
 from examples.search.schemas.indexing.vector import *
+from examples.search.schemas.inference import *
 from examples.search.schemas.relevance import *
 from examples.search.schemas.scoring.overlap import *
 from examples.search.schemas.search import *
 from examples.search.schemas.text import *
 from examples.search.schemas.user import *
 from examples.search.transforms.online.filtering import *
-from examples.search.transforms.online.ranking import *
 from examples.search.transforms.online.scoring.lexical import *
-from examples.search.transforms.searching.search_docs.filter import *
+from examples.search.transforms.online.vectorization import *
+from examples.search.transforms.ranking.vector import RankVectors
 from examples.search.transforms.searching.search_docs.fusion import *
 from examples.search.transforms.searching.search_docs.rerank import *
 from examples.search.transforms.searching.search_docs.retrieve import *
@@ -26,6 +27,8 @@ class SearchDocuments(Transform):
     queries = input(SearchQuery, streaming=True)
     documents = input(Document)
     document_scores = input(DocumentScore)
+    document_vector_scores = input(DocumentVectorScore)
+    paragraph_vector_scores = input(ParagraphVectorScore)
     streamed_documents = input(Document, streaming=True)
     streamed_document_scores = input(DocumentScore, streaming=True)
     document_overlap_scores = input(DocumentOverlapScore)
@@ -44,17 +47,13 @@ class SearchDocuments(Transform):
     paragraph_vector_queries = input(ParagraphVectorQuery)
     paragraph_vector_index = input(ParagraphVectorIndex)
     vector_policy = input(VectorIndexPolicy)
+    inference_policy = input(InferencePolicy)
     requests = input(SearchRequest, streaming=True)
     band_memberships = input(BandMembership)
     query_document_signals = input(QueryDocumentSignals)
     document_popularity = input(DocumentPopularity)
     band_fallbacks = input(BandFallback)
     policy = input(RelevancePolicy)
-
-    vector_queries = VectorizeSearchQueries(
-        queries=queries,
-        embeddings=document_vector_embeddings,
-    )
 
     filtered = OnlineFiltering(
         queries=queries,
@@ -64,18 +63,25 @@ class SearchDocuments(Transform):
         score_policy=score_policy,
     )
 
-    selected = SelectFilterTargets(
-        document_filter_scores=document_filter_scores,
-        online_document_filter_scores=filtered.online_document_filter_scores,
-        requests=requests,
-        score_policy=score_policy,
+    vectorized = OnlineVectorization(
+        queries=queries,
+        documents=documents,
+        cached_query_embeddings=document_vector_embeddings,
+        document_vector_index=document_vector_index,
+        document_targets=filtered.targets,
+        inference_policy=inference_policy,
+        vector_policy=vector_policy,
     )
 
     scored = OnlineScoring(
         queries=queries,
         requests=requests,
-        document_scores=document_scores,
-        document_overlap_scores=document_overlap_scores,
+        streamed_document_scores=streamed_document_scores,
+        cached_document_scores=document_scores,
+        cached_document_vector_scores=document_vector_scores,
+        cached_paragraph_vector_scores=paragraph_vector_scores,
+        cached_document_overlap_scores=document_overlap_scores,
+        prefilter_targets=filtered.targets,
         document_terms=document_terms,
         section_terms=section_terms,
         paragraph_terms=paragraph_terms,
@@ -85,33 +91,30 @@ class SearchDocuments(Transform):
         paragraph_summary=paragraph_summary,
         sentence_summary=sentence_summary,
         score_policy=score_policy,
-        document_vector_queries=vector_queries.vector_queries,
-        document_vector_index=document_vector_index,
+        document_vector_queries=vectorized.vector_queries,
+        document_vector_index=vectorized.document_embeddings,
         paragraph_vector_queries=paragraph_vector_queries,
         paragraph_vector_index=paragraph_vector_index,
         vector_policy=vector_policy,
     )
 
-    ranked = OnlineRanking(
+    ranked = RankVectors(
         policy=vector_policy,
-        document_scores=scored.online_document_vector_scores,
-        paragraph_scores=scored.online_paragraph_vector_scores,
+        document_scores=scored.document_vector_scores,
+        paragraph_scores=scored.paragraph_vector_scores,
     )
 
     retrieved = RetrieveDocuments(
         queries=queries,
         documents=documents,
-        document_scores=document_scores,
-        online_document_scores=scored.online_document_scores,
+        online_document_scores=scored.document_scores,
         streamed_documents=streamed_documents,
-        streamed_document_scores=streamed_document_scores,
-        online_streamed_document_scores=scored.online_streamed_document_scores,
         requests=requests,
         band_memberships=band_memberships,
         score_policy=score_policy,
-        document_vector_candidates=ranked.online_document_vector_candidates,
+        document_vector_candidates=ranked.document_candidates,
         vector_policy=vector_policy,
-        prefilter_targets=selected.targets,
+        prefilter_targets=filtered.targets,
     )
 
     fused = FuseDocumentCandidates(
@@ -129,3 +132,7 @@ class SearchDocuments(Transform):
     )
 
     results = output(DocumentSearchResult, reranked.results)
+    online_query_embeddings = output(SearchQueryVectorEmbedding, vectorized.query_embeddings)
+    online_document_embeddings = output(DocumentVectorIndex, vectorized.document_embeddings)
+    query_inference_status = output(QueryInferenceStatus, vectorized.query_inference_status)
+    document_inference_status = output(DocumentInferenceStatus, vectorized.document_inference_status)

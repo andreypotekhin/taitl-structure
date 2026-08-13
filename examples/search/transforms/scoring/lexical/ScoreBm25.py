@@ -17,6 +17,7 @@ from examples.search.schemas.scoring.bm25 import (
     SentenceBm25Score,
 )
 from examples.search.schemas.scoring.intermediate import QueryTerm
+from examples.search.schemas.search import DocumentSearchTarget
 from examples.search.transforms.scoring.lexical.ScoreBase import ScoreBase
 from structure import input, output, parameter, step
 from structure.plugin.pyspark import cross_join, group_by, inner_join, log
@@ -37,58 +38,78 @@ class ScoreBm25(ScoreBase):
     k1 = parameter(1.2)
     b = parameter(0.75)
 
-    @step(input=[ScoreBase.expanded_query_terms, ScoreBase.document_terms, document_summary], output=document_bm25_scores)
+    @step(
+        input=[ScoreBase.expanded_query_terms, ScoreBase.document_terms, ScoreBase.targets, document_summary],
+        output=document_bm25_scores,
+    )
     def score_document_bm25(
-        self, query: QueryTerm, term: DocumentTerm, summary: DocumentIndexSummary
+        self, query: QueryTerm, term: DocumentTerm, target: DocumentSearchTarget, summary: DocumentIndexSummary
     ) -> DocumentBm25Score:
         inner_join(on=term.term == query.token)
+        inner_join(target, on=(target.query_id == query.query_id) & (target.document_id == term.document_id))
         cross_join(summary, allow_cartesian=True)
-        group_by(query_id=query.query_id, document_id=term.document_id)
+        group_by(query_id=query.query_id, document_id=term.document_id, scope_id=target.scope_id)
         return DocumentBm25Score(
             query_id=query.query_id,
             document_id=term.document_id,
+            scope_id=target.scope_id,
             score_bm25=sum_(self._bm25_term(term, summary)),
         )
 
-    @step(input=[ScoreBase.expanded_query_terms, ScoreBase.section_terms, section_summary], output=section_bm25_scores)
+    @step(
+        input=[ScoreBase.expanded_query_terms, ScoreBase.section_terms, ScoreBase.targets, section_summary],
+        output=section_bm25_scores,
+    )
     def score_section_bm25(
-        self, query: QueryTerm, term: SectionTerm, summary: SectionIndexSummary
+        self, query: QueryTerm, term: SectionTerm, target: DocumentSearchTarget, summary: SectionIndexSummary
     ) -> SectionBm25Score:
         inner_join(on=term.term == query.token)
+        inner_join(target, on=(target.query_id == query.query_id) & (target.document_id == term.document_id))
         cross_join(summary, allow_cartesian=True)
-        group_by(query_id=query.query_id, document_id=term.document_id, section_id=term.section_id)
+        group_by(query_id=query.query_id, document_id=term.document_id, section_id=term.section_id, scope_id=target.scope_id)
         return SectionBm25Score(
             query_id=query.query_id,
             document_id=term.document_id,
             section_id=term.section_id,
+            scope_id=target.scope_id,
             score_bm25=sum_(self._bm25_term(term, summary)),
         )
 
-    @step(input=[ScoreBase.expanded_query_terms, ScoreBase.paragraph_terms, paragraph_summary], output=paragraph_bm25_scores)
+    @step(
+        input=[ScoreBase.expanded_query_terms, ScoreBase.paragraph_terms, ScoreBase.targets, paragraph_summary],
+        output=paragraph_bm25_scores,
+    )
     def score_paragraph_bm25(
-        self, query: QueryTerm, term: ParagraphTerm, summary: ParagraphIndexSummary
+        self, query: QueryTerm, term: ParagraphTerm, target: DocumentSearchTarget, summary: ParagraphIndexSummary
     ) -> ParagraphBm25Score:
         inner_join(on=term.term == query.token)
+        inner_join(target, on=(target.query_id == query.query_id) & (target.document_id == term.document_id))
         cross_join(summary, allow_cartesian=True)
         group_by(
             query_id=query.query_id,
             document_id=term.document_id,
             section_id=term.section_id,
             paragraph_id=term.paragraph_id,
+            scope_id=target.scope_id,
         )
         return ParagraphBm25Score(
             query_id=query.query_id,
             document_id=term.document_id,
             section_id=term.section_id,
             paragraph_id=term.paragraph_id,
+            scope_id=target.scope_id,
             score_bm25=sum_(self._bm25_term(term, summary)),
         )
 
-    @step(input=[ScoreBase.expanded_query_terms, ScoreBase.sentence_terms, sentence_summary], output=sentence_bm25_scores)
+    @step(
+        input=[ScoreBase.expanded_query_terms, ScoreBase.sentence_terms, ScoreBase.targets, sentence_summary],
+        output=sentence_bm25_scores,
+    )
     def score_sentence_bm25(
-        self, query: QueryTerm, term: SentenceTerm, summary: SentenceIndexSummary
+        self, query: QueryTerm, term: SentenceTerm, target: DocumentSearchTarget, summary: SentenceIndexSummary
     ) -> SentenceBm25Score:
         inner_join(on=term.term == query.token)
+        inner_join(target, on=(target.query_id == query.query_id) & (target.document_id == term.document_id))
         cross_join(summary, allow_cartesian=True)
         group_by(
             query_id=query.query_id,
@@ -96,6 +117,7 @@ class ScoreBm25(ScoreBase):
             section_id=term.section_id,
             paragraph_id=term.paragraph_id,
             sentence_id=term.sentence_id,
+            scope_id=target.scope_id,
         )
         return SentenceBm25Score(
             query_id=query.query_id,
@@ -103,6 +125,7 @@ class ScoreBm25(ScoreBase):
             section_id=term.section_id,
             paragraph_id=term.paragraph_id,
             sentence_id=term.sentence_id,
+            scope_id=target.scope_id,
             score_bm25=sum_(self._bm25_term(term, summary)),
         )
 

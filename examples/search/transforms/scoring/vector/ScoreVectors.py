@@ -16,6 +16,7 @@ class ScoreVectors(Transform):
     document_index = input(DocumentVectorIndex)
     paragraph_queries = input(ParagraphVectorQuery)
     paragraph_index = input(ParagraphVectorIndex)
+    targets = input(DocumentSearchTarget, streaming=True)
     valid_policy = lane(VectorIndexPolicy)
     document_scores = output(DocumentVectorScore)
     paragraph_scores = output(ParagraphVectorScore)
@@ -25,17 +26,19 @@ class ScoreVectors(Transform):
         validated = require_all(Vectors.valid_policy(policy))
         return VectorIndexPolicy.project(validated)
 
-    @step(input=[document_queries, document_index, valid_policy, score_policy], output=document_scores)
+    @step(input=[document_queries, document_index, targets, valid_policy, score_policy], output=document_scores)
     def score_documents(
         self,
         query: DocumentVectorQuery,
         index: DocumentVectorIndex,
+        target: DocumentSearchTarget,
         policy: VectorIndexPolicy,
         score_policy: ScorePolicy,
     ) -> DocumentVectorScore:
         param_join(policy)
         param_join(score_policy)
         cross_join(index, allow_cartesian=True)
+        inner_join(target, on=(target.query_id == query.query_id) & (target.document_id == index.document_id))
         require_all(Vectors.valid_pair(query, index, policy))
         where(query.query_document_id.is_null() | (query.query_document_id != index.document_id))
         cosine = Vectors.cosine(query.vector, index.vector)
@@ -43,6 +46,7 @@ class ScoreVectors(Transform):
             query_id=query.query_id,
             query_document_id=query.query_document_id,
             document_id=index.document_id,
+            scope_id=target.scope_id,
             cosine_similarity=coalesce(cosine, 0.0),
             model_id=policy.model_id,
             dimension=policy.dimension,
@@ -52,17 +56,19 @@ class ScoreVectors(Transform):
             scored_at=score_policy.scored_at,
         )
 
-    @step(input=[paragraph_queries, paragraph_index, valid_policy, score_policy], output=paragraph_scores)
+    @step(input=[paragraph_queries, paragraph_index, targets, valid_policy, score_policy], output=paragraph_scores)
     def score_paragraphs(
         self,
         query: ParagraphVectorQuery,
         index: ParagraphVectorIndex,
+        target: DocumentSearchTarget,
         policy: VectorIndexPolicy,
         score_policy: ScorePolicy,
     ) -> ParagraphVectorScore:
         param_join(policy)
         param_join(score_policy)
         cross_join(index, allow_cartesian=True)
+        inner_join(target, on=(target.query_id == query.query_id) & (target.document_id == index.document_id))
         require_all(Vectors.valid_pair(query, index, policy))
         where(
             (query.document_id != index.document_id)
@@ -78,6 +84,7 @@ class ScoreVectors(Transform):
             document_id=index.document_id,
             section_id=index.section_id,
             paragraph_id=index.paragraph_id,
+            scope_id=target.scope_id,
             cosine_similarity=coalesce(cosine, 0.0),
             model_id=policy.model_id,
             dimension=policy.dimension,

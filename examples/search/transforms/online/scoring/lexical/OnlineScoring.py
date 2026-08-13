@@ -5,6 +5,9 @@ from examples.search.schemas.indexing.lexical.index import *
 from examples.search.schemas.indexing.vector import *
 from examples.search.schemas.scoring.overlap import *
 from examples.search.schemas.search import *
+from examples.search.transforms.online.scoring.lexical.merge_scores import MergeDocumentScores
+from examples.search.transforms.online.scoring.lexical.MergeDocumentVectorScores import MergeDocumentVectorScores
+from examples.search.transforms.online.scoring.lexical.MergeParagraphVectorScores import MergeParagraphVectorScores
 from examples.search.transforms.online.scoring.lexical.SelectGapQueries import *
 from examples.search.transforms.scoring import *
 from structure import *
@@ -15,8 +18,12 @@ class OnlineScoring(Transform):
 
     queries = input(SearchQuery, streaming=True)
     requests = input(SearchRequest, streaming=True)
-    document_scores = input(DocumentScore)
-    document_overlap_scores = input(DocumentOverlapScore)
+    prefilter_targets = input(DocumentSearchTarget, streaming=True)
+    cached_document_scores = input(DocumentScore)
+    streamed_document_scores = input(DocumentScore, streaming=True)
+    cached_document_overlap_scores = input(DocumentOverlapScore)
+    cached_document_vector_scores = input(DocumentVectorScore)
+    cached_paragraph_vector_scores = input(ParagraphVectorScore)
     document_terms = input(DocumentTerm)
     section_terms = input(SectionTerm)
     paragraph_terms = input(ParagraphTerm)
@@ -35,9 +42,13 @@ class OnlineScoring(Transform):
     gap = SelectGapQueries(
         queries=queries,
         requests=requests,
-        document_scores=document_scores,
-        document_overlap_scores=document_overlap_scores,
+        document_scores=cached_document_scores,
+        document_overlap_scores=cached_document_overlap_scores,
+        document_vector_scores=cached_document_vector_scores,
+        paragraph_vector_scores=cached_paragraph_vector_scores,
+        prefilter_targets=prefilter_targets,
         score_policy=score_policy,
+        vector_policy=vector_policy,
     )
 
     scoring = Scoring(
@@ -56,16 +67,45 @@ class OnlineScoring(Transform):
         paragraph_vector_queries=paragraph_vector_queries,
         paragraph_vector_index=paragraph_vector_index,
         vector_policy=vector_policy,
+        targets=prefilter_targets,
     )
 
-    online_document_scores = output(DocumentScore, scoring.document_scores)
-    online_streamed_document_scores = output(DocumentScore, scoring.document_scores)
-    online_section_scores = output(SectionScore, scoring.section_scores)
-    online_paragraph_scores = output(ParagraphScore, scoring.paragraph_scores)
-    online_sentence_scores = output(SentenceScore, scoring.sentence_scores)
-    online_document_overlap_scores = output(DocumentOverlapScore, scoring.document_overlap_scores)
-    online_section_overlap_scores = output(SectionOverlapScore, scoring.section_overlap_scores)
-    online_paragraph_overlap_scores = output(ParagraphOverlapScore, scoring.paragraph_overlap_scores)
-    online_sentence_overlap_scores = output(SentenceOverlapScore, scoring.sentence_overlap_scores)
-    online_document_vector_scores = output(DocumentVectorScore, scoring.document_vector_scores)
-    online_paragraph_vector_scores = output(ParagraphVectorScore, scoring.paragraph_vector_scores)
+    merged = MergeDocumentScores(
+        document_scores=cached_document_scores,
+        streamed_document_scores=streamed_document_scores,
+        online_document_scores=scoring.document_scores,
+        requests=requests,
+        prefilter_targets=prefilter_targets,
+        score_policy=score_policy,
+    )
+
+    merged_vectors = MergeDocumentVectorScores(
+        document_vector_scores=cached_document_vector_scores,
+        online_document_vector_scores=scoring.document_vector_scores,
+        invalidated_queries=gap.gap_queries,
+        requests=requests,
+        prefilter_targets=prefilter_targets,
+        score_policy=score_policy,
+        vector_policy=vector_policy,
+    )
+
+    merged_paragraph_vectors = MergeParagraphVectorScores(
+        paragraph_vector_scores=cached_paragraph_vector_scores,
+        online_paragraph_vector_scores=scoring.paragraph_vector_scores,
+        invalidated_queries=gap.gap_queries,
+        requests=requests,
+        prefilter_targets=prefilter_targets,
+        score_policy=score_policy,
+        vector_policy=vector_policy,
+    )
+
+    document_scores = output(DocumentScore, merged.scores)
+    section_scores = output(SectionScore, scoring.section_scores)
+    paragraph_scores = output(ParagraphScore, scoring.paragraph_scores)
+    sentence_scores = output(SentenceScore, scoring.sentence_scores)
+    document_overlap_scores = output(DocumentOverlapScore, scoring.document_overlap_scores)
+    section_overlap_scores = output(SectionOverlapScore, scoring.section_overlap_scores)
+    paragraph_overlap_scores = output(ParagraphOverlapScore, scoring.paragraph_overlap_scores)
+    sentence_overlap_scores = output(SentenceOverlapScore, scoring.sentence_overlap_scores)
+    document_vector_scores = output(DocumentVectorScore, merged_vectors.scores)
+    paragraph_vector_scores = output(ParagraphVectorScore, merged_paragraph_vectors.scores)

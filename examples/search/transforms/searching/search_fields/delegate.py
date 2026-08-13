@@ -69,5 +69,8 @@ class BuildDelegations(Transform):
         return DocumentSearchTarget(
             query_id=delegation.delegated_query_id,
             document_id=document.document_id,
+            scope_id=sha2(
+                concat_ws("\x1f", "field-search-targets-v1", delegation.delegated_query_id),
+                bits=256,
+            ),
         )
-

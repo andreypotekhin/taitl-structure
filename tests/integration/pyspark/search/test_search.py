@@ -261,6 +261,7 @@ from examples.search.transforms.offline.scoring.lexical.OfflineScoring import Of
 from examples.search.transforms.online.scoring.lexical import OnlineScoring
 from examples.search.transforms.relevance.BuildRelevanceSignals import BuildRelevanceSignals
 from examples.search.transforms.score import Scoring
+from examples.search.transforms.scoring.lexical.AllScoringTargets import AllScoringTargets
 from examples.search.transforms.scoring.lexical.ScoreBm25 import ScoreBm25
 from examples.search.transforms.scoring.lexical.ScoreOverlap import ScoreOverlap
 from examples.search.transforms.scoring.lexical.SelectPopularQueries import SelectPopularQueries
@@ -1090,6 +1091,10 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
 
         similarity_score_inputs = dict(
             queries=generated_similarity_queries.queries,
+            targets=AllScoringTargets(
+                queries=generated_similarity_queries.queries,
+                document_terms=generated_index.document_terms,
+            ).run(session(spark, execution_mode="generated", generated_package=PACKAGE)).targets,
             **{name: value for name, value in similarity_index_inputs.items() if name != "policy"},
         )
         score_policy = spark.createDataFrame(
@@ -1308,6 +1313,10 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
 
         search_inputs = dict(
             queries=queries,
+            targets=AllScoringTargets(
+                queries=queries,
+                document_terms=generated_index.document_terms,
+            ).run(session(spark, execution_mode="generated", generated_package=PACKAGE)).targets,
             document_terms=generated_index.document_terms,
             document_summary=generated_index.document_summary,
             section_terms=generated_index.section_terms,
@@ -1386,6 +1395,9 @@ def test_search_ranks_fixture_sentences_online_and_generated(spark, tmp_path) ->
         index = _run_indexing(spark, documents, segments.sentences, execution_mode="generated", generated_package=PACKAGE)
         scores = Scoring(
             queries=queries,
+            targets=AllScoringTargets(queries=queries, document_terms=index.document_terms).run(
+                session(spark, execution_mode="generated", generated_package=PACKAGE)
+            ).targets,
             document_terms=index.document_terms,
             document_summary=index.document_summary,
             section_terms=index.section_terms,
@@ -1521,6 +1533,9 @@ def test_passage_search_ranks_paragraphs_with_same_section_context(spark, tmp_pa
         index = _run_indexing(spark, documents, segments.sentences, execution_mode="generated", generated_package=PACKAGE)
         scores = Scoring(
             queries=queries,
+            targets=AllScoringTargets(queries=queries, document_terms=index.document_terms).run(
+                session(spark, execution_mode="generated", generated_package=PACKAGE)
+            ).targets,
             document_terms=index.document_terms,
             document_summary=index.document_summary,
             section_terms=index.section_terms,
@@ -1762,6 +1777,8 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
             queries=queries,
             documents=documents,
             document_scores=document_scores,
+            document_vector_scores=spark.createDataFrame([], search_schemas.DOCUMENT_VECTOR_SCORE_SCHEMA),
+            paragraph_vector_scores=spark.createDataFrame([], search_schemas.PARAGRAPH_VECTOR_SCORE_SCHEMA),
             streamed_documents=spark.createDataFrame([], text_schemas.DOCUMENT_SCHEMA),
             streamed_document_scores=spark.createDataFrame([], search_schemas.DOCUMENT_SCORE_SCHEMA),
             document_overlap_scores=document_overlap_scores,
@@ -1787,6 +1804,10 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
             vector_policy=spark.createDataFrame(
                 [("fixture-embed", 3, "rev-1", "search-v1", 1000, 60)],
                 vector_schemas.VECTOR_INDEX_POLICY_SCHEMA,
+            ),
+            inference_policy=spark.createDataFrame(
+                [("default", "fixture-embed", "default-v1", "rev-1", 3, "search-v1", scored_at)],
+                __import__(f"{PACKAGE}.pyspark.schemas.inference", fromlist=["INFERENCE_POLICY_SCHEMA"]).INFERENCE_POLICY_SCHEMA,
             ),
             requests=spark.createDataFrame(
                 [

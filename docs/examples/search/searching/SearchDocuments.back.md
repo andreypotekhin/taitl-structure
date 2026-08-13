@@ -1,9 +1,9 @@
 # Search Document Presentation
 
 
-`SearchDocuments` is the request-time document presentation boundary. It combines cached and online lexical artifacts,
-an optional provider-ranked vector lane, bounded candidate admission, reusable user context, and feedback reranking into
-a deterministic result list.
+`SearchDocuments` is the request-time document presentation boundary. It combines cached and online lexical/vector
+artifacts, bounded target-scoped candidate admission, reusable user context, and feedback reranking into a deterministic
+result list.
 
 It is the point where a prepared Search snapshot meets one request. The boundary does not build the corpus, learn a
 ranker, or write serving state; it selects and explains a bounded result set from caller-owned artifacts. This makes
@@ -19,8 +19,9 @@ RRF score, score, feedback, and final rank score.
 Results are partitioned by query, user context, and experiment. Query/request timestamps must match. Score and filter
 artifacts must be no later than the request, within maximum age, and at or after the policy effective timestamp.
 
-In practical terms, a query with no vector relation follows the lexical path, while an explicitly supplied vector
-candidate relation can add semantic-only documents or strengthen documents found by both lanes. A query with feedback
+In practical terms, a query with no vector relation follows the lexical path, while vector scores for selected targets
+can add semantic-only documents or strengthen documents found by both lanes. The prefilter bounds both expensive
+lexical and vector scoring; vector-only means a selected target has no lexical score, not that it bypassed admission. A query with feedback
 can promote an already-admitted fused candidate. A stale or incompatible artifact is not silently mixed into the
 result: the lexical baseline remains available and the vector identity mismatch is diagnosable. The request, candidate,
 policy, and snapshot keys are therefore as important as the final score.
@@ -53,7 +54,10 @@ The source composition is intentionally legible at this boundary:
 
 ```python
 selected = SelectFilterTargets(...).targets
-retrieved = RetrieveDocuments(prefilter_targets=selected, ...)
+scored = OnlineScoring(prefilter_targets=selected, ...)
+ranked_vectors = RankVectors(document_vector_scores=scored.document_vector_scores, ...).candidates
+retrieved = RetrieveDocuments(prefilter_targets=selected, document_scores=scored.document_scores,
+                              document_vector_candidates=ranked_vectors, ...)
 candidates = FuseDocumentCandidates(
     lexical_candidates=retrieved.candidates,
     vector_candidates=retrieved.vector_search_candidates,
@@ -79,8 +83,8 @@ that target-bearing queries are restricted before filter ranking and the 10,000-
 `SearchDocuments` queries continue through the canonical path with no target relation.
 
 This separation keeps field syntax, metadata phrase matching, and parent/child publication at `SearchFields`, while
-keeping document scoring, retrieval, and feedback reranking reusable and field-unaware. Full-corpus score
-normalization and score-cache semantics are unchanged by delegation.
+keeping document scoring, retrieval, and feedback reranking reusable and field-unaware. The delegated target scope is
+part of score-cache identity, and target-local normalization is applied within that scope.
 
 The pipeline is batch-oriented in this example. Candidate identity, score version, query key, and effective
 snapshot travel through every stage. A candidate outside the admitted set cannot be introduced by feedback or

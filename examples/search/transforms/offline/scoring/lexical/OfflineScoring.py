@@ -32,6 +32,7 @@ class OfflineScoring(Transform):
     paragraph_vector_queries = input(ParagraphVectorQuery)
     paragraph_vector_index = input(ParagraphVectorIndex)
     vector_policy = input(VectorIndexPolicy)
+    prefilter_targets = input(DocumentSearchTarget, streaming=True)
     maximum_offline_queries = parameter(1000)
 
     popular = SelectPopularQueries(
@@ -67,6 +68,7 @@ class OfflineScoring(Transform):
         paragraph_vector_queries=paragraph_vector_queries,
         paragraph_vector_index=paragraph_vector_index,
         vector_policy=vector_policy,
+        targets=prefilter_targets,
     )
 
     document_scores = output(DocumentScore, scored.document_scores)

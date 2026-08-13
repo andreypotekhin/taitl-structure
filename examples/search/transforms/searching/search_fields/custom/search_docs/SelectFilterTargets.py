@@ -2,9 +2,12 @@
 
 from examples.search.schemas.filtering import DocumentFilterScore
 from examples.search.schemas.search import DocumentSearchTarget
-from examples.search.transforms.searching.search_docs.filter import SelectFilterTargets as CanonicalSelectFilterTargets
+from examples.search.transforms.lib.TargetScope import target_scope_id
+from examples.search.transforms.online.filtering.SelectFilterTargets import (
+    SelectFilterTargets as CanonicalSelectFilterTargets,
+)
 from structure import input, step
-from structure.plugin.pyspark import left_join, where
+from structure.plugin.pyspark import coalesce, left_join, where
 
 
 class SelectFilterTargets(CanonicalSelectFilterTargets):
@@ -22,4 +25,6 @@ class SelectFilterTargets(CanonicalSelectFilterTargets):
         left_join(target, on=target.query_id == document.query_id)
         where(target.query_id.is_null() | (target.document_id == document.document_id))
         where(document.filter_rank <= self.maximum_candidates)
-        return DocumentSearchTarget.project(document)
+        return DocumentSearchTarget.project(document)(
+            scope_id=coalesce(target.scope_id, target_scope_id(document.query_id, document.scored_at, self.maximum_candidates))
+        )

@@ -168,7 +168,7 @@ def test_search_bm25_scoring_is_typed_and_has_no_opaque_hook_boundary() -> None:
         joins = [operation.join for operation in step.operations if operation.join is not None]
         aggregate = step.aggregate
 
-        assert [join.how.value for join in joins] == ["inner", "cross"]
+        assert [join.how.value for join in joins] == ["inner", "inner", "cross"]
         assert aggregate is not None
         assert aggregate.grouping == "group_by"
         assert aggregate.assignments[-1].function == "sum"

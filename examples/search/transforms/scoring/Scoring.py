@@ -23,6 +23,7 @@ class Scoring(Transform):
     paragraph_summary = input(ParagraphIndexSummary)
     sentence_summary = input(SentenceIndexSummary)
     score_policy = input(ScorePolicy)
+    targets = input(DocumentSearchTarget, streaming=True)
     document_vector_queries = input(DocumentVectorQuery, streaming=True)
     document_vector_index = input(DocumentVectorIndex)
     paragraph_vector_queries = input(ParagraphVectorQuery)
@@ -41,6 +42,7 @@ class Scoring(Transform):
         paragraph_summary=paragraph_summary,
         sentence_summary=sentence_summary,
         score_policy=score_policy,
+        targets=targets,
     )
 
     bm25 = ScoreBm25(
@@ -53,6 +55,7 @@ class Scoring(Transform):
         section_summary=section_summary,
         paragraph_summary=paragraph_summary,
         sentence_summary=sentence_summary,
+        targets=targets,
     )
 
     selected = SelectScores(
@@ -65,6 +68,7 @@ class Scoring(Transform):
         paragraph_bm25_scores=bm25.paragraph_bm25_scores,
         sentence_bm25_scores=bm25.sentence_bm25_scores,
         score_policy=score_policy,
+        targets=targets,
         experiment_id=experiment_id,
     )
 
@@ -75,6 +79,7 @@ class Scoring(Transform):
         document_index=document_vector_index,
         paragraph_queries=paragraph_vector_queries,
         paragraph_index=paragraph_vector_index,
+        targets=targets,
     )
 
     document_scores = output(DocumentScore, selected.document_scores)

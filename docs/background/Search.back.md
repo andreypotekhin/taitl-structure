@@ -196,8 +196,12 @@ changing lexical ranking semantics.
 
 Document search is a bounded funnel. Offline `Filtering` precomputes filter artifacts for a caller-selected query
 subset. Serving `OnlineFiltering` fills only query groups that lack a usable artifact, and `SelectFilterTargets` merges
-cached and online rows before retaining the top 10,000 documents per query. `OnlineScoring` fills missing or invalid
-lexical score groups. `RetrieveDocuments` materializes lexical and vector candidate lanes without ranking them.
+cached and online rows before retaining the top 10,000 documents per query. Those selected targets are passed into
+`OnlineScoring`, so both lexical and vector score construction use the cheap admission boundary. `OnlineScoring` fills
+missing or invalid score rows and tags them with the target scope; a scope mismatch makes a cache row ineligible.
+`OnlineScoring` also merges fresh vector scores with valid cached vector scores, invalidating an entire cached query
+group whenever that group is recomputed. `RankVectors` ranks the resulting authoritative vector score relation and
+applies the vector candidate bound before `RetrieveDocuments` joins candidates to documents.
 `FuseDocumentCandidates` ranks the lexical lane, deduplicates document identities, applies RRF, and retains the fused
 top 1,000. `RerankDocuments` applies feedback to those candidates, and only then does it retain the final top 100.
 
@@ -226,9 +230,10 @@ BM25_g(q, x, t) = idf_g(t) * tf_g(t, x) * (k1 + 1)
 BM25_g(q, x) = sum(BM25_g(q, x, t) for t in Q ∩ T(x))
 ```
 
-BM25 is normalized before combination. The maximum is taken across documents for a document score, sections within a
-document for a section score, paragraphs within a document section for a paragraph score, and sentences within a
-document paragraph for a sentence score. A zero maximum produces normalized BM25 zero:
+BM25 is normalized before combination. The maximum is taken within the selected target scope: across admitted documents
+for a document score, sections within an admitted document for a section score, paragraphs within an admitted document
+section for a paragraph score, and sentences within an admitted document paragraph for a sentence score. A zero maximum
+produces normalized BM25 zero:
 
 ```text
 B̂_g(q, x) = BM25_g(q, x) / max(BM25_g(q, ·))
@@ -251,7 +256,9 @@ OnlineFiltering — calculate only missing/stale query groups
         ↓
 SelectFilterTargets — merge valid cached + online rows; retain 10,000
         ↓
-OnlineScoring — calculate missing/stale composite lexical scores
+OnlineScoring — calculate target-scoped missing/stale lexical and vector scores
+        ↓
+RankVectors — rank and bound the authoritative vector score relation
         ↓
 RetrieveDocuments — materialize lexical and vector candidate lanes
         ↓

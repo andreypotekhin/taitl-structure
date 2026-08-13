@@ -3,8 +3,10 @@
 from examples.search.schemas.analytics import *
 from examples.search.schemas.clicks import *
 from examples.search.schemas.fields import *
+from examples.search.schemas.filtering import DocumentFilterScore
 from examples.search.schemas.indexing.lexical.index import *
 from examples.search.schemas.indexing.vector import *
+from examples.search.schemas.inference import *
 from examples.search.schemas.label import *
 from examples.search.schemas.relevance import *
 from examples.search.schemas.scoring.bm25 import *
@@ -18,8 +20,10 @@ from examples.search.transforms.cohorts import *
 from examples.search.transforms.fields import *
 from examples.search.transforms.indexing import *
 from examples.search.transforms.labeling import *
-from examples.search.transforms.offline.ranking import *
+from examples.search.transforms.offline.filtering import OfflineFiltering
 from examples.search.transforms.offline.scoring.lexical import *
+from examples.search.transforms.offline.vectorization import *
+from examples.search.transforms.ranking.vector import RankVectors
 from examples.search.transforms.relevance.BuildRelevanceSignals import *
 from examples.search.transforms.similarities import *
 from examples.search.transforms.stats import *
@@ -40,15 +44,16 @@ class All(Transform):
     bands = input(Band)
     policy = input(RelevancePolicy)
     score_policy = input(ScorePolicy)
-    document_vector_queries = input(DocumentVectorQuery, streaming=True)
+    query_vector_embeddings = input(SearchQueryVectorEmbedding)
     document_vector_index = input(DocumentVectorIndex)
     paragraph_vector_queries = input(ParagraphVectorQuery)
     paragraph_vector_index = input(ParagraphVectorIndex)
     vector_policy = input(VectorIndexPolicy)
+    inference_policy = input(InferencePolicy)
     similarity_policy = input(SimilarityPolicy)
     field_profiles = input(FieldProfile)
     analyzer_policies = input(AnalyzerPolicy)
-    maximum_offline_queries = parameter(1000)
+    maximum_offline_queries = parameter(100000)
 
     chunked = Chunking(documents=documents)
     extracted = ExtractDocumentFields(source_documents=documents)
@@ -76,6 +81,21 @@ class All(Transform):
 
     labeled = Labeling(queries=queries, query_labels=query_labels, intents=intents, patterns=patterns)
 
+    filtered = OfflineFiltering(
+        queries=labeled.labeled_queries,
+        document_terms=indexed.document_terms,
+        score_policy=score_policy,
+    )
+
+    vectorized = OfflineVectorization(
+        queries=labeled.labeled_queries,
+        documents=extracted.documents,
+        query_embeddings=query_vector_embeddings,
+        document_vector_index=document_vector_index,
+        inference_policy=inference_policy,
+        vector_policy=vector_policy,
+    )
+
     scored = OfflineScoring(
         queries=labeled.labeled_queries,
         daily_impressions=daily_impressions,
@@ -88,15 +108,16 @@ class All(Transform):
         paragraph_summary=indexed.paragraph_summary,
         sentence_summary=indexed.sentence_summary,
         score_policy=score_policy,
-        document_vector_queries=document_vector_queries,
-        document_vector_index=document_vector_index,
+        document_vector_queries=vectorized.vector_queries,
+        document_vector_index=vectorized.document_embeddings,
         paragraph_vector_queries=paragraph_vector_queries,
         paragraph_vector_index=paragraph_vector_index,
         vector_policy=vector_policy,
+        prefilter_targets=filtered.targets,
         maximum_offline_queries=maximum_offline_queries,
     )
 
-    ranked = OfflineRanking(
+    ranked = RankVectors(
         policy=vector_policy,
         document_scores=scored.document_vector_scores,
         paragraph_scores=scored.paragraph_vector_scores,
@@ -152,7 +173,12 @@ class All(Transform):
     paragraph_summary = output(ParagraphIndexSummary, indexed.paragraph_summary)
     sentence_terms = output(SentenceTerm, indexed.sentence_terms)
     sentence_summary = output(SentenceIndexSummary, indexed.sentence_summary)
+    query_vector_embeddings_out = output(SearchQueryVectorEmbedding, vectorized.query_embeddings_out)
+    document_vector_embeddings_out = output(DocumentVectorIndex, vectorized.document_embeddings)
+    query_inference_status = output(QueryInferenceStatus, vectorized.query_inference_status)
+    document_inference_status = output(DocumentInferenceStatus, vectorized.document_inference_status)
     labeled_queries = output(SearchQuery, labeled.labeled_queries)
+    document_filter_scores = output(DocumentFilterScore, filtered.document_filter_scores)
     document_scores = output(DocumentScore, scored.document_scores)
     section_scores = output(SectionScore, scored.section_scores)
     paragraph_scores = output(ParagraphScore, scored.paragraph_scores)
@@ -165,8 +191,10 @@ class All(Transform):
     section_bm25_scores = output(SectionBm25Score, scored.section_bm25_scores)
     paragraph_bm25_scores = output(ParagraphBm25Score, scored.paragraph_bm25_scores)
     sentence_bm25_scores = output(SentenceBm25Score, scored.sentence_bm25_scores)
-    document_vector_candidates = output(DocumentVectorCandidate, ranked.document_vector_candidates)
-    paragraph_vector_candidates = output(ParagraphVectorCandidate, ranked.paragraph_vector_candidates)
+    document_vector_scores = output(DocumentVectorScore, scored.document_vector_scores)
+    paragraph_vector_scores = output(ParagraphVectorScore, scored.paragraph_vector_scores)
+    document_vector_candidates = output(DocumentVectorCandidate, ranked.document_candidates)
+    paragraph_vector_candidates = output(ParagraphVectorCandidate, ranked.paragraph_candidates)
     document_similarities = output(DocumentSimilarity, similarities.document_similarities)
     section_similarities = output(SectionSimilarity, similarities.section_similarities)
     paragraph_similarities = output(ParagraphSimilarity, similarities.paragraph_similarities)

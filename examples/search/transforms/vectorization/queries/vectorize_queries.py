@@ -1,10 +1,9 @@
 """Normalize provider embeddings keyed by request-time SearchQuery rows."""
 
-from examples.search.schemas.indexing.vector import *
-from examples.search.schemas.search import *
-from structure import *
-from structure.plugin.pyspark import *
-from structure.plugin.pyspark.dsl.expressions import literal
+from examples.search.schemas.indexing.vector import DocumentVectorQuery, SearchQueryVectorEmbedding
+from examples.search.schemas.search import SearchQuery
+from structure import Transform, input, output, step
+from structure.plugin.pyspark import inner_join, literal
 
 
 class VectorizeSearchQueries(Transform):

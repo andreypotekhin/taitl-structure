@@ -19,6 +19,7 @@ class Scoring001AdjustBm(Scoring):
         section_summary=Scoring.section_summary,
         paragraph_summary=Scoring.paragraph_summary,
         sentence_summary=Scoring.sentence_summary,
+        targets=Scoring.targets,
         k1=1.35,
         b=0.70,
     )

@@ -338,6 +338,7 @@ class ScoreParagraphVectorsGenerated:
             F.col("paragraph_vector_index_3.document_id"),
             F.col("paragraph_vector_index_3.section_id"),
             F.col("paragraph_vector_index_3.paragraph_id"),
+            F.lit('similarity-v1').alias("scope_id"),
             F.coalesce(
                 (
                     F.aggregate(

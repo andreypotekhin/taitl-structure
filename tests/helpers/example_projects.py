@@ -813,6 +813,13 @@ def render_search_example() -> dict[str, str]:
             SimilarityDocumentVectorEmbedding,
             VectorIndexPolicy,
         )
+        from examples.search.schemas.inference import (
+            DocumentInferenceResult,
+            DocumentInferenceStatus,
+            InferencePolicy,
+            QueryInferenceResult,
+            QueryInferenceStatus,
+        )
         from examples.search.schemas.label import (
             Intent,
             IntentPattern,
@@ -969,6 +976,13 @@ def render_search_example() -> dict[str, str]:
 
         schema_modules: dict[str, Sequence[type[Schema]]] = {
             "examples.search.schemas.filtering": [DocumentFilterMatch, DocumentFilterScore, FilterQueryAvailability],
+            "examples.search.schemas.inference": [
+                InferencePolicy,
+                QueryInferenceResult,
+                DocumentInferenceResult,
+                QueryInferenceStatus,
+                DocumentInferenceStatus,
+            ],
             "examples.search.schemas.analytics": [
                 DocumentProfile,
                 SentenceStatistics,

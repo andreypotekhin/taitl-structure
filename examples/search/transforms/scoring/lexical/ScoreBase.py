@@ -2,7 +2,7 @@
 
 from examples.search.schemas.indexing.lexical.index import DocumentTerm, ParagraphTerm, SectionTerm, SentenceTerm
 from examples.search.schemas.scoring.intermediate import QueryTerm, QueryTermCount, QueryToken
-from examples.search.schemas.search import SearchQuery
+from examples.search.schemas.search import DocumentSearchTarget, SearchQuery
 from structure import Transform, input, lane, step
 from structure.plugin.pyspark import count, group_by, watermark, where
 
@@ -11,6 +11,7 @@ class ScoreBase(Transform):
     """Accept one or more queries and four reusable target-grain indexes."""
 
     queries = input(SearchQuery, streaming=True)
+    targets = input(DocumentSearchTarget, streaming=True)
     document_terms = input(DocumentTerm)
     section_terms = input(SectionTerm)
     paragraph_terms = input(ParagraphTerm)

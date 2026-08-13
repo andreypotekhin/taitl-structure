@@ -5,6 +5,7 @@ from examples.search.schemas.fields import *
 from examples.search.schemas.filtering import *
 from examples.search.schemas.indexing.lexical.index import *
 from examples.search.schemas.indexing.vector import *
+from examples.search.schemas.inference import *
 from examples.search.schemas.relevance import *
 from examples.search.schemas.scoring.overlap import *
 from examples.search.schemas.search import *
@@ -26,6 +27,8 @@ class SearchFields(Transform):
     requests = input(SearchRequest, streaming=True)
     documents = input(Document)
     document_scores = input(DocumentScore)
+    document_vector_scores = input(DocumentVectorScore)
+    paragraph_vector_scores = input(ParagraphVectorScore)
     streamed_documents = input(Document, streaming=True)
     streamed_document_scores = input(DocumentScore, streaming=True)
     document_overlap_scores = input(DocumentOverlapScore)
@@ -44,6 +47,7 @@ class SearchFields(Transform):
     paragraph_vector_queries = input(ParagraphVectorQuery)
     paragraph_vector_index = input(ParagraphVectorIndex)
     vector_policy = input(VectorIndexPolicy)
+    inference_policy = input(InferencePolicy)
     band_memberships = input(BandMembership)
     query_document_signals = input(QueryDocumentSignals)
     document_popularity = input(DocumentPopularity)
@@ -64,6 +68,8 @@ class SearchFields(Transform):
         queries=delegation.body_queries,
         documents=documents,
         document_scores=document_scores,
+        document_vector_scores=document_vector_scores,
+        paragraph_vector_scores=paragraph_vector_scores,
         streamed_documents=streamed_documents,
         streamed_document_scores=streamed_document_scores,
         document_overlap_scores=document_overlap_scores,
@@ -83,6 +89,7 @@ class SearchFields(Transform):
         paragraph_vector_queries=paragraph_vector_queries,
         paragraph_vector_index=paragraph_vector_index,
         vector_policy=vector_policy,
+        inference_policy=inference_policy,
         requests=delegation.delegated_requests,
         band_memberships=band_memberships,
         query_document_signals=query_document_signals,

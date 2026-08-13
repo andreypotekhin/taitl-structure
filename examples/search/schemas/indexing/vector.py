@@ -85,6 +85,7 @@ class DocumentVectorScore(Schema):
     query_id = string(nullable=False)
     query_document_id = string(nullable=True)
     document_id = string(nullable=False)
+    scope_id = string(nullable=False)
     cosine_similarity = double(nullable=False)
     model_id = string(nullable=False)
     dimension = long(nullable=False)
@@ -95,7 +96,7 @@ class DocumentVectorScore(Schema):
 
 
 class DocumentVectorCandidate(DocumentVectorScore):
-    """Provider-neutral ranked document neighbors for downstream similarity fusion."""
+    """Provider-neutral ranked document retrieval rows for downstream fusion."""
 
     rank = long(nullable=False)
 
@@ -108,6 +109,7 @@ class ParagraphVectorScore(Schema):
     document_id = string(nullable=False)
     section_id = string(nullable=False)
     paragraph_id = string(nullable=False)
+    scope_id = string(nullable=False)
     cosine_similarity = double(nullable=False)
     model_id = string(nullable=False)
     dimension = long(nullable=False)

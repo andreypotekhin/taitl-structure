@@ -1,5 +1,6 @@
 """Lexical Search scoring transforms."""
 
+from examples.search.transforms.scoring.lexical.AllScoringTargets import AllScoringTargets
 from examples.search.transforms.scoring.lexical.ScoreBase import ScoreBase
 from examples.search.transforms.scoring.lexical.ScoreBm25 import ScoreBm25
 from examples.search.transforms.scoring.lexical.ScoreOverlap import ScoreOverlap

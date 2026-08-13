@@ -64,6 +64,7 @@ class SelectExperimentScoresGenerated:
         active_document_scores = active_document_scores.select(
             F.col("document_score.query_id"),
             F.col("document_score.document_id"),
+            F.col("document_score.scope_id"),
             F.col("document_score.experiment_id"),
             F.col("document_score.scored_at"),
             F.col("document_score.score"),
@@ -84,6 +85,7 @@ class SelectExperimentScoresGenerated:
         active_section_scores = active_section_scores.select(
             F.col("section_score.query_id"),
             F.col("section_score.document_id"),
+            F.col("section_score.scope_id"),
             F.col("section_score.section_id"),
             F.col("section_score.experiment_id"),
             F.col("section_score.scored_at"),
@@ -105,6 +107,7 @@ class SelectExperimentScoresGenerated:
         active_paragraph_scores = active_paragraph_scores.select(
             F.col("paragraph_score.query_id"),
             F.col("paragraph_score.document_id"),
+            F.col("paragraph_score.scope_id"),
             F.col("paragraph_score.section_id"),
             F.col("paragraph_score.paragraph_id"),
             F.col("paragraph_score.experiment_id"),
@@ -127,6 +130,7 @@ class SelectExperimentScoresGenerated:
         active_sentence_scores = active_sentence_scores.select(
             F.col("sentence_score.query_id"),
             F.col("sentence_score.document_id"),
+            F.col("sentence_score.scope_id"),
             F.col("sentence_score.section_id"),
             F.col("sentence_score.paragraph_id"),
             F.col("sentence_score.sentence_id"),
