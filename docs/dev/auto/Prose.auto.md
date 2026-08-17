@@ -88,6 +88,18 @@ More operators and processes are defined below.
     - The `Workflow` section thus contains the parent workflow class listing plus all former sections, except the intro
       section. It must retain every stage call in execution order, including calls to stages defined outside the workflow
       directory, so the complete parent orchestration is readable in one place.
+      - Build a package stage inventory before writing the document. Include every `Transform` class instantiated by the
+      workflow, every stage named by the draft, and every transform exported by the workflow package that belongs to the
+      package's documented stage surface.
+      - For same-package stages, include the complete annotated source for the stage transform: its class declaration,
+      parameters, inputs, outputs, and every step method with its code listing. If one source file defines multiple
+      transform classes, include each class separately in workflow order.
+      - Treat the workflow directory as a package tree: inspect sibling source files and relevant immediate subpackages,
+      including their annotated documents. Do not assume that the workflow file's annotation contains the package's
+      stage implementations.
+      - A workflow's stage assignment and a same-package stage's class listing serve different purposes. Retain the
+      assignment in `Workflow`, then include the complete stage class in its stage section; do not replace the class with
+      a prose summary or a repeated assignment.
       - Since 'Workflow' section now starts with bare code listing, include a sentence before the listing describing that
       this is the workflow transform. 
     - Append workflow document with the content (.cnd.md) of subtransforms as additional sections to form continuous narrative.
@@ -108,6 +120,10 @@ More operators and processes are defined below.
           the complete `features = Features(...)` assignment, not a second `class Training(Transform):` listing.
     - Quality assurance:
       - Verify transform sections follow the order of main transform stages, with no stages missing.
+      - Verify the package stage inventory is complete: every same-package stage class from the workflow, draft, and
+        documented package exports has a corresponding section in the collected output.
+      - Verify every same-package stage section contains its complete class declaration and all annotated step code,
+        including files that define more than one transform class.
       - Verify the complete parent orchestration, including every external stage call, appears in `Workflow` in
         execution order.
       - Verify every external stage section contains the complete parameterized stage call and that the parent Workflow
@@ -156,14 +172,7 @@ Combining Draft with Background docs:
 - Merge-in Solution section from draft doc if not already covered.
 
 'Stages' section:
-- Create diagrams for each stage: 
- - Use UML class diagram. Use Stage as enclosing package, Inputs/Outputs as classes, input/output schemas as class methods, but without parentheses. 
- - Place Inputs and Outputs left-to-right inside Stage package, with one arrow going from Inputs to Outputs.
- - Do not include an element for Stage inside stage box - it is already the enclosing box.
- - Stay basic - no need for + signs, <<>> or other decorations, one schema per line and no decorations
- - Hide class members box
- - Arrows style: solid. Only vertical and horizontal lines. 
- - Use monochrome style.
+- Convert stages list to a table Stage/Inputs/Outputs 
 
 Implementation section:
 - 'How it works' section of background doc becomes combined doc's 'Implementation' section
@@ -172,20 +181,20 @@ Implementation section:
 - Drop implementation direction content such as discussion of invalid inputs, 'should'/'must paragraphs
 - Drop content from decisions sections and on
 - Move 'Notation' section from draft into 'Implementation' section
-  - Insert after intro paragraphs, before main bullet list. 
+  - Insert it after intro paragraphs, before main bullet list. 
   - Remove 'Notation' heading
   - Don't change notation content compared to draft doc.
 - Make 'Implementation' main bullet list a numbered list
 - Apply italics to the intent intros in numbered items
 - Do refer to transforms, stages and steps from the numbered items. 
 - Add sentences to numbered items for comprehensive explanation/accessibility/understandability.
-- Consider bundling cohesive numbered items together to reduce the overall number of numbered items.  
-- For each numbered item, add item's number as reference number to the notation block:
+- Consider joining cohesive numbered items together, to reduce/balance the overall list.  
+- For each numbered item in Implementation list, add it's number as a reference number to the above notation block:
+  - Mark notation line with the numbered item that explains it. 
   - Use circled digit like &#9312; for reference numbers in the notation block.
-  - Add reference numbers to the end of corresponding lines in the notation block.
-  - Omit repeating of reference numbers, assume point is already taken 
-- Body text other than bullet/numbered lists: prioritize thoughtful description/intent/proposal style over prescription/direction, gradually build understanding.
-- Make reading accessible for the first-time reader.  
+  - Add reference number to the end of notation line.
+  - Omit repeating reference numbers in notation block - assume point is taken by first occurence.
+  - Don't add reference numbers to end of numbered list items themselves, they already have numbers in front. 
   
 Content style: 
 - Problem section: no need to ground in previous steps. Ground in industry wisdom and project needs.
@@ -197,40 +206,52 @@ Content style:
  - Do not assume reader knows project specifics or project-specific terminology. Define/explain concepts.
  - 'Builds on', 'Used by' sections list top stages (Chunking, Fields) and top collections (Documents).
  - Notation: Must mention all input/output schemas, transform steps.
+- Implementation section:
+ - Body text other than bullet/numbered lists: prioritize thoughtful description/intent/proposal style 
+over prescription/direction, gradually build understanding.
+ - Make accessible for the first-time reader.  
 
 Code section:
 - Combine the above results with Collected doc (.cnd.md):
-- Include as Code section in the resulting doc
-- Drop intro line like 'The code below follows the declared workflow' or similar
-- It is OK to go without intro sentence before the Workflow section; however, consider at least one intent sentence per stage transform.
-- Within step transforms, convert 'step' sections into a numbered list. 
+ - Include as Code section in the resulting doc
+ - Drop intro line like 'The code below follows the declared workflow' or similar
+ - It is OK to go without intro sentence before the Workflow section; however, consider at least one intent sentence per stage transform.
+ - Within step transforms, convert 'step' sections into a numbered list.
+ - Apply prose transformations to narrative sections only. The Code section is lossless: copy all collected code 
+and in order. Headings may be relocated or demoted, but code must be preserved.
 
 Formatting:
  - Formulas: use GitHub/Typora-compatible LaTeX, do not render formulas as inline code. 
  - Diagrams: GitHub/Typora-compatible mermaid, 
    - Monochrome diagrams only
-- Inputs/Outputs/Stages sections: use plain bold for class/schema/transform names instead of inline code. 
+ - Definitions: bold defined concept name
+ - Inputs, Outputs, Stages sections: use bold, instead of inline code, for the class/schema/transform names. 
 
 Finishing touches:
 - Ensure continuous narrative from top to bottom, gradual buildup of concepts and understanding,
 gradual introduction of technical details, no repetition, no technical overload while still preserving the goals:
  - Solution, Implementation sections should make interesting read
+ - Industry wisdom/general considerations are concentrated on top (Solution section highest)
+ - Implementation details can gradually grow (Code section highest)
  - Concepts are clarified before used
 
 Avoid:
 - Referring to other steps in text pipeline (e.g. 'The collected implementation') - these names/steps are internal use.
 - Exhaustive comma-separated lists - use etc. as humans would.
 - Corporate/bureaucratic/too-formal talk
-- Do not overuse 'only'
-  - Ex: 'Materialize source-faithful sentence content only in a private lane.'
+- Do not use 'only' where can be omitted. Ex: 'Materialize sentences only for tokenization.'
 - Overly complicated sentences that build up and read like mouthful.
   - Ex: 'Materialize source-faithful sentence content only in a private lane.'
-- Talking about section subject in section content. 
-  - Ex: 'The implementation turns source text into boundary rows' inside Implementation section.
-- Drop negative/exclusion clarifying phrases resembling argumentation in a not-included discussion.
-  - Phrases usually feature ', not' construct with following exclusions. 
+- Drop negative/clarifying-by-exclusion phrases.
+  - Phrases usually feature ', not' construct, followed by exclusions. 
   - Ex: 'The public index retains normalized evidence, not another copy of the source.'
-  - Drop or convert to positive phrase. Ex:'The public index retains normalized evidence.' 
-- Overall cut down on negative statements
+  - Consider dropping or converting to positive phrase, ex:'The public index retains normalized evidence.' 
+- Cut down on starting with negative statements
   - Ex: 'Search needs more than a match/no-match signal. Ranking and field constraints need normalized terms,'
-    - can be refactored by dropping the negative: 'Ranking and field constraints need normalized terms,'
+    - Consider refactoring: 'Ranking and field constraints need normalized terms, because'
+
+Quality assurance:
+- Code section
+ - Every collected transform/method section is represented.
+ - Code-fence order matches the collected source.
+ - Root workflows include all child and external stages.

@@ -1,6 +1,11 @@
 from typing import cast
 
-from examples.search.transforms.inference import Inference
+from examples.search.transforms.inference import (
+    Inference,
+    PublishDocumentInference,
+    PublishQueryInference,
+    ValidateInferencePolicy,
+)
 from examples.search.transforms.offline.vectorization import OfflineVectorization
 from examples.search.transforms.online.filtering import SelectGapQueries as SelectFilterGaps
 from examples.search.transforms.online.scoring.lexical import OnlineScoring
@@ -10,11 +15,26 @@ from examples.search.transforms.searching.search_fields.SearchFields import Sear
 from examples.search.transforms.vectorization import Vectorization
 from structure.core.compiler.api import Compiler
 from structure.plugin.api.v1.model import TransformPlan
+from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 
 
 def test_inference_and_vectorization_facets_compile() -> None:
     for transform in (Inference, Vectorization, OfflineVectorization, OnlineVectorization):
         Compiler.frontend.compile()(transform, materialize_schemas=False)
+
+
+def test_inference_publication_validates_adapter_embeddings() -> None:
+    for transform in (PublishQueryInference, PublishDocumentInference):
+        plan = cast(TransformPlan, Compiler.frontend.compile()(transform, materialize_schemas=False).analysis)
+        body = cast(PySparkStepBody, plan.steps[0].plugin_body)
+        assert any(operation.kind == "require_all" for operation in body.operations)
+
+
+def test_inference_validates_policy_identity_and_dimension() -> None:
+    plan = cast(TransformPlan, Compiler.frontend.compile()(ValidateInferencePolicy, materialize_schemas=False).analysis)
+    assert plan.steps[0].name == "validate"
+    body = cast(PySparkStepBody, plan.steps[0].plugin_body)
+    assert any(operation.kind == "require_all" for operation in body.operations)
 
 
 def test_vectorization_facets_select_the_expected_execution_mode() -> None:

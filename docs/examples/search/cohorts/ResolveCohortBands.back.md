@@ -13,14 +13,15 @@ Fallback weakens the least-important matching band first through its declared pa
 choose one arbitrary cohort. Missing parents, cycles, and ambiguous hierarchy identity are configuration failures.
 
 
-Context resolution is upstream of feedback and search ranking. A context is a reusable relation key, not a request
-attribute and not a permission decision. The resolver's recursive hierarchy expansion is a narrow raw Spark boundary;
-ordinary matching and downstream ranking remain typed.
+Context resolution is upstream of feedback and search ranking. A context is a reusable relation key, separate from a
+request attribute and a permission decision. Hierarchy validation, closure, and fallback expansion use typed
+compiler-visible relation operations; ordinary matching and downstream ranking remain typed as well.
 
 ## How it works
 
 Users may match independent cohort dimensions, but sibling bands are not blended. A deterministic priority-tail fallback
-keeps the governing evidence explainable and bounds context growth.
+keeps the governing evidence explainable and bounds context growth. Parent links are validated with a finite depth,
+ancestor rows are expanded through a typed closure, and fallback rows end at the declared global context.
 
 
 Equivalent ordered cohort sets produce reusable context identity; parent generalization is deterministic; invalid

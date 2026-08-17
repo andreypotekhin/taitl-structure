@@ -7,6 +7,7 @@ from examples.search.schemas.search import SearchQuery
 from examples.search.schemas.text import Document
 from examples.search.transforms.inference.infer import InferDocuments, InferQueries
 from examples.search.transforms.inference.publish import PublishDocumentInference, PublishQueryInference
+from examples.search.transforms.inference.validate import ValidateInferencePolicy
 from structure import Transform, input, output, parameter
 
 
@@ -20,11 +21,14 @@ class Inference(Transform):
     queries = input(SearchQuery, streaming=True)
     documents = input(Document)
 
-    inferred_queries = InferQueries(adapter=adapter, streaming=streaming, policy=policy, queries=queries)
-    inferred_documents = InferDocuments(adapter=adapter, streaming=streaming, policy=policy, documents=documents)
+    validated = ValidateInferencePolicy(policy=policy)
+    valid_policy = validated.valid_policy
 
-    published_queries = PublishQueryInference(policy=policy, results=inferred_queries.results)
-    published_documents = PublishDocumentInference(policy=policy, results=inferred_documents.results)
+    inferred_queries = InferQueries(adapter=adapter, streaming=streaming, policy=valid_policy, queries=queries)
+    inferred_documents = InferDocuments(adapter=adapter, streaming=streaming, policy=valid_policy, documents=documents)
+
+    published_queries = PublishQueryInference(policy=valid_policy, results=inferred_queries.results)
+    published_documents = PublishDocumentInference(policy=valid_policy, results=inferred_documents.results)
 
     query_embeddings = output(SearchQueryVectorEmbedding, published_queries.embeddings)
     document_embeddings = output(DocumentVectorEmbedding, published_documents.embeddings)

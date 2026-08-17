@@ -6,13 +6,17 @@ Maintain annotated sources for certain parts of project code.
 Currently, we only maintain annotated code for these code dirs and their subdirs:
 - examples/search/transforms/chunking
 - examples/search/transforms/clicks
+- examples/search/transforms/cohorts
 - examples/search/transforms/features
 - examples/search/transforms/filtering
+- examples/search/transforms/inference
 - examples/search/transforms/indexing
 - examples/search/transforms/labeling
-- examples/search/transforms/scoring
-- examples/search/transforms/relevance
+- examples/search/transforms/offline
 - examples/search/transforms/online
+- examples/search/transforms/relevance
+- examples/search/transforms/scoring
+- examples/search/transforms/vectorization
 - examples/search/transforms/searching/search_docs
 - examples/search/transforms/training
 - examples/store/transforms/catalog

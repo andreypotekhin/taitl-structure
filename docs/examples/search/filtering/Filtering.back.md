@@ -6,12 +6,13 @@ Filtering provides a cheap, reusable candidate boundary before composite lexical
 
 The filter counts distinct normalized query terms shared with each document. It orders by descending matched-term count,
 then document ID, and publishes timestamped `DocumentFilterScore` rows. `Filtering` creates offline artifacts for a
-selected query set; `OnlineFiltering` computes only query groups missing or invalid in the cache.
+selected query set; `OnlineFiltering` computes only query groups missing or invalid in the cache and reuses usable
+stored rows.
 
 `SelectFilterTargets` applies request-time validity rules and retains at most 10,000 document targets per query. A
-filter
-artifact cannot be used when it is future-dated, older than the configured maximum age, or older than the policy's
-effective timestamp.
+filter artifact cannot be used when it is future-dated, older than the configured maximum age, or older than the
+policy's effective timestamp. Online filtering also carries an optional pre-existing target scope so already-admitted
+query groups can remain stable while new filter rows are merged.
 
 ## How it works
 
@@ -29,9 +30,9 @@ The admission score is intentionally cheaper than lexical relevance:
 matched_terms(q, d) = |distinct_normalized_query_terms ∩ indexed_document_terms(d)|
 ```
 
-Rows order by matched-term count descending and document ID ascending before the 10,000-target cap. The
-This is a cost boundary: cheap deterministic admission happens first, while IDF-weighted overlap is reserved for
-composite scoring after admission. Separating the stages keeps candidate volume bounded without discarding the richer
+Rows order by matched-term count descending and document ID ascending before the 10,000-target cap. This is a cost
+boundary: cheap deterministic admission happens first, while IDF-weighted overlap is reserved for composite scoring
+after admission. Separating the stages keeps candidate volume bounded while preserving the richer
 evidence needed for ranking.
 
 

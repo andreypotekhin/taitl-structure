@@ -8,8 +8,9 @@ from examples.search.schemas.inference import (
     QueryInferenceResult,
     QueryInferenceStatus,
 )
+from examples.search.transforms.lib.Vectors import Vectors
 from structure import Transform, input, output, step
-from structure.plugin.pyspark import array_repeat, coalesce, param_join, where
+from structure.plugin.pyspark import array_repeat, coalesce, param_join, require_all, where
 
 
 class PublishQueryInference(Transform):
@@ -24,6 +25,7 @@ class PublishQueryInference(Transform):
     def embedding(self, result: QueryInferenceResult, policy: InferencePolicy) -> SearchQueryVectorEmbedding:
         param_join(policy)
         where((result.status == "success") & result.vector.is_not_null())
+        require_all(Vectors.valid_vector(result.vector, policy.dimension))
         return SearchQueryVectorEmbedding(
             query_id=result.query_id,
             vector=coalesce(result.vector, array_repeat(0.0, policy.dimension)),
@@ -60,6 +62,7 @@ class PublishDocumentInference(Transform):
     def embedding(self, result: DocumentInferenceResult, policy: InferencePolicy) -> DocumentVectorEmbedding:
         param_join(policy)
         where((result.status == "success") & result.vector.is_not_null())
+        require_all(Vectors.valid_vector(result.vector, policy.dimension))
         return DocumentVectorEmbedding(
             document_id=result.document_id,
             vector=coalesce(result.vector, array_repeat(0.0, policy.dimension)),
