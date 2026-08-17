@@ -157,46 +157,46 @@ Combining Draft with Background docs:
 
 'Stages' section:
 - Create diagrams for each stage: 
- - Use UML package diagram. Use [Stage] as enclosing package, Inputs/Outputs as class names; 
- - Hide class members box
- - Show input/output schemas as class methods, but without parentheses.
- - Place Inputs/Outputs boxes horizontally inside Stage package, with arrow from Inputs to Outputs. 
- - Arrows style: solid.
+ - Use UML class diagram. Use Stage as enclosing package, Inputs/Outputs as classes, input/output schemas as class methods, but without parentheses. 
+ - Place Inputs and Outputs left-to-right inside Stage package, with one arrow going from Inputs to Outputs.
+ - Do not include an element for Stage inside stage box - it is already the enclosing box.
  - Stay basic - no need for + signs, <<>> or other decorations, one schema per line and no decorations
- - Only vertical and horizontal lines
- - Be monochrome (b/w)
+ - Hide class members box
+ - Arrows style: solid. Only vertical and horizontal lines. 
+ - Use monochrome style.
 
 Implementation section:
 - 'How it works' section of background doc becomes combined doc's 'Implementation' section
 - Should have at least one paragraph before main bullet list
+- Move-in the details that are too technical from the Solution section
+- Drop implementation direction content such as discussion of invalid inputs, 'should'/'must paragraphs
+- Drop content from decisions sections and on
 - Move 'Notation' section from draft into 'Implementation' section
   - Insert after intro paragraphs, before main bullet list. 
   - Remove 'Notation' heading
   - Don't change notation content compared to draft doc.
 - Make 'Implementation' main bullet list a numbered list
-- Apply italics to the intent intros in numbered bullets
-- Do refer to transforms, stages and steps from the numbered list. 
-- Add volume, if needed, by extending numbered list sections for accessibility/understandability. 
-- For each numbered Implementation item, add item number as reference number to the notation block above
-  - Use circled digit like &#9312; for reference numbers.
-  - Add reference number to the end of corresponding line in the notation block.
+- Apply italics to the intent intros in numbered items
+- Do refer to transforms, stages and steps from the numbered items. 
+- Add sentences to numbered items for comprehensive explanation/accessibility/understandability.
+- Consider bundling cohesive numbered items together to reduce the overall number of numbered items.  
+- For each numbered item, add item's number as reference number to the notation block:
+  - Use circled digit like &#9312; for reference numbers in the notation block.
+  - Add reference numbers to the end of corresponding lines in the notation block.
   - Omit repeating of reference numbers, assume point is already taken 
-- Move-in the details that are too technical from the Solution section
-- Drop implementation direction content such as discussion of invalid inputs, 'should'/'must paragraphs
-- Drop content from decisions sections and on
-- Body text (other than bullet/numbered lists): prioritize thoughtful description/intent/proposal style over prescription/direction, gradually build understanding.
-- Make the reading accessible for the first-time reader.  
+- Body text other than bullet/numbered lists: prioritize thoughtful description/intent/proposal style over prescription/direction, gradually build understanding.
+- Make reading accessible for the first-time reader.  
   
 Content style: 
-- Problem section: no need to ground in previous steps; ground in industry wisdom as needed for the project.
+- Problem section: no need to ground in previous steps. Ground in industry wisdom and project needs.
 - Solution section: 
-- Ground in industry wisdom as needed for the project.
-- Make accessible for the person who gets familiar or refreshes the concepts
-- Structure as overview + proposal/description, rather than direction/report/achievement statements
-- Do not assume the reader knows project specifics and project-specific terminology. Define/explain concepts.
-- Include ample industry background as needed for the topic. Use formulas.
-- 'Builds on', 'Used by' sections list top stages (Chunking, Fields) and top collections (Documents)
-- Notation: Must mention all input/output schemas, transform steps
+ - Ground in industry wisdom and project needs.
+ - Include ample industry background as needed for the topic. Use formulas.
+ - Make accessible for the person who gets familiar or refreshes the concepts
+ - Structure as an overview + proposal/description, rather than direction/report/achievement statements
+ - Do not assume reader knows project specifics or project-specific terminology. Define/explain concepts.
+ - 'Builds on', 'Used by' sections list top stages (Chunking, Fields) and top collections (Documents).
+ - Notation: Must mention all input/output schemas, transform steps.
 
 Code section:
 - Combine the above results with Collected doc (.cnd.md):
@@ -207,14 +207,8 @@ Code section:
 
 Formatting:
  - Formulas: use GitHub/Typora-compatible LaTeX, do not render formulas as inline code. 
- - Diagrams: GitHub/Typora-compatible mermaid, monochrome
-- Stages: replace stage enumeration with one Mermaid flowchart per stage.
-  - After the `Stages` heading, include diagrams only; omit explanatory prose.
-  - Use a left-to-right flow so data direction is explicit.
-  - Keep diagrams monochrome and compact.
-  - Put inputs and outputs as labeled lines inside compact boxes or tables, with a distinct stage node between them.
-  - Use arrows for connections and include every declared input and output.
-  - Allow diagrams to extend horizontally when names require it.
+ - Diagrams: GitHub/Typora-compatible mermaid, 
+   - Monochrome diagrams only
 - Inputs/Outputs/Stages sections: use plain bold for class/schema/transform names instead of inline code. 
 
 Finishing touches:
@@ -239,4 +233,4 @@ Avoid:
   - Drop or convert to positive phrase. Ex:'The public index retains normalized evidence.' 
 - Overall cut down on negative statements
   - Ex: 'Search needs more than a match/no-match signal. Ranking and field constraints need normalized terms,'
-    - can be refactored by dropping the negative: 'Ranking and field constraints need normalized terms,' 
+    - can be refactored by dropping the negative: 'Ranking and field constraints need normalized terms,'
