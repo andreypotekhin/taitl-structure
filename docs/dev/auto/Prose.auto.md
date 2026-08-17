@@ -88,24 +88,13 @@ More operators and processes are defined below.
     - The `Workflow` section thus contains the parent workflow class listing plus all former sections, except the intro
       section. It must retain every stage call in execution order, including calls to stages defined outside the workflow
       directory, so the complete parent orchestration is readable in one place.
-      - Build a package stage inventory before writing the document. Include every `Transform` class instantiated by the
-      workflow, every stage named by the draft, and every transform exported by the workflow package that belongs to the
-      package's documented stage surface.
-      - For same-package stages, include the complete annotated source for the stage transform: its class declaration,
-      parameters, inputs, outputs, and every step method with its code listing. If one source file defines multiple
-      transform classes, include each class separately in workflow order.
-      - Treat the workflow directory as a package tree: inspect sibling source files and relevant immediate subpackages,
-      including their annotated documents. Do not assume that the workflow file's annotation contains the package's
-      stage implementations.
-      - A workflow's stage assignment and a same-package stage's class listing serve different purposes. Retain the
-      assignment in `Workflow`, then include the complete stage class in its stage section; do not replace the class with
-      a prose summary or a repeated assignment.
-      - Since 'Workflow' section now starts with bare code listing, include a sentence before the listing describing that
-      this is the workflow transform. 
     - Append workflow document with the content (.cnd.md) of subtransforms as additional sections to form continuous narrative.
       - Order subtransform sections according to their stage's order in the workflow transform.
       - Convert the headers of the appended content to one level lower, to maintain header structure.
       - Do not remove any headers: former top-level headers become section headers. 
+    - Treat the workflow directory as a package tree: inspect sibling source files and relevant immediate subpackages,
+      - For same-package stages, include the annotated source for the stage transform. If one source file defines 
+      multiple transform classes, include each class separately in workflow order.
     - Some stages may be outside of workflow dir.
       - For stages in the immediate subdirs of workflow dir: include them into main workflow doc similar subtransforms, as described above.
       - For stages defined in different dirs outside of workflow dir:
@@ -120,8 +109,7 @@ More operators and processes are defined below.
           the complete `features = Features(...)` assignment, not a second `class Training(Transform):` listing.
     - Quality assurance:
       - Verify transform sections follow the order of main transform stages, with no stages missing.
-      - Verify the package stage inventory is complete: every same-package stage class from the workflow, draft, and
-        documented package exports has a corresponding section in the collected output.
+      - Verify the package stage inventory is complete: every same-package stage class from the workflow has a corresponding section in the collected output.
       - Verify every same-package stage section contains its complete class declaration and all annotated step code,
         including files that define more than one transform class.
       - Verify the complete parent orchestration, including every external stage call, appears in `Workflow` in
