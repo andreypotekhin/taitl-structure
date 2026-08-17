@@ -1,10 +1,12 @@
 """Merge usable filter artifacts and expose bounded document targets."""
 
+from typing import cast
+
 from examples.search.schemas.clicks import SearchRequest
 from examples.search.schemas.filtering import DocumentFilterScore
 from examples.search.schemas.search import DocumentSearchTarget, ScorePolicy
 from examples.search.transforms.lib.TargetScope import target_scope_id
-from structure import Transform, input, lane, output, step
+from structure import Transform, input, lane, output, parameter, step
 from structure.plugin.pyspark import (
     coalesce,
     datediff,
@@ -20,7 +22,7 @@ from structure.plugin.pyspark import (
 class SelectFilterTargets(Transform):
     """Merge current filter artifacts and expose bounded document targets."""
 
-    maximum_candidates = 10000
+    maximum_candidates = parameter(10000)
 
     document_filter_scores = input(DocumentFilterScore)
     online_document_filter_scores = input(DocumentFilterScore)
@@ -55,12 +57,13 @@ class SelectFilterTargets(Transform):
         return DocumentFilterScore.project(candidate)
 
     @step(input=[merged_filter_scores, document_filter_targets], output=targets)
-    def select_targets(
-        self, document: DocumentFilterScore, target: DocumentSearchTarget
-    ) -> DocumentSearchTarget:
+    def select_targets(self, document: DocumentFilterScore, target: DocumentSearchTarget) -> DocumentSearchTarget:
         left_join(target, on=target.query_id == document.query_id)
         where(target.query_id.is_null() | (target.document_id == document.document_id))
         where(document.filter_rank <= self.maximum_candidates)
         return DocumentSearchTarget.project(document)(
-            scope_id=coalesce(target.scope_id, target_scope_id(document.query_id, document.scored_at, self.maximum_candidates))
+            scope_id=coalesce(
+                target.scope_id,
+                target_scope_id(document.query_id, document.scored_at, cast(int, self.maximum_candidates)),
+            )
         )

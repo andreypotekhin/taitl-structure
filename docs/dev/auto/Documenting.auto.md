@@ -64,15 +64,20 @@ Follow instructions in Documenting.md and Style.md
 Location: docs/dev/ subdirs
 Follow instructions in Documenting.md and Style.md
 
-### Documentation style 
-
+### Documentation style tips 
 #### Documentation tips - general 
-- Use caution/consider alternative wording for corporate-speak such as 'owns', 'boundary', 'intentional', 'downstream'
+- Use caution/consider alternative wording for corporate-speak such as 'owns', 'intentional', 'downstream'
+- Do not overuse power nouns like as 'boundary', 'contract': prefer to use only in their context (of boundaries, contracts)
+  - In other circumstance, use more specific word, e.g. 'schema' instead of 'contract' when describing input schemas. 
 - Avoid added qualifiers when not the point of the statement, such as 'complete', 'bounded', 'valid'
+- Do not overuse 'only'
+  - Ex: 'Materialize source-faithful sentence content only in a private lane.'
 - Do not assume the reader actually reads headings - repeat heading text or its idea to body text if not already there.
 - Code examples use wildcard imports, to save lines.
 - Do not assume example apps code is known/can be referred as-is to the reader. 
   - Ex: 'Keep tenant and other scope keys in the predicate.' - tenant is part of example app, not part of the project.  
+- Avoid overly complicated sentences that build up and read like mouthful.
+  - Ex: 'Materialize source-faithful sentence content only in a private lane.'
 
 #### End-User documentation tips 
 - In Reference documents: 

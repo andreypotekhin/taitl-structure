@@ -222,16 +222,16 @@ DataFrames have no physical row order, so consumers should sort or page by query
 signals. Its current ranking and deduplication shape is batch-only; it does not expose a caller-adoption streaming
 contract.
 
-The concrete limits are class-level public constants:
+The concrete limits are public transform parameters/constants:
 
 | Transform | Constant | Default | Applied at |
 | --- | --- | ---: | --- |
-| `SelectFilterTargets` | `maximum_candidates` | `10000` | After cached and online filter rows merge |
-| `RetrieveDocuments` | `maximum_candidates` | `1000` | After composite lexical retrieval |
+| `OnlineFiltering` | `maximum_candidates` | `10000` | After cached and online filter rows merge, via `SelectFilterTargets` |
+| `RerankDocuments` | `maximum_candidates` | `1000` | Before feedback scoring and final ranking |
 | `RerankDocuments` | `maximum_results` | `100` | After feedback scoring and final ranking |
 
 The implementation calls the retrieval setting `maximum_candidates`; `max_candidates` is not the documented
-attribute. The limits are not interchangeable: feedback may reorder the 1,000 admitted lexical candidates, but it
+attribute. The limits are not interchangeable: feedback may reorder the 1,000 admitted candidates, but it
 cannot admit a document outside that set. A final top-100 result is therefore not the top 100 over the entire corpus.
 
 The filter cap is a separate, earlier admission guard. Increasing or replacing one cap changes a distinct stage and
@@ -479,7 +479,7 @@ filter and score artifacts, rerank an already admitted candidate set, and presen
 
 The online path must not silently rebuild the whole corpus or bypass the offline boundaries. `OnlineFiltering` and
 `OnlineScoring` resolve missing or stale query groups from reusable indexes; they do not turn a request into an
-unbounded full-corpus scan by implication. `RetrieveDocuments.maximum_candidates` and
+unbounded full-corpus scan by implication. `RerankDocuments.maximum_candidates` and
 `RerankDocuments.maximum_results` remain explicit safeguards.
 
 ```python

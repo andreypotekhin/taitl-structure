@@ -9858,10 +9858,10 @@ class AllDocumentTargetsGenerated:
         }
 
 
-class InferenceGenerated:
-    def _step_vectorized_vectorized_inferred_infer_query_120(self, frames):
-        # Step method: vectorized.vectorized.inferred.infer_query
-        vectorized__vectorized__inferred__query_inference = frames["labeled__merged__labeled_queries"].alias(
+class InferQueriesGenerated:
+    def _step_vectorized_vectorized_inferred_inferred_queries_infer_120(self, frames):
+        # Step method: vectorized.vectorized.inferred.inferred_queries.infer
+        vectorized__vectorized__inferred__inferred_queries__results = frames["labeled__merged__labeled_queries"].alias(
             "search_query"
         )
         __structure_streaming_step = (
@@ -9882,47 +9882,51 @@ class InferenceGenerated:
                 frames["inference_policy"]
             ).drop("__structure_exactly_one")
         inference_policy_joined = inference_policy_param_joined.alias("inference_policy")
-        vectorized__vectorized__inferred__query_inference = vectorized__vectorized__inferred__query_inference.crossJoin(
-            inference_policy_joined
+        vectorized__vectorized__inferred__inferred_queries__results = (
+            vectorized__vectorized__inferred__inferred_queries__results.crossJoin(inference_policy_joined)
         )
-        vectorized__vectorized__inferred__query_inference = vectorized__vectorized__inferred__query_inference.select(
-            F.col("search_query.id").alias("query_id"),
-            F.transform(
-                F.sequence(F.lit(0), (F.col("inference_policy.dimension") - F.lit(1))),
-                lambda item: F.when(
-                    (
-                        F.aggregate(
-                            F.split(F.lower(F.trim(F.col("search_query.content"))), '\\s+', -1),
-                            F.lit(0),
-                            lambda acc, item: (
-                                acc
-                                + F.when(((F.xxhash64(item, item) % F.lit(2)) == F.lit(0)), F.lit(1)).otherwise(
-                                    F.lit(-1)
-                                )
-                            ),
-                        )
-                        >= F.lit(0)
-                    ),
-                    (F.lit(1.0) / F.sqrt(F.col("inference_policy.dimension"))),
-                ).otherwise((-(F.lit(1.0) / F.sqrt(F.col("inference_policy.dimension"))))),
-            ).alias("vector"),
-            F.lit('success').alias("status"),
-            F.lit(None).cast(T.StringType()).alias("error_code"),
-            F.lit(None).cast(T.StringType()).alias("diagnostic"),
+        vectorized__vectorized__inferred__inferred_queries__results = (
+            vectorized__vectorized__inferred__inferred_queries__results.select(
+                F.col("search_query.id").alias("query_id"),
+                F.transform(
+                    F.sequence(F.lit(0), (F.col("inference_policy.dimension") - F.lit(1))),
+                    lambda item: F.when(
+                        (
+                            F.aggregate(
+                                F.split(F.lower(F.trim(F.col("search_query.content"))), '\\s+', -1),
+                                F.lit(0),
+                                lambda acc, item: (
+                                    acc
+                                    + F.when(((F.xxhash64(item, item) % F.lit(2)) == F.lit(0)), F.lit(1)).otherwise(
+                                        F.lit(-1)
+                                    )
+                                ),
+                            )
+                            >= F.lit(0)
+                        ),
+                        (F.lit(1.0) / F.sqrt(F.col("inference_policy.dimension"))),
+                    ).otherwise((-(F.lit(1.0) / F.sqrt(F.col("inference_policy.dimension"))))),
+                ).alias("vector"),
+                F.lit('success').alias("status"),
+                F.lit(None).cast(T.StringType()).alias("error_code"),
+                F.lit(None).cast(T.StringType()).alias("diagnostic"),
+            )
         )
         assert_schema(
-            vectorized__vectorized__inferred__query_inference,
+            vectorized__vectorized__inferred__inferred_queries__results,
             QUERY_INFERENCE_RESULT_SCHEMA,
             name="QueryInferenceResult",
             mode="strict",
         )
         return {
-            "vectorized__vectorized__inferred__query_inference": vectorized__vectorized__inferred__query_inference,
+            "vectorized__vectorized__inferred__inferred_queries__results": vectorized__vectorized__inferred__inferred_queries__results,
         }
 
-    def _step_vectorized_vectorized_inferred_infer_document_121(self, frames):
-        # Step method: vectorized.vectorized.inferred.infer_document
-        vectorized__vectorized__inferred__document_inference = frames["extracted__documents"].alias("document")
+
+class InferDocumentsGenerated:
+    def _step_vectorized_vectorized_inferred_inferred_documents_infer_121(self, frames):
+        # Step method: vectorized.vectorized.inferred.inferred_documents.infer
+        vectorized__vectorized__inferred__inferred_documents__results = frames["extracted__documents"].alias("document")
         __structure_streaming_step = (
             frames["extracted__documents"].isStreaming or frames["inference_policy"].isStreaming
         )
@@ -9941,11 +9945,11 @@ class InferenceGenerated:
                 frames["inference_policy"]
             ).drop("__structure_exactly_one")
         inference_policy_joined = inference_policy_param_joined.alias("inference_policy")
-        vectorized__vectorized__inferred__document_inference = (
-            vectorized__vectorized__inferred__document_inference.crossJoin(inference_policy_joined)
+        vectorized__vectorized__inferred__inferred_documents__results = (
+            vectorized__vectorized__inferred__inferred_documents__results.crossJoin(inference_policy_joined)
         )
-        vectorized__vectorized__inferred__document_inference = (
-            vectorized__vectorized__inferred__document_inference.select(
+        vectorized__vectorized__inferred__inferred_documents__results = (
+            vectorized__vectorized__inferred__inferred_documents__results.select(
                 F.col("document.id").alias("document_id"),
                 F.transform(
                     F.sequence(F.lit(0), (F.col("inference_policy.dimension") - F.lit(1))),
@@ -9972,22 +9976,24 @@ class InferenceGenerated:
             )
         )
         assert_schema(
-            vectorized__vectorized__inferred__document_inference,
+            vectorized__vectorized__inferred__inferred_documents__results,
             DOCUMENT_INFERENCE_RESULT_SCHEMA,
             name="DocumentInferenceResult",
             mode="strict",
         )
         return {
-            "vectorized__vectorized__inferred__document_inference": vectorized__vectorized__inferred__document_inference,
+            "vectorized__vectorized__inferred__inferred_documents__results": vectorized__vectorized__inferred__inferred_documents__results,
         }
 
-    def _step_vectorized_vectorized_inferred_publish_query_embedding_122(self, frames):
-        # Step method: vectorized.vectorized.inferred.publish_query_embedding
-        vectorized__vectorized__inferred__query_embeddings = frames[
-            "vectorized__vectorized__inferred__query_inference"
+
+class PublishQueryInferenceGenerated:
+    def _step_vectorized_vectorized_inferred_published_queries_embedding_122(self, frames):
+        # Step method: vectorized.vectorized.inferred.published_queries.embedding
+        vectorized__vectorized__inferred__published_queries__embeddings = frames[
+            "vectorized__vectorized__inferred__inferred_queries__results"
         ].alias("query_inference_result")
         __structure_streaming_step = (
-            frames["vectorized__vectorized__inferred__query_inference"].isStreaming
+            frames["vectorized__vectorized__inferred__inferred_queries__results"].isStreaming
             or frames["inference_policy"].isStreaming
         )
         inference_policy_param_joined = frames["inference_policy"]
@@ -10005,44 +10011,49 @@ class InferenceGenerated:
                 frames["inference_policy"]
             ).drop("__structure_exactly_one")
         inference_policy_joined = inference_policy_param_joined.alias("inference_policy")
-        vectorized__vectorized__inferred__query_embeddings = (
-            vectorized__vectorized__inferred__query_embeddings.crossJoin(inference_policy_joined)
+        vectorized__vectorized__inferred__published_queries__embeddings = (
+            vectorized__vectorized__inferred__published_queries__embeddings.crossJoin(inference_policy_joined)
         )
-        vectorized__vectorized__inferred__query_embeddings = vectorized__vectorized__inferred__query_embeddings.where(
-            (
+        vectorized__vectorized__inferred__published_queries__embeddings = (
+            vectorized__vectorized__inferred__published_queries__embeddings.where(
                 (
-                    (F.col("query_inference_result.status") == F.lit('success'))
-                    & F.col("query_inference_result.vector").isNotNull()
+                    (
+                        (F.col("query_inference_result.status") == F.lit('success'))
+                        & F.col("query_inference_result.vector").isNotNull()
+                    )
                 )
             )
         )
-        vectorized__vectorized__inferred__query_embeddings = vectorized__vectorized__inferred__query_embeddings.select(
-            F.coalesce(
-                F.col("query_inference_result.vector"), F.array_repeat(F.lit(0.0), F.col("inference_policy.dimension"))
-            ).alias("vector"),
-            F.col("inference_policy.model_id"),
-            F.col("inference_policy.dimension"),
-            F.col("inference_policy.content_revision"),
-            F.col("inference_policy.experiment_id"),
-            F.col("query_inference_result.query_id"),
+        vectorized__vectorized__inferred__published_queries__embeddings = (
+            vectorized__vectorized__inferred__published_queries__embeddings.select(
+                F.coalesce(
+                    F.col("query_inference_result.vector"),
+                    F.array_repeat(F.lit(0.0), F.col("inference_policy.dimension")),
+                ).alias("vector"),
+                F.col("inference_policy.model_id"),
+                F.col("inference_policy.dimension"),
+                F.col("inference_policy.content_revision"),
+                F.col("inference_policy.experiment_id"),
+                F.col("query_inference_result.query_id"),
+            )
         )
         assert_schema(
-            vectorized__vectorized__inferred__query_embeddings,
+            vectorized__vectorized__inferred__published_queries__embeddings,
             SEARCH_QUERY_VECTOR_EMBEDDING_SCHEMA,
             name="SearchQueryVectorEmbedding",
             mode="strict",
         )
         return {
-            "vectorized__vectorized__inferred__query_embeddings": vectorized__vectorized__inferred__query_embeddings,
+            "vectorized__vectorized__inferred__published_queries__embeddings": vectorized__vectorized__inferred__published_queries__embeddings,
         }
 
-    def _step_vectorized_vectorized_inferred_publish_document_embedding_123(self, frames):
-        # Step method: vectorized.vectorized.inferred.publish_document_embedding
-        vectorized__vectorized__inferred__document_embeddings = frames[
-            "vectorized__vectorized__inferred__document_inference"
-        ].alias("document_inference_result")
+    def _step_vectorized_vectorized_inferred_published_queries_status_123(self, frames):
+        # Step method: vectorized.vectorized.inferred.published_queries.status
+        vectorized__vectorized__inferred__published_queries__statuses = frames[
+            "vectorized__vectorized__inferred__inferred_queries__results"
+        ].alias("query_inference_result")
         __structure_streaming_step = (
-            frames["vectorized__vectorized__inferred__document_inference"].isStreaming
+            frames["vectorized__vectorized__inferred__inferred_queries__results"].isStreaming
             or frames["inference_policy"].isStreaming
         )
         inference_policy_param_joined = frames["inference_policy"]
@@ -10060,11 +10071,62 @@ class InferenceGenerated:
                 frames["inference_policy"]
             ).drop("__structure_exactly_one")
         inference_policy_joined = inference_policy_param_joined.alias("inference_policy")
-        vectorized__vectorized__inferred__document_embeddings = (
-            vectorized__vectorized__inferred__document_embeddings.crossJoin(inference_policy_joined)
+        vectorized__vectorized__inferred__published_queries__statuses = (
+            vectorized__vectorized__inferred__published_queries__statuses.crossJoin(inference_policy_joined)
         )
-        vectorized__vectorized__inferred__document_embeddings = (
-            vectorized__vectorized__inferred__document_embeddings.where(
+        vectorized__vectorized__inferred__published_queries__statuses = (
+            vectorized__vectorized__inferred__published_queries__statuses.select(
+                F.col("query_inference_result.query_id"),
+                F.col("inference_policy.provider_id"),
+                F.col("inference_policy.model_id"),
+                F.col("inference_policy.model_version"),
+                F.col("query_inference_result.status"),
+                F.col("query_inference_result.error_code"),
+                F.col("query_inference_result.diagnostic"),
+                F.col("inference_policy.inferred_at"),
+            )
+        )
+        assert_schema(
+            vectorized__vectorized__inferred__published_queries__statuses,
+            QUERY_INFERENCE_STATUS_SCHEMA,
+            name="QueryInferenceStatus",
+            mode="strict",
+        )
+        return {
+            "vectorized__vectorized__inferred__published_queries__statuses": vectorized__vectorized__inferred__published_queries__statuses,
+        }
+
+
+class PublishDocumentInferenceGenerated:
+    def _step_vectorized_vectorized_inferred_published_documents_embedding_124(self, frames):
+        # Step method: vectorized.vectorized.inferred.published_documents.embedding
+        vectorized__vectorized__inferred__published_documents__embeddings = frames[
+            "vectorized__vectorized__inferred__inferred_documents__results"
+        ].alias("document_inference_result")
+        __structure_streaming_step = (
+            frames["vectorized__vectorized__inferred__inferred_documents__results"].isStreaming
+            or frames["inference_policy"].isStreaming
+        )
+        inference_policy_param_joined = frames["inference_policy"]
+        if not __structure_streaming_step:
+            inference_policy_param_joined_count = frames["inference_policy"].agg(
+                F.count(F.lit(1)).alias("__structure_count")
+            )
+            inference_policy_param_joined_count = inference_policy_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            inference_policy_param_joined = inference_policy_param_joined_count.crossJoin(
+                frames["inference_policy"]
+            ).drop("__structure_exactly_one")
+        inference_policy_joined = inference_policy_param_joined.alias("inference_policy")
+        vectorized__vectorized__inferred__published_documents__embeddings = (
+            vectorized__vectorized__inferred__published_documents__embeddings.crossJoin(inference_policy_joined)
+        )
+        vectorized__vectorized__inferred__published_documents__embeddings = (
+            vectorized__vectorized__inferred__published_documents__embeddings.where(
                 (
                     (
                         (F.col("document_inference_result.status") == F.lit('success'))
@@ -10073,8 +10135,8 @@ class InferenceGenerated:
                 )
             )
         )
-        vectorized__vectorized__inferred__document_embeddings = (
-            vectorized__vectorized__inferred__document_embeddings.select(
+        vectorized__vectorized__inferred__published_documents__embeddings = (
+            vectorized__vectorized__inferred__published_documents__embeddings.select(
                 F.coalesce(
                     F.col("document_inference_result.vector"),
                     F.array_repeat(F.lit(0.0), F.col("inference_policy.dimension")),
@@ -10087,69 +10149,22 @@ class InferenceGenerated:
             )
         )
         assert_schema(
-            vectorized__vectorized__inferred__document_embeddings,
+            vectorized__vectorized__inferred__published_documents__embeddings,
             DOCUMENT_VECTOR_EMBEDDING_SCHEMA,
             name="DocumentVectorEmbedding",
             mode="strict",
         )
         return {
-            "vectorized__vectorized__inferred__document_embeddings": vectorized__vectorized__inferred__document_embeddings,
+            "vectorized__vectorized__inferred__published_documents__embeddings": vectorized__vectorized__inferred__published_documents__embeddings,
         }
 
-    def _step_vectorized_vectorized_inferred_publish_query_status_124(self, frames):
-        # Step method: vectorized.vectorized.inferred.publish_query_status
-        vectorized__vectorized__inferred__query_status = frames[
-            "vectorized__vectorized__inferred__query_inference"
-        ].alias("query_inference_result")
-        __structure_streaming_step = (
-            frames["vectorized__vectorized__inferred__query_inference"].isStreaming
-            or frames["inference_policy"].isStreaming
-        )
-        inference_policy_param_joined = frames["inference_policy"]
-        if not __structure_streaming_step:
-            inference_policy_param_joined_count = frames["inference_policy"].agg(
-                F.count(F.lit(1)).alias("__structure_count")
-            )
-            inference_policy_param_joined_count = inference_policy_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            inference_policy_param_joined = inference_policy_param_joined_count.crossJoin(
-                frames["inference_policy"]
-            ).drop("__structure_exactly_one")
-        inference_policy_joined = inference_policy_param_joined.alias("inference_policy")
-        vectorized__vectorized__inferred__query_status = vectorized__vectorized__inferred__query_status.crossJoin(
-            inference_policy_joined
-        )
-        vectorized__vectorized__inferred__query_status = vectorized__vectorized__inferred__query_status.select(
-            F.col("query_inference_result.query_id"),
-            F.col("inference_policy.provider_id"),
-            F.col("inference_policy.model_id"),
-            F.col("inference_policy.model_version"),
-            F.col("query_inference_result.status"),
-            F.col("query_inference_result.error_code"),
-            F.col("query_inference_result.diagnostic"),
-            F.col("inference_policy.inferred_at"),
-        )
-        assert_schema(
-            vectorized__vectorized__inferred__query_status,
-            QUERY_INFERENCE_STATUS_SCHEMA,
-            name="QueryInferenceStatus",
-            mode="strict",
-        )
-        return {
-            "vectorized__vectorized__inferred__query_status": vectorized__vectorized__inferred__query_status,
-        }
-
-    def _step_vectorized_vectorized_inferred_publish_document_status_125(self, frames):
-        # Step method: vectorized.vectorized.inferred.publish_document_status
-        vectorized__vectorized__inferred__document_status = frames[
-            "vectorized__vectorized__inferred__document_inference"
+    def _step_vectorized_vectorized_inferred_published_documents_status_125(self, frames):
+        # Step method: vectorized.vectorized.inferred.published_documents.status
+        vectorized__vectorized__inferred__published_documents__statuses = frames[
+            "vectorized__vectorized__inferred__inferred_documents__results"
         ].alias("document_inference_result")
         __structure_streaming_step = (
-            frames["vectorized__vectorized__inferred__document_inference"].isStreaming
+            frames["vectorized__vectorized__inferred__inferred_documents__results"].isStreaming
             or frames["inference_policy"].isStreaming
         )
         inference_policy_param_joined = frames["inference_policy"]
@@ -10167,27 +10182,29 @@ class InferenceGenerated:
                 frames["inference_policy"]
             ).drop("__structure_exactly_one")
         inference_policy_joined = inference_policy_param_joined.alias("inference_policy")
-        vectorized__vectorized__inferred__document_status = vectorized__vectorized__inferred__document_status.crossJoin(
-            inference_policy_joined
+        vectorized__vectorized__inferred__published_documents__statuses = (
+            vectorized__vectorized__inferred__published_documents__statuses.crossJoin(inference_policy_joined)
         )
-        vectorized__vectorized__inferred__document_status = vectorized__vectorized__inferred__document_status.select(
-            F.col("document_inference_result.document_id"),
-            F.col("inference_policy.provider_id"),
-            F.col("inference_policy.model_id"),
-            F.col("inference_policy.model_version"),
-            F.col("document_inference_result.status"),
-            F.col("document_inference_result.error_code"),
-            F.col("document_inference_result.diagnostic"),
-            F.col("inference_policy.inferred_at"),
+        vectorized__vectorized__inferred__published_documents__statuses = (
+            vectorized__vectorized__inferred__published_documents__statuses.select(
+                F.col("document_inference_result.document_id"),
+                F.col("inference_policy.provider_id"),
+                F.col("inference_policy.model_id"),
+                F.col("inference_policy.model_version"),
+                F.col("document_inference_result.status"),
+                F.col("document_inference_result.error_code"),
+                F.col("document_inference_result.diagnostic"),
+                F.col("inference_policy.inferred_at"),
+            )
         )
         assert_schema(
-            vectorized__vectorized__inferred__document_status,
+            vectorized__vectorized__inferred__published_documents__statuses,
             DOCUMENT_INFERENCE_STATUS_SCHEMA,
             name="DocumentInferenceStatus",
             mode="strict",
         )
         return {
-            "vectorized__vectorized__inferred__document_status": vectorized__vectorized__inferred__document_status,
+            "vectorized__vectorized__inferred__published_documents__statuses": vectorized__vectorized__inferred__published_documents__statuses,
         }
 
 
@@ -10199,11 +10216,11 @@ class MergeQueryEmbeddingsGenerated:
         )
         __structure_streaming_step = (
             frames["query_vector_embeddings"].isStreaming
-            or frames["vectorized__vectorized__inferred__query_embeddings"].isStreaming
+            or frames["vectorized__vectorized__inferred__published_queries__embeddings"].isStreaming
             or frames["inference_policy"].isStreaming
         )
         vectorized__merged_queries__embeddings = vectorized__merged_queries__embeddings.union(
-            frames["vectorized__vectorized__inferred__query_embeddings"]
+            frames["vectorized__vectorized__inferred__published_queries__embeddings"]
         )
         vectorized__merged_queries__embeddings = vectorized__merged_queries__embeddings.alias(
             "search_query_vector_embedding"
@@ -10274,11 +10291,11 @@ class MergeDocumentVectorsGenerated:
         vectorized__merged_documents__embeddings = frames["document_vector_index"].alias("document_vector_index")
         __structure_streaming_step = (
             frames["document_vector_index"].isStreaming
-            or frames["vectorized__vectorized__inferred__document_embeddings"].isStreaming
+            or frames["vectorized__vectorized__inferred__published_documents__embeddings"].isStreaming
             or frames["vector_policy"].isStreaming
         )
         vectorized__merged_documents__embeddings = vectorized__merged_documents__embeddings.union(
-            frames["vectorized__vectorized__inferred__document_embeddings"]
+            frames["vectorized__vectorized__inferred__published_documents__embeddings"]
         )
         vectorized__merged_documents__embeddings = vectorized__merged_documents__embeddings.alias(
             "document_vector_index"
@@ -14795,7 +14812,10 @@ class AllGenerated(
     FilterOverlapGenerated,
     SelectOfflineFilterTargetsGenerated,
     AllDocumentTargetsGenerated,
-    InferenceGenerated,
+    InferQueriesGenerated,
+    InferDocumentsGenerated,
+    PublishQueryInferenceGenerated,
+    PublishDocumentInferenceGenerated,
     MergeQueryEmbeddingsGenerated,
     MergeDocumentVectorsGenerated,
     VectorizeSearchQueriesGenerated,
@@ -15059,12 +15079,12 @@ class AllGenerated(
         frames.update(self._step_filtered_filtering_overlap_publish_filter_scores_117(frames))
         frames.update(self._step_filtered_selected_select_targets_118(frames))
         frames.update(self._step_vectorized_targets_target_119(frames))
-        frames.update(self._step_vectorized_vectorized_inferred_infer_query_120(frames))
-        frames.update(self._step_vectorized_vectorized_inferred_infer_document_121(frames))
-        frames.update(self._step_vectorized_vectorized_inferred_publish_query_embedding_122(frames))
-        frames.update(self._step_vectorized_vectorized_inferred_publish_document_embedding_123(frames))
-        frames.update(self._step_vectorized_vectorized_inferred_publish_query_status_124(frames))
-        frames.update(self._step_vectorized_vectorized_inferred_publish_document_status_125(frames))
+        frames.update(self._step_vectorized_vectorized_inferred_inferred_queries_infer_120(frames))
+        frames.update(self._step_vectorized_vectorized_inferred_inferred_documents_infer_121(frames))
+        frames.update(self._step_vectorized_vectorized_inferred_published_queries_embedding_122(frames))
+        frames.update(self._step_vectorized_vectorized_inferred_published_queries_status_123(frames))
+        frames.update(self._step_vectorized_vectorized_inferred_published_documents_embedding_124(frames))
+        frames.update(self._step_vectorized_vectorized_inferred_published_documents_status_125(frames))
         frames.update(self._step_vectorized_merged_queries_merge_126(frames))
         frames.update(self._step_vectorized_merged_documents_merge_127(frames))
         frames.update(self._step_vectorized_vectorized_queries_bind_query_128(frames))
@@ -15253,13 +15273,13 @@ class AllGenerated(
         )
 
         # Step method: query_inference_status
-        query_inference_status = frames["vectorized__vectorized__inferred__query_status"].alias(
+        query_inference_status = frames["vectorized__vectorized__inferred__published_queries__statuses"].alias(
             "query_inference_status"
         )
         assert_schema(query_inference_status, QUERY_INFERENCE_STATUS_SCHEMA, name="QueryInferenceStatus", mode="strict")
 
         # Step method: document_inference_status
-        document_inference_status = frames["vectorized__vectorized__inferred__document_status"].alias(
+        document_inference_status = frames["vectorized__vectorized__inferred__published_documents__statuses"].alias(
             "document_inference_status"
         )
         assert_schema(

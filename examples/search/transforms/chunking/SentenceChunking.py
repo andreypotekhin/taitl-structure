@@ -38,10 +38,8 @@ class SentenceChunking(Transform):
             scope="sentence_text",
         )
         where(sentence.sentence_content != "")
-        return Sentence(
+        return Sentence.project(paragraph)(
             id=concat_ws("#s", paragraph.id, sentence.position.cast(types.string())),
-            document_id=paragraph.document_id,
-            section_id=paragraph.section_id,
             paragraph_id=paragraph.id,
             paragraph_ordinal=paragraph.ordinal,
             ordinal=(sentence.position + 1).cast(types.integer()),

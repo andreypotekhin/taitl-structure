@@ -10,13 +10,13 @@ from structure.plugin.pyspark import *
 class ScoreVectors(Transform):
     """Produce same-grain exact vector scores without driver collection."""
 
-    policy = input(VectorIndexPolicy)
-    score_policy = input(ScorePolicy)
     document_queries = input(DocumentVectorQuery)
     document_index = input(DocumentVectorIndex)
     paragraph_queries = input(ParagraphVectorQuery)
     paragraph_index = input(ParagraphVectorIndex)
     targets = input(DocumentSearchTarget, streaming=True)
+    policy = input(VectorIndexPolicy)
+    score_policy = input(ScorePolicy)
     valid_policy = lane(VectorIndexPolicy)
     document_scores = output(DocumentVectorScore)
     paragraph_scores = output(ParagraphVectorScore)

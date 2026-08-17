@@ -1,6 +1,5 @@
 """Reusable, batch-built text index artifacts."""
 
-from examples.search.algorithms.text import normalized_token
 from examples.search.schemas.chunking.intermediate import MaterializedSentence
 from examples.search.schemas.indexing.lexical.index import (
     DocumentIndexSummary,
@@ -26,6 +25,7 @@ from examples.search.schemas.indexing.lexical.intermediate import (
     SentenceTermCount,
     TermText,
 )
+from examples.search.schemas.scoring.intermediate import QueryToken
 from examples.search.schemas.text import Document, Sentence
 from examples.search.transforms.lib.Text import Text
 from structure import Transform, input, lane, output, step
@@ -48,6 +48,7 @@ class LexIndex(Transform):
 
     documents = input(Document)
     sentences = input(Sentence)
+
     materialized_sentence = lane(MaterializedSentence)
     occurrences = lane(LexicalOccurrence)
     document_term_counts = lane(DocumentTermCount)
@@ -62,6 +63,7 @@ class LexIndex(Transform):
     sentence_term_counts = lane(SentenceTermCount)
     sentence_target_stats = lane(SentenceIndexTargetStats)
     sentence_target_frequencies = lane(IndexTargetFrequency)
+
     document_terms = output(DocumentTerm)
     document_summary = output(DocumentIndexSummary)
     section_terms = output(SectionTerm)
@@ -85,7 +87,7 @@ class LexIndex(Transform):
             lambda value: TermText(term=value),
         )
         expanded = posexplode_struct(terms, as_=ExpandedTermText, ordinal="position", scope="sentence_term")
-        term = normalized_token(expanded.term)
+        term = QueryToken.normalize(expanded.term)
         where(term != "")
         return LexicalOccurrence(
             document_id=sentence.document_id,

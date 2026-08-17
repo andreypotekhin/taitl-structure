@@ -15,8 +15,9 @@ An optional maximum document-frequency ratio prunes common terms. Similarity doe
 ## How it works
 
 Query creation, shared scoring, and reciprocal reduction are separate stages so callers can persist or inspect
-intermediate evidence. `SearchSimilarity` consumes the document or paragraph relations together with vector candidates
-and combines the lanes by Reciprocal Rank Fusion.
+intermediate evidence. `SearchSimilarity` consumes the document or paragraph relations together with provider-neutral
+vector candidates and combines the lanes by Reciprocal Rank Fusion. The lexical materializer is therefore an offline
+candidate producer, not a third pure-lexical presentation API.
 
 The symmetric pair is a presentation convenience, not a claim that BM25 itself is symmetric or calibrated.
 

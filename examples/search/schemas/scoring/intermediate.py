@@ -1,6 +1,5 @@
 """Scoring-internal intermediate schemas."""
 
-from examples.search.algorithms.text import normalized_token
 from examples.search.schemas.search import (
     DocumentSearchTarget,
     ParagraphSearchTarget,
@@ -9,7 +8,18 @@ from examples.search.schemas.search import (
     SentenceSearchTarget,
 )
 from structure import Schema
-from structure.plugin.pyspark import arr_distinct, arr_transform, double, long, posexplode_struct, split, string, trim
+from structure.plugin.pyspark import (
+    arr_distinct,
+    arr_transform,
+    double,
+    long,
+    lower,
+    posexplode_struct,
+    regexp_replace,
+    split,
+    string,
+    trim,
+)
 
 
 class QueryToken(Schema):
@@ -18,13 +28,18 @@ class QueryToken(Schema):
     token = string(nullable=False)
 
     @staticmethod
+    def normalize(token):
+        """Normalize one token according to the Search lexical contract."""
+        return lower(regexp_replace(trim(token), pattern=r"^[^A-Za-z0-9]+|[^A-Za-z0-9]+$", replacement=""))
+
+    @staticmethod
     def expand(query: SearchQuery):
         """Expand normalized, distinct query tokens into rows."""
 
         return posexplode_struct(
             arr_transform(
                 arr_distinct(split(trim(query.content), pattern=r"\s+")),
-                lambda value: QueryToken(token=normalized_token(value)),
+                lambda value: QueryToken(token=QueryToken.normalize(value)),
             ),
             as_=ExpandedQueryToken,
             scope="query_token",

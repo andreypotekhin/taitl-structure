@@ -1,1 +1,0 @@
-"""Online Search ranking transforms."""

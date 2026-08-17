@@ -13,13 +13,7 @@ from examples.structure_generated.search.runtime.schema_assert import (
     apply_plan_boundary,
     close_plan_boundaries,
 )
-from examples.structure_generated.search.pyspark.schemas.indexing_vector import (
-    PARAGRAPH_VECTOR_INDEX_SCHEMA,
-    PARAGRAPH_VECTOR_QUERY_SCHEMA,
-    PARAGRAPH_VECTOR_SCORE_SCHEMA,
-    VECTOR_INDEX_POLICY_SCHEMA,
-)
-from examples.structure_generated.search.pyspark.schemas.search import SCORE_POLICY_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.indexing_vector import PARAGRAPH_VECTOR_CANDIDATE_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.similarities_vector import (
     PARAGRAPH_FUSED_SIMILARITY_CANDIDATE_SCHEMA,
 )
@@ -95,308 +89,19 @@ class AdoptLexicalSimilarityGenerated:
         }
 
 
-class ScoreParagraphVectorsGenerated:
-    def _step_scored_validate_policy_1(self, frames):
-        # Step method: scored.validate_policy
-        scored__valid_policy = frames["vector_policy"].alias("vector_index_policy")
-        scored__valid_policy_require_all_0_violations = scored__valid_policy.where(
-            ~F.coalesce(
-                (
-                    (
-                        (
-                            (
-                                (
-                                    (F.col("vector_index_policy.model_id") != F.lit(''))
-                                    & (F.col("vector_index_policy.dimension") > F.lit(0))
-                                )
-                                & (F.col("vector_index_policy.content_revision") != F.lit(''))
-                            )
-                            & (F.col("vector_index_policy.experiment_id") != F.lit(''))
-                        )
-                        & (F.col("vector_index_policy.maximum_candidates") > F.lit(0))
-                    )
-                    & (F.col("vector_index_policy.rrf_k") > F.lit(0))
-                ),
-                F.lit(False),
-            )
-        ).agg(F.count(F.lit(1)).alias("__structure_violations"))
-        scored__valid_policy_require_all_0_assertion = scored__valid_policy_require_all_0_violations.select(
-            F.assert_true(
-                F.col("__structure_violations") == F.lit(0),
-                (
-                    'REL-E0703: require_all(...) found rows that do not satisfy the predicate; see'
-                    'docs/Diagnostics.md#rel-e0703'
-                ),
-            ).alias("__structure_require_all")
-        )
-        scored__valid_policy = scored__valid_policy_require_all_0_assertion.crossJoin(scored__valid_policy).drop(
-            "__structure_require_all"
-        )
-        scored__valid_policy = scored__valid_policy.select(
-            F.col("vector_index_policy.model_id"),
-            F.col("vector_index_policy.dimension"),
-            F.col("vector_index_policy.content_revision"),
-            F.col("vector_index_policy.experiment_id"),
-            F.col("vector_index_policy.maximum_candidates"),
-            F.col("vector_index_policy.rrf_k"),
-        )
-        assert_schema(scored__valid_policy, VECTOR_INDEX_POLICY_SCHEMA, name="VectorIndexPolicy", mode="strict")
-        return {
-            "scored__valid_policy": scored__valid_policy,
-        }
-
-    def _step_scored_score_paragraphs_2(self, frames):
-        # Step method: scored.score_paragraphs
-        scored__paragraph_scores = frames["paragraph_vector_queries"].alias("paragraph_vector_query")
-        __structure_streaming_step = (
-            frames["paragraph_vector_queries"].isStreaming
-            or frames["paragraph_vector_index"].isStreaming
-            or frames["scored__valid_policy"].isStreaming
-            or frames["score_policy"].isStreaming
-        )
-        scored__valid_policy_param_joined = frames["scored__valid_policy"]
-        if not __structure_streaming_step:
-            scored__valid_policy_param_joined_count = frames["scored__valid_policy"].agg(
-                F.count(F.lit(1)).alias("__structure_count")
-            )
-            scored__valid_policy_param_joined_count = scored__valid_policy_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            scored__valid_policy_param_joined = scored__valid_policy_param_joined_count.crossJoin(
-                frames["scored__valid_policy"]
-            ).drop("__structure_exactly_one")
-        scored__valid_policy_joined = scored__valid_policy_param_joined.alias("scored__valid_policy")
-        scored__paragraph_scores = scored__paragraph_scores.crossJoin(scored__valid_policy_joined)
-        score_policy_2_param_joined = frames["score_policy"]
-        if not __structure_streaming_step:
-            score_policy_2_param_joined_count = frames["score_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
-            score_policy_2_param_joined_count = score_policy_2_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(score_policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            score_policy_2_param_joined = score_policy_2_param_joined_count.crossJoin(frames["score_policy"]).drop(
-                "__structure_exactly_one"
-            )
-        score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
-        scored__paragraph_scores = scored__paragraph_scores.crossJoin(score_policy_2_joined)
-        paragraph_vector_index_3_joined = frames["paragraph_vector_index"].alias("paragraph_vector_index_3")
-        scored__paragraph_scores = scored__paragraph_scores.crossJoin(paragraph_vector_index_3_joined)
-        scored__paragraph_scores_require_all_3_violations = scored__paragraph_scores.where(
-            ~F.coalesce(
-                (
-                    (
-                        (
-                            (
-                                (
-                                    (
-                                        (
-                                            (
-                                                (
-                                                    (
-                                                        F.col("paragraph_vector_query.model_id")
-                                                        == F.col("scored__valid_policy.model_id")
-                                                    )
-                                                    & (
-                                                        F.col("paragraph_vector_index_3.model_id")
-                                                        == F.col("scored__valid_policy.model_id")
-                                                    )
-                                                )
-                                                & (
-                                                    F.col("paragraph_vector_query.dimension")
-                                                    == F.col("scored__valid_policy.dimension")
-                                                )
-                                            )
-                                            & (
-                                                F.col("paragraph_vector_index_3.dimension")
-                                                == F.col("scored__valid_policy.dimension")
-                                            )
-                                        )
-                                        & (
-                                            F.col("paragraph_vector_query.content_revision")
-                                            == F.col("scored__valid_policy.content_revision")
-                                        )
-                                    )
-                                    & (
-                                        F.col("paragraph_vector_index_3.content_revision")
-                                        == F.col("scored__valid_policy.content_revision")
-                                    )
-                                )
-                                & (
-                                    F.col("paragraph_vector_query.experiment_id")
-                                    == F.col("scored__valid_policy.experiment_id")
-                                )
-                            )
-                            & (
-                                F.col("paragraph_vector_index_3.experiment_id")
-                                == F.col("scored__valid_policy.experiment_id")
-                            )
-                        )
-                        & (
-                            (
-                                (
-                                    (
-                                        F.col("paragraph_vector_query.dimension")
-                                        == F.size(F.col("paragraph_vector_query.vector"))
-                                    )
-                                    & (F.size(F.col("paragraph_vector_query.vector")) > F.lit(0))
-                                )
-                                & (
-                                    F.size(
-                                        F.filter(
-                                            F.col("paragraph_vector_query.vector"),
-                                            lambda item: (
-                                                (F.isnan(item) | (item > F.lit(1.7976931348623157e308)))
-                                                | (item < F.lit(-1.7976931348623157e308))
-                                            ),
-                                        )
-                                    )
-                                    == F.lit(0)
-                                )
-                            )
-                            & (
-                                F.sqrt(
-                                    F.aggregate(
-                                        F.col("paragraph_vector_query.vector"),
-                                        F.lit(0.0),
-                                        lambda acc, item: (acc + (item * item)),
-                                    )
-                                )
-                                > F.lit(0.0)
-                            )
-                        )
-                    )
-                    & (
-                        (
-                            (
-                                (
-                                    F.col("paragraph_vector_index_3.dimension")
-                                    == F.size(F.col("paragraph_vector_index_3.vector"))
-                                )
-                                & (F.size(F.col("paragraph_vector_index_3.vector")) > F.lit(0))
-                            )
-                            & (
-                                F.size(
-                                    F.filter(
-                                        F.col("paragraph_vector_index_3.vector"),
-                                        lambda item: (
-                                            (F.isnan(item) | (item > F.lit(1.7976931348623157e308)))
-                                            | (item < F.lit(-1.7976931348623157e308))
-                                        ),
-                                    )
-                                )
-                                == F.lit(0)
-                            )
-                        )
-                        & (
-                            F.sqrt(
-                                F.aggregate(
-                                    F.col("paragraph_vector_index_3.vector"),
-                                    F.lit(0.0),
-                                    lambda acc, item: (acc + (item * item)),
-                                )
-                            )
-                            > F.lit(0.0)
-                        )
-                    )
-                ),
-                F.lit(False),
-            )
-        ).agg(F.count(F.lit(1)).alias("__structure_violations"))
-        scored__paragraph_scores_require_all_3_assertion = scored__paragraph_scores_require_all_3_violations.select(
-            F.assert_true(
-                F.col("__structure_violations") == F.lit(0),
-                (
-                    'REL-E0703: require_all(...) found rows that do not satisfy the predicate; see'
-                    'docs/Diagnostics.md#rel-e0703'
-                ),
-            ).alias("__structure_require_all")
-        )
-        scored__paragraph_scores = scored__paragraph_scores_require_all_3_assertion.crossJoin(
-            scored__paragraph_scores
-        ).drop("__structure_require_all")
-        scored__paragraph_scores = scored__paragraph_scores.where(
-            (
-                (
-                    (
-                        (F.col("paragraph_vector_query.document_id") != F.col("paragraph_vector_index_3.document_id"))
-                        | (F.col("paragraph_vector_query.section_id") != F.col("paragraph_vector_index_3.section_id"))
-                    )
-                    | (F.col("paragraph_vector_query.paragraph_id") != F.col("paragraph_vector_index_3.paragraph_id"))
-                )
-            )
-        )
-        scored__paragraph_scores = scored__paragraph_scores.select(
-            F.col("paragraph_vector_query.query_id"),
-            F.col("paragraph_vector_query.document_id").alias("query_document_id"),
-            F.col("paragraph_vector_query.section_id").alias("query_section_id"),
-            F.col("paragraph_vector_query.paragraph_id").alias("query_paragraph_id"),
-            F.col("paragraph_vector_index_3.document_id"),
-            F.col("paragraph_vector_index_3.section_id"),
-            F.col("paragraph_vector_index_3.paragraph_id"),
-            F.lit('similarity-v1').alias("scope_id"),
-            F.coalesce(
-                (
-                    F.aggregate(
-                        F.zip_with(
-                            F.col("paragraph_vector_query.vector"),
-                            F.col("paragraph_vector_index_3.vector"),
-                            lambda left_item, right_item: (left_item * right_item),
-                        ),
-                        F.lit(0.0),
-                        lambda acc, item: (acc + item),
-                    )
-                    / (
-                        F.sqrt(
-                            F.aggregate(
-                                F.col("paragraph_vector_query.vector"),
-                                F.lit(0.0),
-                                lambda acc, item: (acc + (item * item)),
-                            )
-                        )
-                        * F.sqrt(
-                            F.aggregate(
-                                F.col("paragraph_vector_index_3.vector"),
-                                F.lit(0.0),
-                                lambda acc, item: (acc + (item * item)),
-                            )
-                        )
-                    )
-                ),
-                F.lit(0.0),
-            ).alias("cosine_similarity"),
-            F.col("scored__valid_policy.model_id"),
-            F.col("scored__valid_policy.dimension"),
-            F.col("scored__valid_policy.content_revision"),
-            F.col("scored__valid_policy.experiment_id"),
-            F.lit('exact_reference').alias("vector_backend"),
-            F.col("score_policy_2.scored_at"),
-        )
-        assert_schema(
-            scored__paragraph_scores, PARAGRAPH_VECTOR_SCORE_SCHEMA, name="ParagraphVectorScore", mode="strict"
-        )
-        return {
-            "scored__paragraph_scores": scored__paragraph_scores,
-        }
-
-
 class AdoptVectorSimilarityGenerated:
-    def _step_vector_adopt_paragraphs_3(self, frames):
+    def _step_vector_adopt_paragraphs_1(self, frames):
         # Step method: vector.adopt_paragraphs
-        vector__adopted_paragraph_candidates = frames["scored__paragraph_scores"].alias("paragraph_vector_score")
+        vector__adopted_paragraph_candidates = frames["paragraph_vector_candidates"].alias("paragraph_vector_candidate")
         query_joined = frames["query"].alias("query")
         vector__adopted_paragraph_candidates = vector__adopted_paragraph_candidates.join(
             query_joined,
             (
                 (
-                    (F.col("query.id") == F.col("paragraph_vector_score.query_paragraph_id"))
-                    & (F.col("query.document_id") == F.col("paragraph_vector_score.query_document_id"))
+                    (F.col("query.id") == F.col("paragraph_vector_candidate.query_paragraph_id"))
+                    & (F.col("query.document_id") == F.col("paragraph_vector_candidate.query_document_id"))
                 )
-                & (F.col("query.section_id") == F.col("paragraph_vector_score.query_section_id"))
+                & (F.col("query.section_id") == F.col("paragraph_vector_candidate.query_section_id"))
             ),
             "inner",
         )
@@ -405,20 +110,20 @@ class AdoptVectorSimilarityGenerated:
             paragraphs_2_joined,
             (
                 (
-                    (F.col("paragraphs_2.id") == F.col("paragraph_vector_score.paragraph_id"))
-                    & (F.col("paragraphs_2.document_id") == F.col("paragraph_vector_score.document_id"))
+                    (F.col("paragraphs_2.id") == F.col("paragraph_vector_candidate.paragraph_id"))
+                    & (F.col("paragraphs_2.document_id") == F.col("paragraph_vector_candidate.document_id"))
                 )
-                & (F.col("paragraphs_2.section_id") == F.col("paragraph_vector_score.section_id"))
+                & (F.col("paragraphs_2.section_id") == F.col("paragraph_vector_candidate.section_id"))
             ),
             "inner",
         )
         vector__adopted_paragraph_candidates_require_unique_2_duplicates = vector__adopted_paragraph_candidates.groupBy(
-            F.col("paragraph_vector_score.query_document_id"),
-            F.col("paragraph_vector_score.query_section_id"),
-            F.col("paragraph_vector_score.query_paragraph_id"),
-            F.col("paragraph_vector_score.document_id"),
-            F.col("paragraph_vector_score.section_id"),
-            F.col("paragraph_vector_score.paragraph_id"),
+            F.col("paragraph_vector_candidate.query_document_id"),
+            F.col("paragraph_vector_candidate.query_section_id"),
+            F.col("paragraph_vector_candidate.query_paragraph_id"),
+            F.col("paragraph_vector_candidate.document_id"),
+            F.col("paragraph_vector_candidate.section_id"),
+            F.col("paragraph_vector_candidate.paragraph_id"),
         ).agg(F.count(F.lit(1)).alias("__structure_count"))
         vector__adopted_paragraph_candidates_require_unique_2_duplicates = (
             vector__adopted_paragraph_candidates_require_unique_2_duplicates.where(
@@ -444,40 +149,26 @@ class AdoptVectorSimilarityGenerated:
             ).drop("__structure_require_unique")
         )
         vector__adopted_paragraph_candidates = vector__adopted_paragraph_candidates.select(
-            F.col("paragraph_vector_score.query_document_id").alias("left_document_id"),
-            F.col("paragraph_vector_score.query_section_id").alias("left_section_id"),
-            F.col("paragraph_vector_score.query_paragraph_id").alias("left_paragraph_id"),
+            F.col("query.document_id").alias("left_document_id"),
+            F.col("query.section_id").alias("left_section_id"),
+            F.col("query.id").alias("left_paragraph_id"),
             F.col("paragraphs_2.document_id").alias("right_document_id"),
             F.col("paragraphs_2.section_id").alias("right_section_id"),
             F.col("paragraphs_2.id").alias("right_paragraph_id"),
             F.lit(None).cast(T.LongType()).alias("lexical_rank"),
-            F.row_number()
-            .over(
-                Window.partitionBy(
-                    F.col("paragraph_vector_score.query_document_id"),
-                    F.col("paragraph_vector_score.query_section_id"),
-                    F.col("paragraph_vector_score.query_paragraph_id"),
-                ).orderBy(
-                    F.col("paragraph_vector_score.cosine_similarity").desc_nulls_last(),
-                    F.col("paragraphs_2.document_id").asc_nulls_first(),
-                    F.col("paragraphs_2.section_id").asc_nulls_first(),
-                    F.col("paragraphs_2.id").asc_nulls_first(),
-                )
-            )
-            .cast(T.LongType())
-            .alias("vector_rank"),
+            F.col("paragraph_vector_candidate.rank").alias("vector_rank"),
             F.lit(None).cast(T.DoubleType()).alias("score_overlap"),
             F.lit(None).cast(T.DoubleType()).alias("bm25_left_to_right"),
             F.lit(None).cast(T.DoubleType()).alias("bm25_right_to_left"),
             F.lit(None).cast(T.DoubleType()).alias("bm25_mean"),
-            F.col("paragraph_vector_score.cosine_similarity").alias("vector_similarity"),
-            F.col("paragraph_vector_score.vector_backend"),
-            F.col("paragraph_vector_score.model_id").alias("vector_model_id"),
-            F.col("paragraph_vector_score.dimension").alias("vector_dimension"),
-            F.col("paragraph_vector_score.content_revision").alias("vector_content_revision"),
+            F.col("paragraph_vector_candidate.cosine_similarity").alias("vector_similarity"),
+            F.col("paragraph_vector_candidate.vector_backend"),
+            F.col("paragraph_vector_candidate.model_id").alias("vector_model_id"),
+            F.col("paragraph_vector_candidate.dimension").alias("vector_dimension"),
+            F.col("paragraph_vector_candidate.content_revision").alias("vector_content_revision"),
             F.lit(0.0).alias("rrf_score"),
             F.lit(0).cast(T.LongType()).alias("rrf_k"),
-            F.lit('').alias("experiment_id"),
+            F.col("paragraph_vector_candidate.experiment_id"),
         )
         assert_schema(
             vector__adopted_paragraph_candidates,
@@ -491,7 +182,7 @@ class AdoptVectorSimilarityGenerated:
 
 
 class FuseSimilarityGenerated:
-    def _step_fused_validate_policy_4(self, frames):
+    def _step_fused_validate_policy_2(self, frames):
         # Step method: fused.validate_policy
         fused__valid_policy = frames["policy"].alias("similarity_fusion_policy")
         fused__valid_policy_require_all_0_violations = fused__valid_policy.where(
@@ -535,10 +226,140 @@ class FuseSimilarityGenerated:
             "fused__valid_policy": fused__valid_policy,
         }
 
+    def _step_fused_validate_lexical_candidates_3(self, frames):
+        # Step method: fused.validate_lexical_candidates
+        fused__validated_lexical_candidates = frames["lexical__paragraph_candidates"].alias(
+            "paragraph_fused_similarity_candidate"
+        )
+        fused__validated_lexical_candidates_require_unique_0_duplicates = fused__validated_lexical_candidates.groupBy(
+            F.col("paragraph_fused_similarity_candidate.left_document_id"),
+            F.col("paragraph_fused_similarity_candidate.left_section_id"),
+            F.col("paragraph_fused_similarity_candidate.left_paragraph_id"),
+            F.col("paragraph_fused_similarity_candidate.right_document_id"),
+            F.col("paragraph_fused_similarity_candidate.right_section_id"),
+            F.col("paragraph_fused_similarity_candidate.right_paragraph_id"),
+        ).agg(F.count(F.lit(1)).alias("__structure_count"))
+        fused__validated_lexical_candidates_require_unique_0_duplicates = (
+            fused__validated_lexical_candidates_require_unique_0_duplicates.where(F.col("__structure_count") > F.lit(1))
+        )
+        fused__validated_lexical_candidates_require_unique_0_violations = (
+            fused__validated_lexical_candidates_require_unique_0_duplicates.agg(
+                F.count(F.lit(1)).alias("__structure_violations")
+            )
+        )
+        fused__validated_lexical_candidates_require_unique_0_assertion = (
+            fused__validated_lexical_candidates_require_unique_0_violations.select(
+                F.assert_true(
+                    F.col("__structure_violations") == F.lit(0),
+                    'REL-E0702: require_unique(...) found duplicate keys; see docs/Diagnostics.md#rel-e0702',
+                ).alias("__structure_require_unique")
+            )
+        )
+        fused__validated_lexical_candidates = fused__validated_lexical_candidates_require_unique_0_assertion.crossJoin(
+            fused__validated_lexical_candidates
+        ).drop("__structure_require_unique")
+        fused__validated_lexical_candidates = fused__validated_lexical_candidates.select(
+            F.col("paragraph_fused_similarity_candidate.left_document_id"),
+            F.col("paragraph_fused_similarity_candidate.left_section_id"),
+            F.col("paragraph_fused_similarity_candidate.left_paragraph_id"),
+            F.col("paragraph_fused_similarity_candidate.right_document_id"),
+            F.col("paragraph_fused_similarity_candidate.right_section_id"),
+            F.col("paragraph_fused_similarity_candidate.right_paragraph_id"),
+            F.col("paragraph_fused_similarity_candidate.lexical_rank"),
+            F.col("paragraph_fused_similarity_candidate.vector_rank"),
+            F.col("paragraph_fused_similarity_candidate.score_overlap"),
+            F.col("paragraph_fused_similarity_candidate.bm25_left_to_right"),
+            F.col("paragraph_fused_similarity_candidate.bm25_right_to_left"),
+            F.col("paragraph_fused_similarity_candidate.bm25_mean"),
+            F.col("paragraph_fused_similarity_candidate.vector_similarity"),
+            F.col("paragraph_fused_similarity_candidate.vector_backend"),
+            F.col("paragraph_fused_similarity_candidate.vector_model_id"),
+            F.col("paragraph_fused_similarity_candidate.vector_dimension"),
+            F.col("paragraph_fused_similarity_candidate.vector_content_revision"),
+            F.col("paragraph_fused_similarity_candidate.rrf_score"),
+            F.col("paragraph_fused_similarity_candidate.rrf_k"),
+            F.col("paragraph_fused_similarity_candidate.experiment_id"),
+        )
+        assert_schema(
+            fused__validated_lexical_candidates,
+            PARAGRAPH_FUSED_SIMILARITY_CANDIDATE_SCHEMA,
+            name="ParagraphFusedSimilarityCandidate",
+            mode="strict",
+        )
+        return {
+            "fused__validated_lexical_candidates": fused__validated_lexical_candidates,
+        }
+
+    def _step_fused_validate_vector_candidates_4(self, frames):
+        # Step method: fused.validate_vector_candidates
+        fused__validated_vector_candidates = frames["vector__adopted_paragraph_candidates"].alias(
+            "paragraph_fused_similarity_candidate"
+        )
+        fused__validated_vector_candidates_require_unique_0_duplicates = fused__validated_vector_candidates.groupBy(
+            F.col("paragraph_fused_similarity_candidate.left_document_id"),
+            F.col("paragraph_fused_similarity_candidate.left_section_id"),
+            F.col("paragraph_fused_similarity_candidate.left_paragraph_id"),
+            F.col("paragraph_fused_similarity_candidate.right_document_id"),
+            F.col("paragraph_fused_similarity_candidate.right_section_id"),
+            F.col("paragraph_fused_similarity_candidate.right_paragraph_id"),
+        ).agg(F.count(F.lit(1)).alias("__structure_count"))
+        fused__validated_vector_candidates_require_unique_0_duplicates = (
+            fused__validated_vector_candidates_require_unique_0_duplicates.where(F.col("__structure_count") > F.lit(1))
+        )
+        fused__validated_vector_candidates_require_unique_0_violations = (
+            fused__validated_vector_candidates_require_unique_0_duplicates.agg(
+                F.count(F.lit(1)).alias("__structure_violations")
+            )
+        )
+        fused__validated_vector_candidates_require_unique_0_assertion = (
+            fused__validated_vector_candidates_require_unique_0_violations.select(
+                F.assert_true(
+                    F.col("__structure_violations") == F.lit(0),
+                    'REL-E0702: require_unique(...) found duplicate keys; see docs/Diagnostics.md#rel-e0702',
+                ).alias("__structure_require_unique")
+            )
+        )
+        fused__validated_vector_candidates = fused__validated_vector_candidates_require_unique_0_assertion.crossJoin(
+            fused__validated_vector_candidates
+        ).drop("__structure_require_unique")
+        fused__validated_vector_candidates = fused__validated_vector_candidates.select(
+            F.col("paragraph_fused_similarity_candidate.left_document_id"),
+            F.col("paragraph_fused_similarity_candidate.left_section_id"),
+            F.col("paragraph_fused_similarity_candidate.left_paragraph_id"),
+            F.col("paragraph_fused_similarity_candidate.right_document_id"),
+            F.col("paragraph_fused_similarity_candidate.right_section_id"),
+            F.col("paragraph_fused_similarity_candidate.right_paragraph_id"),
+            F.col("paragraph_fused_similarity_candidate.lexical_rank"),
+            F.col("paragraph_fused_similarity_candidate.vector_rank"),
+            F.col("paragraph_fused_similarity_candidate.score_overlap"),
+            F.col("paragraph_fused_similarity_candidate.bm25_left_to_right"),
+            F.col("paragraph_fused_similarity_candidate.bm25_right_to_left"),
+            F.col("paragraph_fused_similarity_candidate.bm25_mean"),
+            F.col("paragraph_fused_similarity_candidate.vector_similarity"),
+            F.col("paragraph_fused_similarity_candidate.vector_backend"),
+            F.col("paragraph_fused_similarity_candidate.vector_model_id"),
+            F.col("paragraph_fused_similarity_candidate.vector_dimension"),
+            F.col("paragraph_fused_similarity_candidate.vector_content_revision"),
+            F.col("paragraph_fused_similarity_candidate.rrf_score"),
+            F.col("paragraph_fused_similarity_candidate.rrf_k"),
+            F.col("paragraph_fused_similarity_candidate.experiment_id"),
+        )
+        assert_schema(
+            fused__validated_vector_candidates,
+            PARAGRAPH_FUSED_SIMILARITY_CANDIDATE_SCHEMA,
+            name="ParagraphFusedSimilarityCandidate",
+            mode="strict",
+        )
+        return {
+            "fused__validated_vector_candidates": fused__validated_vector_candidates,
+        }
+
     def _step_fused_merge_paragraphs_5(self, frames):
         # Step method: fused.merge_paragraphs
-        fused__merged_candidates = frames["lexical__paragraph_candidates"].alias("paragraph_fused_similarity_candidate")
-        fused__merged_candidates = fused__merged_candidates.union(frames["vector__adopted_paragraph_candidates"])
+        fused__merged_candidates = frames["fused__validated_lexical_candidates"].alias(
+            "paragraph_fused_similarity_candidate"
+        )
+        fused__merged_candidates = fused__merged_candidates.union(frames["fused__validated_vector_candidates"])
         fused__merged_candidates = fused__merged_candidates.alias("paragraph_fused_similarity_candidate")
         fused__merged_candidates = fused__merged_candidates.select(
             F.col("left_document_id"),
@@ -951,11 +772,7 @@ class RerankSimilarityGenerated:
 
 
 class SearchSimilarityGenerated(
-    AdoptLexicalSimilarityGenerated,
-    ScoreParagraphVectorsGenerated,
-    AdoptVectorSimilarityGenerated,
-    FuseSimilarityGenerated,
-    RerankSimilarityGenerated,
+    AdoptLexicalSimilarityGenerated, AdoptVectorSimilarityGenerated, FuseSimilarityGenerated, RerankSimilarityGenerated
 ):
 
     def __init__(self, *, spark: SparkSession, ctx=None):
@@ -969,55 +786,43 @@ class SearchSimilarityGenerated(
         self,
         *,
         paragraph_similarities: DataFrame,
-        vector_policy: DataFrame,
-        score_policy: DataFrame,
-        paragraph_vector_queries: DataFrame,
-        paragraph_vector_index: DataFrame,
         query: DataFrame,
         paragraphs: DataFrame,
+        paragraph_vector_candidates: DataFrame,
         policy: DataFrame,
     ) -> TransformResult:
         assert_schema(paragraph_similarities, PARAGRAPH_SIMILARITY_SCHEMA, name="ParagraphSimilarity", mode="strict")
-        assert_schema(vector_policy, VECTOR_INDEX_POLICY_SCHEMA, name="VectorIndexPolicy", mode="strict")
-        assert_schema(score_policy, SCORE_POLICY_SCHEMA, name="ScorePolicy", mode="strict")
-        assert_schema(
-            paragraph_vector_queries, PARAGRAPH_VECTOR_QUERY_SCHEMA, name="ParagraphVectorQuery", mode="strict"
-        )
-        assert_schema(paragraph_vector_index, PARAGRAPH_VECTOR_INDEX_SCHEMA, name="ParagraphVectorIndex", mode="strict")
         assert_schema(query, PARAGRAPH_SCHEMA, name="Paragraph", mode="strict")
         assert_schema(paragraphs, PARAGRAPH_SCHEMA, name="Paragraph", mode="strict")
+        assert_schema(
+            paragraph_vector_candidates,
+            PARAGRAPH_VECTOR_CANDIDATE_SCHEMA,
+            name="ParagraphVectorCandidate",
+            mode="strict",
+        )
         assert_schema(policy, SIMILARITY_FUSION_POLICY_SCHEMA, name="SimilarityFusionPolicy", mode="strict")
         _input_paragraph_similarities = paragraph_similarities
-        _input_vector_policy = vector_policy
-        _input_score_policy = score_policy
-        _input_paragraph_vector_queries = paragraph_vector_queries
-        _input_paragraph_vector_index = paragraph_vector_index
         _input_query = query
         _input_paragraphs = paragraphs
+        _input_paragraph_vector_candidates = paragraph_vector_candidates
         _input_policy = policy
         frames = {
             "paragraph_similarities": paragraph_similarities,
-            "vector_policy": vector_policy,
-            "score_policy": score_policy,
-            "paragraph_vector_queries": paragraph_vector_queries,
-            "paragraph_vector_index": paragraph_vector_index,
             "query": query,
             "paragraphs": paragraphs,
+            "paragraph_vector_candidates": paragraph_vector_candidates,
             "policy": policy,
             "input:paragraph_similarities": _input_paragraph_similarities,
-            "input:vector_policy": _input_vector_policy,
-            "input:score_policy": _input_score_policy,
-            "input:paragraph_vector_queries": _input_paragraph_vector_queries,
-            "input:paragraph_vector_index": _input_paragraph_vector_index,
             "input:query": _input_query,
             "input:paragraphs": _input_paragraphs,
+            "input:paragraph_vector_candidates": _input_paragraph_vector_candidates,
             "input:policy": _input_policy,
         }
         frames.update(self._step_lexical_adopt_paragraphs_0(frames))
-        frames.update(self._step_scored_validate_policy_1(frames))
-        frames.update(self._step_scored_score_paragraphs_2(frames))
-        frames.update(self._step_vector_adopt_paragraphs_3(frames))
-        frames.update(self._step_fused_validate_policy_4(frames))
+        frames.update(self._step_vector_adopt_paragraphs_1(frames))
+        frames.update(self._step_fused_validate_policy_2(frames))
+        frames.update(self._step_fused_validate_lexical_candidates_3(frames))
+        frames.update(self._step_fused_validate_vector_candidates_4(frames))
         frames.update(self._step_fused_merge_paragraphs_5(frames))
         frames.update(self._step_fused_fuse_paragraphs_6(frames))
         frames.update(self._step_fused_score_paragraphs_7(frames))

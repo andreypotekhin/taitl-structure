@@ -10,7 +10,7 @@ class RankVectors(Transform):
     """Rank same-grain vector scores deterministically and apply the candidate bound."""
 
     document_scores = input(DocumentVectorScore)
-    paragraph_scores = input(ParagraphVectorScore)
+    paragraph_scores = input(ParagraphVectorScore, optional=True)
     policy = input(VectorIndexPolicy)
     valid_policy = lane(VectorIndexPolicy)
     ranked_document_candidates = lane(DocumentVectorCandidate)

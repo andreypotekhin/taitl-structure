@@ -7,11 +7,13 @@ from examples.search.schemas.search import DocumentSearchTarget, ScorePolicy, Se
 from examples.search.transforms.filtering.Filtering import Filtering
 from examples.search.transforms.online.filtering.SelectFilterTargets import SelectFilterTargets
 from examples.search.transforms.online.filtering.SelectGapQueries import SelectGapQueries
-from structure import Transform, input, output
+from structure import Transform, input, output, parameter
 
 
 class OnlineFiltering(Transform):
     """Calculate filter artifacts only for query groups missing from the cache."""
+
+    maximum_candidates = parameter(10000)
 
     queries = input(SearchQuery, streaming=True)
     requests = input(SearchRequest, streaming=True)
@@ -40,6 +42,7 @@ class OnlineFiltering(Transform):
         requests=requests,
         document_filter_targets=document_filter_targets,
         score_policy=score_policy,
+        maximum_candidates=maximum_candidates,
     )
 
     online_document_filter_scores = output(DocumentFilterScore, filtering.document_filter_scores)

@@ -2195,89 +2195,89 @@ class Scoring001AdjustBmGenerated(
         self,
         *,
         queries: DataFrame,
-        targets: DataFrame,
         document_terms: DataFrame,
         section_terms: DataFrame,
         paragraph_terms: DataFrame,
         sentence_terms: DataFrame,
+        targets: DataFrame,
         document_summary: DataFrame,
         section_summary: DataFrame,
         paragraph_summary: DataFrame,
         sentence_summary: DataFrame,
         score_policy: DataFrame,
-        vector_policy: DataFrame,
         document_vector_queries: DataFrame,
         document_vector_index: DataFrame,
         paragraph_vector_queries: DataFrame,
         paragraph_vector_index: DataFrame,
+        vector_policy: DataFrame,
     ) -> TransformResult:
         assert_schema(queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
-        assert_schema(targets, DOCUMENT_SEARCH_TARGET_SCHEMA, name="DocumentSearchTarget", mode="strict")
         assert_schema(document_terms, DOCUMENT_TERM_SCHEMA, name="DocumentTerm", mode="strict")
         assert_schema(section_terms, SECTION_TERM_SCHEMA, name="SectionTerm", mode="strict")
         assert_schema(paragraph_terms, PARAGRAPH_TERM_SCHEMA, name="ParagraphTerm", mode="strict")
         assert_schema(sentence_terms, SENTENCE_TERM_SCHEMA, name="SentenceTerm", mode="strict")
+        assert_schema(targets, DOCUMENT_SEARCH_TARGET_SCHEMA, name="DocumentSearchTarget", mode="strict")
         assert_schema(document_summary, DOCUMENT_INDEX_SUMMARY_SCHEMA, name="DocumentIndexSummary", mode="strict")
         assert_schema(section_summary, SECTION_INDEX_SUMMARY_SCHEMA, name="SectionIndexSummary", mode="strict")
         assert_schema(paragraph_summary, PARAGRAPH_INDEX_SUMMARY_SCHEMA, name="ParagraphIndexSummary", mode="strict")
         assert_schema(sentence_summary, SENTENCE_INDEX_SUMMARY_SCHEMA, name="SentenceIndexSummary", mode="strict")
         assert_schema(score_policy, SCORE_POLICY_SCHEMA, name="ScorePolicy", mode="strict")
-        assert_schema(vector_policy, VECTOR_INDEX_POLICY_SCHEMA, name="VectorIndexPolicy", mode="strict")
         assert_schema(document_vector_queries, DOCUMENT_VECTOR_QUERY_SCHEMA, name="DocumentVectorQuery", mode="strict")
         assert_schema(document_vector_index, DOCUMENT_VECTOR_INDEX_SCHEMA, name="DocumentVectorIndex", mode="strict")
         assert_schema(
             paragraph_vector_queries, PARAGRAPH_VECTOR_QUERY_SCHEMA, name="ParagraphVectorQuery", mode="strict"
         )
         assert_schema(paragraph_vector_index, PARAGRAPH_VECTOR_INDEX_SCHEMA, name="ParagraphVectorIndex", mode="strict")
+        assert_schema(vector_policy, VECTOR_INDEX_POLICY_SCHEMA, name="VectorIndexPolicy", mode="strict")
         _input_queries = queries
-        _input_targets = targets
         _input_document_terms = document_terms
         _input_section_terms = section_terms
         _input_paragraph_terms = paragraph_terms
         _input_sentence_terms = sentence_terms
+        _input_targets = targets
         _input_document_summary = document_summary
         _input_section_summary = section_summary
         _input_paragraph_summary = paragraph_summary
         _input_sentence_summary = sentence_summary
         _input_score_policy = score_policy
-        _input_vector_policy = vector_policy
         _input_document_vector_queries = document_vector_queries
         _input_document_vector_index = document_vector_index
         _input_paragraph_vector_queries = paragraph_vector_queries
         _input_paragraph_vector_index = paragraph_vector_index
+        _input_vector_policy = vector_policy
         frames = {
             "queries": queries,
-            "targets": targets,
             "document_terms": document_terms,
             "section_terms": section_terms,
             "paragraph_terms": paragraph_terms,
             "sentence_terms": sentence_terms,
+            "targets": targets,
             "document_summary": document_summary,
             "section_summary": section_summary,
             "paragraph_summary": paragraph_summary,
             "sentence_summary": sentence_summary,
             "score_policy": score_policy,
-            "vector_policy": vector_policy,
             "document_vector_queries": document_vector_queries,
             "document_vector_index": document_vector_index,
             "paragraph_vector_queries": paragraph_vector_queries,
             "paragraph_vector_index": paragraph_vector_index,
+            "vector_policy": vector_policy,
             "input:queries": _input_queries,
-            "input:targets": _input_targets,
             "input:document_terms": _input_document_terms,
             "input:section_terms": _input_section_terms,
             "input:paragraph_terms": _input_paragraph_terms,
             "input:sentence_terms": _input_sentence_terms,
+            "input:targets": _input_targets,
             "input:document_summary": _input_document_summary,
             "input:section_summary": _input_section_summary,
             "input:paragraph_summary": _input_paragraph_summary,
             "input:sentence_summary": _input_sentence_summary,
             "input:score_policy": _input_score_policy,
-            "input:vector_policy": _input_vector_policy,
             "input:document_vector_queries": _input_document_vector_queries,
             "input:document_vector_index": _input_document_vector_index,
             "input:paragraph_vector_queries": _input_paragraph_vector_queries,
             "input:paragraph_vector_index": _input_paragraph_vector_index,
+            "input:vector_policy": _input_vector_policy,
         }
         frames.update(self._step_overlap_expand_query_terms_0(frames))
         frames.update(self._step_overlap_count_query_terms_1(frames))

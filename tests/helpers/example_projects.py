@@ -958,7 +958,7 @@ def render_search_example() -> dict[str, str]:
         from examples.search.transforms.scoring.lexical.SelectPopularQueries import SelectPopularQueries
         from examples.search.transforms.scoring.lexical.SelectRecentQueries import SelectRecentQueries
         from examples.search.transforms.search import SearchDocuments, SearchFields, SearchSentences
-        from examples.search.transforms.searching.search_similarity import SearchSimilarity
+        from examples.search.transforms.searching.search_similarity import ExactSimilarityCandidates, SearchSimilarity
         from examples.search.transforms.searching.search_similarity.paragraphs import (
             SearchSimilarity as ParagraphSearchSimilarity,
         )
@@ -1277,6 +1277,10 @@ def render_search_example() -> dict[str, str]:
                 "examples.search.transforms.similarity.lexical.reduce.ReduceSimilarityScores",
             ),
             (Similarities, "examples.search.transforms.similarity.lexical.Similarities"),
+            (
+                ExactSimilarityCandidates,
+                "examples.search.transforms.searching.search_similarity.candidates.ExactSimilarityCandidates",
+            ),
             (
                 SearchSimilarity,
                 "examples.search.transforms.searching.search_similarity.SearchSimilarity.SearchSimilarity",

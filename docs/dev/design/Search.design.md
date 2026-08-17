@@ -236,11 +236,12 @@ replacement for explicit judged evaluation.
 ## Similarity
 
 Similarity reuses the lexical index for its portable baseline. It creates a query from each target's vocabulary, scores
-it at the same text grain, and reduces directed scores into bounded same-grain neighbors. `SearchSimilarity` can then
-adopt provider-neutral ranked vector candidates and fuse the lanes with RRF. The bundled exact vector index is a
-reference producer; callers may substitute an HNSW/ANN service that emits the same candidate contract. Hybrid results
-retain overlap, both BM25 directions, lexical/vector ranks, RRF score, vector similarity, and backend/model/revision
-provenance for inspection.
+it at the same text grain, and reduces directed scores into bounded same-grain neighbors. `SearchSimilarity` adopts
+provider-neutral ranked vector candidates and fuses the lanes with RRF. The bundled `ExactSimilarityCandidates` stage
+composes `VectorizeSimilarityQueries`, `ScoreDocumentVectors`, and `RankVectors` as a reference producer; callers may
+substitute an HNSW/ANN producer that emits the same candidate contract. Hybrid results retain overlap, both BM25
+directions, lexical/vector ranks, RRF score, vector similarity, and backend/model/revision provenance for inspection.
+Fusion rejects duplicate source/target keys within each lane before merging evidence.
 
 Candidate pruning may exclude terms above a caller-provided maximum document-frequency ratio. Similarity does not apply
 hidden title, source, language, or collection filters. Callers add those product constraints after scoring.

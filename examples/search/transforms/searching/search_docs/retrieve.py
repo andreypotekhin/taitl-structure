@@ -13,8 +13,6 @@ from structure.plugin.pyspark.dsl.expressions import *
 class RetrieveDocuments(Transform):
     """Materialize lexical and vector candidates."""
 
-    maximum_candidates = 1000
-
     queries = input(SearchQuery, streaming=True)
     documents = input(Document)
     streamed_documents = input(Document, streaming=True)

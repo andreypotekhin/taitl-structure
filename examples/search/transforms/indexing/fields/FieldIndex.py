@@ -1,8 +1,8 @@
 """Compact positional postings for searchable document metadata fields."""
 
-from examples.search.algorithms.text import normalized_token
 from examples.search.schemas.fields import *
 from examples.search.schemas.fields.intermediate import ExpandedFieldText, FieldText
+from examples.search.schemas.scoring.intermediate import QueryToken
 from structure import *
 from structure.plugin.pyspark import *
 
@@ -23,11 +23,9 @@ class FieldIndex(Transform):
         tokens = when(
             profile.field_kind == "keyword",
             array(FieldText(term=field.field_value)),
-        ).otherwise(
-            arr_transform(split(field.field_value, pattern=r"\s+"), lambda value: FieldText(term=value))
-        )
+        ).otherwise(arr_transform(split(field.field_value, pattern=r"\s+"), lambda value: FieldText(term=value)))
         expanded = posexplode_struct(tokens, as_=ExpandedFieldText, ordinal="position", scope="field_term")
-        term = normalized_token(expanded.term)
+        term = QueryToken.normalize(expanded.term)
         where(term != "")
         where((profile.field_kind == "keyword") | ~array_contains(policy.stop_words, term))
         return FieldTerm(

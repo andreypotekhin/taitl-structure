@@ -266,7 +266,7 @@ from examples.search.transforms.scoring.lexical.SelectPopularQueries import Sele
 from examples.search.transforms.scoring.lexical.SelectRecentQueries import SelectRecentQueries
 from examples.search.transforms.search import SearchDocuments, SearchPassages, SearchSentences
 from examples.search.transforms.searching.search_fields import SearchFields
-from examples.search.transforms.searching.search_similarity import SearchSimilarity
+from examples.search.transforms.searching.search_similarity import ExactSimilarityCandidates, SearchSimilarity
 from examples.search.transforms.similarity.lexical.queries import CreateSimilarityQueries
 from examples.search.transforms.similarity.lexical.reduce import ReduceSimilarityScores
 from examples.search.transforms.similarity.lexical.Similarities import Similarities
@@ -637,6 +637,10 @@ TRANSFORMS = (
         "examples.search.transforms.similarity.lexical.reduce.ReduceSimilarityScores",
     ),
     (Similarities, "examples.search.transforms.similarity.lexical.Similarities"),
+    (
+        ExactSimilarityCandidates,
+        "examples.search.transforms.searching.search_similarity.candidates.ExactSimilarityCandidates",
+    ),
     (
         SearchSimilarity,
         "examples.search.transforms.searching.search_similarity.SearchSimilarity.SearchSimilarity",
@@ -1188,6 +1192,7 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             fromlist=[
                 "SIMILARITY_QUERY_EMBEDDING_SCHEMA",
                 "DOCUMENT_VECTOR_INDEX_SCHEMA",
+                "DOCUMENT_VECTOR_CANDIDATE_SCHEMA",
                 "VECTOR_INDEX_POLICY_SCHEMA",
             ],
         )
@@ -1198,19 +1203,13 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             [(60, 10, 10, 10, "lexical-regression")],
             similarity_schemas.SIMILARITY_FUSION_POLICY_SCHEMA,
         )
-        empty_query_embeddings = spark.createDataFrame(
-            [], vector_schemas.SIMILARITY_QUERY_EMBEDDING_SCHEMA
-        )
-        empty_document_index = spark.createDataFrame([], vector_schemas.DOCUMENT_VECTOR_INDEX_SCHEMA)
+        empty_document_candidates = spark.createDataFrame([], vector_schemas.DOCUMENT_VECTOR_CANDIDATE_SCHEMA)
         vector_policy = spark.createDataFrame(
             [("fixture-embed", 3, "rev-1", "search-v1", 1000, 60)],
             vector_schemas.VECTOR_INDEX_POLICY_SCHEMA,
         )
         similar_document_inputs.update(
-            query_vector_embeddings=empty_query_embeddings,
-            document_vector_index=empty_document_index,
-            score_policy=score_policy,
-            vector_policy=vector_policy,
+            document_vector_candidates=empty_document_candidates,
             fusion_policy=fusion_policy,
         )
         online_similar_documents = (
@@ -1242,14 +1241,28 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             ],
             vector_schemas.DOCUMENT_VECTOR_INDEX_SCHEMA,
         )
+        exact_inputs = dict(
+            query=similar_document_inputs["query"],
+            query_vector_embeddings=ann_query_embeddings,
+            document_vector_index=ann_document_index,
+            score_policy=score_policy,
+            vector_policy=vector_policy,
+        )
+        online_candidates = ExactSimilarityCandidates(**exact_inputs).run(session(spark, execution_mode="online"))
+        generated_candidates = ExactSimilarityCandidates(**exact_inputs).run(
+            session(spark, execution_mode="generated", generated_package=PACKAGE)
+        )
         hybrid_inputs = {
             **similar_document_inputs,
-            "query_vector_embeddings": ann_query_embeddings,
-            "document_vector_index": ann_document_index,
+            "document_vector_candidates": generated_candidates.document_candidates,
         }
         online_hybrid_documents = (
             SearchSimilarity(
-                **{**hybrid_inputs, "document_similarities": online_similarities.document_similarities}
+                **{
+                    **similar_document_inputs,
+                    "document_similarities": online_similarities.document_similarities,
+                    "document_vector_candidates": online_candidates.document_candidates,
+                }
             )
             .run(session(spark, execution_mode="online"))
             .similar_documents

@@ -9,7 +9,6 @@ from examples.search.schemas.search import (
     QueryDocumentFeedback,
 )
 from examples.search.schemas.user import BandFallback
-from examples.search.transforms.searching.search_docs.retrieve import RetrieveDocuments
 from structure import Transform, input, lane, output, step
 from structure.plugin.pyspark import (
     coalesce,
@@ -32,15 +31,16 @@ from structure.plugin.pyspark.dsl.expressions import literal
 class RerankDocuments(Transform):
     """Rerank fused retrieval candidates and return the set of search results."""
 
+    maximum_candidates = 1000
     maximum_results = 100
 
+    candidates = input(DocumentSearchCandidate, streaming=True)
     query_document_signals = input(QueryDocumentSignals)
     document_popularity = input(DocumentPopularity)
     band_fallbacks = input(BandFallback)
     policy = input(RelevancePolicy)
-    candidates = input(DocumentSearchCandidate, streaming=True)
-    fallback_options = lane(DocumentFeedbackOption)
     global_options = lane(DocumentFeedbackOption)
+    fallback_options = lane(DocumentFeedbackOption)
     feedback_options = lane(DocumentFeedbackOption)
     query_feedback = lane(QueryDocumentFeedback)
     popularity_feedback = lane(PopularityFeedback)
@@ -53,7 +53,7 @@ class RerankDocuments(Transform):
     def select_fallback_options(
         self, candidate: DocumentSearchCandidate, fallback: BandFallback, policy: RelevancePolicy
     ) -> DocumentFeedbackOption:
-        where(candidate.candidate_rank <= RetrieveDocuments.maximum_candidates, candidate.user_band_id.is_not_null())
+        where(candidate.candidate_rank <= self.maximum_candidates, candidate.user_band_id.is_not_null())
         inner_join(fallback, on=fallback.user_band_id == candidate.user_band_id)
         policy = param_join(policy)
         return DocumentFeedbackOption.project(candidate)(
@@ -66,7 +66,7 @@ class RerankDocuments(Transform):
     def select_global_options(
         self, candidate: DocumentSearchCandidate, policy: RelevancePolicy
     ) -> DocumentFeedbackOption:
-        where(candidate.candidate_rank <= RetrieveDocuments.maximum_candidates, candidate.user_band_id.is_null())
+        where(candidate.candidate_rank <= self.maximum_candidates, candidate.user_band_id.is_null())
         policy = param_join(policy)
         return DocumentFeedbackOption.project(candidate)(
             feedback_band_id=literal(None),
@@ -148,7 +148,7 @@ class RerankDocuments(Transform):
         popularity: PopularityFeedback,
         policy: RelevancePolicy,
     ) -> DocumentSearchCandidate:
-        where(candidate.candidate_rank <= RetrieveDocuments.maximum_candidates)
+        where(candidate.candidate_rank <= self.maximum_candidates)
         left_join(
             query,
             on=(query.search_query_id == candidate.search_query_id)

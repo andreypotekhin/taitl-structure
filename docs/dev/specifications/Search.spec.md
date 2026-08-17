@@ -3,7 +3,7 @@
 ## Status and Authority
 
 This specification defines the user-visible and schema-level contract of the Search example under
-`examples/search/`. It describes the implementation present in the source tree as of 2026-08-07 and records the
+`examples/search/`. It describes the implementation present in the source tree as of 2026-08-14 and records the
 architecture forks resolved in earlier design and Codex discussions.
 
 The broader rationale is summarized in this document through the evidence boundaries and architecture choices below.
@@ -75,7 +75,7 @@ The application is split into caller-owned boundaries and typed Structure stages
         -> Chunking -> Indexing -> reusable lexical artifacts
         -> OfflineScoring / Filtering -> timestamped offline artifacts
         -> optional labels, cohorts, and feedback -> reusable evaluation/reranking artifacts
-        -> request-time OnlineFiltering / OnlineScoring
+        -> request-time OnlineFiltering / OnlineVectorization / OnlineScoring
         -> SearchSentences, SearchPassages, or SearchDocuments
         -> caller-owned serving, persistence, citation, or answer generation
 
@@ -115,7 +115,7 @@ The primary public schemas are:
 - training feature, snapshot, ranker, and artifact schemas for the optional model branch.
 
 All public outputs have explicit Structure schemas. Intermediate relations may be private lanes, but their keys and
-grain must remain deterministic and compiler-visible. Persistence is not implied by a schema or transform output.
+grain must remain deterministic and compiler-visible. Persistence is not implied by a schema or transform output.\
 
 ## Text and Lexical Pipeline
 
@@ -178,14 +178,14 @@ Document retrieval uses the following explicit funnel:
       -> online DocumentFilterScore artifacts
     SelectFilterTargets
       -> at most 10,000 simple-overlap document targets per query
+    OnlineVectorization
+      -> fill missing query/document embeddings for the selected targets
     OnlineScoring
       -> one request-valid target-scoped composite lexical score relation and one request-valid vector score relation
-    RankVectors
-      -> one bounded vector candidate lane from the merged vector scores
     RetrieveDocuments
-      -> unranked lexical and ranked vector candidate lanes
-    FuseDocumentCandidates
-      -> lexical rank, document-level deduplication, RRF, and at most 1,000 fused candidates
+      -> unranked lexical and raw-vector candidate lanes
+    FuseDocuments
+      -> lexical/vector lane ranking, document-level deduplication, RRF, and at most 1,000 fused candidates
     RerankDocuments
       -> feedback enrichment, final rank, and at most 100 results
 
@@ -246,9 +246,13 @@ prunes common terms at each grain. Similarity does not impose hidden title, sour
 
 The lexical similarity relations remain the reusable baseline. `SearchSimilarity` and the paragraph
 `SearchSimilarity` funnel under `search_similarity/paragraphs` accept provider-neutral ranked vector candidates and
-combine the lanes with RRF. The bundled exact vector index is a reference producer;
-caller-owned ANN services may emit the same candidate contract. Document search remains on its separate
-lexical/feedback path.
+combine the lanes with RRF. `ExactSimilarityCandidates` is the bundled document-level reference producer; it composes
+`VectorizeSimilarityQueries`, `ScoreDocumentVectors`, and `RankVectors`. `SimilarityCandidateAdapter` is the
+caller-replaceable normalization seam, so an HNSW/ANN producer can replace exact candidate generation without changing
+fusion or presentation. Each lane rejects duplicate source/target keys before fusion, and published rows retain vector
+backend/model/dimension/revision provenance alongside lexical evidence. The bundled exact producer remains an
+example-scale reference path; judged-quality and scale measurements are intentionally deferred. Document search
+remains on its separate lexical/feedback path.
 
 ## Cohorts, Labels, Experiments, and Training
 

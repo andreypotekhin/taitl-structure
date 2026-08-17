@@ -8,7 +8,6 @@ from examples.search.schemas.search import (
     QueryDocumentFeedback,
 )
 from examples.search.transforms.searching.search_docs.rerank import RerankDocuments
-from examples.search.transforms.searching.search_docs.retrieve import RetrieveDocuments
 from examples.search.transforms.searching.search_docs.SearchDocuments import SearchDocuments
 from structure import output, step
 from structure.plugin.pyspark import coalesce, left_join, param_join, where
@@ -33,7 +32,7 @@ class Searching001AdjustRerankDocuments(RerankDocuments):
         popularity: PopularityFeedback,
         policy: RelevancePolicy,
     ) -> DocumentSearchCandidate:
-        where(candidate.candidate_rank <= RetrieveDocuments.maximum_candidates)
+        where(candidate.candidate_rank <= RerankDocuments.maximum_candidates)
         left_join(
             query,
             on=(query.search_query_id == candidate.search_query_id)

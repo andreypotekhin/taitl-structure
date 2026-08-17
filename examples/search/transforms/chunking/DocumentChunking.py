@@ -89,26 +89,12 @@ class DocumentChunking(Transform):
     @step(input=marked_lines, output=paragraph_lines)
     def select_paragraph_lines(self, line: MarkedDocumentLine) -> ParagraphLine:
         where(~line.is_blank & line.heading.is_null())
-        return ParagraphLine(
-            document_id=line.document_id,
-            section_ordinal=line.section_ordinal,
-            paragraph_group=line.paragraph_group,
-            line_ordinal=line.line_ordinal,
-            line=line.line,
-            span_start=line.span_start,
-            span_end=line.span_end,
-        )
+        return ParagraphLine.project(line)
 
     @step(input=marked_lines, output=section_headings)
     def select_section_headings(self, line: MarkedDocumentLine) -> SectionHeading:
         where(line.heading.is_not_null())
-        return SectionHeading(
-            document_id=line.document_id,
-            section_ordinal=line.section_ordinal,
-            heading=line.heading,
-            heading_span_start=line.heading_span_start,
-            heading_span_end=line.heading_span_end,
-        )
+        return SectionHeading.project(line)
 
     @step(input=paragraph_lines, output=paragraph_line_groups)
     def collect_paragraph_lines(self, line: ParagraphLine) -> ParagraphLineGroup:
@@ -121,27 +107,16 @@ class DocumentChunking(Transform):
             section_ordinal=line.section_ordinal,
             paragraph_group=line.paragraph_group,
         )
-        return ParagraphLineGroup(
+        return ParagraphLineGroup.project(line)(
             id=paragraph_id,
-            document_id=line.document_id,
             section_id=section_id,
-            section_ordinal=line.section_ordinal,
-            paragraph_group=line.paragraph_group,
             span_start=min(line.span_start),
             span_end=max(line.span_end),
         )
 
     @step(input=paragraph_line_groups, output=paragraph_content)
     def assemble_paragraph_content(self, group: ParagraphLineGroup) -> ParagraphContent:
-        return ParagraphContent(
-            id=group.id,
-            document_id=group.document_id,
-            section_id=group.section_id,
-            section_ordinal=group.section_ordinal,
-            paragraph_group=group.paragraph_group,
-            span_start=group.span_start,
-            span_end=group.span_end,
-        )
+        return ParagraphContent.project(group)
 
     @step(input=paragraph_content, output=paragraph_drafts)
     def number_paragraphs(self, paragraph: ParagraphContent) -> ParagraphDraft:
@@ -149,26 +124,11 @@ class DocumentChunking(Transform):
             partition_by=(paragraph.document_id, paragraph.section_ordinal),
             order_by=paragraph.paragraph_group,
         ).cast(types.integer())
-        return ParagraphDraft(
-            id=paragraph.id,
-            document_id=paragraph.document_id,
-            section_id=paragraph.section_id,
-            section_ordinal=paragraph.section_ordinal,
-            ordinal=ordinal,
-            span_start=paragraph.span_start,
-            span_end=paragraph.span_end,
-        )
+        return ParagraphDraft.project(paragraph)(ordinal=ordinal)
 
     @step(input=paragraph_drafts, output=paragraphs)
     def publish_paragraphs(self, paragraph: ParagraphDraft) -> Paragraph:
-        return Paragraph(
-            id=paragraph.id,
-            document_id=paragraph.document_id,
-            section_id=paragraph.section_id,
-            ordinal=paragraph.ordinal,
-            span_start=paragraph.span_start,
-            span_end=paragraph.span_end,
-        )
+        return Paragraph.project(paragraph)
 
     @step(input=paragraph_drafts, output=section_keys)
     def select_section_keys(self, paragraph: ParagraphDraft) -> SectionKey:
@@ -178,10 +138,8 @@ class DocumentChunking(Transform):
             section_ordinal=paragraph.section_ordinal,
             ordinal=paragraph.section_ordinal.cast(types.integer()),
         )
-        return SectionKey(
+        return SectionKey.project(paragraph)(
             id=paragraph.section_id,
-            document_id=paragraph.document_id,
-            section_ordinal=paragraph.section_ordinal,
             ordinal=paragraph.section_ordinal.cast(types.integer()),
             span_start=min(paragraph.span_start),
             span_end=max(paragraph.span_end),
@@ -193,12 +151,7 @@ class DocumentChunking(Transform):
             heading,
             on=(heading.document_id == key.document_id) & (heading.section_ordinal == key.section_ordinal),
         )
-        return Section(
-            id=key.id,
-            document_id=key.document_id,
-            ordinal=key.ordinal,
-            span_start=key.span_start,
-            span_end=key.span_end,
+        return Section.project(key)(
             heading_span_start=heading.heading_span_start,
             heading_span_end=heading.heading_span_end,
         )

@@ -37,11 +37,12 @@ deterministic rank tie-breakers, and must remain equivalent in online and genera
 grain, effective snapshot, null policy, and failure evidence are part of its contract even when the implementation
 provider changes.
 
-The Search example has a lexical baseline and a bounded hybrid similarity path. `SearchSimilarity` consumes
-provider-neutral vector candidates, fuses them with lexical candidates using RRF, and retains lane evidence in its
-output. The bundled exact vector index is a transparent reference backend; caller-owned HNSW/ANN services can replace
-that producer at the candidate-relation boundary. SearchDocuments remains batch-only until bounded streaming state and
-append-only finalization are proven.
+The Search example has a lexical materialization baseline and a bounded hybrid similarity path. `SearchSimilarity`
+consumes provider-neutral ranked vector candidates, fuses them with lexical candidates using RRF, validates lane
+uniqueness, and retains lane evidence in its output. `ExactSimilarityCandidates` is the transparent bundled reference
+producer; caller-owned HNSW/ANN services can replace it at the candidate-relation boundary. Query/document inference is
+also composed into provider invocation and publication stages, with embeddings and statuses available for caller-owned
+persistence. SearchDocuments remains batch-only until bounded streaming state and append-only finalization are proven.
 
 ## Architecture map
 
@@ -57,7 +58,7 @@ append-only finalization are proven.
 
 | Decision point | Alternatives | Chosen result | Why |
 |---|---|---|---|
-| Retrieval | Lexical/vector/hybrid | Lexical baseline | Inspectable term evidence; dependency-light example. |
+| Retrieval | Lexical/vector/hybrid | Lexical baseline plus explicit hybrid seam | Inspectable term/vector evidence without coupling presentation to an ANN provider. |
 | Extension | Whole pipeline/hidden hooks/seams | Named seams | Add rankers without changing identity/grain contracts. |
 | State | Managed stores/implicit caches/caller snapshots | Caller snapshots | Freshness and replay remain visible. |
 | Publication | Effects/mutable objects/relations | Return relations | Callers choose persistence and serving. |

@@ -11,11 +11,11 @@ class ScoreBase(Transform):
     """Accept one or more queries and four reusable target-grain indexes."""
 
     queries = input(SearchQuery, streaming=True)
-    targets = input(DocumentSearchTarget, streaming=True)
     document_terms = input(DocumentTerm)
     section_terms = input(SectionTerm)
     paragraph_terms = input(ParagraphTerm)
     sentence_terms = input(SentenceTerm)
+    targets = input(DocumentSearchTarget, streaming=True)
     expanded_query_terms = lane(QueryTerm)
     query_sizes = lane(QueryTermCount)
 

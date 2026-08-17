@@ -4,7 +4,7 @@ from examples.search.schemas.similarities.vector import DocumentFusedSimilarityC
 from examples.search.schemas.similarity import SimilarityFusionPolicy
 from examples.search.transforms.lib.Rrf import Rrf
 from structure import Transform, input, lane, output, step
-from structure.plugin.pyspark import group_by, max, param_join, require_all, union_all, where
+from structure.plugin.pyspark import group_by, max, param_join, require_all, require_unique, union_all, where
 
 
 class FuseSimilarity(Transform):
@@ -14,6 +14,8 @@ class FuseSimilarity(Transform):
     document_vector_candidates = input(DocumentFusedSimilarityCandidate)
     policy = input(SimilarityFusionPolicy)
     valid_policy = lane(SimilarityFusionPolicy)
+    validated_lexical_candidates = lane(DocumentFusedSimilarityCandidate)
+    validated_vector_candidates = lane(DocumentFusedSimilarityCandidate)
     merged_document_candidates = lane(DocumentFusedSimilarityCandidate)
     fused_document_candidates = lane(DocumentFusedSimilarityCandidate)
     scored_document_candidates = lane(DocumentFusedSimilarityCandidate)
@@ -29,7 +31,21 @@ class FuseSimilarity(Transform):
         )
         return SimilarityFusionPolicy.project(validated)
 
-    @step(input=[document_lexical_candidates, document_vector_candidates], output=merged_document_candidates)
+    @step(input=document_lexical_candidates, output=validated_lexical_candidates)
+    def validate_lexical_candidates(
+        self, candidate: DocumentFusedSimilarityCandidate
+    ) -> DocumentFusedSimilarityCandidate:
+        require_unique(candidate.left_document_id, candidate.right_document_id)
+        return DocumentFusedSimilarityCandidate.project(candidate)
+
+    @step(input=document_vector_candidates, output=validated_vector_candidates)
+    def validate_vector_candidates(
+        self, candidate: DocumentFusedSimilarityCandidate
+    ) -> DocumentFusedSimilarityCandidate:
+        require_unique(candidate.left_document_id, candidate.right_document_id)
+        return DocumentFusedSimilarityCandidate.project(candidate)
+
+    @step(input=[validated_lexical_candidates, validated_vector_candidates], output=merged_document_candidates)
     def merge_documents(
         self, lexical: DocumentFusedSimilarityCandidate, vector: DocumentFusedSimilarityCandidate
     ) -> DocumentFusedSimilarityCandidate:

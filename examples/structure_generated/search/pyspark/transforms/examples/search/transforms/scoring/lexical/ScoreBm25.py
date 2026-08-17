@@ -439,53 +439,53 @@ class ScoreBm25Generated(ScoreBaseGenerated):
         self,
         *,
         queries: DataFrame,
-        targets: DataFrame,
         document_terms: DataFrame,
         section_terms: DataFrame,
         paragraph_terms: DataFrame,
         sentence_terms: DataFrame,
+        targets: DataFrame,
         document_summary: DataFrame,
         section_summary: DataFrame,
         paragraph_summary: DataFrame,
         sentence_summary: DataFrame,
     ) -> TransformResult:
         assert_schema(queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
-        assert_schema(targets, DOCUMENT_SEARCH_TARGET_SCHEMA, name="DocumentSearchTarget", mode="strict")
         assert_schema(document_terms, DOCUMENT_TERM_SCHEMA, name="DocumentTerm", mode="strict")
         assert_schema(section_terms, SECTION_TERM_SCHEMA, name="SectionTerm", mode="strict")
         assert_schema(paragraph_terms, PARAGRAPH_TERM_SCHEMA, name="ParagraphTerm", mode="strict")
         assert_schema(sentence_terms, SENTENCE_TERM_SCHEMA, name="SentenceTerm", mode="strict")
+        assert_schema(targets, DOCUMENT_SEARCH_TARGET_SCHEMA, name="DocumentSearchTarget", mode="strict")
         assert_schema(document_summary, DOCUMENT_INDEX_SUMMARY_SCHEMA, name="DocumentIndexSummary", mode="strict")
         assert_schema(section_summary, SECTION_INDEX_SUMMARY_SCHEMA, name="SectionIndexSummary", mode="strict")
         assert_schema(paragraph_summary, PARAGRAPH_INDEX_SUMMARY_SCHEMA, name="ParagraphIndexSummary", mode="strict")
         assert_schema(sentence_summary, SENTENCE_INDEX_SUMMARY_SCHEMA, name="SentenceIndexSummary", mode="strict")
         _input_queries = queries
-        _input_targets = targets
         _input_document_terms = document_terms
         _input_section_terms = section_terms
         _input_paragraph_terms = paragraph_terms
         _input_sentence_terms = sentence_terms
+        _input_targets = targets
         _input_document_summary = document_summary
         _input_section_summary = section_summary
         _input_paragraph_summary = paragraph_summary
         _input_sentence_summary = sentence_summary
         frames = {
             "queries": queries,
-            "targets": targets,
             "document_terms": document_terms,
             "section_terms": section_terms,
             "paragraph_terms": paragraph_terms,
             "sentence_terms": sentence_terms,
+            "targets": targets,
             "document_summary": document_summary,
             "section_summary": section_summary,
             "paragraph_summary": paragraph_summary,
             "sentence_summary": sentence_summary,
             "input:queries": _input_queries,
-            "input:targets": _input_targets,
             "input:document_terms": _input_document_terms,
             "input:section_terms": _input_section_terms,
             "input:paragraph_terms": _input_paragraph_terms,
             "input:sentence_terms": _input_sentence_terms,
+            "input:targets": _input_targets,
             "input:document_summary": _input_document_summary,
             "input:section_summary": _input_section_summary,
             "input:paragraph_summary": _input_paragraph_summary,

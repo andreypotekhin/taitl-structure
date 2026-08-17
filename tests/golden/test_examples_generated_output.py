@@ -115,7 +115,8 @@ def test_search_generated_owner_names_are_unique_across_nested_modules() -> None
 def test_search_documents_filters_retrieves_fuses_then_reranks_and_returns() -> None:
     """Document search exposes distinct filtering, retrieval, fusion, and reranking stages."""
 
-    from examples.search.transforms.searching.search_docs import RerankDocuments, RetrieveDocuments, SelectFilterTargets
+    from examples.search.transforms.online.filtering import OnlineFiltering
+    from examples.search.transforms.searching.search_docs import RerankDocuments
     from examples.search.transforms.searching.search_docs.SearchDocuments import SearchDocuments
 
     plan = cast(TransformPlan, Compiler.frontend.compile()(SearchDocuments, materialize_schemas=False).analysis)
@@ -127,8 +128,8 @@ def test_search_documents_filters_retrieves_fuses_then_reranks_and_returns() -> 
         < stages.index("fused")
         < stages.index("reranked")
     )
-    assert SelectFilterTargets.maximum_candidates == 10000
-    assert RetrieveDocuments.maximum_candidates == 1000
+    assert getattr(OnlineFiltering.maximum_candidates, "default") == 10000
+    assert RerankDocuments.maximum_candidates == 1000
     assert RerankDocuments.maximum_results == 100
 
 

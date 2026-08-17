@@ -23,12 +23,12 @@ class Scoring(Transform):
     paragraph_summary = input(ParagraphIndexSummary)
     sentence_summary = input(SentenceIndexSummary)
     score_policy = input(ScorePolicy)
-    targets = input(DocumentSearchTarget, streaming=True)
     document_vector_queries = input(DocumentVectorQuery, streaming=True)
     document_vector_index = input(DocumentVectorIndex)
     paragraph_vector_queries = input(ParagraphVectorQuery)
     paragraph_vector_index = input(ParagraphVectorIndex)
     vector_policy = input(VectorIndexPolicy)
+    targets = input(DocumentSearchTarget, streaming=True)
     experiment_id = parameter(None)
 
     overlap = ScoreOverlap(
@@ -68,8 +68,8 @@ class Scoring(Transform):
         paragraph_bm25_scores=bm25.paragraph_bm25_scores,
         sentence_bm25_scores=bm25.sentence_bm25_scores,
         score_policy=score_policy,
-        targets=targets,
         experiment_id=experiment_id,
+        targets=targets,
     )
 
     vector = ScoreVectors(

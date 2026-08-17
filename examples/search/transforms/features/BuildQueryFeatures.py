@@ -1,12 +1,12 @@
 """Build reusable Search query feature relations."""
 
-from examples.search.algorithms.text import normalized_token
 from examples.search.schemas.features import QueryFeatures
 from examples.search.schemas.features.intermediate import (
     ExpandedQueryFeatureToken,
     QueryFeatureToken,
     QueryTokenSummary,
 )
+from examples.search.schemas.scoring.intermediate import QueryToken
 from examples.search.schemas.search import SearchQuery
 from structure import Transform, input, lane, output, step
 from structure.plugin.pyspark import (
@@ -38,7 +38,7 @@ class BuildQueryFeatures(Transform):
     def expand_tokens(self, query: SearchQuery) -> ExpandedQueryFeatureToken:
         tokens = arr_transform(
             split(trim(query.content), pattern=r"\s+"),
-            lambda value: QueryFeatureToken(query_id=query.id, token=normalized_token(value)),
+            lambda value: QueryFeatureToken(query_id=query.id, token=QueryToken.normalize(value)),
         )
         token = posexplode_struct(tokens, as_=ExpandedQueryFeatureToken, scope="query_feature_token")
         where(token.token != "")

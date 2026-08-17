@@ -4,7 +4,7 @@ from examples.search.schemas.similarities.vector import ParagraphFusedSimilarity
 from examples.search.schemas.similarity import SimilarityFusionPolicy
 from examples.search.transforms.lib.Rrf import Rrf
 from structure import Transform, input, lane, output, step
-from structure.plugin.pyspark import group_by, max, param_join, require_all, union_all, where
+from structure.plugin.pyspark import group_by, max, param_join, require_all, require_unique, union_all, where
 
 
 class FuseSimilarity(Transform):
@@ -14,6 +14,8 @@ class FuseSimilarity(Transform):
     paragraph_vector_candidates = input(ParagraphFusedSimilarityCandidate)
     policy = input(SimilarityFusionPolicy)
     valid_policy = lane(SimilarityFusionPolicy)
+    validated_lexical_candidates = lane(ParagraphFusedSimilarityCandidate)
+    validated_vector_candidates = lane(ParagraphFusedSimilarityCandidate)
     merged_candidates = lane(ParagraphFusedSimilarityCandidate)
     fused_candidates = lane(ParagraphFusedSimilarityCandidate)
     scored_candidates = lane(ParagraphFusedSimilarityCandidate)
@@ -29,7 +31,35 @@ class FuseSimilarity(Transform):
         )
         return SimilarityFusionPolicy.project(validated)
 
-    @step(input=[paragraph_lexical_candidates, paragraph_vector_candidates], output=merged_candidates)
+    @step(input=paragraph_lexical_candidates, output=validated_lexical_candidates)
+    def validate_lexical_candidates(
+        self, candidate: ParagraphFusedSimilarityCandidate
+    ) -> ParagraphFusedSimilarityCandidate:
+        require_unique(
+            candidate.left_document_id,
+            candidate.left_section_id,
+            candidate.left_paragraph_id,
+            candidate.right_document_id,
+            candidate.right_section_id,
+            candidate.right_paragraph_id,
+        )
+        return ParagraphFusedSimilarityCandidate.project(candidate)
+
+    @step(input=paragraph_vector_candidates, output=validated_vector_candidates)
+    def validate_vector_candidates(
+        self, candidate: ParagraphFusedSimilarityCandidate
+    ) -> ParagraphFusedSimilarityCandidate:
+        require_unique(
+            candidate.left_document_id,
+            candidate.left_section_id,
+            candidate.left_paragraph_id,
+            candidate.right_document_id,
+            candidate.right_section_id,
+            candidate.right_paragraph_id,
+        )
+        return ParagraphFusedSimilarityCandidate.project(candidate)
+
+    @step(input=[validated_lexical_candidates, validated_vector_candidates], output=merged_candidates)
     def merge_paragraphs(
         self, lexical: ParagraphFusedSimilarityCandidate, vector: ParagraphFusedSimilarityCandidate
     ) -> ParagraphFusedSimilarityCandidate:

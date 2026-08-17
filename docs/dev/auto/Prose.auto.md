@@ -81,7 +81,7 @@ More operators and processes are defined below.
     - Ex: 'Select fallback options' dropped, 'select fallback options' embedded in section paragraph.
   - Avoid merging code listings, maintain a text sentence in between.
   - Workflow transform is main transform in a package - a staged transform that rules other transforms in the package.   
-  Usually, alphabetically the last file in dir (Ex: 'SearchDocuments'). Not all dirs contain the workflow transform. 
+  Usually, workflow transform is alphabetically the last file in dir (Ex: 'SearchDocuments'). Not all dirs contain the workflow transform. 
     - Top header: as-is, do not convert to gerund
     - Replace subsections as described above
     - Move workflow class listing from intro section into a new section, 'Workflow'
@@ -91,7 +91,8 @@ More operators and processes are defined below.
       - Since 'Workflow' section now starts with bare code listing, include a sentence before the listing describing that
       this is the workflow transform. 
     - Append workflow document with the content (.cnd.md) of subtransforms as additional sections to form continuous narrative.
-      - Convert the headers of appended content to one step lower, to maintain header structure.
+      - Order subtransform sections according to their stage's order in the workflow transform.
+      - Convert the headers of the appended content to one level lower, to maintain header structure.
       - Do not remove any headers: former top-level headers become section headers. 
     - Some stages may be outside of workflow dir.
       - For stages in the immediate subdirs of workflow dir: include them into main workflow doc similar subtransforms, as described above.
@@ -113,6 +114,129 @@ More operators and processes are defined below.
         also contains the call in execution order.
       - Verify parent workflow class listings and child transform narratives are not duplicated as external listings.
       - Verify each output has exactly one top-level header, and that its first nonblank line is that header.
-      - Verify each workflow output has exactly one parent `Workflow` section before inserted child sections. 
+      - Verify each workflow output has exactly one parent `Workflow` section before inserted child sections.
+      - For transform steps, verify code listing is present in each transform step section.
     - Thus, the texts between code listings in 'Workflow' section may become redundant, since the stages describe them in detail in the included content.
       - Trim texts between code listings in 'Workflow' to avoid repetition.
+
+## Combine
+### Combine process
+- Inputs: close/draft, close/collected, .back.md
+- Output: close/combined
+- Scope: close/collected/search
+- Name: Combine. Usage: Combine(dir)
+- Invocation: manual
+
+### Combine operator
+- Name: combine(), usage: combine(dir)
+- Input: .draft.md, .back.md and .cnd.md describing a transform. Ex: chunking.draft.md
+- Output: .comb.md describing a transform in combined narrative. Ex: chunking.comb.md
+- Goal: present combined continuous narrative based on structured draft, background document and collected code.
+ 
+### Combine operator instructions
+Combine draft (.draft.md), background (.back.md) and collected (.cnd.md) docs:
+- Draft (close/draft) contains stubs for the chapters (.draft.md) of future user manual.
+- Combine draft doc with background and collected docs to create an introduction narrative focused on a search engine topic, such as 'chunking'
+- Maintain content and structure set by draft
+ - Make improvements/corrections as needed, but keep it brief/succinct where it is already; 
+  - Specifically, some sections are mention/enumeration only: Builds on, Used by, Inputs/Outpus/Stages, Notation
+ - Only include concepts under Definitions, concept name is mostly single-word.    
+ - Insert contents of background and collected docs as described below.
+- Audience: technically confident reader may not be familiar with industry specifics, field terminology or what comprises the target system.
+- Do not modify draft, background and collected docs (other than an update from source/annotated, if needed). We only produce the new output doc.
+
+Combining Draft with Background docs:
+
+'Solution' section:
+- The main section of background doc becomes Solution section of combined doc. 
+- Make Solution content available for first-time reader: more conceptual, easier on technical details (ok to mention code components).
+- Technical details go to other sections, e.g. Implementation
+- Also consider less-technical parts from 'How it works'/'Implementation' to go to the main section
+- Use casual language, prioritize thoughtful description/intent over prescription/direction, gradually build understanding.
+- Merge-in Solution section from draft doc if not already covered.
+
+'Stages' section:
+- Create diagrams for each stage: 
+ - Use UML package diagram. Use [Stage] as enclosing package, Inputs/Outputs as class names; 
+ - Hide class members box
+ - Show input/output schemas as class methods, but without parentheses.
+ - Place Inputs/Outputs boxes horizontally inside Stage package, with arrow from Inputs to Outputs. 
+ - Arrows style: solid.
+ - Stay basic - no need for + signs, <<>> or other decorations, one schema per line and no decorations
+ - Only vertical and horizontal lines
+ - Be monochrome (b/w)
+
+Implementation section:
+- 'How it works' section of background doc becomes combined doc's 'Implementation' section
+- Should have at least one paragraph before main bullet list
+- Move 'Notation' section from draft into 'Implementation' section
+  - Insert after intro paragraphs, before main bullet list. 
+  - Remove 'Notation' heading
+  - Don't change notation content compared to draft doc.
+- Make 'Implementation' main bullet list a numbered list
+- Apply italics to the intent intros in numbered bullets
+- Do refer to transforms, stages and steps from the numbered list. 
+- Add volume, if needed, by extending numbered list sections for accessibility/understandability. 
+- For each numbered Implementation item, add item number as reference number to the notation block above
+  - Use circled digit like &#9312; for reference numbers.
+  - Add reference number to the end of corresponding line in the notation block.
+  - Omit repeating of reference numbers, assume point is already taken 
+- Move-in the details that are too technical from the Solution section
+- Drop implementation direction content such as discussion of invalid inputs, 'should'/'must paragraphs
+- Drop content from decisions sections and on
+- Body text (other than bullet/numbered lists): prioritize thoughtful description/intent/proposal style over prescription/direction, gradually build understanding.
+- Make the reading accessible for the first-time reader.  
+  
+Content style: 
+- Problem section: no need to ground in previous steps; ground in industry wisdom as needed for the project.
+- Solution section: 
+- Ground in industry wisdom as needed for the project.
+- Make accessible for the person who gets familiar or refreshes the concepts
+- Structure as overview + proposal/description, rather than direction/report/achievement statements
+- Do not assume the reader knows project specifics and project-specific terminology. Define/explain concepts.
+- Include ample industry background as needed for the topic. Use formulas.
+- 'Builds on', 'Used by' sections list top stages (Chunking, Fields) and top collections (Documents)
+- Notation: Must mention all input/output schemas, transform steps
+
+Code section:
+- Combine the above results with Collected doc (.cnd.md):
+- Include as Code section in the resulting doc
+- Drop intro line like 'The code below follows the declared workflow' or similar
+- It is OK to go without intro sentence before the Workflow section; however, consider at least one intent sentence per stage transform.
+- Within step transforms, convert 'step' sections into a numbered list. 
+
+Formatting:
+ - Formulas: use GitHub/Typora-compatible LaTeX, do not render formulas as inline code. 
+ - Diagrams: GitHub/Typora-compatible mermaid, monochrome
+- Stages: replace stage enumeration with one Mermaid flowchart per stage.
+  - After the `Stages` heading, include diagrams only; omit explanatory prose.
+  - Use a left-to-right flow so data direction is explicit.
+  - Keep diagrams monochrome and compact.
+  - Put inputs and outputs as labeled lines inside compact boxes or tables, with a distinct stage node between them.
+  - Use arrows for connections and include every declared input and output.
+  - Allow diagrams to extend horizontally when names require it.
+- Inputs/Outputs/Stages sections: use plain bold for class/schema/transform names instead of inline code. 
+
+Finishing touches:
+- Ensure continuous narrative from top to bottom, gradual buildup of concepts and understanding,
+gradual introduction of technical details, no repetition, no technical overload while still preserving the goals:
+ - Solution, Implementation sections should make interesting read
+ - Concepts are clarified before used
+
+Avoid:
+- Referring to other steps in text pipeline (e.g. 'The collected implementation') - these names/steps are internal use.
+- Exhaustive comma-separated lists - use etc. as humans would.
+- Corporate/bureaucratic/too-formal talk
+- Do not overuse 'only'
+  - Ex: 'Materialize source-faithful sentence content only in a private lane.'
+- Overly complicated sentences that build up and read like mouthful.
+  - Ex: 'Materialize source-faithful sentence content only in a private lane.'
+- Talking about section subject in section content. 
+  - Ex: 'The implementation turns source text into boundary rows' inside Implementation section.
+- Drop negative/exclusion clarifying phrases resembling argumentation in a not-included discussion.
+  - Phrases usually feature ', not' construct with following exclusions. 
+  - Ex: 'The public index retains normalized evidence, not another copy of the source.'
+  - Drop or convert to positive phrase. Ex:'The public index retains normalized evidence.' 
+- Overall cut down on negative statements
+  - Ex: 'Search needs more than a match/no-match signal. Ranking and field constraints need normalized terms,'
+    - can be refactored by dropping the negative: 'Ranking and field constraints need normalized terms,' 

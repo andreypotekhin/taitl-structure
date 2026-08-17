@@ -4,7 +4,7 @@ from examples.search.schemas.indexing.vector import VectorIndexPolicy
 from examples.search.schemas.search import DocumentSearchCandidate
 from examples.search.transforms.lib.Rrf import Rrf
 from structure import Transform, input, lane, output, step
-from structure.plugin.pyspark import group_by, max, param_join, row_number, union_all, when, where
+from structure.plugin.pyspark import group_by, max, param_join, require_unique, row_number, union_all, when, where
 from structure.plugin.pyspark.dsl.expressions import literal
 
 
@@ -16,6 +16,8 @@ class FuseDocuments(Transform):
     policy = input(VectorIndexPolicy)
     ranked_lexical_candidates = lane(DocumentSearchCandidate)
     ranked_vector_candidates = lane(DocumentSearchCandidate)
+    validated_lexical_candidates = lane(DocumentSearchCandidate)
+    validated_vector_candidates = lane(DocumentSearchCandidate)
     selected_vector_candidates = lane(DocumentSearchCandidate)
     merged_candidates = lane(DocumentSearchCandidate)
     fused_candidates = lane(DocumentSearchCandidate)
@@ -55,7 +57,27 @@ class FuseDocuments(Transform):
         where(candidate.vector_rank <= policy.maximum_candidates)
         return DocumentSearchCandidate.project(candidate)
 
-    @step(input=[ranked_lexical_candidates, selected_vector_candidates], output=merged_candidates)
+    @step(input=ranked_lexical_candidates, output=validated_lexical_candidates)
+    def validate_lexical_candidates(self, candidate: DocumentSearchCandidate) -> DocumentSearchCandidate:
+        require_unique(
+            candidate.search_query_id,
+            candidate.user_band_id,
+            candidate.experiment_id,
+            candidate.document_id,
+        )
+        return DocumentSearchCandidate.project(candidate)
+
+    @step(input=selected_vector_candidates, output=validated_vector_candidates)
+    def validate_vector_candidates(self, candidate: DocumentSearchCandidate) -> DocumentSearchCandidate:
+        require_unique(
+            candidate.search_query_id,
+            candidate.user_band_id,
+            candidate.experiment_id,
+            candidate.document_id,
+        )
+        return DocumentSearchCandidate.project(candidate)
+
+    @step(input=[validated_lexical_candidates, validated_vector_candidates], output=merged_candidates)
     def merge_candidates(
         self, lexical: DocumentSearchCandidate, vector: DocumentSearchCandidate
     ) -> DocumentSearchCandidate:

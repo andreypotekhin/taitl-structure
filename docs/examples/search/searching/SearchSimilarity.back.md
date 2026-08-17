@@ -7,9 +7,11 @@ joining corpus metadata. It does not create an embedding service or impose produ
 
 
 The boundary accepts one source target, the corresponding corpus targets, lexical similarity pairs, ranked vector
-candidates, and a separate fusion policy. The vector candidate relation is provider-neutral: the bundled exact
-implementation is a reference producer, while a caller-owned HNSW/ANN service can emit the same contract. It emits up
-to the configured result limit, preserving source identity, corpus metadata, and ranking evidence.
+candidates, and a separate fusion policy. `DocumentVectorCandidate` and `ParagraphVectorCandidate` are the stable
+provider-neutral contracts. `ExactSimilarityCandidates` is the bundled producer for document similarity; it composes
+`VectorizeSimilarityQueries`, `ScoreDocumentVectors`, and `RankVectors`. A caller-owned HNSW/ANN service can emit the
+same candidate relation without changing fusion or presentation. It emits up to the configured result limit,
+preserving source identity, corpus metadata, and ranking evidence.
 
 Document and paragraph similarity search remain grain-isolated. Sections and sentences are available as lexical
 materialization grains, but have no vector/hybrid presentation boundary. Title, source, language, and collection filters
@@ -22,7 +24,8 @@ inspectable source-to-candidate evidence rather than forcing one symmetric score
 lane; the normal invocation supplies candidates from an index provider, while the lexical regression path may pass an
 empty vector-candidate relation without inventing vector model or index identity. RRF uses `1 / (rrf_k + rank)` for each
 available lane, and the result retains lexical rank, vector rank, vector similarity, backend, model, dimension, and
-content-revision evidence.
+content-revision evidence. Each lane is checked for duplicate source/target keys before fusion; the merge assumes the
+remaining lane values are single-valued and mutually exclusive where appropriate.
 
 
 Same-grain relations are respected, self-pairs are absent, output limits are deterministic, and callers can inspect the
@@ -43,7 +46,9 @@ reason. Self-pairs are excluded by identity, not by assuming the first row is th
 may be reduced for display, while evidence remains available for evaluation.
 
 
-The decisions below keep this topic inspectable when an implementation or provider changes.
+The decisions below keep this topic inspectable when an implementation or provider changes. Judged-quality comparisons
+and exact-backend scale/candidate-growth measurements remain intentionally deferred; this example establishes the
+architecture and evidence contract rather than production ANN performance claims.
 
 | Decision | Alternatives considered | Choice | Why |
 |---|---|---|---|

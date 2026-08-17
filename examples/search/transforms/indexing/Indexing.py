@@ -33,10 +33,13 @@ class Indexing(Transform):
     paragraph_summary = output(ParagraphIndexSummary)
     sentence_terms = output(SentenceTerm)
     sentence_summary = output(SentenceIndexSummary)
+
     lexical = LexIndex(documents=documents, sentences=sentences)
+
     fields = FieldIndex(
         document_fields=document_fields,
         field_profiles=field_profiles,
         analyzer_policies=analyzer_policies,
     )
+
     field_terms = output(FieldTerm, fields.terms)

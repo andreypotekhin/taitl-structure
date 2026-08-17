@@ -220,11 +220,12 @@ at each grain. This controls common-token candidate growth without imposing a hi
 does not require title, source, language, or collection matches; callers apply those business filters after scoring.
 
 `SearchSimilarity` is the vector or hybrid query-document lookup. Supply the one-row query document,
-corpus `Document` rows, lexical similarity pairs, provider-produced `SimilarityQueryEmbedding` rows, the
-matching `DocumentVectorIndex`, score/vector policies, and one `SimilarityFusionPolicy`. The exact vector stage infers
-the source document query, excludes that source document, joins scores back to corpus `Document` rows, and emits
-`vector_backend="exact_reference"`. Results preserve lexical/vector ranks, RRF score, vector provenance, lexical
-evidence, and corpus metadata in `IndexedSimilarDocument`.
+corpus `Document` rows, lexical similarity pairs, provider-neutral ranked `DocumentVectorCandidate` rows, and one
+`SimilarityFusionPolicy`. `ExactSimilarityCandidates` is the bundled reference producer: it accepts
+`SimilarityQueryEmbedding`, `DocumentVectorIndex`, `ScorePolicy`, and `VectorIndexPolicy`, then emits ranked candidates
+with `vector_backend="exact_reference"`. Callers can replace that producer with an HNSW/ANN adapter that emits the same
+candidate contract. Results preserve lexical/vector ranks, RRF score, vector provenance, lexical evidence, and corpus
+metadata in `IndexedSimilarDocument`.
 
 The paragraph `SearchSimilarity` funnel under `search_similarity/paragraphs` applies the same staged contract to
 document-local paragraphs. Sections and sentences have lexical materialization relations but no similarity-search
@@ -413,7 +414,7 @@ signals = BuildRelevanceSignals(
     policy=policy,  # Exactly one RelevancePolicy row.
 ).run(session)
 
-# Persist or cache the snapshot; document ranking uses these two relations as inpunt.
+# Persist or cache the snapshot; document ranking uses these two relations as input.
 query_document_signals = signals.query_document_signals
 document_popularity = signals.document_popularity
 ```

@@ -14,6 +14,7 @@ from examples.search.transforms.scoring.vector import *
 from examples.search.transforms.searching.search_docs.fuse import *
 from examples.search.transforms.searching.search_docs.SearchDocuments import *
 from examples.search.transforms.searching.search_similarity import *
+from examples.search.transforms.searching.search_similarity import ExactSimilarityCandidates
 from examples.search.transforms.searching.search_similarity.paragraphs import (
     AdoptLexicalSimilarity as AdoptLexicalParagraphSimilarity,
 )
@@ -52,6 +53,7 @@ def test_vector_index_and_scoring_transforms_compile() -> None:
     Compiler.frontend.compile()(ScoreVectors, materialize_schemas=False)
     Compiler.frontend.compile()(VectorizeSearchQueries, materialize_schemas=False)
     Compiler.frontend.compile()(VectorizeSimilarityQueries, materialize_schemas=False)
+    Compiler.frontend.compile()(ExactSimilarityCandidates, materialize_schemas=False)
     Compiler.frontend.compile()(ScoreDocumentVectors, materialize_schemas=False)
     Compiler.frontend.compile()(ScoreParagraphVectors, materialize_schemas=False)
     Compiler.frontend.compile()(RankVectors, materialize_schemas=False)

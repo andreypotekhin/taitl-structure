@@ -1,12 +1,11 @@
 """Staged hybrid similarity workflow for paragraphs."""
 
-from examples.search.schemas.indexing.vector import *
+from examples.search.algorithms.similarity.adapter import SimilarityCandidateAdapter
+from examples.search.schemas.indexing.vector import ParagraphVectorCandidate
 from examples.search.schemas.search import *
 from examples.search.schemas.similarity import *
 from examples.search.schemas.text import *
-from examples.search.transforms.scoring.similarity import *
-from examples.search.transforms.searching.search_similarity.paragraphs.adopt_lexical import *
-from examples.search.transforms.searching.search_similarity.paragraphs.adopt_vector import *
+from examples.search.transforms.searching.search_similarity.paragraphs.adopt import *
 from examples.search.transforms.searching.search_similarity.paragraphs.fusion import *
 from examples.search.transforms.searching.search_similarity.paragraphs.rerank import *
 from structure import *
@@ -18,26 +17,18 @@ class SearchSimilarity(Transform):
     query = input(Paragraph)
     paragraphs = input(Paragraph)
     paragraph_similarities = input(ParagraphSimilarity)
-    paragraph_vector_queries = input(ParagraphVectorQuery)
-    paragraph_vector_index = input(ParagraphVectorIndex)
-    score_policy = input(ScorePolicy)
-    vector_policy = input(VectorIndexPolicy)
+    paragraph_vector_candidates = input(ParagraphVectorCandidate)
     policy = input(SimilarityFusionPolicy)
+    vector_adapter = parameter(SimilarityCandidateAdapter())
     similar_paragraphs = output(IndexedSimilarParagraph)
 
     lexical = AdoptLexicalSimilarity(paragraph_similarities=paragraph_similarities)
 
-    scored = ScoreParagraphVectors(
-        score_policy=score_policy,
-        queries=paragraph_vector_queries,
-        paragraph_index=paragraph_vector_index,
-        policy=vector_policy,
-    )
-
     vector = AdoptVectorSimilarity(
         query=query,
         paragraphs=paragraphs,
-        paragraph_scores=scored.paragraph_scores,
+        paragraph_candidates=paragraph_vector_candidates,
+        adapter=vector_adapter,
     )
 
     fused = FuseSimilarity(

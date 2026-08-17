@@ -197,13 +197,15 @@ changing lexical ranking semantics.
 Document search is a bounded funnel. Offline `Filtering` precomputes filter artifacts for a caller-selected query
 subset. Serving `OnlineFiltering` fills only query groups that lack a usable artifact, and `SelectFilterTargets` merges
 cached and online rows before retaining the top 10,000 documents per query. Those selected targets are passed into
-`OnlineScoring`, so both lexical and vector score construction use the cheap admission boundary. `OnlineScoring` fills
-missing or invalid score rows and tags them with the target scope; a scope mismatch makes a cache row ineligible.
+`OnlineVectorization` fills missing query embeddings and document vectors only for those selected targets, then
+`OnlineScoring` uses the resulting typed vector queries alongside lexical inputs. `OnlineScoring` fills missing or
+invalid score rows and tags them with the target scope; a scope mismatch makes a cache row ineligible.
 `OnlineScoring` also merges fresh vector scores with valid cached vector scores, invalidating an entire cached query
-group whenever that group is recomputed. `RankVectors` ranks the resulting authoritative vector score relation and
-applies the vector candidate bound before `RetrieveDocuments` joins candidates to documents.
-`FuseDocumentCandidates` ranks the lexical lane, deduplicates document identities, applies RRF, and retains the fused
-top 1,000. `RerankDocuments` applies feedback to those candidates, and only then does it retain the final top 100.
+group whenever that group is recomputed. `RetrieveDocuments` joins the authoritative raw vector scores and lexical
+scores to documents. `FuseDocuments` ranks and bounds both lanes, deduplicates document identities, applies RRF, and
+retains the fused top 1,000. `RerankDocuments` applies feedback to those candidates, and only then does it retain the
+final top 100. Offline cache-building may still compose `RankVectors` when a bounded vector-candidate artifact is
+needed.
 
 The filter and scoring artifacts have separate purposes. A `DocumentFilterScore` contains a simple distinct-term match
 count, deterministic filter rank, and `scored_at`; it is a cheap admission boundary. A unified `DocumentScore` contains
@@ -258,11 +260,9 @@ SelectFilterTargets — merge valid cached + online rows; retain 10,000
         ↓
 OnlineScoring — calculate target-scoped missing/stale lexical and vector scores
         ↓
-RankVectors — rank and bound the authoritative vector score relation
+RetrieveDocuments — materialize lexical and raw-vector candidate lanes
         ↓
-RetrieveDocuments — materialize lexical and vector candidate lanes
-        ↓
-FuseDocumentCandidates — rank lexical candidates, apply RRF, retain top 1,000
+FuseDocuments — rank and bound both lanes, apply RRF, retain top 1,000
         ↓
 RerankDocuments — feedback score, deterministic rank, retain top 100
 ```
@@ -437,12 +437,13 @@ inspect why a signal was eligible, zeroed, or omitted.
 
 ## Similarity
 
-Similarity Search reuses the lexical index for its portable baseline. It creates a query from each target's vocabulary, scores
-targets at the same text grain, and reduces directed scores into bounded same-grain neighbors. `SearchSimilarity` can
-then adopt provider-neutral ranked vector candidates and fuse the lanes with RRF. The bundled exact vector index is a
-reference producer; callers may substitute an HNSW/ANN service that emits the same candidate contract. Hybrid results
-retain overlap, both BM25 directions, lexical/vector ranks, RRF score, vector similarity, and backend/model/revision
-provenance for inspection.
+Similarity Search reuses the lexical index for its portable baseline. It creates a query from each target's vocabulary,
+scores targets at the same text grain, and reduces directed scores into bounded same-grain neighbors. `SearchSimilarity`
+adopts provider-neutral ranked vector candidates and fuses the lanes with RRF. The bundled
+`ExactSimilarityCandidates` stage composes similarity-query vectorization, exact cosine scoring, and deterministic
+ranking; callers may substitute an HNSW/ANN producer that emits the same candidate contract. Hybrid results retain
+overlap, both BM25 directions, lexical/vector ranks, RRF score, vector similarity, and backend/model/revision
+provenance for inspection. Duplicate source/target keys are rejected within each lane before fusion.
 
 ### Same-Grain Candidate Materialization
 

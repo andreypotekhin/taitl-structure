@@ -45,6 +45,12 @@ from structure.plugin.pyspark import when
 class ScoreOverlap(ScoreBase):
     """Score each query against reusable indexes at four target grains."""
 
+    document_summary = input(DocumentIndexSummary)
+    section_summary = input(SectionIndexSummary)
+    paragraph_summary = input(ParagraphIndexSummary)
+    sentence_summary = input(SentenceIndexSummary)
+    score_policy = input(ScorePolicy)
+
     document_overlap_matches = lane(DocumentOverlapMatch)
     section_overlap_matches = lane(SectionOverlapMatch)
     paragraph_overlap_matches = lane(ParagraphOverlapMatch)
@@ -61,11 +67,7 @@ class ScoreOverlap(ScoreBase):
     section_query_totals = lane(QueryIdfTotal)
     paragraph_query_totals = lane(QueryIdfTotal)
     sentence_query_totals = lane(QueryIdfTotal)
-    document_summary = input(DocumentIndexSummary)
-    section_summary = input(SectionIndexSummary)
-    paragraph_summary = input(ParagraphIndexSummary)
-    sentence_summary = input(SentenceIndexSummary)
-    score_policy = input(ScorePolicy)
+
     document_overlap_scores = output(DocumentOverlapScore)
     section_overlap_scores = output(SectionOverlapScore)
     paragraph_overlap_scores = output(ParagraphOverlapScore)

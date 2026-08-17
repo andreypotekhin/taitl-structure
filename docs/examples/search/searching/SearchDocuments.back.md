@@ -44,8 +44,8 @@ no-history queries preserve lexical order, and ties are stable by document ID.
 | Stage | Target bound | Contract |
 |---|---:|---|
 | Filter | 10,000 | Admit only candidates satisfying the declared eligibility policy. |
-| Retrieve | Per source policy | Materialize lexical/vector evidence and preserve candidate identity without ranking. |
-| Fuse | 1,000 | Rank lexical candidates, deduplicate document identities, and apply RRF before feedback. |
+| Retrieve | Per source policy | Join lexical and raw vector scores to documents and preserve candidate identity. |
+| Fuse | 1,000 | Rank and bound both lanes, deduplicate document identities, and apply RRF before feedback. |
 | Feedback | As available | Lookup snapshot-aligned behavior without removing lexical candidates. |
 | Rerank | 1,000 | Apply optional scores within query and experiment scope. |
 | Publish | 100 | Emit deterministic top results with stable ties and lineage. |
@@ -54,13 +54,13 @@ The source composition is intentionally legible at this boundary:
 
 ```python
 selected = SelectFilterTargets(...).targets
-scored = OnlineScoring(prefilter_targets=selected, ...)
-ranked_vectors = RankVectors(document_vector_scores=scored.document_vector_scores, ...).candidates
+vectorized = OnlineVectorization(document_targets=selected, ...)
+scored = OnlineScoring(prefilter_targets=selected, document_vector_queries=vectorized.vector_queries, ...)
 retrieved = RetrieveDocuments(prefilter_targets=selected, document_scores=scored.document_scores,
-                              document_vector_candidates=ranked_vectors, ...)
-candidates = FuseDocumentCandidates(
+                              document_vector_scores=scored.document_vector_scores, ...)
+candidates = FuseDocuments(
     lexical_candidates=retrieved.candidates,
-    vector_candidates=retrieved.vector_search_candidates,
+    vector_candidates=retrieved.vector_candidates,
     policy=vector_policy,
 ).candidates
 results = RerankDocuments(candidates=candidates, ...).results

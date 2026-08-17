@@ -726,10 +726,12 @@ class SelectDocumentGapsGenerated:
         }
 
 
-class InferenceGenerated:
-    def _step_vectorized_vectorized_inferred_infer_query_11(self, frames):
-        # Step method: vectorized.vectorized.inferred.infer_query
-        vectorized__vectorized__inferred__query_inference = frames["vectorized__query_gaps__gaps"].alias("search_query")
+class InferQueriesGenerated:
+    def _step_vectorized_vectorized_inferred_inferred_queries_infer_11(self, frames):
+        # Step method: vectorized.vectorized.inferred.inferred_queries.infer
+        vectorized__vectorized__inferred__inferred_queries__results = frames["vectorized__query_gaps__gaps"].alias(
+            "search_query"
+        )
         __structure_streaming_step = (
             frames["vectorized__query_gaps__gaps"].isStreaming or frames["inference_policy"].isStreaming
         )
@@ -748,47 +750,51 @@ class InferenceGenerated:
                 frames["inference_policy"]
             ).drop("__structure_exactly_one")
         inference_policy_joined = inference_policy_param_joined.alias("inference_policy")
-        vectorized__vectorized__inferred__query_inference = vectorized__vectorized__inferred__query_inference.crossJoin(
-            inference_policy_joined
+        vectorized__vectorized__inferred__inferred_queries__results = (
+            vectorized__vectorized__inferred__inferred_queries__results.crossJoin(inference_policy_joined)
         )
-        vectorized__vectorized__inferred__query_inference = vectorized__vectorized__inferred__query_inference.select(
-            F.col("search_query.id").alias("query_id"),
-            F.transform(
-                F.sequence(F.lit(0), (F.col("inference_policy.dimension") - F.lit(1))),
-                lambda item: F.when(
-                    (
-                        F.aggregate(
-                            F.split(F.lower(F.trim(F.col("search_query.content"))), '\\s+', -1),
-                            F.lit(0),
-                            lambda acc, item: (
-                                acc
-                                + F.when(((F.xxhash64(item, item) % F.lit(2)) == F.lit(0)), F.lit(1)).otherwise(
-                                    F.lit(-1)
-                                )
-                            ),
-                        )
-                        >= F.lit(0)
-                    ),
-                    (F.lit(1.0) / F.sqrt(F.col("inference_policy.dimension"))),
-                ).otherwise((-(F.lit(1.0) / F.sqrt(F.col("inference_policy.dimension"))))),
-            ).alias("vector"),
-            F.lit('success').alias("status"),
-            F.lit(None).cast(T.StringType()).alias("error_code"),
-            F.lit(None).cast(T.StringType()).alias("diagnostic"),
+        vectorized__vectorized__inferred__inferred_queries__results = (
+            vectorized__vectorized__inferred__inferred_queries__results.select(
+                F.col("search_query.id").alias("query_id"),
+                F.transform(
+                    F.sequence(F.lit(0), (F.col("inference_policy.dimension") - F.lit(1))),
+                    lambda item: F.when(
+                        (
+                            F.aggregate(
+                                F.split(F.lower(F.trim(F.col("search_query.content"))), '\\s+', -1),
+                                F.lit(0),
+                                lambda acc, item: (
+                                    acc
+                                    + F.when(((F.xxhash64(item, item) % F.lit(2)) == F.lit(0)), F.lit(1)).otherwise(
+                                        F.lit(-1)
+                                    )
+                                ),
+                            )
+                            >= F.lit(0)
+                        ),
+                        (F.lit(1.0) / F.sqrt(F.col("inference_policy.dimension"))),
+                    ).otherwise((-(F.lit(1.0) / F.sqrt(F.col("inference_policy.dimension"))))),
+                ).alias("vector"),
+                F.lit('success').alias("status"),
+                F.lit(None).cast(T.StringType()).alias("error_code"),
+                F.lit(None).cast(T.StringType()).alias("diagnostic"),
+            )
         )
         assert_schema(
-            vectorized__vectorized__inferred__query_inference,
+            vectorized__vectorized__inferred__inferred_queries__results,
             QUERY_INFERENCE_RESULT_SCHEMA,
             name="QueryInferenceResult",
             mode="strict",
         )
         return {
-            "vectorized__vectorized__inferred__query_inference": vectorized__vectorized__inferred__query_inference,
+            "vectorized__vectorized__inferred__inferred_queries__results": vectorized__vectorized__inferred__inferred_queries__results,
         }
 
-    def _step_vectorized_vectorized_inferred_infer_document_12(self, frames):
-        # Step method: vectorized.vectorized.inferred.infer_document
-        vectorized__vectorized__inferred__document_inference = frames["vectorized__document_gaps__gaps"].alias(
+
+class InferDocumentsGenerated:
+    def _step_vectorized_vectorized_inferred_inferred_documents_infer_12(self, frames):
+        # Step method: vectorized.vectorized.inferred.inferred_documents.infer
+        vectorized__vectorized__inferred__inferred_documents__results = frames["vectorized__document_gaps__gaps"].alias(
             "document"
         )
         __structure_streaming_step = (
@@ -809,11 +815,11 @@ class InferenceGenerated:
                 frames["inference_policy"]
             ).drop("__structure_exactly_one")
         inference_policy_joined = inference_policy_param_joined.alias("inference_policy")
-        vectorized__vectorized__inferred__document_inference = (
-            vectorized__vectorized__inferred__document_inference.crossJoin(inference_policy_joined)
+        vectorized__vectorized__inferred__inferred_documents__results = (
+            vectorized__vectorized__inferred__inferred_documents__results.crossJoin(inference_policy_joined)
         )
-        vectorized__vectorized__inferred__document_inference = (
-            vectorized__vectorized__inferred__document_inference.select(
+        vectorized__vectorized__inferred__inferred_documents__results = (
+            vectorized__vectorized__inferred__inferred_documents__results.select(
                 F.col("document.id").alias("document_id"),
                 F.transform(
                     F.sequence(F.lit(0), (F.col("inference_policy.dimension") - F.lit(1))),
@@ -840,22 +846,24 @@ class InferenceGenerated:
             )
         )
         assert_schema(
-            vectorized__vectorized__inferred__document_inference,
+            vectorized__vectorized__inferred__inferred_documents__results,
             DOCUMENT_INFERENCE_RESULT_SCHEMA,
             name="DocumentInferenceResult",
             mode="strict",
         )
         return {
-            "vectorized__vectorized__inferred__document_inference": vectorized__vectorized__inferred__document_inference,
+            "vectorized__vectorized__inferred__inferred_documents__results": vectorized__vectorized__inferred__inferred_documents__results,
         }
 
-    def _step_vectorized_vectorized_inferred_publish_query_embedding_13(self, frames):
-        # Step method: vectorized.vectorized.inferred.publish_query_embedding
-        vectorized__vectorized__inferred__query_embeddings = frames[
-            "vectorized__vectorized__inferred__query_inference"
+
+class PublishQueryInferenceGenerated:
+    def _step_vectorized_vectorized_inferred_published_queries_embedding_13(self, frames):
+        # Step method: vectorized.vectorized.inferred.published_queries.embedding
+        vectorized__vectorized__inferred__published_queries__embeddings = frames[
+            "vectorized__vectorized__inferred__inferred_queries__results"
         ].alias("query_inference_result")
         __structure_streaming_step = (
-            frames["vectorized__vectorized__inferred__query_inference"].isStreaming
+            frames["vectorized__vectorized__inferred__inferred_queries__results"].isStreaming
             or frames["inference_policy"].isStreaming
         )
         inference_policy_param_joined = frames["inference_policy"]
@@ -873,44 +881,49 @@ class InferenceGenerated:
                 frames["inference_policy"]
             ).drop("__structure_exactly_one")
         inference_policy_joined = inference_policy_param_joined.alias("inference_policy")
-        vectorized__vectorized__inferred__query_embeddings = (
-            vectorized__vectorized__inferred__query_embeddings.crossJoin(inference_policy_joined)
+        vectorized__vectorized__inferred__published_queries__embeddings = (
+            vectorized__vectorized__inferred__published_queries__embeddings.crossJoin(inference_policy_joined)
         )
-        vectorized__vectorized__inferred__query_embeddings = vectorized__vectorized__inferred__query_embeddings.where(
-            (
+        vectorized__vectorized__inferred__published_queries__embeddings = (
+            vectorized__vectorized__inferred__published_queries__embeddings.where(
                 (
-                    (F.col("query_inference_result.status") == F.lit('success'))
-                    & F.col("query_inference_result.vector").isNotNull()
+                    (
+                        (F.col("query_inference_result.status") == F.lit('success'))
+                        & F.col("query_inference_result.vector").isNotNull()
+                    )
                 )
             )
         )
-        vectorized__vectorized__inferred__query_embeddings = vectorized__vectorized__inferred__query_embeddings.select(
-            F.coalesce(
-                F.col("query_inference_result.vector"), F.array_repeat(F.lit(0.0), F.col("inference_policy.dimension"))
-            ).alias("vector"),
-            F.col("inference_policy.model_id"),
-            F.col("inference_policy.dimension"),
-            F.col("inference_policy.content_revision"),
-            F.col("inference_policy.experiment_id"),
-            F.col("query_inference_result.query_id"),
+        vectorized__vectorized__inferred__published_queries__embeddings = (
+            vectorized__vectorized__inferred__published_queries__embeddings.select(
+                F.coalesce(
+                    F.col("query_inference_result.vector"),
+                    F.array_repeat(F.lit(0.0), F.col("inference_policy.dimension")),
+                ).alias("vector"),
+                F.col("inference_policy.model_id"),
+                F.col("inference_policy.dimension"),
+                F.col("inference_policy.content_revision"),
+                F.col("inference_policy.experiment_id"),
+                F.col("query_inference_result.query_id"),
+            )
         )
         assert_schema(
-            vectorized__vectorized__inferred__query_embeddings,
+            vectorized__vectorized__inferred__published_queries__embeddings,
             SEARCH_QUERY_VECTOR_EMBEDDING_SCHEMA,
             name="SearchQueryVectorEmbedding",
             mode="strict",
         )
         return {
-            "vectorized__vectorized__inferred__query_embeddings": vectorized__vectorized__inferred__query_embeddings,
+            "vectorized__vectorized__inferred__published_queries__embeddings": vectorized__vectorized__inferred__published_queries__embeddings,
         }
 
-    def _step_vectorized_vectorized_inferred_publish_document_embedding_14(self, frames):
-        # Step method: vectorized.vectorized.inferred.publish_document_embedding
-        vectorized__vectorized__inferred__document_embeddings = frames[
-            "vectorized__vectorized__inferred__document_inference"
-        ].alias("document_inference_result")
+    def _step_vectorized_vectorized_inferred_published_queries_status_14(self, frames):
+        # Step method: vectorized.vectorized.inferred.published_queries.status
+        vectorized__vectorized__inferred__published_queries__statuses = frames[
+            "vectorized__vectorized__inferred__inferred_queries__results"
+        ].alias("query_inference_result")
         __structure_streaming_step = (
-            frames["vectorized__vectorized__inferred__document_inference"].isStreaming
+            frames["vectorized__vectorized__inferred__inferred_queries__results"].isStreaming
             or frames["inference_policy"].isStreaming
         )
         inference_policy_param_joined = frames["inference_policy"]
@@ -928,11 +941,62 @@ class InferenceGenerated:
                 frames["inference_policy"]
             ).drop("__structure_exactly_one")
         inference_policy_joined = inference_policy_param_joined.alias("inference_policy")
-        vectorized__vectorized__inferred__document_embeddings = (
-            vectorized__vectorized__inferred__document_embeddings.crossJoin(inference_policy_joined)
+        vectorized__vectorized__inferred__published_queries__statuses = (
+            vectorized__vectorized__inferred__published_queries__statuses.crossJoin(inference_policy_joined)
         )
-        vectorized__vectorized__inferred__document_embeddings = (
-            vectorized__vectorized__inferred__document_embeddings.where(
+        vectorized__vectorized__inferred__published_queries__statuses = (
+            vectorized__vectorized__inferred__published_queries__statuses.select(
+                F.col("query_inference_result.query_id"),
+                F.col("inference_policy.provider_id"),
+                F.col("inference_policy.model_id"),
+                F.col("inference_policy.model_version"),
+                F.col("query_inference_result.status"),
+                F.col("query_inference_result.error_code"),
+                F.col("query_inference_result.diagnostic"),
+                F.col("inference_policy.inferred_at"),
+            )
+        )
+        assert_schema(
+            vectorized__vectorized__inferred__published_queries__statuses,
+            QUERY_INFERENCE_STATUS_SCHEMA,
+            name="QueryInferenceStatus",
+            mode="strict",
+        )
+        return {
+            "vectorized__vectorized__inferred__published_queries__statuses": vectorized__vectorized__inferred__published_queries__statuses,
+        }
+
+
+class PublishDocumentInferenceGenerated:
+    def _step_vectorized_vectorized_inferred_published_documents_embedding_15(self, frames):
+        # Step method: vectorized.vectorized.inferred.published_documents.embedding
+        vectorized__vectorized__inferred__published_documents__embeddings = frames[
+            "vectorized__vectorized__inferred__inferred_documents__results"
+        ].alias("document_inference_result")
+        __structure_streaming_step = (
+            frames["vectorized__vectorized__inferred__inferred_documents__results"].isStreaming
+            or frames["inference_policy"].isStreaming
+        )
+        inference_policy_param_joined = frames["inference_policy"]
+        if not __structure_streaming_step:
+            inference_policy_param_joined_count = frames["inference_policy"].agg(
+                F.count(F.lit(1)).alias("__structure_count")
+            )
+            inference_policy_param_joined_count = inference_policy_param_joined_count.select(
+                F.assert_true(
+                    F.col("__structure_count") == F.lit(1),
+                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
+                ).alias("__structure_exactly_one")
+            )
+            inference_policy_param_joined = inference_policy_param_joined_count.crossJoin(
+                frames["inference_policy"]
+            ).drop("__structure_exactly_one")
+        inference_policy_joined = inference_policy_param_joined.alias("inference_policy")
+        vectorized__vectorized__inferred__published_documents__embeddings = (
+            vectorized__vectorized__inferred__published_documents__embeddings.crossJoin(inference_policy_joined)
+        )
+        vectorized__vectorized__inferred__published_documents__embeddings = (
+            vectorized__vectorized__inferred__published_documents__embeddings.where(
                 (
                     (
                         (F.col("document_inference_result.status") == F.lit('success'))
@@ -941,8 +1005,8 @@ class InferenceGenerated:
                 )
             )
         )
-        vectorized__vectorized__inferred__document_embeddings = (
-            vectorized__vectorized__inferred__document_embeddings.select(
+        vectorized__vectorized__inferred__published_documents__embeddings = (
+            vectorized__vectorized__inferred__published_documents__embeddings.select(
                 F.coalesce(
                     F.col("document_inference_result.vector"),
                     F.array_repeat(F.lit(0.0), F.col("inference_policy.dimension")),
@@ -955,69 +1019,22 @@ class InferenceGenerated:
             )
         )
         assert_schema(
-            vectorized__vectorized__inferred__document_embeddings,
+            vectorized__vectorized__inferred__published_documents__embeddings,
             DOCUMENT_VECTOR_EMBEDDING_SCHEMA,
             name="DocumentVectorEmbedding",
             mode="strict",
         )
         return {
-            "vectorized__vectorized__inferred__document_embeddings": vectorized__vectorized__inferred__document_embeddings,
+            "vectorized__vectorized__inferred__published_documents__embeddings": vectorized__vectorized__inferred__published_documents__embeddings,
         }
 
-    def _step_vectorized_vectorized_inferred_publish_query_status_15(self, frames):
-        # Step method: vectorized.vectorized.inferred.publish_query_status
-        vectorized__vectorized__inferred__query_status = frames[
-            "vectorized__vectorized__inferred__query_inference"
-        ].alias("query_inference_result")
-        __structure_streaming_step = (
-            frames["vectorized__vectorized__inferred__query_inference"].isStreaming
-            or frames["inference_policy"].isStreaming
-        )
-        inference_policy_param_joined = frames["inference_policy"]
-        if not __structure_streaming_step:
-            inference_policy_param_joined_count = frames["inference_policy"].agg(
-                F.count(F.lit(1)).alias("__structure_count")
-            )
-            inference_policy_param_joined_count = inference_policy_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            inference_policy_param_joined = inference_policy_param_joined_count.crossJoin(
-                frames["inference_policy"]
-            ).drop("__structure_exactly_one")
-        inference_policy_joined = inference_policy_param_joined.alias("inference_policy")
-        vectorized__vectorized__inferred__query_status = vectorized__vectorized__inferred__query_status.crossJoin(
-            inference_policy_joined
-        )
-        vectorized__vectorized__inferred__query_status = vectorized__vectorized__inferred__query_status.select(
-            F.col("query_inference_result.query_id"),
-            F.col("inference_policy.provider_id"),
-            F.col("inference_policy.model_id"),
-            F.col("inference_policy.model_version"),
-            F.col("query_inference_result.status"),
-            F.col("query_inference_result.error_code"),
-            F.col("query_inference_result.diagnostic"),
-            F.col("inference_policy.inferred_at"),
-        )
-        assert_schema(
-            vectorized__vectorized__inferred__query_status,
-            QUERY_INFERENCE_STATUS_SCHEMA,
-            name="QueryInferenceStatus",
-            mode="strict",
-        )
-        return {
-            "vectorized__vectorized__inferred__query_status": vectorized__vectorized__inferred__query_status,
-        }
-
-    def _step_vectorized_vectorized_inferred_publish_document_status_16(self, frames):
-        # Step method: vectorized.vectorized.inferred.publish_document_status
-        vectorized__vectorized__inferred__document_status = frames[
-            "vectorized__vectorized__inferred__document_inference"
+    def _step_vectorized_vectorized_inferred_published_documents_status_16(self, frames):
+        # Step method: vectorized.vectorized.inferred.published_documents.status
+        vectorized__vectorized__inferred__published_documents__statuses = frames[
+            "vectorized__vectorized__inferred__inferred_documents__results"
         ].alias("document_inference_result")
         __structure_streaming_step = (
-            frames["vectorized__vectorized__inferred__document_inference"].isStreaming
+            frames["vectorized__vectorized__inferred__inferred_documents__results"].isStreaming
             or frames["inference_policy"].isStreaming
         )
         inference_policy_param_joined = frames["inference_policy"]
@@ -1035,27 +1052,29 @@ class InferenceGenerated:
                 frames["inference_policy"]
             ).drop("__structure_exactly_one")
         inference_policy_joined = inference_policy_param_joined.alias("inference_policy")
-        vectorized__vectorized__inferred__document_status = vectorized__vectorized__inferred__document_status.crossJoin(
-            inference_policy_joined
+        vectorized__vectorized__inferred__published_documents__statuses = (
+            vectorized__vectorized__inferred__published_documents__statuses.crossJoin(inference_policy_joined)
         )
-        vectorized__vectorized__inferred__document_status = vectorized__vectorized__inferred__document_status.select(
-            F.col("document_inference_result.document_id"),
-            F.col("inference_policy.provider_id"),
-            F.col("inference_policy.model_id"),
-            F.col("inference_policy.model_version"),
-            F.col("document_inference_result.status"),
-            F.col("document_inference_result.error_code"),
-            F.col("document_inference_result.diagnostic"),
-            F.col("inference_policy.inferred_at"),
+        vectorized__vectorized__inferred__published_documents__statuses = (
+            vectorized__vectorized__inferred__published_documents__statuses.select(
+                F.col("document_inference_result.document_id"),
+                F.col("inference_policy.provider_id"),
+                F.col("inference_policy.model_id"),
+                F.col("inference_policy.model_version"),
+                F.col("document_inference_result.status"),
+                F.col("document_inference_result.error_code"),
+                F.col("document_inference_result.diagnostic"),
+                F.col("inference_policy.inferred_at"),
+            )
         )
         assert_schema(
-            vectorized__vectorized__inferred__document_status,
+            vectorized__vectorized__inferred__published_documents__statuses,
             DOCUMENT_INFERENCE_STATUS_SCHEMA,
             name="DocumentInferenceStatus",
             mode="strict",
         )
         return {
-            "vectorized__vectorized__inferred__document_status": vectorized__vectorized__inferred__document_status,
+            "vectorized__vectorized__inferred__published_documents__statuses": vectorized__vectorized__inferred__published_documents__statuses,
         }
 
 
@@ -1067,11 +1086,11 @@ class MergeQueryEmbeddingsGenerated:
         )
         __structure_streaming_step = (
             frames["document_vector_embeddings"].isStreaming
-            or frames["vectorized__vectorized__inferred__query_embeddings"].isStreaming
+            or frames["vectorized__vectorized__inferred__published_queries__embeddings"].isStreaming
             or frames["inference_policy"].isStreaming
         )
         vectorized__merged_queries__embeddings = vectorized__merged_queries__embeddings.union(
-            frames["vectorized__vectorized__inferred__query_embeddings"]
+            frames["vectorized__vectorized__inferred__published_queries__embeddings"]
         )
         vectorized__merged_queries__embeddings = vectorized__merged_queries__embeddings.alias(
             "search_query_vector_embedding"
@@ -1142,11 +1161,11 @@ class MergeDocumentVectorsGenerated:
         vectorized__merged_documents__embeddings = frames["document_vector_index"].alias("document_vector_index")
         __structure_streaming_step = (
             frames["document_vector_index"].isStreaming
-            or frames["vectorized__vectorized__inferred__document_embeddings"].isStreaming
+            or frames["vectorized__vectorized__inferred__published_documents__embeddings"].isStreaming
             or frames["vector_policy"].isStreaming
         )
         vectorized__merged_documents__embeddings = vectorized__merged_documents__embeddings.union(
-            frames["vectorized__vectorized__inferred__document_embeddings"]
+            frames["vectorized__vectorized__inferred__published_documents__embeddings"]
         )
         vectorized__merged_documents__embeddings = vectorized__merged_documents__embeddings.alias(
             "document_vector_index"
@@ -5780,10 +5799,136 @@ class FuseDocumentsGenerated:
             "fused__selected_vector_candidates": fused__selected_vector_candidates,
         }
 
-    def _step_fused_merge_candidates_76(self, frames):
+    def _step_fused_validate_lexical_candidates_76(self, frames):
+        # Step method: fused.validate_lexical_candidates
+        fused__validated_lexical_candidates = frames["fused__ranked_lexical_candidates"].alias(
+            "document_search_candidate"
+        )
+        fused__validated_lexical_candidates_require_unique_0_duplicates = fused__validated_lexical_candidates.groupBy(
+            F.col("document_search_candidate.search_query_id"),
+            F.col("document_search_candidate.user_band_id"),
+            F.col("document_search_candidate.experiment_id"),
+            F.col("document_search_candidate.document_id"),
+        ).agg(F.count(F.lit(1)).alias("__structure_count"))
+        fused__validated_lexical_candidates_require_unique_0_duplicates = (
+            fused__validated_lexical_candidates_require_unique_0_duplicates.where(F.col("__structure_count") > F.lit(1))
+        )
+        fused__validated_lexical_candidates_require_unique_0_violations = (
+            fused__validated_lexical_candidates_require_unique_0_duplicates.agg(
+                F.count(F.lit(1)).alias("__structure_violations")
+            )
+        )
+        fused__validated_lexical_candidates_require_unique_0_assertion = (
+            fused__validated_lexical_candidates_require_unique_0_violations.select(
+                F.assert_true(
+                    F.col("__structure_violations") == F.lit(0),
+                    'REL-E0702: require_unique(...) found duplicate keys; see docs/Diagnostics.md#rel-e0702',
+                ).alias("__structure_require_unique")
+            )
+        )
+        fused__validated_lexical_candidates = fused__validated_lexical_candidates_require_unique_0_assertion.crossJoin(
+            fused__validated_lexical_candidates
+        ).drop("__structure_require_unique")
+        fused__validated_lexical_candidates = fused__validated_lexical_candidates.select(
+            F.col("document_search_candidate.search_query_id"),
+            F.col("document_search_candidate.experiment_id"),
+            F.col("document_search_candidate.user_band_id"),
+            F.col("document_search_candidate.band_id"),
+            F.col("document_search_candidate.query"),
+            F.col("document_search_candidate.candidate_rank"),
+            F.col("document_search_candidate.document_id"),
+            F.col("document_search_candidate.title"),
+            F.col("document_search_candidate.url"),
+            F.col("document_search_candidate.score"),
+            F.col("document_search_candidate.retrieval_score"),
+            F.col("document_search_candidate.score_feedback"),
+            F.col("document_search_candidate.score_rank"),
+            F.col("document_search_candidate.score_weight"),
+            F.col("document_search_candidate.feedback_weight"),
+            F.col("document_search_candidate.lexical_rank"),
+            F.col("document_search_candidate.vector_rank"),
+            F.col("document_search_candidate.vector_similarity"),
+            F.col("document_search_candidate.rrf_score"),
+            F.col("document_search_candidate.rrf_k"),
+            F.col("document_search_candidate.vector_backend"),
+        )
+        assert_schema(
+            fused__validated_lexical_candidates,
+            DOCUMENT_SEARCH_CANDIDATE_SCHEMA,
+            name="DocumentSearchCandidate",
+            mode="strict",
+        )
+        return {
+            "fused__validated_lexical_candidates": fused__validated_lexical_candidates,
+        }
+
+    def _step_fused_validate_vector_candidates_77(self, frames):
+        # Step method: fused.validate_vector_candidates
+        fused__validated_vector_candidates = frames["fused__selected_vector_candidates"].alias(
+            "document_search_candidate"
+        )
+        fused__validated_vector_candidates_require_unique_0_duplicates = fused__validated_vector_candidates.groupBy(
+            F.col("document_search_candidate.search_query_id"),
+            F.col("document_search_candidate.user_band_id"),
+            F.col("document_search_candidate.experiment_id"),
+            F.col("document_search_candidate.document_id"),
+        ).agg(F.count(F.lit(1)).alias("__structure_count"))
+        fused__validated_vector_candidates_require_unique_0_duplicates = (
+            fused__validated_vector_candidates_require_unique_0_duplicates.where(F.col("__structure_count") > F.lit(1))
+        )
+        fused__validated_vector_candidates_require_unique_0_violations = (
+            fused__validated_vector_candidates_require_unique_0_duplicates.agg(
+                F.count(F.lit(1)).alias("__structure_violations")
+            )
+        )
+        fused__validated_vector_candidates_require_unique_0_assertion = (
+            fused__validated_vector_candidates_require_unique_0_violations.select(
+                F.assert_true(
+                    F.col("__structure_violations") == F.lit(0),
+                    'REL-E0702: require_unique(...) found duplicate keys; see docs/Diagnostics.md#rel-e0702',
+                ).alias("__structure_require_unique")
+            )
+        )
+        fused__validated_vector_candidates = fused__validated_vector_candidates_require_unique_0_assertion.crossJoin(
+            fused__validated_vector_candidates
+        ).drop("__structure_require_unique")
+        fused__validated_vector_candidates = fused__validated_vector_candidates.select(
+            F.col("document_search_candidate.search_query_id"),
+            F.col("document_search_candidate.experiment_id"),
+            F.col("document_search_candidate.user_band_id"),
+            F.col("document_search_candidate.band_id"),
+            F.col("document_search_candidate.query"),
+            F.col("document_search_candidate.candidate_rank"),
+            F.col("document_search_candidate.document_id"),
+            F.col("document_search_candidate.title"),
+            F.col("document_search_candidate.url"),
+            F.col("document_search_candidate.score"),
+            F.col("document_search_candidate.retrieval_score"),
+            F.col("document_search_candidate.score_feedback"),
+            F.col("document_search_candidate.score_rank"),
+            F.col("document_search_candidate.score_weight"),
+            F.col("document_search_candidate.feedback_weight"),
+            F.col("document_search_candidate.lexical_rank"),
+            F.col("document_search_candidate.vector_rank"),
+            F.col("document_search_candidate.vector_similarity"),
+            F.col("document_search_candidate.rrf_score"),
+            F.col("document_search_candidate.rrf_k"),
+            F.col("document_search_candidate.vector_backend"),
+        )
+        assert_schema(
+            fused__validated_vector_candidates,
+            DOCUMENT_SEARCH_CANDIDATE_SCHEMA,
+            name="DocumentSearchCandidate",
+            mode="strict",
+        )
+        return {
+            "fused__validated_vector_candidates": fused__validated_vector_candidates,
+        }
+
+    def _step_fused_merge_candidates_78(self, frames):
         # Step method: fused.merge_candidates
-        fused__merged_candidates = frames["fused__ranked_lexical_candidates"].alias("document_search_candidate")
-        fused__merged_candidates = fused__merged_candidates.union(frames["fused__selected_vector_candidates"])
+        fused__merged_candidates = frames["fused__validated_lexical_candidates"].alias("document_search_candidate")
+        fused__merged_candidates = fused__merged_candidates.union(frames["fused__validated_vector_candidates"])
         fused__merged_candidates = fused__merged_candidates.alias("document_search_candidate")
         fused__merged_candidates = fused__merged_candidates.select(
             F.col("search_query_id"),
@@ -5815,7 +5960,7 @@ class FuseDocumentsGenerated:
             "fused__merged_candidates": fused__merged_candidates,
         }
 
-    def _step_fused_fuse_candidates_77(self, frames):
+    def _step_fused_fuse_candidates_79(self, frames):
         # Step method: fused.fuse_candidates
         fused__fused_candidates = frames["fused__merged_candidates"].alias("document_search_candidate")
         __structure_streaming_step = (
@@ -5892,7 +6037,7 @@ class FuseDocumentsGenerated:
             "fused__fused_candidates": fused__fused_candidates,
         }
 
-    def _step_fused_score_candidates_78(self, frames):
+    def _step_fused_score_candidates_80(self, frames):
         # Step method: fused.score_candidates
         fused__scored_candidates = frames["fused__fused_candidates"].alias("document_search_candidate")
         __structure_streaming_step = (
@@ -5983,7 +6128,7 @@ class FuseDocumentsGenerated:
             "fused__scored_candidates": fused__scored_candidates,
         }
 
-    def _step_fused_rank_candidates_79(self, frames):
+    def _step_fused_rank_candidates_81(self, frames):
         # Step method: fused.rank_candidates
         fused__ranked_candidates = frames["fused__scored_candidates"].alias("document_search_candidate")
         __structure_streaming_step = (
@@ -6050,7 +6195,7 @@ class FuseDocumentsGenerated:
             "fused__ranked_candidates": fused__ranked_candidates,
         }
 
-    def _step_fused_select_candidates_80(self, frames):
+    def _step_fused_select_candidates_82(self, frames):
         # Step method: fused.select_candidates
         fused__candidates = frames["fused__ranked_candidates"].alias("document_search_candidate")
         __structure_streaming_step = (
@@ -6105,7 +6250,7 @@ class FuseDocumentsGenerated:
 
 
 class RerankDocumentsGenerated:
-    def _step_reranked_select_fallback_options_81(self, frames):
+    def _step_reranked_select_fallback_options_83(self, frames):
         # Step method: reranked.select_fallback_options
         reranked__fallback_options = frames["fused__candidates"].alias("document_search_candidate")
         __structure_streaming_step = (
@@ -6170,7 +6315,7 @@ class RerankDocumentsGenerated:
             "reranked__fallback_options": reranked__fallback_options,
         }
 
-    def _step_reranked_select_global_options_82(self, frames):
+    def _step_reranked_select_global_options_84(self, frames):
         # Step method: reranked.select_global_options
         reranked__global_options = frames["fused__candidates"].alias("document_search_candidate")
         __structure_streaming_step = frames["fused__candidates"].isStreaming or frames["policy"].isStreaming
@@ -6223,7 +6368,7 @@ class RerankDocumentsGenerated:
             "reranked__global_options": reranked__global_options,
         }
 
-    def _step_reranked_merge_feedback_options_83(self, frames):
+    def _step_reranked_merge_feedback_options_85(self, frames):
         # Step method: reranked.merge_feedback_options
         reranked__feedback_options = frames["reranked__fallback_options"].alias("document_feedback_option")
         reranked__feedback_options = reranked__feedback_options.union(frames["reranked__global_options"])
@@ -6261,7 +6406,7 @@ class RerankDocumentsGenerated:
             "reranked__feedback_options": reranked__feedback_options,
         }
 
-    def _step_reranked_select_query_feedback_84(self, frames):
+    def _step_reranked_select_query_feedback_86(self, frames):
         # Step method: reranked.select_query_feedback
         reranked__query_feedback = frames["reranked__feedback_options"].alias("document_feedback_option")
         query_document_signals_joined = frames["query_document_signals"].alias("query_document_signals")
@@ -6409,7 +6554,7 @@ class RerankDocumentsGenerated:
             "reranked__query_feedback": reranked__query_feedback,
         }
 
-    def _step_reranked_select_popularity_feedback_85(self, frames):
+    def _step_reranked_select_popularity_feedback_87(self, frames):
         # Step method: reranked.select_popularity_feedback
         reranked__popularity_feedback = frames["reranked__feedback_options"].alias("document_feedback_option")
         document_popularity_joined = frames["document_popularity"].alias("document_popularity")
@@ -6554,7 +6699,7 @@ class RerankDocumentsGenerated:
             "reranked__popularity_feedback": reranked__popularity_feedback,
         }
 
-    def _step_reranked_normalize_score_87(self, frames):
+    def _step_reranked_normalize_score_89(self, frames):
         # Step method: reranked.normalize_score
         reranked__normalized_candidates = frames["reranked__scored_candidates"].alias("document_search_candidate")
         reranked__normalized_candidates = reranked__normalized_candidates.select(
@@ -6607,7 +6752,7 @@ class RerankDocumentsGenerated:
             "reranked__normalized_candidates": reranked__normalized_candidates,
         }
 
-    def _step_reranked_rank_results_88(self, frames):
+    def _step_reranked_rank_results_90(self, frames):
         # Step method: reranked.rank_results
         reranked__ranked_results = frames["reranked__normalized_candidates"].alias("document_search_candidate")
         reranked__ranked_results = reranked__ranked_results.select(
@@ -6650,7 +6795,7 @@ class RerankDocumentsGenerated:
             "reranked__ranked_results": reranked__ranked_results,
         }
 
-    def _step_reranked_select_results_89(self, frames):
+    def _step_reranked_select_results_91(self, frames):
         # Step method: reranked.select_results
         reranked__results = frames["reranked__ranked_results"].alias("document_search_result")
         reranked__results = reranked__results.where(((F.col("document_search_result.rank") <= F.lit(100))))
@@ -6681,7 +6826,7 @@ class RerankDocumentsGenerated:
 
 
 class Searching001AdjustRerankDocumentsGenerated:
-    def _step_reranked_score_candidates_86(self, frames):
+    def _step_reranked_score_candidates_88(self, frames):
         # Step method: reranked.score_candidates
         reranked__scored_candidates = frames["fused__candidates"].alias("document_search_candidate")
         __structure_streaming_step = (
@@ -6808,7 +6953,10 @@ class Searching001AdjustRerankSearchDocumentsGenerated(
     SelectFilterTargetsGenerated,
     SelectQueryGapsGenerated,
     SelectDocumentGapsGenerated,
-    InferenceGenerated,
+    InferQueriesGenerated,
+    InferDocumentsGenerated,
+    PublishQueryInferenceGenerated,
+    PublishDocumentInferenceGenerated,
     MergeQueryEmbeddingsGenerated,
     MergeDocumentVectorsGenerated,
     VectorizeSearchQueriesGenerated,
@@ -7052,12 +7200,12 @@ class Searching001AdjustRerankSearchDocumentsGenerated(
         frames.update(self._step_vectorized_query_gaps_select_8(frames))
         frames.update(self._step_vectorized_document_gaps_select_targets_9(frames))
         frames.update(self._step_vectorized_document_gaps_select_gaps_10(frames))
-        frames.update(self._step_vectorized_vectorized_inferred_infer_query_11(frames))
-        frames.update(self._step_vectorized_vectorized_inferred_infer_document_12(frames))
-        frames.update(self._step_vectorized_vectorized_inferred_publish_query_embedding_13(frames))
-        frames.update(self._step_vectorized_vectorized_inferred_publish_document_embedding_14(frames))
-        frames.update(self._step_vectorized_vectorized_inferred_publish_query_status_15(frames))
-        frames.update(self._step_vectorized_vectorized_inferred_publish_document_status_16(frames))
+        frames.update(self._step_vectorized_vectorized_inferred_inferred_queries_infer_11(frames))
+        frames.update(self._step_vectorized_vectorized_inferred_inferred_documents_infer_12(frames))
+        frames.update(self._step_vectorized_vectorized_inferred_published_queries_embedding_13(frames))
+        frames.update(self._step_vectorized_vectorized_inferred_published_queries_status_14(frames))
+        frames.update(self._step_vectorized_vectorized_inferred_published_documents_embedding_15(frames))
+        frames.update(self._step_vectorized_vectorized_inferred_published_documents_status_16(frames))
         frames.update(self._step_vectorized_merged_queries_merge_17(frames))
         frames.update(self._step_vectorized_merged_documents_merge_18(frames))
         frames.update(self._step_vectorized_query_vectors_bind_query_19(frames))
@@ -7117,20 +7265,22 @@ class Searching001AdjustRerankSearchDocumentsGenerated(
         frames.update(self._step_fused_rank_lexical_candidates_73(frames))
         frames.update(self._step_fused_rank_vector_candidates_74(frames))
         frames.update(self._step_fused_select_vector_candidates_75(frames))
-        frames.update(self._step_fused_merge_candidates_76(frames))
-        frames.update(self._step_fused_fuse_candidates_77(frames))
-        frames.update(self._step_fused_score_candidates_78(frames))
-        frames.update(self._step_fused_rank_candidates_79(frames))
-        frames.update(self._step_fused_select_candidates_80(frames))
-        frames.update(self._step_reranked_select_fallback_options_81(frames))
-        frames.update(self._step_reranked_select_global_options_82(frames))
-        frames.update(self._step_reranked_merge_feedback_options_83(frames))
-        frames.update(self._step_reranked_select_query_feedback_84(frames))
-        frames.update(self._step_reranked_select_popularity_feedback_85(frames))
-        frames.update(self._step_reranked_score_candidates_86(frames))
-        frames.update(self._step_reranked_normalize_score_87(frames))
-        frames.update(self._step_reranked_rank_results_88(frames))
-        frames.update(self._step_reranked_select_results_89(frames))
+        frames.update(self._step_fused_validate_lexical_candidates_76(frames))
+        frames.update(self._step_fused_validate_vector_candidates_77(frames))
+        frames.update(self._step_fused_merge_candidates_78(frames))
+        frames.update(self._step_fused_fuse_candidates_79(frames))
+        frames.update(self._step_fused_score_candidates_80(frames))
+        frames.update(self._step_fused_rank_candidates_81(frames))
+        frames.update(self._step_fused_select_candidates_82(frames))
+        frames.update(self._step_reranked_select_fallback_options_83(frames))
+        frames.update(self._step_reranked_select_global_options_84(frames))
+        frames.update(self._step_reranked_merge_feedback_options_85(frames))
+        frames.update(self._step_reranked_select_query_feedback_86(frames))
+        frames.update(self._step_reranked_select_popularity_feedback_87(frames))
+        frames.update(self._step_reranked_score_candidates_88(frames))
+        frames.update(self._step_reranked_normalize_score_89(frames))
+        frames.update(self._step_reranked_rank_results_90(frames))
+        frames.update(self._step_reranked_select_results_91(frames))
 
         # Step method: results
         results = frames["reranked__results"].alias("document_search_result")
@@ -7154,13 +7304,13 @@ class Searching001AdjustRerankSearchDocumentsGenerated(
         )
 
         # Step method: query_inference_status
-        query_inference_status = frames["vectorized__vectorized__inferred__query_status"].alias(
+        query_inference_status = frames["vectorized__vectorized__inferred__published_queries__statuses"].alias(
             "query_inference_status"
         )
         assert_schema(query_inference_status, QUERY_INFERENCE_STATUS_SCHEMA, name="QueryInferenceStatus", mode="strict")
 
         # Step method: document_inference_status
-        document_inference_status = frames["vectorized__vectorized__inferred__document_status"].alias(
+        document_inference_status = frames["vectorized__vectorized__inferred__published_documents__statuses"].alias(
             "document_inference_status"
         )
         assert_schema(
