@@ -107,7 +107,15 @@ Draft the remaining sections in the concise, structured style exemplified by `cl
 - `Outputs`: list each output schema or relation and introduce grouped output families with a short descriptive sentence when useful.
 - `Stages`: list each public or workflow stage as `StageName: inputs -> outputs`. Keep this as an inventory of boundaries, not an explanation of step mechanics.
 - `Notation`: include one fenced text block for the workflow. List stages in execution order and list every meaningful step with its input and output relations. Keep the notation lossless and concise; do not add implementation prose or Combine reference markers.
-- `Implementation`: retain the heading as the location for the later combined implementation narrative. Leave it empty unless the drafting task explicitly supplies implementation prose.
+- `Implementation`: write a second substantive narrative, more concrete than Solution and less mechanical than Code. Begin with the implementation's intent and boundary, then explain how data moves through the stages in the order established by Notation. Name the relevant transforms and schemas, explain why responsibilities are separated, and describe the contracts that make the flow reliable.
+  - Use approximately four to seven paragraphs, expanding with topic complexity.
+  - Explain stage responsibilities and ordering in prose; use a short numbered sequence when order is itself an important behavior.
+  - Cover relevant validation, invariants, identity, ownership, failure, fallback, freshness, concurrency, or observability behavior.
+  - Distinguish caller-owned responsibilities, transform-owned responsibilities, and provider or backend responsibilities.
+  - Use Notation as the source of truth without repeating every notation line mechanically.
+  - Explain what each important boundary guarantees to the next boundary, including the behavior of partial or failed inputs.
+  - End with the implementation shape and the observable behavior it enables.
+  - Do not include source code, collected-code references, implementation checklists, or low-level operator inventories.
 - `Code`: retain the heading and identify the corresponding collected document by filename, such as `Indexing.cnd.md`. Do not reproduce source code in the draft.
 
 Keep the section order fixed. The draft is a structured chapter source: its lists establish the chapter's vocabulary and interfaces, its Notation block establishes workflow coverage, and its Solution establishes the reader-facing conceptual argument.
@@ -132,6 +140,7 @@ Keep the section order fixed. The draft is a structured chapter source: its list
   - Low-level headers: drop low-level headers. If that affects clarity, repeat the header as part of intro section paragraph.
     - Ex: 'Select fallback options' dropped, 'select fallback options' embedded in section paragraph.
   - Avoid merging code listings, maintain a text sentence in between.
+  - Drop import statements.
   - Workflow transform is main transform in a package - a staged transform that rules other transforms in the package.   
   Usually, workflow transform is alphabetically the last file in dir (Ex: 'SearchDocuments'). Not all dirs contain the workflow transform. 
     - Top header: as-is, do not convert to gerund
@@ -217,13 +226,12 @@ Combining Draft with Background docs:
 - Convert stages list to a table Stage/Inputs/Outputs 
 
 Implementation section:
-- 'How it works' section of the background doc becomes combined doc's 'Implementation' section
-- Should have at least one paragraph before main bullet list
-- Move-in the details that are too technical from the Solution section
-- Drop implementation direction content such as discussion of invalid inputs, 'should'/'must' paragraphs
-- Drop content from decisions sections and on
+- 'How it works' section of the background doc becomes combined with 'Implementation' section from draft doc
+- For 'How it works' section:
+  - Drop implementation direction content such as discussion of invalid inputs, 'should'/'must' paragraphs
+  - Drop content from decisions sections and on
 - Move 'Notation' section from draft into 'Implementation' section
-  - Insert it after intro paragraphs, before main bullet list. 
+  - Insert it draft content, before main bullet list. 
   - Remove 'Notation' heading
   - Don't change notation content compared to draft doc.
 - Make 'Implementation' main bullet list a numbered list
