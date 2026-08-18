@@ -230,21 +230,23 @@ Implementation section:
 - For 'How it works' section:
   - Drop implementation direction content such as discussion of invalid inputs, 'should'/'must' paragraphs
   - Drop content from decisions sections and on
-- Move 'Notation' section from draft into 'Implementation' section
-  - Insert it draft content, before main bullet list. 
-  - Remove 'Notation' heading
-  - Don't change notation content compared to draft doc.
-- Make 'Implementation' main bullet list a numbered list
-- Apply italics to the intent intros in numbered items
-- Do refer to transforms, stages and steps from the numbered items. 
-- Add sentences to numbered items for comprehensive explanation/accessibility/understandability.
-- Consider joining cohesive numbered items together, to reduce/balance the overall list.  
-- For each numbered item in Implementation list, add it's number as a reference number to the above notation block:
-  - Mark notation line with the numbered item that explains it. 
-  - Use circled digit like &#9312; for reference numbers in the notation block.
-  - Add reference number to the end of notation line.
-  - Omit repeating reference numbers in notation block - assume point is taken by first occurence.
-  - Don't add reference numbers to end of numbered list items themselves, they already have numbers in front. 
+- Preserve the substantive Implementation prose from the draft before the workflow notation. Do not replace those
+  paragraphs with a list or hide them after the notation.
+- Use this exact order inside the combined `Implementation` section:
+  1. the combined conceptual/technical prose from the background and draft Implementation;
+  2. the draft's fenced Notation block, with its workflow content unchanged except for reference markers;
+  3. numbered implementation explanations that elaborate the notation.
+- Make the numbered explanations correspond one-to-one with the reference numbers in the notation. Each item should
+  explain the stage or coherent group of notation lines carrying the same number; do not create unreferenced items or
+  markers that have no explanatory item.
+- Apply italics to the short intent sentence at the beginning of each numbered item only. Keep the explanatory prose
+  after that sentence in normal text; never wrap an entire numbered item in italics.
+- Refer to transforms, stages, and steps from the numbered items.
+- Add sentences to numbered items for comprehensive explanation, accessibility, and understandability.
+- Consider joining cohesive notation lines into one numbered explanation when that keeps the correspondence clear.
+- Use circled digits such as `①` at the end of the first notation line covered by each numbered item. Omit repeated
+  markers for continuation lines covered by the same item.
+- Do not add reference numbers to the numbered items themselves; their list numbers provide the reference.
   
 Content style: 
 - Problem section: no need to ground in previous steps. Ground in industry wisdom and project needs.
