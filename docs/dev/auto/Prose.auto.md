@@ -60,6 +60,58 @@ Existing text operators:
 
 More operators and processes are defined below. 
 
+## Draft
+
+### Draft process
+- Input: a topic's background document and its intended chapter structure.
+- Output: close/draft `.draft.md` documents.
+- Scope: topics selected for future user-manual chapters.
+- Name: Draft. Usage: Draft(dir).
+- Invocation: manual.
+
+### Draft operator
+- Name: draft(), usage: draft(dir)
+- Goal: create a structured future-user-manual chapter whose Solution section contains the topic's real conceptual explanation.
+
+### Draft operator instructions
+Create a `.draft.md` from the topic background and retain the standard chapter structure:
+
+Problem, Solution, Builds on, Used by, Definitions, Inputs, Outputs, Stages, Notation, Implementation, and Code.
+
+Keep enumeration-oriented sections concise. Write the Solution section as the substantive chapter narrative:
+
+- Use approximately five to eight paragraphs, expanding or contracting with topic complexity rather than enforcing a fixed word count.
+- Begin with general theory or industry context before introducing project-specific names.
+- Explain the central abstraction, its purpose, and the important semantic tradeoffs.
+- Define concepts before using them.
+- Progress gradually from theory to the project's proposed design.
+- Include a formula, small model, or monochrome diagram when it materially clarifies the topic.
+- Explain relevant identity, ownership, compatibility, lifecycle, failure, fallback, or concurrency concerns.
+- End by stating what the project intends to implement and what behavior that enables.
+- Use thoughtful overview/proposal prose rather than implementation instructions, status reports, or checklists.
+- Do not add internal subsection headings inside Solution.
+- Do not duplicate the detailed stage mechanics, notation, or code that belong in later sections.
+- Preserve the project's terminology and distinguish established behavior from proposed behavior.
+- Keep the remaining sections concise and structurally useful for the Combine operator.
+
+The Solution must be useful to a technically confident reader who understands software but may be unfamiliar with the industry topic or this project's vocabulary.
+
+Draft the remaining sections in the concise, structured style exemplified by `close/draft/search/transforms/indexing/Indexing.draft.md`:
+
+- `Problem`: describe the industry and project need in one or two focused paragraphs. Ground the problem in the topic itself; do not refer to earlier text-pipeline steps.
+- `Solution`: provide the full conceptual narrative described above.
+- `Builds on`: list the principal collections, transforms, or relations that supply the topic's inputs.
+- `Used by`: list the principal transforms or workflows that consume the topic's outputs.
+- `Definitions`: define the small set of topic concepts needed by the chapter. Prefer bold, single-word concept names followed by concise explanations.
+- `Inputs`: list each input schema or relation, grouping related inputs when that improves readability.
+- `Outputs`: list each output schema or relation and introduce grouped output families with a short descriptive sentence when useful.
+- `Stages`: list each public or workflow stage as `StageName: inputs -> outputs`. Keep this as an inventory of boundaries, not an explanation of step mechanics.
+- `Notation`: include one fenced text block for the workflow. List stages in execution order and list every meaningful step with its input and output relations. Keep the notation lossless and concise; do not add implementation prose or Combine reference markers.
+- `Implementation`: retain the heading as the location for the later combined implementation narrative. Leave it empty unless the drafting task explicitly supplies implementation prose.
+- `Code`: retain the heading and identify the corresponding collected document by filename, such as `Indexing.cnd.md`. Do not reproduce source code in the draft.
+
+Keep the section order fixed. The draft is a structured chapter source: its lists establish the chapter's vocabulary and interfaces, its Notation block establishes workflow coverage, and its Solution establishes the reader-facing conceptual argument.
+
 ## Collection
 
 ### Collect process
@@ -139,7 +191,7 @@ More operators and processes are defined below.
  
 ### Combine operator instructions
 Combine draft (.draft.md), background (.back.md) and collected (.cnd.md) docs:
-- Draft (close/draft) contains stubs for the chapters (.draft.md) of future user manual.
+- Draft (close/draft) contains structured chapters (.draft.md) of the future user manual, including a substantive Solution narrative.
 - Combine draft doc with background and collected docs to create an introduction narrative focused on a search engine topic, such as 'chunking'
 - Maintain content and structure set by draft
  - Make improvements/corrections as needed, but keep it brief/succinct where it is already; 
@@ -152,21 +204,23 @@ Combine draft (.draft.md), background (.back.md) and collected (.cnd.md) docs:
 Combining Draft with Background docs:
 
 'Solution' section:
-- The main section of background doc becomes Solution section of combined doc. 
+- Preserve the draft's substantive Solution narrative and enrich it with the background document where useful.
+- Treat Solution as the conceptual center of the combined document, rather than as a short summary of Background.
 - Make Solution content available for first-time reader: more conceptual, easier on technical details (ok to mention code components).
+- Include textbook-grade explanations as needed.
 - Technical details go to other sections, e.g. Implementation
 - Also consider less-technical parts from 'How it works'/'Implementation' to go to the main section
-- Use casual language, prioritize thoughtful description/intent over prescription/direction, gradually build understanding.
+- Use casual language, prioritize thoughtful explanation/intent over prescription/direction, gradually build understanding.
 - Merge-in Solution section from draft doc if not already covered.
 
 'Stages' section:
 - Convert stages list to a table Stage/Inputs/Outputs 
 
 Implementation section:
-- 'How it works' section of background doc becomes combined doc's 'Implementation' section
+- 'How it works' section of the background doc becomes combined doc's 'Implementation' section
 - Should have at least one paragraph before main bullet list
 - Move-in the details that are too technical from the Solution section
-- Drop implementation direction content such as discussion of invalid inputs, 'should'/'must paragraphs
+- Drop implementation direction content such as discussion of invalid inputs, 'should'/'must' paragraphs
 - Drop content from decisions sections and on
 - Move 'Notation' section from draft into 'Implementation' section
   - Insert it after intro paragraphs, before main bullet list. 
@@ -189,7 +243,7 @@ Content style:
 - Solution section: 
  - Ground in industry wisdom and project needs.
  - Include ample industry background as needed for the topic. Use formulas.
- - Make accessible for the person who gets familiar or refreshes the concepts
+ - Make accessible for the person who gets familiar or refreshes the concepts.
  - Structure as an overview + proposal/description, rather than direction/report/achievement statements
  - Do not assume reader knows project specifics or project-specific terminology. Define/explain concepts.
  - 'Builds on', 'Used by' sections list top stages (Chunking, Fields) and top collections (Documents).
@@ -201,12 +255,13 @@ over prescription/direction, gradually build understanding.
 
 Code section:
 - Combine the above results with Collected doc (.cnd.md):
- - Include as Code section in the resulting doc
- - Drop intro line like 'The code below follows the declared workflow' or similar
- - It is OK to go without intro sentence before the Workflow section; however, consider at least one intent sentence per stage transform.
- - Within step transforms, convert 'step' sections into a numbered list.
- - Apply prose transformations to narrative sections only. The Code section is lossless: copy all collected code 
-and in order. Headings may be relocated or demoted, but code must be preserved.
+ - Include collected doc as Code section
+ - Avoid small-info intro like 'The code below follows the declared workflow'.
+ - Step methods:
+   - If several step methods form a coherent group, consider grouping. In such case, step method
+   paragraphs may be joined and harmonized, e.g. to avoid repetition.
+   - Add global number in front of to step method paragraph, and include a short 'intent' sentence in italics.
+   - The code must be preserved.
 
 Formatting:
  - Formulas: use GitHub/Typora-compatible LaTeX, do not render formulas as inline code. 
@@ -241,5 +296,5 @@ Avoid:
 Quality assurance:
 - Code section
  - Every collected transform/method section is represented.
- - Code-fence order matches the collected source.
+ - Code listings order matches the collected source.
  - Root workflows include all child and external stages.
