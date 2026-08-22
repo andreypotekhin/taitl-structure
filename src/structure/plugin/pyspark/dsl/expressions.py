@@ -39,11 +39,11 @@ __all__ = [
     "abs", "base64", "bround", "ceil", "coalesce", "concat_ws", "date_add", "date_sub", "date_trunc", "datediff",
     "dayofmonth", "event_time_between", "exp", "floor", "from_csv", "from_json", "hash", "hour", "ifnull", "initcap",
     "instr", "isnan", "isnotnull", "isnull", "CsvOptions", "JsonOptions", "length", "levenshtein", "literal", "log",
-    "lower", "ltrim", "md5",
+    "lower", "lpad", "ltrim", "md5",
     "minute", "month", "nanvl", "nullif", "nvl", "nvl2", "pow", "regexp_extract", "regexp_replace", "reverse",
-    "round", "rtrim", "sha1", "sha2", "second", "signum", "split", "sqrt", "substring", "to_csv", "to_date",
+    "round", "rpad", "rtrim", "sha1", "sha2", "second", "signum", "split", "sqrt", "substring", "to_csv", "to_date",
     "to_decimal", "to_json", "to_timestamp", "translate", "trim", "trunc", "unbase64", "decode", "encode", "upper",
-    "when", "xxhash64", "year", "zeroifnull", "is_valid_variant", "is_variant_null", "parse_json",
+    "when", "xxhash64", "year", "zeroifnull", "acos", "hypot", "add_months", "next_day", "is_valid_variant", "is_variant_null", "parse_json",
     "schema_of_variant", "to_variant_object", "try_parse_json", "try_variant_get", "variant_get", "variant_literal",
     "variant_array_append", "try_variant_array_append", "variant_insert", "try_variant_insert", "variant_set",
     "try_variant_set", "variant_delete",
@@ -626,6 +626,34 @@ def regexp_extract(value: object, *, pattern: str, group: int = 1) -> Expression
     )
 
 
+def lpad(value: object, *, length: int, pad: str = " ") -> Expression:
+    """Left-pad a string expression to a literal character length."""
+    argument = _string_argument(value, "lpad(...)")
+    _padding_length(length, "lpad(...)")
+    _padding_string(pad, "lpad(...)")
+    return Expression(
+        kind="call",
+        type=StringType(),
+        nullable=argument.nullable,
+        data={"function": "lpad", "length": length, "pad": pad},
+        args=(argument,),
+    )
+
+
+def rpad(value: object, *, length: int, pad: str = " ") -> Expression:
+    """Right-pad a string expression to a literal character length."""
+    argument = _string_argument(value, "rpad(...)")
+    _padding_length(length, "rpad(...)")
+    _padding_string(pad, "rpad(...)")
+    return Expression(
+        kind="call",
+        type=StringType(),
+        nullable=argument.nullable,
+        data={"function": "rpad", "length": length, "pad": pad},
+        args=(argument,),
+    )
+
+
 def length(value: object) -> Expression:
     """Return the length of a string expression."""
     argument = _string_argument(value, "length(...)")
@@ -788,6 +816,31 @@ def date_sub(value: object, *, days: int) -> Expression:
     )
 
 
+def add_months(value: object, *, months: object) -> Expression:
+    """Add whole calendar months and return a Date expression."""
+    argument = _date_or_timestamp_argument(value, "add_months(...)")
+    if isinstance(months, bool):
+        raise TypeError("add_months(...) months must be an integer or integral Structure expression")
+    if isinstance(months, int):
+        return Expression(
+            kind="call",
+            type=DateType(),
+            nullable=argument.nullable,
+            data={"function": "add_months", "months": months},
+            args=(argument,),
+        )
+    month_count = literal(months)
+    if not isinstance(month_count.type, (IntegerType, LongType)):
+        raise TypeError("add_months(...) months must be an integer or integral Structure expression")
+    return Expression(
+        kind="call",
+        type=DateType(),
+        nullable=argument.nullable or month_count.nullable,
+        data={"function": "add_months"},
+        args=(argument, month_count),
+    )
+
+
 def datediff(end: object, start: object) -> Expression:
     """Return the day difference between two Date or Timestamp expressions."""
     end_argument = _date_or_timestamp_argument(end, "datediff(...)")
@@ -842,6 +895,19 @@ def dayofmonth(value: object) -> Expression:
     return _calendar_part("dayofmonth", value, _date_or_timestamp_argument)
 
 
+def next_day(value: object, *, day_of_week: str) -> Expression:
+    """Return the first named weekday after a Date or Timestamp expression."""
+    argument = _date_or_timestamp_argument(value, "next_day(...)")
+    day = _weekday_literal(day_of_week, "next_day(...)")
+    return Expression(
+        kind="call",
+        type=DateType(),
+        nullable=argument.nullable,
+        data={"function": "next_day", "day_of_week": day},
+        args=(argument,),
+    )
+
+
 def hour(value: object) -> Expression:
     """Extract the hour from a Timestamp expression."""
     return _calendar_part("hour", value, _timestamp_argument)
@@ -888,6 +954,24 @@ def abs(value: object) -> Expression:
     argument = _numeric_argument(value, "abs(...)")
     return Expression(
         kind="call", type=argument.type, nullable=argument.nullable, data={"function": "abs"}, args=(argument,)
+    )
+
+
+def acos(value: object) -> Expression:
+    """Return the arc cosine of a numeric expression in radians."""
+    return _double_numeric_call("acos", value)
+
+
+def hypot(left: object, right: object) -> Expression:
+    """Return the hypotenuse of two numeric expressions."""
+    left_argument = _numeric_argument(left, "hypot(...)")
+    right_argument = _numeric_argument(right, "hypot(...)")
+    return Expression(
+        kind="call",
+        type=DoubleType(),
+        nullable=left_argument.nullable or right_argument.nullable,
+        data={"function": "hypot"},
+        args=(left_argument, right_argument),
     )
 
 
@@ -1399,6 +1483,25 @@ def _string_call(function: str, value: object) -> Expression:
 def _string_literal(value: object, call: str, parameter: str) -> None:
     if not isinstance(value, str):
         raise TypeError(f"{call} {parameter} must be a string literal")
+
+
+def _padding_length(value: object, call: str) -> None:
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        raise TypeError(f"{call} length must be a non-negative integer literal")
+
+
+def _padding_string(value: object, call: str) -> None:
+    if not isinstance(value, str) or not value:
+        raise TypeError(f"{call} pad must be a non-empty string literal")
+
+
+def _weekday_literal(value: object, call: str) -> str:
+    if not isinstance(value, str) or value.lower() not in {
+        "mon", "monday", "tue", "tuesday", "wed", "wednesday", "thu", "thursday", "fri", "friday",
+        "sat", "saturday", "sun", "sunday",
+    }:
+        raise TypeError(f"{call} day_of_week must name a weekday such as 'Mon' or 'Monday'")
+    return value
 
 
 def _null_fallback(function: str, value: object, fallback: object) -> Expression:

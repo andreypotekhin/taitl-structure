@@ -329,6 +329,8 @@ def test_v4_expression_renderer_renders_deterministic_numeric_functions() -> Non
         base_ten_log = double(nullable=True)
         exponent = double(nullable=True)
         sign = double(nullable=True)
+        arc_cosine = double(nullable=True)
+        hypotenuse = double(nullable=True)
 
     @transform
     class Publish(Transform):
@@ -344,6 +346,8 @@ def test_v4_expression_renderer_renders_deterministic_numeric_functions() -> Non
                 base_ten_log=log(row.amount, base=10),
                 exponent=exp(row.amount),
                 sign=signum(row.amount),
+                arc_cosine=acos(row.amount),
+                hypotenuse=hypot(row.amount, 2),
             )
 
     recipe = _recipe(Publish)
@@ -360,6 +364,10 @@ def test_v4_expression_renderer_renders_deterministic_numeric_functions() -> Non
     assert render(projection["base_ten_log"], scope_aliases={"rows": "orders"}) == 'F.log(10, F.col("orders.amount"))'
     assert render(projection["exponent"], scope_aliases={"rows": "orders"}) == 'F.exp(F.col("orders.amount"))'
     assert render(projection["sign"], scope_aliases={"rows": "orders"}) == 'F.signum(F.col("orders.amount"))'
+    assert render(projection["arc_cosine"], scope_aliases={"rows": "orders"}) == 'F.acos(F.col("orders.amount"))'
+    assert render(projection["hypotenuse"], scope_aliases={"rows": "orders"}) == (
+        'F.hypot(F.col("orders.amount"), F.lit(2))'
+    )
 
 
 def test_v4_expression_renderer_renders_temporal_helpers() -> None:
@@ -409,6 +417,48 @@ def test_v4_expression_renderer_renders_temporal_helpers() -> None:
     )
     assert render(projection["parsed_timestamp"], scope_aliases={"rows": "orders"}) == (
         'F.to_timestamp(F.col("orders.raw_observed_at"), \'yyyy-MM-dd HH:mm:ss\')'
+    )
+
+
+def test_v4_expression_renderer_renders_calendar_and_padding_helpers() -> None:
+    class Raw(Schema):
+        observed_on = date(nullable=True)
+        label = string(nullable=True)
+
+    class Published(Schema):
+        shifted = date(nullable=True)
+        following_monday = date(nullable=True)
+        left_padded = string(nullable=True)
+        right_padded = string(nullable=True)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(
+                shifted=add_months(row.observed_on, months=2),
+                following_monday=next_day(row.observed_on, day_of_week="Mon"),
+                left_padded=lpad(row.label, length=8, pad="0"),
+                right_padded=rpad(row.label, length=8, pad="0"),
+            )
+
+    recipe = _recipe(Publish)
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    assert render(projection["shifted"], scope_aliases={"rows": "orders"}) == (
+        'F.add_months(F.col("orders.observed_on"), 2)'
+    )
+    assert render(projection["following_monday"], scope_aliases={"rows": "orders"}) == (
+        'F.next_day(F.col("orders.observed_on"), \'Mon\')'
+    )
+    assert render(projection["left_padded"], scope_aliases={"rows": "orders"}) == (
+        'F.lpad(F.col("orders.label"), 8, \'0\')'
+    )
+    assert render(projection["right_padded"], scope_aliases={"rows": "orders"}) == (
+        'F.rpad(F.col("orders.label"), 8, \'0\')'
     )
 
 

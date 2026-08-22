@@ -1,6 +1,7 @@
 # Sprint 54: V10 Hardening and Release Evidence
 
-Status: planned; target: 2026-12-11.
+Status: in progress; target: 2026-12-11. Environment-independent hardening and evidence reconciliation are recorded;
+live target lanes remain blocked by Docker-engine access and SearchDocuments streaming remains design-gated.
 
 ## Sprint Goal
 

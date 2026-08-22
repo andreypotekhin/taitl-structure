@@ -193,6 +193,9 @@ pass on PySpark 3.5 and 4.0 before the stage is claimed.
 
 ## Streaming Design Gates
 
+The current outstanding gate register is maintained in [Design](../Design.md#design-gates). The sections below retain
+the durable streaming boundary and admission rationale.
+
 The v9 design-gate program treats each open family as a proving lane rather than a generic backlog label. Every admitted
 stateful feature records its event-time source, watermark, grouping or partition key, state family, caller-required
 output mode, allowed following state stage, generated public PySpark form, and corrective diagnostic.

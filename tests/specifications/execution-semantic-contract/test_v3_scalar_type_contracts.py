@@ -465,6 +465,8 @@ def test_deterministic_numeric_helpers_return_typed_null_propagating_expressions
     assert rounded.type.precision == 12 and rounded.type.scale == 1
     assert rounded.nullable is True
     for expression in (
+        acos(nullable_decimal),
+        hypot(nullable_decimal, required_integer),
         sqrt(nullable_decimal),
         pow(nullable_decimal, required_integer),
         log(nullable_decimal),
@@ -550,6 +552,36 @@ def test_temporal_helpers_preserve_typed_calendar_contracts() -> None:
         assert expression.nullable is True
     assert to_date(required_text, format="yyyy-MM-dd").nullable is True
     assert to_timestamp(required_text, format="yyyy-MM-dd HH:mm:ss").nullable is True
+
+
+def test_calendar_and_padding_helpers_preserve_typed_contracts() -> None:
+    required_date = _expression(types.date(), nullable=False)
+    nullable_timestamp = _expression(types.timestamp(), nullable=True)
+    nullable_text = _expression(types.string(), nullable=True)
+
+    assert add_months(required_date, months=2).type is not None
+    assert add_months(nullable_timestamp, months=1).nullable is True
+    assert add_months(required_date, months=_expression(types.integer(), nullable=True)).nullable is True
+    assert next_day(required_date, day_of_week="Mon").type is not None
+    assert next_day(nullable_timestamp, day_of_week="Monday").nullable is True
+    assert lpad(nullable_text, length=8, pad="0").nullable is True
+    assert rpad(nullable_text, length=8, pad="0").nullable is True
+
+
+@pytest.mark.parametrize("function", [lpad, rpad])
+def test_padding_helpers_require_valid_literal_arguments(function) -> None:
+    with pytest.raises(TypeError, match=r"requires a String Structure expression"):
+        function(1, length=2, pad="0")
+    with pytest.raises(TypeError, match=r"length must be a non-negative integer literal"):
+        function("value", length=-1, pad="0")
+    with pytest.raises(TypeError, match=r"pad must be a non-empty string literal"):
+        function("value", length=2, pad="")
+
+
+@pytest.mark.parametrize("day", ["", "weekday", "Monday; SELECT 1", 1])
+def test_next_day_requires_a_weekday_literal(day: object) -> None:
+    with pytest.raises(TypeError, match=r"day_of_week must name a weekday"):
+        next_day(_expression(types.date(), nullable=False), day_of_week=day)  # type: ignore[arg-type]
 
 
 @pytest.mark.parametrize("function", [hour, minute, second])

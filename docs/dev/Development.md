@@ -12,7 +12,9 @@ concept-test coverage map.
 ## Architecture
 Main: [Architecture.md](Architecture.md)
 
-Design docs: **/docs/dev/design**
+Design index: [Design.md](Design.md)
+
+Design topic docs: **/docs/dev/design**
 
 Specifications: **/docs/dev/specifications**
 

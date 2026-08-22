@@ -1,5 +1,7 @@
 # Architecture
 
+The maintained design index and current open contract register are in [Design.md](Design.md).
+
 Structure is a schema-driven compiler and runtime toolkit. Core owns the public workflow: it discovers source,
 resolves configuration and a plugin target, analyzes transform structure, manages artifacts, and presents diagnostics.
 A selected plugin owns the target language and runtime semantics. The bundled PySpark plugin is the supported target;

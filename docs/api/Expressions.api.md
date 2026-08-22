@@ -96,6 +96,7 @@ explicit design gate are marked in the details below.
 | `split(...)` | `split` | `split(o.code, pattern="-")` |
 | `regexp_replace(...)` | `regexp_replace` | `regexp_replace(o.code, pattern="-", replacement="")` |
 | `regexp_extract(...)` | `regexp_extract` | `regexp_extract(o.code, pattern="(.*)", group=1)` |
+| `lpad(...)`, `rpad(...)` | `lpad`, `rpad` | `lpad(o.code, length=8, pad="0")` |
 | `length(...)` | `length` | `length(o.name)` |
 | `concat_ws(...)` | `concat_ws` | `concat_ws("-", o.region, o.code)`; `concat_ws("\u001f", o.path_ids)` for `array<string>` |
 | `initcap(...)` | `initcap` | `initcap(o.name)` |
@@ -110,14 +111,18 @@ explicit design gate are marked in the details below.
 | `sha2(...)` | `sha2` | `sha2(o.name, bits=256)` |
 | `date_add(...)` | `date_add` | `date_add(o.day, days=1)` |
 | `date_sub(...)` | `date_sub` | `date_sub(o.day, days=1)` |
+| `add_months(...)` | `add_months` | `add_months(o.day, months=1)` |
 | `datediff(...)` | `datediff` | `datediff(o.end_day, o.start_day)` |
 | `date_trunc(...)` | `date_trunc` | `date_trunc(o.at, unit="month")` |
 | `trunc(...)` | `trunc` | `trunc(o.day, unit="month")` |
 | `year(...)`, `month(...)`, `dayofmonth(...)` | Calendar extraction | `year(o.day)` |
 | `hour(...)`, `minute(...)`, `second(...)` | Time extraction | `hour(o.at)` |
+| `next_day(...)` | `next_day` | `next_day(o.day, day_of_week="Mon")` |
 | `to_date(...)` | `to_date` | `to_date(o.raw_day, format="yyyy-MM-dd")` |
 | `to_timestamp(...)` | `to_timestamp` | `to_timestamp(o.raw_at, format="yyyy-MM-dd HH:mm:ss")` |
 | `abs(...)` | `abs` | `abs(o.total)` |
+| `acos(...)` | `acos` | `acos(o.total)` |
+| `hypot(...)` | `hypot` | `hypot(o.x, o.y)` |
 | `round(...)` | `round` | `round(o.total, scale=2)` |
 | `bround(...)` | `bround` | `bround(o.total, scale=2)` |
 | `ceil(...)` | `ceil` | `ceil(o.total)` |
@@ -171,6 +176,12 @@ explicit design gate are marked in the details below.
 - `trunc(...)` accepts Date values and `year`, `month`, `quarter`, or `week` units (including Spark aliases).
   Calendar extraction accepts Date or Timestamp values; time extraction requires Timestamp. String temporal parsing is
   nullable because invalid input becomes null, and its optional format is a compiler-visible literal.
+- `add_months(...)` accepts Date or Timestamp values and an integer literal or integral expression; the result is a
+  nullable Date when either input is nullable. `next_day(...)` accepts a Date or Timestamp and a weekday literal from
+  Monday through Sunday (short names such as `Mon` are accepted) and returns a nullable Date.
+- `lpad(...)` and `rpad(...)` accept a String expression, a non-negative integer literal, and a non-empty padding
+  literal. They return a String expression with the input nullability.
+- `acos(...)` and `hypot(...)` accept numeric expressions and return nullable Double results.
 - `hash(...)` and `xxhash64(...)` accept scalar inputs. They are Spark hash functions, not cryptographic identifiers;
   do not use them for security, cross-engine interchange, or persistent identifiers. `md5(...)`, `sha1(...)`, and
   `sha2(...)` are deterministic digests of String values, not password-storage primitives.

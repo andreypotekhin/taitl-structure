@@ -108,13 +108,15 @@ Coding guidelines: See Coding section in /dev/Style.md
 Code structure: /dev/Code.md
 
 ## Testing
-Test cases backing user stories (from /docs/dev/specifications/UserStories.spec.md) are in tests/user_stories/[section]/[item-descr].
+Main: [Testing.md](docs/dev/Testing.md)
+
 Testing standards, guidelines, structure are coverage limits: 
-- Style guide (/docs/dev/Style.md)
-- Testing guide (/docs/dev/Testing.md)
+- Style guide ([Style.md](docs/dev/Style.md))
+- Testing guide ([Testing.md](docs/dev/Testing.md))
+Test cases backing user stories (from /docs/dev/specifications/UserStories.spec.md) are in tests/user_stories/[section]/[item-descr].
 Pay attention to test name shortening techniques described in the style guide.
 
-### Testing inputs
+### Testing inputs: Model Source Code
 Model source code:
 - Source: res/testing/model/orders
 - Generated: res/testing/model/structure_generated
@@ -124,6 +126,17 @@ Model source code covers the happy path; unhappy paths are expected to be create
 The generated source is not fixed, may adjust to the project as we evolve/refactor. 
 The generated source is also 'more' than the developed project until the current version scope is complete. 
 
+#### Live PySpark environment
+Live PySpark infrastructure is defined as Docker-Compose scripts under infra/compose.
+This infrastructure is generally not needed for most tests - with the exception of integration tests.
+This infrastructure can also be used in development for activities that require live Spark, 
+such as live proofing and prototyping.  
+
+See [Testing.md](docs/dev/Testing.md) sections for details:
+- 'Integration Tests'
+- 'Execution Correctness'
+- 'Execution/Generated-Code Parity'
+- 
 ### Documenting
 You produce concise and all-encompassing, ready-to-publish documentation that people love to read.
 See 'Documenting' sections in /docs/dev/Style.md for details.

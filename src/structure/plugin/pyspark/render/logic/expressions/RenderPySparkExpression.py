@@ -619,6 +619,8 @@ class RenderPySparkExpression:
             return f"F.regexp_replace({args[0]}, {expression.data['pattern']!r}, {expression.data['replacement']!r})"
         if function == "regexp_extract":
             return f"F.regexp_extract({args[0]}, {expression.data['pattern']!r}, {expression.data['group']})"
+        if function in {"lpad", "rpad"}:
+            return f"F.{function}({args[0]}, {expression.data['length']}, {expression.data['pad']!r})"
         if function == "length":
             return f"F.length({args[0]})"
         if function in {"initcap", "reverse"}:
@@ -642,12 +644,17 @@ class RenderPySparkExpression:
             return f"F.date_add({args[0]}, {days})"
         if function == "date_sub":
             return f"F.date_sub({args[0]}, {expression.data['days']})"
+        if function == "add_months":
+            months = expression.data.get("months", args[1] if len(args) == 2 else None)
+            return f"F.add_months({args[0]}, {months})"
         if function == "datediff":
             return f"F.datediff({args[0]}, {args[1]})"
         if function == "date_trunc":
             return f"F.date_trunc({expression.data['unit']!r}, {args[0]})"
         if function == "trunc":
             return f"F.trunc({args[0]}, {expression.data['unit']!r})"
+        if function == "next_day":
+            return f"F.next_day({args[0]}, {expression.data['day_of_week']!r})"
         if function in {"year", "month", "dayofmonth", "hour", "minute", "second"}:
             return f"F.{function}({args[0]})"
         if function in {"to_date", "to_timestamp"}:
@@ -658,6 +665,10 @@ class RenderPySparkExpression:
             )
         if function == "abs":
             return f"F.abs({args[0]})"
+        if function == "acos":
+            return f"F.acos({args[0]})"
+        if function == "hypot":
+            return f"F.hypot({args[0]}, {args[1]})"
         if function == "round":
             return f"F.round({args[0]}, {expression.data['scale']})"
         if function == "bround":

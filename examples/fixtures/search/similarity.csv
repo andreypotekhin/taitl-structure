@@ -1,0 +1,4 @@
+id,collection_id,source,title,url,content,content_type,encoding,language,created_at,published_at,harvested_at
+d-11,docs,structure,Aurora Beacon Navigation,https://example.test/aurora-navigation,"Aurora beacon navigation guides travelers through the northern route.",text/plain,utf-8,en,2026-07-01 08:00:00,2026-07-02 08:00:00,2026-07-10 09:00:00
+d-12,docs,structure,Aurora Beacon,https://example.test/aurora-beacon,"Aurora beacon signals guide the night route.",text/plain,utf-8,en,2026-07-03 08:00:00,2026-07-04 08:00:00,2026-07-10 10:00:00
+d-13,docs,structure,Navigation Notes,https://example.test/navigation,"Navigation charts describe the route.",text/plain,utf-8,en,2026-07-05 08:00:00,2026-07-06 08:00:00,2026-07-10 11:00:00

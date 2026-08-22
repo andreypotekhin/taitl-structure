@@ -63,3 +63,4 @@ src/structure/app/target/pyspark/logic/model/PySparkStepResultRecipe.py.isorted
 res/img/screenshots/add_promotion.screen.0.jpg
 res/img/screenshots/*.*.jpg
 .pytest-tmp/
+.pytest-workspace-tmp/

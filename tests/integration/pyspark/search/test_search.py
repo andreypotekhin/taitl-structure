@@ -125,6 +125,7 @@ from examples.search.schemas.indexing.vector import (
     ParagraphVectorScore,
     SearchQueryVectorEmbedding,
     SimilarityQueryEmbedding,
+    VectorEmbedding,
     VectorIndexPolicy,
 )
 from examples.search.schemas.label import (
@@ -350,6 +351,7 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         SentenceIndexSummary,
     ],
     "examples.search.schemas.indexing.vector": [
+        VectorEmbedding,
         DocumentVectorEmbedding,
         ParagraphVectorEmbedding,
         DocumentVectorQuery,
@@ -623,6 +625,10 @@ TRANSFORMS = (
     (ScoreOverlap, "examples.search.transforms.scoring.lexical.ScoreOverlap.ScoreOverlap"),
     (ScoreBm25, "examples.search.transforms.scoring.lexical.ScoreBm25.ScoreBm25"),
     (Scoring, "examples.search.transforms.scoring.Scoring.Scoring"),
+    (
+        AllScoringTargets,
+        "examples.search.transforms.scoring.lexical.AllScoringTargets.AllScoringTargets",
+    ),
     (OfflineScoring, "examples.search.transforms.offline.scoring.lexical.OfflineScoring.OfflineScoring"),
     (MergeOfflineQueries, "examples.search.transforms.offline.scoring.lexical.MergeOfflineQueries.MergeOfflineQueries"),
     (SelectPopularQueries, "examples.search.transforms.scoring.lexical.SelectPopularQueries.SelectPopularQueries"),

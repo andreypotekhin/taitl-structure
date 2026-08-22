@@ -26,7 +26,8 @@ RUN pip install --no-cache-dir \
 
 COPY infra/compose/images/pyspark/log4j2-integration.properties /etc/spark/log4j2-integration.properties
 COPY infra/compose/images/pyspark/run-integration.sh /usr/local/bin/run-integration
-RUN chmod +x /usr/local/bin/run-integration
+RUN sed -i 's/\r$//' /usr/local/bin/run-integration \
+    && chmod +x /usr/local/bin/run-integration
 
 WORKDIR /workspace
 ENTRYPOINT ["tini", "--"]

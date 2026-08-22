@@ -121,6 +121,7 @@ Draft the remaining sections in the concise, structured style exemplified by `cl
 Keep the section order fixed. The draft is a structured chapter source: its lists establish the chapter's vocabulary and interfaces, its Notation block establishes workflow coverage, and its Solution establishes the reader-facing conceptual argument.
 
 ## Collection
+Present annotated source as continuous narrative.
 
 ### Collect process
 - Input: close/annotated
@@ -185,6 +186,8 @@ Keep the section order fixed. The draft is a structured chapter source: its list
       - Trim texts between code listings in 'Workflow' to avoid repetition.
 
 ## Combine
+Present combined continuous narrative based on draft, background and collected documents.
+
 ### Combine process
 - Inputs: close/draft, close/collected, .back.md
 - Output: close/combined
@@ -196,12 +199,13 @@ Keep the section order fixed. The draft is a structured chapter source: its list
 - Name: combine(), usage: combine(dir)
 - Input: .draft.md, .back.md and .cnd.md describing a transform. Ex: chunking.draft.md
 - Output: .comb.md describing a transform in combined narrative. Ex: chunking.comb.md
-- Goal: present combined continuous narrative based on structured draft, background document and collected code.
+- Goal: present combined continuous narrative based on draft, background, planning and collected documents.
  
 ### Combine operator instructions
-Combine draft (.draft.md), background (.back.md) and collected (.cnd.md) docs:
-- Draft (close/draft) contains structured chapters (.draft.md) of the future user manual, including a substantive Solution narrative.
+Combine draft (.draft.md), background (.back.md), plan (plan.md) and collected (.cnd.md) docs:
+- Draft (close/draft) contains structured chapter (.draft.md) of the future user manual, including a substantive Solution narrative.
 - Combine draft doc with background and collected docs to create an introduction narrative focused on a search engine topic, such as 'chunking'
+- Use relevant plan documents (.plan.md) for deep insight into decisions/tradeoffs/inner worsings. Use to extend the narrative without explicit importing parts of plan. Avoid citing/referring the plan docs.
 - Maintain content and structure set by draft doc
  - Make improvements/corrections to draft as needed, but keep it brief/succinct where it is already 
   - Specifically, some sections are mention/enumeration only: Builds on, Used by, Inputs/Outpus/Stages, Notation

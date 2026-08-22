@@ -140,22 +140,22 @@ if TYPE_CHECKING:
 
 
 _DSL_EXPORTS = """
-AsOf BinaryType CsvOptions DecimalType Join JoinDedupe JoinHint JoinStrategy JsonOptions OverlapPolicy StreamingOutputMode TiePolicy abs base64 bround
+AsOf BinaryType CsvOptions DecimalType Join JoinDedupe JoinHint JoinStrategy JsonOptions OverlapPolicy StreamingOutputMode TiePolicy abs acos add_months base64 bround
 approx_count_distinct approx_percentile arr_aggregate arr_append arr_compact arr_distinct arr_exists arr_filter
 arr_flatten arr_forall arr_position arr_prepend arr_reverse arr_insert arr_remove arr_sort arr_sort_by arr_transform
 arr_zip_with array array_contains array_except array_intersect array_repeat array_union avg as_of_one bool_and bool_or
 collect_list collect_set concat_ws coalesce ceil count count_distinct corr covar cross_join cube current_row date_add
 date_sub date_trunc dayofmonth datediff decode cume_dist dedupe_earliest_by dedupe_latest_by dense_rank distinct
-drop_duplicates drop_duplicates_within_watermark earliest_by element_at encode event_time_between exactly_one except_all exp exists floor from_csv from_json hash hour
+drop_duplicates drop_duplicates_within_watermark earliest_by element_at encode event_time_between exactly_one except_all exp exists floor from_csv from_json hash hour hypot
 initcap ifnull instr intersect intersect_all first_value following full_join group_by grouping_id grouping_sets having inner_join isnan
-isnotnull isnull is_grouped kurtosis lag left_join latest_by lead lookup_join last_value length levenshtein lower
+isnotnull isnull is_grouped kurtosis lag left_join latest_by lead lookup_join last_value length levenshtein lower lpad
 ltrim log limit md5 map_entries map_concat map_contains_key map_filter map_from_entries map_keys map_transform_keys
 map_transform_values map_values map_zip_with max min minute mode month nanvl nvl nvl2 nullif pow not_exists nth_value
 ntile offset order_by param_join percent_rank percentile posexplode_array posexplode_outer_array posexplode_struct posexplode_outer_struct posexplode_map posexplode_outer_map explode_array explode_outer_array explode_struct explode_outer_struct explode_map explode_outer_map inline_struct inline_outer_struct variant_explode variant_explode_outer preceding project rank range_between relation_alias regexp_extract regexp_replace require_all require_parent_hierarchy require_reference require_unique hierarchy_closure hierarchy_fallbacks reverse rtrim round
 sample select_first_qualified signum slice sha1 sha2 second right_join rollup row_number rowset_join rows_between rolling_avg rolling_max
-rolling_min rolling_sum scan subtract sum stddev sqrt size sequence session_window skewness split translate substring temporal_one
+rolling_min rolling_sum scan subtract sum stddev sqrt size sequence session_window skewness split translate substring temporal_one next_day
 to_csv to_decimal to_date to_json to_timestamp TimeWindow trim trunc try_element_at unbase64 union_all union_by_name upper unbounded_following unbounded_preceding
-variance when year xxhash64 zeroifnull where watermark window window_avg window_bool_and window_bool_or
+variance when year xxhash64 zeroifnull where watermark window window_avg window_bool_and window_bool_or rpad
 window_time
 window_collect_list window_collect_set window_count window_count_distinct window_max window_min window_sum
 window_stddev window_variance is_valid_variant is_variant_null parse_json schema_of_variant schema_of_variant_agg
@@ -198,6 +198,8 @@ __all__ = [  # noqa: F405
     "StreamingOutputMode",
     "TiePolicy",
     "abs",
+    "acos",
+    "add_months",
     "base64",
     "bround",
     "approx_count_distinct",
@@ -271,6 +273,7 @@ __all__ = [  # noqa: F405
     "from_json",
     "hash",
     "hour",
+    "hypot",
     "initcap",
     "inline_struct",
     "inline_outer_struct",
@@ -300,6 +303,7 @@ __all__ = [  # noqa: F405
     "length",
     "levenshtein",
     "lower",
+    "lpad",
     "ltrim",
     "log",
     "limit",
@@ -319,6 +323,7 @@ __all__ = [  # noqa: F405
     "mode",
     "minute",
     "month",
+    "next_day",
     "nanvl",
     "nvl",
     "nvl2",
@@ -360,6 +365,7 @@ __all__ = [  # noqa: F405
     "reverse",
     "rtrim",
     "round",
+    "rpad",
     "signum",
     "slice",
     "sha1",

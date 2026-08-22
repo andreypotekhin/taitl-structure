@@ -7,6 +7,9 @@ implemented, unsupported, streaming-ineligible, caller-owned-guided, or design-g
 The catalog is not a one-to-one PySpark wrapper: Structure admits only typed, compiler-visible, explainable, and
 testable transformations.
 
+The current outstanding gate register is maintained in [Design](../Design.md#design-gates). This topic document keeps
+the durable API admission rules; it does not replace the current-status register.
+
 ## Coverage and Admission
 
 The coverage catalog is the single source of truth for the PySpark 3.5.x/4.0.x transformation intersection. Each row

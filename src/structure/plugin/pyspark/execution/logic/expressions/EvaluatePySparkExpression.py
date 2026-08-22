@@ -807,6 +807,8 @@ class EvaluatePySparkExpression:
             return functions.regexp_replace(args[0], expression.data["pattern"], expression.data["replacement"])
         if function == "regexp_extract":
             return functions.regexp_extract(args[0], expression.data["pattern"], expression.data["group"])
+        if function in {"lpad", "rpad"}:
+            return getattr(functions, function)(args[0], expression.data["length"], expression.data["pad"])
         if function == "length":
             return functions.length(args[0])
         if function in {"initcap", "reverse"}:
@@ -830,12 +832,17 @@ class EvaluatePySparkExpression:
             return functions.date_add(args[0], days)
         if function == "date_sub":
             return functions.date_sub(args[0], expression.data["days"])
+        if function == "add_months":
+            months = expression.data.get("months", args[1] if len(args) == 2 else None)
+            return functions.add_months(args[0], months)
         if function == "datediff":
             return functions.datediff(args[0], args[1])
         if function == "date_trunc":
             return functions.date_trunc(expression.data["unit"], args[0])
         if function == "trunc":
             return functions.trunc(args[0], expression.data["unit"])
+        if function == "next_day":
+            return functions.next_day(args[0], expression.data["day_of_week"])
         if function in {"year", "month", "dayofmonth", "hour", "minute", "second"}:
             return getattr(functions, function)(args[0])
         if function in {"to_date", "to_timestamp"}:
@@ -846,6 +853,10 @@ class EvaluatePySparkExpression:
             )
         if function == "abs":
             return functions.abs(args[0])
+        if function == "acos":
+            return functions.acos(args[0])
+        if function == "hypot":
+            return functions.hypot(args[0], args[1])
         if function == "round":
             return functions.round(args[0], expression.data["scale"])
         if function == "bround":
