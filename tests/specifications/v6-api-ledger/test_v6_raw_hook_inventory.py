@@ -9,23 +9,21 @@ INVENTORY = ROOT / "docs/dev/specifications/ExampleRawHookInventory.json"
 GAPS = ROOT / "docs/dev/Gaps.md"
 VALID_STATUSES = {"scheduled", "retired", "intentional", "deferred"}
 GAPS_REGISTER = (
-    "Lambda-bound struct field access",
-    "Partitioned `window_max`",
-    "Ordered `collect_list`",
-    "`exactly_one` validation",
-    "Implicit global aggregation",
-    "Explicit scalar UDF example",
-    "`posexplode` over array of structs",
-    "Other generator forms",
-    "Exact-schema relation set composition and self-alias",
-    "Relation order/limit/offset",
-    "Branchable typed union",
-    "`require_unique` / `require_all` / `require_reference`",
-    "Bounded parent hierarchy and fallbacks",
-    "First-qualified priority selection",
-    "Sampling",
-    "Bounded ordered `scan(...)`",
-    "Binary/encoding; JSON/CSV parsing; Deterministic `mode`",
+    "Normal, conditional, predicate, and sort",
+    "String",
+    "Numeric and mathematical",
+    "Date and timestamp",
+    "Bitwise and binary",
+    "Hash",
+    "JSON and CSV",
+    "Arrays and higher-order functions",
+    "Struct and map",
+    "Aggregates",
+    "Windows",
+    "Generators and partition transforms",
+    "Variant",
+    "XML, URL, provider/runtime",
+    "Python UDF/UDTF/custom types",
 )
 
 
@@ -54,7 +52,7 @@ def test_v6_raw_hook_dispositions_name_a_real_boundary_and_owner() -> None:
             assert entry["capabilities"]
 
 
-def test_v6_postponed_and_scheduled_capabilities_have_a_gaps_register_entry() -> None:
+def test_sql_function_families_have_a_gaps_register_entry() -> None:
     gaps = GAPS.read_text(encoding="utf-8")
 
     assert all(capability in gaps for capability in GAPS_REGISTER)

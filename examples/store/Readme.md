@@ -1,6 +1,6 @@
 # Store Example App
 
-Focused boundary contracts are collected in the [Store example specifications](../../docs/examples/store/Readme.md).
+Focused boundary contracts are collected in the [Store example specifications](../../close/background/store/Readme.md).
 
 This example models a multi-tenant retail, merchandising, and fulfillment flow in an online e-commerce store. It can
 shape demand before an order exists by ranking product recommendations, then turn incoming orders into validated

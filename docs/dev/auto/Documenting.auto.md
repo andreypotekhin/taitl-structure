@@ -6,7 +6,7 @@
 - 'Documenting' section in [Style.md](../Style.md)
 
 ### Text style, processes and operators
-- Main: [Prose.auto.md](../Prose.auto.md)
+- Main: [Prose.md](../Prose.md)
 - Definitions of text operators and processes. 
 
 ### Annotated source code

@@ -528,7 +528,7 @@ documents remain outside V10.
 | M3 | Practical expression DSL and diagnostics | Sprint 03 |
 | M4 | Hook model and no-hook generated-code cleanliness | Sprint 04 |
 | M5 | Joins, compiler traceability, build integration | Sprint 05 |
-| M6 | v1 stabilization and docs/examples | follow-up hardening sprint |
+| M6 | v1 stabilization and example background docs | follow-up hardening sprint |
 | M7 | v2 analytical pipeline features, analytical join coverage, composition maturity, adoption tooling, and Spark Connect batch support | Sprints 06-09 |
 | M8 | v3 PySpark gap closure and streaming transformation hardening | Sprints 11-16 |
 | M9 | v4 PySpark transformation API coverage | Sprint 17, later v4 feature sprints including Sprint 18 streaming migration, then the final v4 hardening sprint |

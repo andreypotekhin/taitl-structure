@@ -38,7 +38,7 @@ Destination: close/annotated/
 
 ## Creating annotated code
 Maintain creation of annotated code documents for project source code:
-- Annotated source documents are markdown (.py.md) files describing the purpose and workings of single source unit (file)
+- Annotated source documents are markdown (.anno.md) files describing the purpose and workings of single source unit (file)
 - Ignore package and other dunder files (Ex: __init__.md)
 - Annotated source document describes purpose and workings of a source unit, shows source code section, and then lists relevant points with explanations
 - Multiple annotated source documents read as continuous story/narrative, top to bottom, focused on business details such as purpose, parameter values, formulas.  
@@ -66,17 +66,17 @@ close/annotated/
     transforms/
       searching/
         search_docs/
-          admit.py.md
-          overlap.py.md
-          rerank.py.md
-          workflow.py.md         
+          admit.anno.md
+          overlap.anno.md
+          rerank.anno.md
+          workflow.anno.md
 ```
 - Of example code, we only currently target transform code. Schema definitions are not listed, just named in transform code.
 - Annotated source document structure for a Transform class: 
  - Heading (follows class name), Sections: Intro (no heading), Inputs (no heading), Step sections (follow step method names)
 
 Example:
-admit.py.md contents follow the code of admit.py:
+admit.anno.md contents follow the code of admit.py:
 Heading: ## Retrieve Documents - We start at Heading 2 by convention (no Heading 1)
 'Intro (no heading)': Description of transform purpose, with focus on business logic/purpose/goal
 - Grounded in outer transform logic, if any, or in same-level workflow sequence.
@@ -90,7 +90,7 @@ Heading: ## Retrieve Documents - We start at Heading 2 by convention (no Heading
 - Avoid overqualifying the nouns (e.g. 'nullable experiment' - prefer simply 'experiment').
 - Avoid explaining what's obvious, e.g. specific lanes purpose.
 - Tailored for sequential reader, who goes over the docs top-to-bottom. 
- - This implies no need to repeat what is established/explained in previous .py.md docs on same level.
+ - This implies no need to repeat what is established/explained in previous .anno.md docs on same level.
 - Avoid sophisticated/too detailed language - stick to overview style; assume the reader will 
 glance at the listed code and use subsequent bullets for focusing. Also assume the reader does
 not read headings - heading text or its idea must be present in body text. 
@@ -131,7 +131,7 @@ the algorithm version used to calculate it.'
 ### Non-example app annotated source 
 Non-example app annotated source, e.g. annotated source for core packages, 
 follows the above instructions for example code, with following adjustments:
-- For top-level packages under core/, plugin/, plugin/pyspark, create Package document: package.py.md 
+- For top-level packages under core/, plugin/, plugin/pyspark, create Package document: package.anno.md
 - In the package document, describe the purpose of the package and overall flow.  
 - Package dirs, modules and methods do not typically follow 'top-to-bottom' sequence inherent to transforms.
 Therefore, it may be more difficult to create a continuous narrative for top-to-bottom reader.

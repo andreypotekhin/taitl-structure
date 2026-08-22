@@ -14,11 +14,10 @@ def test_api_catalog_open_rows_use_design_gate_language() -> None:
 
     assert "planned" not in text.lower()
     assert "deferred" not in text.lower()
-    assert "| XML helpers | design-gated |" in text
-    assert "| Variant field | implemented |" in text
-    assert "| Variant helpers | implemented |" in text
-    assert "| Variant mutation helpers | design-gated |" in text
-    assert "| Geospatial helpers | design-gated |" in text
+    assert "| XML, URL, and provider/runtime functions | design-gated or unsupported |" in text
+    assert "| Variant functions | partial |" in text
+    assert "Variant mutation helpers remain design-gated" in text
+    assert "provider-neutral geometry remains separately gated" in text
     assert "| Aggregate aliases | unsupported |" in text
     assert "| Sampling | implemented |" in text
     assert "| Join reordering | design-gated |" in text

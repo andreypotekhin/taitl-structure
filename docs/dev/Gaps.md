@@ -14,10 +14,12 @@ See the user-facing summary in [API.md](../API.md) and the unified API status ta
 
 - `implemented`: shipped with the required capability, diagnostic, documentation, and verification evidence for the
   claimed target profile.
-- `planned`: accepted direction or reserved API; needs implementation, diagnostics, tests, or docs. A plan may be
-  created later.
-- `scheduled`: accepted v4 catalog work assigned to a delivery slice. The pre-catalog gap list continues to use
-  `planned` until Sprint 17 reclassifies it.
+- `partial`: a family has useful implemented coverage, but one or more functions in the family remain open.
+- `planned`: accepted implementation direction; it needs implementation, diagnostics, tests, or docs.
+- `design-gated`: the API is a candidate, but its type, cardinality, determinism, streaming, or runtime contract must
+  be designed before implementation.
+- `caller-owned-guided`: Structure documents how to use native PySpark at the boundary, but does not compile the API.
+- `streaming-ineligible`: the batch contract is or may be admissible, but Structure does not claim a streaming form.
 - `deferred`: deliberately postponed because its type, cardinality, determinism, or runtime contract is not yet
   sufficiently specified. It is not an implicit promise for the current release.
 - `unsupported`: intentionally outside the compiler-visible DSL, or incompatible with Structure's contract.
@@ -39,81 +41,50 @@ Consult the official Spark 4.0.1 docs when expanding this page:
 - PySpark DataFrame join reference:
   <https://spark.apache.org/docs/4.0.1/api/python/reference/pyspark.sql/api/pyspark.sql.DataFrame.join.html>
 
-The latest Spark docs may be useful for discovery, but features introduced after PySpark 4.0.x should not be marked
-`planned` for the current target unless the target range changes.
+The latest Spark docs may be useful for discovery, but features introduced after PySpark 4.0.x are not current-baseline
+gaps. PySpark 4.1 adoption has a separate ledger in [APICatalog.md](../APICatalog.md) and
+[V11.md](project-management/V11.md); it must not silently change the default `>=3.5,<4.1` baseline.
 
-## V4 Coverage Program
+## Current Baseline
 
-V3's scheduled gaps are complete. V4 now treats this page as input to the checked
-[API Coverage catalog](../APICatalog.md#api-coverage), rather than as a list of
-isolated surprises. The catalog classifies every relevant PySpark 3.5.x/4.0.x transformation API as supported,
-scheduled, deferred, or unsupported and links each supported entry to capability and parity evidence.
+This register is current as of 2026-08-22. The default target remains PySpark `>=3.5,<4.1`, ordinary PySpark, with
+Spark Connect claims only for completed compiler-visible batch features. The authoritative inventory is the intersection
+of the PySpark 3.5.x and 4.0.x public APIs, not the newest Spark documentation.
 
-The delivery design and first ExecPlan are [API Catalog Design Gates](design/ApiCatalogDesignGates.design.md) and
-[P07132601.V4-transformation-api-coverage.plan.md](planning/P07132601.V4-transformation-api-coverage.plan.md).
-[Spark Streaming](design/SparkStreaming.design.md) and
-[P07152602.V4-caller-owned-streaming-migration.plan.md](../../close/archive/planning/P07152602.V4-caller-owned-streaming-migration.plan.md)
-define the dedicated bounded-streaming transformation slice. Loading, storage, catalog/table management, actions, and
-streaming lifecycle ownership are excluded from this program.
+Full SQL-function coverage means that every baseline function has exactly one disposition: implemented with evidence,
+planned for a typed Structure contract, design-gated, caller-owned-guided, streaming-ineligible, or unsupported. It does
+not mean that every function must be exposed under the same spelling or that arbitrary SQL strings become acceptable.
 
-## V6 Deferral Discipline
+The seven examples raised during the audit resolve as follows: `hour` and `exp` are implemented; the PySpark spelling is
+`add_months` rather than `add_month`; and `add_months`, `next_day`, `acos`, `hypot`, `rand`, and `lpad` are open. The
+implementation sequence is the [PySpark SQL function coverage ExecPlan](planning/P08222601.PySpark-SQL-function-coverage.plan.md).
 
-v6 uses the coverage catalog and [APICatalog.md](../APICatalog.md) to schedule small typed PySpark additions, but this
-page remains the durable register of postponed and deferred work. The design is
-[PySpark API Closure](design/PluginArchitecture.design.md), and the previous release ledger is now consolidated into
-[APICatalog.md](../APICatalog.md). When v6 admits, postpones, or rejects an API, update this page, the coverage
-JSON/reference, and the catalog in the same change. Keep the reason, the user-facing boundary (`step`, explicit scalar
-UDF, `@raw`, or caller-owned PySpark), and the owning plan together so an omitted API never becomes an implicit promise.
+## SQL Function Family Register
 
-The following candidates remain deferred in the catalog until their contracts and evidence are complete: missing-column
-relation set composition, sampling, and physical-plan directives. V7 delivered Binary encoding, schema-carrying
-JSON/CSV parsing, deterministic grouped `mode(...)`, and generator expansion through named delivery slices; their
-contracts are [Advanced Analytical Operations](design/AdvancedAnalyticalOperations.design.md)
-and [Typed Relation Operations](design/TypedRelationOperations.design.md). Missing-column union, sampling,
-and physical-plan directives remain retained backlog. Scalar `@special(type="udf")` is already implemented
-for ordinary PySpark and Spark Connect batch; its user contract is [Explicit Scalar Python UDFs](specifications/ExplicitScalarUdfs.spec.md). It is
-opt-in, type/nullability declared, warning-governed, and not a substitute for an
-unsupported symbolic operation.
+The table records the current family-level gaps. “Covered” includes a typed equivalent where the Structure API is
+intentionally more explicit; “open” names the remaining PySpark functions or the contract decision still required.
 
-The remaining v6 work is cleanup and broader vocabulary, not Search hook retirement. Implemented P1 generators,
-relation assertions, parent hierarchy validation, hierarchy closure rows, hierarchy fallback expansion, branchable typed
-union, first-qualified priority selection, and typed cohort matcher predicates now cover the Search example's former raw
-boundaries. General recursive relations, dynamic-depth traversal, arbitrary graph algorithms, user-defined hierarchy
-traversal, and implicit surrogate row identifiers remain deferred until a separate contract defines them.
+| Family | Status | Covered now | Open gaps / boundary |
+| --- | --- | --- | --- |
+| Normal, conditional, predicate, and sort | partial | `literal`, `when`, null-control helpers, `isnull`, `isnotnull`, `isnan` | `equal_null`, function-form `like`/`ilike`/`regexp`/`regexp_like`/`rlike`, and null-ordering sort helpers. `expr` and `call_function` remain unsupported. |
+| String | partial | `lower`, `upper`, trim variants, `substring`, `split`, regex extraction/replacement, `concat_ws`, `length`, `initcap`, `reverse`, `translate`, `instr`, `levenshtein` | `lpad` and `rpad`; `ascii`, `btrim`, `char`, `char_length`, `contains`, `elt`, `find_in_set`, formatting, `left`/`right`, `locate`, `mask`, `octet_length`, `overlay`, `position`, `printf`, regex-count/instruction/substr variants, `repeat`, `replace`, `sentences`, `soundex`, split/substring variants, and UTF-8 helpers. |
+| Numeric and mathematical | partial | `abs`, `round`, `bround`, `ceil`, `floor`, `sqrt`, `pow`, `log`, `exp`, `signum` | `acos`, `acosh`, `asin`, `asinh`, `atan`, `atan2`, `atanh`, `bin`, `cbrt`, `conv`, `cos`, `cosh`, `cot`, `csc`, `degrees`, `e`, `expm1`, `factorial`, `greatest`, `hex`, `hypot`, `least`, `ln`, `log10`, `log1p`, `log2`, `pi`, `pmod`, `radians`, `rint`, `sec`, `sign`, `sin`, `sinh`, `tan`, `tanh`, `unhex`, and `width_bucket`. `rand`, `randn`, and `uniform` need a nondeterminism policy. |
+| Date and timestamp | partial | `date_add`, `date_sub`, `datediff`, `date_trunc`, `trunc`, calendar extraction including `hour`, and date/timestamp parsing | `add_months`, `next_day`, timezone/current-time functions, date formatting/parts, day/week/name helpers, Unix/UTC conversion, `last_day`, `make_*` constructors, `months_between`, quarter, timestamp arithmetic/construction, `try_*` temporal helpers, and week helpers. |
+| Bitwise and binary | partial | typed Column bitwise methods, `base64`, `unbase64`, `encode`, `decode` | SQL bitwise functions, shifts, `to_binary`, `try_to_binary`, `hex`/`unhex`, and UTF-8/binary validation helpers. |
+| Hash | partial | `hash`, `xxhash64`, `md5`, `sha1`, `sha2` | `crc32` and remaining baseline aliases need a parity decision; hashes remain non-identity and non-password-storage primitives. |
+| JSON and CSV | partial | Schema-carrying `from_json`, `to_json`, `from_csv`, `to_csv` | `schema_of_csv`, `schema_of_json`, `get_json_object`, `json_array_length`, `json_object_keys`, and `json_tuple`. |
+| Arrays and higher-order functions | partial | Typed array construction, lookup, mutation, set, sort, `sequence`, `slice`, and symbolic callbacks through `arr_*`/`array_*` | `cardinality`, `concat`, `array_join`, `array_max`, `array_min`, `array_size`, `arrays_overlap`, `arrays_zip`, `get`, `shuffle`, `sort_array`, and `reduce`; callback nullability and random shuffle need evidence. |
+| Struct and map | partial | Typed map construction/lookup/entries/callbacks; schema constructors own struct shape | `create_map`, `map_from_arrays`, `str_to_map`, `named_struct`, and exact constructor parity. |
+| Aggregates | partial | Core, boolean, statistical, percentile, collection, and deterministic `mode` aggregates | `any_value`, `array_agg`, bitwise aggregates, `count_if`, `first`/`last`, `max_by`/`min_by`, `median`, `product`, regression aggregates, population/sample aliases, distinct/string aggregation, and sketch/bitmap aggregates. |
+| Windows | partial | Typed ranking, lag/lead, value selection, and aggregate-window helpers | Raw `Column.over`, complete null-ordering options, and any aggregate/window form not admitted through typed `WindowSpec`. |
+| Generators and partition transforms | partial | Typed array/map/struct generators and Variant TVFs | `stack`, generic PySpark generator spellings, and partition transforms `years`, `months`, `days`, `hours`, `bucket`; cardinality, schema, and streaming contracts are required. |
+| Variant | partial | Released-profile parsing, extraction, validation, schema inspection, conversion, and TVF expansion | `is_valid_variant` is profile-gated; Variant mutations remain design-gated until a released target and mutation contract exist. |
+| XML, URL, provider/runtime | design-gated or unsupported | No general XML or URL symbolic surface | XML and XPath functions, URL functions, geometry-provider functions, runtime metadata, reflection, encryption, and sketch/bitmap runtime integrations need separate contracts or remain caller-owned. |
+| Python UDF/UDTF/custom types | implemented only for scalar UDFs | Opt-in scalar `@special(type="udf")` for ordinary batch | Pandas UDFs, UDTFs, UDTs, arbitrary callbacks, and implicit UDF conversion remain caller-owned. |
 
-### Checked v6 register
-
-The following is the durable Gaps-side mirror of the postponed and scheduled rows in
-[APICatalog.md](../APICatalog.md). A generic coverage-family entry may remain deferred while this register schedules one
-narrower typed capability from that family; no broader API is implied.
-
-| Capability | Status | Owner / current boundary |
-| --- | --- | --- |
-| Lambda-bound struct field access | implemented | Sprint 24; the two Security reconciliation hooks are typed steps |
-| Partitioned `window_max` | implemented | Sprint 24; typed partition/order/frame contract is available, and BM25 no longer needs a raw hook |
-| Ordered `collect_list` | implemented | Sprint 24; explicit ascending/descending aggregate keys retain deterministic collection order |
-| `exactly_one` validation | implemented | Sprint 24 P0; batch-only ordinary-PySpark/Spark Connect relation assertion with generated/online `REL-E0701` failure. `CreateSimilarityQueries` now uses it with ordered token aggregation and typed query union. |
-| Implicit global aggregation | implemented | Sprint 24; aggregate-only steps retain global semantics and enforce empty-input nullability. `CreateIndex` now uses grouped term aggregates plus aggregate-only summaries without a raw hook. |
-| Explicit scalar UDF example | implemented documentation | Sprint 24; documented opt-in ordinary-PySpark/Spark Connect exception with warning and declared boundary |
-| `posexplode` over array of structs | implemented | Sprint 25; `posexplode_struct(...)` is available, and `Chunking`, `ScoreOverlap`, and `ScoreBm25` now use typed struct-wrapped expansion instead of raw hooks |
-| Other generator forms (nested/variant) | deferred | Admit only after a separate cardinality/null/streaming contract; primitive scalar-array and primitive map generators are implemented |
-| Exact-schema relation set composition and self-alias | implemented | Sprint 25; exact-schema set operations, branchable lane rejoin, and `relation_alias(...)` are implemented. `ReduceSimilarityScores` now uses them for reciprocal pair matching, exact-schema pair union, and typed per-source ranking. |
-| Relation order/limit/offset | implemented | Sprint 25; `order_by(...)`, `limit(n)`, and `offset(n)` are compiler-visible. `sample` remains deferred. |
-| Branchable typed union | implemented | Sprint 25; independently materialized typed lanes can rejoin through exact-schema `union_all(...)`. `BuildRelevanceSignals` now uses branch fan-out for global, fallback, and band-scoped impressions/clicks without raw hooks. |
-| `require_unique` / `require_all` / `require_reference` / `require_parent_hierarchy` | implemented | Sprint 25; compiler-visible Spark-plan assertions are available, and `ResolveCohortBands` now uses them for bounded band-catalog validation |
-| Search cohort band matcher predicates | implemented | Sprint 25; `cross_join(...)`, `where(...)`, `size(...)`, and `array_contains(...)` cover wildcard-or-membership matching inside the typed `ResolveCohortBands` migration |
-| Parent hierarchy closure | implemented | Sprint 25; `hierarchy_closure(...)` emits typed bounded `(node, ancestor, depth)` rows without driver collection |
-| Bounded parent hierarchy and fallbacks | implemented | Sprint 25; `ResolveCohortBands` now uses `require_parent_hierarchy(...)`, `hierarchy_closure(...)`, and `hierarchy_fallbacks(...)` to retire its raw driver-collection traversal |
-| First-qualified priority selection | implemented | Sprint 25; `select_first_qualified(...)` is available. `RerankDocuments` now uses declared candidate keys to select the first eligible query and popularity feedback context without a raw surrogate row ID. |
-| Sampling | deferred | Seed, replacement, and reproducibility contract is incomplete |
-| Bounded ordered `scan(...)` | implemented | Sprint 26; batch-only ordinary-PySpark recurrence over caller-supplied partitioned timelines, with a positive per-partition bound and `"error"` duplicate-key failure |
-| Binary/encoding; JSON/CSV parsing; Deterministic `mode` | implemented | V7 delivered typed Binary fields and encoding helpers, Schema-carrying JSON/CSV conversion, and grouped `mode(value, deterministic=False)` with portable deterministic tie lowering |
-
-## API Catalog
-
-Column, SQL-function, join, aggregation, window, collection, streaming, and v6 release-ledger tables now live in
-[APICatalog.md](../APICatalog.md). Keep this page focused on postponed/deferred rationale and use the catalog for
-user-facing API status, PySpark parity, and boundaries.
+Updates to this register must be reflected in [APICatalog.md](../APICatalog.md), the machine-readable coverage ledgers
+under `src/structure/plugin/pyspark/resources/`, the relevant API reference, and the owning ExecPlan. A family must not
+be marked implemented merely because one example function has tests.
 
 ## Admission Checklist
 

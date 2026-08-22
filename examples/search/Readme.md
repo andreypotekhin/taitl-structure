@@ -8,7 +8,7 @@ sources, persistence, query serving, stream lifecycles, and checkpoints.
 For the architecture, evidence boundaries, and ownership model, see the
 [Search background](../../docs/background/Search.back.md).
 
-Focused boundary contracts are collected in the [Search example specifications](../../docs/examples/search/Readme.md).
+Focused boundary contracts are collected in the [Search example specifications](../../close/background/search/Readme.md).
 
 ## Pipeline
 

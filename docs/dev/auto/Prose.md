@@ -103,8 +103,8 @@ Draft the remaining sections in the concise, structured style exemplified by `cl
 - `Builds on`: list the principal collections, transforms, or relations that supply the topic's inputs.
 - `Used by`: list the principal transforms or workflows that consume the topic's outputs.
 - `Definitions`: define the small set of topic concepts needed by the chapter. Prefer bold, single-word concept names followed by concise explanations.
-- `Inputs`: list each input schema or relation, grouping related inputs when that improves readability.
-- `Outputs`: list each output schema or relation and introduce grouped output families with a short descriptive sentence when useful.
+- `Inputs`: list each input schema or relation.
+- `Outputs`: list each output schema or relation.
 - `Stages`: list each public or workflow stage as `StageName: inputs -> outputs`. Keep this as an inventory of boundaries, not an explanation of step mechanics.
 - `Notation`: include one fenced text block for the workflow. List stages in execution order and list every meaningful step with its input and output relations. Keep the notation lossless and concise; do not add implementation prose or Combine reference markers.
 - `Implementation`: write a second substantive narrative, more concrete than Solution and less mechanical than Code. Begin with the implementation's intent and boundary, then explain how data moves through the stages in the order established by Notation. Name the relevant transforms and schemas, explain why responsibilities are separated, and describe the contracts that make the flow reliable.
@@ -131,7 +131,7 @@ Keep the section order fixed. The draft is a structured chapter source: its list
 
 ### Collect operator
 - Name: collect(), usage: collect(dir)
-- Input: .py.md describing a transform. Ex: rerank.py.md
+- Input: .anno.md describing a transform. Ex: rerank.anno.md
 - Output: .cnd.md describing a transform in collectd form. Ex: rerank.cond.md
 - Goal: present annotated source as continuous narrative.
 - Instructions
@@ -202,8 +202,8 @@ Keep the section order fixed. The draft is a structured chapter source: its list
 Combine draft (.draft.md), background (.back.md) and collected (.cnd.md) docs:
 - Draft (close/draft) contains structured chapters (.draft.md) of the future user manual, including a substantive Solution narrative.
 - Combine draft doc with background and collected docs to create an introduction narrative focused on a search engine topic, such as 'chunking'
-- Maintain content and structure set by draft
- - Make improvements/corrections as needed, but keep it brief/succinct where it is already; 
+- Maintain content and structure set by draft doc
+ - Make improvements/corrections to draft as needed, but keep it brief/succinct where it is already 
   - Specifically, some sections are mention/enumeration only: Builds on, Used by, Inputs/Outpus/Stages, Notation
  - Only include concepts under Definitions, concept name is mostly single-word.    
  - Insert contents of background and collected docs as described below.
@@ -223,10 +223,14 @@ Combining Draft with Background docs:
 - Merge-in Solution section from draft doc if not already covered.
 
 'Stages' section:
-- Convert stages list to a table Stage/Inputs/Outputs 
+- Convert stage table to Structure notation for each stage 
+  - Structure notation: docs/dev/auto/prose/Notation.md
+  - As described in 'Stage Notation - Default' section
+  - Use compact variant, without assignments
+  - Place stages 
 
 Implementation section:
-- 'How it works' section of the background doc becomes combined with 'Implementation' section from draft doc
+- 'How it works' section of the background doc gets combined with 'Implementation' section from the draft doc
 - For 'How it works' section:
   - Drop implementation direction content such as discussion of invalid inputs, 'should'/'must' paragraphs
   - Drop content from decisions sections and on
