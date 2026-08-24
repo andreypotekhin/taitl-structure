@@ -31,15 +31,9 @@ class BuildDelegations(Transform):
         self, query: FieldSearchQuery, delegation: FieldSearchDelegation
     ) -> SearchQuery:
         inner_join(on=delegation.query_id == query.id)
-        return SearchQuery(
+        return SearchQuery.project(query)(
             id=delegation.delegated_query_id,
-            queryset=query.queryset,
-            content=query.content,
-            requested_at=query.requested_at,
             labels=query.labels,
-            is_question=query.is_question,
-            is_time_sensitive=query.is_time_sensitive,
-            language=query.language,
         )
 
     @step(input=[queries, delegations, requests], output=delegated_requests)
@@ -66,9 +60,8 @@ class BuildDelegations(Transform):
         inner_join(on=query.id == document.query_id)
         inner_join(on=delegation.query_id == query.id)
         where((query.operator == "or") | (document.matched_clause_count == document.expected_clause_count))
-        return DocumentSearchTarget(
+        return DocumentSearchTarget.project(delegation, document)(
             query_id=delegation.delegated_query_id,
-            document_id=document.document_id,
             scope_id=sha2(
                 concat_ws("\x1f", "field-search-targets-v1", delegation.delegated_query_id),
                 bits=256,

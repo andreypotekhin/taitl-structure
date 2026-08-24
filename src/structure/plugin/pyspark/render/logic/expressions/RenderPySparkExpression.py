@@ -669,6 +669,9 @@ class RenderPySparkExpression:
             return f"F.acos({args[0]})"
         if function == "hypot":
             return f"F.hypot({args[0]}, {args[1]})"
+        if function == "rand":
+            seed = expression.data.get("seed")
+            return "F.rand()" if seed is None else f"F.rand(seed={seed})"
         if function == "round":
             return f"F.round({args[0]}, {expression.data['scale']})"
         if function == "bround":

@@ -43,7 +43,7 @@ __all__ = [
     "minute", "month", "nanvl", "nullif", "nvl", "nvl2", "pow", "regexp_extract", "regexp_replace", "reverse",
     "round", "rpad", "rtrim", "sha1", "sha2", "second", "signum", "split", "sqrt", "substring", "to_csv", "to_date",
     "to_decimal", "to_json", "to_timestamp", "translate", "trim", "trunc", "unbase64", "decode", "encode", "upper",
-    "when", "xxhash64", "year", "zeroifnull", "acos", "hypot", "add_months", "next_day", "is_valid_variant", "is_variant_null", "parse_json",
+    "when", "xxhash64", "year", "zeroifnull", "acos", "hypot", "add_months", "next_day", "rand", "is_valid_variant", "is_variant_null", "parse_json",
     "schema_of_variant", "to_variant_object", "try_parse_json", "try_variant_get", "variant_get", "variant_literal",
     "variant_array_append", "try_variant_array_append", "variant_insert", "try_variant_insert", "variant_set",
     "try_variant_set", "variant_delete",
@@ -972,6 +972,33 @@ def hypot(left: object, right: object) -> Expression:
         nullable=left_argument.nullable or right_argument.nullable,
         data={"function": "hypot"},
         args=(left_argument, right_argument),
+    )
+
+
+def rand(*, seed: int | None = None, reproducible: bool = True) -> Expression:
+    """Generate a non-null uniform random Double expression.
+
+    ``reproducible=True`` requires a literal integer seed as an authoring
+    policy. A seed makes the expression auditable but does not promise identical
+    values across repartitioning, retries, Spark versions, or query restarts.
+    Set ``reproducible=False`` to explicitly allow an omitted seed.
+    """
+    if not isinstance(reproducible, bool):
+        raise TypeError("rand(...) reproducible must be a Boolean")
+    if seed is not None and (isinstance(seed, bool) or not isinstance(seed, int)):
+        raise TypeError("rand(...) seed must be an integer literal or None")
+    if reproducible and seed is None:
+        raise TypeError("rand(...) seed is required unless reproducible=False")
+    return Expression(
+        kind="call",
+        type=DoubleType(),
+        nullable=False,
+        data={
+            "function": "rand",
+            "seed": seed,
+            "reproducible": reproducible,
+            "nondeterministic": True,
+        },
     )
 
 

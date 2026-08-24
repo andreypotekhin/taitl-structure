@@ -60,8 +60,9 @@ not mean that every function must be exposed under the same spelling or that arb
 
 The eight examples raised during the audit resolve as follows: `hour` and `exp` were already implemented; the PySpark
 spelling is `add_months` rather than `add_month`; and the first implementation slice now covers `add_months`, `next_day`,
-`acos`, `hypot`, and `lpad` (with `rpad` added alongside it). `rand` remains open pending a nondeterminism, seed, and
-reproducibility contract. The implementation sequence is the [PySpark SQL function coverage ExecPlan](planning/P08222601.PySpark-SQL-function-coverage.plan.md).
+`acos`, `hypot`, and `lpad` (with `rpad` added alongside it). `rand` is now admitted as an explicitly nondeterministic
+scalar with a seed/reproducibility policy; its streaming status remains target-evidence driven. The implementation
+sequence is the [PySpark SQL function coverage ExecPlan](planning/P08222601.PySpark-SQL-function-coverage.plan.md).
 
 ## SQL Function Family Register
 
@@ -72,7 +73,8 @@ intentionally more explicit; “open” names the remaining PySpark functions or
 | --- | --- | --- | --- |
 | Normal, conditional, predicate, and sort | partial | `literal`, `when`, null-control helpers, `isnull`, `isnotnull`, `isnan` | `equal_null`, function-form `like`/`ilike`/`regexp`/`regexp_like`/`rlike`, and null-ordering sort helpers. `expr` and `call_function` remain unsupported. |
 | String | partial | `lower`, `upper`, trim variants, `lpad`, `rpad`, `substring`, `split`, regex extraction/replacement, `concat_ws`, `length`, `initcap`, `reverse`, `translate`, `instr`, `levenshtein` | `ascii`, `btrim`, `char`, `char_length`, `contains`, `elt`, `find_in_set`, formatting, `left`/`right`, `locate`, `mask`, `octet_length`, `overlay`, `position`, `printf`, regex-count/instruction/substr variants, `repeat`, `replace`, `sentences`, `soundex`, split/substring variants, and UTF-8 helpers. |
-| Numeric and mathematical | partial | `abs`, `acos`, `round`, `bround`, `ceil`, `floor`, `hypot`, `sqrt`, `pow`, `log`, `exp`, `signum` | `acosh`, `asin`, `asinh`, `atan`, `atan2`, `atanh`, `bin`, `cbrt`, `conv`, `cos`, `cosh`, `cot`, `csc`, `degrees`, `e`, `expm1`, `factorial`, `greatest`, `hex`, `least`, `ln`, `log10`, `log1p`, `log2`, `pi`, `pmod`, `radians`, `rint`, `sec`, `sign`, `sin`, `sinh`, `tan`, `tanh`, `unhex`, and `width_bucket`. `rand`, `randn`, and `uniform` need a nondeterminism policy. |
+| Numeric and mathematical | partial | `abs`, `acos`, `round`, `bround`, `ceil`, `floor`, `hypot`, `sqrt`, `pow`, `log`, `exp`, `signum` | `acosh`, `asin`, `asinh`, `atan`, `atan2`, `atanh`, `bin`, `cbrt`, `conv`, `cos`, `cosh`, `cot`, `csc`, `degrees`, `e`, `expm1`, `factorial`, `greatest`, `hex`, `least`, `ln`, `log10`, `log1p`, `log2`, `pi`, `pmod`, `radians`, `rint`, `sec`, `sign`, `sin`, `sinh`, `tan`, `tanh`, `unhex`, and `width_bucket`. |
+| Random and seeded | partial | `rand` with explicit seed/reproducibility policy | `randn`, `uniform`, `randstr`, and other random helpers need separate contracts; streaming support is target-evidence driven. |
 | Date and timestamp | partial | `add_months`, `date_add`, `date_sub`, `datediff`, `date_trunc`, `trunc`, calendar extraction including `hour`, `next_day`, and date/timestamp parsing | timezone/current-time functions, date formatting/parts, day/week/name helpers, Unix/UTC conversion, `last_day`, `make_*` constructors, `months_between`, quarter, timestamp arithmetic/construction, `try_*` temporal helpers, and week helpers. |
 | Bitwise and binary | partial | typed Column bitwise methods, `base64`, `unbase64`, `encode`, `decode` | SQL bitwise functions, shifts, `to_binary`, `try_to_binary`, `hex`/`unhex`, and UTF-8/binary validation helpers. |
 | Hash | partial | `hash`, `xxhash64`, `md5`, `sha1`, `sha2` | `crc32` and remaining baseline aliases need a parity decision; hashes remain non-identity and non-password-storage primitives. |

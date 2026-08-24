@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 from structure.plugin.api.v1.model import BackendId
 from structure.plugin.pyspark.compiler.model.PySparkInputRecipe import PySparkInputRecipe
+from structure.plugin.pyspark.compiler.model.PySparkOptimizationTrace import PySparkOptimizationTrace
 from structure.plugin.pyspark.compiler.model.PySparkOutputRecipe import PySparkOutputRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.plugin.pyspark.compiler.model.PySparkValidationRecipe import PySparkValidationRecipe
@@ -17,6 +18,7 @@ class PySparkExecutionPlan:
     steps: tuple[PySparkStepRecipe, ...]
     outputs: tuple[PySparkOutputRecipe, ...]
     requires_hook_inputs: bool
+    optimizations: tuple[PySparkOptimizationTrace, ...] = ()
 
     @property
     def final_validation(self) -> PySparkValidationRecipe:

@@ -1,0 +1,74 @@
+# Gotchas
+
+This page records reproducible operational traps that are easy to mistake for Structure compiler or transform defects.
+Each entry uses the same `When` / `Error` / `Cause` / `Fix` shape as the development troubleshooting guide.
+
+The detailed standalone lineage reproducer and avoidance guidance are in [the memory gotcha](troubleshooting/memory/spark_driver_heap_oom.gotcha.md). The developer measurements and design record are in the [Memory specification](dev/specifications/Memory.spec.md).
+
+### Problem (integration): Search proving plan exhausts the ordinary PySpark driver heap
+
+When: Running the bundled Search integration fixture against ordinary PySpark 3.5 or 4.0, especially the text fixture
+or document-reranking case.
+
+Error: The test spends several minutes in online/generated Search execution and fails while Spark analyzes or serializes
+the logical plan. The useful failure is a JVM `OutOfMemoryError: Java heap space`; shutdown can add noisy Netty/RPC errors
+after the Spark JVM has already failed.
+
+Cause: `ReduceSimilarityScores` builds reciprocal evidence independently at document, section, paragraph, and sentence
+grain. In the baseline graph, each canonical lane aliases its candidate relation, filters one orientation, and performs an
+inner join against the reversed relation. `SearchDocuments` then carries those large nested plans through scoring,
+retrieval, and reranking. The failure is driver-side logical-plan analysis/serialization; it is not evidence that a worker
+task ran out of shuffle memory.
+
+Fix: Reproduce the baseline before changing the Search graph, then try a larger driver heap. The repository Compose runner
+accepts `STRUCTURE_SPARK_DRIVER_MEMORY` for ordinary PySpark; it is translated to `PYSPARK_SUBMIT_ARGS` before PySpark
+launches its JVM. Do not rely on setting `spark.driver.memory` after the Spark session has already been created.
+
+The smallest exact reproducer is the checked-in test
+`tests/integration/pyspark/search/test_search.py::test_text_fixture_runs_online_and_generated`:
+
+```python
+# The complete fixture construction is in test_search.py. The failure is
+# reached by running both execution modes through the same SearchDocuments graph.
+online = SearchDocuments(**inputs).run(session(spark, execution_mode="online")).results
+generated = SearchDocuments(**inputs).run(
+    session(spark, execution_mode="generated", generated_package=PACKAGE)
+).results
+```
+
+Run it from the repository root after Docker is ready:
+
+```text
+docker compose --env-file infra/compose/.env -f infra/compose/docker-compose.yaml up -d spark35-master spark35-worker
+docker compose --env-file infra/compose/.env -f infra/compose/docker-compose.yaml run --rm -e INTEGRATION_PYTEST_ARGS="/workspace/tests/integration/pyspark/search/test_search.py -k test_text_fixture_runs_online_and_generated -q" structure-integration-pyspark35
+```
+
+The same reproduction with a larger driver heap is:
+
+```text
+docker compose --env-file infra/compose/.env -f infra/compose/docker-compose.yaml run --rm -e STRUCTURE_SPARK_DRIVER_MEMORY=3g -e INTEGRATION_PYTEST_ARGS="/workspace/tests/integration/pyspark/search/test_search.py -k test_text_fixture_runs_online_and_generated -q" structure-integration-pyspark35
+```
+
+Also try `test_document_search_reranks_bm25_candidates_for_multiple_queries` when validating the document-reranking
+path. Record the PySpark version, driver-memory setting, elapsed time, exit status, and the first `OutOfMemoryError`
+line. A passing larger-heap run demonstrates that memory is a limiting factor; it does not by itself prove that the
+Search logical plan is appropriately sized for production.
+
+Observed on the current Compose host after the reciprocal-reduction workaround was rolled back:
+
+- The text-fixture reproducer ran for 444.28 seconds and ended `1 failed, 12 deselected`; use the reranking case below
+  when the first failure stack must include the complete Catalyst heap trace.
+- The default PySpark 3.5 `SearchDocuments` reranking case used `-Xmx1g` and failed after 608.56 seconds at a generated
+  `DataFrame.union`, with `java.lang.OutOfMemoryError: Java heap space` in Catalyst `DeduplicateRelations`.
+- The same case with `STRUCTURE_SPARK_DRIVER_MEMORY=3g` launched with `-Xmx3g`, consumed about 3 GiB, and still had no
+  pytest result after a 16-minute bounded run. It was stopped as an incomplete mitigation.
+- The first rerun of the reranking case exposed a separate missing inference-schema catalog entry before plan analysis;
+  the integration fixture now includes the inference result and status schemas so subsequent failures are meaningful.
+
+The 3 GiB setting is therefore a diagnostic experiment, not the default fix. The current host has about 3.8 GiB available
+to the Compose stack, so larger heaps require a larger Docker Desktop memory allocation and should be repeated only with a
+bounded timeout and recorded resource limit.
+
+For Spark Connect, use its separate `STRUCTURE_SPARK_CONNECT_DRIVER_MEMORY` setting. Executor or worker memory changes
+are a different experiment: use them only when the error is an executor/shuffle failure, not when the driver fails while
+analyzing the plan.

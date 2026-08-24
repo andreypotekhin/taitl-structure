@@ -412,6 +412,19 @@ class RunOnlinePySparkTransform:
                     types=types,
                 )
                 df = df.alias(step.input_alias)
+            if operation.kind == "persist" and operation.persist is not None:
+                if operation.persist.storage_level is None:
+                    df = df.persist()
+                else:
+                    from pyspark import StorageLevel  # type: ignore[import-not-found]
+
+                    df = df.persist(StorageLevel(*operation.persist.storage_level))
+            if operation.kind == "unpersist" and operation.unpersist is not None:
+                df = df.unpersist(blocking=operation.unpersist.blocking)
+            if operation.kind == "checkpoint" and operation.checkpoint is not None:
+                df = df.checkpoint(eager=operation.checkpoint.eager)
+            if operation.kind == "local_checkpoint" and operation.local_checkpoint is not None:
+                df = df.localCheckpoint(eager=operation.local_checkpoint.eager)
             if operation.kind == "watermark" and operation.watermark is not None:
                 if operation.watermark.scope == getattr(step, "source_scope", ""):
                     df = self._watermark(operation.watermark, df)
@@ -956,19 +969,18 @@ class RunOnlinePySparkTransform:
             "REL-E0705: select_first_qualified(...) found tied eligible candidates; "
             "see docs/Diagnostics.md#rel-e0705"
         )
-        ties = eligible.select(
-            *(key.alias(column) for key, column in zip(keys, key_columns, strict=True)),
-            functions.col(priority),
+        tie_count = "__structure_priority_tie_count"
+        eligible = eligible.withColumn(
+            tie_count,
+            functions.count(functions.lit(1)).over(window.partitionBy(*keys, functions.col(priority))),
         )
-        ties = ties.groupBy(*key_columns, priority).agg(functions.count(functions.lit(1)).alias("__structure_count"))
-        ties = ties.where(functions.col("__structure_count") > functions.lit(1))
-        ties = ties.agg(functions.count(functions.lit(1)).alias("__structure_violations"))
-        guards.append(
-            ties.select(
-                functions.assert_true(
-                    functions.col("__structure_violations") == functions.lit(0),
-                    message,
-                ).alias("__structure_select_first_ties")
+        eligible = eligible.where(
+            functions.coalesce(
+                functions.when(
+                    functions.col(tie_count) > functions.lit(1),
+                    functions.assert_true(functions.lit(False), message),
+                ),
+                functions.lit(True),
             )
         )
 
@@ -977,14 +989,16 @@ class RunOnlinePySparkTransform:
             functions.row_number().over(window.partitionBy(*keys).orderBy(ordering)),
         )
         ranked = ranked.where(functions.col(rank) == functions.lit(1))
-        guarded = guards[0]
-        for guard in guards[1:]:
-            guarded = guarded.crossJoin(guard)
-        return guarded.crossJoin(ranked).drop(
+        if guards:
+            guarded = guards[0]
+            for guard in guards[1:]:
+                guarded = guarded.crossJoin(guard)
+            ranked = guarded.crossJoin(ranked)
+        return ranked.drop(
             rank,
             priority,
+            tie_count,
             "__structure_select_first_missing",
-            "__structure_select_first_ties",
         )
 
     def _order_value(self, expression):

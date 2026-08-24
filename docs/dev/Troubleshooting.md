@@ -1,5 +1,9 @@
 # Troubleshooting
 
+For the end-user reproducer and materialization guidance, see the
+[PySpark driver-heap memory gotcha](../troubleshooting/memory/spark_driver_heap_oom.gotcha.md). For the engineering
+root-cause, measurements, and implementation contract, see the developer [Memory specification](specifications/Memory.spec.md).
+
 ### Problem (pytest): `PermissionError: [WinError 5] Access is denied: 'C:\Temp\pytest-of-Admin'`
 
 When: Running tests that use pytest's `tmp_path` fixture on a Windows checkout.
@@ -7,6 +11,15 @@ Error: `PermissionError: [WinError 5] Access is denied: 'C:\Temp\pytest-of-Admin
 Cause: The global pytest temp root exists but is not readable by the current process.
 Fix: Set `TMP` and `TEMP` to a writable directory, or use a workspace-local temp directory for tests that only need
 short-lived generated files.
+
+### Problem (make gold): `ModuleNotFoundError: No module named 'helpers'` on Windows
+
+When: Regenerating example golden files with `make gold` on Windows.
+Error: The regeneration script cannot import the repository's `helpers` package.
+Cause: The Makefile target uses the POSIX `:` `PYTHONPATH` separator; Windows requires `;`.
+Fix: Run the same target with a Windows path separator:
+`$env:PYTHONPATH='.;src;tests;examples/plugins/iterable/src'; poetry run python scripts/regenerate_golden.py`.
+Then run `poetry run pytest -q tests/golden` and review the generated diff.
 
 ### Problem (Black): formatting hangs on Windows
 
@@ -92,7 +105,7 @@ Error: The client raises a Spark Connect gRPC exception whose server detail is `
 include `TextFormat$TextGenerator`.
 Cause: Spark Connect serializes a large logical plan while handling the request. The default Spark driver heap is too
 small for some bundled generated-query integration cases.
-Fix: The supported runner starts Connect with a 2 GiB driver heap. Rebuild once after updating the runner:
+Fix: The supported runner starts Connect with a 3 GiB driver heap. Rebuild once after updating the runner:
 `make integration-rebuild BACKEND=spark-connect35`. If the host has capacity and a larger plan still fails, override
 it for that run, for example:
 `STRUCTURE_SPARK_CONNECT_DRIVER_MEMORY=3g make integration BACKEND=spark-connect35`.
@@ -100,6 +113,11 @@ it for that run, for example:
 If the failure occurs after a long chain of intermediate schema checks, verify that Connect is using the default
 `validate_intermediate = false` and `connect_plan_boundaries = "auto"`. Setting `validate_intermediate = true` is a
 diagnostic opt-in and can recreate the expensive remote-analysis behavior.
+
+For the ordinary-PySpark SearchDocuments reproducer and the measured driver-memory experiment, see
+[Gotchas](../Gotchas.md#problem-integration-search-proving-plan-exhausts-the-ordinary-pyspark-driver-heap).
+
+For the self-sufficient PySpark reproducer and end-user restructuring guidance, see [the driver-heap memory gotcha](../troubleshooting/memory/spark_driver_heap_oom.gotcha.md). For root-cause analysis, compile-time detection, warning design, measures, and decisions, see the developer [Memory specification](specifications/Memory.spec.md).
 
 ### Problem (integration): Spark Connect logs `INVALID_HANDLE.SESSION_CLOSED` during `releaseExecute`
 

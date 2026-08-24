@@ -28,6 +28,7 @@ class StructureConfig:
     output_validation_mode: str
     strict_performance: bool
     warn_on_udfs: bool
+    warn_on_lineage_growth: bool
     allow_stream_to_batch: bool
     stream_to_batch_policy: str
     allow_output_to_input: bool

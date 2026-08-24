@@ -67,15 +67,10 @@ class MergeQueryLabels(Transform):
             query.labels
         )
         labels = coalesce(updated, query.labels)
-        return SearchQuery(
-            id=query.id,
-            queryset=query.queryset,
-            content=query.content,
-            requested_at=query.requested_at,
+        return SearchQuery.project(query)(
             labels=labels,
             is_question=coalesce(element_at(labels, "is_question"), 0) == 1,
             is_time_sensitive=coalesce(element_at(labels, "is_time_sensitive"), 0) == 1,
-            language=query.language,
         )
 
     @step(input=[caller_labeled_queries, created_labels], output=labeled_queries)
@@ -89,13 +84,8 @@ class MergeQueryLabels(Transform):
             query.labels
         )
         labels = coalesce(updated, query.labels)
-        return SearchQuery(
-            id=query.id,
-            queryset=query.queryset,
-            content=query.content,
-            requested_at=query.requested_at,
+        return SearchQuery.project(query)(
             labels=labels,
             is_question=coalesce(element_at(labels, "is_question"), 0) == 1,
             is_time_sensitive=coalesce(element_at(labels, "is_time_sensitive"), 0) == 1,
-            language=query.language,
         )

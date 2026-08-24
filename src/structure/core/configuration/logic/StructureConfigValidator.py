@@ -27,6 +27,7 @@ class StructureConfigValidator:
         "validate_outputs",
         "strict_performance",
         "warn_on_udfs",
+        "warn_on_lineage_growth",
         "allow_stream_to_batch",
         "allow_output_to_input",
         "allow_to_reassign_output",

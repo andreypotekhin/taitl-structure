@@ -67,6 +67,12 @@ class QueryTermCount(Schema):
     query_terms = long(nullable=False)
 
 
+class ScoringTargetGroup(DocumentSearchTarget):
+    """One deduplicated query/document target before public projection."""
+
+    row_count = long(nullable=False)
+
+
 class ScoreQueryAvailability(Schema):
     """One query with a fresh score relation available for serving."""
 

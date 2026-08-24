@@ -478,6 +478,13 @@ V10 follows the completed V9 design-gate closeout and expands only the core API 
 adopted from `docs/dev/future/API.future.md` and `docs/dev/future/Streaming.future.md`. It keeps streaming lifecycle,
 deployment, recovery, and side effects caller-owned.
 
+### v10 closeout status
+
+The environment-independent V10 scope is conditionally complete as of 2026-08-22. Catalog, ledger, diagnostic,
+documentation, generated-artifact, collision-safety, and package/build reconciliation is complete. Docker-dependent
+live target evidence remains unavailable, and SearchDocuments streaming remains design-gated; see
+[V10 Release Evidence](V10ReleaseEvidence.md).
+
 ### v10 sequence
 
 - Sprint 49 (2026-09-21--2026-10-02): V10 admission, V9 handoff, and grouped ExecPlan foundation.
@@ -537,4 +544,4 @@ documents remain outside V10.
 | M12 | v7 broad PySpark transformation coverage and caller-owned streaming adoption | Sprints 28--35 |
 | M13 | v8 PySpark Structured Streaming coverage parity | Sprints 36--39 and v8 hardening |
 | M14 | v9 PySpark streaming API coverage, design-gate follow-up, and release hardening | Sprints 40--48 |
-| M15 | v10 API Catalog and streaming contract expansion | Sprints 49--54 |
+| M15 | v10 API Catalog and streaming contract expansion | Conditionally complete 2026-08-22; Sprints 49--54 evidence retained |

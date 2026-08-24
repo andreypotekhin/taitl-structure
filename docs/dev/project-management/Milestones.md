@@ -471,7 +471,8 @@ The dated execution schedule is
 
 ## M15: v10 API Catalog and Streaming Contract Expansion
 
-Status: planned. V10 begins after the V9 Sprints 45–48 closeout and runs through Sprint 54 hardening.
+Status: conditionally complete (2026-08-22). Environment-independent implementation and documentation closeout are
+complete; Docker-dependent live evidence and the SearchDocuments streaming proving lane remain open follow-ups.
 
 ### Exit Criteria
 
@@ -486,7 +487,14 @@ Status: planned. V10 begins after the V9 Sprints 45–48 closeout and runs throu
 - Generated artifacts, documentation, compatibility ledgers, diagnostics, and traceability agree.
 - Generated backend modules, schema symbols, schema documentation, and plugin file maps preserve full source identity
   without silent overwrite or shadowing.
-- Sprint 54 admits no new feature scope and passes `make build`.
+- Sprint 54 admitted no new feature scope and passes `make build`; unavailable live lanes are recorded as evidence gaps,
+  not support claims.
+
+### Closeout evidence
+
+See [V10 Release Evidence](V10ReleaseEvidence.md) for the exact pass/skip totals, unavailable lanes, retained design
+gates, and follow-up owners. V10 is conditionally closed and ready for handoff to V11 planning; it is not an
+unconditional runtime-support promotion for the unavailable target lanes.
 
 ### Governing Documents
 

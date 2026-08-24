@@ -101,12 +101,7 @@ class RerankDocuments(Transform):
             order_by=option.fallback_ordinal.asc(),
             missing="allow",
         )
-        return QueryDocumentFeedback(
-            search_query_id=selected.search_query_id,
-            experiment_id=selected.experiment_id,
-            user_band_id=selected.user_band_id,
-            candidate_rank=selected.candidate_rank,
-            document_id=selected.document_id,
+        return QueryDocumentFeedback.project(selected)(
             query_feedback=signal.normalized_score,
         )
 
@@ -128,12 +123,7 @@ class RerankDocuments(Transform):
             order_by=option.fallback_ordinal.asc(),
             missing="allow",
         )
-        return PopularityFeedback(
-            search_query_id=selected.search_query_id,
-            experiment_id=selected.experiment_id,
-            user_band_id=selected.user_band_id,
-            candidate_rank=selected.candidate_rank,
-            document_id=selected.document_id,
+        return PopularityFeedback.project(selected)(
             popularity_feedback=signal.normalized_score,
         )
 

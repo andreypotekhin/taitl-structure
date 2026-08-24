@@ -42,11 +42,11 @@ class BuildQueryFeatures(Transform):
         )
         token = posexplode_struct(tokens, as_=ExpandedQueryFeatureToken, scope="query_feature_token")
         where(token.token != "")
-        return ExpandedQueryFeatureToken(ordinal=token.ordinal, query_id=token.query_id, token=token.token)
+        return ExpandedQueryFeatureToken.base(token)(ordinal=token.ordinal)
 
     @step(input=expanded_query_tokens, output=query_tokens)
     def select_tokens(self, token: ExpandedQueryFeatureToken) -> QueryFeatureToken:
-        return QueryFeatureToken(query_id=token.query_id, token=token.token)
+        return QueryFeatureToken.project(token)
 
     @step(input=query_tokens, output=query_token_summaries)
     def summarize(self, token: QueryFeatureToken) -> QueryTokenSummary:
@@ -60,13 +60,9 @@ class BuildQueryFeatures(Transform):
     @step(input=[queries, query_token_summaries], output=query_features)
     def build(self, query: SearchQuery, summary: QueryTokenSummary) -> QueryFeatures:
         left_join(summary, on=summary.query_id == query.id)
-        return QueryFeatures(
+        return QueryFeatures.project(query)(
             query_id=query.id,
-            queryset=query.queryset,
-            language=query.language,
             normalized_content=lower(regexp_replace(trim(query.content), pattern=r"\s+", replacement=" ")),
             token_count=coalesce(summary.token_count, 0),
             distinct_token_count=coalesce(summary.distinct_token_count, 0),
-            is_question=query.is_question,
-            is_time_sensitive=query.is_time_sensitive,
         )

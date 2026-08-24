@@ -62,6 +62,7 @@ class StructureConfigBuilder:
             output_validation_mode=str(values["output_validation_mode"]),
             strict_performance=bool(values["strict_performance"]),
             warn_on_udfs=bool(values["warn_on_udfs"]),
+            warn_on_lineage_growth=bool(values["warn_on_lineage_growth"]),
             allow_stream_to_batch=bool(values["allow_stream_to_batch"]),
             stream_to_batch_policy=str(values["stream_to_batch_policy"]),
             allow_output_to_input=semantic_bool("allow_output_to_input"),

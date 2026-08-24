@@ -478,6 +478,35 @@ def test_deterministic_numeric_helpers_return_typed_null_propagating_expressions
         assert expression.nullable is True
 
 
+def test_rand_requires_explicit_reproducibility_policy_and_returns_non_null_double() -> None:
+    seeded = rand(seed=17)
+    unseeded = rand(reproducible=False)
+
+    assert seeded.type is not None and seeded.type.name == "double"
+    assert seeded.nullable is False
+    assert dict(seeded.data or {}) == {
+        "function": "rand",
+        "seed": 17,
+        "reproducible": True,
+        "nondeterministic": True,
+    }
+    assert dict(unseeded.data or {})["seed"] is None
+    assert dict(unseeded.data or {})["reproducible"] is False
+
+
+@pytest.mark.parametrize(
+    ("call", "message"),
+    [
+        (lambda: rand(), "seed is required"),
+        (lambda: rand(seed=True), "seed must be an integer"),
+        (lambda: rand(seed=1, reproducible=cast(bool, "yes")), "reproducible must be a Boolean"),
+    ],
+)
+def test_rand_rejects_implicit_or_invalid_seed_policy(call, message: str) -> None:
+    with pytest.raises(TypeError, match=message):
+        call()
+
+
 @pytest.mark.parametrize("function", [sqrt, exp, signum])
 def test_unary_deterministic_numeric_helpers_require_numeric_values(function) -> None:
     with pytest.raises(TypeError, match=r"requires a numeric Structure expression"):

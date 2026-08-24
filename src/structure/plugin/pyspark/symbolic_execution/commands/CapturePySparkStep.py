@@ -1,3 +1,4 @@
+from dataclasses import replace
 from typing import Any, cast
 
 from structure.plugin.api.v1.model.StepAuthoringRequest import StepAuthoringRequest
@@ -34,11 +35,17 @@ class CapturePySparkStep:
         first = results[0]
         if first.aggregate is not None:
             context.record_aggregate(first.aggregate)
+        operations = tuple(
+            replace(operation, source_span=request.primary_span)
+            if request.primary_span is not None
+            else operation
+            for operation in context.operations
+        )
         body = PySparkStepBody(
             value=value,
             filters=tuple(context.filters),
             joins=tuple(context.joins),
-            operations=tuple(context.operations),
+            operations=operations,
             aggregate_keys=context.aggregate_keys,
             aggregate_levels=context.aggregate_levels,
             aggregate_grouping=context.aggregate_grouping,

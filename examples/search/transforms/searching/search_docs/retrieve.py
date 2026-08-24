@@ -106,7 +106,7 @@ class RetrieveDocuments(Transform):
             user_band_id=coalesce(band.user_band_id, literal(None)),
             band_id=band.band_id,
             query=lower(regexp_replace(trim(query.content), pattern=r"\s+", replacement=" ")),
-            candidate_rank=0,
+            candidate_rank=literal(0).cast(types.long()),
             document_id=document.id,
             score=0.0,
             retrieval_score=0.0,
@@ -118,7 +118,7 @@ class RetrieveDocuments(Transform):
             vector_rank=None,
             vector_similarity=vector.cosine_similarity,
             rrf_score=0.0,
-            rrf_k=0,
+            rrf_k=literal(0).cast(types.long()),
             vector_backend=vector.vector_backend,
         )
 
@@ -147,7 +147,7 @@ class RetrieveDocuments(Transform):
             user_band_id=coalesce(band.user_band_id, literal(None)),
             band_id=band.band_id,
             query=lower(regexp_replace(trim(query.content), pattern=r"\s+", replacement=" ")),
-            candidate_rank=0,
+            candidate_rank=literal(0).cast(types.long()),
             retrieval_score=score.score,
             document_id=document.id,
             score_feedback=0.0,
@@ -158,6 +158,6 @@ class RetrieveDocuments(Transform):
             vector_rank=None,
             vector_similarity=None,
             rrf_score=0.0,
-            rrf_k=0,
+            rrf_k=literal(0).cast(types.long()),
             vector_backend=None,
         )

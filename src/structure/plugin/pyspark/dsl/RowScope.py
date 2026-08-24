@@ -77,3 +77,28 @@ class RowScope:
         from structure.plugin.pyspark.dsl.body import project
 
         return project(*args)
+
+    def persist(self, storage_level: object | None = None):
+        from structure.plugin.pyspark.dsl.operations_api import persist
+
+        return persist(storage_level)
+
+    def cache(self):
+        from structure.plugin.pyspark.dsl.operations_api import cache
+
+        return cache()
+
+    def unpersist(self, *, blocking: bool = False):
+        from structure.plugin.pyspark.dsl.operations_api import unpersist
+
+        return unpersist(blocking=blocking)
+
+    def checkpoint(self, *, eager: bool = True):
+        from structure.plugin.pyspark.dsl.operations_api import checkpoint
+
+        return checkpoint(eager=eager)
+
+    def local_checkpoint(self, *, eager: bool = True):
+        from structure.plugin.pyspark.dsl.operations_api import local_checkpoint
+
+        return local_checkpoint(eager=eager)

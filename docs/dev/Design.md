@@ -107,15 +107,19 @@ maintained in [V10 Release Evidence](project-management/V10ReleaseEvidence.md).
 
 ## Versioned Design History
 
-The V4–V9 files below remain as compatibility pointers for existing links. Their active conclusions are represented by
-the maintained topic documents and the Design Gates register above:
+The version-specific files below remain as compatibility pointers for existing links. V5 and V8 have no standalone
+design-pointer files; their active conclusions are in the topic documents named below. All active conclusions are
+represented by the maintained topic documents and the Design Gates register above:
 
 - V4: [caller-owned streaming migration](design/V4CallerOwnedStreamingMigration.design.md) and
   [transformation API coverage](design/V4TransformationApiCoverage.design.md).
+- V5: [alternative backends](design/AlternativeBackends.design.md) and
+  [plugin architecture](design/PluginArchitecture.design.md).
 - V6: [PySpark API closure](design/V6PySparkApiClosure.design.md).
 - V7: [caller-owned streaming adoption](design/V7CallerOwnedStreamingAdoption.design.md),
   [deferred PySpark families](design/V7DeferredPySparkFamilies.design.md), and
   [generator expansion](design/V7PySparkGeneratorExpansion.design.md).
+- V8: [Spark Streaming](design/SparkStreaming.design.md).
 - V9: [API catalog gates](design/V9ApiCatalogDesignGates.design.md) and
   [streaming gates](design/V9StreamingDesignGates.design.md).
 

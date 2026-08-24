@@ -106,7 +106,10 @@ Draft the remaining sections in the concise, structured style exemplified by `cl
 - `Inputs`: list each input schema or relation.
 - `Outputs`: list each output schema or relation.
 - `Stages`: list each public or workflow stage as `StageName: inputs -> outputs`. Keep this as an inventory of boundaries, not an explanation of step mechanics.
-- `Notation`: include one fenced text block for the workflow. List stages in execution order and list every meaningful step with its input and output relations. Keep the notation lossless and concise; do not add implementation prose or Combine reference markers.
+- `Notation`: include one fenced text block for the workflow. List stages in execution order and list every meaningful step
+  with its input and output relations. Every return/output position must use the concrete schema class or classes, never a
+  vague relation label such as `targets`, `embeddings`, or `scores` when the schema is known. Keep the notation lossless
+  and concise; do not add implementation prose or Combine reference markers.
 - `Implementation`: write a second substantive narrative, more concrete than Solution and less mechanical than Code. Begin with the implementation's intent and boundary, then explain how data moves through the stages in the order established by Notation. Name the relevant transforms and schemas, explain why responsibilities are separated, and describe the contracts that make the flow reliable.
   - Use approximately four to seven paragraphs, expanding with topic complexity.
   - Explain stage responsibilities and ordering in prose; use a short numbered sequence when order is itself an important behavior.
@@ -240,21 +243,51 @@ Implementation section:
   - Drop content from decisions sections and on
 - Preserve the substantive Implementation prose from the draft before the workflow notation. Do not replace those
   paragraphs with a list or hide them after the notation.
+- Preserve the complete combined document before `## Implementation`: retain the H1 and every preceding `Problem`,
+  `Solution`, `Builds on`, `Used by`, `Definitions`, `Inputs`, `Outputs`, and `Stages` section. Never rebuild the output
+  starting at `## Implementation`.
 - Use this exact order inside the combined `Implementation` section:
   1. the combined conceptual/technical prose from the background and draft Implementation;
-  2. the draft's fenced Notation block, with its workflow content unchanged except for reference markers;
-  3. numbered implementation explanations that elaborate the notation.
-- Make the numbered explanations correspond one-to-one with the reference numbers in the notation. Each item should
-  explain the stage or coherent group of notation lines carrying the same number; do not create unreferenced items or
-  markers that have no explanatory item.
-- Apply italics to the short intent sentence at the beginning of each numbered item only. Keep the explanatory prose
-  after that sentence in normal text; never wrap an entire numbered item in italics.
-- Refer to transforms, stages, and steps from the numbered items.
-- Add sentences to numbered items for comprehensive explanation, accessibility, and understandability.
-- Consider joining cohesive notation lines into one numbered explanation when that keeps the correspondence clear.
-- Use circled digits such as `①` at the end of the first notation line covered by each numbered item. Omit repeated
-  markers for continuation lines covered by the same item.
-- Do not add reference numbers to the numbered items themselves; their list numbers provide the reference.
+  2. one subsection for each workflow transform stage, including its explanatory items, individual typed step notation,
+     and its final compact text notation;
+  3. a `Result` subsection containing the complete workflow notation only when the transform composes child stages.
+- In each stage subsection, explain the stage with circled items such as `①`, `②`, and `③`. Drop the short italic
+  intent sentence used by the earlier format; each item should contain the explanatory prose directly.
+- Name each stage subsection with the exact transform class it describes, and use that same exact class name in its
+  compact notation. Derive the names from the source `Stages` inventory and the collected Code classes; never rename a
+  child stage to the package or parent workflow name.
+- Keep the parent workflow's assigned stage call separate from the internal stage's implementation narrative. An
+  assignment such as `overlap = ScoreOverlap(...)` belongs in the parent workflow/result shape; the `ScoreOverlap`
+  subsection must describe `ScoreOverlap` as a step transform, using the public `@step` methods declared by that class.
+  Never replace that narrative with a synthetic method such as `score_overlap(...)`, and never present the assigned
+  stage call as though it were one of the stage's step methods.
+- Treat each stage subsection as a step-transform narrative, not as a method inventory. Partition the stage's public
+  `@step` methods into adjacent, semantically coherent groups in source order. Give every group its own circled item,
+  explain the data transition and responsibility in prose, and put that group's typed step signatures immediately
+  beneath the explanation. Use named typed arguments and a return type, for example
+  `tokenize(sentence: MaterializedSentence) -> LexicalOccurrence`.
+- A group may contain several methods when they form one responsibility, such as stored and streamed candidate
+  selection or parallel grain summaries. It must still show every method signature exactly once, directly under the
+  group's explanation. A stage-level signature is not a substitute for its step methods. Step notation is reserved
+  for step methods; do not present a step-method signature as if it were a stage transform.
+- For every internal stage whose collected code includes a transform class, copy its complete public `@step` method
+  coverage into those explanatory groups in the stage's Implementation subsection. Do not stop at the stage
+  inputs/outputs or its compact transform shape; internal stages such as retrieval, fusion, and reranking must expose
+  their individual methods through coherent narrative groups.
+- Make each circled item correspond to one marker in the source notation or to a coherent group of lines carrying the
+  same marker. Do not create unreferenced items or markers that have no explanatory item.
+- End every stage subsection with a fenced `text` block containing that stage's compact notation; do not add an explicit
+  `Notation` heading. Remove the circled reference markers from this compact stage block; the typed individual signatures
+  remain under their explanatory items. Put the body-text line `Resulting transform shape:` immediately before the
+  compact block so it cannot visually merge with the preceding individual step notation.
+- After all stage subsections, add a `### Result` subsection with a fenced `text` block for the whole workflow transform
+  only when an actual parent workflow transform exists and has child stages. A single transform with internal steps does
+  not need a `Result` section. Do not invent a parent transform for a package that has only child transforms.
+  Preserve workflow inputs, child-stage composition, and concrete output schemas in this result notation. Use the typed
+  workflow format of `Indexing.comb.md`: list `inputs`, child transform assignments, and typed `outputs`. Do not repeat
+  a stage's compact transform notation in `Result`; the parent workflow shape must be distinct.
+- Refer to transforms, stages, and steps from the circled items. Consider joining cohesive notation lines when that
+  keeps the correspondence clear, but retain every meaningful step in the stage and result notation.
   
 Content style: 
 - Problem section: no need to ground in previous steps. Ground in industry wisdom and project needs.
@@ -312,7 +345,78 @@ Avoid:
     - Consider refactoring: 'Ranking and field constraints need normalized terms, because'
 
 Quality assurance:
+- Before publishing a combined document, verify that its H1 and every section before `## Implementation` are preserved
+  from the source draft/combined structure.
+- Verify every circled item is followed by its complete individual notation. A notation block must not begin or end with a
+  continuation line torn from a neighboring item; check multiline calls and outputs as one unit.
+- Verify every stage notation block contains all and only that stage's steps, in order, and that each return/output uses
+  concrete schema classes.
+- For every internal stage, distinguish its transform class from every parent-workflow assignment that invokes it. The
+  stage subsection must explain the stage's own inputs, step transitions, and outputs; the parent assignment may appear
+  only in the enclosing workflow/result notation. Reject a subsection whose apparent method is merely the assigned
+  stage name in snake case, such as `score_overlap(...)` for `ScoreOverlap`, unless that exact method exists as a public
+  `@step` in the collected class.
+- Cross-check every method-looking name in an internal-stage subsection against the actual source class and the
+  collected Code class's decorated `@step` definitions; when they disagree, the source class is authoritative. Reject
+  stage calls, lane names, output aliases, or invented summaries presented as step methods. For every displayed step,
+  verify the method name, argument names, argument types, and return type against source, not merely the schema set.
+  Conversely, require the stage subsection's compact transform shape to reference the same actual step-method inventory
+  used by its explanatory groups.
+- If a real child class has no public `@step` methods because it is itself a workflow composition, describe its child
+  assignments as a stage-transform/workflow shape and label them as composition. Do not invent a wrapper method to make
+  the section look executable; the step-transform method rule applies whenever the class has actual decorated steps.
+- Run this check as a document-wide stage audit, not as a spot check of the first or most visible internal stage:
+  enumerate every real child transform class from `Stages` and `Code`, then perform the class-to-method comparison for
+  each one. The audit fails if any one internal stage remains represented by a parent assignment, a stage-level call, or
+  a synthetic method-shaped summary while another stage has been corrected.
+- For every collected child stage, count the public `@step` methods in its source code and compare that inventory with
+  the typed step signatures in the matching narrative groups. Reject a subsection that has no step signatures, has
+  fewer signatures than the source, skips a method, changes method order, or includes a method from another stage.
+- Treat a stage-level input/output signature and a compact `Resulting transform shape:` block as insufficient evidence
+  of stage implementation coverage; both may be present only in addition to the complete grouped step narrative.
+- Reject a standalone `Step methods:` inventory block or any equivalent dump of signatures that is not attached to
+  explanatory circled items. Every signature must be traceable to exactly one group and its prose explanation.
+- Verify every stage subsection title and compact notation name exactly matches a real transform class in the source;
+  reject package names or invented workflow names when no such class exists.
+- Verify every actual stage listed in `Stages` and every collected child stage that has its own transform class has an
+  `Implementation` subsection. Verify step signatures remain under their owning stage and are not promoted to stage
+  notation.
+- For every stage subsection, classify the named class as either a step transform or a workflow composition before
+  checking its notation. A step-transform subsection must contain that class's actual public `@step` methods; a workflow
+  subsection must contain only that class's child-transform assignments and typed inputs/outputs. Reject a section that
+  copies methods or assignments from a parent or sibling stage, even when the resulting schemas look plausible. For a
+  workflow subsection, compare every assignment's left-hand alias, called child class, keyword arguments, and output
+  reference with the source class; do not accept a shape merely because its child schemas are plausible.
+- Apply the preceding ownership check to every stage subsection in the document, including the first, last, and nested
+  internal stages. Do not stop after finding one valid subsection or after validating only the parent `Result` shape.
+- Verify a package with no parent workflow class has no fabricated parent `Result` transform.
+- Verify each compact transform notation block is introduced by `Resulting transform shape:` and that `Result` contains
+  only a distinct typed parent workflow shape, never a repeated stage notation block.
+- Verify the Implementation section has no duplicate parent workflow notation: one parent composition shape may appear in
+  `Result`, while each internal stage has exactly one stage shape and no additional parent-shaped copy.
+- Add a workflow `Result` section only when the transform composes child stages.
+- For every `.form.md` counterpart, audit every formula block in the document, not only `Filtering` or `Scoring`:
+  - Step methods must use the canonic step-method form from `prose/Notation.md`: argument names and separating colons
+    are omitted, argument schema types remain, and every returned schema retains its name plus a field-name projection.
+    Reject a bare return schema, a missing `return_schema_definitions` projection, or an invented `\vdots` projection when
+    the source schema fields are available.
+  - Use the single-argument form `\operatorname{method}(Type)` for one argument. The compact-space `\!` is permitted only
+    before a multi-argument matrix or a stage-transform call; reject `\operatorname{method}\!(Type)`.
+  - Keep formulas left anchored. Every `aligned` block must anchor its rows with `&`; do not use right-aligned display
+    formulas or a leading unanchored continuation row. Separate consecutive standalone step formulas with a dedicated
+    full `\\` row, and use short spacing only between methods inside a dense workflow method vector.
+  - Escape every identifier underscore as `\\_` inside displayed formulas. A formula audit must reject any unescaped `_`,
+    because subscripts are not part of Structure formula notation.
+  - Each standalone `Resulting transform shape:` must be the canonic step-transform shape: transform name and colon,
+    typed input vector on the left, method `Bmatrix` in the middle, `\rightarrow`, and output vector on the right. Do not
+    replace that structure with a vertically stacked prose/list rendering or duplicate the transform name elsewhere.
+  - A workflow `Result` must use Stage Transform Notation - Canonic: typed `name : Type` workflow inputs, assigned stage
+    calls with name-only stage arguments, each stage's method vector and output vector, and typed final outputs without
+    assignments. Omit the workflow name and do not repeat the `Resulting transform shape:` label in `Result`.
+  - Check formula width and vertical spacing document-wide: do not insert threshold-based line breaks inside a step-method
+    formula; keep its call, arrow, and return schema in one formula flow. Matrix components may use natural rows, while
+    standalone methods remain visually separated and method vectors stay denser than workflow-stage gaps.
 - Code section
- - Every collected transform/method section is represented.
- - Code listings order matches the collected source.
- - Root workflows include all child and external stages.
+  - Every collected transform/method section is represented.
+  - Code listings order matches the collected source.
+  - Root workflows include all child and external stages.

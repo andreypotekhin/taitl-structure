@@ -49,10 +49,7 @@ class ScoreBm25(ScoreBase):
         inner_join(target, on=(target.query_id == query.query_id) & (target.document_id == term.document_id))
         cross_join(summary, allow_cartesian=True)
         group_by(query_id=query.query_id, document_id=term.document_id, scope_id=target.scope_id)
-        return DocumentBm25Score(
-            query_id=query.query_id,
-            document_id=term.document_id,
-            scope_id=target.scope_id,
+        return DocumentBm25Score.base(target)(
             score_bm25=sum_(self._bm25_term(term, summary)),
         )
 
@@ -67,11 +64,8 @@ class ScoreBm25(ScoreBase):
         inner_join(target, on=(target.query_id == query.query_id) & (target.document_id == term.document_id))
         cross_join(summary, allow_cartesian=True)
         group_by(query_id=query.query_id, document_id=term.document_id, section_id=term.section_id, scope_id=target.scope_id)
-        return SectionBm25Score(
-            query_id=query.query_id,
-            document_id=term.document_id,
+        return SectionBm25Score.project(target)(
             section_id=term.section_id,
-            scope_id=target.scope_id,
             score_bm25=sum_(self._bm25_term(term, summary)),
         )
 
@@ -92,12 +86,9 @@ class ScoreBm25(ScoreBase):
             paragraph_id=term.paragraph_id,
             scope_id=target.scope_id,
         )
-        return ParagraphBm25Score(
-            query_id=query.query_id,
-            document_id=term.document_id,
+        return ParagraphBm25Score.project(target)(
             section_id=term.section_id,
             paragraph_id=term.paragraph_id,
-            scope_id=target.scope_id,
             score_bm25=sum_(self._bm25_term(term, summary)),
         )
 
@@ -119,13 +110,10 @@ class ScoreBm25(ScoreBase):
             sentence_id=term.sentence_id,
             scope_id=target.scope_id,
         )
-        return SentenceBm25Score(
-            query_id=query.query_id,
-            document_id=term.document_id,
+        return SentenceBm25Score.project(target)(
             section_id=term.section_id,
             paragraph_id=term.paragraph_id,
             sentence_id=term.sentence_id,
-            scope_id=target.scope_id,
             score_bm25=sum_(self._bm25_term(term, summary)),
         )
 

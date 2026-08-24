@@ -186,10 +186,7 @@ class ScoreOverlap(ScoreBase):
             scope_id=target.scope_id,
             query_idf=total.query_idf,
         )
-        return DocumentOverlapMatch(
-            query_id=query.query_id,
-            document_id=term.document_id,
-            scope_id=target.scope_id,
+        return DocumentOverlapMatch.base(target)(
             query_idf=total.query_idf,
             matched_idf=sum_(weight.idf),
         )
@@ -212,11 +209,8 @@ class ScoreOverlap(ScoreBase):
             scope_id=target.scope_id,
             query_idf=total.query_idf,
         )
-        return SectionOverlapMatch(
-            query_id=query.query_id,
-            document_id=term.document_id,
+        return SectionOverlapMatch.project(target)(
             section_id=term.section_id,
-            scope_id=target.scope_id,
             query_idf=total.query_idf,
             matched_idf=sum_(weight.idf),
         )
@@ -240,12 +234,9 @@ class ScoreOverlap(ScoreBase):
             scope_id=target.scope_id,
             query_idf=total.query_idf,
         )
-        return ParagraphOverlapMatch(
-            query_id=query.query_id,
-            document_id=term.document_id,
+        return ParagraphOverlapMatch.project(target)(
             section_id=term.section_id,
             paragraph_id=term.paragraph_id,
-            scope_id=target.scope_id,
             query_idf=total.query_idf,
             matched_idf=sum_(weight.idf),
         )
@@ -270,13 +261,10 @@ class ScoreOverlap(ScoreBase):
             scope_id=target.scope_id,
             query_idf=total.query_idf,
         )
-        return SentenceOverlapMatch(
-            query_id=query.query_id,
-            document_id=term.document_id,
+        return SentenceOverlapMatch.project(target)(
             section_id=term.section_id,
             paragraph_id=term.paragraph_id,
             sentence_id=term.sentence_id,
-            scope_id=target.scope_id,
             query_idf=total.query_idf,
             matched_idf=sum_(weight.idf),
         )
@@ -287,9 +275,7 @@ class ScoreOverlap(ScoreBase):
     ) -> DocumentOverlapScore:
         inner_join(target, on=(target.query_id == match.query_id) & (target.document_id == match.document_id))
         param_join(policy)
-        return DocumentOverlapScore(
-            query_id=match.query_id,
-            document_id=match.document_id,
+        return DocumentOverlapScore.base(match)(
             scope_id=target.scope_id,
             scored_at=policy.scored_at,
             score_overlap=self._overlap_score(match),
@@ -301,10 +287,7 @@ class ScoreOverlap(ScoreBase):
     ) -> SectionOverlapScore:
         inner_join(target, on=(target.query_id == match.query_id) & (target.document_id == match.document_id))
         param_join(policy)
-        return SectionOverlapScore(
-            query_id=match.query_id,
-            document_id=match.document_id,
-            section_id=match.section_id,
+        return SectionOverlapScore.base(match)(
             scope_id=target.scope_id,
             scored_at=policy.scored_at,
             score_overlap=self._overlap_score(match),
@@ -316,11 +299,7 @@ class ScoreOverlap(ScoreBase):
     ) -> ParagraphOverlapScore:
         inner_join(target, on=(target.query_id == match.query_id) & (target.document_id == match.document_id))
         param_join(policy)
-        return ParagraphOverlapScore(
-            query_id=match.query_id,
-            document_id=match.document_id,
-            section_id=match.section_id,
-            paragraph_id=match.paragraph_id,
+        return ParagraphOverlapScore.base(match)(
             scope_id=target.scope_id,
             scored_at=policy.scored_at,
             score_overlap=self._overlap_score(match),
@@ -332,12 +311,7 @@ class ScoreOverlap(ScoreBase):
     ) -> SentenceOverlapScore:
         inner_join(target, on=(target.query_id == match.query_id) & (target.document_id == match.document_id))
         param_join(policy)
-        return SentenceOverlapScore(
-            query_id=match.query_id,
-            document_id=match.document_id,
-            section_id=match.section_id,
-            paragraph_id=match.paragraph_id,
-            sentence_id=match.sentence_id,
+        return SentenceOverlapScore.base(match)(
             scope_id=target.scope_id,
             scored_at=policy.scored_at,
             score_overlap=self._overlap_score(match),

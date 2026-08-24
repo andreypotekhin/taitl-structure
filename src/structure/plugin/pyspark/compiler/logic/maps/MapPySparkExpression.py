@@ -56,6 +56,8 @@ class MapPySparkExpression:
             function = (expression.data or {}).get("function")
             if function == "is_valid_variant":
                 return "expression", "is_valid_variant"
+            if function == "rand":
+                return "expression", "rand"
             if function in {
                 "variant_array_append",
                 "try_variant_array_append",

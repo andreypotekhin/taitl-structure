@@ -107,23 +107,19 @@ class ReduceSimilarityScores(Transform):
             on=(pair.left_document_id == reverse.right_document_id)
             & (pair.right_document_id == reverse.left_document_id),
         )
-        return DocumentSimilarityPair(
-            left_document_id=pair.left_document_id,
-            right_document_id=pair.right_document_id,
+        return DocumentSimilarityPair.base(pair)(
             score_overlap=when(pair.score_overlap <= reverse.score_overlap, pair.score_overlap).otherwise(
                 reverse.score_overlap
             ),
-            bm25_left_to_right=pair.bm25_left_to_right,
             bm25_right_to_left=reverse.bm25_left_to_right,
             bm25_mean=(pair.bm25_left_to_right + reverse.bm25_left_to_right) / 2.0,
         )
 
     @step(input=document_canonical_pairs, output=document_reversed_pairs)
     def reverse_document_pairs(self, pair: DocumentSimilarityPair) -> DocumentSimilarityPair:
-        return DocumentSimilarityPair(
+        return DocumentSimilarityPair.base(pair)(
             left_document_id=pair.right_document_id,
             right_document_id=pair.left_document_id,
-            score_overlap=pair.score_overlap,
             bm25_left_to_right=pair.bm25_right_to_left,
             bm25_right_to_left=pair.bm25_left_to_right,
             bm25_mean=pair.bm25_mean,
@@ -185,27 +181,21 @@ class ReduceSimilarityScores(Transform):
             & (pair.right_document_id == reverse.left_document_id)
             & (pair.right_section_id == reverse.left_section_id),
         )
-        return SectionSimilarityPair(
-            left_document_id=pair.left_document_id,
-            left_section_id=pair.left_section_id,
-            right_document_id=pair.right_document_id,
-            right_section_id=pair.right_section_id,
+        return SectionSimilarityPair.base(pair)(
             score_overlap=when(pair.score_overlap <= reverse.score_overlap, pair.score_overlap).otherwise(
                 reverse.score_overlap
             ),
-            bm25_left_to_right=pair.bm25_left_to_right,
             bm25_right_to_left=reverse.bm25_left_to_right,
             bm25_mean=(pair.bm25_left_to_right + reverse.bm25_left_to_right) / 2.0,
         )
 
     @step(input=section_canonical_pairs, output=section_reversed_pairs)
     def reverse_section_pairs(self, pair: SectionSimilarityPair) -> SectionSimilarityPair:
-        return SectionSimilarityPair(
+        return SectionSimilarityPair.base(pair)(
             left_document_id=pair.right_document_id,
             left_section_id=pair.right_section_id,
             right_document_id=pair.left_document_id,
             right_section_id=pair.left_section_id,
-            score_overlap=pair.score_overlap,
             bm25_left_to_right=pair.bm25_right_to_left,
             bm25_right_to_left=pair.bm25_left_to_right,
             bm25_mean=pair.bm25_mean,
@@ -273,31 +263,23 @@ class ReduceSimilarityScores(Transform):
             & (pair.right_section_id == reverse.left_section_id)
             & (pair.right_paragraph_id == reverse.left_paragraph_id),
         )
-        return ParagraphSimilarityPair(
-            left_document_id=pair.left_document_id,
-            left_section_id=pair.left_section_id,
-            left_paragraph_id=pair.left_paragraph_id,
-            right_document_id=pair.right_document_id,
-            right_section_id=pair.right_section_id,
-            right_paragraph_id=pair.right_paragraph_id,
+        return ParagraphSimilarityPair.base(pair)(
             score_overlap=when(pair.score_overlap <= reverse.score_overlap, pair.score_overlap).otherwise(
                 reverse.score_overlap
             ),
-            bm25_left_to_right=pair.bm25_left_to_right,
             bm25_right_to_left=reverse.bm25_left_to_right,
             bm25_mean=(pair.bm25_left_to_right + reverse.bm25_left_to_right) / 2.0,
         )
 
     @step(input=paragraph_canonical_pairs, output=paragraph_reversed_pairs)
     def reverse_paragraph_pairs(self, pair: ParagraphSimilarityPair) -> ParagraphSimilarityPair:
-        return ParagraphSimilarityPair(
+        return ParagraphSimilarityPair.base(pair)(
             left_document_id=pair.right_document_id,
             left_section_id=pair.right_section_id,
             left_paragraph_id=pair.right_paragraph_id,
             right_document_id=pair.left_document_id,
             right_section_id=pair.left_section_id,
             right_paragraph_id=pair.left_paragraph_id,
-            score_overlap=pair.score_overlap,
             bm25_left_to_right=pair.bm25_right_to_left,
             bm25_right_to_left=pair.bm25_left_to_right,
             bm25_mean=pair.bm25_mean,
@@ -373,26 +355,17 @@ class ReduceSimilarityScores(Transform):
             & (pair.right_paragraph_id == reverse.left_paragraph_id)
             & (pair.right_sentence_id == reverse.left_sentence_id),
         )
-        return SentenceSimilarityPair(
-            left_document_id=pair.left_document_id,
-            left_section_id=pair.left_section_id,
-            left_paragraph_id=pair.left_paragraph_id,
-            left_sentence_id=pair.left_sentence_id,
-            right_document_id=pair.right_document_id,
-            right_section_id=pair.right_section_id,
-            right_paragraph_id=pair.right_paragraph_id,
-            right_sentence_id=pair.right_sentence_id,
+        return SentenceSimilarityPair.base(pair)(
             score_overlap=when(pair.score_overlap <= reverse.score_overlap, pair.score_overlap).otherwise(
                 reverse.score_overlap
             ),
-            bm25_left_to_right=pair.bm25_left_to_right,
             bm25_right_to_left=reverse.bm25_left_to_right,
             bm25_mean=(pair.bm25_left_to_right + reverse.bm25_left_to_right) / 2.0,
         )
 
     @step(input=sentence_canonical_pairs, output=sentence_reversed_pairs)
     def reverse_sentence_pairs(self, pair: SentenceSimilarityPair) -> SentenceSimilarityPair:
-        return SentenceSimilarityPair(
+        return SentenceSimilarityPair.base(pair)(
             left_document_id=pair.right_document_id,
             left_section_id=pair.right_section_id,
             left_paragraph_id=pair.right_paragraph_id,
@@ -401,7 +374,6 @@ class ReduceSimilarityScores(Transform):
             right_section_id=pair.left_section_id,
             right_paragraph_id=pair.left_paragraph_id,
             right_sentence_id=pair.left_sentence_id,
-            score_overlap=pair.score_overlap,
             bm25_left_to_right=pair.bm25_right_to_left,
             bm25_right_to_left=pair.bm25_left_to_right,
             bm25_mean=pair.bm25_mean,

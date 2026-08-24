@@ -57,6 +57,7 @@ class CompilePluginTransform:
         target = self._target(transform, default=resolved.target)
         configuration = {
             "warn_on_udfs": resolved.warn_on_udfs,
+            "warn_on_lineage_growth": resolved.warn_on_lineage_growth,
             "validate_intermediate": resolved.validate_intermediate,
             "stream_to_batch_policy": resolved.stream_to_batch_policy,
             "allow_output_to_input": resolved.allow_output_to_input,
@@ -105,6 +106,7 @@ class CompilePluginTransform:
         target = self._target(transform, default=options.target)
         configuration = {
             "warn_on_udfs": options.warn_on_udfs,
+            "warn_on_lineage_growth": options.warn_on_lineage_growth,
             "allow_stream_to_batch": options.allow_stream_to_batch,
             "stream_to_batch_policy": options.stream_to_batch_policy,
             "allow_output_to_input": options.allow_output_to_input,
@@ -121,6 +123,7 @@ class CompilePluginTransform:
             project_root=options.project_root,
             overrides={
                 "warn_on_udfs": options.warn_on_udfs,
+                "warn_on_lineage_growth": options.warn_on_lineage_growth,
                 "allow_stream_to_batch": options.allow_stream_to_batch,
                 "stream_to_batch_policy": options.stream_to_batch_policy,
                 "allow_output_to_input": options.allow_output_to_input,

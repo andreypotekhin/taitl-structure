@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from structure.dsl import Schema
 from structure.plugin.api.v1.model import current_symbolic_context
-from structure.plugin.pyspark.dsl.logic import CapturePySparkGenerator
+from structure.plugin.pyspark.dsl.logic.CapturePySparkGenerator import CapturePySparkGenerator
 from structure.plugin.pyspark.dsl.RowScope import RowScope
 
 _generators = CapturePySparkGenerator()

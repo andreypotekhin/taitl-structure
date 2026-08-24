@@ -194,9 +194,11 @@ class RenderPySparkStep:
         sources: dict[str, str],
         target: str = "df",
     ) -> list[str]:
-        lines: list[str] = self._streaming_guard(step, sources=sources) if any(
-            join.assert_singleton_in_batch for join in step.joins
-        ) else []
+        lines: list[str] = (
+            self._streaming_guard(step, sources=sources)
+            if any(join.assert_singleton_in_batch for join in step.joins)
+            else []
+        )
         for join in step.joins:
             lines.extend(self._join(step, join, sources=sources, target=target))
         return lines
@@ -219,9 +221,7 @@ class RenderPySparkStep:
 
         ordered_lines: list[str] = []
         if any(
-            operation.kind == "join"
-            and operation.join is not None
-            and operation.join.assert_singleton_in_batch
+            operation.kind == "join" and operation.join is not None and operation.join.assert_singleton_in_batch
             for operation in step.operations
         ):
             ordered_lines.extend(self._streaming_guard(step, sources=sources))
@@ -465,6 +465,27 @@ class RenderPySparkStep:
             if operation.kind == "watermark" and operation.watermark is not None:
                 if operation.watermark.scope == getattr(step, "source_scope", ""):
                     ordered_lines.extend(self._watermark(operation.watermark, target=target))
+            if operation.kind == "persist" and operation.persist is not None:
+                storage = (
+                    "()"
+                    if operation.persist.storage_level is None
+                    else self._storage_level(operation.persist.storage_level)
+                )
+                ordered_lines.append(
+                    f"        {target} = {target}.persist({storage})"
+                    if storage != "()"
+                    else f"        {target} = {target}.persist()"
+                )
+            if operation.kind == "unpersist" and operation.unpersist is not None:
+                ordered_lines.append(
+                    f"        {target} = {target}.unpersist(blocking={operation.unpersist.blocking!r})"
+                )
+            if operation.kind == "checkpoint" and operation.checkpoint is not None:
+                ordered_lines.append(f"        {target} = {target}.checkpoint(eager={operation.checkpoint.eager!r})")
+            if operation.kind == "local_checkpoint" and operation.local_checkpoint is not None:
+                ordered_lines.append(
+                    f"        {target} = {target}.localCheckpoint(eager={operation.local_checkpoint.eager!r})"
+                )
         if pending_filters:
             ordered_lines.extend(
                 self._filters_renderer(tuple(pending_filters), scope_aliases=self._scope_aliases(step), target=target)
@@ -484,7 +505,11 @@ class RenderPySparkStep:
 
     def _cache_storage_level(self, operation) -> str:
         assert operation.cache is not None and operation.cache.storage_level is not None
-        return f"StorageLevel({', '.join(map(str, operation.cache.storage_level))})"
+        return self._storage_level(operation.cache.storage_level)
+
+    @staticmethod
+    def _storage_level(storage_level: tuple[bool, bool, bool, bool, int]) -> str:
+        return f"StorageLevel({', '.join(map(str, storage_level))})"
 
     def _dedupe_subset(self, duplicate_rows: PySparkDuplicateRowsRecipe) -> str:
         if not duplicate_rows.subset:
@@ -1075,31 +1100,23 @@ class RenderPySparkStep:
                     "        )",
                 ]
             )
-        guards.append(f"{prefix}_tie_assertion")
-        tie_columns = (*key_columns, priority)
         message = (
             "REL-E0705: select_first_qualified(...) found tied eligible candidates; "
             "see docs/Diagnostics.md#rel-e0705"
         )
         lines.extend(
             [
-                f"        {prefix}_ties = {prefix}_eligible.select(",
-                *(
-                    f"            {key}.alias({self._literal(column)}),"
-                    for key, column in zip(rendered_keys, key_columns, strict=True)
-                ),
-                f"            F.col({self._literal(priority)}),",
+                f"        {prefix}_eligible = {prefix}_eligible.withColumn(",
+                f'            "__structure_priority_tie_count_{index}",',
+                f"            F.count(F.lit(1)).over(Window.partitionBy({', '.join((*rendered_keys, f'F.col({self._literal(priority)})'))})),",
                 "        )",
-                f"        {prefix}_ties = {prefix}_ties.groupBy({', '.join(self._literal(column) for column in tie_columns)}).agg(",
-                '            F.count(F.lit(1)).alias("__structure_count")',
-                "        )",
-                f'        {prefix}_ties = {prefix}_ties.where(F.col("__structure_count") > F.lit(1))',
-                f"        {prefix}_ties = {prefix}_ties.agg(",
-                '            F.count(F.lit(1)).alias("__structure_violations")',
-                "        )",
-                f"        {prefix}_tie_assertion = {prefix}_ties.select(",
-                f'            F.assert_true(F.col("__structure_violations") == F.lit(0), {message!r})',
-                '            .alias("__structure_select_first_ties")',
+                f"        {prefix}_eligible = {prefix}_eligible.where(",
+                "            F.coalesce(",
+                f"                F.when(F.col({self._literal(f'__structure_priority_tie_count_{index}')}) > F.lit(1),",
+                f"                    F.assert_true(F.lit(False), {message!r})",
+                "                ),",
+                "                F.lit(True),",
+                "            )",
                 "        )",
                 f"        {prefix}_ranked = {prefix}_eligible.withColumn(",
                 f"            {self._literal(rank)},",
@@ -1108,17 +1125,20 @@ class RenderPySparkStep:
                 f"        {prefix}_ranked = {prefix}_ranked.where(F.col({self._literal(rank)}) == F.lit(1))",
             ]
         )
-        lines.append(f"        {target} = {guards[0]}")
-        for guard in guards[1:]:
-            lines.append(f"        {target} = {target}.crossJoin({guard})")
+        if guards:
+            lines.append(f"        {target} = {guards[0]}")
+            for guard in guards[1:]:
+                lines.append(f"        {target} = {target}.crossJoin({guard})")
+            lines.append(f"        {target} = {target}.crossJoin({prefix}_ranked)")
+        else:
+            lines.append(f"        {target} = {prefix}_ranked")
         lines.extend(
             [
-                f"        {target} = {target}.crossJoin({prefix}_ranked)",
                 f"        {target} = {target}.drop(",
                 f"            {self._literal(rank)},",
                 f"            {self._literal(priority)},",
+                f'            "__structure_priority_tie_count_{index}",',
                 '            "__structure_select_first_missing",',
-                '            "__structure_select_first_ties",',
                 "        )",
             ]
         )
@@ -1638,7 +1658,9 @@ class RenderPySparkStep:
         if join.assert_singleton_in_batch:
             prepared = f"{join.right_alias}_param_joined"
             lines = [f"        {prepared} = {right}", "        if not __structure_streaming_step:"]
-            lines.extend(f"    {line}" for line in self._exactly_one(right, prepared, join.input_name, index=join.occurrence))
+            lines.extend(
+                f"    {line}" for line in self._exactly_one(right, prepared, join.input_name, index=join.occurrence)
+            )
             right = prepared
         else:
             lines = []

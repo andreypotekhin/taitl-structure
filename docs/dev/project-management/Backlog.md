@@ -322,35 +322,39 @@ boundary; unimplemented parity work is now marked `planned` in `docs/dev/Gaps.md
 
 ## V10 Backlog: API Catalog and Streaming Contract Expansion
 
+Status: conditionally closed on 2026-08-22. The implementation, catalog/ledger reconciliation, generated-artifact
+freshness, and local build/package gates are complete. The open items below are retained only where they represent
+unavailable external evidence or an intentionally deferred contract; see [V10 Release Evidence](V10ReleaseEvidence.md).
+
 ### Epic: API Catalog and Schema Evolution
 
-- Define and verify provider-neutral Geometry with positive literal SRIDs, WKT operations, nullable predicates, and
+- + Define and verify provider-neutral Geometry with positive literal SRIDs, WKT operations, nullable predicates, and
   optional-provider diagnostics.
-- Preserve sampling's explicit seed/reproducibility policy and batch-only streaming boundary.
-- Implement or explicitly gate `union_by_name(..., defaults=...)` for nullable, nested-struct, alias-preserving schema
+- + Preserve sampling's explicit seed/reproducibility policy and batch-only streaming boundary.
+- + Implement or explicitly gate `union_by_name(..., defaults=...)` for nullable, nested-struct, alias-preserving schema
   evolution; reject implicit array/map element evolution.
-- Reconcile XML, Variant mutation profiles, and opt-in join reordering with precise catalog statuses.
+- + Reconcile XML, Variant mutation profiles, and opt-in join reordering with precise catalog statuses.
 
 ### Epic: Streaming State and Join Contracts
 
-- Record ordered state-stage metadata for aggregates, dedupe, windows, and stream-stream joins.
-- Prototype bounded cross and anti stream-stream candidates with watermarks, event-time bounds, retention, and output
+- + Record ordered state-stage metadata for aggregates, dedupe, windows, and stream-stream joins.
+- + Prototype bounded cross and anti stream-stream candidates with watermarks, event-time bounds, retention, and output
   mode requirements.
-- Preserve finite grouped selected-value alternatives and explicit batch boundaries for global selected-row and broad
+- + Preserve finite grouped selected-value alternatives and explicit batch boundaries for global selected-row and broad
   analytic-window helpers.
 
 ### Epic: Side-Effect Safety and Arbitrary State
 
-- Document caller-owned sink identity, idempotence, retry, checkpoint, failure, recovery, and callback security rules.
-- Test caller-owned `foreachBatch` adoption and generated-source lifecycle cleanliness.
-- Specify typed arbitrary-state input/state/output schemas, timeout clocks, initialization, cleanup, target profiles,
+- + Document caller-owned sink identity, idempotence, retry, checkpoint, failure, recovery, and callback security rules.
+- + Test caller-owned `foreachBatch` adoption and generated-source lifecycle cleanliness.
+- + Specify typed arbitrary-state input/state/output schemas, timeout clocks, initialization, cleanup, target profiles,
   generated-code boundaries, hooks, and restart evidence.
 
 ### Epic: Evidence and Hardening
 
-- Keep API Catalog, capability ledgers, diagnostics, references, examples, generated artifacts, and background
+- + Keep API Catalog, capability ledgers, diagnostics, references, examples, generated artifacts, and background
   companions synchronized.
-- Preserve full source identity in every generated backend module, schema symbol, schema document, traceability path,
+- + Preserve full source identity in every generated backend module, schema symbol, schema document, traceability path,
   and plugin-generated file map; reject conflicting duplicate paths instead of overwriting them.
 - Run PySpark 3.5/4.0 live parity and restart lanes for every claimed streaming support row.
 - Run optional-provider evidence only with pinned dependencies and finish Sprint 54 with `make build`.
@@ -364,12 +368,12 @@ future documents are not V10 backlog commitments.
 
 ### Epic: Search Vector Index and Reciprocal Rank Fusion
 
-- Add caller-supplied document and paragraph embedding contracts with model, dimension, content-revision, and
+- + Add caller-supplied document and paragraph embedding contracts with model, dimension, content-revision, and
   experiment identity validation.
-- Build an exact typed vector index and cosine top-K scorer without model invocation, driver-side collection, or an
+- + Build an exact typed vector index and cosine top-K scorer without model invocation, driver-side collection, or an
   external ANN dependency.
-- Refactor document and paragraph similarity to union lexical/vector ranked candidates and apply equal-weight RRF.
-- Extend document search with vector candidates before feedback reranking while preserving lexical-only compatibility
+- + Refactor document and paragraph similarity to union lexical/vector ranked candidates and apply equal-weight RRF.
+- + Extend document search with vector candidates before feedback reranking while preserving lexical-only compatibility
   and the caller-owned streaming lifecycle boundary.
 - Add generated/online parity, judged-ranking comparisons, documentation, and v10 release evidence.
 

@@ -1,6 +1,10 @@
 # Sprint 53: V10 Side-Effect Safety and Arbitrary State
 
-Status: planned; target: 2026-11-27.
+Status: completed with retained gates; closeout: 2026-08-22; planned target: 2026-11-27.
+
+Closeout: Caller-owned `foreachBatch` safety and retry/restart guidance, generated-source cleanliness, and typed
+arbitrary-state metadata validation are complete. Structure-owned state processors, row-level side effects, and the
+SearchDocuments caller handoff remain design-gated or deferred.
 
 ## Sprint Goal
 

@@ -1,6 +1,9 @@
 # Sprint 49: V10 Admission and ExecPlan Foundation
 
-Status: planned; target: 2026-10-02.
+Status: completed; closeout: 2026-08-02; planned target: 2026-10-02.
+
+Closeout: V10 scope, ownership, grouped plans, sprint navigation, and the explicitly adopted proving slices were
+recorded. The original target date is retained for schedule traceability.
 
 ## Sprint Goal
 

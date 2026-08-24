@@ -4,7 +4,17 @@ from examples.search.schemas.indexing.vector import VectorIndexPolicy
 from examples.search.schemas.search import DocumentSearchCandidate
 from examples.search.transforms.lib.Rrf import Rrf
 from structure import Transform, input, lane, output, step
-from structure.plugin.pyspark import group_by, max, param_join, require_unique, row_number, union_all, when, where
+from structure.plugin.pyspark import (
+    group_by,
+    max,
+    param_join,
+    require_unique,
+    row_number,
+    types,
+    union_all,
+    when,
+    where,
+)
 from structure.plugin.pyspark.dsl.expressions import literal
 
 
@@ -94,21 +104,16 @@ class FuseDocuments(Transform):
             user_band_id=candidate.user_band_id,
             experiment_id=candidate.experiment_id,
             document_id=candidate.document_id,
-            candidate_rank=literal(0),
+            candidate_rank=literal(0).cast(types.long()),
             rrf_k=policy.rrf_k,
         )
-        return DocumentSearchCandidate(
-            search_query_id=candidate.search_query_id,
-            experiment_id=candidate.experiment_id,
-            user_band_id=candidate.user_band_id,
+        return DocumentSearchCandidate.project(candidate)(
             band_id=max(candidate.band_id),
             query=max(candidate.query),
-            candidate_rank=candidate.candidate_rank,
-            document_id=candidate.document_id,
             title=max(candidate.title),
             url=max(candidate.url),
             score=max(candidate.score),
-            retrieval_score=0.0,
+            retrieval_score=max(candidate.retrieval_score),
             score_feedback=max(candidate.score_feedback),
             score_rank=max(candidate.score_rank),
             score_weight=max(candidate.score_weight),
@@ -116,7 +121,7 @@ class FuseDocuments(Transform):
             lexical_rank=max(candidate.lexical_rank),
             vector_rank=max(candidate.vector_rank),
             vector_similarity=max(candidate.vector_similarity),
-            rrf_score=0.0,
+            rrf_score=max(candidate.rrf_score),
             rrf_k=policy.rrf_k,
             vector_backend=max(candidate.vector_backend),
         )

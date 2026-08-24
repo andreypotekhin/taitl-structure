@@ -3,10 +3,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from structure.lib.cross.errors.SourceSpan import SourceSpan
 from structure.plugin.pyspark.dsl.operations.CachePlan import CachePlan
 from structure.plugin.pyspark.dsl.operations.DuplicateRowsPlan import DuplicateRowsPlan
 from structure.plugin.pyspark.dsl.operations.ExactlyOnePlan import ExactlyOnePlan
 from structure.plugin.pyspark.dsl.operations.MapGeneratorPlan import MapGeneratorPlan
+from structure.plugin.pyspark.dsl.operations.MaterializationPlan import CheckpointPlan, PersistPlan, UnpersistPlan
 from structure.plugin.pyspark.dsl.operations.OperationCapability import OperationCapability
 from structure.plugin.pyspark.dsl.operations.OperationCardinality import OperationCardinality
 from structure.plugin.pyspark.dsl.operations.OrderedTimelineScanPlan import OrderedTimelineScanPlan
@@ -51,6 +53,11 @@ class OperationPlan:
     relation_set: RelationSetPlan | None = None
     watermark: WatermarkPlan | None = None
     cache: CachePlan | None = None
+    persist: PersistPlan | None = None
+    unpersist: UnpersistPlan | None = None
+    checkpoint: CheckpointPlan | None = None
+    local_checkpoint: CheckpointPlan | None = None
+    source_span: SourceSpan | None = None
     family: str | None = None
     capability: OperationCapability | None = None
     cardinality: OperationCardinality = OperationCardinality.UNKNOWN
@@ -466,6 +473,50 @@ class OperationPlan:
             cache=cache,
             family="optimization",
             capability=OperationCapability("optimization", "cache"),
+            cardinality=OperationCardinality.ROW_PRESERVING,
+            streaming=StreamingSupport.BATCH_ONLY,
+        )
+
+    @staticmethod
+    def persist_operation(persist: PersistPlan) -> OperationPlan:
+        return OperationPlan(
+            "persist",
+            persist=persist,
+            family="optimization",
+            capability=OperationCapability("optimization", "persist"),
+            cardinality=OperationCardinality.ROW_PRESERVING,
+            streaming=StreamingSupport.BATCH_ONLY,
+        )
+
+    @staticmethod
+    def unpersist_operation(unpersist: UnpersistPlan) -> OperationPlan:
+        return OperationPlan(
+            "unpersist",
+            unpersist=unpersist,
+            family="optimization",
+            capability=OperationCapability("optimization", "unpersist"),
+            cardinality=OperationCardinality.ROW_PRESERVING,
+            streaming=StreamingSupport.BATCH_ONLY,
+        )
+
+    @staticmethod
+    def checkpoint_operation(checkpoint: CheckpointPlan) -> OperationPlan:
+        return OperationPlan(
+            "checkpoint",
+            checkpoint=checkpoint,
+            family="optimization",
+            capability=OperationCapability("optimization", "checkpoint"),
+            cardinality=OperationCardinality.ROW_PRESERVING,
+            streaming=StreamingSupport.BATCH_ONLY,
+        )
+
+    @staticmethod
+    def local_checkpoint_operation(checkpoint: CheckpointPlan) -> OperationPlan:
+        return OperationPlan(
+            "local_checkpoint",
+            local_checkpoint=checkpoint,
+            family="optimization",
+            capability=OperationCapability("optimization", "local_checkpoint"),
             cardinality=OperationCardinality.ROW_PRESERVING,
             streaming=StreamingSupport.BATCH_ONLY,
         )

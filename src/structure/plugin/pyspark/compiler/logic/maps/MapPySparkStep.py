@@ -17,6 +17,11 @@ from structure.plugin.pyspark.compiler.model.PySparkJoinAsOfRecipe import PySpar
 from structure.plugin.pyspark.compiler.model.PySparkJoinDedupeRecipe import PySparkJoinDedupeRecipe
 from structure.plugin.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoinRecipe
 from structure.plugin.pyspark.compiler.model.PySparkJoinTemporalRecipe import PySparkJoinTemporalRecipe
+from structure.plugin.pyspark.compiler.model.PySparkMaterializationRecipe import (
+    PySparkCheckpointRecipe,
+    PySparkPersistRecipe,
+    PySparkUnpersistRecipe,
+)
 from structure.plugin.pyspark.compiler.model.PySparkOperationRecipe import PySparkOperationRecipe
 from structure.plugin.pyspark.compiler.model.PySparkOrderedTimelineScanRecipe import PySparkOrderedTimelineScanRecipe
 from structure.plugin.pyspark.compiler.model.PySparkProjectionRecipe import PySparkProjectionRecipe
@@ -586,6 +591,42 @@ class MapPySparkStep:
                             PySparkCacheRecipe(
                                 storage_level=None if operation.cache is None else operation.cache.storage_level
                             )
+                        ),
+                        operation,
+                    )
+                )
+            if operation.kind == "persist" and operation.persist is not None:
+                recipes.append(
+                    self._operation_modes(
+                        PySparkOperationRecipe.persist_operation(
+                            PySparkPersistRecipe(storage_level=operation.persist.storage_level)
+                        ),
+                        operation,
+                    )
+                )
+            if operation.kind == "unpersist" and operation.unpersist is not None:
+                recipes.append(
+                    self._operation_modes(
+                        PySparkOperationRecipe.unpersist_operation(
+                            PySparkUnpersistRecipe(blocking=operation.unpersist.blocking)
+                        ),
+                        operation,
+                    )
+                )
+            if operation.kind == "checkpoint" and operation.checkpoint is not None:
+                recipes.append(
+                    self._operation_modes(
+                        PySparkOperationRecipe.checkpoint_operation(
+                            PySparkCheckpointRecipe(eager=operation.checkpoint.eager)
+                        ),
+                        operation,
+                    )
+                )
+            if operation.kind == "local_checkpoint" and operation.local_checkpoint is not None:
+                recipes.append(
+                    self._operation_modes(
+                        PySparkOperationRecipe.local_checkpoint_operation(
+                            PySparkCheckpointRecipe(eager=operation.local_checkpoint.eager)
                         ),
                         operation,
                     )

@@ -52,6 +52,7 @@ class WriteStructureConfig:
                     'output_validation_mode = "schema_only"',
                     "strict_performance = true",
                     "warn_on_udfs = true",
+                    "warn_on_lineage_growth = true",
                     "fail_on_diff = false",
                 ]
             )

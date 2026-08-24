@@ -49,10 +49,18 @@ class RenderPySparkExplainReport:
             recipe.transform,
             f"  backend: {recipe.backend.name} {recipe.backend.target}",
         ]
+        if recipe.optimizations:
+            lines.extend(["", "  optimizations:"])
+            for optimization in recipe.optimizations:
+                lines.append(f"    {optimization.detail}")
         if plan.diagnostics:
             lines.extend(["", "  diagnostics:"])
             for diagnostic in plan.diagnostics:
                 lines.append(f"    {diagnostic.code}: {diagnostic.problem_text()}")
+        lineage_states = self._lineage_states(plan, recipe)
+        if lineage_states:
+            lines.extend(["", "  lineage state:"])
+            lines.extend(f"    {line}" for line in lineage_states)
         lines.extend(
             [
                 "",
@@ -141,6 +149,42 @@ class RenderPySparkExplainReport:
             for output in recipe.outputs:
                 lines.append(f"    {output.name}: {output.output_schema.__name__}")
         return "\n".join(lines)
+
+    def _lineage_states(self, plan: TransformPlan, recipe: PySparkExecutionPlan) -> tuple[str, ...]:
+        findings = tuple(diagnostic for diagnostic in plan.diagnostics if diagnostic.code == "PYSPARK-W2701")
+        if not findings:
+            return ()
+        optimization = next(
+            (
+                trace.detail
+                for trace in recipe.optimizations
+                if trace.kind == "projection-union-fusion"
+            ),
+            None,
+        )
+        states: list[str] = []
+        for diagnostic in findings:
+            step = str(diagnostic.context.get("step", "unknown"))
+            boundary = self._nearest_lineage_boundary(plan, step)
+            if diagnostic.context.get("lineage_action") == "diminished-residual-risk" and optimization is not None:
+                states.append(f"{step}: diminish: {optimization}")
+                states.append(f"{step}: residual risk: exponential repeated-lineage reuse remains")
+            else:
+                states.append(f"{step}: residual risk: repeated-lineage reuse requires a true boundary")
+            states.append(f"{step}: nearest true boundary: {boundary}")
+        return tuple(states)
+
+    @staticmethod
+    def _nearest_lineage_boundary(plan: TransformPlan, step_name: str) -> str:
+        latest = None
+        for step in plan.steps:
+            body = getattr(step, "plugin_body", None)
+            for operation in getattr(body, "operations", ()):
+                if operation.kind in {"checkpoint", "local_checkpoint"}:
+                    latest = f"{step.name}.{operation.kind}()"
+            if step.name == step_name:
+                break
+        return latest or "none (add checkpoint() or local_checkpoint())"
 
     def _collection_helpers(self, expressions) -> tuple[str, ...]:
         helpers: list[str] = []
@@ -254,6 +298,15 @@ class RenderPySparkExplainReport:
             )
         if operation.watermark is not None:
             return f"watermark({operation.watermark.column} {operation.watermark.delay})"
+        if operation.persist is not None:
+            level = "default" if operation.persist.storage_level is None else repr(operation.persist.storage_level)
+            return f"persist(row_preserving storage_level={level})"
+        if operation.unpersist is not None:
+            return f"unpersist(row_preserving blocking={operation.unpersist.blocking})"
+        if operation.checkpoint is not None:
+            return f"checkpoint(row_preserving eager={operation.checkpoint.eager})"
+        if operation.local_checkpoint is not None:
+            return f"local_checkpoint(row_preserving eager={operation.local_checkpoint.eager})"
         if operation.filter is not None:
             return "filter(row_filtering)"
         name = operation.join.method.value if operation.join is not None else operation.kind
@@ -277,7 +330,7 @@ class RenderPySparkExplainReport:
         return f" levels={levels}"
 
     def _operation_cardinality(self, operation: PySparkOperationRecipe) -> str:
-        if operation.kind == "cache":
+        if operation.kind in {"cache", "persist", "unpersist", "checkpoint", "local_checkpoint"}:
             return "row_preserving"
         if operation.join is None:
             return "unknown"

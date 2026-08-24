@@ -370,6 +370,30 @@ def test_v4_expression_renderer_renders_deterministic_numeric_functions() -> Non
     )
 
 
+def test_v4_expression_renderer_renders_seeded_and_unseeded_rand() -> None:
+    class Raw(Schema):
+        amount = double(nullable=False)
+
+    class Published(Schema):
+        seeded = double(nullable=False)
+        unseeded = double(nullable=False)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(seeded=rand(seed=17), unseeded=rand(reproducible=False))
+
+    recipe = _recipe(Publish)
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    assert render(projection["seeded"], scope_aliases={"rows": "orders"}) == "F.rand(seed=17)"
+    assert render(projection["unseeded"], scope_aliases={"rows": "orders"}) == "F.rand()"
+
+
 def test_v4_expression_renderer_renders_temporal_helpers() -> None:
     class Raw(Schema):
         observed_on = date(nullable=True)

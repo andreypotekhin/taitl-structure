@@ -857,6 +857,9 @@ class EvaluatePySparkExpression:
             return functions.acos(args[0])
         if function == "hypot":
             return functions.hypot(args[0], args[1])
+        if function == "rand":
+            seed = expression.data.get("seed")
+            return functions.rand() if seed is None else functions.rand(seed=seed)
         if function == "round":
             return functions.round(args[0], expression.data["scale"])
         if function == "bround":

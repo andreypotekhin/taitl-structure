@@ -123,6 +123,7 @@ explicit design gate are marked in the details below.
 | `abs(...)` | `abs` | `abs(o.total)` |
 | `acos(...)` | `acos` | `acos(o.total)` |
 | `hypot(...)` | `hypot` | `hypot(o.x, o.y)` |
+| `rand(...)` | `rand` | `rand(seed=42)`; `rand(reproducible=False)` |
 | `round(...)` | `round` | `round(o.total, scale=2)` |
 | `bround(...)` | `bround` | `bround(o.total, scale=2)` |
 | `ceil(...)` | `ceil` | `ceil(o.total)` |
@@ -182,6 +183,10 @@ explicit design gate are marked in the details below.
 - `lpad(...)` and `rpad(...)` accept a String expression, a non-negative integer literal, and a non-empty padding
   literal. They return a String expression with the input nullability.
 - `acos(...)` and `hypot(...)` accept numeric expressions and return nullable Double results.
+- `rand(...)` returns a non-null Double in `[0.0, 1.0)`. It requires an integer `seed` by default; omitting the seed
+  requires `reproducible=False`. The seed makes the use auditable but does not promise identical random values across
+  repartitioning, retries, Spark versions, or query restarts. Streaming support follows the target-specific coverage
+  ledger and is not implied by batch support.
 - `hash(...)` and `xxhash64(...)` accept scalar inputs. They are Spark hash functions, not cryptographic identifiers;
   do not use them for security, cross-engine interchange, or persistent identifiers. `md5(...)`, `sha1(...)`, and
   `sha2(...)` are deterministic digests of String values, not password-storage primitives.

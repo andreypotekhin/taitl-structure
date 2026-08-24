@@ -1,6 +1,6 @@
 # Sprint 51: V10 Schema Evolution and Missing-Column Union
 
-Status: planned; target: 2026-10-30.
+Status: completed; closeout: 2026-08-22; planned target: 2026-10-30.
 
 ## Sprint Goal
 
@@ -10,6 +10,9 @@ Deliver or explicitly gate typed defaults, nested-struct evolution, alias preser
 
 As of 2026-08-02, top-level scalar defaults and nested struct defaults are implemented through symbolic validation,
 generated PySpark, online execution, alias-preserving rendering, and traceability. Live streaming evidence remains open.
+
+Closeout: The batch schema-evolution contract, alias-preserving nested rendering, ordinal-aware callbacks, and Search
+chunking documentation/ledger updates are reconciled. Streaming schema-evolution promotion remains evidence-gated.
 
 ## User-Facing Outcome
 

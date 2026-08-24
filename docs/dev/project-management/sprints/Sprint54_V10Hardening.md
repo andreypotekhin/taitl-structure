@@ -1,11 +1,16 @@
 # Sprint 54: V10 Hardening and Release Evidence
 
-Status: in progress; target: 2026-12-11. Environment-independent hardening and evidence reconciliation are recorded;
-live target lanes remain blocked by Docker-engine access and SearchDocuments streaming remains design-gated.
+Status: completed with external evidence gaps; closeout: 2026-08-22; planned target: 2026-12-11. Environment-independent
+hardening and evidence reconciliation are complete; live target lanes remain blocked by Docker-engine access and
+SearchDocuments streaming remains design-gated.
 
 ## Sprint Goal
 
 Verify and close V10 without admitting new feature scope.
+
+Closeout: `make build` and the secondary rigidity/compatibility gate pass, package artifacts build successfully, and
+the release evidence report names every retained gate and unavailable lane. V10 is conditionally closed pending the
+external evidence listed in [V10 Release Evidence](../V10ReleaseEvidence.md).
 
 ## User-Facing Outcome
 

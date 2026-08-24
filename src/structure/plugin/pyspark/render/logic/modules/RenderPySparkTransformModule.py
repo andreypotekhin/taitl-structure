@@ -238,14 +238,22 @@ class RenderPySparkTransformModule:
         lines = [f"class {class_name}:", "", "    def __init__(self, *, spark: SparkSession, ctx=None,"]
         for input in self._public_inputs(plan):
             suffix = " = None" if input.optional else ""
-            lines.append(f"        {input.name}: DataFrame | None{suffix}," if input.optional else f"        {input.name}: DataFrame,")
+            lines.append(
+                f"        {input.name}: DataFrame | None{suffix},"
+                if input.optional
+                else f"        {input.name}: DataFrame,"
+            )
         lines.extend(["    ):", "        self.spark = spark", "        self.ctx = ctx", "        self._ran = False"])
         for input in plan.inputs:
             if input.internal:
-                lines.append(f"        {input.name} = self.spark.createDataFrame([], {self._schema.constant_name(input.schema)})")
+                lines.append(
+                    f"        {input.name} = self.spark.createDataFrame([], {self._schema.constant_name(input.schema)})"
+                )
             elif input.optional:
                 lines.append(f"        if {input.name} is None:")
-                lines.append(f"            {input.name} = self.spark.createDataFrame([], {self._schema.constant_name(input.schema)})")
+                lines.append(
+                    f"            {input.name} = self.spark.createDataFrame([], {self._schema.constant_name(input.schema)})"
+                )
             lines.append(f"        self.{fields[f'input:{input.name}']} = {input.name}")
         if self._requires_impl(plan, generated_code_options=generated_code_options):
             lines.append(f"        self._impl = {source_name}()")
@@ -1000,7 +1008,11 @@ class RenderPySparkTransformModule:
         items: Iterable[PySparkStepRecipe | PySparkOutputRecipe],
     ) -> bool:
         return any(
-            operation.kind == "cache" and operation.cache is not None and operation.cache.storage_level is not None
+            operation.kind in {"cache", "persist"}
+            and (
+                (operation.cache is not None and operation.cache.storage_level is not None)
+                or (operation.persist is not None and operation.persist.storage_level is not None)
+            )
             for item in items
             for operation in item.operations
         )

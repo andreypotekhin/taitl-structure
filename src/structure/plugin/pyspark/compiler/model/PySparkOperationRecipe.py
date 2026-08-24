@@ -9,6 +9,11 @@ from structure.plugin.pyspark.compiler.model.PySparkExactlyOneRecipe import PySp
 from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.plugin.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoinRecipe
 from structure.plugin.pyspark.compiler.model.PySparkMapGeneratorRecipe import PySparkMapGeneratorRecipe
+from structure.plugin.pyspark.compiler.model.PySparkMaterializationRecipe import (
+    PySparkCheckpointRecipe,
+    PySparkPersistRecipe,
+    PySparkUnpersistRecipe,
+)
 from structure.plugin.pyspark.compiler.model.PySparkOrderedTimelineScanRecipe import PySparkOrderedTimelineScanRecipe
 from structure.plugin.pyspark.compiler.model.PySparkPosexplodeStructRecipe import PySparkPosexplodeStructRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationAliasRecipe import PySparkRelationAliasRecipe
@@ -56,6 +61,10 @@ class PySparkOperationRecipe:
     relation_set: PySparkRelationSetRecipe | None = None
     watermark: PySparkWatermarkRecipe | None = None
     cache: PySparkCacheRecipe | None = None
+    persist: PySparkPersistRecipe | None = None
+    unpersist: PySparkUnpersistRecipe | None = None
+    checkpoint: PySparkCheckpointRecipe | None = None
+    local_checkpoint: PySparkCheckpointRecipe | None = None
     streaming_output_modes: tuple[StreamingOutputMode, ...] = ()
 
     @staticmethod
@@ -217,3 +226,19 @@ class PySparkOperationRecipe:
     @staticmethod
     def cache_operation(cache: PySparkCacheRecipe) -> "PySparkOperationRecipe":
         return PySparkOperationRecipe(kind="cache", cache=cache)
+
+    @staticmethod
+    def persist_operation(persist: PySparkPersistRecipe) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="persist", persist=persist)
+
+    @staticmethod
+    def unpersist_operation(unpersist: PySparkUnpersistRecipe) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="unpersist", unpersist=unpersist)
+
+    @staticmethod
+    def checkpoint_operation(checkpoint: PySparkCheckpointRecipe) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="checkpoint", checkpoint=checkpoint)
+
+    @staticmethod
+    def local_checkpoint_operation(checkpoint: PySparkCheckpointRecipe) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="local_checkpoint", local_checkpoint=checkpoint)

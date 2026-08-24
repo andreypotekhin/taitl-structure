@@ -5,6 +5,10 @@ backend="${1:?integration backend is required}"
 connect_pid=""
 connect_log=""
 
+if [[ "${backend}" != spark-connect* && -n "${STRUCTURE_SPARK_DRIVER_MEMORY:-}" ]]; then
+    export PYSPARK_SUBMIT_ARGS="--driver-memory ${STRUCTURE_SPARK_DRIVER_MEMORY} pyspark-shell"
+fi
+
 mkdir -p /tmp/artifacts /tmp/spark-artifacts
 cd /tmp
 

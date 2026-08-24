@@ -49,6 +49,17 @@ class ClassifyStreamingCompatibility:
                 result_expressions = tuple(assignment.expression for assignment in result.projection)
                 findings.extend(self._window_projection(result.lane, result_expressions, streaming=streaming_step))
             for operation in step.operations:
+                if streaming_step and operation.kind in {"persist", "unpersist", "checkpoint", "local_checkpoint"}:
+                    findings.append(
+                        StreamingFinding(
+                            code="STREAM-E0801",
+                            support=StreamingSupport.BATCH_ONLY,
+                            step=step.name,
+                            operation=operation.kind,
+                            problem=f"{operation.kind}() is only admitted for batch DataFrames.",
+                            use="Keep this materialization operation on batch input, or move streaming lifecycle policy to the caller.",
+                        )
+                    )
                 if operation.watermark is not None:
                     if not streaming_step:
                         continue

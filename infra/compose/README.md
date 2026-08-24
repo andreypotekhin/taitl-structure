@@ -30,6 +30,12 @@ The Spark Connect lanes are experimental. They start the Spark Connect gateway i
 not add separate Connect services to the Compose stack. The gateway defaults to a 3 GiB driver heap, which can be
 overridden with `STRUCTURE_SPARK_CONNECT_DRIVER_MEMORY` for constrained or larger local environments.
 
+Ordinary PySpark runs use the JVM default driver heap unless `STRUCTURE_SPARK_DRIVER_MEMORY` is set. For a bounded
+diagnostic run, set it in `infra/compose/.env` or pass it to the runner, for example
+`docker compose ... run --rm -e STRUCTURE_SPARK_DRIVER_MEMORY=3g structure-integration-pyspark35`. The runner applies
+this before launching PySpark through `PYSPARK_SUBMIT_ARGS`; changing `spark.driver.memory` after the session starts is
+too late to enlarge the driver JVM.
+
 The test runner is removed after every run, while the Spark master/worker services and the versioned Spark Connect Ivy
 caches are retained locally. This avoids repeat image builds, Spark startup, and Spark Connect dependency downloads.
 Use `make integration-rebuild` after changing a Compose image, and `make integration-down` to stop the retained

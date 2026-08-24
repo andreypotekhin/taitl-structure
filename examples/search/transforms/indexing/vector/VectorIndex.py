@@ -79,10 +79,4 @@ class VectorIndex(Transform):
             content_revision=policy.content_revision,
             experiment_id=policy.experiment_id,
         )
-        return ParagraphVectorIndexSummary(
-            model_id=policy.model_id,
-            dimension=policy.dimension,
-            content_revision=policy.content_revision,
-            experiment_id=policy.experiment_id,
-            target_count=count(),
-        )
+        return ParagraphVectorIndexSummary.project(policy)(target_count=count())

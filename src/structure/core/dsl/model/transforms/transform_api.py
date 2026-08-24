@@ -19,7 +19,14 @@ from structure.core.dsl.model.transforms.StageDeclaration import StageDeclaratio
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.plugin.api.v1.model import current_symbolic_context
 
-_CLASS_OPTIONS = {"target", "validate_intermediate", "streaming", "warn_on_udfs", "allow_stream_to_batch"}
+_CLASS_OPTIONS = {
+    "target",
+    "validate_intermediate",
+    "streaming",
+    "warn_on_udfs",
+    "warn_on_lineage_growth",
+    "allow_stream_to_batch",
+}
 _STEP_METHOD_OPTIONS = {"target", "target_platform", "target_profile"}
 _METHOD_BINDING_OPTIONS = {"input", "output", "inout"}
 _METHOD_OPTIMIZATION_OPTIONS = {"cache"}
@@ -227,7 +234,7 @@ def transform(target=None, **kwargs):
         target: Optional target name or class. Passing ``"pyspark"`` selects a
             default target for the class.
         **kwargs: Class-level options such as ``target``,
-            ``validate_intermediate``, ``streaming``, ``warn_on_udfs``, and
+            ``validate_intermediate``, ``streaming``, ``warn_on_udfs``, ``warn_on_lineage_growth``, and
             ``allow_stream_to_batch``.
             Step defaults such as ``target_platform`` may also be supplied.
 

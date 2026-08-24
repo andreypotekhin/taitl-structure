@@ -62,6 +62,11 @@ class StreamClean(Schema):
     id = string(nullable=False)
 
 
+class StreamRandomOutput(Schema):
+    id = string(nullable=False)
+    random_value = double(nullable=False)
+
+
 class StreamLookup(Schema):
     id = string(nullable=False)
     value = string(nullable=True)
@@ -483,6 +488,15 @@ class StreamingProjection(Transform):
     def normalize(self, row: StreamRaw) -> StreamClean:
         where(row.id.is_not_null())  # type: ignore[attr-defined]
         return StreamClean(id=row.id)
+
+
+@transform(streaming=True)
+class StreamingRandomProjection(Transform):
+    rows = input(StreamRaw)
+    clean = output(StreamRandomOutput)
+
+    def normalize(self, row: StreamRaw) -> StreamRandomOutput:
+        return StreamRandomOutput(id=row.id, random_value=rand(seed=17))
 
 
 @transform(streaming=True)
@@ -1282,6 +1296,14 @@ def test_v4_sliding_window_renders_with_positional_slide() -> None:
 
 def test_v4_scalar_udf_is_a_compatible_row_local_streaming_expression() -> None:
     plan = _analysis(StreamingScalarUdf)
+    report = Compiler.compileability.streaming()(PySpark.compiler.lower()(plan), required=True)
+
+    assert report.support is StreamingSupport.COMPATIBLE
+    assert report.findings == ()
+
+
+def test_rand_is_a_compatible_row_local_nondeterministic_streaming_expression() -> None:
+    plan = _analysis(StreamingRandomProjection)
     report = Compiler.compileability.streaming()(PySpark.compiler.lower()(plan), required=True)
 
     assert report.support is StreamingSupport.COMPATIBLE

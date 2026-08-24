@@ -9,6 +9,7 @@ from structure.plugin.pyspark.api.PySpark import PySpark
 class CompilerAPI(CompilerAPIV1):
     def __init__(self) -> None:
         self._udf_diagnostics = PySpark.compiler.udf_diagnostics()
+        self._lineage_diagnostics = PySpark.compiler.lineage_diagnostics()
 
     def compile(self, request: CompileRequest) -> PluginCompilation:
         options = request.configuration
@@ -19,11 +20,20 @@ class CompilerAPI(CompilerAPIV1):
             raise ValueError("PLUGIN-E2708: PySpark compilation requires a PySpark-owned body for every step.")
         PySpark.compiler.hooks()(plan)
         warn_on_udfs = self._warn_on_udfs(plan, default=bool(options.get("warn_on_udfs", True)))
+        warn_on_lineage_growth = self._warn_on_lineage_growth(
+            plan,
+            default=bool(options.get("warn_on_lineage_growth", True)),
+        )
         if request.purpose is CompilationPurpose.DOCUMENTATION:
+            diagnostics = self._diagnostics(
+                plan,
+                warn_on_udfs=warn_on_udfs,
+                warn_on_lineage_growth=warn_on_lineage_growth,
+            )
             return PluginCompilation(
                 lowered=None,
                 fingerprint=plan.name,
-                diagnostics=self._udf_diagnostics(plan, enabled=warn_on_udfs),
+                diagnostics=diagnostics,
             )
         plugin_options = request.plugin_options
         capabilities = PySpark.capabilities.resolve()(
@@ -39,6 +49,13 @@ class CompilerAPI(CompilerAPIV1):
             check_intermediate=check_intermediate,
             boundary_policy=boundary_policy,
         )
+        lowered = PySpark.compiler.optimize_projection_unions()(lowered)
+        diagnostics = self._diagnostics(
+            plan,
+            warn_on_udfs=warn_on_udfs,
+            warn_on_lineage_growth=warn_on_lineage_growth,
+            execution_plan=lowered,
+        )
         schemas = (
             PySpark.schema.build()(lowered, types=options.get("schema_types"))
             if options.get("materialize_schemas", True)
@@ -48,7 +65,24 @@ class CompilerAPI(CompilerAPIV1):
             lowered=lowered,
             fingerprint=plan.name,
             schemas=schemas,
-            diagnostics=self._udf_diagnostics(plan, enabled=warn_on_udfs),
+            diagnostics=diagnostics,
+        )
+
+    def _diagnostics(
+        self,
+        plan: TransformPlan,
+        *,
+        warn_on_udfs: bool,
+        warn_on_lineage_growth: bool,
+        execution_plan=None,
+    ):
+        return (
+            *self._udf_diagnostics(plan, enabled=warn_on_udfs),
+            *self._lineage_diagnostics(
+                plan,
+                enabled=warn_on_lineage_growth,
+                execution_plan=execution_plan,
+            ),
         )
 
     @staticmethod
@@ -56,11 +90,13 @@ class CompilerAPI(CompilerAPIV1):
         return bool((plan.options or {}).get("warn_on_udfs", default))
 
     @staticmethod
+    def _warn_on_lineage_growth(plan: TransformPlan, *, default: bool) -> bool:
+        return bool((plan.options or {}).get("warn_on_lineage_growth", default))
+
+    @staticmethod
     def _boundary_policy(options, variant: str) -> str:
         default = "auto" if variant == "spark-connect" else "off"
         policy = str(options.get("connect_plan_boundaries", default))
         if policy not in {"off", "auto", "strict"}:
-            raise ValueError(
-                "PLUGIN-E2710: connect_plan_boundaries must be one of 'off', 'auto', or 'strict'."
-            )
+            raise ValueError("PLUGIN-E2710: connect_plan_boundaries must be one of 'off', 'auto', or 'strict'.")
         return policy if variant == "spark-connect" else "off"

@@ -187,8 +187,9 @@ the PySpark Structured Streaming API surface while keeping lifecycle ownership e
    and catalog reconciliation, and Sprint 48 release hardening through
    `docs/dev/planning/P07302603.V9-closeout-and-release.plan.md`.
 
-V10 follows the completed V9 design-gate closeout. It uses grouped ExecPlans for the adopted API Catalog, schema
-evolution, streaming state/join, side-effect safety, arbitrary-state, evidence work, and the explicitly admitted
+V10 follows the completed V9 design-gate closeout. Its environment-independent implementation and documentation
+reconciliation are conditionally complete as of 2026-08-22. It uses grouped ExecPlans for the adopted API Catalog,
+schema evolution, streaming state/join, side-effect safety, arbitrary-state, evidence work, and the explicitly admitted
 compiler/API and Search chunking proving slice in `P08082601.Typed-scalar-generators-and-optimizer-visible-search-chunking.plan.md`.
-The V10 sprint sequence is documented in `V10.md` and runs from Sprint 49 through the dedicated Sprint 54 hardening sprint.
-Other application-specific future documents remain outside the release.
+The V10 sprint sequence is documented in `V10.md`; the release evidence page records the unavailable live lanes and
+retained SearchDocuments streaming gate. Other application-specific future documents remain outside the release.

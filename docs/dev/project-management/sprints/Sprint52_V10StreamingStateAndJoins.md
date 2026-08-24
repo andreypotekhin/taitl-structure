@@ -1,6 +1,10 @@
 # Sprint 52: V10 Streaming State Stages and Join Contracts
 
-Status: planned; target: 2026-11-13.
+Status: completed with retained gates; closeout: 2026-08-22; planned target: 2026-11-13.
+
+Closeout: State-stage metadata, diagnostics, finite selected-value boundaries, and explicit cross/anti rejection were
+reconciled. Spark 3.5/4.0 parity and restart evidence remain unavailable, and SearchDocuments streaming remains
+design-gated.
 
 ## Sprint Goal
 

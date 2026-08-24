@@ -26,13 +26,18 @@ from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.expressions import literal
 from structure.plugin.pyspark.dsl.joins import TiePolicy
 from structure.plugin.pyspark.dsl.operations import (
-    CachePlan,
+    CheckpointPlan,
     DuplicateRowsPlan,
     OperationPlan,
     OrderedTimelineScanPlan,
     SelectedRowsPlan,
+    UnpersistPlan,
 )
-from structure.plugin.pyspark.dsl.operations.CacheOperations import cache, cache_operation, reserved_operations
+from structure.plugin.pyspark.dsl.operations.CacheOperations import (
+    cache_operation,
+    persist_operation,
+    reserved_operations,
+)
 from structure.plugin.pyspark.dsl.TimeWindow import TimeWindow
 from structure.plugin.pyspark.dsl.types import (
     ArrayType,
@@ -58,6 +63,40 @@ from structure.plugin.pyspark.dsl.windows.WindowSpec import WindowSpec
 class _LambdaBinding:
     def __repr__(self) -> str:
         return "<lambda-binding>"
+
+
+def persist(storage_level: object | None = None):
+    """Persist the current relation at the default or supplied Spark storage level."""
+    return _record_materialization("persist", persist_operation(storage_level))
+
+
+def cache():
+    """Persist the current relation at Spark's default storage level."""
+    return persist()
+
+
+def unpersist(*, blocking: bool = False):
+    """Release persistence for the current relation without truncating its lineage."""
+    if not isinstance(blocking, bool):
+        raise TypeError("unpersist(blocking=...) requires a Boolean")
+    return _record_materialization("unpersist", OperationPlan.unpersist_operation(UnpersistPlan(blocking)))
+
+
+def checkpoint(*, eager: bool = True):
+    """Checkpoint the current relation and truncate its logical lineage."""
+    if not isinstance(eager, bool):
+        raise TypeError("checkpoint(eager=...) requires a Boolean")
+    return _record_materialization("checkpoint", OperationPlan.checkpoint_operation(CheckpointPlan(eager)))
+
+
+def local_checkpoint(*, eager: bool = True):
+    """Checkpoint the current relation using executor-local storage."""
+    if not isinstance(eager, bool):
+        raise TypeError("local_checkpoint(eager=...) requires a Boolean")
+    return _record_materialization(
+        "local_checkpoint",
+        OperationPlan.local_checkpoint_operation(CheckpointPlan(eager)),
+    )
 
 
 def group_by(*keys: object, **named_keys: object) -> "GroupedRows":
@@ -2625,3 +2664,12 @@ def _context(call: str) -> SymbolicContext:
     if context is None:
         raise RuntimeError(f"{call} can only be used inside a compiled Structure step method")
     return context
+
+
+def _record_materialization(call: str, operation: OperationPlan):
+    context = _context(f"{call}(...)")
+    relation = context.default_project_source
+    if relation is None:
+        raise TypeError(f"{call}(...) requires a current relation")
+    context.operations.append(operation)
+    return relation

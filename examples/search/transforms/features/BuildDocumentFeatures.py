@@ -14,11 +14,8 @@ class BuildDocumentFeatures(Transform):
 
     @step(input=documents, output=document_features)
     def build(self, document: Document) -> DocumentFeatures:
-        return DocumentFeatures(
+        return DocumentFeatures.project(document)(
             document_id=document.id,
-            collection_id=document.collection_id,
-            source=document.source,
-            language=document.language,
             normalized_title=lower(trim(document.title)),
             normalized_content=lower(regexp_replace(trim(document.content), pattern=r"\s+", replacement=" ")),
             title_length=length(document.title),

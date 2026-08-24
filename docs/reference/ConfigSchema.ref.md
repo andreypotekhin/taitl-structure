@@ -127,6 +127,7 @@ Use a session or transform override only when the workflow intentionally needs a
 | `output_validation_mode` | `schema_only`, `schema_and_constraints` | Final-output validation depth |
 | `strict_performance` | Boolean | Reject unsupported opaque or row-wise fallbacks |
 | `warn_on_udfs` | Boolean | Warn when an opted-in Python UDF is used |
+| `warn_on_lineage_growth` | Boolean | Warn when repeated lazy relation reuse risks driver-side logical-plan growth |
 | `allow_stream_to_batch` | Boolean | Allow an undeclared downstream stream-to-batch boundary |
 
 ```python

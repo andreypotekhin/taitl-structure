@@ -86,9 +86,8 @@ class CreateSimilarityQueries(Transform):
         self._retain(policy, summary, term)
         query_id = concat_ws("", "document:", term.document_id)
         group_by(query_id=query_id, document_id=term.document_id)
-        return DocumentSimilarityQueryText(
+        return DocumentSimilarityQueryText.project(term)(
             query_id=query_id,
-            document_id=term.document_id,
             content_tokens=collect_list(term.term, order_by=term.term),
         )
 
@@ -99,10 +98,8 @@ class CreateSimilarityQueries(Transform):
         self._retain(policy, summary, term)
         query_id = concat_ws("", "section:", term.section_id)
         group_by(query_id=query_id, document_id=term.document_id, section_id=term.section_id)
-        return SectionSimilarityQueryText(
+        return SectionSimilarityQueryText.project(term)(
             query_id=query_id,
-            document_id=term.document_id,
-            section_id=term.section_id,
             content_tokens=collect_list(term.term, order_by=term.term),
         )
 
@@ -118,11 +115,8 @@ class CreateSimilarityQueries(Transform):
             section_id=term.section_id,
             paragraph_id=term.paragraph_id,
         )
-        return ParagraphSimilarityQueryText(
+        return ParagraphSimilarityQueryText.project(term)(
             query_id=query_id,
-            document_id=term.document_id,
-            section_id=term.section_id,
-            paragraph_id=term.paragraph_id,
             content_tokens=collect_list(term.term, order_by=term.term),
         )
 
@@ -139,12 +133,8 @@ class CreateSimilarityQueries(Transform):
             paragraph_id=term.paragraph_id,
             sentence_id=term.sentence_id,
         )
-        return SentenceSimilarityQueryText(
+        return SentenceSimilarityQueryText.project(term)(
             query_id=query_id,
-            document_id=term.document_id,
-            section_id=term.section_id,
-            paragraph_id=term.paragraph_id,
-            sentence_id=term.sentence_id,
             content_tokens=collect_list(term.term, order_by=term.term),
         )
 
@@ -166,34 +156,19 @@ class CreateSimilarityQueries(Transform):
 
     @step(input=document_query_text, output=document_queries)
     def publish_document_query_targets(self, query: DocumentSimilarityQueryText) -> DocumentSimilarityQuery:
-        return DocumentSimilarityQuery(query_id=query.query_id, document_id=query.document_id)
+        return DocumentSimilarityQuery.project(query)
 
     @step(input=section_query_text, output=section_queries)
     def publish_section_query_targets(self, query: SectionSimilarityQueryText) -> SectionSimilarityQuery:
-        return SectionSimilarityQuery(
-            query_id=query.query_id,
-            document_id=query.document_id,
-            section_id=query.section_id,
-        )
+        return SectionSimilarityQuery.project(query)
 
     @step(input=paragraph_query_text, output=paragraph_queries)
     def publish_paragraph_query_targets(self, query: ParagraphSimilarityQueryText) -> ParagraphSimilarityQuery:
-        return ParagraphSimilarityQuery(
-            query_id=query.query_id,
-            document_id=query.document_id,
-            section_id=query.section_id,
-            paragraph_id=query.paragraph_id,
-        )
+        return ParagraphSimilarityQuery.project(query)
 
     @step(input=sentence_query_text, output=sentence_queries)
     def publish_sentence_query_targets(self, query: SentenceSimilarityQueryText) -> SentenceSimilarityQuery:
-        return SentenceSimilarityQuery(
-            query_id=query.query_id,
-            document_id=query.document_id,
-            section_id=query.section_id,
-            paragraph_id=query.paragraph_id,
-            sentence_id=query.sentence_id,
-        )
+        return SentenceSimilarityQuery.project(query)
 
     @step(
         input=[document_search_queries, section_search_queries, paragraph_search_queries, sentence_search_queries],

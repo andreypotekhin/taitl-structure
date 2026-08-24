@@ -13,6 +13,7 @@ Below is an index for published diagnostic codes. For the full diagnostic contra
 | DSL-E0402 | error | Invalid transform structure | Check decoration, annotations, schema flow, and output fields. |
 | DSL-E0404 | error | Ignored compiler code reached | Keep ignored code outside compiled logic, or use a UDF or explicit hook for intentional runtime execution. |
 | DSL-W0403 | warning | Python UDF is optimizer-opaque | Keep intentional UDFs or set `warn_on_udfs = false`. |
+| PYSPARK-W2701 | warning | PySpark lazy lineage is growing through repeated reuse | Fusion may diminish one multiplier, but it does not bound recursive lineage. Add `checkpoint()` or `local_checkpoint()` before reusing the expanded relation, or restructure around a stable base relation; `cache()` and `persist()` alone do not truncate logical lineage. See the [driver-heap gotcha](troubleshooting/memory/spark_driver_heap_oom.gotcha.md). |
 | SCHEMA-E0301 | error | Nullable expression assigned to non-nullable field | Guard the value or provide a non-null default. |
 | SCHEMA-E0302 | error | Explicit conversion required | Use an explicit conversion helper such as `to_decimal(...)`. |
 | SCHEMA-E0303 | error | Incompatible output field type | Use a compatible expression type or explicit conversion. |
@@ -66,6 +67,16 @@ See [Diagnostics.md](background/Diagnostics.back.md#dsl-e0404).
 
 ### DSL-W0403
 See [Diagnostics.md](background/Diagnostics.back.md#dsl-w0403).
+
+### PYSPARK-W2701
+See [the driver-heap gotcha](troubleshooting/memory/spark_driver_heap_oom.gotcha.md) and the developer [Memory specification](dev/specifications/Memory.spec.md).
+
+The warning uses three distinct remedies. **Diminish** means Structure fused an eligible projection-union branch and
+reduced one measured lineage multiplier; the remaining self-join can still grow exponentially. **Bound** means an
+explicit `checkpoint()` or `local_checkpoint()` truncates the logical lineage at the selected source position.
+**Remove** means the user restructures the algorithm so each round uses a stable base relation or another equivalent
+bounded reduction. A cache, persist, alias, Python variable, or temporary view is not a lineage boundary, and a larger
+driver heap only postpones the threshold.
 
 ### SCHEMA-E0301
 See [Diagnostics.md](background/Diagnostics.back.md#schema-e0301).

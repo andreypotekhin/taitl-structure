@@ -1,10 +1,11 @@
-# Transform Notation
-Structure Transform Notation is math formula-like notation for Structure transforms 
+# Structure Formula Notation
+Structure Formula Notation is math formula-like notation for Structure transforms 
 and their parts: inputs, outputs, stages and steps, as well as stage and step method
 arguments and return types.
 The goal is leverage LaTex formatting for compact display of Structure transforms. 
 
 In this notation
+- fields are displayed as vector components, 
 - methods are displayed as math functions, 
 - method arguments as function arguments,
 - method arguments types as :Type annotation on function argument, 
@@ -14,6 +15,7 @@ In this notation
 
 ## Style tips
 - Include line heights (e.g. \\[12pt]) if needed to prevent overlapping. 
+- Escape every underscore in displayed identifiers as `\\_`; formulas use no subscripts.
 
 ## Notation Variants
 Notation comes as default notation and variants
@@ -24,6 +26,8 @@ Notation comes as default notation and variants
     - omit_argument_types omits function argument types 
     - omit_input_names omits type annotations (left part and colon from 'name : Type' pair) from transform input vector  
     - omit_input_types omits type annotations (right part of 'name : Type' pair) from transform input vector  
+    - omit_names omits names in schema notation  
+    - omit_types omits type annotations in schema notation  
 - Combination variants 
   - Ex: Variant 'compact' is a combination of all omit_: omit_argument_names, omit_return_types, omit_input_output_names
 - Bracing variants
@@ -34,31 +38,101 @@ Notation comes as default notation and variants
   e.g. on a dedicated line/paragraph, as opposed to be shown as part of a bigger construct.  
   By default, it is 'default', but can be additionally specified per-section below. 
 
+## Schema Notation
+Structure notation for schema classes.
+
+### Schema Notation - Default
+Field name vector without type annotations
+
+\begin{pmatrix}
+x \\
+y \\
+z 
+\end{pmatrix}
+
+### Schema Notation - With Types
+Field vector with type annotations
+
+\begin{pmatrix}
+x : X \\
+y : Y \\
+z : Z
+\end{pmatrix}
+
+### Schema Notation - With Name
+Notation for defining a schema class.
+
+\operatorname{SchemaClass} : \begin{pmatrix}
+x \\
+y \\
+z
+\end{pmatrix}
+
+### Schema Notation - With Projection
+Schema class created as projection of another class or classes.
+Based on 'Schema Notation - With Name' but omits the projected fields. 
+Used to describe step method return value obtained as a projection (.project() or .base()). 
+In such case, only non-projected (new/unique) fields are shown.
+
+\operatorname{SchemaClass} : \begin{pmatrix}
+\vdots \\
+z
+\end{pmatrix}
+
+### Schema Notation Variants
+The variants are as described in 'Notation Variants':
+- omit_names: with_types, omit names
+- omit_types
+- with_name: defined in 'Schema Notation - With Name' above
+- with_projection: defined in 'Schema Notation - With Projection' above
+- default: omit_types 
+- compact: default
+- canonic: default
+
 ## Step Method Notation
 Use single-argument/multi-argument notation depending on the number of arguments.
 
-### Step Method Notation - Single
+### Step Method Notation - Single-Argument
+Notation for single-argument step methods
 \operatorname{func}(x: X) \rightarrow A
 
 ### Step Method Notation - Horizontal
 \operatorname{func}(x: X, z : Z) \rightarrow A
 
 ### Step Method Notation - Vertical
-\operatorname{func3}\begin{pmatrix} x : X \\ z : Z \end{pmatrix} \rightarrow B
+Notation for a multi-argument methods
+\operatorname{func3}\!\begin{pmatrix} x : X \\ z : Z \end{pmatrix} \rightarrow B
+
+### Step Method Notation - Multiple Return Values
+Notation for a multiple return value methods. Uses a vector to show return types.
+Ex (for vertical notation):
+\operatorname{func3}\!\begin{pmatrix} x : X \\ z : Z \end{pmatrix} \rightarrow \begin{pmatrix} B \\ C \end{pmatrix}
 
 ### Step Method Notation - Colon
-Characterized by a colon sign (' : ') after first operator 
-
-Ex (for vertical notation):
+Fancy colon (' : ') after operator. 
+Ex:
 \operatorname{func3} : \begin{pmatrix} x : X \\ z : Z \end{pmatrix} \rightarrow B
 
-#### Step Method Notation Variants
+### Step Method Notation - Return Schema Definitions
+Use with_projection variant of schema notation for the schemas of return types. 
+Ex:
+\operatorname{func3}\!\begin{pmatrix} x : X \\ z : Z \end{pmatrix} \rightarrow B : \begin{pmatrix} c \\ d \end{pmatrix} 
+
+### Step Method Notation Variants
 The variants are as described in 'Notation Variants' section:
 - omit_argument_names
 - omit_argument_types
 - omit_return_types
+- single_argument
+- vertical
+- multiple_return_values
+- return_schema_definitions: 'Step Method Notation - Return Schema Definitions'
 - compact
-- canonic: (single or vertical) + colon
+- default: (single_argument or vertical) + multiple_return_values
+- canonic: default + omit_argument_names + return_schema_definitions
+
+The canonic step-method form omits argument names and the separating colons, but retains each argument's schema
+type. Its return schema retains the schema name and field names while omitting field type annotations.
 
 ## Step Transform Notation
 Notation for a transform with step methods. 
@@ -84,7 +158,49 @@ b : B \\
 c : C
 \end{pmatrix}
 
-## Step Transform Notation - Variants
+### Step Transform Notation - With Name
+Notation for defining a transform.
+Based on default notation, preceded with transform name.
+
+\operatorname{TransformClassName} : \begin{pmatrix}
+x : X \\
+y : Y \\
+z : Z
+\end{pmatrix}
+\begin{Bmatrix}
+\operatorname{func1}(x : X) \rightarrow D \\
+\operatorname{func2}(y : Y) \rightarrow A \\
+\operatorname{func3}\begin{pmatrix} x : X \\ z : Z \end{pmatrix} \rightarrow B
+\end{Bmatrix}
+\rightarrow
+\begin{pmatrix}
+a : A \\
+b : B \\
+c : C
+\end{pmatrix}
+
+### Step Transform Notation - As a Call
+Notation for displaying a transform as a stage of a bigger transform. 
+Based on 'With Name' notation, without colon and smaller space to inputs vector.
+
+\operatorname{TransformClassName}\!\begin{pmatrix}
+x : X \\
+y : Y \\
+z : Z
+\end{pmatrix}
+\begin{Bmatrix}
+\operatorname{func1}(x : X) \rightarrow D \\
+\operatorname{func2}(y : Y) \rightarrow A \\
+\operatorname{func3}\begin{pmatrix} x : X \\ z : Z \end{pmatrix} \rightarrow B
+\end{Bmatrix}
+\rightarrow
+\begin{pmatrix}
+a : A \\
+b : B \\
+c : C
+\end{pmatrix}
+
+### Step Transform Notation - Variants
 The variants are as described in 'Notation Variants' and above sections:
 - omit_input_names
 - omit_output_names
@@ -92,9 +208,11 @@ The variants are as described in 'Notation Variants' and above sections:
 - omit_argument_names
 - omit_argument_types
 - omit_return_types
-- omit_odot: omit \odot sign 
+- omit_odot: omit \odot sign
+- with_name: 'Step Transform Notation - With Name'
+- as_call: 'Step Transform Notation - As a Call'
 - compact
-- canonic: omit_input_output_names, omit_argument_names, omit_argument_types, omit_return_types, omit_odot   
+- canonic: with_name, omit_input_output_names, omit_argument_names, omit_return_types, omit_odot   
 
 ## Stage Notation
 Notation for a transform which serves as a stage in a bigger transform.
@@ -104,21 +222,6 @@ Notation is used for both for standalone display of a stage as well as displayin
 Stage name followed by a colon, followed by inputs vector, arrow, followed by outputs vector.
 
 \operatorname{Stage} : \begin{pmatrix}
-x : X \\
-y : Y \\
-z : Z
-\end{pmatrix}
-\rightarrow
-\begin{pmatrix}
-a : A \\
-b : B \\
-c : C
-\end{pmatrix}
-
-### Stage Notation - Assigned:
-Same as default but with 'assigned to variable' notation on the left
-
-s = \operatorname{Stage} : \begin{pmatrix}
 x : X \\
 y : Y \\
 z : Z
@@ -151,6 +254,41 @@ b : B \\
 c : C
 \end{pmatrix}
 
+### Stage Notation - Assigned:
+Same as the default but with 'assigned to variable' notation on the left
+
+s = \operatorname{Stage}\!\begin{pmatrix}
+x : X \\
+y : Y \\
+z : Z
+\end{pmatrix}
+\rightarrow
+\begin{pmatrix}
+a : A \\
+b : B \\
+c : C
+\end{pmatrix}
+
+### Stage Notation - Assigned With Steps:
+Same as the 'Stage Notation - With Steps' but with 'assigned to variable' notation on the left
+
+s = \operatorname{Stage}\!\begin{pmatrix}
+x : X \\
+y : Y \\
+z : Z
+\end{pmatrix}
+\begin{Bmatrix}
+\operatorname{func1}(x : X) \rightarrow D \\
+\operatorname{func2}(y : Y) \rightarrow A \\
+\operatorname{func3}\begin{pmatrix} x : X \\ z : Z \end{pmatrix} \rightarrow B
+\end{Bmatrix}
+\rightarrow
+\begin{pmatrix}
+a : A \\
+b : B \\
+c : C
+\end{pmatrix}
+
 ### Stage Notation Variants
 The variants are as described in 'Notation Variants' section:
 - omit_input_names
@@ -165,7 +303,7 @@ The variants are as described in 'Notation Variants' section:
 ## Stage Transform Notation
 A stage transform (workflow transform) is a transform which has one or several other transforms serving as its stages.
 
-## Stage Transform Notation - Default
+### Stage Transform Notation - Default
 Stage transform (workflow transform) notation includes:
 - Inputs vector: transform inputs as 'name: Type' pairs
 - Stage 'assigned' notation for each stage
@@ -182,33 +320,32 @@ Stage transform (workflow transform) notation includes:
 & \begin{pmatrix} u : U \\ v : V \\ w : W \end{pmatrix}
 \end{aligned}
 
-## Stage Transform Notation - Canonic
-Canonic notation combines the default Stage Transform Notation with 'With Steps' notation for stages, 
-and features outputs assignments:
-- Stages: 'Stage Notation - With Steps' with: 
+### Stage Transform Notation - Canonic
+Canonic notation combines the default Stage Transform Notation with 'With Steps' notation for stages,
+and features typed outputs without value assignments:
+- Stages: 'Stage Notation - Assigned With Steps' with: 
   - with_steps
   - omit_argument_names
   - omit_argument_types
   - omit_return_types
   - omit_input_output_types
-- Outputs:
-  - The outputs vector shows value assignments after type annotation. 
+- Outputs: the outputs vector shows name : Type pairs without value assignments.
 
 \begin{aligned}
 & \begin{pmatrix} x : X \\ y : Y \\ z : Z \end{pmatrix} \\
-& s1 = \operatorname{Stage}1 : \begin{pmatrix} x \\ y \\ z \end{pmatrix}
+& s1 = \operatorname{Stage}1\!\begin{pmatrix} x \\ y \\ z \end{pmatrix}
 \begin{Bmatrix} \operatorname{func11} \\ \operatorname{func12} \\ \operatorname{func13} \end{Bmatrix}
 \rightarrow \begin{pmatrix} a \\ b \\ c \end{pmatrix} \\
-& s2 = \operatorname{Stage}2 : \begin{pmatrix} a \\ b \\ c \end{pmatrix} 
+& s2 = \operatorname{Stage}2\!\begin{pmatrix} a \\ b \\ c \end{pmatrix} 
 \begin{Bmatrix} \operatorname{func21} \\ \operatorname{func22} \\ \operatorname{func23} \end{Bmatrix}
 \rightarrow \begin{pmatrix} d \\ e \\ f \end{pmatrix} \\
-& s3 = \operatorname{Stage}3 : \begin{pmatrix} d \\ e \\ f \end{pmatrix} 
+& s3 = \operatorname{Stage}3\!\begin{pmatrix} d \\ e \\ f \end{pmatrix} 
 \begin{Bmatrix} \operatorname{func31} \\ \operatorname{func32} \\ \operatorname{func33} \end{Bmatrix}
 \rightarrow \begin{pmatrix} u \\ v \\ w \end{pmatrix} \\
-& \begin{pmatrix} u : U = s3.u \\ v : V = s3.v \\ w : W = s3.w \end{pmatrix}
+& \begin{pmatrix} u : U \\ v : V \\ w : W \end{pmatrix}
 \end{aligned}
 
-## Stage Transform Notation - Variants
+### Stage Transform Notation - Variants
 The variants are as described in 'Notation Variants' section:
 - omit_input_names
 - omit_input_types
@@ -218,3 +355,25 @@ The variants are as described in 'Notation Variants' section:
 - omit_input_output_types
 - compact: omit_input_output_names
 - canonic 
+
+## Form-document application rules
+When applying this notation in a .form.md counterpart to a combined document:
+
+- Keep the Inputs, Outputs, and Stages sections in their source text form; formulas are applied to the individual
+  step methods, standalone transforms, and the workflow transform.
+- Use the canonic step-method form: omit method argument names and separating colons while retaining argument schema
+  types; omit field type annotations in the result schema definition while retaining its schema name and field names.
+- Use the canonic step-transform form for each standalone Resulting transform shape: retain the transform name and
+  colon, place the input vector on the left, the step-method vector in the middle, and the output vector on the
+  right. Omit \odot in canonic notation.
+- Use Stage Notation - Assigned With Steps for stages in a canonic workflow: assign each stage with stage =, use \!
+  after the stage name, omit the stage-name colon, and show stage inputs and outputs by name only. Omit the workflow
+  transform name; show workflow inputs and final workflow outputs as name : Type pairs without value assignments.
+- Separate consecutive standalone step formulas with a dedicated full \\ row rather than adjusting the line height
+  of the leading formula's final row; use a smaller gap such as \\[2pt] between methods inside a dense workflow
+  method vector.
+- Do not add threshold-based line breaks inside step-method formulas; keep the method call, arrow, and return schema in
+  one formula flow. Matrix components may remain on their own natural rows.
+- Add vertical spacing such as \\[12pt] between workflow stages when the stage formulas are dense.
+- Do not repeat the Resulting transform shape: label in the workflow's Result section when the formula is already
+  established by the preceding transform sections.

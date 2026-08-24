@@ -322,6 +322,7 @@ trees and source locations for troubleshooting.
 ```toml
 strict_performance = true
 warn_on_udfs = true
+warn_on_lineage_growth = true
 allow_pandas_udf = false
 allow_rdd = false
 allow_collect = false

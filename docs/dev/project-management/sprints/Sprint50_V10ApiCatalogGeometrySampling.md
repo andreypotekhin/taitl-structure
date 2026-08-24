@@ -1,6 +1,9 @@
 # Sprint 50: V10 API Catalog Contracts, Geometry, and Sampling
 
-Status: planned; target: 2026-10-16.
+Status: completed; closeout: 2026-08-22; planned target: 2026-10-16.
+
+Closeout: Geometry, sampling, scalar generators, and the selected API Catalog dispositions were implemented or
+explicitly gated. Optional-provider and live target evidence remain outside the local closeout evidence.
 
 ## Sprint Goal
 

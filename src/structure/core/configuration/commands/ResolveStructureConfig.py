@@ -33,6 +33,7 @@ class ResolveStructureConfig:
         "output_validation_mode",
         "strict_performance",
         "warn_on_udfs",
+        "warn_on_lineage_growth",
         "allow_stream_to_batch",
         "stream_to_batch_policy",
         "allow_output_to_input",

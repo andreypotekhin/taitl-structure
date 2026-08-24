@@ -2,6 +2,7 @@ from structure.plugin.pyspark.dsl.operations.CachePlan import CachePlan
 from structure.plugin.pyspark.dsl.operations.DuplicateRowsPlan import DuplicateRowsPlan
 from structure.plugin.pyspark.dsl.operations.ExactlyOnePlan import ExactlyOnePlan
 from structure.plugin.pyspark.dsl.operations.MapGeneratorPlan import MapGeneratorPlan
+from structure.plugin.pyspark.dsl.operations.MaterializationPlan import CheckpointPlan, PersistPlan, UnpersistPlan
 from structure.plugin.pyspark.dsl.operations.OperationCapability import OperationCapability
 from structure.plugin.pyspark.dsl.operations.OperationCardinality import OperationCardinality
 from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
@@ -24,12 +25,14 @@ from structure.plugin.pyspark.dsl.operations.WatermarkPlan import WatermarkPlan
 
 __all__ = [
     "CachePlan",
+    "CheckpointPlan",
     "DuplicateRowsPlan",
     "ExactlyOnePlan",
     "OperationCapability",
     "OperationCardinality",
     "OperationPlan",
     "MapGeneratorPlan",
+    "PersistPlan",
     "OrderedTimelineScanPlan",
     "PosexplodeStructPlan",
     "ScalarGeneratorPlan",
@@ -43,6 +46,7 @@ __all__ = [
     "RelationSamplePlan",
     "RelationSetPlan",
     "SelectedRowsPlan",
+    "UnpersistPlan",
     "StreamingOutputMode",
     "StreamingSupport",
     "WatermarkPlan",

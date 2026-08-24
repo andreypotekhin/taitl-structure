@@ -10,7 +10,7 @@ from examples.search.schemas.inference import (
 )
 from examples.search.transforms.lib.Vectors import Vectors
 from structure import Transform, input, output, step
-from structure.plugin.pyspark import array_repeat, coalesce, param_join, require_all, where
+from structure.plugin.pyspark import array_repeat, coalesce, param_join, require_all, types, where
 
 
 class PublishQueryInference(Transform):
@@ -26,9 +26,8 @@ class PublishQueryInference(Transform):
         param_join(policy)
         where((result.status == "success") & result.vector.is_not_null())
         require_all(Vectors.valid_vector(result.vector, policy.dimension))
-        return SearchQueryVectorEmbedding(
-            query_id=result.query_id,
-            vector=coalesce(result.vector, array_repeat(0.0, policy.dimension)),
+        return SearchQueryVectorEmbedding.project(result)(
+            vector=coalesce(result.vector, array_repeat(0.0, policy.dimension.cast(types.integer()))),
             model_id=policy.model_id,
             dimension=policy.dimension,
             content_revision=policy.content_revision,
@@ -63,9 +62,8 @@ class PublishDocumentInference(Transform):
         param_join(policy)
         where((result.status == "success") & result.vector.is_not_null())
         require_all(Vectors.valid_vector(result.vector, policy.dimension))
-        return DocumentVectorEmbedding(
-            document_id=result.document_id,
-            vector=coalesce(result.vector, array_repeat(0.0, policy.dimension)),
+        return DocumentVectorEmbedding.project(result)(
+            vector=coalesce(result.vector, array_repeat(0.0, policy.dimension.cast(types.integer()))),
             model_id=policy.model_id,
             dimension=policy.dimension,
             content_revision=policy.content_revision,

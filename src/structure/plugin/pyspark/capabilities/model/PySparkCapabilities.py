@@ -30,6 +30,15 @@ PYSPARK_4_CAPABILITIES = frozenset(
     }
 )
 PYSPARK_4_2_CAPABILITIES = frozenset({("expression", "is_valid_variant")})
+MATERIALIZATION_CAPABILITIES = frozenset(
+    {
+        ("optimization", "persist"),
+        ("optimization", "unpersist"),
+        ("optimization", "checkpoint"),
+        ("optimization", "local_checkpoint"),
+    }
+)
+MATERIALIZATION_PROFILES = frozenset({">=3.5,<4.1", ">=3.5,<4.0", ">=4.0,<4.1"})
 VARIANT_FAMILIES = {
     "ordinary": "ordinary_pyspark",
     "spark-connect": "spark_connect_dataframe",
@@ -47,6 +56,7 @@ COMMON_CAPABILITIES = frozenset(
         ("expression", "null_safe_equality"),
         ("expression", "cast"),
         ("expression", "python_udf"),
+        ("expression", "rand"),
         ("relation", "exactly_one"),
         ("expression", "standard_helper_call"),
         ("pyspark", "ordered_timeline_scan"),
@@ -273,9 +283,11 @@ class PySparkCapabilities:
         if explicit is not None:
             return base_capabilities
         if target_profile == ">=4.0,<4.1":
-            return base_capabilities | PYSPARK_4_CAPABILITIES
-        if target_profile == ">=4.2,<4.3":
-            return base_capabilities | PYSPARK_4_CAPABILITIES | PYSPARK_4_2_CAPABILITIES
+            base_capabilities = base_capabilities | PYSPARK_4_CAPABILITIES
+        elif target_profile == ">=4.2,<4.3":
+            base_capabilities = base_capabilities | PYSPARK_4_CAPABILITIES | PYSPARK_4_2_CAPABILITIES
+        if self.id.variant == "ordinary" and target_profile in MATERIALIZATION_PROFILES:
+            base_capabilities |= MATERIALIZATION_CAPABILITIES
         return base_capabilities
 
     def supports(self, requirement: CapabilityRequirement) -> CapabilityDecision:

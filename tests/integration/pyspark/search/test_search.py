@@ -128,6 +128,13 @@ from examples.search.schemas.indexing.vector import (
     VectorEmbedding,
     VectorIndexPolicy,
 )
+from examples.search.schemas.inference import (
+    DocumentInferenceResult,
+    DocumentInferenceStatus,
+    InferencePolicy,
+    QueryInferenceResult,
+    QueryInferenceStatus,
+)
 from examples.search.schemas.label import (
     Intent,
     IntentPattern,
@@ -162,6 +169,7 @@ from examples.search.schemas.scoring.intermediate import (
     QueryTermIdf,
     QueryToken,
     ScoreQueryAvailability,
+    ScoringTargetGroup,
     SectionOverlapMatch,
     SentenceOverlapMatch,
 )
@@ -328,6 +336,7 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         QueryIdfTotal,
         QueryTerm,
         QueryTermCount,
+        ScoringTargetGroup,
         QueryTermIdf,
         ScoreQueryAvailability,
         PopularQueryCandidate,
@@ -464,6 +473,13 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         RelevancePolicy,
         QueryDocumentSignals,
         DocumentPopularity,
+    ],
+    "examples.search.schemas.inference": [
+        InferencePolicy,
+        QueryInferenceResult,
+        DocumentInferenceResult,
+        QueryInferenceStatus,
+        DocumentInferenceStatus,
     ],
     "examples.search.schemas.relevance_signals.build": [
         ContextDailyImpressions,
@@ -1300,6 +1316,7 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             sentence_terms=generated_index.sentence_terms,
             sentence_summary=generated_index.sentence_summary,
             score_policy=score_policy,
+            **_empty_vector_scoring_inputs(spark),
         )
         online_scores = Scoring(**search_inputs).run(session(spark, execution_mode="online"))
         generated_scores = Scoring(**search_inputs).run(
@@ -1384,6 +1401,7 @@ def test_search_ranks_fixture_sentences_online_and_generated(spark, tmp_path) ->
                 [(30, datetime(2026, 7, 21), datetime(2026, 7, 21), 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0)],
                 search_schemas.SCORE_POLICY_SCHEMA,
             ),
+            **_empty_vector_scoring_inputs(spark),
         ).run(session(spark, execution_mode="generated", generated_package=PACKAGE))
 
         inputs = dict(
@@ -1522,6 +1540,7 @@ def test_passage_search_ranks_paragraphs_with_same_section_context(spark, tmp_pa
                 [(30, datetime(2026, 7, 22), datetime(2026, 7, 22), 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0)],
                 search_schemas.SCORE_POLICY_SCHEMA,
             ),
+            **_empty_vector_scoring_inputs(spark),
         ).run(session(spark, execution_mode="generated", generated_package=PACKAGE))
 
         inputs = dict(
@@ -1661,7 +1680,7 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
         vector_schemas = __import__(
             f"{PACKAGE}.pyspark.schemas.indexing_vector",
             fromlist=[
-                "DOCUMENT_SEARCH_VECTOR_EMBEDDING_SCHEMA",
+                "SEARCH_QUERY_VECTOR_EMBEDDING_SCHEMA",
                 "DOCUMENT_VECTOR_INDEX_SCHEMA",
                 "PARAGRAPH_VECTOR_INDEX_SCHEMA",
                 "PARAGRAPH_VECTOR_QUERY_SCHEMA",
@@ -1711,14 +1730,14 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
         index = _run_indexing(spark, documents, segments.sentences, execution_mode="generated", generated_package=PACKAGE)
         scored_at = datetime(2026, 7, 21)
         document_score_rows = [
-            (query_id, cast(str, row[0]), None, scored_at, scores[cast(str, row[0])])
+            (query_id, cast(str, row[0]), "all-scoring-targets-v1", None, scored_at, scores[cast(str, row[0])])
             for query_id in ("q-free-form", "q-navigation")
             for row in _search_documents()
         ]
         document_scores = spark.createDataFrame(document_score_rows, search_schemas.DOCUMENT_SCORE_SCHEMA)
         document_overlap_scores = spark.createDataFrame(
             [
-                (query_id, cast(str, row[0]), scored_at, scores[cast(str, row[0])])
+                (query_id, cast(str, row[0]), "all-scoring-targets-v1", scored_at, scores[cast(str, row[0])])
                 for query_id in ("q-free-form", "q-navigation")
                 for row in _search_documents()
             ],
@@ -1751,7 +1770,7 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
             queries=queries,
             documents=documents,
             document_scores=document_scores,
-            document_vector_scores=spark.createDataFrame([], search_schemas.DOCUMENT_VECTOR_SCORE_SCHEMA),
+            document_vector_scores=spark.createDataFrame([], vector_schemas.DOCUMENT_VECTOR_SCORE_SCHEMA),
             streamed_documents=spark.createDataFrame([], text_schemas.DOCUMENT_SCHEMA),
             streamed_document_scores=spark.createDataFrame([], search_schemas.DOCUMENT_SCORE_SCHEMA),
             document_overlap_scores=document_overlap_scores,
@@ -1767,7 +1786,7 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
                 search_schemas.GAP_POLICY_SCHEMA,
             ),
             document_vector_embeddings=spark.createDataFrame(
-                [], vector_schemas.DOCUMENT_SEARCH_VECTOR_EMBEDDING_SCHEMA
+                [], vector_schemas.SEARCH_QUERY_VECTOR_EMBEDDING_SCHEMA
             ),
             document_vector_index=spark.createDataFrame([], vector_schemas.DOCUMENT_VECTOR_INDEX_SCHEMA),
             vector_policy=spark.createDataFrame(
@@ -1776,7 +1795,9 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
             ),
             inference_policy=spark.createDataFrame(
                 [("default", "fixture-embed", "default-v1", "rev-1", 3, "search-v1", scored_at)],
-                __import__(f"{PACKAGE}.pyspark.schemas.inference", fromlist=["INFERENCE_POLICY_SCHEMA"]).INFERENCE_POLICY_SCHEMA,
+                __import__(
+                    f"{PACKAGE}.pyspark.schemas.inference", fromlist=["INFERENCE_POLICY_SCHEMA"]
+                ).INFERENCE_POLICY_SCHEMA,
             ),
             requests=spark.createDataFrame(
                 [
@@ -1875,6 +1896,29 @@ def _run_indexing(spark, documents, sentences, *, execution_mode: str, generated
         field_profiles=field_profiles,
         analyzer_policies=analyzer_policies,
     ).run(session(spark, execution_mode=execution_mode, generated_package=generated_package))
+
+
+def _empty_vector_scoring_inputs(spark) -> dict[str, object]:
+    vector_schemas = __import__(
+        f"{PACKAGE}.pyspark.schemas.indexing_vector",
+        fromlist=[
+            "DOCUMENT_VECTOR_QUERY_SCHEMA",
+            "DOCUMENT_VECTOR_INDEX_SCHEMA",
+            "PARAGRAPH_VECTOR_QUERY_SCHEMA",
+            "PARAGRAPH_VECTOR_INDEX_SCHEMA",
+            "VECTOR_INDEX_POLICY_SCHEMA",
+        ],
+    )
+    return {
+        "document_vector_queries": spark.createDataFrame([], vector_schemas.DOCUMENT_VECTOR_QUERY_SCHEMA),
+        "document_vector_index": spark.createDataFrame([], vector_schemas.DOCUMENT_VECTOR_INDEX_SCHEMA),
+        "paragraph_vector_queries": spark.createDataFrame([], vector_schemas.PARAGRAPH_VECTOR_QUERY_SCHEMA),
+        "paragraph_vector_index": spark.createDataFrame([], vector_schemas.PARAGRAPH_VECTOR_INDEX_SCHEMA),
+        "vector_policy": spark.createDataFrame(
+            [("fixture-embed", 3, "rev-1", "search-v1", 1000, 60)],
+            vector_schemas.VECTOR_INDEX_POLICY_SCHEMA,
+        ),
+    }
 
 
 def _timestamp(value: str) -> datetime | None:

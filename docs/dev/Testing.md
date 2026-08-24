@@ -380,3 +380,4 @@ smoke tests belong under `tests/integration/pyspark/backend`, shared live-backen
 
 Versioned integration fixture data belongs under `res/testing/data`. For example, the v1 orders integration scenario
 uses CSV files from `res/testing/data/v1/orders`.
+

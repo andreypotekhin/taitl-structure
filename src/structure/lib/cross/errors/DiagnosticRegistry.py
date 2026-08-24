@@ -22,6 +22,7 @@ class DiagnosticRegistry:
         "IR",
         "JOIN",
         "ONLINE",
+        "PYSPARK",
         "REL",
         "SCHEMA",
         "STREAM",

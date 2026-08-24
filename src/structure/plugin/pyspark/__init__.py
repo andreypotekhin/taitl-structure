@@ -140,7 +140,7 @@ if TYPE_CHECKING:
 
 
 _DSL_EXPORTS = """
-AsOf BinaryType CsvOptions DecimalType Join JoinDedupe JoinHint JoinStrategy JsonOptions OverlapPolicy StreamingOutputMode TiePolicy abs acos add_months base64 bround
+AsOf BinaryType CsvOptions DecimalType Join JoinDedupe JoinHint JoinStrategy JsonOptions OverlapPolicy StreamingOutputMode TiePolicy abs acos add_months base64 bround cache checkpoint local_checkpoint persist unpersist
 approx_count_distinct approx_percentile arr_aggregate arr_append arr_compact arr_distinct arr_exists arr_filter
 arr_flatten arr_forall arr_position arr_prepend arr_reverse arr_insert arr_remove arr_sort arr_sort_by arr_transform
 arr_zip_with array array_contains array_except array_intersect array_repeat array_union avg as_of_one bool_and bool_or
@@ -152,7 +152,7 @@ isnotnull isnull is_grouped kurtosis lag left_join latest_by lead lookup_join la
 ltrim log limit md5 map_entries map_concat map_contains_key map_filter map_from_entries map_keys map_transform_keys
 map_transform_values map_values map_zip_with max min minute mode month nanvl nvl nvl2 nullif pow not_exists nth_value
 ntile offset order_by param_join percent_rank percentile posexplode_array posexplode_outer_array posexplode_struct posexplode_outer_struct posexplode_map posexplode_outer_map explode_array explode_outer_array explode_struct explode_outer_struct explode_map explode_outer_map inline_struct inline_outer_struct variant_explode variant_explode_outer preceding project rank range_between relation_alias regexp_extract regexp_replace require_all require_parent_hierarchy require_reference require_unique hierarchy_closure hierarchy_fallbacks reverse rtrim round
-sample select_first_qualified signum slice sha1 sha2 second right_join rollup row_number rowset_join rows_between rolling_avg rolling_max
+sample select_first_qualified signum slice sha1 sha2 second rand right_join rollup row_number rowset_join rows_between rolling_avg rolling_max
 rolling_min rolling_sum scan subtract sum stddev sqrt size sequence session_window skewness split translate substring temporal_one next_day
 to_csv to_decimal to_date to_json to_timestamp TimeWindow trim trunc try_element_at unbase64 union_all union_by_name upper unbounded_following unbounded_preceding
 variance when year xxhash64 zeroifnull where watermark window window_avg window_bool_and window_bool_or rpad
@@ -329,6 +329,7 @@ __all__ = [  # noqa: F405
     "nvl2",
     "nullif",
     "pow",
+    "rand",
     "not_exists",
     "nth_value",
     "ntile",
@@ -465,6 +466,11 @@ __all__ = [  # noqa: F405
     "intersects",
     "contains",
     "within",
+    "cache",
+    "persist",
+    "unpersist",
+    "checkpoint",
+    "local_checkpoint",
 ]
 
 

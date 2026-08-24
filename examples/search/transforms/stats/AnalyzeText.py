@@ -58,12 +58,8 @@ class AnalyzeText(Transform):
             ordinal=sentence.ordinal,
         )
         term_count = max(term.target_term_count)
-        return SentenceStatistics(
+        return SentenceStatistics.project(sentence)(
             sentence_id=sentence.id,
-            document_id=sentence.document_id,
-            paragraph_id=sentence.paragraph_id,
-            section_id=sentence.section_id,
-            ordinal=sentence.ordinal,
             word_count=term_count,
             distinct_words=max(term.target_distinct_term_count),
             average_word_length=max(term.target_average_term_length),
@@ -88,11 +84,8 @@ class AnalyzeText(Transform):
             ordinal=paragraph.ordinal,
         )
         term_count = max(term.target_term_count)
-        return ParagraphStatistics(
+        return ParagraphStatistics.project(paragraph)(
             paragraph_id=paragraph.id,
-            document_id=paragraph.document_id,
-            section_id=paragraph.section_id,
-            ordinal=paragraph.ordinal,
             word_count=term_count,
             sentence_count=count_distinct(sentence.id),
             average_word_length=max(term.target_average_term_length),
@@ -121,9 +114,8 @@ class AnalyzeText(Transform):
             heading=materialized_section.heading,
         )
         term_count = max(term.target_term_count)
-        return SectionStatistics(
+        return SectionStatistics.project(section)(
             section_id=section.id,
-            document_id=section.document_id,
             section_ordinal=section.ordinal,
             heading=materialized_section.heading,
             paragraph_count=count_distinct(paragraph.id),
@@ -135,8 +127,7 @@ class AnalyzeText(Transform):
     @step(input=sentence_terms, output=document_hierarchy_counts)
     def document_hierarchy(self, term: SentenceTerm) -> DocumentHierarchyCounts:
         group_by(document_id=term.document_id)
-        return DocumentHierarchyCounts(
-            document_id=term.document_id,
+        return DocumentHierarchyCounts.base(term)(
             section_count=count_distinct(term.section_id),
             paragraph_count=count_distinct(term.paragraph_id),
             sentence_count=count_distinct(term.sentence_id),
@@ -147,8 +138,7 @@ class AnalyzeText(Transform):
         inner_join(on=term.document_id == hierarchy.document_id)
         group_by(document_id=term.document_id)
         term_count = max(term.target_term_count)
-        return DocumentStatistics(
-            document_id=term.document_id,
+        return DocumentStatistics.project(term)(
             section_count=max(hierarchy.section_count),
             paragraph_count=max(hierarchy.paragraph_count),
             sentence_count=max(hierarchy.sentence_count),

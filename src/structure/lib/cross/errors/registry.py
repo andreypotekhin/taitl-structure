@@ -70,6 +70,20 @@ diagnostic_registry = DiagnosticRegistry(
             use_template='Keep the UDF only when Python execution is intentional, or set @transform(warn_on_udfs=False).',
         ),
         DiagnosticEntry(
+            code="PYSPARK-W2701",
+            severity="warning",
+            title="PySpark lazy lineage is growing through repeated reuse",
+            owner="pyspark",
+            status="active",
+            docs="docs/Diagnostics.md#pyspark-w2701",
+            introduced="1.0.0",
+            problem_template="A relation is reused after a self-join or multi-branch operation has expanded its lazy lineage.",
+            use_template=(
+                "Add checkpoint() or local_checkpoint() before reusing the expanded relation. "
+                "cache() and persist() alone do not truncate logical lineage."
+            ),
+        ),
+        DiagnosticEntry(
             code="SCHEMA-E0301",
             severity="error",
             title="Nullable expression assigned to non-nullable field",

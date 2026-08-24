@@ -89,10 +89,7 @@ class LexIndex(Transform):
         expanded = posexplode_struct(terms, as_=ExpandedTermText, ordinal="position", scope="sentence_term")
         term = QueryToken.normalize(expanded.term)
         where(term != "")
-        return LexicalOccurrence(
-            document_id=sentence.document_id,
-            section_id=sentence.section_id,
-            paragraph_id=sentence.paragraph_id,
+        return LexicalOccurrence.project(sentence)(
             sentence_id=sentence.id,
             term=term,
         )
@@ -100,8 +97,7 @@ class LexIndex(Transform):
     @step(input=occurrences, output=document_term_counts)
     def count_document_terms(self, occurrence: LexicalOccurrence) -> DocumentTermCount:
         group_by(document_id=occurrence.document_id, term=occurrence.term)
-        return DocumentTermCount(
-            document_id=occurrence.document_id,
+        return DocumentTermCount.base(occurrence)(
             term=occurrence.term,
             term_frequency=count(),
         )
@@ -109,8 +105,7 @@ class LexIndex(Transform):
     @step(input=occurrences, output=document_target_stats)
     def summarize_documents(self, occurrence: LexicalOccurrence) -> DocumentIndexTargetStats:
         group_by(document_id=occurrence.document_id)
-        return DocumentIndexTargetStats(
-            document_id=occurrence.document_id,
+        return DocumentIndexTargetStats.base(occurrence)(
             target_term_count=count(),
             target_distinct_term_count=count_distinct(occurrence.term),
             target_average_term_length=avg(length(occurrence.term)),
@@ -130,14 +125,9 @@ class LexIndex(Transform):
     ) -> DocumentTerm:
         inner_join(stats, on=stats.document_id == term.document_id)
         inner_join(frequency, on=frequency.term == term.term)
-        return DocumentTerm(
-            document_id=term.document_id,
+        return DocumentTerm.base(term).project(stats, frequency)(
             term=term.term,
             term_frequency=term.term_frequency,
-            target_term_count=stats.target_term_count,
-            target_distinct_term_count=stats.target_distinct_term_count,
-            target_average_term_length=stats.target_average_term_length,
-            target_frequency=frequency.target_frequency,
         )
 
     @step(input=document_target_stats, output=document_summary)
@@ -150,9 +140,7 @@ class LexIndex(Transform):
     @step(input=occurrences, output=section_term_counts)
     def count_section_terms(self, occurrence: LexicalOccurrence) -> SectionTermCount:
         group_by(document_id=occurrence.document_id, section_id=occurrence.section_id, term=occurrence.term)
-        return SectionTermCount(
-            document_id=occurrence.document_id,
-            section_id=occurrence.section_id,
+        return SectionTermCount.base(occurrence)(
             term=occurrence.term,
             term_frequency=count(),
         )
@@ -160,9 +148,7 @@ class LexIndex(Transform):
     @step(input=occurrences, output=section_target_stats)
     def summarize_sections(self, occurrence: LexicalOccurrence) -> SectionIndexTargetStats:
         group_by(document_id=occurrence.document_id, section_id=occurrence.section_id)
-        return SectionIndexTargetStats(
-            document_id=occurrence.document_id,
-            section_id=occurrence.section_id,
+        return SectionIndexTargetStats.base(occurrence)(
             target_term_count=count(),
             target_distinct_term_count=count_distinct(occurrence.term),
             target_average_term_length=avg(length(occurrence.term)),
@@ -182,15 +168,9 @@ class LexIndex(Transform):
             on=(stats.document_id == term.document_id) & (stats.section_id == term.section_id),
         )
         inner_join(frequency, on=frequency.term == term.term)
-        return SectionTerm(
-            document_id=term.document_id,
-            section_id=term.section_id,
+        return SectionTerm.base(term).project(stats, frequency)(
             term=term.term,
             term_frequency=term.term_frequency,
-            target_term_count=stats.target_term_count,
-            target_distinct_term_count=stats.target_distinct_term_count,
-            target_average_term_length=stats.target_average_term_length,
-            target_frequency=frequency.target_frequency,
         )
 
     @step(input=section_target_stats, output=section_summary)
@@ -208,10 +188,7 @@ class LexIndex(Transform):
             paragraph_id=occurrence.paragraph_id,
             term=occurrence.term,
         )
-        return ParagraphTermCount(
-            document_id=occurrence.document_id,
-            section_id=occurrence.section_id,
-            paragraph_id=occurrence.paragraph_id,
+        return ParagraphTermCount.base(occurrence)(
             term=occurrence.term,
             term_frequency=count(),
         )
@@ -223,10 +200,7 @@ class LexIndex(Transform):
             section_id=occurrence.section_id,
             paragraph_id=occurrence.paragraph_id,
         )
-        return ParagraphIndexTargetStats(
-            document_id=occurrence.document_id,
-            section_id=occurrence.section_id,
-            paragraph_id=occurrence.paragraph_id,
+        return ParagraphIndexTargetStats.base(occurrence)(
             target_term_count=count(),
             target_distinct_term_count=count_distinct(occurrence.term),
             target_average_term_length=avg(length(occurrence.term)),
@@ -251,16 +225,9 @@ class LexIndex(Transform):
             & (stats.paragraph_id == term.paragraph_id),
         )
         inner_join(frequency, on=frequency.term == term.term)
-        return ParagraphTerm(
-            document_id=term.document_id,
-            section_id=term.section_id,
-            paragraph_id=term.paragraph_id,
+        return ParagraphTerm.base(term).project(stats, frequency)(
             term=term.term,
             term_frequency=term.term_frequency,
-            target_term_count=stats.target_term_count,
-            target_distinct_term_count=stats.target_distinct_term_count,
-            target_average_term_length=stats.target_average_term_length,
-            target_frequency=frequency.target_frequency,
         )
 
     @step(input=paragraph_target_stats, output=paragraph_summary)
@@ -279,11 +246,7 @@ class LexIndex(Transform):
             sentence_id=occurrence.sentence_id,
             term=occurrence.term,
         )
-        return SentenceTermCount(
-            document_id=occurrence.document_id,
-            section_id=occurrence.section_id,
-            paragraph_id=occurrence.paragraph_id,
-            sentence_id=occurrence.sentence_id,
+        return SentenceTermCount.base(occurrence)(
             term=occurrence.term,
             term_frequency=count(),
         )
@@ -296,11 +259,7 @@ class LexIndex(Transform):
             paragraph_id=occurrence.paragraph_id,
             sentence_id=occurrence.sentence_id,
         )
-        return SentenceIndexTargetStats(
-            document_id=occurrence.document_id,
-            section_id=occurrence.section_id,
-            paragraph_id=occurrence.paragraph_id,
-            sentence_id=occurrence.sentence_id,
+        return SentenceIndexTargetStats.base(occurrence)(
             target_term_count=count(),
             target_distinct_term_count=count_distinct(occurrence.term),
             target_average_term_length=avg(length(occurrence.term)),
@@ -326,17 +285,9 @@ class LexIndex(Transform):
             & (stats.sentence_id == term.sentence_id),
         )
         inner_join(frequency, on=frequency.term == term.term)
-        return SentenceTerm(
-            document_id=term.document_id,
-            section_id=term.section_id,
-            paragraph_id=term.paragraph_id,
-            sentence_id=term.sentence_id,
+        return SentenceTerm.base(term).project(stats, frequency)(
             term=term.term,
             term_frequency=term.term_frequency,
-            target_term_count=stats.target_term_count,
-            target_distinct_term_count=stats.target_distinct_term_count,
-            target_average_term_length=stats.target_average_term_length,
-            target_frequency=frequency.target_frequency,
         )
 
     @step(input=sentence_target_stats, output=sentence_summary)

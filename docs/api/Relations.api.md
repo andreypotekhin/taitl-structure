@@ -26,6 +26,31 @@ streaming schema-evolution gate are called out below.
   is required by default; `reproducible=False` explicitly opts into non-repeatable sampling.
 - Ordering, bounds, and sampling are batch-oriented and are streaming materialization boundaries.
 
+## Persistence And Lineage Boundaries
+
+| Structure API | PySpark parity | Example |
+| --- | --- | --- |
+| `persist()` | `DataFrame.persist()` | `persist()` |
+| `persist(storage_level=...)` | `DataFrame.persist(StorageLevel(...))` | `persist(storage_level=level)` |
+| `cache()` | default `persist()` | `cache()` |
+| `unpersist(blocking=False)` | `DataFrame.unpersist(blocking=...)` | `unpersist(blocking=True)` |
+| `checkpoint(eager=True)` | `DataFrame.checkpoint(eager=...)` | `checkpoint()` |
+| `local_checkpoint(eager=True)` | `DataFrame.localCheckpoint(eager=...)` | `local_checkpoint(eager=False)` |
+
+`persist()` and `cache()` retain reusable data but do not truncate lazy logical lineage. `unpersist()` releases the
+persisted data and also leaves lineage unchanged. `checkpoint()` writes through Spark's configured checkpoint
+directory and truncates the logical plan. `local_checkpoint()` uses executor-local cached storage, so it is a
+lineage boundary but not a reliable recovery boundary. Both checkpoint helpers are batch-only.
+
+When a relation is repeatedly reused through self-joins or unions after its lineage has expanded, Structure emits
+`PYSPARK-W2701`. Add `checkpoint()` or `local_checkpoint()` at the intended boundary; caching alone does not resolve
+driver-side logical-plan analysis growth. See the [memory gotcha](../troubleshooting/memory/spark_driver_heap_oom.gotcha.md) and the developer [Memory specification](../dev/specifications/Memory.spec.md).
+
+Interpret the remedy in three steps: **diminish** a multiplier with Structure's eligible projection-union fusion;
+**bound** unchanged recursive reuse with `checkpoint()` or `local_checkpoint()`; or **remove** the recurrence by
+rewriting the algorithm around a stable base relation when the business semantics permit it. Python assignment,
+aliases, temporary views, `cache()`, and `persist()` do not bound logical lineage.
+
 ## Set Composition And Schema Evolution
 
 | Structure API | PySpark parity | Example |

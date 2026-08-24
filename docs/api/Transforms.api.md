@@ -48,6 +48,12 @@ are documented in the [Relations API](Relations.api.md).
 - `cache=True` persists the completed step at PySpark's default storage level. Supply a PySpark `StorageLevel` for an
   explicit level; Structure preserves its disk, memory, off-heap, deserialization, and replication settings in both
   generated and online execution.
+- In a transform body, use `persist()`, `cache()`, `unpersist()`, `checkpoint()`, or `local_checkpoint()` to place an
+  operation at that source position. Checkpointing truncates logical lineage; persistence alone does not.
+- For repeated lazy-lineage reuse, projection-union fusion can **diminish** one multiplier but does not make recursive
+  growth safe. Use `checkpoint()` or `local_checkpoint()` to **bound** the unchanged recurrence, or **remove** it by
+  restructuring the algorithm around a stable base relation. Python variables, aliases, temporary views, `cache()`,
+  and `persist()` are not lineage boundaries.
 - Expression specials compile without PySpark. Raw SQL and arbitrary Python UDF helpers remain outside the symbolic API.
 - `Compiler.frontend.analyze()` does not invoke step methods or start a Spark job.
 - `Compiler.frontend.compile()` authors and compiles for the selected platform but does not start a Spark job.
