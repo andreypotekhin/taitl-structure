@@ -135,7 +135,7 @@ The canonic step-method form omits argument names and the separating colons, but
 type. Its return schema retains the schema name and field names while omitting field type annotations.
 
 ## Step Transform Notation
-Notation for a transform with step methods. 
+Notation for a step transform - a transform with (implicit or explicit) step methods. 
 
 ### Step Transform Notation - Default:
 Combines inputs vector, step methods vector and outputs vector.
@@ -179,9 +179,9 @@ b : B \\
 c : C
 \end{pmatrix}
 
-### Step Transform Notation - As a Call
-Notation for displaying a transform as a stage of a bigger transform. 
-Based on 'With Name' notation, without colon and smaller space to inputs vector.
+### Step Transform Notation - As Expression
+Notation for displaying a transform as right part of stage call assignment in parent transform. 
+Based on 'Step Transform Notation - With Name' notation, with the colon replaced by diminished space (\!).
 
 \operatorname{TransformClassName}\!\begin{pmatrix}
 x : X \\
@@ -210,68 +210,19 @@ The variants are as described in 'Notation Variants' and above sections:
 - omit_return_types
 - omit_odot: omit \odot sign
 - with_name: 'Step Transform Notation - With Name'
-- as_call: 'Step Transform Notation - As a Call'
+- as_expression: 'Step Transform Notation - As Expression'
 - compact
 - canonic: with_name, omit_input_output_names, omit_argument_names, omit_return_types, omit_odot   
 
-## Stage Notation
-Notation for a transform which serves as a stage in a bigger transform.
-Notation is used for both for standalone display of a stage as well as displaying as part of the enclosing transform.
+## Stage Call Notation
+Notation for a stage call to a transform within a parent transform.
+Stage call: assignment of a stage transform to a field of a composed transform.
 
-### Stage Notation - Default:
-Stage name followed by a colon, followed by inputs vector, arrow, followed by outputs vector.
+### Stage Call Notation - Default:
+Based on as_expression variant of Transform Notation ('Step Transform Notation' or 'Composed Transform Notation), 
+preceded with variable assignment.
 
-\operatorname{Stage} : \begin{pmatrix}
-x : X \\
-y : Y \\
-z : Z
-\end{pmatrix}
-\rightarrow
-\begin{pmatrix}
-a : A \\
-b : B \\
-c : C
-\end{pmatrix}
-
-### Stage Notation - With Steps:
-Combines Stage Notation with step methods vector from Step Transform Notation.
-Same as Step Transform Notation with stage name on the left.
-
-\operatorname{Stage} : \begin{pmatrix}
-x : X \\
-y : Y \\
-z : Z
-\end{pmatrix}
-\begin{Bmatrix}
-\operatorname{func1}(x : X) \rightarrow D \\
-\operatorname{func2}(y : Y) \rightarrow A \\
-\operatorname{func3}\begin{pmatrix} x : X \\ z : Z \end{pmatrix} \rightarrow B
-\end{Bmatrix}
-\rightarrow
-\begin{pmatrix}
-a : A \\
-b : B \\
-c : C
-\end{pmatrix}
-
-### Stage Notation - Assigned:
-Same as the default but with 'assigned to variable' notation on the left
-
-s = \operatorname{Stage}\!\begin{pmatrix}
-x : X \\
-y : Y \\
-z : Z
-\end{pmatrix}
-\rightarrow
-\begin{pmatrix}
-a : A \\
-b : B \\
-c : C
-\end{pmatrix}
-
-### Stage Notation - Assigned With Steps:
-Same as the 'Stage Notation - With Steps' but with 'assigned to variable' notation on the left
-
+Example: step transform:
 s = \operatorname{Stage}\!\begin{pmatrix}
 x : X \\
 y : Y \\
@@ -289,47 +240,43 @@ b : B \\
 c : C
 \end{pmatrix}
 
-### Stage Notation Variants
+Example: composed transform:
+s = \operatorname{Stage}\!\begin{aligned}
+& \begin{pmatrix} x : X \\ y : Y \\ z : Z \end{pmatrix} \\
+& s1 = \operatorname{Stage}1\!\begin{pmatrix} x \\ y \\ z \end{pmatrix}
+\begin{Bmatrix} \operatorname{func11} \\ \operatorname{func12} \\ \operatorname{func13} \end{Bmatrix}
+\rightarrow \begin{pmatrix} a \\ b \\ c \end{pmatrix} \\
+& s2 = \operatorname{Stage}2\!\begin{pmatrix} a \\ b \\ c \end{pmatrix} 
+\begin{Bmatrix} \operatorname{func21} \\ \operatorname{func22} \\ \operatorname{func23} \end{Bmatrix}
+\rightarrow \begin{pmatrix} d \\ e \\ f \end{pmatrix} \\
+& s3 = \operatorname{Stage}3\!\begin{pmatrix} d \\ e \\ f \end{pmatrix} 
+\begin{Bmatrix} \operatorname{func31} \\ \operatorname{func32} \\ \operatorname{func33} \end{Bmatrix}
+\rightarrow \begin{pmatrix} u \\ v \\ w \end{pmatrix} \\
+& \begin{pmatrix} u : U \\ v : V \\ w : W \end{pmatrix}
+\end{aligned}
+
+### Stage Call Notation Variants
 The variants are as described in 'Notation Variants' section:
 - omit_input_names
 - omit_output_names
 - omit_input_output_names
+- omit_input_output_types
 - omit_argument_names
 - omit_argument_types
 - omit_return_types
-- compact
-- canonic: compact
+- omit_steps: step method vector omitted
+- compact: omit_input_output_types, omit_argument_names, omit_argument_types, omit_return_types
+- canonic: compact 
 
-## Stage Transform Notation
-A stage transform (workflow transform) is a transform which has one or several other transforms serving as its stages.
+## Composed Transform Notation
+Composed transform: a transform that consists of stages (other transforms) rather than step methods.
 
-### Stage Transform Notation - Default
-Stage transform (workflow transform) notation includes:
-- Inputs vector: transform inputs as 'name: Type' pairs
-- Stage 'assigned' notation for each stage
- - As defined in 'Stage Notation Notation - Assigned' section
-- Outputs vector: transform inputs as 'name: Type' pairs
-
-- In the following example, inputs vector is on tje second line, outputs is next-to-last line, transform stages are in between.
-
-\begin{aligned}
-& \begin{pmatrix} x : X \\ y : Y \\ z : Z \end{pmatrix} \\
-& s1 = \operatorname{Stage}1 : \begin{pmatrix} x : X \\ y : Y \\ z : Z \end{pmatrix} \rightarrow \begin{pmatrix} a : A \\ b : B \\ c : C \end{pmatrix} \\
-& s2 = \operatorname{Stage}2 : \begin{pmatrix} a : A \\ b : B \\ c : C \end{pmatrix} \rightarrow \begin{pmatrix} d : D \\ e : E \\ f : F \end{pmatrix} \\
-& s3 = \operatorname{Stage}3 : \begin{pmatrix} d : D \\ e : E \\ f : F \end{pmatrix} \rightarrow \begin{pmatrix} u : U \\ v : V \\ w : W \end{pmatrix} \\
-& \begin{pmatrix} u : U \\ v : V \\ w : W \end{pmatrix}
-\end{aligned}
-
-### Stage Transform Notation - Canonic
-Canonic notation combines the default Stage Transform Notation with 'With Steps' notation for stages,
-and features typed outputs without value assignments:
-- Stages: 'Stage Notation - Assigned With Steps' with: 
-  - with_steps
-  - omit_argument_names
-  - omit_argument_types
-  - omit_return_types
-  - omit_input_output_types
-- Outputs: the outputs vector shows name : Type pairs without value assignments.
+### Composed Transform Notation - Default
+Composed Transform Notation combines canonic Stage Call Notation for stage calls
+and typed outputs without value assignments: 
+- Inputs vector: transform's inputs vector as 'name: Type' pairs
+- For each stage: canonic Stage Call Notation
+- Outputs vector: transform's outputs vector as 'name: Type' pairs without value assignments.
 
 \begin{aligned}
 & \begin{pmatrix} x : X \\ y : Y \\ z : Z \end{pmatrix} \\
@@ -345,7 +292,42 @@ and features typed outputs without value assignments:
 & \begin{pmatrix} u : U \\ v : V \\ w : W \end{pmatrix}
 \end{aligned}
 
-### Stage Transform Notation - Variants
+### Composed Transform Notation - With name
+Default Composed Transform Notation, preceded with transform class name and colon.
+
+\operatorname{TransformClassName} : \begin{aligned}
+& \begin{pmatrix} x : X \\ y : Y \\ z : Z \end{pmatrix} \\
+& s1 = \operatorname{Stage}1\!\begin{pmatrix} x \\ y \\ z \end{pmatrix}
+\begin{Bmatrix} \operatorname{func11} \\ \operatorname{func12} \\ \operatorname{func13} \end{Bmatrix}
+\rightarrow \begin{pmatrix} a \\ b \\ c \end{pmatrix} \\
+& s2 = \operatorname{Stage}2\!\begin{pmatrix} a \\ b \\ c \end{pmatrix} 
+\begin{Bmatrix} \operatorname{func21} \\ \operatorname{func22} \\ \operatorname{func23} \end{Bmatrix}
+\rightarrow \begin{pmatrix} d \\ e \\ f \end{pmatrix} \\
+& s3 = \operatorname{Stage}3\!\begin{pmatrix} d \\ e \\ f \end{pmatrix} 
+\begin{Bmatrix} \operatorname{func31} \\ \operatorname{func32} \\ \operatorname{func33} \end{Bmatrix}
+\rightarrow \begin{pmatrix} u \\ v \\ w \end{pmatrix} \\
+& \begin{pmatrix} u : U \\ v : V \\ w : W \end{pmatrix}
+\end{aligned}
+
+### Composed Transform Notation - As Expression
+Based on 'Composed Transform Notation - With Name' notation, 
+with the colon replaced by diminished space (\!).
+
+\operatorname{TransformClassName}\!\begin{aligned}
+& \begin{pmatrix} x : X \\ y : Y \\ z : Z \end{pmatrix} \\
+& s1 = \operatorname{Stage}1\!\begin{pmatrix} x \\ y \\ z \end{pmatrix}
+\begin{Bmatrix} \operatorname{func11} \\ \operatorname{func12} \\ \operatorname{func13} \end{Bmatrix}
+\rightarrow \begin{pmatrix} a \\ b \\ c \end{pmatrix} \\
+& s2 = \operatorname{Stage}2\!\begin{pmatrix} a \\ b \\ c \end{pmatrix} 
+\begin{Bmatrix} \operatorname{func21} \\ \operatorname{func22} \\ \operatorname{func23} \end{Bmatrix}
+\rightarrow \begin{pmatrix} d \\ e \\ f \end{pmatrix} \\
+& s3 = \operatorname{Stage}3\!\begin{pmatrix} d \\ e \\ f \end{pmatrix} 
+\begin{Bmatrix} \operatorname{func31} \\ \operatorname{func32} \\ \operatorname{func33} \end{Bmatrix}
+\rightarrow \begin{pmatrix} u \\ v \\ w \end{pmatrix} \\
+& \begin{pmatrix} u : U \\ v : V \\ w : W \end{pmatrix}
+\end{aligned}
+
+### Composed Transform Notation - Variants
 The variants are as described in 'Notation Variants' section:
 - omit_input_names
 - omit_input_types
@@ -353,5 +335,8 @@ The variants are as described in 'Notation Variants' section:
 - omit_output_types
 - omit_input_output_names
 - omit_input_output_types
-- compact: omit_input_output_names
-- canonic 
+- omit_steps
+- with_name
+- as_expression
+- compact: omit_input_output_names 
+- canonic: default 
