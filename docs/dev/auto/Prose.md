@@ -512,9 +512,11 @@ Special/opaque methods:
   explicit typed step notation in Combine. Preserve a typed `@raw` method that Combine documents as a step,
   in its step formula and transform method vectors.
 
-Transform - standalone (e.g. in 'Resulting transform shape' sections of .form.md docs):
+Transform - standalone (as in 'Resulting transform shape' sections of .form.md docs):
 - Use the canonic transform notation: show transform name and colon, place input vector on the left, 
   the step-method vector in the middle, and the output vector on the  right. Omit \odot.
+- Put exactly one schema type on each input and output vector row; never collapse multiple comma-separated types into one
+  row, even when several methods consume or produce the same relation set.
 - Preserve transform name in formula, including workflow stages such as Features; 
   omit a name only in workflow Result formula when the surrounding prose already names it.
 - Define external stages by source package: a stage is external when its transform class is outside the package tree rooted at
@@ -525,6 +527,8 @@ Transform - standalone (e.g. in 'Resulting transform shape' sections of .form.md
 
 Stage call:
 - Use 'Stage Call Notation' for stages in a workflow. 
+- In a composed-transform shape, retain one `name : Type` pair per input/output row and include the assigned stage's
+  canonic method vector; do not substitute the child transform's method signatures for the stage call.
  
 Main Transform - e.g. workflow transform in Result section of .form.md docs
 - Omit transform name and colon.
@@ -557,6 +561,11 @@ Quality assurance:
   - Each standalone `Resulting transform shape:` must be the canonic step-transform shape: transform name and colon,
     typed input vector on the left, method `Bmatrix` in the middle, `\rightarrow`, and output vector on the right. Do not
     replace that structure with a vertically stacked prose/list rendering or duplicate the transform name elsewhere.
+  - In every canonic transform method `Bmatrix`, each entry must be an operator name only. Reject argument parentheses,
+    argument matrices or types, return arrows, return-schema definitions, and any other full step-method notation inside
+    the transform vector; full signatures belong only to the explanatory step formulas.
+  - In every canonic standalone transform input and output vector, put exactly one schema type on each row. Reject
+    comma-separated type lists collapsed into one matrix row; multiple inputs or outputs must occupy separate rows.
   - Apply the raw/special omission rule to every formula context, including method vectors nested inside composed-transform
     stage calls. Reject opaque `@special` helpers and undocumented `@raw` helpers in formulas; a typed `@raw` step
     explicitly documented by Combine must remain present in its corresponding formula contexts.
@@ -568,6 +577,11 @@ Quality assurance:
   - A workflow Result section must use canonic 'Composed Transform Notation': typed `name : Type` workflow inputs, assigned stage
     calls with name-only stage arguments, each stage's method vector and output vector, and typed final outputs without
     assignments. Omit the workflow name and do not repeat the `Resulting transform shape:` label in `Result`.
+  - For a composed root transform, use a `### Result` section for the parent composition; never emit the parent as an
+    additional `Resulting transform shape:` block. Reserve that label for internal standalone stage shapes.
+  - Classify a named shape as standalone or composed from the source transform before formatting. A composed transform must
+    use `Composed Transform Notation - With name`: `TransformClassName :`, typed input/output name pairs, and assigned stage
+    calls with their canonic stage method vectors. Never render a composed transform as a standalone step-transform shape.
   - Check formula width and vertical spacing document-wide: keep short step-method formulas in one flow. Apply 140
     character threshold to the longest rendered arrow-bearing row, not to the aggregate source length of a formula with
     vertical matrices. Also inspect rendered width for long identifiers; wrap any row that still exceeds the viewer
