@@ -453,12 +453,16 @@ Automation:
   the `Result` section; reject a parent-shaped block after the last stage subsection.
 - Verify Implementation section has no duplicate parent workflow notations: one parent composition shape may appear in
   `Result`, while each internal stage has exactly one stage shape and no additional parent-shaped copy.
-- Classify methods before writing notation: include public methods decorated with `@step` only. Mark `@raw` methods and
-  opaque helpers such as `@special(type="udf")` as raw/special implementation helpers; they may remain in Code and prose, 
-  but their signatures must not appear in step/transform notations or workflow method vectors.
 - For every `Resulting transform shape:` block, verify the exact transform class name, canonical shape structure, and method
   inventory against the owning class. Reject a helper-shaped or stage-call-shaped block, such as `extract: Document ->
-  Document`, in place of `ExtractDocumentFields:` with its typed vectors and method vector.
+  Document`, in place of `ExtractDocumentFields:` with its typed vectors and complete method signatures.
+- For every standalone step transform, verify that its text `Resulting transform shape` contains the exact class name
+  followed by one complete typed signature per public step, one signature per line. Reject `methods:` summaries,
+  abbreviated method-name lists, `inputs:`/`outputs:` summary blocks, and any signature not traceable to that transform.
+- Combine preserves source-level raw/special helper discussion; raw/special omission is a Format-only rule applied while
+  producing formula notation, never a reason to replace a complete combined transform narrative with a method summary.
+- In Combine, include every `@raw` and `@special` method in its owning text step narrative and standalone transform
+  notation, with its typed input and output signature. Format alone omits those methods from formula notation.
 
 ## Format
 Create formatted documents (.form.md), based on combined documents (.comb.md).
@@ -490,11 +494,10 @@ Step method:
 - Use 'Schema Notation - With Projection' notation for return schemas: 
   - when source code returns Schema.project(...), Schema.base(...), or a projected call with added fields, 
   use : show \\vdots for inherited/projected fields and list only fields introduced by that return expression.
-  - Do not show return schema definition (colon and vector), only show return schema name(s), if:
-    - If no fields are introduced by .project()/.base() return expression.
-    - If return schema is same as one of argument schemas
-    - If return schema definition for the schema was already shown in the preceding formulas of same document.
-    - If return schema definition ends up to be lone ellipses (\\vdots) and nothing more.
+  - Omit return schema definition (colon and vector), and only show return schema name(s), if:
+    - If return schema definition for the schema is already shown in preceding formulas of same document.
+    - If return schema is same as one of the argument schemas.
+    - If the only content of return schema definition vector is lone ellipses (\\vdots).
 - Keep short step-method formulas in one formula flow. Use 140 characters as the soft wrapping limit for the longest
   rendered arrow-bearing row, not for the sum of vertically stacked matrix rows. Wrap once at the arrow only when that
   row reaches the limit or visibly exceeds the viewer's content width because of long identifiers. Do not split the
@@ -503,6 +506,11 @@ Step method:
 Step methods:
 - Separate consecutive standalone step method formulas with two consecutive dedicated full lines (\\) rather than
   adjusting line height of the leading formula's final row;
+
+Special/opaque methods:
+- Omit opaque helpers such as `@special`, and omit `@raw` methods only when they are implementation helpers without an
+  explicit typed step notation in Combine. Preserve a typed `@raw` method that Combine documents as a step,
+  in its step formula and transform method vectors.
 
 Transform - standalone (e.g. in 'Resulting transform shape' sections of .form.md docs):
 - Use the canonic transform notation: show transform name and colon, place input vector on the left, 
@@ -533,10 +541,12 @@ Additional Rules
 
 Quality assurance:
   - For every `.form.md` output, audit every formula block in the document.
+  - Verify every display formula has balanced, properly nested `\\begin{...}`/`\\end{...}` environments. Reject an
+    unclosed nested `aligned`, `gathered`, `pmatrix`, or `Bmatrix` environment, including when one is embedded in another.
   - Step methods must use the canonic step method notation from `prose/Notation.md`: argument names and separating colons
     are omitted, argument schema types remain, and every returned schema retains its name plus a field-name projection.
-    Reject a bare return schema, a missing `return_schema_definitions` projection, or an invented `\vdots` projection when
-    the source schema fields are available.
+    Reject a bare return schema, lone ellipses (\\vdots) return schema, a missing `return_schema_definitions` projection,
+    or an invented `\vdots` projection when the source schema fields are available.
   - Use the single-argument form `\operatorname{method}(Type)` for one argument. The compact-space `\!` is permitted only
     before a multi-argument matrix or a stage call; reject `\operatorname{method}\!(Type)`.
   - Keep formulas left anchored. Every `aligned` block must anchor its rows with `&`; do not use right-aligned display
@@ -547,6 +557,11 @@ Quality assurance:
   - Each standalone `Resulting transform shape:` must be the canonic step-transform shape: transform name and colon,
     typed input vector on the left, method `Bmatrix` in the middle, `\rightarrow`, and output vector on the right. Do not
     replace that structure with a vertically stacked prose/list rendering or duplicate the transform name elsewhere.
+  - Apply the raw/special omission rule to every formula context, including method vectors nested inside composed-transform
+    stage calls. Reject opaque `@special` helpers and undocumented `@raw` helpers in formulas; a typed `@raw` step
+    explicitly documented by Combine must remain present in its corresponding formula contexts.
+  - For every typed step signature in a combined explanatory item, require exactly one corresponding step formula and
+    require its method name in the owning standalone transform shape and any composed-transform stage method vector.
   - Use the GitHub/Typora-compatible `\operatorname{...}` command for every displayed operator. Reject the invalid
     `\operator{...}` form, raw text such as `extract: Document -> Document`, and any standalone shape whose name is not the
     exact source transform class.
