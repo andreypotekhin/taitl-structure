@@ -209,8 +209,8 @@ The variants are as described in 'Notation Variants' and above sections:
 - omit_argument_types
 - omit_return_types
 - omit_odot: omit \odot sign
-- with_name: 'Step Transform Notation - With Name'
-- as_expression: 'Step Transform Notation - As Expression'
+- with_name
+- as_expression
 - compact
 - canonic: with_name, omit_input_output_names, omit_argument_names, omit_return_types, omit_odot   
 
@@ -275,55 +275,78 @@ Composed transform: a transform that consists of stages (other transforms) rathe
 Composed Transform Notation combines canonic Stage Call Notation for stage calls
 and typed outputs without value assignments: 
 - Inputs vector: transform's inputs vector as 'name: Type' pairs
-- For each stage: canonic Stage Call Notation
+- For each stage: canonic 'Stage Call Notation'
 - Outputs vector: transform's outputs vector as 'name: Type' pairs without value assignments.
 
 \begin{aligned}
 & \begin{pmatrix} x : X \\ y : Y \\ z : Z \end{pmatrix} \\
+&\\
+&\\
 & s1 = \operatorname{Stage}1\!\begin{pmatrix} x \\ y \\ z \end{pmatrix}
 \begin{Bmatrix} \operatorname{func11} \\ \operatorname{func12} \\ \operatorname{func13} \end{Bmatrix}
 \rightarrow \begin{pmatrix} a \\ b \\ c \end{pmatrix} \\
+&\\
+&\\
 & s2 = \operatorname{Stage}2\!\begin{pmatrix} a \\ b \\ c \end{pmatrix} 
 \begin{Bmatrix} \operatorname{func21} \\ \operatorname{func22} \\ \operatorname{func23} \end{Bmatrix}
 \rightarrow \begin{pmatrix} d \\ e \\ f \end{pmatrix} \\
+&\\
+&\\
 & s3 = \operatorname{Stage}3\!\begin{pmatrix} d \\ e \\ f \end{pmatrix} 
 \begin{Bmatrix} \operatorname{func31} \\ \operatorname{func32} \\ \operatorname{func33} \end{Bmatrix}
 \rightarrow \begin{pmatrix} u \\ v \\ w \end{pmatrix} \\
+&\\
+&\\
 & \begin{pmatrix} u : U \\ v : V \\ w : W \end{pmatrix}
 \end{aligned}
 
 ### Composed Transform Notation - With name
-Default Composed Transform Notation, preceded with transform class name and colon.
+Based on 'Composed Transform Notation - Default', preceded with transform class name and colon.
 
 \operatorname{TransformClassName} : \begin{aligned}
 & \begin{pmatrix} x : X \\ y : Y \\ z : Z \end{pmatrix} \\
+&\\
+&\\
 & s1 = \operatorname{Stage}1\!\begin{pmatrix} x \\ y \\ z \end{pmatrix}
 \begin{Bmatrix} \operatorname{func11} \\ \operatorname{func12} \\ \operatorname{func13} \end{Bmatrix}
 \rightarrow \begin{pmatrix} a \\ b \\ c \end{pmatrix} \\
+&\\
+&\\
 & s2 = \operatorname{Stage}2\!\begin{pmatrix} a \\ b \\ c \end{pmatrix} 
 \begin{Bmatrix} \operatorname{func21} \\ \operatorname{func22} \\ \operatorname{func23} \end{Bmatrix}
 \rightarrow \begin{pmatrix} d \\ e \\ f \end{pmatrix} \\
+&\\
+&\\
 & s3 = \operatorname{Stage}3\!\begin{pmatrix} d \\ e \\ f \end{pmatrix} 
 \begin{Bmatrix} \operatorname{func31} \\ \operatorname{func32} \\ \operatorname{func33} \end{Bmatrix}
 \rightarrow \begin{pmatrix} u \\ v \\ w \end{pmatrix} \\
+&\\
+&\\
 & \begin{pmatrix} u : U \\ v : V \\ w : W \end{pmatrix}
 \end{aligned}
 
 ### Composed Transform Notation - As Expression
-Based on 'Composed Transform Notation - With Name' notation, 
-with the colon replaced by diminished space (\!).
+Based on 'Composed Transform Notation - With Name' notation, with the colon replaced by diminished space (\!).
 
 \operatorname{TransformClassName}\!\begin{aligned}
 & \begin{pmatrix} x : X \\ y : Y \\ z : Z \end{pmatrix} \\
+&\\
+&\\
 & s1 = \operatorname{Stage}1\!\begin{pmatrix} x \\ y \\ z \end{pmatrix}
 \begin{Bmatrix} \operatorname{func11} \\ \operatorname{func12} \\ \operatorname{func13} \end{Bmatrix}
 \rightarrow \begin{pmatrix} a \\ b \\ c \end{pmatrix} \\
+&\\
+&\\
 & s2 = \operatorname{Stage}2\!\begin{pmatrix} a \\ b \\ c \end{pmatrix} 
 \begin{Bmatrix} \operatorname{func21} \\ \operatorname{func22} \\ \operatorname{func23} \end{Bmatrix}
 \rightarrow \begin{pmatrix} d \\ e \\ f \end{pmatrix} \\
+&\\
+&\\
 & s3 = \operatorname{Stage}3\!\begin{pmatrix} d \\ e \\ f \end{pmatrix} 
 \begin{Bmatrix} \operatorname{func31} \\ \operatorname{func32} \\ \operatorname{func33} \end{Bmatrix}
 \rightarrow \begin{pmatrix} u \\ v \\ w \end{pmatrix} \\
+&\\
+&\\
 & \begin{pmatrix} u : U \\ v : V \\ w : W \end{pmatrix}
 \end{aligned}
 
@@ -340,3 +363,6 @@ The variants are as described in 'Notation Variants' section:
 - as_expression
 - compact: omit_input_output_names 
 - canonic: default 
+
+## General tips
+- Consecutive standalone step-method formulas: insert two empty line rows (\\) between adjacent formula lines.

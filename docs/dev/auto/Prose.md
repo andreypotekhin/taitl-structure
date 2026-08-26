@@ -183,8 +183,8 @@ Present annotated source as continuous narrative.
     - Ex: 'Select fallback options' dropped, 'select fallback options' embedded in section paragraph.
   - Avoid merging code listings, maintain a text sentence in between.
   - Drop import statements.
-  - Workflow transform is main transform in a package - a staged transform that rules other transforms in the package.   
-  Usually, workflow transform is alphabetically the last file in dir (Ex: 'SearchDocuments'). Not all dirs contain the workflow transform. 
+  - Workflow transform is the main transform in a package - a composed transform that rules other transforms in the package.   
+  Usually, the workflow transform is alphabetically the last file in dir (Ex: 'SearchDocuments'). Not all dirs contain the workflow transform. 
     - Top header: as-is, do not convert to gerund
     - Replace subsections as described above
     - Move workflow class listing from intro section into a new section, 'Workflow'
@@ -203,12 +203,12 @@ Present annotated source as continuous narrative.
       - External stages (stages defined outside the workflow dir):
         - Include a section heading and brief description, ", as described in 'doc_header'".
         - Keep the full stage call in the parent `Workflow` section and include the complete parameterized stage call in
-          the external-stage section as well, so the external reference is self-contained.
+          the external stage section as well, so the external reference is self-contained.
         - Describe the external stage in prose without repeating the assignment inline; the fenced listing is the single
           external reference for that call.
-        - The intentional duplication is limited to the stage assignment; never duplicate the parent workflow class
-          listing or a child transform narrative in the external-stage section.
-        - For example, if the workflow class contains `features = Features(...)`, the external-stage section contains
+        - The intentional duplication is limited to stage assignment; never duplicate parent workflow class
+          listing or a child transform narrative in external stage section.
+        - For example, if the workflow class contains `features = Features(...)`, the external stage section contains
           the complete `features = Features(...)` assignment, not a second `class Training(Transform):` listing.
     - Quality assurance:
       - Verify transform sections follow the order of main transform stages, with no stages missing.
@@ -289,10 +289,10 @@ Implementation section:
   3. (only when workflow is a composed transform) a `Result` subsection containing the complete workflow notation.
 - In each stage subsection, explain stage flow with circled items such as `①`, `②`, and `③`. Drop the short italic
   intent sentence used by the earlier format; each item should contain explanatory prose directly.
-- Name each stage subsection with the exact transform class name it describes and use that class name in its
-  compact notation. Derive the names from the source `Stages` inventory and the collected Code classes; never rename a
+- Name each stage subsection with the its exact transform class name and use that class name in text notation. 
+  Derive the names from the source `Stages` inventory and the collected Code classes; never rename a
   child stage to the package or parent workflow name.
-- Keep the parent workflow's assigned stage call separate from the stage implementation narrative in stage subsection.
+- Keep parent workflow's assigned stage call separate from stage implementation narrative.
   Ex: An assignment such as `overlap = ScoreOverlap(...)` belongs in parent workflow/result shape; the `ScoreOverlap`
   subsection must describe `ScoreOverlap` as a step transform, using the public `@step` methods declared by that class.
   Never replace that narrative with a synthetic method such as `score_overlap(...)`, and never present the assigned
@@ -305,7 +305,7 @@ Implementation section:
 - A step method group may contain several methods when they form one responsibility, such as stored and streamed candidate
   selection or parallel grain summaries. Replace repeating parts of text notation with a text e.g.'Same for
   other grains', or similar (in body text, outside of text notation fenced block). A stage-level signature is not a substitute for
-  its step methods. Step notation is reserved for step methods; do not present a step-method signature as if it were a stage transform.
+  its step methods. Step notation is reserved for step methods; do not present a step-method signature as if it were a composed transform.
 - For every internal stage whose collected code includes a transform class, copy its complete public `@step` method
   coverage into explanatory groups in the stage subsection. Do not stop at the stage inputs/outputs or its compact
   transform shape; internal stages must expose their individual methods through coherent narrative groups.
@@ -313,13 +313,13 @@ Implementation section:
   explicit `Notation` heading. Remove the circled reference markers from stage notation block; the typed individual
   signatures remain under their explanatory items. Put body-text line `Resulting transform shape:` immediately before
   the notation block so it cannot visually merge with the preceding individual step notation. For an external stage,
-  keep only one canonical stage-transform notation block and omit `Resulting transform shape:` entirely.
+  keep only one canonical stage transform notation block and omit `Resulting transform shape:` entirely.
 - After all stage subsections, add a Result subsection with a fenced text notation block for the workflow transform,
   only when an actual parent workflow transform exists and is a composed transform. A single transform with internal 
   steps does not need a Result section. Do not invent a parent transform for a package that has only child transforms.
-  Preserve workflow inputs, child-stage composition, and concrete output schemas in this result notation. Use the typed
+  Preserve workflow inputs, stage calls and concrete output schemas in result notation. Use the typed
   workflow format of `Indexing.comb.md`: list `inputs`, child transform assignments, and typed `outputs`. Do not repeat
-  stage transform notation in Result section; the parent workflow shape must be distinct.
+  stage transform notations in Result section; the parent workflow shape must be distinct.
 - Refer to transforms, stages, and steps from the circled items. Consider joining cohesive notation lines when that
   keeps the correspondence clear, but retain every meaningful step in the stage transform and result notations.
   
@@ -414,24 +414,22 @@ Automation:
   collected Code class's decorated step methods; when they disagree, the source class is authoritative. Reject
   stage calls, lane names, output aliases, or invented summaries presented as step methods. For every displayed step,
   verify the method name, argument names, argument types, and return type against source, not merely the schema set.
-- For every parent workflow, audit every child stage, including imported or shared transforms: each stage must have its
-  own explanatory narrative and one complete Resulting transform shape with concrete inputs, methods or child stages,
-  and outputs. The parent Result shape must reproduce the source assignments and typed outputs exactly; reject placeholders
-  such as “grain terms,” omitted per-stage shapes, or a parent shape that merely repeats a child shape.
-- Bind each stage shape locally: the first transform in the shape immediately following a stage subsection must
-  equal that subsection's transform class name. Never use the parent workflow name as a child stage's shape, even
-  when the parent assignment immediately preceding the shape calls that child. If a subsection heading names multiple
-  classes (for example, `A / B`), split it into subsection-per-class and give each class its own narrative and shape.
-  Conversely, require the stage subsection transform shape to reference the same actual step-method inventory
+- For parent workflow, audit every child stage, including imported or shared transforms: each stage must have its own
+  stage subsection, internal stages have explanatory narrative and one complete Resulting transform shape with concrete
+  inputs, methods or child stages, and outputs. Parent Result shape must reproduce stage calls and typed outputs exactly; 
+  reject placeholders such as “grain terms,” omitted per-stage shapes, or a parent shape that merely repeats a child shape.
+- Never use parent workflow name as a child stage's shape. If a subsection heading names multiple
+  classes (for example, `A / B`), split it into subsection-per-class and give each class its own narrative and notation.
+  Conversely, require the stage subsection transform notation to reference the same actual step-method inventory
   used by its explanatory groups.
-- If a stage transform class is itself a composed transform, describe its stage
-  assignments as a stage-transform/workflow shape and label them as composition. Do not invent a wrapper method to make
-  the section look executable; the step-transform method rule applies whenever the class is a genuine step transform.
-- Run this check as a document-wide stage audit: enumerate every real child transform class from `Stages` and `Code`, 
+- If a stage transform is itself a composed transform, use composed transform notation with stage calls. 
+  Do not invent a wrapper method to make the section look executable: the step-transform method rule applies 
+  whenever the class is a genuine step transform.
+- Run this check as a document-wide stage audit: enumerate every child transform class from `Stages` and `Code`, 
   then perform the class-to-method comparison for each one. The audit fails if any one internal stage remains represented 
   by a parent assignment, a stage call, or a synthetic method-shaped summary while another stage has been corrected.
 - Reject a subsection if it includes a method from another stage.
-- Treat a stage transform input/output signature and a `Resulting transform shape:` notation as partial evidence
+- Treat stage transform input/output signature and a `Resulting transform shape` notation as partial evidence
   of stage implementation; both may be present only in addition to the complete grouped step narrative.
 - Reject a standalone `Step methods:` inventory block or any equivalent dump of signatures that is not attached to
   explanatory items. Every signature must be traceable to exactly one group and its prose explanation.
@@ -507,27 +505,24 @@ Step methods:
   adjusting line height of the leading formula's final row;
 
 Transform - standalone (e.g. in 'Resulting transform shape' sections of .form.md docs):
-- Use the canonic transform form for each standalone: show the transform name and
-  colon, place the input vector on the left, the step-method vector in the middle, and the output vector on the
-  right. Omit \odot.
-- Preserve transform name in every standalone transform formula, including workflow stages such
-  as Features; omit a name only in the enclosing workflow's Result formula when the surrounding prose already names it.
-- Define external by source package: a stage is external when its transform class is outside the package tree rooted at
+- Use the canonic transform notation: show transform name and colon, place input vector on the left, 
+  the step-method vector in the middle, and the output vector on the  right. Omit \odot.
+- Preserve transform name in formula, including workflow stages such as Features; 
+  omit a name only in workflow Result formula when the surrounding prose already names it.
+- Define external stages by source package: a stage is external when its transform class is outside the package tree rooted at
   the main/workflow transform; imports alone do not make a same-package or child-package stage external. For an external
-  stage whose implementation and step methods are not discussed in the document, keep one canonical stage-transform
-  notation with the transform name followed by `:`, schema types without input/output names, and no `Resulting transform
-  shape:` label or block. Internal stages in the workflow package or its subpackages retain their documented methods
-  and one `Resulting transform shape:` block.
+  stage whose implementation and step methods are not discussed in the document, keep one canonical standalone transform
+  notation: transform name followed by colon, schema types with omitted input/output names, and no `Resulting transform
+  shape:` label or block. Internal stages retain their step methods and one `Resulting transform shape:` block.
 
-Stage call: transform as а stage inside parent transform (e.g. parts of workflow notation in Result section of .form.md docs):
-- Use 'Stage Call Notation' for stages in a workflow: assign each stage with stage =, use \!
-  after the stage name, omit the stage-name colon, and show stage inputs and outputs by name only. 
+Stage call:
+- Use 'Stage Call Notation' for stages in a workflow. 
  
-Main Transform - transform as a workflow (e.g. workflow transform in Result section of .form.md docs)
-- Omit workflow transform name.
+Main Transform - e.g. workflow transform in Result section of .form.md docs
+- Omit transform name and colon.
 - Show workflow inputs and final workflow outputs as name : Type pairs without value assignments.
 - Use a smaller gap such as \\[2pt] between methods inside a dense workflow method vector.
-- Add two dedicated full \\ rows between workflow inputs, each stage, and final outputs so adjacent vectors do not
+- Add two dedicated full \\ rows between workflow inputs, each stage and final outputs so adjacent vectors do not
   visually merge.
 
 Additional Rules
@@ -537,13 +532,13 @@ Additional Rules
   transform notation is already shown in the preceding sections.
 
 Quality assurance:
-  - For every `.form.md` counterpart, audit every formula block in the document, not only `Filtering` or `Scoring`:
-  - Step methods must use the canonic step-method form from `prose/Notation.md`: argument names and separating colons
+  - For every `.form.md` output, audit every formula block in the document.
+  - Step methods must use the canonic step method notation from `prose/Notation.md`: argument names and separating colons
     are omitted, argument schema types remain, and every returned schema retains its name plus a field-name projection.
     Reject a bare return schema, a missing `return_schema_definitions` projection, or an invented `\vdots` projection when
     the source schema fields are available.
   - Use the single-argument form `\operatorname{method}(Type)` for one argument. The compact-space `\!` is permitted only
-    before a multi-argument matrix or a stage-transform call; reject `\operatorname{method}\!(Type)`.
+    before a multi-argument matrix or a stage call; reject `\operatorname{method}\!(Type)`.
   - Keep formulas left anchored. Every `aligned` block must anchor its rows with `&`; do not use right-aligned display
     formulas or a leading unanchored continuation row. Separate consecutive standalone step formulas with two dedicated
     full `\\` rows, and use short spacing only between methods inside a dense workflow method vector.
@@ -555,35 +550,36 @@ Quality assurance:
   - Use the GitHub/Typora-compatible `\operatorname{...}` command for every displayed operator. Reject the invalid
     `\operator{...}` form, raw text such as `extract: Document -> Document`, and any standalone shape whose name is not the
     exact source transform class.
-  - A workflow `Result` must use 'Composed Transform Notation': typed `name : Type` workflow inputs, assigned stage
+  - A workflow Result section must use canonic 'Composed Transform Notation': typed `name : Type` workflow inputs, assigned stage
     calls with name-only stage arguments, each stage's method vector and output vector, and typed final outputs without
     assignments. Omit the workflow name and do not repeat the `Resulting transform shape:` label in `Result`.
-  - Check formula width and vertical spacing document-wide: keep short step-method formulas in one flow. Apply the 140
+  - Check formula width and vertical spacing document-wide: keep short step-method formulas in one flow. Apply 140
     character threshold to the longest rendered arrow-bearing row, not to the aggregate source length of a formula with
     vertical matrices. Also inspect rendered width for long identifiers; wrap any row that still exceeds the viewer
     content width once at the arrow. Never split the method call or return schema internally. Matrix components may use
-    natural rows, while standalone methods remain visually separated and method vectors stay denser than workflow-stage
-    gaps.
+    natural rows, while standalone methods remain visually separated and method vectors stay denser than stage call gaps
+    of a composed transform.
   - For every `gathered` block containing consecutive standalone step-method formulas, require exactly two dedicated full
     `\\` rows between adjacent formulas. Count only full rows outside any `Bmatrix` method vector; reject zero or one
     separator rows and reject artificial `\\[12pt]` spacing used in their place.
-  - For every workflow formula in a `Result` section, require exactly two dedicated full `\\` rows between the typed input
+  - For the workflow formula in Result section, require exactly two dedicated full `\\` rows between the typed input
     vector, each assigned stage, and the typed final-output vector. Reject a directly adjacent row or a single separator row;
     the check must cover every workflow document, not only `SearchDocuments`.
   - After applying the 140-character rule, reject any arrow-centered `aligned` split whose normalized call-plus-arrow row is
     at most 140 characters. The height of a return matrix must never trigger wrapping of an otherwise viewer-safe method.
-  - Preserve the exact transform class name in every standalone Resulting transform shape formula, including workflow
-    stages such as Features. The enclosing workflow Result may omit its parent name when the prose already identifies it.
-  - Inspect each source return expression for .project() and .base(). Use Schema Notation - With Projection in the matching
-    step formula: retain the return schema name, show \vdots for inherited/projected fields, and list only fields introduced
+  - Preserve exact transform class name in every 'Resulting transform shape' formula, including workflow stages such as Features. 
+    The main transform Result section notation omits its transform name when the prose already identifies it.
+  - Inspect each source return expression for .project() and .base(). Use 'Schema Notation - With Projection' in the matching
+    step formula: retain return schema name, show \vdots for inherited/projected fields, and list only fields introduced
     by the projection call.
   - Verify every arrow-bearing row at or above 140 characters, and every row that visibly exceeds the viewer content
     width, has at most one arrow-centered wrap. Do not wrap a formula merely because its vertically stacked matrix rows
     make the aggregate source block longer; verify shorter, viewer-safe formulas have no artificial wrap.
-  - Classify every stage by source package before formatting: only a transform outside the main/workflow package tree is
-    external. External stages may have one canonical transform formula with a colon and unnamed schema vectors, but must
-    not have a `Resulting transform shape:` block when their step methods are not discussed. Internal same-package and
-    child-package stages must retain their documented methods and exactly one `Resulting transform shape:` block.
-  - Verify every standalone shape names its exact transform class, dense workflow shapes have visible spacing between input,
-    stage, and output rows, and consecutive standalone step formulas contain two dedicated full \\ separator rows.
+  - Classify every stage by source package before formatting: only a transform outside main transform package tree is
+    external. External stages may have one transform formula with a colon and unnamed schema vectors, but must
+    not have a `Resulting transform shape:` block when their step methods are not discussed. Internal stages must
+    retain their documented methods and exactly one `Resulting transform shape:` block.
+  - Verify every standalone transform notation names its exact transform class, composed transforms have visible 
+    spacing between input, stage, and output rows, and consecutive standalone step formulas contain two dedicated
+    full \\ separator rows.
 
