@@ -488,10 +488,29 @@ class ChunkingGenerated(DocumentChunkingGenerated, SentenceChunkingGenerated):
         # Step method: sentences
         sentences = frames["sentences_chunked__sentences"].alias("sentence")
         assert_schema(sentences, SENTENCE_SCHEMA, name="Sentence", mode="strict")
+
+        # Step method: _stage_output_0
+        _stage_output_0 = frames["documents_chunked__sections"].alias("section")
+        assert_schema(_stage_output_0, SECTION_SCHEMA, name="Section", mode="strict")
+
+        # Step method: _stage_output_1
+        _stage_output_1 = frames["documents_chunked__paragraphs"].alias("paragraph")
+        assert_schema(_stage_output_1, PARAGRAPH_SCHEMA, name="Paragraph", mode="strict")
+
+        # Step method: _stage_output_2
+        _stage_output_2 = frames["sentences_chunked__sentences"].alias("sentence")
+        assert_schema(_stage_output_2, SENTENCE_SCHEMA, name="Sentence", mode="strict")
         return TransformResult(
             {"sections": sections, "paragraphs": paragraphs, "sentences": sentences},
             single=False,
             schema={"sections": SECTION_SCHEMA, "paragraphs": PARAGRAPH_SCHEMA, "sentences": SENTENCE_SCHEMA},
+            stage_records=[
+                (('documents_chunked', 'sections'), _stage_output_0, SECTION_SCHEMA, ()),
+                (('documents_chunked', 'paragraphs'), _stage_output_1, PARAGRAPH_SCHEMA, ()),
+                (('sentences_chunked', 'sentences'), _stage_output_2, SENTENCE_SCHEMA, ()),
+            ],
+            stage_outputs_enabled=True,
+            stage_names=('documents_chunked', 'sentences_chunked'),
         )
 
     @staticmethod

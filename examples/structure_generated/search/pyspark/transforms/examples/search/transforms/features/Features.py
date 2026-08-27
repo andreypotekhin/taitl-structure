@@ -198,8 +198,22 @@ class FeaturesGenerated(BuildDocumentFeaturesGenerated, BuildQueryFeaturesGenera
         # Step method: query_features
         query_features = frames["queries_built__query_features"].alias("query_features")
         assert_schema(query_features, QUERY_FEATURES_SCHEMA, name="QueryFeatures", mode="strict")
+
+        # Step method: _stage_output_0
+        _stage_output_0 = frames["documents_built__document_features"].alias("document_features")
+        assert_schema(_stage_output_0, DOCUMENT_FEATURES_SCHEMA, name="DocumentFeatures", mode="strict")
+
+        # Step method: _stage_output_1
+        _stage_output_1 = frames["queries_built__query_features"].alias("query_features")
+        assert_schema(_stage_output_1, QUERY_FEATURES_SCHEMA, name="QueryFeatures", mode="strict")
         return TransformResult(
             {"document_features": document_features, "query_features": query_features},
             single=False,
             schema={"document_features": DOCUMENT_FEATURES_SCHEMA, "query_features": QUERY_FEATURES_SCHEMA},
+            stage_records=[
+                (('documents_built', 'document_features'), _stage_output_0, DOCUMENT_FEATURES_SCHEMA, ()),
+                (('queries_built', 'query_features'), _stage_output_1, QUERY_FEATURES_SCHEMA, ()),
+            ],
+            stage_outputs_enabled=True,
+            stage_names=('documents_built', 'queries_built'),
         )

@@ -147,7 +147,7 @@ def test_instance_to_runs_with_final_output_shape() -> None:
 
     def executor(**kwargs):
         captured["steps"] = [step.name for step in kwargs["plan"].steps]
-        return object()
+        return TransformResult({"published": object()}, single=True)
 
     result = (
         NormalizeOrders(orders=object())

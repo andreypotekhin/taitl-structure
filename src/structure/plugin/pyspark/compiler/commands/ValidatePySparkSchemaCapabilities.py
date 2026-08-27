@@ -21,6 +21,7 @@ class ValidatePySparkSchemaCapabilities:
         schemas.update(cast(type[Schema], step.output_schema) for step in plan.steps)
         schemas.update(cast(type[Schema], result.schema) for step in plan.steps for result in step.results)
         schemas.update(cast(type[Schema], output.schema) for output in plan.outputs)
+        schemas.update(cast(type[Schema], item.output.schema) for item in plan.stage_outputs)
         return schemas
 
     def _schema(self, schema: type[Schema], *, capabilities: BackendCapabilities, visited: set[type[Schema]]) -> None:

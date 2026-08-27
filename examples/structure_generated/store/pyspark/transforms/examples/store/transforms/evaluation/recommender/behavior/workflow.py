@@ -537,6 +537,33 @@ class EvaluateRecommendationsGenerated(
         assert_schema(
             daily_behavior, DAILY_RECOMMENDATION_BEHAVIOR_SCHEMA, name="DailyRecommendationBehavior", mode="strict"
         )
+
+        # Step method: _stage_output_0
+        _stage_output_0 = frames["selected__selected_requests"].alias("recommendation_request_behavior")
+        assert_schema(
+            _stage_output_0, RECOMMENDATION_REQUEST_BEHAVIOR_SCHEMA, name="RecommendationRequestBehavior", mode="strict"
+        )
+
+        # Step method: _stage_output_1
+        _stage_output_1 = frames["impressions_measured__measured"].alias("recommendation_behavior_impression")
+        assert_schema(
+            _stage_output_1,
+            RECOMMENDATION_BEHAVIOR_IMPRESSION_SCHEMA,
+            name="RecommendationBehaviorImpression",
+            mode="strict",
+        )
+
+        # Step method: _stage_output_2
+        _stage_output_2 = frames["requests_measured__request_behaviors"].alias("recommendation_request_behavior")
+        assert_schema(
+            _stage_output_2, RECOMMENDATION_REQUEST_BEHAVIOR_SCHEMA, name="RecommendationRequestBehavior", mode="strict"
+        )
+
+        # Step method: _stage_output_3
+        _stage_output_3 = frames["summarized__daily_behavior"].alias("daily_recommendation_behavior")
+        assert_schema(
+            _stage_output_3, DAILY_RECOMMENDATION_BEHAVIOR_SCHEMA, name="DailyRecommendationBehavior", mode="strict"
+        )
         return TransformResult(
             {"request_behaviors": request_behaviors, "daily_behavior": daily_behavior},
             single=False,
@@ -544,4 +571,17 @@ class EvaluateRecommendationsGenerated(
                 "request_behaviors": RECOMMENDATION_REQUEST_BEHAVIOR_SCHEMA,
                 "daily_behavior": DAILY_RECOMMENDATION_BEHAVIOR_SCHEMA,
             },
+            stage_records=[
+                (('selected', 'selected_requests'), _stage_output_0, RECOMMENDATION_REQUEST_BEHAVIOR_SCHEMA, ()),
+                (('impressions_measured', 'measured'), _stage_output_1, RECOMMENDATION_BEHAVIOR_IMPRESSION_SCHEMA, ()),
+                (
+                    ('requests_measured', 'request_behaviors'),
+                    _stage_output_2,
+                    RECOMMENDATION_REQUEST_BEHAVIOR_SCHEMA,
+                    (),
+                ),
+                (('summarized', 'daily_behavior'), _stage_output_3, DAILY_RECOMMENDATION_BEHAVIOR_SCHEMA, ()),
+            ],
+            stage_outputs_enabled=True,
+            stage_names=('selected', 'impressions_measured', 'requests_measured', 'summarized'),
         )

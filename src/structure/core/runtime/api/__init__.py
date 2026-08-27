@@ -3,6 +3,7 @@ from structure.core.runtime.execution.api import Execution
 from structure.core.runtime.schemas.api import ResultSchemas, Schemas, TransformSchemas
 from structure.core.runtime.session.api import (
     RuntimeDiagnostic,
+    StageResult,
     StructureRuntimeError,
     StructureSession,
     TransformResult,
@@ -11,6 +12,7 @@ from structure.core.runtime.session.api import (
 __all__ = [
     "Execution",
     "RuntimeDiagnostic",
+    "StageResult",
     "ResultSchemas",
     "Runtime",
     "Schemas",

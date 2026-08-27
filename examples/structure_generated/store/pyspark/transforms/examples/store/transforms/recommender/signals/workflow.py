@@ -489,6 +489,35 @@ class BuildRecommendationSignalsGenerated(
             name="ProductRecommendationSignal",
             mode="strict",
         )
+
+        # Step method: _stage_output_0
+        _stage_output_0 = frames["session__events"].alias("session_feature")
+        assert_schema(_stage_output_0, SESSION_FEATURE_SCHEMA, name="SessionFeature", mode="strict")
+
+        # Step method: _stage_output_1
+        _stage_output_1 = frames["purchases__fulfilled_orders"].alias("recommendation_purchase")
+        assert_schema(_stage_output_1, RECOMMENDATION_PURCHASE_SCHEMA, name="RecommendationPurchase", mode="strict")
+
+        # Step method: _stage_output_2
+        _stage_output_2 = frames["recommendation__daily_impressions"].alias("daily_recommendation_impressions")
+        assert_schema(
+            _stage_output_2,
+            DAILY_RECOMMENDATION_IMPRESSIONS_SCHEMA,
+            name="DailyRecommendationImpressions",
+            mode="strict",
+        )
+
+        # Step method: _stage_output_3
+        _stage_output_3 = frames["recommendation__daily_clicks"].alias("daily_recommendation_clicks")
+        assert_schema(
+            _stage_output_3, DAILY_RECOMMENDATION_CLICKS_SCHEMA, name="DailyRecommendationClicks", mode="strict"
+        )
+
+        # Step method: _stage_output_4
+        _stage_output_4 = frames["recommendation__signals"].alias("product_recommendation_signal")
+        assert_schema(
+            _stage_output_4, PRODUCT_RECOMMENDATION_SIGNAL_SCHEMA, name="ProductRecommendationSignal", mode="strict"
+        )
         return TransformResult(
             {
                 "session_features": session_features,
@@ -505,4 +534,13 @@ class BuildRecommendationSignalsGenerated(
                 "daily_clicks": DAILY_RECOMMENDATION_CLICKS_SCHEMA,
                 "recommendation_signals": PRODUCT_RECOMMENDATION_SIGNAL_SCHEMA,
             },
+            stage_records=[
+                (('session', 'features'), _stage_output_0, SESSION_FEATURE_SCHEMA, ()),
+                (('purchases', 'purchases'), _stage_output_1, RECOMMENDATION_PURCHASE_SCHEMA, ()),
+                (('recommendation', 'daily_impressions'), _stage_output_2, DAILY_RECOMMENDATION_IMPRESSIONS_SCHEMA, ()),
+                (('recommendation', 'daily_clicks'), _stage_output_3, DAILY_RECOMMENDATION_CLICKS_SCHEMA, ()),
+                (('recommendation', 'signals'), _stage_output_4, PRODUCT_RECOMMENDATION_SIGNAL_SCHEMA, ()),
+            ],
+            stage_outputs_enabled=True,
+            stage_names=('session', 'purchases', 'recommendation'),
         )

@@ -97,7 +97,9 @@ scope rather than a live DataFrame. Generated `run(...)` methods retain the same
 
 `lane(schema)` names internal transform state. A lane can be written by one step and read by later steps, but it is not
 a public composition boundary. `output(schema)` declares a public result and may name the source lane or expression.
-Output declarations determine the public result order.
+Output declarations determine the public result order. When a transform is used as a composition stage, its declared
+outputs are also available to the composed result through that stage's namespace; this does not make its internal lanes
+public.
 
 Step methods normally return a schema constructor projection. A method may use `where(...)`, expressions, joins,
 windows, aggregates, collections, and other supported operations from the plugin API. Operations are applied in source

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from dataclasses import replace
 from datetime import date, datetime
 from decimal import Decimal
 from typing import Callable, Iterable, Mapping, cast
@@ -303,6 +304,10 @@ class RenderPySparkTransformModule:
             lines.append(f"        self.{fields[output.name]} = {output.name}")
             result_entries.append(f'"{output.name}": self.{fields[output.name]}')
             schema_entries.append(f'"{output.name}": {self._schema.constant_name(output.output_schema)}')
+        stage_lines, stage_argument = self._stage_result_lines(
+            plan, sources, backend_target=plan.backend.target, mirror=True
+        )
+        lines.extend(stage_lines)
         single = "True" if len(plan.outputs) == 1 else "False"
         aliases = self._output_aliases(plan)
         alias_argument = f", aliases={aliases!r}" if aliases else ""
@@ -311,6 +316,7 @@ class RenderPySparkTransformModule:
             f"{{{', '.join(result_entries)}}}, "
             f"single={single}, "
             f"schema={{{', '.join(schema_entries)}}}"
+            f"{stage_argument}"
             f"{alias_argument})"
         )
         wrappers = (
@@ -512,6 +518,10 @@ class RenderPySparkTransformModule:
             )
             result_entries.append(f'"{output.name}": {output.name}')
             schema_entries.append(f'"{output.name}": {self._schema.constant_name(output.output_schema)}')
+        stage_lines, stage_argument = self._stage_result_lines(
+            plan, sources, backend_target=plan.backend.target
+        )
+        lines.extend(stage_lines)
         single = "True" if len(plan.outputs) == 1 else "False"
         aliases = self._output_aliases(plan)
         alias_argument = f", aliases={aliases!r}" if aliases else ""
@@ -520,6 +530,7 @@ class RenderPySparkTransformModule:
             f"{{{', '.join(result_entries)}}}, "
             f"single={single}, "
             f"schema={{{', '.join(schema_entries)}}}"
+            f"{stage_argument}"
             f"{alias_argument})"
         )
         if self._options.enabled(generated_code_options, "embed_hooks"):
@@ -634,6 +645,10 @@ class RenderPySparkTransformModule:
             )
             result_entries.append(f'"{output.name}": {output.name}')
             schema_entries.append(f'"{output.name}": {self._schema.constant_name(output.output_schema)}')
+        stage_lines, stage_argument = self._stage_result_lines(
+            plan, sources, backend_target=plan.backend.target
+        )
+        lines.extend(stage_lines)
         single = "True" if len(plan.outputs) == 1 else "False"
         aliases = self._output_aliases(plan)
         alias_argument = f", aliases={aliases!r}" if aliases else ""
@@ -642,6 +657,7 @@ class RenderPySparkTransformModule:
             f"{{{', '.join(result_entries)}}}, "
             f"single={single}, "
             f"schema={{{', '.join(schema_entries)}}}"
+            f"{stage_argument}"
             f"{alias_argument})"
         )
         if self._options.enabled(generated_code_options, "embed_hooks"):
@@ -953,6 +969,8 @@ class RenderPySparkTransformModule:
             yield from self._step_expressions(step)
         for output in plan.outputs:
             yield from self._step_expressions(output)
+        for stage_output in plan.stage_outputs:
+            yield from self._step_expressions(stage_output.output)
 
     def _step_expressions(self, step: PySparkStepRecipe | PySparkOutputRecipe):
         yield from step.filters
@@ -1000,7 +1018,7 @@ class RenderPySparkTransformModule:
 
     def _has_explicit_cache_level(self, plan: PySparkExecutionPlan) -> bool:
         return self._operations_have_explicit_cache_level(plan.steps) or self._operations_have_explicit_cache_level(
-            plan.outputs
+            (*plan.outputs, *(item.output for item in plan.stage_outputs))
         )
 
     def _operations_have_explicit_cache_level(
@@ -1115,6 +1133,7 @@ class RenderPySparkTransformModule:
 
     def _schemas(self, plan: PySparkExecutionPlan) -> set[type[Schema]]:
         schemas: set[type[Schema]] = {output.output_schema for output in plan.outputs}
+        schemas.update(item.output.output_schema for item in plan.stage_outputs)
         for input in plan.inputs:
             schemas.add(input.schema)
         for step in plan.steps:
@@ -1152,6 +1171,40 @@ class RenderPySparkTransformModule:
     def _output_aliases(self, plan: PySparkExecutionPlan) -> dict[str, tuple[str, ...]]:
         return {output.name: output.aliases for output in plan.outputs if output.aliases}
 
+    def _stage_result_lines(
+        self,
+        plan: PySparkExecutionPlan,
+        sources: dict[str, str],
+        *,
+        backend_target: str,
+        mirror: bool = False,
+    ) -> tuple[list[str], str]:
+        if not plan.allow_stage_outputs or not plan.stage_outputs:
+            return [], ""
+        lines: list[str] = []
+        records: list[str] = []
+        for ordinal, stage_output in enumerate(plan.stage_outputs):
+            output = replace(stage_output.output, name=f"_stage_output_{ordinal}")
+            lines.append("")
+            lines.append(
+                self._step(
+                    output,
+                    current=sources[output.source],
+                    sources=sources,
+                    backend_target=backend_target,
+                )
+            )
+            value = f"self.{output.name}" if mirror else output.name
+            records.append(
+                f"({stage_output.path!r}, {value}, {self._schema.constant_name(output.output_schema)}, {output.aliases!r})"
+            )
+        stage_names = tuple(dict.fromkeys(item.path[0] for item in plan.stage_outputs))
+        return lines, (
+            f", stage_records=[{', '.join(records)}]"
+            f", stage_outputs_enabled={plan.allow_stage_outputs!r}"
+            f", stage_names={stage_names!r}"
+        )
+
     def _has_hooks(self, plan: PySparkExecutionPlan) -> bool:
         return bool(self._hooks(plan))
 
@@ -1167,10 +1220,11 @@ class RenderPySparkTransformModule:
         )
 
     def _has_window(self, plan: PySparkExecutionPlan) -> bool:
+        all_outputs = (*plan.outputs, *(item.output for item in plan.stage_outputs))
         joins = [join for step in plan.steps for join in step.joins]
-        joins.extend(join for output in plan.outputs for join in output.joins)
+        joins.extend(join for output in all_outputs for join in output.joins)
         joins.extend(operation.join for step in plan.steps for operation in step.operations if operation.join)
-        joins.extend(operation.join for output in plan.outputs for operation in output.operations if operation.join)
+        joins.extend(operation.join for output in all_outputs for operation in output.operations if operation.join)
         selected_rows = [
             operation.selected_rows
             for step in plan.steps
@@ -1179,7 +1233,7 @@ class RenderPySparkTransformModule:
         ]
         selected_rows.extend(
             operation.selected_rows
-            for output in plan.outputs
+            for output in all_outputs
             for operation in output.operations
             if operation.selected_rows is not None
         )
@@ -1191,7 +1245,7 @@ class RenderPySparkTransformModule:
         ]
         priority_selections.extend(
             operation.relation_priority_selection
-            for output in plan.outputs
+            for output in all_outputs
             for operation in output.operations
             if operation.relation_priority_selection is not None
         )
@@ -1212,7 +1266,7 @@ class RenderPySparkTransformModule:
             )
             or any(
                 self._has_window_projection(assignment.expression)
-                for output in plan.outputs
+                for output in all_outputs
                 for assignment in output.projection
             )
         )

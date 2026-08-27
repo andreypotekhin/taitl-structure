@@ -93,7 +93,7 @@ Internal stage subsection: stage subsection for an internal stage.
 External stage subsection: stage subsection for an external stage. 
 Resulting shape block: canonic stage transform notation at the end of stage subsection, usually preceded with `Resulting transform shape:` label 
 
-Explanatory item: for a step method, the prose which explains it; usually numbered with a circled number.  
+Explanatory item: for a step method, the prose which explains it; usually a numbered item.
 Stage call: the assignment of stage to a field of a composed transform.
 
 ## Draft
@@ -137,9 +137,14 @@ Draft the remaining sections in the concise, structured style exemplified by `cl
 
 - `Problem`: describe the industry and project need in one or two focused paragraphs. Ground the problem in the topic itself; 
 do not refer to earlier text-pipeline steps.
-- `Solution`: provide the full conceptual narrative described above.
-- `Builds on`: list the principal collections, transforms, or relations that supply the topic's inputs.
-- `Used by`: list the principal transforms or workflows that consume the topic's outputs.
+- `Solution`: provide the full conceptual narrative described above. Frame it as a proposed solution: explain the design
+  the chapter recommends, why its boundaries and tradeoffs are chosen, and what behavior the proposal should enable.
+  Refrain from referring to the proposed solution as such: omit 'The proposed solution is' and similar wording.
+- `Builds on`: list only principal top-level topics that supply the topic's inputs, using canonical topic names such as
+  `Chunking` or `Scoring`. Omit schema classes, step methods, internal stage transforms, policy objects, and generic
+  prose; leave the section empty when no top-level topic applies.
+- `Used by`: list only principal top-level topics or workflows that consume the topic's outputs, using the same canonical
+  names. Omit schema classes, step methods, internal stage transforms, policy objects, and generic consumer descriptions.
 - `Definitions`: define the small set of topic concepts needed by the chapter. Prefer bold, single-word concept names followed by concise explanations.
 - `Inputs`: list each input schema or relation.
 - `Outputs`: list each output schema or relation.
@@ -160,6 +165,14 @@ do not refer to earlier text-pipeline steps.
 - `Code`: retain the heading and identify the corresponding collected document by filename, such as `Indexing.cnd.md`. Do not reproduce source code in the draft.
 
 Keep the section order fixed. The draft is a structured chapter source: its lists establish the chapter's vocabulary and interfaces, its Notation block establishes workflow coverage, and its Solution establishes the reader-facing conceptual argument.
+
+### Draft operator - Quality assurance
+
+- Verify that `Solution` opens with a clearly proposed design and continues as a recommendation narrative: explain chosen
+  boundaries, tradeoffs, and enabled behavior rather than only describing existing facts.
+- Verify that `Builds on` and `Used by` contain only canonical names of principal top-level topics or workflows. Reject
+  schema classes, step methods, internal stage transforms, policy objects, and generic relationship prose; allow an empty
+  section when no top-level topic applies.
 
 ## Collection
 Present annotated source as continuous narrative.
@@ -285,10 +298,16 @@ Implementation section:
 - Use this exact order inside the combined `Implementation` section:
   1. the combined conceptual/technical prose from the background and draft Implementation;
   2. one subsection (a Stage subsection) for each workflow stage transform, including its explanatory items, 
-  individual typed step notation, and its final compact text notation;
+     individual typed step notation, and its final compact text notation;
   3. (only when workflow is a composed transform) a `Result` subsection containing the complete workflow notation.
-- In each stage subsection, explain stage flow with circled items such as `①`, `②`, and `③`. Drop the short italic
-  intent sentence used by the earlier format; each item should contain explanatory prose directly.
+- Identify the parent/workflow transform from the collected source before creating Implementation subsections. The parent
+  transform is represented by the `Result` subsection only; do not create a stage subsection or numbered step narrative
+  named after the parent/workflow transform. Implementation prose may explain the parent orchestration, but its assigned
+  stage calls belong in the parent `Result` notation, while numbered narratives and stage subsections belong only to child
+  stage transforms.
+- In each stage subsection, explain stage flow with numbered items. Each item must begin with one short italicized intent
+    sentence, immediately followed by the explanatory prose for that same step. Do not place explanatory prose before the
+    intent sentence, and do not duplicate the intent or explanation as separate numbered items.
 - Name each stage subsection with the its exact transform class name and use that class name in text notation. 
   Derive the names from the source `Stages` inventory and the collected Code classes; never rename a
   child stage to the package or parent workflow name.
@@ -313,14 +332,18 @@ Implementation section:
   explicit `Notation` heading. Remove the circled reference markers from stage notation block; the typed individual
   signatures remain under their explanatory items. Put body-text line `Resulting transform shape:` immediately before
   the notation block so it cannot visually merge with the preceding individual step notation. For an external stage,
-  keep only one canonical stage transform notation block and omit `Resulting transform shape:` entirely.
+  keep one stage subsection per actual external stage call, with one short numbered intent and one canonical stage-call
+  notation block; do not include its typed step methods, step groups, method inventory, or `Resulting transform shape:`.
 - After all stage subsections, add a Result subsection with a fenced text notation block for the workflow transform,
   only when an actual parent workflow transform exists and is a composed transform. A single transform with internal 
   steps does not need a Result section. Do not invent a parent transform for a package that has only child transforms.
+  Confirm the exact parent class declaration and its composed stage assignments in the collected source before emitting
+  `Result`; if no such class exists, omit `Result`, any parent-named Implementation subsection, and any package-level
+  parent notation. This applies to aggregate topics such as Evaluation and Experiments.
   Preserve workflow inputs, stage calls and concrete output schemas in result notation. Use the typed
   workflow format of `Indexing.comb.md`: list `inputs`, child transform assignments, and typed `outputs`. Do not repeat
   stage transform notations in Result section; the parent workflow shape must be distinct.
-- Refer to transforms, stages, and steps from the circled items. Consider joining cohesive notation lines when that
+- Refer to transforms, stages, and steps from the numbered items. Consider joining cohesive notation lines when that
   keeps the correspondence clear, but retain every meaningful step in the stage transform and result notations.
   
 Content style: 
@@ -384,20 +407,32 @@ Quality assurance rules
 General
 - Before publishing a combined document, verify that its H1 and every section before Implementation section are preserved
   from the source draft/combined structure.
-- Normalize prose wrapping before publishing: continuation lines in ordinary paragraphs and circled-item prose must start at
+- Normalize prose wrapping before publishing: continuation lines in ordinary paragraphs and numbered-item prose must start at
   column zero. Preserve indentation only inside fenced code, structured text notation, lists, and display math; reject runs of
   leading spaces that would render as literal whitespace in Typora.
+- In every numbered implementation item, place exactly one short italicized intent sentence first, followed immediately by
+  the explanatory prose for that same step. Reject prose duplicated before the item, a separate unnumbered explanation before
+  the intent, or an item containing only the intent with its explanation outside the item.
 
 Implementation section - main body
-- Verify every circled item is followed by its complete individual notation. A notation block must not begin or end with a
+- Verify every numbered item is followed by its complete individual notation. A notation block must not begin or end with a
   continuation line torn from a neighboring item; check multiline calls and outputs as one unit.
 
 Implementation section - stage subsections 
   - Verify every stage subsection
     - Contains all and only that stage transform steps, in order, and that each return/output uses concrete schema classes.
+    - Is a child stage subsection, never a subsection named after the parent/workflow transform. Parent orchestration and
+      its stage assignments belong only in the `Result` subsection.
     - For internal stages, ends with `Resulting transform shape:` and canonical transform notation. 
-      For external stages, contains one canonical transform notation without a `Resulting transform shape:` block.
+      For external stages, contains one numbered intent and one canonical stage-call notation without typed step methods
+      or a `Resulting transform shape:` block.
   - Verify main/workflow transform, if any, has Result section with full notation.
+  - Verify `Result` is emitted only when the collected source contains the exact parent/workflow class and composed stage
+    assignments. For a topic package with only standalone or child transform classes, reject `Result`, a synthetic
+    parent-named Implementation subsection, and any package-level parent shape.
+  - For a composed workflow, reject any numbered implementation narrative, child-stage heading, or stage notation block
+    that presents the parent/workflow transform as one of its own stages. The only parent transform notation is the
+    composed notation in `Result`; the parent may be mentioned in surrounding conceptual prose.
   - Verify no repeat/duplication of transform notations.
 
 Code section
@@ -418,6 +453,12 @@ Automation:
   stage subsection, internal stages have explanatory narrative and one complete Resulting transform shape with concrete
   inputs, methods or child stages, and outputs. Parent Result shape must reproduce stage calls and typed outputs exactly; 
   reject placeholders such as “grain terms,” omitted per-stage shapes, or a parent shape that merely repeats a child shape.
+- Derive the stage inventory from every actual transform call in the parent workflow source and Code, not from the draft
+  `Stages` list alone. If a called class is outside the main/workflow package tree, require an external stage subsection
+  for it even when the draft inventory omitted it; if it is inside the tree, require the corresponding internal narrative.
+- For every external stage subsection, verify that the subsection names the called class exactly, contains one concise
+  numbered intent and one canonical stage-call notation, and contains no typed step signature, step group, method vector,
+  or `Resulting transform shape:` block. The parent workflow may repeat the actual stage assignment in its Result shape.
 - Never use parent workflow name as a child stage's shape. If a subsection heading names multiple
   classes (for example, `A / B`), split it into subsection-per-class and give each class its own narrative and notation.
   Conversely, require the stage subsection transform notation to reference the same actual step-method inventory
@@ -498,6 +539,10 @@ Step method:
     - If return schema definition for the schema is already shown in preceding formulas of same document.
     - If return schema is same as one of the argument schemas.
     - If the only content of return schema definition vector is lone ellipses (\\vdots).
+  - Maintain a document-wide set of emitted schema definitions while formatting, including definitions emitted in
+    other stage subsections. Once a schema's complete field vector has appeared, later returns of that same schema
+    use only the schema name. Emit a return definition again only when the returned field set is genuinely different,
+    such as a distinct projection.
 - Keep short step-method formulas in one formula flow. Use 140 characters as the soft wrapping limit for the longest
   rendered arrow-bearing row, not for the sum of vertically stacked matrix rows. Wrap once at the arrow only when that
   row reaches the limit or visibly exceeds the viewer's content width because of long identifiers. Do not split the
@@ -519,6 +564,9 @@ Transform - standalone (as in 'Resulting transform shape' sections of .form.md d
   row, even when several methods consume or produce the same relation set.
 - Preserve transform name in formula, including workflow stages such as Features; 
   omit a name only in workflow Result formula when the surrounding prose already names it.
+- In the canonic transform shape, the middle method vector contains operator names only. Do not place argument types,
+  argument vectors, arrows, return schemas, or full step signatures inside that vector; those belong in the explanatory
+  step formulas.
 - Define external stages by source package: a stage is external when its transform class is outside the package tree rooted at
   the main/workflow transform; imports alone do not make a same-package or child-package stage external. For an external
   stage whose implementation and step methods are not discussed in the document, keep one canonical standalone transform
@@ -536,6 +584,8 @@ Main Transform - e.g. workflow transform in Result section of .form.md docs
 - Use a smaller gap such as \\[2pt] between methods inside a dense workflow method vector.
 - Add two dedicated full \\ rows between workflow inputs, each stage and final outputs so adjacent vectors do not
   visually merge.
+- Apply the same two-row separation to every composed-transform formula, including a stage subsection's
+  `Resulting transform shape:` and its multi-stage explanatory flow; do not let adjacent stage calls share a visual row.
 
 Additional Rules
 - Keep the Inputs, Outputs, and Stages sections in their source text form; formulas are applied to the individual
@@ -545,14 +595,18 @@ Additional Rules
 
 Quality assurance:
   - For every `.form.md` output, audit every formula block in the document.
+  - Outside fenced code, structured text notation, and display math, require ordinary paragraph and numbered-item
+    continuation lines to start at column zero. Reject indentation introduced only by wrapping prose, because Typora
+    renders those leading spaces as visible whitespace.
   - Verify every display formula has balanced, properly nested `\\begin{...}`/`\\end{...}` environments. Reject an
     unclosed nested `aligned`, `gathered`, `pmatrix`, or `Bmatrix` environment, including when one is embedded in another.
   - Step methods must use the canonic step method notation from `prose/Notation.md`: argument names and separating colons
     are omitted, argument schema types remain, and every returned schema retains its name plus a field-name projection.
     Reject a bare return schema, lone ellipses (\\vdots) return schema, a missing `return_schema_definitions` projection,
     or an invented `\vdots` projection when the source schema fields are available.
-  - Use the single-argument form `\operatorname{method}(Type)` for one argument. The compact-space `\!` is permitted only
-    before a multi-argument matrix or a stage call; reject `\operatorname{method}\!(Type)`.
+  - Use the single-argument form `\operatorname{method}(Type)` for exactly one argument. Never render a one-argument
+    matrix, and never use `\!` before its parentheses. The compact-space `\!` is permitted only before a multi-argument
+    matrix or a stage call; reject `\operatorname{method}\!(Type)` and any one-argument `pmatrix`.
   - Keep formulas left anchored. Every `aligned` block must anchor its rows with `&`; do not use right-aligned display
     formulas or a leading unanchored continuation row. Separate consecutive standalone step formulas with two dedicated
     full `\\` rows, and use short spacing only between methods inside a dense workflow method vector.
@@ -566,6 +620,9 @@ Quality assurance:
     the transform vector; full signatures belong only to the explanatory step formulas.
   - In every canonic standalone transform input and output vector, put exactly one schema type on each row. Reject
     comma-separated type lists collapsed into one matrix row; multiple inputs or outputs must occupy separate rows.
+  - Whenever a step method, stage call, or other formula returns multiple schemas, represent the return schemas as one
+    output `pmatrix` with exactly one schema per row. Reject comma-separated return lists, including lists in abstract or
+    variant stage formulas.
   - Apply the raw/special omission rule to every formula context, including method vectors nested inside composed-transform
     stage calls. Reject opaque `@special` helpers and undocumented `@raw` helpers in formulas; a typed `@raw` step
     explicitly documented by Combine must remain present in its corresponding formula contexts.
@@ -579,6 +636,9 @@ Quality assurance:
     assignments. Omit the workflow name and do not repeat the `Resulting transform shape:` label in `Result`.
   - For a composed root transform, use a `### Result` section for the parent composition; never emit the parent as an
     additional `Resulting transform shape:` block. Reserve that label for internal standalone stage shapes.
+  - Emit `### Result` only after verifying an exact parent/workflow class with composed stage assignments in the collected
+    Code. If the topic contains no such class, reject any Result section, parent-named implementation narrative, or
+    invented package-level transform notation.
   - Classify a named shape as standalone or composed from the source transform before formatting. A composed transform must
     use `Composed Transform Notation - With name`: `TransformClassName :`, typed input/output name pairs, and assigned stage
     calls with their canonic stage method vectors. Never render a composed transform as a standalone step-transform shape.
@@ -594,6 +654,9 @@ Quality assurance:
   - For the workflow formula in Result section, require exactly two dedicated full `\\` rows between the typed input
     vector, each assigned stage, and the typed final-output vector. Reject a directly adjacent row or a single separator row;
     the check must cover every workflow document, not only `SearchDocuments`.
+  - For every composed-transform formula outside `Result`, including internal stage shapes and explanatory stage flows,
+    require exactly two dedicated full `\\` rows between adjacent stage calls and between the input/output vectors and
+    neighboring stage calls. Reject directly adjacent calls or a single separator row.
   - After applying the 140-character rule, reject any arrow-centered `aligned` split whose normalized call-plus-arrow row is
     at most 140 characters. The height of a return matrix must never trigger wrapping of an otherwise viewer-safe method.
   - Preserve exact transform class name in every 'Resulting transform shape' formula, including workflow stages such as Features. 
@@ -601,6 +664,9 @@ Quality assurance:
   - Inspect each source return expression for .project() and .base(). Use 'Schema Notation - With Projection' in the matching
     step formula: retain return schema name, show \vdots for inherited/projected fields, and list only fields introduced
     by the projection call.
+  - Track emitted schema field vectors across the entire document, including all stage subsections. After a schema's
+    complete definition has been shown once, reject later identical return-schema vectors and require the schema name
+    alone. A repeated schema may show a definition only when its fields differ because of a distinct projection.
   - Verify every arrow-bearing row at or above 140 characters, and every row that visibly exceeds the viewer content
     width, has at most one arrow-centered wrap. Do not wrap a formula merely because its vertically stacked matrix rows
     make the aggregate source block longer; verify shorter, viewer-safe formulas have no artificial wrap.

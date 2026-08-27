@@ -16,6 +16,8 @@ generated_package = "structure_generated"
 generated_code_options = []
 # Hard line wrap for generated Python source.
 generated_code_hard_wrap = 120
+# Expose declared outputs of composed stages through TransformResult.stages.
+allow_stage_outputs = true
 
 # Backend target.
 execution_mode = "online"

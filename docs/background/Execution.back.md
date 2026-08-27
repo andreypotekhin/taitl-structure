@@ -100,6 +100,16 @@ declared output names such as `result.published`, `result.accepted`, and `result
 the same names through `result.schema`, such as `result.schema.published` and `result.schema["rejected"]`. There is no
 automatic `df` alias; `df` is present only when a field-declared output is explicitly named `df`.
 
+Composed transforms also retain declared child outputs in a recursive stage namespace when the standard
+`allow_stage_outputs` option is enabled (default `True`):
+
+    query_embeddings = result.vectorized.query_embeddings
+    same_embeddings = result.stages["vectorized"]["query_embeddings"]
+
+Dot access and mapping access are equivalent. Nested compositions retain nested stage names. Only child
+`output(...)` declarations are exposed; `lane(...)` fields and raw-hook frames remain private. Setting
+`allow_stage_outputs=False` omits stage packaging while leaving the final result mapping unchanged.
+
 ### Deferred Invocation And Result Access
 
 Construction and execution are separate operations:

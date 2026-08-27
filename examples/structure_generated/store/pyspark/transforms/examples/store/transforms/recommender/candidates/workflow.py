@@ -355,6 +355,27 @@ class BuildRecommendationCandidatesGenerated(
         assert_schema(
             decisions, RECOMMENDATION_CANDIDATE_DECISION_SCHEMA, name="RecommendationCandidateDecision", mode="strict"
         )
+
+        # Step method: _stage_output_0
+        _stage_output_0 = frames["admitted__requests"].alias("recommendation_candidate")
+        assert_schema(_stage_output_0, RECOMMENDATION_CANDIDATE_SCHEMA, name="RecommendationCandidate", mode="strict")
+
+        # Step method: _stage_output_1
+        _stage_output_1 = frames["retrieved__admitted"].alias("recommendation_candidate")
+        assert_schema(_stage_output_1, RECOMMENDATION_CANDIDATE_SCHEMA, name="RecommendationCandidate", mode="strict")
+
+        # Step method: _stage_output_2
+        _stage_output_2 = frames["filtered__evaluated"].alias("recommendation_candidate_decision")
+        assert_schema(
+            _stage_output_2,
+            RECOMMENDATION_CANDIDATE_DECISION_SCHEMA,
+            name="RecommendationCandidateDecision",
+            mode="strict",
+        )
+
+        # Step method: _stage_output_3
+        _stage_output_3 = frames["filtered__filtered"].alias("recommendation_candidate")
+        assert_schema(_stage_output_3, RECOMMENDATION_CANDIDATE_SCHEMA, name="RecommendationCandidate", mode="strict")
         return TransformResult(
             {"candidates": candidates, "decisions": decisions},
             single=False,
@@ -362,4 +383,12 @@ class BuildRecommendationCandidatesGenerated(
                 "candidates": RECOMMENDATION_CANDIDATE_SCHEMA,
                 "decisions": RECOMMENDATION_CANDIDATE_DECISION_SCHEMA,
             },
+            stage_records=[
+                (('admitted', 'candidates'), _stage_output_0, RECOMMENDATION_CANDIDATE_SCHEMA, ()),
+                (('retrieved', 'candidates'), _stage_output_1, RECOMMENDATION_CANDIDATE_SCHEMA, ()),
+                (('filtered', 'decisions'), _stage_output_2, RECOMMENDATION_CANDIDATE_DECISION_SCHEMA, ()),
+                (('filtered', 'filtered'), _stage_output_3, RECOMMENDATION_CANDIDATE_SCHEMA, ()),
+            ],
+            stage_outputs_enabled=True,
+            stage_names=('admitted', 'retrieved', 'filtered'),
         )

@@ -137,7 +137,7 @@ On invocation of run(), Structure compiles Transform and its dependencies into a
 
 ### Generated PySpark Code
 
-Generated  PySpark code looks similar to this:
+Optionally, we can generate PySpark code. Generated PySpark code looks similar to this:
 
 ```python
 from pyspark.sql import DataFrame, SparkSession
@@ -234,7 +234,7 @@ class EnrichOrdersGenerated:
 
 ## API
 
-Structure tries to cover most of PySpark APIs related to data transformation: filtering, joins, aggregation, deduplication, windowing, higher order functions. Here is an example of a less-trivial analytical transform:
+Structure strives to cover most of PySpark APIs related to data transformation: filtering, joins, aggregation, deduplication, windowing, higher order functions. Here is an example of a less-trivial analytical transform:
 
 ```python
 class OrderAnalytics(Transform):

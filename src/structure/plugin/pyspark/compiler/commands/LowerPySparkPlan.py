@@ -11,6 +11,7 @@ from structure.plugin.pyspark.compiler.logic.maps.MapPySparkInput import MapPySp
 from structure.plugin.pyspark.compiler.logic.maps.MapPySparkOutput import MapPySparkOutput
 from structure.plugin.pyspark.compiler.logic.maps.MapPySparkStep import MapPySparkStep
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
+from structure.plugin.pyspark.compiler.model.PySparkStageOutputRecipe import PySparkStageOutputRecipe
 
 
 class LowerPySparkPlan:
@@ -63,6 +64,13 @@ class LowerPySparkPlan:
             for index, step in enumerate(plan.steps)
         )
         outputs = tuple(self._outputs.map(output, capabilities=target) for output in plan.outputs)
+        stage_outputs = tuple(
+            PySparkStageOutputRecipe(
+                path=stage_output.path,
+                output=self._outputs.map(stage_output.output, capabilities=target),
+            )
+            for stage_output in plan.stage_outputs
+        )
         return PySparkExecutionPlan(
             transform=plan.name,
             backend=target.id,
@@ -70,6 +78,8 @@ class LowerPySparkPlan:
             steps=steps,
             outputs=outputs,
             requires_hook_inputs=False,
+            stage_outputs=stage_outputs,
+            allow_stage_outputs=plan.allow_stage_outputs,
         )
 
     @staticmethod

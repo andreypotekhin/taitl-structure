@@ -30,6 +30,7 @@ from structure.core.dsl.model.transforms.transform_api import (
 )
 from structure.core.runtime.api import (
     ResultSchemas,
+    StageResult,
     StructureRuntimeError,
     StructureSession,
     TransformResult,
@@ -50,6 +51,7 @@ __all__ = [
     "MemoryStorage",
     "PackageImportStorage",
     "ResultSchemas",
+    "StageResult",
     "Schema",
     "SchemaMode",
     "SourceTransformAddress",

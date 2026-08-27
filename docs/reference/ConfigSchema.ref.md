@@ -70,6 +70,7 @@ project root. Explicit `source_roots` always wins.
 | `generated_docs_formats` | list; `["markdown", "json"]` | Supported values are `markdown` and `json` |
 | `generated_code_options` | list; `[]` | Opt into generated method, expression, hook, or UDF forms |
 | `generated_code_hard_wrap` | integer; `120` | Generated source line width |
+| `allow_stage_outputs` | Boolean; `true` | Return recursively composed stage outputs alongside final outputs |
 
 ```toml
 [tool.structure]

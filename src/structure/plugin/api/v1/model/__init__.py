@@ -7,6 +7,7 @@ from structure.plugin.api.v1.model.GenerationResult import GenerationResult
 from structure.plugin.api.v1.model.InputPlan import InputPlan
 from structure.plugin.api.v1.model.HookPlan import HookPlan
 from structure.plugin.api.v1.model.OutputPlan import OutputPlan
+from structure.plugin.api.v1.model.StageOutputPlan import StageOutputPlan
 from structure.plugin.api.v1.model.PluginCompilation import PluginCompilation
 from structure.plugin.api.v1.model.SchemaInspectionRequest import SchemaInspectionRequest
 from structure.plugin.api.v1.model.SchemaValidationRequest import SchemaValidationRequest
@@ -52,6 +53,7 @@ _CORE_CONTRACTS = {
     "StructureRuntimeError": "structure.core.runtime.session.model.StructureRuntimeError",
     "StructureToolError": "structure.core.tools.model.StructureToolError",
     "TransformResult": "structure.core.runtime.session.model.TransformResult",
+    "StageResult": "structure.core.runtime.session.model.StageResult",
     "TransformSchemas": "structure.core.runtime.schemas.model.TransformSchemas",
     "ValidateSchemaToolRequest": "structure.core.tools.logic.rules.ValidateSchemaToolRequest",
 }
@@ -59,8 +61,8 @@ _CORE_CONTRACTS = {
 __all__ = [
     "CompilationPurpose", "CompileRequest", "ExecutionRequest", "ExplainRequest", "GenerationRequest", "GenerationResult", "InputPlan", "PluginCompilation",
     "SchemaInspectionRequest", "SchemaValidationRequest", "StepAuthoringCapture", "StepAuthoringInput", "StepAuthoringRequest", "HookPlan",
-    "StepAuthoringResult", "StepAuthoringSession", "StepInputPlan", "StepPlan", "StepResultPlan", "StreamingAnalysisRequest", "StreamingSupport",
-    "SymbolicContext", "OutputPlan", "TraceabilityRequest", "TransformMemberOrigin", "TransformPlan", "TransformSchemaRequest", "StreamingBoundaryPlan", "current_symbolic_context",
+    "StepAuthoringResult", "StageResult", "StepAuthoringSession", "StepInputPlan", "StepPlan", "StepResultPlan", "StreamingAnalysisRequest", "StreamingSupport",
+    "SymbolicContext", "OutputPlan", "StageOutputPlan", "TraceabilityRequest", "TransformMemberOrigin", "TransformPlan", "TransformSchemaRequest", "StreamingBoundaryPlan", "current_symbolic_context",
     *_CORE_CONTRACTS,
 ]
 

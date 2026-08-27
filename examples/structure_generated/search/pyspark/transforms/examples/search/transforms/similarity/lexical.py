@@ -2991,6 +2991,80 @@ class SimilaritiesGenerated(
         # Step method: sentence_similarities
         sentence_similarities = frames["reduced__sentence_similarities"].alias("sentence_similarity")
         assert_schema(sentence_similarities, SENTENCE_SIMILARITY_SCHEMA, name="SentenceSimilarity", mode="strict")
+
+        # Step method: _stage_output_0
+        _stage_output_0 = frames["queries__queries"].alias("search_query")
+        assert_schema(_stage_output_0, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
+
+        # Step method: _stage_output_1
+        _stage_output_1 = frames["queries__document_queries"].alias("document_similarity_query")
+        assert_schema(_stage_output_1, DOCUMENT_SIMILARITY_QUERY_SCHEMA, name="DocumentSimilarityQuery", mode="strict")
+
+        # Step method: _stage_output_2
+        _stage_output_2 = frames["queries__section_queries"].alias("section_similarity_query")
+        assert_schema(_stage_output_2, SECTION_SIMILARITY_QUERY_SCHEMA, name="SectionSimilarityQuery", mode="strict")
+
+        # Step method: _stage_output_3
+        _stage_output_3 = frames["queries__paragraph_queries"].alias("paragraph_similarity_query")
+        assert_schema(
+            _stage_output_3, PARAGRAPH_SIMILARITY_QUERY_SCHEMA, name="ParagraphSimilarityQuery", mode="strict"
+        )
+
+        # Step method: _stage_output_4
+        _stage_output_4 = frames["queries__sentence_queries"].alias("sentence_similarity_query")
+        assert_schema(_stage_output_4, SENTENCE_SIMILARITY_QUERY_SCHEMA, name="SentenceSimilarityQuery", mode="strict")
+
+        # Step method: _stage_output_5
+        _stage_output_5 = frames["scoring_targets__targets"].alias("document_search_target")
+        assert_schema(_stage_output_5, DOCUMENT_SEARCH_TARGET_SCHEMA, name="DocumentSearchTarget", mode="strict")
+
+        # Step method: _stage_output_6
+        _stage_output_6 = frames["overlap__document_overlap_scores"].alias("document_overlap_score")
+        assert_schema(_stage_output_6, DOCUMENT_OVERLAP_SCORE_SCHEMA, name="DocumentOverlapScore", mode="strict")
+
+        # Step method: _stage_output_7
+        _stage_output_7 = frames["overlap__section_overlap_scores"].alias("section_overlap_score")
+        assert_schema(_stage_output_7, SECTION_OVERLAP_SCORE_SCHEMA, name="SectionOverlapScore", mode="strict")
+
+        # Step method: _stage_output_8
+        _stage_output_8 = frames["overlap__paragraph_overlap_scores"].alias("paragraph_overlap_score")
+        assert_schema(_stage_output_8, PARAGRAPH_OVERLAP_SCORE_SCHEMA, name="ParagraphOverlapScore", mode="strict")
+
+        # Step method: _stage_output_9
+        _stage_output_9 = frames["overlap__sentence_overlap_scores"].alias("sentence_overlap_score")
+        assert_schema(_stage_output_9, SENTENCE_OVERLAP_SCORE_SCHEMA, name="SentenceOverlapScore", mode="strict")
+
+        # Step method: _stage_output_10
+        _stage_output_10 = frames["bm25__document_bm25_scores"].alias("document_bm25_score")
+        assert_schema(_stage_output_10, DOCUMENT_BM25_SCORE_SCHEMA, name="DocumentBm25Score", mode="strict")
+
+        # Step method: _stage_output_11
+        _stage_output_11 = frames["bm25__section_bm25_scores"].alias("section_bm25_score")
+        assert_schema(_stage_output_11, SECTION_BM25_SCORE_SCHEMA, name="SectionBm25Score", mode="strict")
+
+        # Step method: _stage_output_12
+        _stage_output_12 = frames["bm25__paragraph_bm25_scores"].alias("paragraph_bm25_score")
+        assert_schema(_stage_output_12, PARAGRAPH_BM25_SCORE_SCHEMA, name="ParagraphBm25Score", mode="strict")
+
+        # Step method: _stage_output_13
+        _stage_output_13 = frames["bm25__sentence_bm25_scores"].alias("sentence_bm25_score")
+        assert_schema(_stage_output_13, SENTENCE_BM25_SCORE_SCHEMA, name="SentenceBm25Score", mode="strict")
+
+        # Step method: _stage_output_14
+        _stage_output_14 = frames["reduced__document_similarities"].alias("document_similarity")
+        assert_schema(_stage_output_14, DOCUMENT_SIMILARITY_SCHEMA, name="DocumentSimilarity", mode="strict")
+
+        # Step method: _stage_output_15
+        _stage_output_15 = frames["reduced__section_similarities"].alias("section_similarity")
+        assert_schema(_stage_output_15, SECTION_SIMILARITY_SCHEMA, name="SectionSimilarity", mode="strict")
+
+        # Step method: _stage_output_16
+        _stage_output_16 = frames["reduced__paragraph_similarities"].alias("paragraph_similarity")
+        assert_schema(_stage_output_16, PARAGRAPH_SIMILARITY_SCHEMA, name="ParagraphSimilarity", mode="strict")
+
+        # Step method: _stage_output_17
+        _stage_output_17 = frames["reduced__sentence_similarities"].alias("sentence_similarity")
+        assert_schema(_stage_output_17, SENTENCE_SIMILARITY_SCHEMA, name="SentenceSimilarity", mode="strict")
         return TransformResult(
             {
                 "document_similarities": document_similarities,
@@ -3005,4 +3079,26 @@ class SimilaritiesGenerated(
                 "paragraph_similarities": PARAGRAPH_SIMILARITY_SCHEMA,
                 "sentence_similarities": SENTENCE_SIMILARITY_SCHEMA,
             },
+            stage_records=[
+                (('queries', 'queries'), _stage_output_0, SEARCH_QUERY_SCHEMA, ()),
+                (('queries', 'document_queries'), _stage_output_1, DOCUMENT_SIMILARITY_QUERY_SCHEMA, ()),
+                (('queries', 'section_queries'), _stage_output_2, SECTION_SIMILARITY_QUERY_SCHEMA, ()),
+                (('queries', 'paragraph_queries'), _stage_output_3, PARAGRAPH_SIMILARITY_QUERY_SCHEMA, ()),
+                (('queries', 'sentence_queries'), _stage_output_4, SENTENCE_SIMILARITY_QUERY_SCHEMA, ()),
+                (('scoring_targets', 'targets'), _stage_output_5, DOCUMENT_SEARCH_TARGET_SCHEMA, ()),
+                (('overlap', 'document_overlap_scores'), _stage_output_6, DOCUMENT_OVERLAP_SCORE_SCHEMA, ()),
+                (('overlap', 'section_overlap_scores'), _stage_output_7, SECTION_OVERLAP_SCORE_SCHEMA, ()),
+                (('overlap', 'paragraph_overlap_scores'), _stage_output_8, PARAGRAPH_OVERLAP_SCORE_SCHEMA, ()),
+                (('overlap', 'sentence_overlap_scores'), _stage_output_9, SENTENCE_OVERLAP_SCORE_SCHEMA, ()),
+                (('bm25', 'document_bm25_scores'), _stage_output_10, DOCUMENT_BM25_SCORE_SCHEMA, ()),
+                (('bm25', 'section_bm25_scores'), _stage_output_11, SECTION_BM25_SCORE_SCHEMA, ()),
+                (('bm25', 'paragraph_bm25_scores'), _stage_output_12, PARAGRAPH_BM25_SCORE_SCHEMA, ()),
+                (('bm25', 'sentence_bm25_scores'), _stage_output_13, SENTENCE_BM25_SCORE_SCHEMA, ()),
+                (('reduced', 'document_similarities'), _stage_output_14, DOCUMENT_SIMILARITY_SCHEMA, ()),
+                (('reduced', 'section_similarities'), _stage_output_15, SECTION_SIMILARITY_SCHEMA, ()),
+                (('reduced', 'paragraph_similarities'), _stage_output_16, PARAGRAPH_SIMILARITY_SCHEMA, ()),
+                (('reduced', 'sentence_similarities'), _stage_output_17, SENTENCE_SIMILARITY_SCHEMA, ()),
+            ],
+            stage_outputs_enabled=True,
+            stage_names=('queries', 'scoring_targets', 'overlap', 'bm25', 'reduced'),
         )

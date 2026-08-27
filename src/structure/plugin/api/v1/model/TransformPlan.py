@@ -3,6 +3,7 @@ from typing import Any
 
 from structure.plugin.api.v1.model.InputPlan import InputPlan
 from structure.plugin.api.v1.model.OutputPlan import OutputPlan
+from structure.plugin.api.v1.model.StageOutputPlan import StageOutputPlan
 from structure.plugin.api.v1.model.StepPlan import StepPlan
 from structure.plugin.api.v1.model.StreamingBoundaryPlan import StreamingBoundaryPlan
 
@@ -15,6 +16,8 @@ class TransformPlan:
     inputs: tuple[InputPlan, ...]
     steps: tuple[StepPlan, ...]
     outputs: tuple[OutputPlan, ...]
+    stage_outputs: tuple[StageOutputPlan, ...] = ()
+    allow_stage_outputs: bool = True
     internal_inputs: tuple[InputPlan, ...] = ()
     options: dict[str, object] | None = None
     diagnostics: tuple[Any, ...] = ()

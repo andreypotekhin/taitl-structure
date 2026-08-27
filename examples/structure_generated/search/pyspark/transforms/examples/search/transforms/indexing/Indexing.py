@@ -872,6 +872,42 @@ class IndexingGenerated(LexIndexGenerated, FieldIndexGenerated):
         # Step method: field_terms
         field_terms = frames["fields__terms"].alias("field_term")
         assert_schema(field_terms, FIELD_TERM_SCHEMA, name="FieldTerm", mode="strict")
+
+        # Step method: _stage_output_0
+        _stage_output_0 = frames["lexical__document_terms"].alias("document_term")
+        assert_schema(_stage_output_0, DOCUMENT_TERM_SCHEMA, name="DocumentTerm", mode="strict")
+
+        # Step method: _stage_output_1
+        _stage_output_1 = frames["lexical__document_summary"].alias("document_index_summary")
+        assert_schema(_stage_output_1, DOCUMENT_INDEX_SUMMARY_SCHEMA, name="DocumentIndexSummary", mode="strict")
+
+        # Step method: _stage_output_2
+        _stage_output_2 = frames["lexical__section_terms"].alias("section_term")
+        assert_schema(_stage_output_2, SECTION_TERM_SCHEMA, name="SectionTerm", mode="strict")
+
+        # Step method: _stage_output_3
+        _stage_output_3 = frames["lexical__section_summary"].alias("section_index_summary")
+        assert_schema(_stage_output_3, SECTION_INDEX_SUMMARY_SCHEMA, name="SectionIndexSummary", mode="strict")
+
+        # Step method: _stage_output_4
+        _stage_output_4 = frames["lexical__paragraph_terms"].alias("paragraph_term")
+        assert_schema(_stage_output_4, PARAGRAPH_TERM_SCHEMA, name="ParagraphTerm", mode="strict")
+
+        # Step method: _stage_output_5
+        _stage_output_5 = frames["lexical__paragraph_summary"].alias("paragraph_index_summary")
+        assert_schema(_stage_output_5, PARAGRAPH_INDEX_SUMMARY_SCHEMA, name="ParagraphIndexSummary", mode="strict")
+
+        # Step method: _stage_output_6
+        _stage_output_6 = frames["lexical__sentence_terms"].alias("sentence_term")
+        assert_schema(_stage_output_6, SENTENCE_TERM_SCHEMA, name="SentenceTerm", mode="strict")
+
+        # Step method: _stage_output_7
+        _stage_output_7 = frames["lexical__sentence_summary"].alias("sentence_index_summary")
+        assert_schema(_stage_output_7, SENTENCE_INDEX_SUMMARY_SCHEMA, name="SentenceIndexSummary", mode="strict")
+
+        # Step method: _stage_output_8
+        _stage_output_8 = frames["fields__terms"].alias("field_term")
+        assert_schema(_stage_output_8, FIELD_TERM_SCHEMA, name="FieldTerm", mode="strict")
         return TransformResult(
             {
                 "document_terms": document_terms,
@@ -896,6 +932,19 @@ class IndexingGenerated(LexIndexGenerated, FieldIndexGenerated):
                 "sentence_summary": SENTENCE_INDEX_SUMMARY_SCHEMA,
                 "field_terms": FIELD_TERM_SCHEMA,
             },
+            stage_records=[
+                (('lexical', 'document_terms'), _stage_output_0, DOCUMENT_TERM_SCHEMA, ()),
+                (('lexical', 'document_summary'), _stage_output_1, DOCUMENT_INDEX_SUMMARY_SCHEMA, ()),
+                (('lexical', 'section_terms'), _stage_output_2, SECTION_TERM_SCHEMA, ()),
+                (('lexical', 'section_summary'), _stage_output_3, SECTION_INDEX_SUMMARY_SCHEMA, ()),
+                (('lexical', 'paragraph_terms'), _stage_output_4, PARAGRAPH_TERM_SCHEMA, ()),
+                (('lexical', 'paragraph_summary'), _stage_output_5, PARAGRAPH_INDEX_SUMMARY_SCHEMA, ()),
+                (('lexical', 'sentence_terms'), _stage_output_6, SENTENCE_TERM_SCHEMA, ()),
+                (('lexical', 'sentence_summary'), _stage_output_7, SENTENCE_INDEX_SUMMARY_SCHEMA, ()),
+                (('fields', 'terms'), _stage_output_8, FIELD_TERM_SCHEMA, ()),
+            ],
+            stage_outputs_enabled=True,
+            stage_names=('lexical', 'fields'),
         )
 
     @staticmethod

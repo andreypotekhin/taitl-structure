@@ -57,6 +57,11 @@ class RunOnlinePySparkTransform:
             if isinstance(result, TransformResult):
                 return result
             if len(plan.outputs) == 1:
+                if plan.allow_stage_outputs and plan.stage_outputs:
+                    raise TypeError(
+                        "Injected online executor must return a stage-aware TransformResult "
+                        "when composed stage outputs are enabled"
+                    )
                 return TransformResult(
                     {plan.outputs[0].name: result},
                     single=True,
@@ -112,7 +117,33 @@ class RunOnlinePySparkTransform:
                 window=Window,
                 types=T,
             )
-        return TransformResult(outputs, single=len(plan.outputs) == 1, aliases=self._output_aliases(plan))
+        stage_records = []
+        if plan.allow_stage_outputs:
+            for stage_output in plan.stage_outputs:
+                output = stage_output.output
+                stage_records.append(
+                    (
+                        stage_output.path,
+                        self._output(
+                            output,
+                            source=frames[output.source],
+                            inputs=inputs,
+                            functions=F,
+                            window=Window,
+                            types=T,
+                        ),
+                        output.output_schema,
+                        output.aliases,
+                    )
+                )
+        return TransformResult(
+            outputs,
+            single=len(plan.outputs) == 1,
+            aliases=self._output_aliases(plan),
+            stage_records=stage_records,
+            stage_outputs_enabled=plan.allow_stage_outputs,
+            stage_names=tuple(dict.fromkeys(item.path[0] for item in plan.stage_outputs)),
+        )
 
     def _output_aliases(self, plan: PySparkExecutionPlan) -> dict[str, tuple[str, ...]]:
         return {output.name: output.aliases for output in plan.outputs if output.aliases}

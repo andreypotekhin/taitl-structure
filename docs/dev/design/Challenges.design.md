@@ -776,8 +776,9 @@ Recommended direction:
   delegate model.
 - Define generated-code imports and `_impl` construction for composed hook stages.
 - Preserve hook lifecycle order, validation boundaries, traceability, and streaming compatibility reporting.
-- Decide separately whether composed wrappers may expose earlier-stage outputs or mix wrapper-local step methods and
-  hooks with a class-field pipeline.
+- Composed wrappers may expose declared earlier-stage outputs through the recursive, config-gated
+  `TransformResult.stages` namespace; this does not expose lanes or raw-hook frames. Wrapper-local step methods and
+  hooks remain a separate design question.
 - Keep `lane(...)` internal to a transform implementation and unavailable for composition matching unless a later design
   explicitly changes that boundary.
 

@@ -62,6 +62,11 @@ class RunGeneratedPySparkTransform:
         if isinstance(result, TransformResult):
             return result
         if hasattr(result, "as_dict"):
+            if plan.allow_stage_outputs and plan.stage_outputs:
+                raise TypeError(
+                    "Generated transform executor must return a stage-aware TransformResult "
+                    "when composed stage outputs are enabled"
+                )
             return TransformResult(
                 result.as_dict(),
                 single=len(plan.outputs) == 1,
@@ -76,7 +81,7 @@ class RunGeneratedPySparkTransform:
         return generated_class(spark=session.spark, ctx=session.ctx).run(**inputs)
 
     def _result(self, plan: PySparkExecutionPlan, df) -> TransformResult:
-        if len(plan.outputs) == 1:
+        if len(plan.outputs) == 1 and not (plan.allow_stage_outputs and plan.stage_outputs):
             return TransformResult({plan.outputs[0].name: df}, single=True, aliases=self._output_aliases(plan))
         raise TypeError("Generated multi-output transforms must return TransformResult")
 

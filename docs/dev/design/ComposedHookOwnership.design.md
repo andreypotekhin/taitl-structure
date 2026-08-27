@@ -18,9 +18,9 @@ stage- and owner-qualified generated name; no source-stage implementation object
 Both modes validate the lane schema at the original raw-hook boundary. The online runner always uses the stage-owned
 source instance model; embedding changes generated-source packaging, not online behavior.
 
-Composition wrappers may route declared outputs between stages, but they must not match `lane(...)` as a public
-composition boundary. A lane remains internal to the declaring transform unless a later specification introduces an
-explicit public intermediate-output contract.
+Composition wrappers may route declared outputs between stages and may expose those declared outputs through the
+recursive `TransformResult.stages` namespace. They must not match `lane(...)` as a public composition boundary. A lane
+remains internal to the declaring transform, as do raw-hook frames.
 
 ## Implementation Contract
 
@@ -70,6 +70,6 @@ diagnostics. The Search label pipeline can consume this generic path without a S
 
 ## Deferred Questions
 
-Wrapper-local hooks, wrapper-local step methods, cross-target hook pipelines, and exposing earlier-stage outputs from a
-composed wrapper remain deferred. They need a separate public intermediate-output contract rather than overloading
-existing lane internals.
+Wrapper-local hooks, wrapper-local step methods, and cross-target hook pipelines remain deferred. Earlier-stage output
+access is resolved by the public `TransformResult.stages` contract and the `allow_stage_outputs` configuration gate; it
+does not expose existing lane internals.

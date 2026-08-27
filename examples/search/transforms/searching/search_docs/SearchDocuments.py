@@ -111,7 +111,3 @@ class SearchDocuments(Transform):
     )
 
     results = output(DocumentSearchResult, reranked.results)
-    online_query_embeddings = output(SearchQueryVectorEmbedding, vectorized.query_embeddings)
-    online_document_embeddings = output(DocumentVectorIndex, vectorized.document_embeddings)
-    query_inference_status = output(QueryInferenceStatus, vectorized.query_inference_status)
-    document_inference_status = output(DocumentInferenceStatus, vectorized.document_inference_status)

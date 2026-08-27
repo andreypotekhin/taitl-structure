@@ -662,8 +662,34 @@ class ExactSimilarityCandidatesGenerated(
         assert_schema(
             document_candidates, DOCUMENT_VECTOR_CANDIDATE_SCHEMA, name="DocumentVectorCandidate", mode="strict"
         )
+
+        # Step method: _stage_output_0
+        _stage_output_0 = frames["vectorized__vector_queries"].alias("document_vector_query")
+        assert_schema(_stage_output_0, DOCUMENT_VECTOR_QUERY_SCHEMA, name="DocumentVectorQuery", mode="strict")
+
+        # Step method: _stage_output_1
+        _stage_output_1 = frames["scored__document_scores"].alias("document_vector_score")
+        assert_schema(_stage_output_1, DOCUMENT_VECTOR_SCORE_SCHEMA, name="DocumentVectorScore", mode="strict")
+
+        # Step method: _stage_output_2
+        _stage_output_2 = frames["ranked__document_candidates"].alias("document_vector_candidate")
+        assert_schema(_stage_output_2, DOCUMENT_VECTOR_CANDIDATE_SCHEMA, name="DocumentVectorCandidate", mode="strict")
+
+        # Step method: _stage_output_3
+        _stage_output_3 = frames["ranked__paragraph_candidates"].alias("paragraph_vector_candidate")
+        assert_schema(
+            _stage_output_3, PARAGRAPH_VECTOR_CANDIDATE_SCHEMA, name="ParagraphVectorCandidate", mode="strict"
+        )
         return TransformResult(
             {"document_candidates": document_candidates},
             single=True,
             schema={"document_candidates": DOCUMENT_VECTOR_CANDIDATE_SCHEMA},
+            stage_records=[
+                (('vectorized', 'vector_queries'), _stage_output_0, DOCUMENT_VECTOR_QUERY_SCHEMA, ()),
+                (('scored', 'document_scores'), _stage_output_1, DOCUMENT_VECTOR_SCORE_SCHEMA, ()),
+                (('ranked', 'document_candidates'), _stage_output_2, DOCUMENT_VECTOR_CANDIDATE_SCHEMA, ()),
+                (('ranked', 'paragraph_candidates'), _stage_output_3, PARAGRAPH_VECTOR_CANDIDATE_SCHEMA, ()),
+            ],
+            stage_outputs_enabled=True,
+            stage_names=('vectorized', 'scored', 'ranked'),
         )

@@ -367,8 +367,29 @@ class BuildPersonalizedRecommendationsGenerated(
         assert_schema(
             recommendations, PERSONALIZED_RECOMMENDATION_SCHEMA, name="PersonalizedRecommendation", mode="strict"
         )
+
+        # Step method: _stage_output_0
+        _stage_output_0 = frames["featured__catalog"].alias("catalog_product")
+        assert_schema(_stage_output_0, CATALOG_PRODUCT_SCHEMA, name="CatalogProduct", mode="strict")
+
+        # Step method: _stage_output_1
+        _stage_output_1 = frames["history__history"].alias("personalization_history")
+        assert_schema(_stage_output_1, PERSONALIZATION_HISTORY_SCHEMA, name="PersonalizationHistory", mode="strict")
+
+        # Step method: _stage_output_2
+        _stage_output_2 = frames["scored__requests"].alias("personalized_recommendation")
+        assert_schema(
+            _stage_output_2, PERSONALIZED_RECOMMENDATION_SCHEMA, name="PersonalizedRecommendation", mode="strict"
+        )
         return TransformResult(
             {"recommendations": recommendations},
             single=True,
             schema={"recommendations": PERSONALIZED_RECOMMENDATION_SCHEMA},
+            stage_records=[
+                (('featured', 'featured'), _stage_output_0, CATALOG_PRODUCT_SCHEMA, ()),
+                (('history', 'history'), _stage_output_1, PERSONALIZATION_HISTORY_SCHEMA, ()),
+                (('scored', 'recommendations'), _stage_output_2, PERSONALIZED_RECOMMENDATION_SCHEMA, ()),
+            ],
+            stage_outputs_enabled=True,
+            stage_names=('featured', 'history', 'scored'),
         )

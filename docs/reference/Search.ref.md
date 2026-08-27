@@ -222,6 +222,17 @@ DataFrames have no physical row order, so consumers should sort or page by query
 signals. Its current ranking and deduplication shape is batch-only; it does not expose a caller-adoption streaming
 contract.
 
+`SearchDocuments` returns only `results` in its top-level result mapping. With the default `allow_stage_outputs=True`,
+cache-ready vectorization relations and inference statuses are available without repeating them as wrapper outputs:
+
+    result = SearchDocuments(...).run(session)
+    ranked = result.results
+    query_embeddings = result.vectorized.query_embeddings
+    same_embeddings = result.stages["vectorized"]["query_embeddings"]
+
+Stage access is disabled by setting `allow_stage_outputs=False`; final `results` access remains unchanged. Only declared
+stage outputs are exposed, not internal lanes or hook frames.
+
 The concrete limits are public transform parameters/constants:
 
 | Transform | Constant | Default | Applied at |

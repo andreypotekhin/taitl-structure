@@ -8,6 +8,7 @@ from structure.core.compiler.diagnostics.api import StructureCompileError
 from structure.core.compiler.frontend.logic.ValidateStreamingInputBinding import validate_streaming_input_binding
 from structure.core.compiler.ir.model.HookPlan import HookPlan
 from structure.core.compiler.ir.model.OutputPlan import OutputPlan
+from structure.core.compiler.ir.model.StageOutputPlan import StageOutputPlan
 from structure.core.compiler.ir.model.StepInputPlan import StepInputPlan
 from structure.core.compiler.ir.model.StepPlan import StepPlan
 from structure.core.compiler.ir.model.StepResultPlan import StepResultPlan
@@ -33,6 +34,7 @@ class ComposeTransformGraph:
         rewrite_body: RewriteBody | None = None,
         allow_stream_to_batch: bool = False,
         stream_to_batch_policy: str = "default",
+        allow_stage_outputs: bool = True,
     ) -> TransformPlan:
         rewrite = rewrite_body or (lambda body, _: body)
         stages = tuple(self._stage(wrapper_class, stage) for stage in wrapper_class._structure_stages.values())
@@ -57,7 +59,7 @@ class ComposeTransformGraph:
             allow_stream_to_batch=allow_stream_to_batch,
             stream_to_batch_policy=stream_to_batch_policy,
         )
-        steps, stage_outputs, output_sources = self._rewrite(
+        steps, stage_outputs, output_sources, public_stage_outputs = self._rewrite(
             wrapper_class,
             stages,
             stage_plans,
@@ -70,6 +72,8 @@ class ComposeTransformGraph:
             inputs=tuple(inputs),
             steps=tuple(steps),
             outputs=tuple(outputs),
+            stage_outputs=tuple(public_stage_outputs),
+            allow_stage_outputs=allow_stage_outputs,
             internal_inputs=tuple(internal_inputs),
             options=Transform.resolve_transform_options(
                 wrapper_class.__dict__.get("_structure_transform_options", {}),
@@ -266,10 +270,16 @@ class ComposeTransformGraph:
         *,
         stage_by_name: Mapping[str, StageDeclaration],
         rewrite_body: RewriteBody,
-    ) -> tuple[list[StepPlan], list[OutputPlan], dict[tuple[StageDeclaration, str], OutputPlan]]:
+    ) -> tuple[
+        list[StepPlan],
+        list[OutputPlan],
+        dict[tuple[StageDeclaration, str], OutputPlan],
+        list[StageOutputPlan],
+    ]:
         steps: list[StepPlan] = []
         stage_outputs: list[OutputPlan] = []
         output_sources: dict[tuple[StageDeclaration, str], OutputPlan] = {}
+        public_stage_outputs: list[StageOutputPlan] = []
 
         for stage, plan in zip(stages, stage_plans, strict=True):
             label = stage.name or self._snake(type(stage.invocation).__name__)
@@ -302,7 +312,21 @@ class ComposeTransformGraph:
                 )
                 output_sources[(stage, output.name)] = rewritten_output
                 stage_outputs.append(rewritten_output)
-        return steps, stage_outputs, output_sources
+                public_stage_outputs.append(
+                    StageOutputPlan(path=(stage.name, output.name), output=rewritten_output)
+                )
+            for nested in plan.stage_outputs:
+                public_stage_outputs.append(
+                    StageOutputPlan(
+                        path=(stage.name, *nested.path),
+                        output=replace(
+                            nested.output,
+                            source=frame_map.get(nested.output.source, nested.output.source),
+                            ordinal=len(public_stage_outputs),
+                        ),
+                    )
+                )
+        return steps, stage_outputs, output_sources, public_stage_outputs
 
     def _effective_outputs(
         self,

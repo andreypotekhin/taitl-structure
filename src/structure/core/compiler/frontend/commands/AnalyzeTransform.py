@@ -98,6 +98,7 @@ class AnalyzeTransform(CompileTransform):
             inputs=tuple(inputs),
             steps=tuple(steps),
             outputs=tuple(outputs),
+            allow_stage_outputs=config.allow_stage_outputs,
             options=transform_class.effective_transform_options(),
             diagnostics=tuple(diagnostics),
         )
@@ -118,6 +119,7 @@ class AnalyzeTransform(CompileTransform):
             wrapper_class=wrapper_class,
             allow_stream_to_batch=composition_config.allow_stream_to_batch,
             stream_to_batch_policy=composition_config.stream_to_batch_policy,
+            allow_stage_outputs=composition_config.allow_stage_outputs,
         )
 
     def _compose_graph(self, transform_class: type[Transform], *, config: StructureConfig) -> TransformPlan:
@@ -127,6 +129,7 @@ class AnalyzeTransform(CompileTransform):
             compile_stage=lambda stage: self._analyze(type(stage), config=composition_config),
             allow_stream_to_batch=composition_config.allow_stream_to_batch,
             stream_to_batch_policy=composition_config.stream_to_batch_policy,
+            allow_stage_outputs=composition_config.allow_stage_outputs,
         )
 
     def _structural_steps(self, transform_class, inputs):

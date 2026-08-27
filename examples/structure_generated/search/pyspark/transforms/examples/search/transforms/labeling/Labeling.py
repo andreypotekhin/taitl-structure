@@ -539,6 +539,22 @@ class LabelingGenerated(CreateQueryLabelsGenerated, MergeQueryLabelsGenerated):
         # Step method: labeled_queries
         labeled_queries = frames["merged__labeled_queries"].alias("search_query")
         assert_schema(labeled_queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
+
+        # Step method: _stage_output_0
+        _stage_output_0 = frames["created__labels"].alias("query_label_assignments")
+        assert_schema(_stage_output_0, QUERY_LABEL_ASSIGNMENTS_SCHEMA, name="QueryLabelAssignments", mode="strict")
+
+        # Step method: _stage_output_1
+        _stage_output_1 = frames["merged__labeled_queries"].alias("search_query")
+        assert_schema(_stage_output_1, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
         return TransformResult(
-            {"labeled_queries": labeled_queries}, single=True, schema={"labeled_queries": SEARCH_QUERY_SCHEMA}
+            {"labeled_queries": labeled_queries},
+            single=True,
+            schema={"labeled_queries": SEARCH_QUERY_SCHEMA},
+            stage_records=[
+                (('created', 'labels'), _stage_output_0, QUERY_LABEL_ASSIGNMENTS_SCHEMA, ()),
+                (('merged', 'labeled_queries'), _stage_output_1, SEARCH_QUERY_SCHEMA, ()),
+            ],
+            stage_outputs_enabled=True,
+            stage_names=('created', 'merged'),
         )

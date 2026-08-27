@@ -224,6 +224,18 @@ class OrderAnalyticsGenerated(
         # Step method: customer_event_rank
         customer_event_rank = frames["ranks__customer_event_rank"].alias("customer_event_rank")
         assert_schema(customer_event_rank, CUSTOMER_EVENT_RANK_SCHEMA, name="CustomerEventRank", mode="strict")
+
+        # Step method: _stage_output_0
+        _stage_output_0 = frames["customer__customer_totals"].alias("customer_daily_total")
+        assert_schema(_stage_output_0, CUSTOMER_DAILY_TOTAL_SCHEMA, name="CustomerDailyTotal", mode="strict")
+
+        # Step method: _stage_output_1
+        _stage_output_1 = frames["product__product_summary"].alias("product_daily_summary")
+        assert_schema(_stage_output_1, PRODUCT_DAILY_SUMMARY_SCHEMA, name="ProductDailySummary", mode="strict")
+
+        # Step method: _stage_output_2
+        _stage_output_2 = frames["ranks__customer_event_rank"].alias("customer_event_rank")
+        assert_schema(_stage_output_2, CUSTOMER_EVENT_RANK_SCHEMA, name="CustomerEventRank", mode="strict")
         return TransformResult(
             {
                 "customer_totals": customer_totals,
@@ -236,4 +248,11 @@ class OrderAnalyticsGenerated(
                 "product_summary": PRODUCT_DAILY_SUMMARY_SCHEMA,
                 "customer_event_rank": CUSTOMER_EVENT_RANK_SCHEMA,
             },
+            stage_records=[
+                (('customer', 'customer_totals'), _stage_output_0, CUSTOMER_DAILY_TOTAL_SCHEMA, ()),
+                (('product', 'product_summary'), _stage_output_1, PRODUCT_DAILY_SUMMARY_SCHEMA, ()),
+                (('ranks', 'customer_event_rank'), _stage_output_2, CUSTOMER_EVENT_RANK_SCHEMA, ()),
+            ],
+            stage_outputs_enabled=True,
+            stage_names=('customer', 'product', 'ranks'),
         )

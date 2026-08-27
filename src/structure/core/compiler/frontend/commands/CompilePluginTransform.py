@@ -62,6 +62,7 @@ class CompilePluginTransform:
             "stream_to_batch_policy": resolved.stream_to_batch_policy,
             "allow_output_to_input": resolved.allow_output_to_input,
             "allow_to_reassign_output": resolved.allow_to_reassign_output,
+            "allow_stage_outputs": resolved.allow_stage_outputs,
             "generated_code_options": resolved.generated_code_options,
             "schema_types": schema_types,
             "materialize_schemas": materialize_schemas,
@@ -111,6 +112,7 @@ class CompilePluginTransform:
             "stream_to_batch_policy": options.stream_to_batch_policy,
             "allow_output_to_input": options.allow_output_to_input,
             "allow_to_reassign_output": options.allow_to_reassign_output,
+            "allow_stage_outputs": options.allow_stage_outputs,
             "validate_intermediate": options.validate_intermediate,
             "generated_code_options": options.generated_code_options,
             "schema_types": schema_types,
@@ -128,6 +130,7 @@ class CompilePluginTransform:
                 "stream_to_batch_policy": options.stream_to_batch_policy,
                 "allow_output_to_input": options.allow_output_to_input,
                 "allow_to_reassign_output": options.allow_to_reassign_output,
+                "allow_stage_outputs": options.allow_stage_outputs,
                 "generated_code_options": options.generated_code_options,
             },
         )

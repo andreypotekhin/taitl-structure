@@ -485,9 +485,11 @@ first_page = ranked_documents.where("rank <= 20").orderBy("rank")
 `DocumentSearchResult` exposes candidate rank, final rank, lexical/vector lane evidence, RRF score, feedback, and final
 rank score so a serving layer can explain movement without reconstructing the scoring path. Pass
 `SearchQueryVectorEmbedding` rows, a matching `DocumentVectorIndex`, `VectorIndexPolicy`, and `InferencePolicy` to
-`SearchDocuments`. The online transform also exposes newly inferred query/document embeddings and per-item inference
-statuses so the caller can persist successful cache additions. Query inference failures preserve lexical search; document
-inference failures remove only that document from the vector lane.
+`SearchDocuments`. The online transform exposes its declared `vectorized` stage outputs through the result namespace,
+including cache-ready query/document embeddings and per-item inference statuses. Query inference failures preserve lexical
+search; document inference failures remove only that document from the vector lane. Use `result.results` for ranked
+documents and `result.vectorized.query_embeddings` or `result.vectorized.document_embeddings` for caller-owned cache
+persistence.
 The vector lane is fused before feedback reranking; a vector-only candidate does not need a lexical overlap row.
 
 ## Passage Search

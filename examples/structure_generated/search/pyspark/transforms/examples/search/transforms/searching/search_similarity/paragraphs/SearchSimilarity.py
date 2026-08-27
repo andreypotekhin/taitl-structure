@@ -835,8 +835,52 @@ class SearchSimilarityGenerated(
         assert_schema(
             similar_paragraphs, INDEXED_SIMILAR_PARAGRAPH_SCHEMA, name="IndexedSimilarParagraph", mode="strict"
         )
+
+        # Step method: _stage_output_0
+        _stage_output_0 = frames["lexical__paragraph_candidates"].alias("paragraph_fused_similarity_candidate")
+        assert_schema(
+            _stage_output_0,
+            PARAGRAPH_FUSED_SIMILARITY_CANDIDATE_SCHEMA,
+            name="ParagraphFusedSimilarityCandidate",
+            mode="strict",
+        )
+
+        # Step method: _stage_output_1
+        _stage_output_1 = frames["vector__adopted_paragraph_candidates"].alias("paragraph_fused_similarity_candidate")
+        assert_schema(
+            _stage_output_1,
+            PARAGRAPH_FUSED_SIMILARITY_CANDIDATE_SCHEMA,
+            name="ParagraphFusedSimilarityCandidate",
+            mode="strict",
+        )
+
+        # Step method: _stage_output_2
+        _stage_output_2 = frames["fused__paragraph_candidates"].alias("paragraph_fused_similarity_candidate")
+        assert_schema(
+            _stage_output_2,
+            PARAGRAPH_FUSED_SIMILARITY_CANDIDATE_SCHEMA,
+            name="ParagraphFusedSimilarityCandidate",
+            mode="strict",
+        )
+
+        # Step method: _stage_output_3
+        _stage_output_3 = frames["reranked__similar_paragraphs"].alias("indexed_similar_paragraph")
+        assert_schema(_stage_output_3, INDEXED_SIMILAR_PARAGRAPH_SCHEMA, name="IndexedSimilarParagraph", mode="strict")
         return TransformResult(
             {"similar_paragraphs": similar_paragraphs},
             single=True,
             schema={"similar_paragraphs": INDEXED_SIMILAR_PARAGRAPH_SCHEMA},
+            stage_records=[
+                (('lexical', 'paragraph_candidates'), _stage_output_0, PARAGRAPH_FUSED_SIMILARITY_CANDIDATE_SCHEMA, ()),
+                (
+                    ('vector', 'adopted_paragraph_candidates'),
+                    _stage_output_1,
+                    PARAGRAPH_FUSED_SIMILARITY_CANDIDATE_SCHEMA,
+                    (),
+                ),
+                (('fused', 'paragraph_candidates'), _stage_output_2, PARAGRAPH_FUSED_SIMILARITY_CANDIDATE_SCHEMA, ()),
+                (('reranked', 'similar_paragraphs'), _stage_output_3, INDEXED_SIMILAR_PARAGRAPH_SCHEMA, ()),
+            ],
+            stage_outputs_enabled=True,
+            stage_names=('lexical', 'vector', 'fused', 'reranked'),
         )

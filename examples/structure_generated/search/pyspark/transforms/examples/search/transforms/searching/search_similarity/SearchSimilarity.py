@@ -775,8 +775,52 @@ class SearchSimilarityGenerated(
         # Step method: similar_documents
         similar_documents = frames["reranked__similar_documents"].alias("indexed_similar_document")
         assert_schema(similar_documents, INDEXED_SIMILAR_DOCUMENT_SCHEMA, name="IndexedSimilarDocument", mode="strict")
+
+        # Step method: _stage_output_0
+        _stage_output_0 = frames["lexical__document_candidates"].alias("document_fused_similarity_candidate")
+        assert_schema(
+            _stage_output_0,
+            DOCUMENT_FUSED_SIMILARITY_CANDIDATE_SCHEMA,
+            name="DocumentFusedSimilarityCandidate",
+            mode="strict",
+        )
+
+        # Step method: _stage_output_1
+        _stage_output_1 = frames["vector__adopted_document_candidates"].alias("document_fused_similarity_candidate")
+        assert_schema(
+            _stage_output_1,
+            DOCUMENT_FUSED_SIMILARITY_CANDIDATE_SCHEMA,
+            name="DocumentFusedSimilarityCandidate",
+            mode="strict",
+        )
+
+        # Step method: _stage_output_2
+        _stage_output_2 = frames["fused__document_candidates"].alias("document_fused_similarity_candidate")
+        assert_schema(
+            _stage_output_2,
+            DOCUMENT_FUSED_SIMILARITY_CANDIDATE_SCHEMA,
+            name="DocumentFusedSimilarityCandidate",
+            mode="strict",
+        )
+
+        # Step method: _stage_output_3
+        _stage_output_3 = frames["reranked__similar_documents"].alias("indexed_similar_document")
+        assert_schema(_stage_output_3, INDEXED_SIMILAR_DOCUMENT_SCHEMA, name="IndexedSimilarDocument", mode="strict")
         return TransformResult(
             {"similar_documents": similar_documents},
             single=True,
             schema={"similar_documents": INDEXED_SIMILAR_DOCUMENT_SCHEMA},
+            stage_records=[
+                (('lexical', 'document_candidates'), _stage_output_0, DOCUMENT_FUSED_SIMILARITY_CANDIDATE_SCHEMA, ()),
+                (
+                    ('vector', 'adopted_document_candidates'),
+                    _stage_output_1,
+                    DOCUMENT_FUSED_SIMILARITY_CANDIDATE_SCHEMA,
+                    (),
+                ),
+                (('fused', 'document_candidates'), _stage_output_2, DOCUMENT_FUSED_SIMILARITY_CANDIDATE_SCHEMA, ()),
+                (('reranked', 'similar_documents'), _stage_output_3, INDEXED_SIMILAR_DOCUMENT_SCHEMA, ()),
+            ],
+            stage_outputs_enabled=True,
+            stage_names=('lexical', 'vector', 'fused', 'reranked'),
         )

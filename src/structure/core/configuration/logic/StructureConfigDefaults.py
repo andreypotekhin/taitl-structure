@@ -38,6 +38,7 @@ class StructureConfigDefaults:
             "stream_to_batch_policy": "default",
             "allow_output_to_input": False,
             "allow_to_reassign_output": False,
+            "allow_stage_outputs": True,
             "fail_on_diff": False,
             "spark.sql.ansi.enabled": True,
             "spark.sql.storeAssignmentPolicy": "ANSI",

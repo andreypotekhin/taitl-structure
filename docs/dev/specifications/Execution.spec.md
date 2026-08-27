@@ -60,6 +60,12 @@ declared output names such as `result.published`, `result.accepted`, and `result
 the same names through `result.schema`, such as `result.schema.published` and `result.schema["rejected"]`. There is no
 automatic `df` alias; `df` is present only when a field-declared output is explicitly named `df`.
 
+For a composed transform, declared outputs of child transforms are available through a recursive stage namespace when
+`allow_stage_outputs` is enabled (the default): `result.vectorized.query_embeddings` and
+`result.stages["vectorized"]["query_embeddings"]` are equivalent lookups. Nested compositions retain nested stage
+paths. Stage namespaces expose only child `output(...)` declarations; lanes and raw-hook frames remain private. The
+stage namespace is omitted when `allow_stage_outputs=False`, while final outputs remain available normally.
+
 Execution evaluates transform methods in source order while preserving independent lane frames. When schemas are
 unambiguous, methods consume and update inferred lanes without method-level selectors. Method-level `input=` selects
 original inputs, existing lanes, or already-produced outputs; `output=` names intermediate lanes or final outputs, and

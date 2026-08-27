@@ -31,6 +31,7 @@ class StructureConfigValidator:
         "allow_stream_to_batch",
         "allow_output_to_input",
         "allow_to_reassign_output",
+        "allow_stage_outputs",
         "fail_on_diff",
         "spark.sql.ansi.enabled",
     }

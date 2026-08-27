@@ -397,7 +397,11 @@ def test_v1_pipeline_reuses_shared_compiled_artifact(monkeypatch) -> None:
         return original(self, *args, **kwargs)
 
     monkeypatch.setattr(BuildCompiledTransform, "__call__", counted)
-    session = StructureSession(schema_types=FakeTypes, online_executor=lambda **kwargs: object())
+    session = StructureSession(
+        config=StructureConfig.create(allow_stage_outputs=False),
+        schema_types=FakeTypes,
+        online_executor=lambda **kwargs: object(),
+    )
     NormalizeOrders(orders=object()).to(PublishOrders()).run(session)
     NormalizeOrders(orders=object()).to(PublishOrders()).run(session)
 

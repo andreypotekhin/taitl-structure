@@ -56,7 +56,7 @@ def project_schema(df, schema):
 
 class TransformResult:
 
-    def __init__(self, outputs, *, single=False, schema=None, aliases=None):
+    def __init__(self, outputs, *, single=False, schema=None, aliases=None, stage_records=None, stage_outputs_enabled=True, stage_names=()):
         values = dict(outputs)
         output_aliases = dict(aliases or {})
         if single:
@@ -65,7 +65,14 @@ class TransformResult:
         object.__setattr__(self, '_structure_outputs', MappingProxyType(values))
         object.__setattr__(self, '_structure_output_aliases', MappingProxyType(output_aliases))
         object.__setattr__(self, '_structure_aliases', MappingProxyType(_alias_index(output_aliases)))
+        object.__setattr__(self, '_structure_stages', MappingProxyType(_build_stage_results(stage_records or [])))
+        object.__setattr__(self, '_structure_stage_outputs_enabled', stage_outputs_enabled)
+        object.__setattr__(self, '_structure_stage_names', frozenset(stage_names))
         object.__setattr__(self, 'schema', ResultSchemas(schema, aliases=output_aliases))
+
+    @property
+    def stages(self):
+        return self._structure_stages
 
     def __getitem__(self, name):
         if name in self._structure_outputs:
@@ -83,6 +90,10 @@ class TransformResult:
             return self._structure_outputs[name]
         if name in self._structure_aliases:
             return self._structure_outputs[self._structure_aliases[name]]
+        if name in self._structure_stages:
+            return self._structure_stages[name]
+        if name in self._structure_stage_names and not self._structure_stage_outputs_enabled:
+            raise AttributeError('Stage output access is disabled; set allow_stage_outputs=True to enable it')
         raise AttributeError(name)
 
     def __setattr__(self, name, value):
@@ -90,6 +101,78 @@ class TransformResult:
 
     def as_dict(self):
         return dict(self._structure_outputs)
+
+
+class StageResult:
+
+    def __init__(self, outputs, *, schema=None, aliases=None, stages=None):
+        output_aliases = dict(aliases or {})
+        object.__setattr__(self, '_structure_outputs', MappingProxyType(dict(outputs)))
+        object.__setattr__(self, '_structure_aliases', MappingProxyType(_alias_index(output_aliases)))
+        object.__setattr__(self, '_structure_stages', MappingProxyType(dict(stages or {})))
+        object.__setattr__(self, 'schema', ResultSchemas(schema, aliases=output_aliases))
+
+    @property
+    def stages(self):
+        return self._structure_stages
+
+    def __getitem__(self, name):
+        if name in self._structure_outputs:
+            return self._structure_outputs[name]
+        return self._structure_outputs[self._structure_aliases.get(name, name)]
+
+    def __iter__(self):
+        return iter(self._structure_outputs)
+
+    def __len__(self):
+        return len(self._structure_outputs)
+
+    def __getattr__(self, name):
+        if name in self._structure_outputs:
+            return self._structure_outputs[name]
+        if name in self._structure_aliases:
+            return self._structure_outputs[self._structure_aliases[name]]
+        if name in self._structure_stages:
+            return self._structure_stages[name]
+        raise AttributeError(name)
+
+    def __setattr__(self, name, value):
+        raise AttributeError('StageResult is read-only')
+
+    def as_dict(self):
+        return dict(self._structure_outputs)
+
+
+def _build_stage_results(records):
+    root = {}
+    for path, value, schema, aliases in records:
+        nodes = root
+        for stage_name in path[:-1]:
+            node = nodes.setdefault(stage_name, {'outputs': {}, 'schemas': {}, 'aliases': {}, 'stages': {}})
+            nodes = node['stages']
+        stage_name = path[-2]
+        node = root
+        for name in path[:-2]:
+            node = node[name]['stages']
+        stage = node.setdefault(stage_name, {'outputs': {}, 'schemas': {}, 'aliases': {}, 'stages': {}})
+        output_name = path[-1]
+        stage['outputs'][output_name] = value
+        stage['schemas'][output_name] = schema
+        if aliases:
+            stage['aliases'][output_name] = aliases
+
+    def freeze(nodes):
+        return MappingProxyType({
+            name: StageResult(
+                node['outputs'],
+                schema=node['schemas'],
+                aliases=node['aliases'],
+                stages=freeze(node['stages']),
+            )
+            for name, node in nodes.items()
+        })
+
+    return freeze(root)
 
 
 class ResultSchemas(Mapping):

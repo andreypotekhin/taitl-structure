@@ -358,6 +358,13 @@ statuses for caller-owned persistence. `SearchDocuments` runs `OnlineVectorizati
 uncached documents are limited to the bounded serving target set. `InferencePolicy` carries provider/model identity and
 permits arbitrary vector dimensions; the bundled deterministic adapter uses dimension 100 for tests and development.
 
+`SearchDocuments` declares only `results` as its top-level output. The declared outputs of its composed stages are
+available through the recursive `TransformResult` stage namespace when `allow_stage_outputs=True` (the default), for
+example `result.vectorized.query_embeddings` or
+`result.stages["vectorized"]["query_inference_status"]`. These are the existing cache-ready merged embeddings and
+status relations; stage access does not imply that Search persists them. `allow_stage_outputs=False` keeps final result
+access but omits stage packaging. Internal lanes and hook frames are never part of this namespace.
+
 ### Vector index and Reciprocal Rank Fusion
 
 The adopted plan `P08052602.Search-vector-index-and-rrf.plan.md` provides caller-supplied, validated document and

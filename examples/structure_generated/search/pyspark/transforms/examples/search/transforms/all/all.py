@@ -15724,6 +15724,622 @@ class AllGenerated(
         # Step method: document_popularity
         document_popularity = frames["relevance__document_popularity"].alias("document_popularity")
         assert_schema(document_popularity, DOCUMENT_POPULARITY_SCHEMA, name="DocumentPopularity", mode="strict")
+
+        # Step method: _stage_output_0
+        _stage_output_0 = frames["chunked__documents_chunked__sections"].alias("section")
+        assert_schema(_stage_output_0, SECTION_SCHEMA, name="Section", mode="strict")
+
+        # Step method: _stage_output_1
+        _stage_output_1 = frames["chunked__documents_chunked__paragraphs"].alias("paragraph")
+        assert_schema(_stage_output_1, PARAGRAPH_SCHEMA, name="Paragraph", mode="strict")
+
+        # Step method: _stage_output_2
+        _stage_output_2 = frames["chunked__sentences_chunked__sentences"].alias("sentence")
+        assert_schema(_stage_output_2, SENTENCE_SCHEMA, name="Sentence", mode="strict")
+
+        # Step method: _stage_output_3
+        _stage_output_3 = frames["chunked__documents_chunked__sections"].alias("section")
+        assert_schema(_stage_output_3, SECTION_SCHEMA, name="Section", mode="strict")
+
+        # Step method: _stage_output_4
+        _stage_output_4 = frames["chunked__documents_chunked__paragraphs"].alias("paragraph")
+        assert_schema(_stage_output_4, PARAGRAPH_SCHEMA, name="Paragraph", mode="strict")
+
+        # Step method: _stage_output_5
+        _stage_output_5 = frames["chunked__sentences_chunked__sentences"].alias("sentence")
+        assert_schema(_stage_output_5, SENTENCE_SCHEMA, name="Sentence", mode="strict")
+
+        # Step method: _stage_output_6
+        _stage_output_6 = frames["extracted__documents"].alias("document")
+        assert_schema(_stage_output_6, DOCUMENT_SCHEMA, name="Document", mode="strict")
+
+        # Step method: _stage_output_7
+        _stage_output_7 = frames["extracted__document_fields"].alias("document_field")
+        assert_schema(_stage_output_7, DOCUMENT_FIELD_SCHEMA, name="DocumentField", mode="strict")
+
+        # Step method: _stage_output_8
+        _stage_output_8 = frames["profiled__documents"].alias("document_profile")
+        assert_schema(_stage_output_8, DOCUMENT_PROFILE_SCHEMA, name="DocumentProfile", mode="strict")
+
+        # Step method: _stage_output_9
+        _stage_output_9 = frames["indexed__lexical__document_terms"].alias("document_term")
+        assert_schema(_stage_output_9, DOCUMENT_TERM_SCHEMA, name="DocumentTerm", mode="strict")
+
+        # Step method: _stage_output_10
+        _stage_output_10 = frames["indexed__lexical__document_summary"].alias("document_index_summary")
+        assert_schema(_stage_output_10, DOCUMENT_INDEX_SUMMARY_SCHEMA, name="DocumentIndexSummary", mode="strict")
+
+        # Step method: _stage_output_11
+        _stage_output_11 = frames["indexed__lexical__section_terms"].alias("section_term")
+        assert_schema(_stage_output_11, SECTION_TERM_SCHEMA, name="SectionTerm", mode="strict")
+
+        # Step method: _stage_output_12
+        _stage_output_12 = frames["indexed__lexical__section_summary"].alias("section_index_summary")
+        assert_schema(_stage_output_12, SECTION_INDEX_SUMMARY_SCHEMA, name="SectionIndexSummary", mode="strict")
+
+        # Step method: _stage_output_13
+        _stage_output_13 = frames["indexed__lexical__paragraph_terms"].alias("paragraph_term")
+        assert_schema(_stage_output_13, PARAGRAPH_TERM_SCHEMA, name="ParagraphTerm", mode="strict")
+
+        # Step method: _stage_output_14
+        _stage_output_14 = frames["indexed__lexical__paragraph_summary"].alias("paragraph_index_summary")
+        assert_schema(_stage_output_14, PARAGRAPH_INDEX_SUMMARY_SCHEMA, name="ParagraphIndexSummary", mode="strict")
+
+        # Step method: _stage_output_15
+        _stage_output_15 = frames["indexed__lexical__sentence_terms"].alias("sentence_term")
+        assert_schema(_stage_output_15, SENTENCE_TERM_SCHEMA, name="SentenceTerm", mode="strict")
+
+        # Step method: _stage_output_16
+        _stage_output_16 = frames["indexed__lexical__sentence_summary"].alias("sentence_index_summary")
+        assert_schema(_stage_output_16, SENTENCE_INDEX_SUMMARY_SCHEMA, name="SentenceIndexSummary", mode="strict")
+
+        # Step method: _stage_output_17
+        _stage_output_17 = frames["indexed__fields__terms"].alias("field_term")
+        assert_schema(_stage_output_17, FIELD_TERM_SCHEMA, name="FieldTerm", mode="strict")
+
+        # Step method: _stage_output_18
+        _stage_output_18 = frames["indexed__lexical__document_terms"].alias("document_term")
+        assert_schema(_stage_output_18, DOCUMENT_TERM_SCHEMA, name="DocumentTerm", mode="strict")
+
+        # Step method: _stage_output_19
+        _stage_output_19 = frames["indexed__lexical__document_summary"].alias("document_index_summary")
+        assert_schema(_stage_output_19, DOCUMENT_INDEX_SUMMARY_SCHEMA, name="DocumentIndexSummary", mode="strict")
+
+        # Step method: _stage_output_20
+        _stage_output_20 = frames["indexed__lexical__section_terms"].alias("section_term")
+        assert_schema(_stage_output_20, SECTION_TERM_SCHEMA, name="SectionTerm", mode="strict")
+
+        # Step method: _stage_output_21
+        _stage_output_21 = frames["indexed__lexical__section_summary"].alias("section_index_summary")
+        assert_schema(_stage_output_21, SECTION_INDEX_SUMMARY_SCHEMA, name="SectionIndexSummary", mode="strict")
+
+        # Step method: _stage_output_22
+        _stage_output_22 = frames["indexed__lexical__paragraph_terms"].alias("paragraph_term")
+        assert_schema(_stage_output_22, PARAGRAPH_TERM_SCHEMA, name="ParagraphTerm", mode="strict")
+
+        # Step method: _stage_output_23
+        _stage_output_23 = frames["indexed__lexical__paragraph_summary"].alias("paragraph_index_summary")
+        assert_schema(_stage_output_23, PARAGRAPH_INDEX_SUMMARY_SCHEMA, name="ParagraphIndexSummary", mode="strict")
+
+        # Step method: _stage_output_24
+        _stage_output_24 = frames["indexed__lexical__sentence_terms"].alias("sentence_term")
+        assert_schema(_stage_output_24, SENTENCE_TERM_SCHEMA, name="SentenceTerm", mode="strict")
+
+        # Step method: _stage_output_25
+        _stage_output_25 = frames["indexed__lexical__sentence_summary"].alias("sentence_index_summary")
+        assert_schema(_stage_output_25, SENTENCE_INDEX_SUMMARY_SCHEMA, name="SentenceIndexSummary", mode="strict")
+
+        # Step method: _stage_output_26
+        _stage_output_26 = frames["indexed__fields__terms"].alias("field_term")
+        assert_schema(_stage_output_26, FIELD_TERM_SCHEMA, name="FieldTerm", mode="strict")
+
+        # Step method: _stage_output_27
+        _stage_output_27 = frames["similarities__reduced__document_similarities"].alias("document_similarity")
+        assert_schema(_stage_output_27, DOCUMENT_SIMILARITY_SCHEMA, name="DocumentSimilarity", mode="strict")
+
+        # Step method: _stage_output_28
+        _stage_output_28 = frames["similarities__reduced__section_similarities"].alias("section_similarity")
+        assert_schema(_stage_output_28, SECTION_SIMILARITY_SCHEMA, name="SectionSimilarity", mode="strict")
+
+        # Step method: _stage_output_29
+        _stage_output_29 = frames["similarities__reduced__paragraph_similarities"].alias("paragraph_similarity")
+        assert_schema(_stage_output_29, PARAGRAPH_SIMILARITY_SCHEMA, name="ParagraphSimilarity", mode="strict")
+
+        # Step method: _stage_output_30
+        _stage_output_30 = frames["similarities__reduced__sentence_similarities"].alias("sentence_similarity")
+        assert_schema(_stage_output_30, SENTENCE_SIMILARITY_SCHEMA, name="SentenceSimilarity", mode="strict")
+
+        # Step method: _stage_output_31
+        _stage_output_31 = frames["similarities__queries__queries"].alias("search_query")
+        assert_schema(_stage_output_31, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
+
+        # Step method: _stage_output_32
+        _stage_output_32 = frames["similarities__queries__document_queries"].alias("document_similarity_query")
+        assert_schema(_stage_output_32, DOCUMENT_SIMILARITY_QUERY_SCHEMA, name="DocumentSimilarityQuery", mode="strict")
+
+        # Step method: _stage_output_33
+        _stage_output_33 = frames["similarities__queries__section_queries"].alias("section_similarity_query")
+        assert_schema(_stage_output_33, SECTION_SIMILARITY_QUERY_SCHEMA, name="SectionSimilarityQuery", mode="strict")
+
+        # Step method: _stage_output_34
+        _stage_output_34 = frames["similarities__queries__paragraph_queries"].alias("paragraph_similarity_query")
+        assert_schema(
+            _stage_output_34, PARAGRAPH_SIMILARITY_QUERY_SCHEMA, name="ParagraphSimilarityQuery", mode="strict"
+        )
+
+        # Step method: _stage_output_35
+        _stage_output_35 = frames["similarities__queries__sentence_queries"].alias("sentence_similarity_query")
+        assert_schema(_stage_output_35, SENTENCE_SIMILARITY_QUERY_SCHEMA, name="SentenceSimilarityQuery", mode="strict")
+
+        # Step method: _stage_output_36
+        _stage_output_36 = frames["similarities__scoring_targets__targets"].alias("document_search_target")
+        assert_schema(_stage_output_36, DOCUMENT_SEARCH_TARGET_SCHEMA, name="DocumentSearchTarget", mode="strict")
+
+        # Step method: _stage_output_37
+        _stage_output_37 = frames["similarities__overlap__document_overlap_scores"].alias("document_overlap_score")
+        assert_schema(_stage_output_37, DOCUMENT_OVERLAP_SCORE_SCHEMA, name="DocumentOverlapScore", mode="strict")
+
+        # Step method: _stage_output_38
+        _stage_output_38 = frames["similarities__overlap__section_overlap_scores"].alias("section_overlap_score")
+        assert_schema(_stage_output_38, SECTION_OVERLAP_SCORE_SCHEMA, name="SectionOverlapScore", mode="strict")
+
+        # Step method: _stage_output_39
+        _stage_output_39 = frames["similarities__overlap__paragraph_overlap_scores"].alias("paragraph_overlap_score")
+        assert_schema(_stage_output_39, PARAGRAPH_OVERLAP_SCORE_SCHEMA, name="ParagraphOverlapScore", mode="strict")
+
+        # Step method: _stage_output_40
+        _stage_output_40 = frames["similarities__overlap__sentence_overlap_scores"].alias("sentence_overlap_score")
+        assert_schema(_stage_output_40, SENTENCE_OVERLAP_SCORE_SCHEMA, name="SentenceOverlapScore", mode="strict")
+
+        # Step method: _stage_output_41
+        _stage_output_41 = frames["similarities__bm25__document_bm25_scores"].alias("document_bm25_score")
+        assert_schema(_stage_output_41, DOCUMENT_BM25_SCORE_SCHEMA, name="DocumentBm25Score", mode="strict")
+
+        # Step method: _stage_output_42
+        _stage_output_42 = frames["similarities__bm25__section_bm25_scores"].alias("section_bm25_score")
+        assert_schema(_stage_output_42, SECTION_BM25_SCORE_SCHEMA, name="SectionBm25Score", mode="strict")
+
+        # Step method: _stage_output_43
+        _stage_output_43 = frames["similarities__bm25__paragraph_bm25_scores"].alias("paragraph_bm25_score")
+        assert_schema(_stage_output_43, PARAGRAPH_BM25_SCORE_SCHEMA, name="ParagraphBm25Score", mode="strict")
+
+        # Step method: _stage_output_44
+        _stage_output_44 = frames["similarities__bm25__sentence_bm25_scores"].alias("sentence_bm25_score")
+        assert_schema(_stage_output_44, SENTENCE_BM25_SCORE_SCHEMA, name="SentenceBm25Score", mode="strict")
+
+        # Step method: _stage_output_45
+        _stage_output_45 = frames["similarities__reduced__document_similarities"].alias("document_similarity")
+        assert_schema(_stage_output_45, DOCUMENT_SIMILARITY_SCHEMA, name="DocumentSimilarity", mode="strict")
+
+        # Step method: _stage_output_46
+        _stage_output_46 = frames["similarities__reduced__section_similarities"].alias("section_similarity")
+        assert_schema(_stage_output_46, SECTION_SIMILARITY_SCHEMA, name="SectionSimilarity", mode="strict")
+
+        # Step method: _stage_output_47
+        _stage_output_47 = frames["similarities__reduced__paragraph_similarities"].alias("paragraph_similarity")
+        assert_schema(_stage_output_47, PARAGRAPH_SIMILARITY_SCHEMA, name="ParagraphSimilarity", mode="strict")
+
+        # Step method: _stage_output_48
+        _stage_output_48 = frames["similarities__reduced__sentence_similarities"].alias("sentence_similarity")
+        assert_schema(_stage_output_48, SENTENCE_SIMILARITY_SCHEMA, name="SentenceSimilarity", mode="strict")
+
+        # Step method: _stage_output_49
+        _stage_output_49 = frames["labeled__merged__labeled_queries"].alias("search_query")
+        assert_schema(_stage_output_49, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
+
+        # Step method: _stage_output_50
+        _stage_output_50 = frames["labeled__created__labels"].alias("query_label_assignments")
+        assert_schema(_stage_output_50, QUERY_LABEL_ASSIGNMENTS_SCHEMA, name="QueryLabelAssignments", mode="strict")
+
+        # Step method: _stage_output_51
+        _stage_output_51 = frames["labeled__merged__labeled_queries"].alias("search_query")
+        assert_schema(_stage_output_51, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
+
+        # Step method: _stage_output_52
+        _stage_output_52 = frames["filtered__filtering__overlap__document_filter_scores"].alias("document_filter_score")
+        assert_schema(_stage_output_52, DOCUMENT_FILTER_SCORE_SCHEMA, name="DocumentFilterScore", mode="strict")
+
+        # Step method: _stage_output_53
+        _stage_output_53 = frames["filtered__selected__targets"].alias("document_search_target")
+        assert_schema(_stage_output_53, DOCUMENT_SEARCH_TARGET_SCHEMA, name="DocumentSearchTarget", mode="strict")
+
+        # Step method: _stage_output_54
+        _stage_output_54 = frames["filtered__filtering__overlap__document_filter_scores"].alias("document_filter_score")
+        assert_schema(_stage_output_54, DOCUMENT_FILTER_SCORE_SCHEMA, name="DocumentFilterScore", mode="strict")
+
+        # Step method: _stage_output_55
+        _stage_output_55 = frames["filtered__filtering__overlap__document_filter_scores"].alias("document_filter_score")
+        assert_schema(_stage_output_55, DOCUMENT_FILTER_SCORE_SCHEMA, name="DocumentFilterScore", mode="strict")
+
+        # Step method: _stage_output_56
+        _stage_output_56 = frames["filtered__selected__targets"].alias("document_search_target")
+        assert_schema(_stage_output_56, DOCUMENT_SEARCH_TARGET_SCHEMA, name="DocumentSearchTarget", mode="strict")
+
+        # Step method: _stage_output_57
+        _stage_output_57 = frames["vectorized__vectorized_queries__vector_queries"].alias("document_vector_query")
+        assert_schema(_stage_output_57, DOCUMENT_VECTOR_QUERY_SCHEMA, name="DocumentVectorQuery", mode="strict")
+
+        # Step method: _stage_output_58
+        _stage_output_58 = frames["vectorized__merged_documents__embeddings"].alias("document_vector_index")
+        assert_schema(_stage_output_58, DOCUMENT_VECTOR_INDEX_SCHEMA, name="DocumentVectorIndex", mode="strict")
+
+        # Step method: _stage_output_59
+        _stage_output_59 = frames["vectorized__merged_queries__embeddings"].alias("search_query_vector_embedding")
+        assert_schema(
+            _stage_output_59, SEARCH_QUERY_VECTOR_EMBEDDING_SCHEMA, name="SearchQueryVectorEmbedding", mode="strict"
+        )
+
+        # Step method: _stage_output_60
+        _stage_output_60 = frames["vectorized__vectorized__inferred__published_queries__statuses"].alias(
+            "query_inference_status"
+        )
+        assert_schema(_stage_output_60, QUERY_INFERENCE_STATUS_SCHEMA, name="QueryInferenceStatus", mode="strict")
+
+        # Step method: _stage_output_61
+        _stage_output_61 = frames["vectorized__vectorized__inferred__published_documents__statuses"].alias(
+            "document_inference_status"
+        )
+        assert_schema(_stage_output_61, DOCUMENT_INFERENCE_STATUS_SCHEMA, name="DocumentInferenceStatus", mode="strict")
+
+        # Step method: _stage_output_62
+        _stage_output_62 = frames["vectorized__targets__documents"].alias("document_search_target")
+        assert_schema(_stage_output_62, DOCUMENT_SEARCH_TARGET_SCHEMA, name="DocumentSearchTarget", mode="strict")
+
+        # Step method: _stage_output_63
+        _stage_output_63 = frames["vectorized__targets__documents"].alias("document_search_target")
+        assert_schema(_stage_output_63, DOCUMENT_SEARCH_TARGET_SCHEMA, name="DocumentSearchTarget", mode="strict")
+
+        # Step method: _stage_output_64
+        _stage_output_64 = frames["vectorized__vectorized__inferred__published_queries__embeddings"].alias(
+            "search_query_vector_embedding"
+        )
+        assert_schema(
+            _stage_output_64, SEARCH_QUERY_VECTOR_EMBEDDING_SCHEMA, name="SearchQueryVectorEmbedding", mode="strict"
+        )
+
+        # Step method: _stage_output_65
+        _stage_output_65 = frames["vectorized__vectorized__inferred__published_documents__embeddings"].alias(
+            "document_vector_embedding"
+        )
+        assert_schema(_stage_output_65, DOCUMENT_VECTOR_EMBEDDING_SCHEMA, name="DocumentVectorEmbedding", mode="strict")
+
+        # Step method: _stage_output_66
+        _stage_output_66 = frames["vectorized__vectorized__inferred__published_queries__statuses"].alias(
+            "query_inference_status"
+        )
+        assert_schema(_stage_output_66, QUERY_INFERENCE_STATUS_SCHEMA, name="QueryInferenceStatus", mode="strict")
+
+        # Step method: _stage_output_67
+        _stage_output_67 = frames["vectorized__vectorized__inferred__published_documents__statuses"].alias(
+            "document_inference_status"
+        )
+        assert_schema(_stage_output_67, DOCUMENT_INFERENCE_STATUS_SCHEMA, name="DocumentInferenceStatus", mode="strict")
+
+        # Step method: _stage_output_68
+        _stage_output_68 = frames["vectorized__vectorized__inferred__published_queries__embeddings"].alias(
+            "search_query_vector_embedding"
+        )
+        assert_schema(
+            _stage_output_68, SEARCH_QUERY_VECTOR_EMBEDDING_SCHEMA, name="SearchQueryVectorEmbedding", mode="strict"
+        )
+
+        # Step method: _stage_output_69
+        _stage_output_69 = frames["vectorized__vectorized__inferred__published_documents__embeddings"].alias(
+            "document_vector_embedding"
+        )
+        assert_schema(_stage_output_69, DOCUMENT_VECTOR_EMBEDDING_SCHEMA, name="DocumentVectorEmbedding", mode="strict")
+
+        # Step method: _stage_output_70
+        _stage_output_70 = frames["vectorized__vectorized__inferred__published_queries__statuses"].alias(
+            "query_inference_status"
+        )
+        assert_schema(_stage_output_70, QUERY_INFERENCE_STATUS_SCHEMA, name="QueryInferenceStatus", mode="strict")
+
+        # Step method: _stage_output_71
+        _stage_output_71 = frames["vectorized__vectorized__inferred__published_documents__statuses"].alias(
+            "document_inference_status"
+        )
+        assert_schema(_stage_output_71, DOCUMENT_INFERENCE_STATUS_SCHEMA, name="DocumentInferenceStatus", mode="strict")
+
+        # Step method: _stage_output_72
+        _stage_output_72 = frames["vectorized__vectorized__inferred__validated__valid_policy"].alias("inference_policy")
+        assert_schema(_stage_output_72, INFERENCE_POLICY_SCHEMA, name="InferencePolicy", mode="strict")
+
+        # Step method: _stage_output_73
+        _stage_output_73 = frames["vectorized__vectorized__inferred__inferred_queries__results"].alias(
+            "query_inference_result"
+        )
+        assert_schema(_stage_output_73, QUERY_INFERENCE_RESULT_SCHEMA, name="QueryInferenceResult", mode="strict")
+
+        # Step method: _stage_output_74
+        _stage_output_74 = frames["vectorized__vectorized__inferred__inferred_documents__results"].alias(
+            "document_inference_result"
+        )
+        assert_schema(_stage_output_74, DOCUMENT_INFERENCE_RESULT_SCHEMA, name="DocumentInferenceResult", mode="strict")
+
+        # Step method: _stage_output_75
+        _stage_output_75 = frames["vectorized__vectorized__inferred__published_queries__embeddings"].alias(
+            "search_query_vector_embedding"
+        )
+        assert_schema(
+            _stage_output_75, SEARCH_QUERY_VECTOR_EMBEDDING_SCHEMA, name="SearchQueryVectorEmbedding", mode="strict"
+        )
+
+        # Step method: _stage_output_76
+        _stage_output_76 = frames["vectorized__vectorized__inferred__published_queries__statuses"].alias(
+            "query_inference_status"
+        )
+        assert_schema(_stage_output_76, QUERY_INFERENCE_STATUS_SCHEMA, name="QueryInferenceStatus", mode="strict")
+
+        # Step method: _stage_output_77
+        _stage_output_77 = frames["vectorized__vectorized__inferred__published_documents__embeddings"].alias(
+            "document_vector_embedding"
+        )
+        assert_schema(_stage_output_77, DOCUMENT_VECTOR_EMBEDDING_SCHEMA, name="DocumentVectorEmbedding", mode="strict")
+
+        # Step method: _stage_output_78
+        _stage_output_78 = frames["vectorized__vectorized__inferred__published_documents__statuses"].alias(
+            "document_inference_status"
+        )
+        assert_schema(_stage_output_78, DOCUMENT_INFERENCE_STATUS_SCHEMA, name="DocumentInferenceStatus", mode="strict")
+
+        # Step method: _stage_output_79
+        _stage_output_79 = frames["vectorized__merged_queries__embeddings"].alias("search_query_vector_embedding")
+        assert_schema(
+            _stage_output_79, SEARCH_QUERY_VECTOR_EMBEDDING_SCHEMA, name="SearchQueryVectorEmbedding", mode="strict"
+        )
+
+        # Step method: _stage_output_80
+        _stage_output_80 = frames["vectorized__merged_documents__embeddings"].alias("document_vector_index")
+        assert_schema(_stage_output_80, DOCUMENT_VECTOR_INDEX_SCHEMA, name="DocumentVectorIndex", mode="strict")
+
+        # Step method: _stage_output_81
+        _stage_output_81 = frames["vectorized__vectorized_queries__vector_queries"].alias("document_vector_query")
+        assert_schema(_stage_output_81, DOCUMENT_VECTOR_QUERY_SCHEMA, name="DocumentVectorQuery", mode="strict")
+
+        # Step method: _stage_output_82
+        _stage_output_82 = frames["scored__scored__selected__document_scores"].alias("document_score")
+        assert_schema(_stage_output_82, DOCUMENT_SCORE_SCHEMA, name="DocumentScore", mode="strict")
+
+        # Step method: _stage_output_83
+        _stage_output_83 = frames["scored__scored__selected__section_scores"].alias("section_score")
+        assert_schema(_stage_output_83, SECTION_SCORE_SCHEMA, name="SectionScore", mode="strict")
+
+        # Step method: _stage_output_84
+        _stage_output_84 = frames["scored__scored__selected__paragraph_scores"].alias("paragraph_score")
+        assert_schema(_stage_output_84, PARAGRAPH_SCORE_SCHEMA, name="ParagraphScore", mode="strict")
+
+        # Step method: _stage_output_85
+        _stage_output_85 = frames["scored__scored__selected__sentence_scores"].alias("sentence_score")
+        assert_schema(_stage_output_85, SENTENCE_SCORE_SCHEMA, name="SentenceScore", mode="strict")
+
+        # Step method: _stage_output_86
+        _stage_output_86 = frames["scored__scored__overlap__document_overlap_scores"].alias("document_overlap_score")
+        assert_schema(_stage_output_86, DOCUMENT_OVERLAP_SCORE_SCHEMA, name="DocumentOverlapScore", mode="strict")
+
+        # Step method: _stage_output_87
+        _stage_output_87 = frames["scored__scored__overlap__section_overlap_scores"].alias("section_overlap_score")
+        assert_schema(_stage_output_87, SECTION_OVERLAP_SCORE_SCHEMA, name="SectionOverlapScore", mode="strict")
+
+        # Step method: _stage_output_88
+        _stage_output_88 = frames["scored__scored__overlap__paragraph_overlap_scores"].alias("paragraph_overlap_score")
+        assert_schema(_stage_output_88, PARAGRAPH_OVERLAP_SCORE_SCHEMA, name="ParagraphOverlapScore", mode="strict")
+
+        # Step method: _stage_output_89
+        _stage_output_89 = frames["scored__scored__overlap__sentence_overlap_scores"].alias("sentence_overlap_score")
+        assert_schema(_stage_output_89, SENTENCE_OVERLAP_SCORE_SCHEMA, name="SentenceOverlapScore", mode="strict")
+
+        # Step method: _stage_output_90
+        _stage_output_90 = frames["scored__scored__bm25__document_bm25_scores"].alias("document_bm25_score")
+        assert_schema(_stage_output_90, DOCUMENT_BM25_SCORE_SCHEMA, name="DocumentBm25Score", mode="strict")
+
+        # Step method: _stage_output_91
+        _stage_output_91 = frames["scored__scored__bm25__section_bm25_scores"].alias("section_bm25_score")
+        assert_schema(_stage_output_91, SECTION_BM25_SCORE_SCHEMA, name="SectionBm25Score", mode="strict")
+
+        # Step method: _stage_output_92
+        _stage_output_92 = frames["scored__scored__bm25__paragraph_bm25_scores"].alias("paragraph_bm25_score")
+        assert_schema(_stage_output_92, PARAGRAPH_BM25_SCORE_SCHEMA, name="ParagraphBm25Score", mode="strict")
+
+        # Step method: _stage_output_93
+        _stage_output_93 = frames["scored__scored__bm25__sentence_bm25_scores"].alias("sentence_bm25_score")
+        assert_schema(_stage_output_93, SENTENCE_BM25_SCORE_SCHEMA, name="SentenceBm25Score", mode="strict")
+
+        # Step method: _stage_output_94
+        _stage_output_94 = frames["scored__scored__vector__document_scores"].alias("document_vector_score")
+        assert_schema(_stage_output_94, DOCUMENT_VECTOR_SCORE_SCHEMA, name="DocumentVectorScore", mode="strict")
+
+        # Step method: _stage_output_95
+        _stage_output_95 = frames["scored__scored__vector__paragraph_scores"].alias("paragraph_vector_score")
+        assert_schema(_stage_output_95, PARAGRAPH_VECTOR_SCORE_SCHEMA, name="ParagraphVectorScore", mode="strict")
+
+        # Step method: _stage_output_96
+        _stage_output_96 = frames["scored__popular__selected_queries"].alias("search_query")
+        assert_schema(_stage_output_96, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
+
+        # Step method: _stage_output_97
+        _stage_output_97 = frames["scored__recent__recent_queries"].alias("search_query")
+        assert_schema(_stage_output_97, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
+
+        # Step method: _stage_output_98
+        _stage_output_98 = frames["scored__offline__offline_queries"].alias("search_query")
+        assert_schema(_stage_output_98, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
+
+        # Step method: _stage_output_99
+        _stage_output_99 = frames["scored__scored__selected__document_scores"].alias("document_score")
+        assert_schema(_stage_output_99, DOCUMENT_SCORE_SCHEMA, name="DocumentScore", mode="strict")
+
+        # Step method: _stage_output_100
+        _stage_output_100 = frames["scored__scored__selected__section_scores"].alias("section_score")
+        assert_schema(_stage_output_100, SECTION_SCORE_SCHEMA, name="SectionScore", mode="strict")
+
+        # Step method: _stage_output_101
+        _stage_output_101 = frames["scored__scored__selected__paragraph_scores"].alias("paragraph_score")
+        assert_schema(_stage_output_101, PARAGRAPH_SCORE_SCHEMA, name="ParagraphScore", mode="strict")
+
+        # Step method: _stage_output_102
+        _stage_output_102 = frames["scored__scored__selected__sentence_scores"].alias("sentence_score")
+        assert_schema(_stage_output_102, SENTENCE_SCORE_SCHEMA, name="SentenceScore", mode="strict")
+
+        # Step method: _stage_output_103
+        _stage_output_103 = frames["scored__scored__overlap__document_overlap_scores"].alias("document_overlap_score")
+        assert_schema(_stage_output_103, DOCUMENT_OVERLAP_SCORE_SCHEMA, name="DocumentOverlapScore", mode="strict")
+
+        # Step method: _stage_output_104
+        _stage_output_104 = frames["scored__scored__overlap__section_overlap_scores"].alias("section_overlap_score")
+        assert_schema(_stage_output_104, SECTION_OVERLAP_SCORE_SCHEMA, name="SectionOverlapScore", mode="strict")
+
+        # Step method: _stage_output_105
+        _stage_output_105 = frames["scored__scored__overlap__paragraph_overlap_scores"].alias("paragraph_overlap_score")
+        assert_schema(_stage_output_105, PARAGRAPH_OVERLAP_SCORE_SCHEMA, name="ParagraphOverlapScore", mode="strict")
+
+        # Step method: _stage_output_106
+        _stage_output_106 = frames["scored__scored__overlap__sentence_overlap_scores"].alias("sentence_overlap_score")
+        assert_schema(_stage_output_106, SENTENCE_OVERLAP_SCORE_SCHEMA, name="SentenceOverlapScore", mode="strict")
+
+        # Step method: _stage_output_107
+        _stage_output_107 = frames["scored__scored__bm25__document_bm25_scores"].alias("document_bm25_score")
+        assert_schema(_stage_output_107, DOCUMENT_BM25_SCORE_SCHEMA, name="DocumentBm25Score", mode="strict")
+
+        # Step method: _stage_output_108
+        _stage_output_108 = frames["scored__scored__bm25__section_bm25_scores"].alias("section_bm25_score")
+        assert_schema(_stage_output_108, SECTION_BM25_SCORE_SCHEMA, name="SectionBm25Score", mode="strict")
+
+        # Step method: _stage_output_109
+        _stage_output_109 = frames["scored__scored__bm25__paragraph_bm25_scores"].alias("paragraph_bm25_score")
+        assert_schema(_stage_output_109, PARAGRAPH_BM25_SCORE_SCHEMA, name="ParagraphBm25Score", mode="strict")
+
+        # Step method: _stage_output_110
+        _stage_output_110 = frames["scored__scored__bm25__sentence_bm25_scores"].alias("sentence_bm25_score")
+        assert_schema(_stage_output_110, SENTENCE_BM25_SCORE_SCHEMA, name="SentenceBm25Score", mode="strict")
+
+        # Step method: _stage_output_111
+        _stage_output_111 = frames["scored__scored__vector__document_scores"].alias("document_vector_score")
+        assert_schema(_stage_output_111, DOCUMENT_VECTOR_SCORE_SCHEMA, name="DocumentVectorScore", mode="strict")
+
+        # Step method: _stage_output_112
+        _stage_output_112 = frames["scored__scored__vector__paragraph_scores"].alias("paragraph_vector_score")
+        assert_schema(_stage_output_112, PARAGRAPH_VECTOR_SCORE_SCHEMA, name="ParagraphVectorScore", mode="strict")
+
+        # Step method: _stage_output_113
+        _stage_output_113 = frames["scored__scored__overlap__document_overlap_scores"].alias("document_overlap_score")
+        assert_schema(_stage_output_113, DOCUMENT_OVERLAP_SCORE_SCHEMA, name="DocumentOverlapScore", mode="strict")
+
+        # Step method: _stage_output_114
+        _stage_output_114 = frames["scored__scored__overlap__section_overlap_scores"].alias("section_overlap_score")
+        assert_schema(_stage_output_114, SECTION_OVERLAP_SCORE_SCHEMA, name="SectionOverlapScore", mode="strict")
+
+        # Step method: _stage_output_115
+        _stage_output_115 = frames["scored__scored__overlap__paragraph_overlap_scores"].alias("paragraph_overlap_score")
+        assert_schema(_stage_output_115, PARAGRAPH_OVERLAP_SCORE_SCHEMA, name="ParagraphOverlapScore", mode="strict")
+
+        # Step method: _stage_output_116
+        _stage_output_116 = frames["scored__scored__overlap__sentence_overlap_scores"].alias("sentence_overlap_score")
+        assert_schema(_stage_output_116, SENTENCE_OVERLAP_SCORE_SCHEMA, name="SentenceOverlapScore", mode="strict")
+
+        # Step method: _stage_output_117
+        _stage_output_117 = frames["scored__scored__bm25__document_bm25_scores"].alias("document_bm25_score")
+        assert_schema(_stage_output_117, DOCUMENT_BM25_SCORE_SCHEMA, name="DocumentBm25Score", mode="strict")
+
+        # Step method: _stage_output_118
+        _stage_output_118 = frames["scored__scored__bm25__section_bm25_scores"].alias("section_bm25_score")
+        assert_schema(_stage_output_118, SECTION_BM25_SCORE_SCHEMA, name="SectionBm25Score", mode="strict")
+
+        # Step method: _stage_output_119
+        _stage_output_119 = frames["scored__scored__bm25__paragraph_bm25_scores"].alias("paragraph_bm25_score")
+        assert_schema(_stage_output_119, PARAGRAPH_BM25_SCORE_SCHEMA, name="ParagraphBm25Score", mode="strict")
+
+        # Step method: _stage_output_120
+        _stage_output_120 = frames["scored__scored__bm25__sentence_bm25_scores"].alias("sentence_bm25_score")
+        assert_schema(_stage_output_120, SENTENCE_BM25_SCORE_SCHEMA, name="SentenceBm25Score", mode="strict")
+
+        # Step method: _stage_output_121
+        _stage_output_121 = frames["scored__scored__selected__document_scores"].alias("document_score")
+        assert_schema(_stage_output_121, DOCUMENT_SCORE_SCHEMA, name="DocumentScore", mode="strict")
+
+        # Step method: _stage_output_122
+        _stage_output_122 = frames["scored__scored__selected__section_scores"].alias("section_score")
+        assert_schema(_stage_output_122, SECTION_SCORE_SCHEMA, name="SectionScore", mode="strict")
+
+        # Step method: _stage_output_123
+        _stage_output_123 = frames["scored__scored__selected__paragraph_scores"].alias("paragraph_score")
+        assert_schema(_stage_output_123, PARAGRAPH_SCORE_SCHEMA, name="ParagraphScore", mode="strict")
+
+        # Step method: _stage_output_124
+        _stage_output_124 = frames["scored__scored__selected__sentence_scores"].alias("sentence_score")
+        assert_schema(_stage_output_124, SENTENCE_SCORE_SCHEMA, name="SentenceScore", mode="strict")
+
+        # Step method: _stage_output_125
+        _stage_output_125 = frames["scored__scored__vector__document_scores"].alias("document_vector_score")
+        assert_schema(_stage_output_125, DOCUMENT_VECTOR_SCORE_SCHEMA, name="DocumentVectorScore", mode="strict")
+
+        # Step method: _stage_output_126
+        _stage_output_126 = frames["scored__scored__vector__paragraph_scores"].alias("paragraph_vector_score")
+        assert_schema(_stage_output_126, PARAGRAPH_VECTOR_SCORE_SCHEMA, name="ParagraphVectorScore", mode="strict")
+
+        # Step method: _stage_output_127
+        _stage_output_127 = frames["ranked__document_candidates"].alias("document_vector_candidate")
+        assert_schema(
+            _stage_output_127, DOCUMENT_VECTOR_CANDIDATE_SCHEMA, name="DocumentVectorCandidate", mode="strict"
+        )
+
+        # Step method: _stage_output_128
+        _stage_output_128 = frames["ranked__paragraph_candidates"].alias("paragraph_vector_candidate")
+        assert_schema(
+            _stage_output_128, PARAGRAPH_VECTOR_CANDIDATE_SCHEMA, name="ParagraphVectorCandidate", mode="strict"
+        )
+
+        # Step method: _stage_output_129
+        _stage_output_129 = frames["cohorts__band_memberships"].alias("band_membership")
+        assert_schema(_stage_output_129, BAND_MEMBERSHIP_SCHEMA, name="BandMembership", mode="strict")
+
+        # Step method: _stage_output_130
+        _stage_output_130 = frames["cohorts__user_bands"].alias("user_band")
+        assert_schema(_stage_output_130, USER_BAND_SCHEMA, name="UserBand", mode="strict")
+
+        # Step method: _stage_output_131
+        _stage_output_131 = frames["cohorts__user_band_memberships"].alias("user_band_membership")
+        assert_schema(_stage_output_131, USER_BAND_MEMBERSHIP_SCHEMA, name="UserBandMembership", mode="strict")
+
+        # Step method: _stage_output_132
+        _stage_output_132 = frames["cohorts__band_fallbacks"].alias("band_fallback")
+        assert_schema(_stage_output_132, BAND_FALLBACK_SCHEMA, name="BandFallback", mode="strict")
+
+        # Step method: _stage_output_133
+        _stage_output_133 = frames["relevance__query_document_signals"].alias("query_document_signals")
+        assert_schema(_stage_output_133, QUERY_DOCUMENT_SIGNALS_SCHEMA, name="QueryDocumentSignals", mode="strict")
+
+        # Step method: _stage_output_134
+        _stage_output_134 = frames["relevance__document_popularity"].alias("document_popularity")
+        assert_schema(_stage_output_134, DOCUMENT_POPULARITY_SCHEMA, name="DocumentPopularity", mode="strict")
+
+        # Step method: _stage_output_135
+        _stage_output_135 = frames["analyzed__sentence_statistics"].alias("sentence_statistics")
+        assert_schema(_stage_output_135, SENTENCE_STATISTICS_SCHEMA, name="SentenceStatistics", mode="strict")
+
+        # Step method: _stage_output_136
+        _stage_output_136 = frames["analyzed__paragraph_statistics"].alias("paragraph_statistics")
+        assert_schema(_stage_output_136, PARAGRAPH_STATISTICS_SCHEMA, name="ParagraphStatistics", mode="strict")
+
+        # Step method: _stage_output_137
+        _stage_output_137 = frames["analyzed__section_statistics"].alias("section_statistics")
+        assert_schema(_stage_output_137, SECTION_STATISTICS_SCHEMA, name="SectionStatistics", mode="strict")
+
+        # Step method: _stage_output_138
+        _stage_output_138 = frames["analyzed__document_statistics"].alias("document_statistics")
+        assert_schema(_stage_output_138, DOCUMENT_STATISTICS_SCHEMA, name="DocumentStatistics", mode="strict")
+
+        # Step method: _stage_output_139
+        _stage_output_139 = frames["analyzed__similar_documents"].alias("similar_document")
+        assert_schema(_stage_output_139, SIMILAR_DOCUMENT_SCHEMA, name="SimilarDocument", mode="strict")
+
+        # Step method: _stage_output_140
+        _stage_output_140 = frames["corpus__corpus_statistics"].alias("corpus_statistics")
+        assert_schema(_stage_output_140, CORPUS_STATISTICS_SCHEMA, name="CorpusStatistics", mode="strict")
+
+        # Step method: _stage_output_141
+        _stage_output_141 = frames["corpus__corpus_vocabulary"].alias("corpus_vocabulary")
+        assert_schema(_stage_output_141, CORPUS_VOCABULARY_SCHEMA, name="CorpusVocabulary", mode="strict")
         return TransformResult(
             {
                 "sections": sections,
@@ -15836,6 +16452,362 @@ class AllGenerated(
                 "query_document_signals": QUERY_DOCUMENT_SIGNALS_SCHEMA,
                 "document_popularity": DOCUMENT_POPULARITY_SCHEMA,
             },
+            stage_records=[
+                (('chunked', 'sections'), _stage_output_0, SECTION_SCHEMA, ()),
+                (('chunked', 'paragraphs'), _stage_output_1, PARAGRAPH_SCHEMA, ()),
+                (('chunked', 'sentences'), _stage_output_2, SENTENCE_SCHEMA, ()),
+                (('chunked', 'documents_chunked', 'sections'), _stage_output_3, SECTION_SCHEMA, ()),
+                (('chunked', 'documents_chunked', 'paragraphs'), _stage_output_4, PARAGRAPH_SCHEMA, ()),
+                (('chunked', 'sentences_chunked', 'sentences'), _stage_output_5, SENTENCE_SCHEMA, ()),
+                (('extracted', 'documents'), _stage_output_6, DOCUMENT_SCHEMA, ()),
+                (('extracted', 'document_fields'), _stage_output_7, DOCUMENT_FIELD_SCHEMA, ()),
+                (('profiled', 'features'), _stage_output_8, DOCUMENT_PROFILE_SCHEMA, ()),
+                (('indexed', 'document_terms'), _stage_output_9, DOCUMENT_TERM_SCHEMA, ()),
+                (('indexed', 'document_summary'), _stage_output_10, DOCUMENT_INDEX_SUMMARY_SCHEMA, ()),
+                (('indexed', 'section_terms'), _stage_output_11, SECTION_TERM_SCHEMA, ()),
+                (('indexed', 'section_summary'), _stage_output_12, SECTION_INDEX_SUMMARY_SCHEMA, ()),
+                (('indexed', 'paragraph_terms'), _stage_output_13, PARAGRAPH_TERM_SCHEMA, ()),
+                (('indexed', 'paragraph_summary'), _stage_output_14, PARAGRAPH_INDEX_SUMMARY_SCHEMA, ()),
+                (('indexed', 'sentence_terms'), _stage_output_15, SENTENCE_TERM_SCHEMA, ()),
+                (('indexed', 'sentence_summary'), _stage_output_16, SENTENCE_INDEX_SUMMARY_SCHEMA, ()),
+                (('indexed', 'field_terms'), _stage_output_17, FIELD_TERM_SCHEMA, ()),
+                (('indexed', 'lexical', 'document_terms'), _stage_output_18, DOCUMENT_TERM_SCHEMA, ()),
+                (('indexed', 'lexical', 'document_summary'), _stage_output_19, DOCUMENT_INDEX_SUMMARY_SCHEMA, ()),
+                (('indexed', 'lexical', 'section_terms'), _stage_output_20, SECTION_TERM_SCHEMA, ()),
+                (('indexed', 'lexical', 'section_summary'), _stage_output_21, SECTION_INDEX_SUMMARY_SCHEMA, ()),
+                (('indexed', 'lexical', 'paragraph_terms'), _stage_output_22, PARAGRAPH_TERM_SCHEMA, ()),
+                (('indexed', 'lexical', 'paragraph_summary'), _stage_output_23, PARAGRAPH_INDEX_SUMMARY_SCHEMA, ()),
+                (('indexed', 'lexical', 'sentence_terms'), _stage_output_24, SENTENCE_TERM_SCHEMA, ()),
+                (('indexed', 'lexical', 'sentence_summary'), _stage_output_25, SENTENCE_INDEX_SUMMARY_SCHEMA, ()),
+                (('indexed', 'fields', 'terms'), _stage_output_26, FIELD_TERM_SCHEMA, ()),
+                (('similarities', 'document_similarities'), _stage_output_27, DOCUMENT_SIMILARITY_SCHEMA, ()),
+                (('similarities', 'section_similarities'), _stage_output_28, SECTION_SIMILARITY_SCHEMA, ()),
+                (('similarities', 'paragraph_similarities'), _stage_output_29, PARAGRAPH_SIMILARITY_SCHEMA, ()),
+                (('similarities', 'sentence_similarities'), _stage_output_30, SENTENCE_SIMILARITY_SCHEMA, ()),
+                (('similarities', 'queries', 'queries'), _stage_output_31, SEARCH_QUERY_SCHEMA, ()),
+                (
+                    ('similarities', 'queries', 'document_queries'),
+                    _stage_output_32,
+                    DOCUMENT_SIMILARITY_QUERY_SCHEMA,
+                    (),
+                ),
+                (('similarities', 'queries', 'section_queries'), _stage_output_33, SECTION_SIMILARITY_QUERY_SCHEMA, ()),
+                (
+                    ('similarities', 'queries', 'paragraph_queries'),
+                    _stage_output_34,
+                    PARAGRAPH_SIMILARITY_QUERY_SCHEMA,
+                    (),
+                ),
+                (
+                    ('similarities', 'queries', 'sentence_queries'),
+                    _stage_output_35,
+                    SENTENCE_SIMILARITY_QUERY_SCHEMA,
+                    (),
+                ),
+                (('similarities', 'scoring_targets', 'targets'), _stage_output_36, DOCUMENT_SEARCH_TARGET_SCHEMA, ()),
+                (
+                    ('similarities', 'overlap', 'document_overlap_scores'),
+                    _stage_output_37,
+                    DOCUMENT_OVERLAP_SCORE_SCHEMA,
+                    (),
+                ),
+                (
+                    ('similarities', 'overlap', 'section_overlap_scores'),
+                    _stage_output_38,
+                    SECTION_OVERLAP_SCORE_SCHEMA,
+                    (),
+                ),
+                (
+                    ('similarities', 'overlap', 'paragraph_overlap_scores'),
+                    _stage_output_39,
+                    PARAGRAPH_OVERLAP_SCORE_SCHEMA,
+                    (),
+                ),
+                (
+                    ('similarities', 'overlap', 'sentence_overlap_scores'),
+                    _stage_output_40,
+                    SENTENCE_OVERLAP_SCORE_SCHEMA,
+                    (),
+                ),
+                (('similarities', 'bm25', 'document_bm25_scores'), _stage_output_41, DOCUMENT_BM25_SCORE_SCHEMA, ()),
+                (('similarities', 'bm25', 'section_bm25_scores'), _stage_output_42, SECTION_BM25_SCORE_SCHEMA, ()),
+                (('similarities', 'bm25', 'paragraph_bm25_scores'), _stage_output_43, PARAGRAPH_BM25_SCORE_SCHEMA, ()),
+                (('similarities', 'bm25', 'sentence_bm25_scores'), _stage_output_44, SENTENCE_BM25_SCORE_SCHEMA, ()),
+                (
+                    ('similarities', 'reduced', 'document_similarities'),
+                    _stage_output_45,
+                    DOCUMENT_SIMILARITY_SCHEMA,
+                    (),
+                ),
+                (('similarities', 'reduced', 'section_similarities'), _stage_output_46, SECTION_SIMILARITY_SCHEMA, ()),
+                (
+                    ('similarities', 'reduced', 'paragraph_similarities'),
+                    _stage_output_47,
+                    PARAGRAPH_SIMILARITY_SCHEMA,
+                    (),
+                ),
+                (
+                    ('similarities', 'reduced', 'sentence_similarities'),
+                    _stage_output_48,
+                    SENTENCE_SIMILARITY_SCHEMA,
+                    (),
+                ),
+                (('labeled', 'labeled_queries'), _stage_output_49, SEARCH_QUERY_SCHEMA, ()),
+                (('labeled', 'created', 'labels'), _stage_output_50, QUERY_LABEL_ASSIGNMENTS_SCHEMA, ()),
+                (('labeled', 'merged', 'labeled_queries'), _stage_output_51, SEARCH_QUERY_SCHEMA, ()),
+                (('filtered', 'document_filter_scores'), _stage_output_52, DOCUMENT_FILTER_SCORE_SCHEMA, ()),
+                (('filtered', 'targets'), _stage_output_53, DOCUMENT_SEARCH_TARGET_SCHEMA, ()),
+                (
+                    ('filtered', 'filtering', 'document_filter_scores'),
+                    _stage_output_54,
+                    DOCUMENT_FILTER_SCORE_SCHEMA,
+                    (),
+                ),
+                (
+                    ('filtered', 'filtering', 'overlap', 'document_filter_scores'),
+                    _stage_output_55,
+                    DOCUMENT_FILTER_SCORE_SCHEMA,
+                    (),
+                ),
+                (('filtered', 'selected', 'targets'), _stage_output_56, DOCUMENT_SEARCH_TARGET_SCHEMA, ()),
+                (('vectorized', 'vector_queries'), _stage_output_57, DOCUMENT_VECTOR_QUERY_SCHEMA, ()),
+                (('vectorized', 'document_embeddings'), _stage_output_58, DOCUMENT_VECTOR_INDEX_SCHEMA, ()),
+                (('vectorized', 'query_embeddings_out'), _stage_output_59, SEARCH_QUERY_VECTOR_EMBEDDING_SCHEMA, ()),
+                (('vectorized', 'query_inference_status'), _stage_output_60, QUERY_INFERENCE_STATUS_SCHEMA, ()),
+                (('vectorized', 'document_inference_status'), _stage_output_61, DOCUMENT_INFERENCE_STATUS_SCHEMA, ()),
+                (('vectorized', 'document_targets'), _stage_output_62, DOCUMENT_SEARCH_TARGET_SCHEMA, ()),
+                (('vectorized', 'targets', 'targets'), _stage_output_63, DOCUMENT_SEARCH_TARGET_SCHEMA, ()),
+                (
+                    ('vectorized', 'vectorized', 'query_embeddings'),
+                    _stage_output_64,
+                    SEARCH_QUERY_VECTOR_EMBEDDING_SCHEMA,
+                    (),
+                ),
+                (
+                    ('vectorized', 'vectorized', 'document_embeddings'),
+                    _stage_output_65,
+                    DOCUMENT_VECTOR_EMBEDDING_SCHEMA,
+                    (),
+                ),
+                (
+                    ('vectorized', 'vectorized', 'query_inference_status'),
+                    _stage_output_66,
+                    QUERY_INFERENCE_STATUS_SCHEMA,
+                    (),
+                ),
+                (
+                    ('vectorized', 'vectorized', 'document_inference_status'),
+                    _stage_output_67,
+                    DOCUMENT_INFERENCE_STATUS_SCHEMA,
+                    (),
+                ),
+                (
+                    ('vectorized', 'vectorized', 'inferred', 'query_embeddings'),
+                    _stage_output_68,
+                    SEARCH_QUERY_VECTOR_EMBEDDING_SCHEMA,
+                    (),
+                ),
+                (
+                    ('vectorized', 'vectorized', 'inferred', 'document_embeddings'),
+                    _stage_output_69,
+                    DOCUMENT_VECTOR_EMBEDDING_SCHEMA,
+                    (),
+                ),
+                (
+                    ('vectorized', 'vectorized', 'inferred', 'query_status'),
+                    _stage_output_70,
+                    QUERY_INFERENCE_STATUS_SCHEMA,
+                    (),
+                ),
+                (
+                    ('vectorized', 'vectorized', 'inferred', 'document_status'),
+                    _stage_output_71,
+                    DOCUMENT_INFERENCE_STATUS_SCHEMA,
+                    (),
+                ),
+                (
+                    ('vectorized', 'vectorized', 'inferred', 'validated', 'valid_policy'),
+                    _stage_output_72,
+                    INFERENCE_POLICY_SCHEMA,
+                    (),
+                ),
+                (
+                    ('vectorized', 'vectorized', 'inferred', 'inferred_queries', 'results'),
+                    _stage_output_73,
+                    QUERY_INFERENCE_RESULT_SCHEMA,
+                    (),
+                ),
+                (
+                    ('vectorized', 'vectorized', 'inferred', 'inferred_documents', 'results'),
+                    _stage_output_74,
+                    DOCUMENT_INFERENCE_RESULT_SCHEMA,
+                    (),
+                ),
+                (
+                    ('vectorized', 'vectorized', 'inferred', 'published_queries', 'embeddings'),
+                    _stage_output_75,
+                    SEARCH_QUERY_VECTOR_EMBEDDING_SCHEMA,
+                    (),
+                ),
+                (
+                    ('vectorized', 'vectorized', 'inferred', 'published_queries', 'statuses'),
+                    _stage_output_76,
+                    QUERY_INFERENCE_STATUS_SCHEMA,
+                    (),
+                ),
+                (
+                    ('vectorized', 'vectorized', 'inferred', 'published_documents', 'embeddings'),
+                    _stage_output_77,
+                    DOCUMENT_VECTOR_EMBEDDING_SCHEMA,
+                    (),
+                ),
+                (
+                    ('vectorized', 'vectorized', 'inferred', 'published_documents', 'statuses'),
+                    _stage_output_78,
+                    DOCUMENT_INFERENCE_STATUS_SCHEMA,
+                    (),
+                ),
+                (
+                    ('vectorized', 'merged_queries', 'embeddings'),
+                    _stage_output_79,
+                    SEARCH_QUERY_VECTOR_EMBEDDING_SCHEMA,
+                    (),
+                ),
+                (('vectorized', 'merged_documents', 'embeddings'), _stage_output_80, DOCUMENT_VECTOR_INDEX_SCHEMA, ()),
+                (
+                    ('vectorized', 'vectorized_queries', 'vector_queries'),
+                    _stage_output_81,
+                    DOCUMENT_VECTOR_QUERY_SCHEMA,
+                    (),
+                ),
+                (('scored', 'document_scores'), _stage_output_82, DOCUMENT_SCORE_SCHEMA, ()),
+                (('scored', 'section_scores'), _stage_output_83, SECTION_SCORE_SCHEMA, ()),
+                (('scored', 'paragraph_scores'), _stage_output_84, PARAGRAPH_SCORE_SCHEMA, ()),
+                (('scored', 'sentence_scores'), _stage_output_85, SENTENCE_SCORE_SCHEMA, ()),
+                (('scored', 'document_overlap_scores'), _stage_output_86, DOCUMENT_OVERLAP_SCORE_SCHEMA, ()),
+                (('scored', 'section_overlap_scores'), _stage_output_87, SECTION_OVERLAP_SCORE_SCHEMA, ()),
+                (('scored', 'paragraph_overlap_scores'), _stage_output_88, PARAGRAPH_OVERLAP_SCORE_SCHEMA, ()),
+                (('scored', 'sentence_overlap_scores'), _stage_output_89, SENTENCE_OVERLAP_SCORE_SCHEMA, ()),
+                (('scored', 'document_bm25_scores'), _stage_output_90, DOCUMENT_BM25_SCORE_SCHEMA, ()),
+                (('scored', 'section_bm25_scores'), _stage_output_91, SECTION_BM25_SCORE_SCHEMA, ()),
+                (('scored', 'paragraph_bm25_scores'), _stage_output_92, PARAGRAPH_BM25_SCORE_SCHEMA, ()),
+                (('scored', 'sentence_bm25_scores'), _stage_output_93, SENTENCE_BM25_SCORE_SCHEMA, ()),
+                (('scored', 'document_vector_scores'), _stage_output_94, DOCUMENT_VECTOR_SCORE_SCHEMA, ()),
+                (('scored', 'paragraph_vector_scores'), _stage_output_95, PARAGRAPH_VECTOR_SCORE_SCHEMA, ()),
+                (('scored', 'popular', 'selected_queries'), _stage_output_96, SEARCH_QUERY_SCHEMA, ()),
+                (('scored', 'recent', 'recent_queries'), _stage_output_97, SEARCH_QUERY_SCHEMA, ()),
+                (('scored', 'offline', 'offline_queries'), _stage_output_98, SEARCH_QUERY_SCHEMA, ()),
+                (('scored', 'scored', 'document_scores'), _stage_output_99, DOCUMENT_SCORE_SCHEMA, ()),
+                (('scored', 'scored', 'section_scores'), _stage_output_100, SECTION_SCORE_SCHEMA, ()),
+                (('scored', 'scored', 'paragraph_scores'), _stage_output_101, PARAGRAPH_SCORE_SCHEMA, ()),
+                (('scored', 'scored', 'sentence_scores'), _stage_output_102, SENTENCE_SCORE_SCHEMA, ()),
+                (('scored', 'scored', 'document_overlap_scores'), _stage_output_103, DOCUMENT_OVERLAP_SCORE_SCHEMA, ()),
+                (('scored', 'scored', 'section_overlap_scores'), _stage_output_104, SECTION_OVERLAP_SCORE_SCHEMA, ()),
+                (
+                    ('scored', 'scored', 'paragraph_overlap_scores'),
+                    _stage_output_105,
+                    PARAGRAPH_OVERLAP_SCORE_SCHEMA,
+                    (),
+                ),
+                (('scored', 'scored', 'sentence_overlap_scores'), _stage_output_106, SENTENCE_OVERLAP_SCORE_SCHEMA, ()),
+                (('scored', 'scored', 'document_bm25_scores'), _stage_output_107, DOCUMENT_BM25_SCORE_SCHEMA, ()),
+                (('scored', 'scored', 'section_bm25_scores'), _stage_output_108, SECTION_BM25_SCORE_SCHEMA, ()),
+                (('scored', 'scored', 'paragraph_bm25_scores'), _stage_output_109, PARAGRAPH_BM25_SCORE_SCHEMA, ()),
+                (('scored', 'scored', 'sentence_bm25_scores'), _stage_output_110, SENTENCE_BM25_SCORE_SCHEMA, ()),
+                (('scored', 'scored', 'document_vector_scores'), _stage_output_111, DOCUMENT_VECTOR_SCORE_SCHEMA, ()),
+                (('scored', 'scored', 'paragraph_vector_scores'), _stage_output_112, PARAGRAPH_VECTOR_SCORE_SCHEMA, ()),
+                (
+                    ('scored', 'scored', 'overlap', 'document_overlap_scores'),
+                    _stage_output_113,
+                    DOCUMENT_OVERLAP_SCORE_SCHEMA,
+                    (),
+                ),
+                (
+                    ('scored', 'scored', 'overlap', 'section_overlap_scores'),
+                    _stage_output_114,
+                    SECTION_OVERLAP_SCORE_SCHEMA,
+                    (),
+                ),
+                (
+                    ('scored', 'scored', 'overlap', 'paragraph_overlap_scores'),
+                    _stage_output_115,
+                    PARAGRAPH_OVERLAP_SCORE_SCHEMA,
+                    (),
+                ),
+                (
+                    ('scored', 'scored', 'overlap', 'sentence_overlap_scores'),
+                    _stage_output_116,
+                    SENTENCE_OVERLAP_SCORE_SCHEMA,
+                    (),
+                ),
+                (
+                    ('scored', 'scored', 'bm25', 'document_bm25_scores'),
+                    _stage_output_117,
+                    DOCUMENT_BM25_SCORE_SCHEMA,
+                    (),
+                ),
+                (('scored', 'scored', 'bm25', 'section_bm25_scores'), _stage_output_118, SECTION_BM25_SCORE_SCHEMA, ()),
+                (
+                    ('scored', 'scored', 'bm25', 'paragraph_bm25_scores'),
+                    _stage_output_119,
+                    PARAGRAPH_BM25_SCORE_SCHEMA,
+                    (),
+                ),
+                (
+                    ('scored', 'scored', 'bm25', 'sentence_bm25_scores'),
+                    _stage_output_120,
+                    SENTENCE_BM25_SCORE_SCHEMA,
+                    (),
+                ),
+                (('scored', 'scored', 'selected', 'document_scores'), _stage_output_121, DOCUMENT_SCORE_SCHEMA, ()),
+                (('scored', 'scored', 'selected', 'section_scores'), _stage_output_122, SECTION_SCORE_SCHEMA, ()),
+                (('scored', 'scored', 'selected', 'paragraph_scores'), _stage_output_123, PARAGRAPH_SCORE_SCHEMA, ()),
+                (('scored', 'scored', 'selected', 'sentence_scores'), _stage_output_124, SENTENCE_SCORE_SCHEMA, ()),
+                (
+                    ('scored', 'scored', 'vector', 'document_scores'),
+                    _stage_output_125,
+                    DOCUMENT_VECTOR_SCORE_SCHEMA,
+                    (),
+                ),
+                (
+                    ('scored', 'scored', 'vector', 'paragraph_scores'),
+                    _stage_output_126,
+                    PARAGRAPH_VECTOR_SCORE_SCHEMA,
+                    (),
+                ),
+                (('ranked', 'document_candidates'), _stage_output_127, DOCUMENT_VECTOR_CANDIDATE_SCHEMA, ()),
+                (('ranked', 'paragraph_candidates'), _stage_output_128, PARAGRAPH_VECTOR_CANDIDATE_SCHEMA, ()),
+                (('cohorts', 'band_memberships'), _stage_output_129, BAND_MEMBERSHIP_SCHEMA, ()),
+                (('cohorts', 'user_bands'), _stage_output_130, USER_BAND_SCHEMA, ()),
+                (('cohorts', 'user_band_memberships'), _stage_output_131, USER_BAND_MEMBERSHIP_SCHEMA, ()),
+                (('cohorts', 'band_fallbacks'), _stage_output_132, BAND_FALLBACK_SCHEMA, ()),
+                (('relevance', 'query_document_signals'), _stage_output_133, QUERY_DOCUMENT_SIGNALS_SCHEMA, ()),
+                (('relevance', 'document_popularity'), _stage_output_134, DOCUMENT_POPULARITY_SCHEMA, ()),
+                (('analyzed', 'sentence_statistics'), _stage_output_135, SENTENCE_STATISTICS_SCHEMA, ()),
+                (('analyzed', 'paragraph_statistics'), _stage_output_136, PARAGRAPH_STATISTICS_SCHEMA, ()),
+                (('analyzed', 'section_statistics'), _stage_output_137, SECTION_STATISTICS_SCHEMA, ()),
+                (('analyzed', 'document_statistics'), _stage_output_138, DOCUMENT_STATISTICS_SCHEMA, ()),
+                (('analyzed', 'similar_documents'), _stage_output_139, SIMILAR_DOCUMENT_SCHEMA, ()),
+                (('corpus', 'corpus_statistics'), _stage_output_140, CORPUS_STATISTICS_SCHEMA, ()),
+                (('corpus', 'corpus_vocabulary'), _stage_output_141, CORPUS_VOCABULARY_SCHEMA, ()),
+            ],
+            stage_outputs_enabled=True,
+            stage_names=(
+                'chunked',
+                'extracted',
+                'profiled',
+                'indexed',
+                'similarities',
+                'labeled',
+                'filtered',
+                'vectorized',
+                'scored',
+                'ranked',
+                'cohorts',
+                'relevance',
+                'analyzed',
+                'corpus',
+            ),
         )
 
     @staticmethod

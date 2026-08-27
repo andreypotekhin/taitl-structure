@@ -1031,6 +1031,83 @@ class VulnerabilityRemediationWorkflowGenerated(
         assert_schema(
             org_summaries, ORG_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA, name="OrgRemediationWorkflowSummary", mode="strict"
         )
+
+        # Step method: _stage_output_0
+        _stage_output_0 = frames["prepared__case_checks"].alias("remediation_case_check")
+        assert_schema(_stage_output_0, REMEDIATION_CASE_CHECK_SCHEMA, name="RemediationCaseCheck", mode="strict")
+
+        # Step method: _stage_output_1
+        _stage_output_1 = frames["prepared__case_issues"].alias("remediation_case_issue")
+        assert_schema(_stage_output_1, REMEDIATION_CASE_ISSUE_SCHEMA, name="RemediationCaseIssue", mode="strict")
+
+        # Step method: _stage_output_2
+        _stage_output_2 = frames["accessed__exposures"].alias("vulnerability_workflow_exposure")
+        assert_schema(
+            _stage_output_2, VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA, name="VulnerabilityWorkflowExposure", mode="strict"
+        )
+
+        # Step method: _stage_output_3
+        _stage_output_3 = frames["published__unacknowledged"].alias("unacknowledged_vulnerability")
+        assert_schema(
+            _stage_output_3, UNACKNOWLEDGED_VULNERABILITY_SCHEMA, name="UnacknowledgedVulnerability", mode="strict"
+        )
+
+        # Step method: _stage_output_4
+        _stage_output_4 = frames["published__pending_exceptions"].alias("pending_exception_vulnerability")
+        assert_schema(
+            _stage_output_4, PENDING_EXCEPTION_VULNERABILITY_SCHEMA, name="PendingExceptionVulnerability", mode="strict"
+        )
+
+        # Step method: _stage_output_5
+        _stage_output_5 = frames["published__expiring_exceptions"].alias("expiring_exception_vulnerability")
+        assert_schema(
+            _stage_output_5,
+            EXPIRING_EXCEPTION_VULNERABILITY_SCHEMA,
+            name="ExpiringExceptionVulnerability",
+            mode="strict",
+        )
+
+        # Step method: _stage_output_6
+        _stage_output_6 = frames["published__expired_exceptions"].alias("expired_exception_vulnerability")
+        assert_schema(
+            _stage_output_6, EXPIRED_EXCEPTION_VULNERABILITY_SCHEMA, name="ExpiredExceptionVulnerability", mode="strict"
+        )
+
+        # Step method: _stage_output_7
+        _stage_output_7 = frames["summarized__person_summaries"].alias("person_remediation_workflow_summary")
+        assert_schema(
+            _stage_output_7,
+            PERSON_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA,
+            name="PersonRemediationWorkflowSummary",
+            mode="strict",
+        )
+
+        # Step method: _stage_output_8
+        _stage_output_8 = frames["summarized__team_summaries"].alias("team_remediation_workflow_summary")
+        assert_schema(
+            _stage_output_8,
+            TEAM_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA,
+            name="TeamRemediationWorkflowSummary",
+            mode="strict",
+        )
+
+        # Step method: _stage_output_9
+        _stage_output_9 = frames["summarized__department_summaries"].alias("department_remediation_workflow_summary")
+        assert_schema(
+            _stage_output_9,
+            DEPARTMENT_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA,
+            name="DepartmentRemediationWorkflowSummary",
+            mode="strict",
+        )
+
+        # Step method: _stage_output_10
+        _stage_output_10 = frames["summarized__org_summaries"].alias("org_remediation_workflow_summary")
+        assert_schema(
+            _stage_output_10,
+            ORG_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA,
+            name="OrgRemediationWorkflowSummary",
+            mode="strict",
+        )
         return TransformResult(
             {
                 "case_checks": case_checks,
@@ -1059,4 +1136,24 @@ class VulnerabilityRemediationWorkflowGenerated(
                 "department_summaries": DEPARTMENT_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA,
                 "org_summaries": ORG_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA,
             },
+            stage_records=[
+                (('prepared', 'case_checks'), _stage_output_0, REMEDIATION_CASE_CHECK_SCHEMA, ()),
+                (('prepared', 'case_issues'), _stage_output_1, REMEDIATION_CASE_ISSUE_SCHEMA, ()),
+                (('accessed', 'workflow_exposures'), _stage_output_2, VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA, ()),
+                (('published', 'unacknowledged'), _stage_output_3, UNACKNOWLEDGED_VULNERABILITY_SCHEMA, ()),
+                (('published', 'pending_exceptions'), _stage_output_4, PENDING_EXCEPTION_VULNERABILITY_SCHEMA, ()),
+                (('published', 'expiring_exceptions'), _stage_output_5, EXPIRING_EXCEPTION_VULNERABILITY_SCHEMA, ()),
+                (('published', 'expired_exceptions'), _stage_output_6, EXPIRED_EXCEPTION_VULNERABILITY_SCHEMA, ()),
+                (('summarized', 'person_summaries'), _stage_output_7, PERSON_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA, ()),
+                (('summarized', 'team_summaries'), _stage_output_8, TEAM_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA, ()),
+                (
+                    ('summarized', 'department_summaries'),
+                    _stage_output_9,
+                    DEPARTMENT_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA,
+                    (),
+                ),
+                (('summarized', 'org_summaries'), _stage_output_10, ORG_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA, ()),
+            ],
+            stage_outputs_enabled=True,
+            stage_names=('prepared', 'accessed', 'published', 'summarized'),
         )

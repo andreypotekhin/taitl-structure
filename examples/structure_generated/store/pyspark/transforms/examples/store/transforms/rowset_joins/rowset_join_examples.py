@@ -143,6 +143,29 @@ class RowsetJoinExamplesGenerated(
         # Step method: candidates
         candidates = frames["expanded__candidates"].alias("order_product_candidate")
         assert_schema(candidates, ORDER_PRODUCT_CANDIDATE_SCHEMA, name="OrderProductCandidate", mode="strict")
+
+        # Step method: _stage_output_0
+        _stage_output_0 = frames["reconciled__reconciliation"].alias("order_customer_reconciliation")
+        assert_schema(
+            _stage_output_0, ORDER_CUSTOMER_RECONCILIATION_SCHEMA, name="OrderCustomerReconciliation", mode="strict"
+        )
+
+        # Step method: _stage_output_1
+        _stage_output_1 = frames["backfilled__backfills"].alias("customer_order_backfill")
+        assert_schema(_stage_output_1, CUSTOMER_ORDER_BACKFILL_SCHEMA, name="CustomerOrderBackfill", mode="strict")
+
+        # Step method: _stage_output_2
+        _stage_output_2 = frames["expanded__candidates"].alias("order_product_candidate")
+        assert_schema(_stage_output_2, ORDER_PRODUCT_CANDIDATE_SCHEMA, name="OrderProductCandidate", mode="strict")
         return TransformResult(
-            {"candidates": candidates}, single=True, schema={"candidates": ORDER_PRODUCT_CANDIDATE_SCHEMA}
+            {"candidates": candidates},
+            single=True,
+            schema={"candidates": ORDER_PRODUCT_CANDIDATE_SCHEMA},
+            stage_records=[
+                (('reconciled', 'reconciliation'), _stage_output_0, ORDER_CUSTOMER_RECONCILIATION_SCHEMA, ()),
+                (('backfilled', 'backfills'), _stage_output_1, CUSTOMER_ORDER_BACKFILL_SCHEMA, ()),
+                (('expanded', 'candidates'), _stage_output_2, ORDER_PRODUCT_CANDIDATE_SCHEMA, ()),
+            ],
+            stage_outputs_enabled=True,
+            stage_names=('reconciled', 'backfilled', 'expanded'),
         )

@@ -67,6 +67,7 @@ class StructureConfigBuilder:
             stream_to_batch_policy=str(values["stream_to_batch_policy"]),
             allow_output_to_input=semantic_bool("allow_output_to_input"),
             allow_to_reassign_output=semantic_bool("allow_to_reassign_output"),
+            allow_stage_outputs=bool(values["allow_stage_outputs"]),
             fail_on_diff=bool(values["fail_on_diff"]),
             spark_sql={
                 "spark.sql.ansi.enabled": values["spark.sql.ansi.enabled"],

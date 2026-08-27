@@ -14,6 +14,7 @@ from examples.search.transforms.searching.search_docs.SearchDocuments import Sea
 from examples.search.transforms.searching.search_fields.SearchFields import SearchFields
 from examples.search.transforms.vectorization import Vectorization
 from structure.core.compiler.api import Compiler
+from structure.core.configuration.model.StructureConfig import StructureConfig
 from structure.plugin.api.v1.model import TransformPlan
 from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 
@@ -46,6 +47,28 @@ def test_search_documents_accepts_optional_extra_filter_targets() -> None:
     plan = cast(TransformPlan, Compiler.frontend.compile()(SearchDocuments, materialize_schemas=False).analysis)
     target = next(input for input in plan.inputs if input.name == "document_filter_targets")
     assert target.optional is True
+
+
+def test_search_documents_keeps_results_top_level_and_exposes_declared_stage_outputs() -> None:
+    plan = cast(TransformPlan, Compiler.frontend.compile()(SearchDocuments, materialize_schemas=False).analysis)
+
+    assert [output.name for output in plan.outputs] == ["results"]
+    paths = {stage_output.path for stage_output in plan.stage_outputs}
+    assert ("vectorized", "query_embeddings") in paths
+    assert ("vectorized", "document_embeddings") in paths
+    assert ("vectorized", "query_inference_status") in paths
+    assert ("vectorized", "document_inference_status") in paths
+
+
+def test_search_documents_stage_output_packaging_follows_config() -> None:
+    config = StructureConfig.create(allow_stage_outputs=False)
+    plan = cast(
+        TransformPlan,
+        Compiler.frontend.compile()(SearchDocuments, config=config, materialize_schemas=False).analysis,
+    )
+
+    assert plan.allow_stage_outputs is False
+    assert [output.name for output in plan.outputs] == ["results"]
 
 
 def test_online_filter_gap_selection_accepts_optional_extra_filter_targets() -> None:

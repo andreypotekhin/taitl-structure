@@ -2217,6 +2217,77 @@ class FulfillmentGenerated(
             name="DailyFulfillmentServiceSummary",
             mode="strict",
         )
+
+        # Step method: _stage_output_0
+        _stage_output_0 = frames["prepared__demand"].alias("order")
+        assert_schema(_stage_output_0, ORDER_SCHEMA, name="Order", mode="strict")
+
+        # Step method: _stage_output_1
+        _stage_output_1 = frames["planned__allocations"].alias("fulfillment_allocation")
+        assert_schema(_stage_output_1, FULFILLMENT_ALLOCATION_SCHEMA, name="FulfillmentAllocation", mode="strict")
+
+        # Step method: _stage_output_2
+        _stage_output_2 = frames["planned__backorders"].alias("fulfillment_backorder")
+        assert_schema(_stage_output_2, FULFILLMENT_BACKORDER_SCHEMA, name="FulfillmentBackorder", mode="strict")
+
+        # Step method: _stage_output_3
+        _stage_output_3 = frames["planned__plans"].alias("fulfillment_plan")
+        assert_schema(_stage_output_3, FULFILLMENT_PLAN_SCHEMA, name="FulfillmentPlan", mode="strict")
+
+        # Step method: _stage_output_4
+        _stage_output_4 = frames["planned__replenishment_suggestions"].alias("replenishment_suggestion")
+        assert_schema(_stage_output_4, REPLENISHMENT_SUGGESTION_SCHEMA, name="ReplenishmentSuggestion", mode="strict")
+
+        # Step method: _stage_output_5
+        _stage_output_5 = frames["windows__windows"].alias("demand_window")
+        assert_schema(_stage_output_5, DEMAND_WINDOW_SCHEMA, name="DemandWindow", mode="strict")
+
+        # Step method: _stage_output_6
+        _stage_output_6 = frames["inventory_projection__projections"].alias("inventory_projection")
+        assert_schema(_stage_output_6, INVENTORY_PROJECTION_SCHEMA, name="InventoryProjection", mode="strict")
+
+        # Step method: _stage_output_7
+        _stage_output_7 = frames["shortage_stage__shortages"].alias("fulfillment_shortage")
+        assert_schema(_stage_output_7, FULFILLMENT_SHORTAGE_SCHEMA, name="FulfillmentShortage", mode="strict")
+
+        # Step method: _stage_output_8
+        _stage_output_8 = frames["substitution_stage__options"].alias("fulfillment_substitution_option")
+        assert_schema(
+            _stage_output_8, FULFILLMENT_SUBSTITUTION_OPTION_SCHEMA, name="FulfillmentSubstitutionOption", mode="strict"
+        )
+
+        # Step method: _stage_output_9
+        _stage_output_9 = frames["exception_stage__exceptions"].alias("fulfillment_exception")
+        assert_schema(_stage_output_9, FULFILLMENT_EXCEPTION_SCHEMA, name="FulfillmentException", mode="strict")
+
+        # Step method: _stage_output_10
+        _stage_output_10 = frames["reconciled__reconciliation"].alias("fulfillment_reconciliation")
+        assert_schema(
+            _stage_output_10, FULFILLMENT_RECONCILIATION_SCHEMA, name="FulfillmentReconciliation", mode="strict"
+        )
+
+        # Step method: _stage_output_11
+        _stage_output_11 = frames["summarized__daily_summary"].alias("daily_fulfillment_summary")
+        assert_schema(_stage_output_11, DAILY_FULFILLMENT_SUMMARY_SCHEMA, name="DailyFulfillmentSummary", mode="strict")
+
+        # Step method: _stage_output_12
+        _stage_output_12 = frames["summarized__warehouse_load_summary"].alias("warehouse_load_summary")
+        assert_schema(_stage_output_12, WAREHOUSE_LOAD_SUMMARY_SCHEMA, name="WarehouseLoadSummary", mode="strict")
+
+        # Step method: _stage_output_13
+        _stage_output_13 = frames["evaluated__evaluations"].alias("fulfillment_service_evaluation")
+        assert_schema(
+            _stage_output_13, FULFILLMENT_SERVICE_EVALUATION_SCHEMA, name="FulfillmentServiceEvaluation", mode="strict"
+        )
+
+        # Step method: _stage_output_14
+        _stage_output_14 = frames["evaluated__daily_summary"].alias("daily_fulfillment_service_summary")
+        assert_schema(
+            _stage_output_14,
+            DAILY_FULFILLMENT_SERVICE_SUMMARY_SCHEMA,
+            name="DailyFulfillmentServiceSummary",
+            mode="strict",
+        )
         return TransformResult(
             {
                 "demand": demand,
@@ -2253,4 +2324,34 @@ class FulfillmentGenerated(
                 "service_evaluations": FULFILLMENT_SERVICE_EVALUATION_SCHEMA,
                 "daily_service_summary": DAILY_FULFILLMENT_SERVICE_SUMMARY_SCHEMA,
             },
+            stage_records=[
+                (('prepared', 'demand'), _stage_output_0, ORDER_SCHEMA, ()),
+                (('planned', 'allocations'), _stage_output_1, FULFILLMENT_ALLOCATION_SCHEMA, ()),
+                (('planned', 'backorders'), _stage_output_2, FULFILLMENT_BACKORDER_SCHEMA, ()),
+                (('planned', 'plans'), _stage_output_3, FULFILLMENT_PLAN_SCHEMA, ()),
+                (('planned', 'replenishment_suggestions'), _stage_output_4, REPLENISHMENT_SUGGESTION_SCHEMA, ()),
+                (('windows', 'windows'), _stage_output_5, DEMAND_WINDOW_SCHEMA, ()),
+                (('inventory_projection', 'projections'), _stage_output_6, INVENTORY_PROJECTION_SCHEMA, ()),
+                (('shortage_stage', 'shortages'), _stage_output_7, FULFILLMENT_SHORTAGE_SCHEMA, ()),
+                (('substitution_stage', 'options'), _stage_output_8, FULFILLMENT_SUBSTITUTION_OPTION_SCHEMA, ()),
+                (('exception_stage', 'exceptions'), _stage_output_9, FULFILLMENT_EXCEPTION_SCHEMA, ()),
+                (('reconciled', 'reconciliation'), _stage_output_10, FULFILLMENT_RECONCILIATION_SCHEMA, ()),
+                (('summarized', 'daily_summary'), _stage_output_11, DAILY_FULFILLMENT_SUMMARY_SCHEMA, ()),
+                (('summarized', 'warehouse_load_summary'), _stage_output_12, WAREHOUSE_LOAD_SUMMARY_SCHEMA, ()),
+                (('evaluated', 'service_evaluations'), _stage_output_13, FULFILLMENT_SERVICE_EVALUATION_SCHEMA, ()),
+                (('evaluated', 'daily_summary'), _stage_output_14, DAILY_FULFILLMENT_SERVICE_SUMMARY_SCHEMA, ()),
+            ],
+            stage_outputs_enabled=True,
+            stage_names=(
+                'prepared',
+                'planned',
+                'windows',
+                'inventory_projection',
+                'shortage_stage',
+                'substitution_stage',
+                'exception_stage',
+                'reconciled',
+                'summarized',
+                'evaluated',
+            ),
         )

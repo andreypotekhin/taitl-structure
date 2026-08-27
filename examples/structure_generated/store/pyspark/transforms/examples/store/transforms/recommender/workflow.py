@@ -1794,6 +1794,148 @@ class RecommenderGenerated(
         assert_schema(
             recommendation_purchases, RECOMMENDATION_PURCHASE_SCHEMA, name="RecommendationPurchase", mode="strict"
         )
+
+        # Step method: _stage_output_0
+        _stage_output_0 = frames["signals__session__events"].alias("session_feature")
+        assert_schema(_stage_output_0, SESSION_FEATURE_SCHEMA, name="SessionFeature", mode="strict")
+
+        # Step method: _stage_output_1
+        _stage_output_1 = frames["signals__purchases__fulfilled_orders"].alias("recommendation_purchase")
+        assert_schema(_stage_output_1, RECOMMENDATION_PURCHASE_SCHEMA, name="RecommendationPurchase", mode="strict")
+
+        # Step method: _stage_output_2
+        _stage_output_2 = frames["signals__recommendation__daily_impressions"].alias("daily_recommendation_impressions")
+        assert_schema(
+            _stage_output_2,
+            DAILY_RECOMMENDATION_IMPRESSIONS_SCHEMA,
+            name="DailyRecommendationImpressions",
+            mode="strict",
+        )
+
+        # Step method: _stage_output_3
+        _stage_output_3 = frames["signals__recommendation__daily_clicks"].alias("daily_recommendation_clicks")
+        assert_schema(
+            _stage_output_3, DAILY_RECOMMENDATION_CLICKS_SCHEMA, name="DailyRecommendationClicks", mode="strict"
+        )
+
+        # Step method: _stage_output_4
+        _stage_output_4 = frames["signals__recommendation__signals"].alias("product_recommendation_signal")
+        assert_schema(
+            _stage_output_4, PRODUCT_RECOMMENDATION_SIGNAL_SCHEMA, name="ProductRecommendationSignal", mode="strict"
+        )
+
+        # Step method: _stage_output_5
+        _stage_output_5 = frames["signals__session__events"].alias("session_feature")
+        assert_schema(_stage_output_5, SESSION_FEATURE_SCHEMA, name="SessionFeature", mode="strict")
+
+        # Step method: _stage_output_6
+        _stage_output_6 = frames["signals__purchases__fulfilled_orders"].alias("recommendation_purchase")
+        assert_schema(_stage_output_6, RECOMMENDATION_PURCHASE_SCHEMA, name="RecommendationPurchase", mode="strict")
+
+        # Step method: _stage_output_7
+        _stage_output_7 = frames["signals__recommendation__daily_impressions"].alias("daily_recommendation_impressions")
+        assert_schema(
+            _stage_output_7,
+            DAILY_RECOMMENDATION_IMPRESSIONS_SCHEMA,
+            name="DailyRecommendationImpressions",
+            mode="strict",
+        )
+
+        # Step method: _stage_output_8
+        _stage_output_8 = frames["signals__recommendation__daily_clicks"].alias("daily_recommendation_clicks")
+        assert_schema(
+            _stage_output_8, DAILY_RECOMMENDATION_CLICKS_SCHEMA, name="DailyRecommendationClicks", mode="strict"
+        )
+
+        # Step method: _stage_output_9
+        _stage_output_9 = frames["signals__recommendation__signals"].alias("product_recommendation_signal")
+        assert_schema(
+            _stage_output_9, PRODUCT_RECOMMENDATION_SIGNAL_SCHEMA, name="ProductRecommendationSignal", mode="strict"
+        )
+
+        # Step method: _stage_output_10
+        _stage_output_10 = frames["personalized__scored__requests"].alias("personalized_recommendation")
+        assert_schema(
+            _stage_output_10, PERSONALIZED_RECOMMENDATION_SCHEMA, name="PersonalizedRecommendation", mode="strict"
+        )
+
+        # Step method: _stage_output_11
+        _stage_output_11 = frames["personalized__featured__catalog"].alias("catalog_product")
+        assert_schema(_stage_output_11, CATALOG_PRODUCT_SCHEMA, name="CatalogProduct", mode="strict")
+
+        # Step method: _stage_output_12
+        _stage_output_12 = frames["personalized__history__history"].alias("personalization_history")
+        assert_schema(_stage_output_12, PERSONALIZATION_HISTORY_SCHEMA, name="PersonalizationHistory", mode="strict")
+
+        # Step method: _stage_output_13
+        _stage_output_13 = frames["personalized__scored__requests"].alias("personalized_recommendation")
+        assert_schema(
+            _stage_output_13, PERSONALIZED_RECOMMENDATION_SCHEMA, name="PersonalizedRecommendation", mode="strict"
+        )
+
+        # Step method: _stage_output_14
+        _stage_output_14 = frames["candidates__filtered__filtered"].alias("recommendation_candidate")
+        assert_schema(_stage_output_14, RECOMMENDATION_CANDIDATE_SCHEMA, name="RecommendationCandidate", mode="strict")
+
+        # Step method: _stage_output_15
+        _stage_output_15 = frames["candidates__filtered__evaluated"].alias("recommendation_candidate_decision")
+        assert_schema(
+            _stage_output_15,
+            RECOMMENDATION_CANDIDATE_DECISION_SCHEMA,
+            name="RecommendationCandidateDecision",
+            mode="strict",
+        )
+
+        # Step method: _stage_output_16
+        _stage_output_16 = frames["candidates__admitted__requests"].alias("recommendation_candidate")
+        assert_schema(_stage_output_16, RECOMMENDATION_CANDIDATE_SCHEMA, name="RecommendationCandidate", mode="strict")
+
+        # Step method: _stage_output_17
+        _stage_output_17 = frames["candidates__retrieved__admitted"].alias("recommendation_candidate")
+        assert_schema(_stage_output_17, RECOMMENDATION_CANDIDATE_SCHEMA, name="RecommendationCandidate", mode="strict")
+
+        # Step method: _stage_output_18
+        _stage_output_18 = frames["candidates__filtered__evaluated"].alias("recommendation_candidate_decision")
+        assert_schema(
+            _stage_output_18,
+            RECOMMENDATION_CANDIDATE_DECISION_SCHEMA,
+            name="RecommendationCandidateDecision",
+            mode="strict",
+        )
+
+        # Step method: _stage_output_19
+        _stage_output_19 = frames["candidates__filtered__filtered"].alias("recommendation_candidate")
+        assert_schema(_stage_output_19, RECOMMENDATION_CANDIDATE_SCHEMA, name="RecommendationCandidate", mode="strict")
+
+        # Step method: _stage_output_20
+        _stage_output_20 = frames["ranked__candidates"].alias("ranked_recommendation_candidate")
+        assert_schema(
+            _stage_output_20,
+            RANKED_RECOMMENDATION_CANDIDATE_SCHEMA,
+            name="RankedRecommendationCandidate",
+            mode="strict",
+        )
+
+        # Step method: _stage_output_21
+        _stage_output_21 = frames["diversified__diversified"].alias("diversified_recommendation_candidate")
+        assert_schema(
+            _stage_output_21,
+            DIVERSIFIED_RECOMMENDATION_CANDIDATE_SCHEMA,
+            name="DiversifiedRecommendationCandidate",
+            mode="strict",
+        )
+
+        # Step method: _stage_output_22
+        _stage_output_22 = frames["diversified__decisions"].alias("diversification_decision")
+        assert_schema(_stage_output_22, DIVERSIFICATION_DECISION_SCHEMA, name="DiversificationDecision", mode="strict")
+
+        # Step method: _stage_output_23
+        _stage_output_23 = frames["published__ranked_candidates"].alias("recommended_product")
+        assert_schema(_stage_output_23, RECOMMENDED_PRODUCT_SCHEMA, name="RecommendedProduct", mode="strict")
+
+        # Step method: _stage_output_24
+        _stage_output_24 = frames["summarized__requests"].alias("recommendation_run")
+        assert_schema(_stage_output_24, RECOMMENDATION_RUN_SCHEMA, name="RecommendationRun", mode="strict")
         return TransformResult(
             {
                 "recommended_products": recommended_products,
@@ -1812,4 +1954,53 @@ class RecommenderGenerated(
                 "recommendation_signals": PRODUCT_RECOMMENDATION_SIGNAL_SCHEMA,
                 "recommendation_purchases": RECOMMENDATION_PURCHASE_SCHEMA,
             },
+            stage_records=[
+                (('signals', 'session_features'), _stage_output_0, SESSION_FEATURE_SCHEMA, ()),
+                (('signals', 'recommendation_purchases'), _stage_output_1, RECOMMENDATION_PURCHASE_SCHEMA, ()),
+                (('signals', 'daily_impressions'), _stage_output_2, DAILY_RECOMMENDATION_IMPRESSIONS_SCHEMA, ()),
+                (('signals', 'daily_clicks'), _stage_output_3, DAILY_RECOMMENDATION_CLICKS_SCHEMA, ()),
+                (('signals', 'recommendation_signals'), _stage_output_4, PRODUCT_RECOMMENDATION_SIGNAL_SCHEMA, ()),
+                (('signals', 'session', 'features'), _stage_output_5, SESSION_FEATURE_SCHEMA, ()),
+                (('signals', 'purchases', 'purchases'), _stage_output_6, RECOMMENDATION_PURCHASE_SCHEMA, ()),
+                (
+                    ('signals', 'recommendation', 'daily_impressions'),
+                    _stage_output_7,
+                    DAILY_RECOMMENDATION_IMPRESSIONS_SCHEMA,
+                    (),
+                ),
+                (
+                    ('signals', 'recommendation', 'daily_clicks'),
+                    _stage_output_8,
+                    DAILY_RECOMMENDATION_CLICKS_SCHEMA,
+                    (),
+                ),
+                (('signals', 'recommendation', 'signals'), _stage_output_9, PRODUCT_RECOMMENDATION_SIGNAL_SCHEMA, ()),
+                (('personalized', 'recommendations'), _stage_output_10, PERSONALIZED_RECOMMENDATION_SCHEMA, ()),
+                (('personalized', 'featured', 'featured'), _stage_output_11, CATALOG_PRODUCT_SCHEMA, ()),
+                (('personalized', 'history', 'history'), _stage_output_12, PERSONALIZATION_HISTORY_SCHEMA, ()),
+                (
+                    ('personalized', 'scored', 'recommendations'),
+                    _stage_output_13,
+                    PERSONALIZED_RECOMMENDATION_SCHEMA,
+                    (),
+                ),
+                (('candidates', 'candidates'), _stage_output_14, RECOMMENDATION_CANDIDATE_SCHEMA, ()),
+                (('candidates', 'decisions'), _stage_output_15, RECOMMENDATION_CANDIDATE_DECISION_SCHEMA, ()),
+                (('candidates', 'admitted', 'candidates'), _stage_output_16, RECOMMENDATION_CANDIDATE_SCHEMA, ()),
+                (('candidates', 'retrieved', 'candidates'), _stage_output_17, RECOMMENDATION_CANDIDATE_SCHEMA, ()),
+                (
+                    ('candidates', 'filtered', 'decisions'),
+                    _stage_output_18,
+                    RECOMMENDATION_CANDIDATE_DECISION_SCHEMA,
+                    (),
+                ),
+                (('candidates', 'filtered', 'filtered'), _stage_output_19, RECOMMENDATION_CANDIDATE_SCHEMA, ()),
+                (('ranked', 'ranked_candidates'), _stage_output_20, RANKED_RECOMMENDATION_CANDIDATE_SCHEMA, ()),
+                (('diversified', 'diversified'), _stage_output_21, DIVERSIFIED_RECOMMENDATION_CANDIDATE_SCHEMA, ()),
+                (('diversified', 'decision_rows'), _stage_output_22, DIVERSIFICATION_DECISION_SCHEMA, ()),
+                (('published', 'products'), _stage_output_23, RECOMMENDED_PRODUCT_SCHEMA, ()),
+                (('summarized', 'runs'), _stage_output_24, RECOMMENDATION_RUN_SCHEMA, ()),
+            ],
+            stage_outputs_enabled=True,
+            stage_names=('signals', 'personalized', 'candidates', 'ranked', 'diversified', 'published', 'summarized'),
         )

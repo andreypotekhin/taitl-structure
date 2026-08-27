@@ -2699,6 +2699,130 @@ class OfflineScoringGenerated(
         assert_schema(
             paragraph_vector_scores, PARAGRAPH_VECTOR_SCORE_SCHEMA, name="ParagraphVectorScore", mode="strict"
         )
+
+        # Step method: _stage_output_0
+        _stage_output_0 = frames["popular__selected_queries"].alias("search_query")
+        assert_schema(_stage_output_0, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
+
+        # Step method: _stage_output_1
+        _stage_output_1 = frames["recent__recent_queries"].alias("search_query")
+        assert_schema(_stage_output_1, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
+
+        # Step method: _stage_output_2
+        _stage_output_2 = frames["offline__offline_queries"].alias("search_query")
+        assert_schema(_stage_output_2, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
+
+        # Step method: _stage_output_3
+        _stage_output_3 = frames["scored__selected__document_scores"].alias("document_score")
+        assert_schema(_stage_output_3, DOCUMENT_SCORE_SCHEMA, name="DocumentScore", mode="strict")
+
+        # Step method: _stage_output_4
+        _stage_output_4 = frames["scored__selected__section_scores"].alias("section_score")
+        assert_schema(_stage_output_4, SECTION_SCORE_SCHEMA, name="SectionScore", mode="strict")
+
+        # Step method: _stage_output_5
+        _stage_output_5 = frames["scored__selected__paragraph_scores"].alias("paragraph_score")
+        assert_schema(_stage_output_5, PARAGRAPH_SCORE_SCHEMA, name="ParagraphScore", mode="strict")
+
+        # Step method: _stage_output_6
+        _stage_output_6 = frames["scored__selected__sentence_scores"].alias("sentence_score")
+        assert_schema(_stage_output_6, SENTENCE_SCORE_SCHEMA, name="SentenceScore", mode="strict")
+
+        # Step method: _stage_output_7
+        _stage_output_7 = frames["scored__overlap__document_overlap_scores"].alias("document_overlap_score")
+        assert_schema(_stage_output_7, DOCUMENT_OVERLAP_SCORE_SCHEMA, name="DocumentOverlapScore", mode="strict")
+
+        # Step method: _stage_output_8
+        _stage_output_8 = frames["scored__overlap__section_overlap_scores"].alias("section_overlap_score")
+        assert_schema(_stage_output_8, SECTION_OVERLAP_SCORE_SCHEMA, name="SectionOverlapScore", mode="strict")
+
+        # Step method: _stage_output_9
+        _stage_output_9 = frames["scored__overlap__paragraph_overlap_scores"].alias("paragraph_overlap_score")
+        assert_schema(_stage_output_9, PARAGRAPH_OVERLAP_SCORE_SCHEMA, name="ParagraphOverlapScore", mode="strict")
+
+        # Step method: _stage_output_10
+        _stage_output_10 = frames["scored__overlap__sentence_overlap_scores"].alias("sentence_overlap_score")
+        assert_schema(_stage_output_10, SENTENCE_OVERLAP_SCORE_SCHEMA, name="SentenceOverlapScore", mode="strict")
+
+        # Step method: _stage_output_11
+        _stage_output_11 = frames["scored__bm25__document_bm25_scores"].alias("document_bm25_score")
+        assert_schema(_stage_output_11, DOCUMENT_BM25_SCORE_SCHEMA, name="DocumentBm25Score", mode="strict")
+
+        # Step method: _stage_output_12
+        _stage_output_12 = frames["scored__bm25__section_bm25_scores"].alias("section_bm25_score")
+        assert_schema(_stage_output_12, SECTION_BM25_SCORE_SCHEMA, name="SectionBm25Score", mode="strict")
+
+        # Step method: _stage_output_13
+        _stage_output_13 = frames["scored__bm25__paragraph_bm25_scores"].alias("paragraph_bm25_score")
+        assert_schema(_stage_output_13, PARAGRAPH_BM25_SCORE_SCHEMA, name="ParagraphBm25Score", mode="strict")
+
+        # Step method: _stage_output_14
+        _stage_output_14 = frames["scored__bm25__sentence_bm25_scores"].alias("sentence_bm25_score")
+        assert_schema(_stage_output_14, SENTENCE_BM25_SCORE_SCHEMA, name="SentenceBm25Score", mode="strict")
+
+        # Step method: _stage_output_15
+        _stage_output_15 = frames["scored__vector__document_scores"].alias("document_vector_score")
+        assert_schema(_stage_output_15, DOCUMENT_VECTOR_SCORE_SCHEMA, name="DocumentVectorScore", mode="strict")
+
+        # Step method: _stage_output_16
+        _stage_output_16 = frames["scored__vector__paragraph_scores"].alias("paragraph_vector_score")
+        assert_schema(_stage_output_16, PARAGRAPH_VECTOR_SCORE_SCHEMA, name="ParagraphVectorScore", mode="strict")
+
+        # Step method: _stage_output_17
+        _stage_output_17 = frames["scored__overlap__document_overlap_scores"].alias("document_overlap_score")
+        assert_schema(_stage_output_17, DOCUMENT_OVERLAP_SCORE_SCHEMA, name="DocumentOverlapScore", mode="strict")
+
+        # Step method: _stage_output_18
+        _stage_output_18 = frames["scored__overlap__section_overlap_scores"].alias("section_overlap_score")
+        assert_schema(_stage_output_18, SECTION_OVERLAP_SCORE_SCHEMA, name="SectionOverlapScore", mode="strict")
+
+        # Step method: _stage_output_19
+        _stage_output_19 = frames["scored__overlap__paragraph_overlap_scores"].alias("paragraph_overlap_score")
+        assert_schema(_stage_output_19, PARAGRAPH_OVERLAP_SCORE_SCHEMA, name="ParagraphOverlapScore", mode="strict")
+
+        # Step method: _stage_output_20
+        _stage_output_20 = frames["scored__overlap__sentence_overlap_scores"].alias("sentence_overlap_score")
+        assert_schema(_stage_output_20, SENTENCE_OVERLAP_SCORE_SCHEMA, name="SentenceOverlapScore", mode="strict")
+
+        # Step method: _stage_output_21
+        _stage_output_21 = frames["scored__bm25__document_bm25_scores"].alias("document_bm25_score")
+        assert_schema(_stage_output_21, DOCUMENT_BM25_SCORE_SCHEMA, name="DocumentBm25Score", mode="strict")
+
+        # Step method: _stage_output_22
+        _stage_output_22 = frames["scored__bm25__section_bm25_scores"].alias("section_bm25_score")
+        assert_schema(_stage_output_22, SECTION_BM25_SCORE_SCHEMA, name="SectionBm25Score", mode="strict")
+
+        # Step method: _stage_output_23
+        _stage_output_23 = frames["scored__bm25__paragraph_bm25_scores"].alias("paragraph_bm25_score")
+        assert_schema(_stage_output_23, PARAGRAPH_BM25_SCORE_SCHEMA, name="ParagraphBm25Score", mode="strict")
+
+        # Step method: _stage_output_24
+        _stage_output_24 = frames["scored__bm25__sentence_bm25_scores"].alias("sentence_bm25_score")
+        assert_schema(_stage_output_24, SENTENCE_BM25_SCORE_SCHEMA, name="SentenceBm25Score", mode="strict")
+
+        # Step method: _stage_output_25
+        _stage_output_25 = frames["scored__selected__document_scores"].alias("document_score")
+        assert_schema(_stage_output_25, DOCUMENT_SCORE_SCHEMA, name="DocumentScore", mode="strict")
+
+        # Step method: _stage_output_26
+        _stage_output_26 = frames["scored__selected__section_scores"].alias("section_score")
+        assert_schema(_stage_output_26, SECTION_SCORE_SCHEMA, name="SectionScore", mode="strict")
+
+        # Step method: _stage_output_27
+        _stage_output_27 = frames["scored__selected__paragraph_scores"].alias("paragraph_score")
+        assert_schema(_stage_output_27, PARAGRAPH_SCORE_SCHEMA, name="ParagraphScore", mode="strict")
+
+        # Step method: _stage_output_28
+        _stage_output_28 = frames["scored__selected__sentence_scores"].alias("sentence_score")
+        assert_schema(_stage_output_28, SENTENCE_SCORE_SCHEMA, name="SentenceScore", mode="strict")
+
+        # Step method: _stage_output_29
+        _stage_output_29 = frames["scored__vector__document_scores"].alias("document_vector_score")
+        assert_schema(_stage_output_29, DOCUMENT_VECTOR_SCORE_SCHEMA, name="DocumentVectorScore", mode="strict")
+
+        # Step method: _stage_output_30
+        _stage_output_30 = frames["scored__vector__paragraph_scores"].alias("paragraph_vector_score")
+        assert_schema(_stage_output_30, PARAGRAPH_VECTOR_SCORE_SCHEMA, name="ParagraphVectorScore", mode="strict")
         return TransformResult(
             {
                 "document_scores": document_scores,
@@ -2733,4 +2857,44 @@ class OfflineScoringGenerated(
                 "document_vector_scores": DOCUMENT_VECTOR_SCORE_SCHEMA,
                 "paragraph_vector_scores": PARAGRAPH_VECTOR_SCORE_SCHEMA,
             },
+            stage_records=[
+                (('popular', 'selected_queries'), _stage_output_0, SEARCH_QUERY_SCHEMA, ()),
+                (('recent', 'recent_queries'), _stage_output_1, SEARCH_QUERY_SCHEMA, ()),
+                (('offline', 'offline_queries'), _stage_output_2, SEARCH_QUERY_SCHEMA, ()),
+                (('scored', 'document_scores'), _stage_output_3, DOCUMENT_SCORE_SCHEMA, ()),
+                (('scored', 'section_scores'), _stage_output_4, SECTION_SCORE_SCHEMA, ()),
+                (('scored', 'paragraph_scores'), _stage_output_5, PARAGRAPH_SCORE_SCHEMA, ()),
+                (('scored', 'sentence_scores'), _stage_output_6, SENTENCE_SCORE_SCHEMA, ()),
+                (('scored', 'document_overlap_scores'), _stage_output_7, DOCUMENT_OVERLAP_SCORE_SCHEMA, ()),
+                (('scored', 'section_overlap_scores'), _stage_output_8, SECTION_OVERLAP_SCORE_SCHEMA, ()),
+                (('scored', 'paragraph_overlap_scores'), _stage_output_9, PARAGRAPH_OVERLAP_SCORE_SCHEMA, ()),
+                (('scored', 'sentence_overlap_scores'), _stage_output_10, SENTENCE_OVERLAP_SCORE_SCHEMA, ()),
+                (('scored', 'document_bm25_scores'), _stage_output_11, DOCUMENT_BM25_SCORE_SCHEMA, ()),
+                (('scored', 'section_bm25_scores'), _stage_output_12, SECTION_BM25_SCORE_SCHEMA, ()),
+                (('scored', 'paragraph_bm25_scores'), _stage_output_13, PARAGRAPH_BM25_SCORE_SCHEMA, ()),
+                (('scored', 'sentence_bm25_scores'), _stage_output_14, SENTENCE_BM25_SCORE_SCHEMA, ()),
+                (('scored', 'document_vector_scores'), _stage_output_15, DOCUMENT_VECTOR_SCORE_SCHEMA, ()),
+                (('scored', 'paragraph_vector_scores'), _stage_output_16, PARAGRAPH_VECTOR_SCORE_SCHEMA, ()),
+                (('scored', 'overlap', 'document_overlap_scores'), _stage_output_17, DOCUMENT_OVERLAP_SCORE_SCHEMA, ()),
+                (('scored', 'overlap', 'section_overlap_scores'), _stage_output_18, SECTION_OVERLAP_SCORE_SCHEMA, ()),
+                (
+                    ('scored', 'overlap', 'paragraph_overlap_scores'),
+                    _stage_output_19,
+                    PARAGRAPH_OVERLAP_SCORE_SCHEMA,
+                    (),
+                ),
+                (('scored', 'overlap', 'sentence_overlap_scores'), _stage_output_20, SENTENCE_OVERLAP_SCORE_SCHEMA, ()),
+                (('scored', 'bm25', 'document_bm25_scores'), _stage_output_21, DOCUMENT_BM25_SCORE_SCHEMA, ()),
+                (('scored', 'bm25', 'section_bm25_scores'), _stage_output_22, SECTION_BM25_SCORE_SCHEMA, ()),
+                (('scored', 'bm25', 'paragraph_bm25_scores'), _stage_output_23, PARAGRAPH_BM25_SCORE_SCHEMA, ()),
+                (('scored', 'bm25', 'sentence_bm25_scores'), _stage_output_24, SENTENCE_BM25_SCORE_SCHEMA, ()),
+                (('scored', 'selected', 'document_scores'), _stage_output_25, DOCUMENT_SCORE_SCHEMA, ()),
+                (('scored', 'selected', 'section_scores'), _stage_output_26, SECTION_SCORE_SCHEMA, ()),
+                (('scored', 'selected', 'paragraph_scores'), _stage_output_27, PARAGRAPH_SCORE_SCHEMA, ()),
+                (('scored', 'selected', 'sentence_scores'), _stage_output_28, SENTENCE_SCORE_SCHEMA, ()),
+                (('scored', 'vector', 'document_scores'), _stage_output_29, DOCUMENT_VECTOR_SCORE_SCHEMA, ()),
+                (('scored', 'vector', 'paragraph_scores'), _stage_output_30, PARAGRAPH_VECTOR_SCORE_SCHEMA, ()),
+            ],
+            stage_outputs_enabled=True,
+            stage_names=('popular', 'recent', 'offline', 'scored'),
         )

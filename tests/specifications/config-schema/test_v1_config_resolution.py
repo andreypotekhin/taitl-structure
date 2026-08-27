@@ -42,6 +42,7 @@ def test_v1_config_uses_defaults_and_tracks_sources() -> None:
         assert config.stream_to_batch_policy == "default"
         assert config.allow_output_to_input is True
         assert config.allow_to_reassign_output is True
+        assert config.allow_stage_outputs is True
         assert config.execution_mode == "online"
         assert dict(config.plugin_options["pyspark"])["profile"] == ">=3.5,<4.1"
         assert dict(config.plugin_options["pyspark"])["variant"] == "ordinary"
@@ -68,6 +69,15 @@ def test_v1_output_policies_accept_independent_overrides_and_fingerprint_them() 
         StructureConfig.create(allow_output_to_input=True, allow_to_reassign_output=True)
     )
     assert options.fingerprint() != changed.fingerprint()
+
+
+def test_v1_stage_output_policy_defaults_to_allow_and_is_fingerprinted() -> None:
+    allowed = CompilerArtifactOptions.from_config(StructureConfig.create())
+    denied = CompilerArtifactOptions.from_config(StructureConfig.create(allow_stage_outputs=False))
+
+    assert allowed.allow_stage_outputs is True
+    assert denied.allow_stage_outputs is False
+    assert allowed.fingerprint() != denied.fingerprint()
 
 
 def test_v1_config_resolves_stream_to_batch_boundary_policy() -> None:

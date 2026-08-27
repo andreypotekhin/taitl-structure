@@ -277,6 +277,26 @@ class TrainingGenerated(BuildDocumentFeaturesGenerated, BuildQueryFeaturesGenera
         # Step method: training_data
         training_data = frames["data__training_data"].alias("document_training_data")
         assert_schema(training_data, DOCUMENT_TRAINING_DATA_SCHEMA, name="DocumentTrainingData", mode="strict")
+
+        # Step method: _stage_output_0
+        _stage_output_0 = frames["features__documents_built__document_features"].alias("document_features")
+        assert_schema(_stage_output_0, DOCUMENT_FEATURES_SCHEMA, name="DocumentFeatures", mode="strict")
+
+        # Step method: _stage_output_1
+        _stage_output_1 = frames["features__queries_built__query_features"].alias("query_features")
+        assert_schema(_stage_output_1, QUERY_FEATURES_SCHEMA, name="QueryFeatures", mode="strict")
+
+        # Step method: _stage_output_2
+        _stage_output_2 = frames["features__documents_built__document_features"].alias("document_features")
+        assert_schema(_stage_output_2, DOCUMENT_FEATURES_SCHEMA, name="DocumentFeatures", mode="strict")
+
+        # Step method: _stage_output_3
+        _stage_output_3 = frames["features__queries_built__query_features"].alias("query_features")
+        assert_schema(_stage_output_3, QUERY_FEATURES_SCHEMA, name="QueryFeatures", mode="strict")
+
+        # Step method: _stage_output_4
+        _stage_output_4 = frames["data__training_data"].alias("document_training_data")
+        assert_schema(_stage_output_4, DOCUMENT_TRAINING_DATA_SCHEMA, name="DocumentTrainingData", mode="strict")
         return TransformResult(
             {"document_features": document_features, "query_features": query_features, "training_data": training_data},
             single=False,
@@ -285,4 +305,13 @@ class TrainingGenerated(BuildDocumentFeaturesGenerated, BuildQueryFeaturesGenera
                 "query_features": QUERY_FEATURES_SCHEMA,
                 "training_data": DOCUMENT_TRAINING_DATA_SCHEMA,
             },
+            stage_records=[
+                (('features', 'document_features'), _stage_output_0, DOCUMENT_FEATURES_SCHEMA, ()),
+                (('features', 'query_features'), _stage_output_1, QUERY_FEATURES_SCHEMA, ()),
+                (('features', 'documents_built', 'document_features'), _stage_output_2, DOCUMENT_FEATURES_SCHEMA, ()),
+                (('features', 'queries_built', 'query_features'), _stage_output_3, QUERY_FEATURES_SCHEMA, ()),
+                (('data', 'training_data'), _stage_output_4, DOCUMENT_TRAINING_DATA_SCHEMA, ()),
+            ],
+            stage_outputs_enabled=True,
+            stage_names=('features', 'data'),
         )

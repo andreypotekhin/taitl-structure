@@ -8,6 +8,7 @@ from structure.core.compiler.diagnostics.api import StructureCompileError
 from structure.core.compiler.frontend.logic.ValidateStreamingInputBinding import validate_streaming_input_binding
 from structure.core.compiler.ir.model.HookPlan import HookPlan
 from structure.core.compiler.ir.model.OutputPlan import OutputPlan
+from structure.core.compiler.ir.model.StageOutputPlan import StageOutputPlan
 from structure.core.compiler.ir.model.StepInputPlan import StepInputPlan
 from structure.core.compiler.ir.model.StepPlan import StepPlan
 from structure.core.compiler.ir.model.StepResultPlan import StepResultPlan
@@ -37,6 +38,7 @@ class ComposeTransformPlans:
         wrapper_class: type[Transform] | None = None,
         allow_stream_to_batch: bool = False,
         stream_to_batch_policy: str = "default",
+        allow_stage_outputs: bool = True,
     ) -> TransformPlan:
         rewrite = rewrite_body or (lambda body, _: body)
         stages = pipeline.stages
@@ -55,7 +57,7 @@ class ComposeTransformPlans:
             allow_stream_to_batch=allow_stream_to_batch,
             stream_to_batch_policy=stream_to_batch_policy,
         )
-        steps, outputs = self._rewrite(
+        steps, outputs, stage_outputs = self._rewrite(
             name,
             stages,
             stage_plans,
@@ -68,6 +70,8 @@ class ComposeTransformPlans:
             inputs=tuple(inputs),
             steps=tuple(steps),
             outputs=tuple(outputs),
+            stage_outputs=tuple(stage_outputs),
+            allow_stage_outputs=allow_stage_outputs,
             internal_inputs=tuple(internal_inputs),
             options=Transform.resolve_transform_options(
                 wrapper_class.__dict__.get("_structure_transform_options", {}) if wrapper_class is not None else {},
@@ -317,10 +321,11 @@ class ComposeTransformPlans:
         labels: tuple[str, ...],
         external: dict[tuple[int, str], str],
         rewrite_body: RewriteBody,
-    ) -> tuple[list[StepPlan], list[OutputPlan]]:
+    ) -> tuple[list[StepPlan], list[OutputPlan], list[StageOutputPlan]]:
         steps: list[StepPlan] = []
         current_outputs: dict[str, OutputPlan] = {}
         final_outputs: list[OutputPlan] = []
+        public_stage_outputs: list[StageOutputPlan] = []
 
         for index, (stage, label, plan) in enumerate(zip(stages, labels, stage_plans, strict=True)):
             final = index == len(stage_plans) - 1
@@ -362,15 +367,30 @@ class ComposeTransformPlans:
             for output in stage_outputs:
                 rewritten_output = self._output(output, frame_map=frame_map, ordinal=len(final_outputs))
                 next_outputs[output.name] = rewritten_output
+                public_stage_outputs.append(
+                    StageOutputPlan(path=(label, output.name), output=rewritten_output)
+                )
                 if final:
                     final_outputs.append(rewritten_output)
             current_outputs = next_outputs
+
+            for nested in plan.stage_outputs:
+                public_stage_outputs.append(
+                    StageOutputPlan(
+                        path=(label, *nested.path),
+                        output=replace(
+                            nested.output,
+                            source=frame_map.get(nested.output.source, nested.output.source),
+                            ordinal=len(public_stage_outputs),
+                        ),
+                    )
+                )
 
         if not final_outputs:
             raise self._error(
                 pipeline_name, "Transform pipeline has no outputs.", "Use a final stage with output(...)."
             )
-        return steps, final_outputs
+        return steps, final_outputs, public_stage_outputs
 
     def _stage_input_sources(
         self,
