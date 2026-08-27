@@ -12,7 +12,7 @@ concept-test coverage map.
 ## Architecture
 Main: [Architecture.md](Architecture.md)
 
-Design index: [Design.md](Design.md)
+Design gates: [gated/](gated/); deferred design: [deferred/](deferred/)
 
 Design topic docs: **/docs/dev/design**
 
@@ -81,8 +81,8 @@ transform, then orchestrates compilation, execution, generation, artifacts, and 
 Plugin API. Use `@transform(target="...")`, a session or command `target=`, or `plugin.default` to select it.
 
 An external plugin may use its own import package and DSL. Different transforms in one project can select different
-installed plugins, but one composed pipeline always uses one target. See [Configuration.md](Configuration.md) and
-[Plugin Authoring](dev/PluginAuthoring.md).
+installed plugins, but one composed pipeline always uses one target. See [Configuration.md](../Configuration.md) and
+[Plugin Authoring](PluginAuthoring.md).
 
 ## Testing
 

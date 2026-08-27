@@ -7,6 +7,7 @@ from structure.core.compiler.api import Compiler
 from structure.core.target.capabilities.api import BackendCapabilityError
 from structure.plugin.pyspark import *
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
+from structure.plugin.pyspark.dsl.expressions import replace as replace_text
 
 
 def _recipe(transform) -> PySparkExecutionPlan:
@@ -370,6 +371,67 @@ def test_v4_expression_renderer_renders_deterministic_numeric_functions() -> Non
     )
 
 
+def test_v4_expression_renderer_renders_trigonometric_and_logarithmic_functions() -> None:
+    class Raw(Schema):
+        angle = double(nullable=True)
+        x = double(nullable=False)
+        y = double(nullable=True)
+
+    class Published(Schema):
+        arc_sine = double(nullable=True)
+        arc_tangent = double(nullable=True)
+        arc_tangent_two = double(nullable=True)
+        cosine = double(nullable=True)
+        degrees_value = double(nullable=True)
+        natural_log = double(nullable=True)
+        base_ten_log = double(nullable=True)
+        radians_value = double(nullable=True)
+        sine = double(nullable=True)
+        tangent = double(nullable=True)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(
+                arc_sine=asin(row.angle),
+                arc_tangent=atan(row.angle),
+                arc_tangent_two=atan2(row.y, row.x),
+                cosine=cos(row.angle),
+                degrees_value=degrees(row.angle),
+                natural_log=ln(row.angle),
+                base_ten_log=log10(row.angle),
+                radians_value=radians(row.angle),
+                sine=sin(row.angle),
+                tangent=tan(row.angle),
+            )
+
+    recipe = _recipe(Publish)
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    assert render(projection["arc_sine"], scope_aliases={"rows": "orders"}) == 'F.asin(F.col("orders.angle"))'
+    assert render(projection["arc_tangent"], scope_aliases={"rows": "orders"}) == 'F.atan(F.col("orders.angle"))'
+    assert render(projection["arc_tangent_two"], scope_aliases={"rows": "orders"}) == (
+        'F.atan2(F.col("orders.y"), F.col("orders.x"))'
+    )
+    assert render(projection["cosine"], scope_aliases={"rows": "orders"}) == 'F.cos(F.col("orders.angle"))'
+    assert render(projection["degrees_value"], scope_aliases={"rows": "orders"}) == (
+        'F.degrees(F.col("orders.angle"))'
+    )
+    assert render(projection["natural_log"], scope_aliases={"rows": "orders"}) == 'F.ln(F.col("orders.angle"))'
+    assert render(projection["base_ten_log"], scope_aliases={"rows": "orders"}) == (
+        'F.log10(F.col("orders.angle"))'
+    )
+    assert render(projection["radians_value"], scope_aliases={"rows": "orders"}) == (
+        'F.radians(F.col("orders.angle"))'
+    )
+    assert render(projection["sine"], scope_aliases={"rows": "orders"}) == 'F.sin(F.col("orders.angle"))'
+    assert render(projection["tangent"], scope_aliases={"rows": "orders"}) == 'F.tan(F.col("orders.angle"))'
+
+
 def test_v4_expression_renderer_renders_seeded_and_unseeded_rand() -> None:
     class Raw(Schema):
         amount = double(nullable=False)
@@ -483,6 +545,70 @@ def test_v4_expression_renderer_renders_calendar_and_padding_helpers() -> None:
     )
     assert render(projection["right_padded"], scope_aliases={"rows": "orders"}) == (
         'F.rpad(F.col("orders.label"), 8, \'0\')'
+    )
+
+
+def test_v4_expression_renderer_renders_string_position_and_slicing_helpers() -> None:
+    class Raw(Schema):
+        label = string(nullable=True)
+
+    class Published(Schema):
+        ascii_code = integer(nullable=True)
+        character_count = integer(nullable=True)
+        first_three = string(nullable=True)
+        last_three = string(nullable=True)
+        located = integer(nullable=True)
+        byte_count = integer(nullable=True)
+        repeated = string(nullable=True)
+        replaced = string(nullable=True)
+        path_prefix = string(nullable=True)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(
+                ascii_code=ascii(row.label),
+                character_count=char_length(row.label),
+                first_three=left(row.label, length=3),
+                last_three=right(row.label, length=3),
+                located=locate(row.label, substring="Ada", position=2),
+                byte_count=octet_length(row.label),
+                repeated=repeat(row.label, count=2),
+                replaced=replace_text(row.label, search="-", replacement="_"),
+                path_prefix=substring_index(row.label, delimiter="/", count=2),
+            )
+
+    recipe = _recipe(Publish)
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    assert render(projection["ascii_code"], scope_aliases={"rows": "orders"}) == 'F.ascii(F.col("orders.label"))'
+    assert render(projection["character_count"], scope_aliases={"rows": "orders"}) == (
+        'F.char_length(F.col("orders.label"))'
+    )
+    assert render(projection["first_three"], scope_aliases={"rows": "orders"}) == (
+        'F.left(F.col("orders.label"), 3)'
+    )
+    assert render(projection["last_three"], scope_aliases={"rows": "orders"}) == (
+        'F.right(F.col("orders.label"), 3)'
+    )
+    assert render(projection["located"], scope_aliases={"rows": "orders"}) == (
+        "F.locate('Ada', F.col(\"orders.label\"), 2)"
+    )
+    assert render(projection["byte_count"], scope_aliases={"rows": "orders"}) == (
+        'F.octet_length(F.col("orders.label"))'
+    )
+    assert render(projection["repeated"], scope_aliases={"rows": "orders"}) == (
+        'F.repeat(F.col("orders.label"), 2)'
+    )
+    assert render(projection["replaced"], scope_aliases={"rows": "orders"}) == (
+        "F.replace(F.col(\"orders.label\"), '-', '_')"
+    )
+    assert render(projection["path_prefix"], scope_aliases={"rows": "orders"}) == (
+        "F.substring_index(F.col(\"orders.label\"), '/', 2)"
     )
 
 

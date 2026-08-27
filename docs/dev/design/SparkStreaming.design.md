@@ -147,7 +147,7 @@ deployment.
 
 Full streaming orchestration should build on this slice later by adding explicit source, sink, trigger, checkpoint,
 output mode, watermark, and state-policy models. Those are designed separately in
-`SparkStreamingDeferredFeatures.design.md`.
+`docs/dev/deferred/Streaming.deferred.md`.
 
 ## Caller-Owned Streaming Migration
 
@@ -193,26 +193,5 @@ pass on PySpark 3.5 and 4.0 before the stage is claimed.
 
 ## Streaming Design Gates
 
-The current outstanding gate register is maintained in [Design](../Design.md#design-gates). The sections below retain
-the durable streaming boundary and admission rationale.
-
-The v9 design-gate program treats each open family as a proving lane rather than a generic backlog label. Every admitted
-stateful feature records its event-time source, watermark, grouping or partition key, state family, caller-required
-output mode, allowed following state stage, generated public PySpark form, and corrective diagnostic.
-
-The first candidate chained-state shape is a two-stage event-time window rollup. A typed `window_time(...)` expression
-may consume only a `TimeWindow` produced by the existing streaming `window(...)` helper. The accepted form has one
-watermarked input, one first-stage tumbling or sliding aggregate, only stateless work between stages, and one second
-aggregate over `window_time(first_window)`. Arbitrary nested windows, session chains, a third stateful operation, and a
-second stateful family remain rejected. The caller owns `append` mode unless target evidence proves a narrower rule.
-
-Selected-row helpers are split between finite window-scoped forms and global forms. A candidate window-scoped form needs
-a watermark, a grouping window, deterministic order keys, and an explicit tie policy; global latest/earliest selection
-over an unbounded stream remains a batch boundary. Broad analytic projections such as ranking, lag/lead, and rolling
-windows remain batch-only unless a distinct finite-window API proves bounded state and output-mode semantics.
-
-`foreach` and `foreachBatch` are side-effect and lifecycle APIs, not transform operations. `foreachBatch` is
-caller-owned-guided through the streaming adoption example; generated transform modules must contain no side-effect
-sink calls. Row-level `foreach` remains gated until sink identity, idempotence, retry, security, and recovery contracts
-exist. Arbitrary state APIs such as `applyInPandasWithState` and `transformWithState` need a separate typed state model
-covering input, state, output, timeout, clock, initialization, cleanup, profile gating, and restart behavior.
+The current streaming gate register is [Streaming Gates](../gated/Streaming.gates.md). This topic document owns the
+durable transformation boundary and admission rationale; it does not duplicate the live gate status.

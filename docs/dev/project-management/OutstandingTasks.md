@@ -15,7 +15,7 @@ Generated-code version headers
 Still promised by compatibility policy in [Compatibility.md (line 90)](C:/Taitl/Code/taitl/taitl-structure/docs/Compatibility.md:90) and M6 in [Milestones.md (line 121)](C:/Taitl/Code/taitl/taitl-structure/docs/dev/project-management/Milestones.md:121). Final pass should add or verify generator version and target PySpark range comments in generated artifacts.
 
 Setup/configuration doctor checks
-Still listed as v1 complete-phase work in [Implementation.md (line 54)](C:/Taitl/Code/taitl/taitl-structure/docs/dev/Implementation.md:54) and as remaining M6 work in [Milestones.md (line 121)](C:/Taitl/Code/taitl/taitl-structure/docs/dev/project-management/Milestones.md:121). This likely wants a lightweight structure doctor or equivalent check path for common adoption failures.
+Still listed as v1 complete-phase work in [archived Implementation.md (line 54)](C:/Taitl/Code/taitl/taitl-structure/close/archive/implementation/Implementation.md:54) and as remaining M6 work in [Milestones.md (line 121)](C:/Taitl/Code/taitl/taitl-structure/docs/dev/project-management/Milestones.md:121). This likely wants a lightweight structure doctor or equivalent check path for common adoption failures.
 
 Multi-version PySpark evidence
 Also part of M6 in [Milestones.md (line 129)](C:/Taitl/Code/taitl/taitl-structure/docs/dev/project-management/Milestones.md:129). This overlaps with the integration matrix but should produce release-ready evidence for the documented >=3.5,<4.1 target.

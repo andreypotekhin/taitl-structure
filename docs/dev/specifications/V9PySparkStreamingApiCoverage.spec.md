@@ -12,7 +12,7 @@ DataFrame plan. Sources, sinks, checkpoints, triggers, output modes, query names
 recovery remain caller-owned unless a later explicit product decision creates a separate lifecycle-owning runtime.
 
 The extended v9 posture is support-first, as recorded in
-[D07302603 V9 streaming support-first](../design/decisions/D07302603.V9-streaming-support-first.md). Design-gated rows
+[D07302603 V9 streaming support-first](../past/decisions/D07302603.V9-streaming-support-first.md). Design-gated rows
 are implementation proving lanes. They stay gated or move to `streaming-ineligible` only when Spark evidence, state
 semantics, or lifecycle ownership blocks safe support.
 
@@ -80,7 +80,7 @@ V9 re-evaluates deferred streaming-related items from v7 and v8 under current ev
 - Spark Connect streaming, which remains unclaimed unless a separate target contract proves support.
 
 Design-gated streaming rows are addressed by [V9 Streaming Design-Gated Features](V9StreamingDesignGatedFeatures.spec.md)
-and [V9 Streaming Design Gates](../design/V9StreamingDesignGates.design.md). The broader active follow-up plan for these
+and [Streaming Gates](../gated/Streaming.gates.md). The broader active follow-up plan for these
 rows and non-streaming APICatalog open rows is
 `docs/dev/planning/P07302601.V9-api-catalog-design-gates.plan.md`; its remaining Variant completion work is
 specified in `docs/dev/planning/P07302602.V9-variant-type-and-helpers.plan.md`.

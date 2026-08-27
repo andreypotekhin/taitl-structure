@@ -6,9 +6,9 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[3]
 EXAMPLES = ROOT / "examples"
 INVENTORY = ROOT / "docs/dev/specifications/ExampleRawHookInventory.json"
-GAPS = ROOT / "docs/dev/Gaps.md"
+PARITY = ROOT / "docs/dev/Parity.md"
 VALID_STATUSES = {"scheduled", "retired", "intentional", "deferred"}
-GAPS_REGISTER = (
+PARITY_REGISTER = (
     "Normal, conditional, predicate, and sort",
     "String",
     "Numeric and mathematical",
@@ -52,10 +52,10 @@ def test_v6_raw_hook_dispositions_name_a_real_boundary_and_owner() -> None:
             assert entry["capabilities"]
 
 
-def test_sql_function_families_have_a_gaps_register_entry() -> None:
-    gaps = GAPS.read_text(encoding="utf-8")
+def test_sql_function_families_have_a_parity_register_entry() -> None:
+    parity = PARITY.read_text(encoding="utf-8")
 
-    assert all(capability in gaps for capability in GAPS_REGISTER)
+    assert all(capability in parity for capability in PARITY_REGISTER)
 
 
 def _raw_hooks() -> set[tuple[str, str]]:

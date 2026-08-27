@@ -140,25 +140,25 @@ if TYPE_CHECKING:
 
 
 _DSL_EXPORTS = """
-AsOf BinaryType CsvOptions DecimalType Join JoinDedupe JoinHint JoinStrategy JsonOptions OverlapPolicy StreamingOutputMode TiePolicy abs acos add_months base64 bround cache checkpoint local_checkpoint persist unpersist
+AsOf BinaryType CsvOptions DecimalType Join JoinDedupe JoinHint JoinStrategy JsonOptions OverlapPolicy StreamingOutputMode TiePolicy abs acos asin ascii atan atan2 add_months base64 bround cache checkpoint local_checkpoint persist unpersist
 approx_count_distinct approx_percentile arr_aggregate arr_append arr_compact arr_distinct arr_exists arr_filter
 arr_flatten arr_forall arr_position arr_prepend arr_reverse arr_insert arr_remove arr_sort arr_sort_by arr_transform
 arr_zip_with array array_contains array_except array_intersect array_repeat array_union avg as_of_one bool_and bool_or
-collect_list collect_set concat_ws coalesce ceil count count_distinct corr covar cross_join cube current_row date_add
-date_sub date_trunc dayofmonth datediff decode cume_dist dedupe_earliest_by dedupe_latest_by dense_rank distinct
-drop_duplicates drop_duplicates_within_watermark earliest_by element_at encode event_time_between exactly_one except_all exp exists floor from_csv from_json hash hour hypot
+collect_list collect_set concat_ws coalesce ceil char_length count count_distinct corr covar cos cross_join cube current_row date_add
+date_sub date_trunc dayofmonth datediff decode cume_dist dedupe_earliest_by dedupe_latest_by dense_rank degrees distinct
+drop_duplicates drop_duplicates_within_watermark earliest_by element_at encode event_time_between exactly_one except_all exp exists floor from_csv from_json hash hour hypot left
 initcap ifnull instr intersect intersect_all first_value following full_join group_by grouping_id grouping_sets having inner_join isnan
 isnotnull isnull is_grouped kurtosis lag left_join latest_by lead lookup_join last_value length levenshtein lower lpad
-ltrim log limit md5 map_entries map_concat map_contains_key map_filter map_from_entries map_keys map_transform_keys
+ltrim ln locate log log10 limit md5 map_entries map_concat map_contains_key map_filter map_from_entries map_keys map_transform_keys
 map_transform_values map_values map_zip_with max min minute mode month nanvl nvl nvl2 nullif pow not_exists nth_value
 ntile offset order_by param_join percent_rank percentile posexplode_array posexplode_outer_array posexplode_struct posexplode_outer_struct posexplode_map posexplode_outer_map explode_array explode_outer_array explode_struct explode_outer_struct explode_map explode_outer_map inline_struct inline_outer_struct variant_explode variant_explode_outer preceding project rank range_between relation_alias regexp_extract regexp_replace require_all require_parent_hierarchy require_reference require_unique hierarchy_closure hierarchy_fallbacks reverse rtrim round
-sample select_first_qualified signum slice sha1 sha2 second rand right_join rollup row_number rowset_join rows_between rolling_avg rolling_max
+sample select_first_qualified signum sin slice sha1 sha2 second rand radians right_join rollup row_number rowset_join rows_between rolling_avg rolling_max
 rolling_min rolling_sum scan subtract sum stddev sqrt size sequence session_window skewness split translate substring temporal_one next_day
 to_csv to_decimal to_date to_json to_timestamp TimeWindow trim trunc try_element_at unbase64 union_all union_by_name upper unbounded_following unbounded_preceding
-variance when year xxhash64 zeroifnull where watermark window window_avg window_bool_and window_bool_or rpad
+variance when year xxhash64 zeroifnull where watermark window window_avg window_bool_and window_bool_or rpad repeat replace right tan
 window_time
 window_collect_list window_collect_set window_count window_count_distinct window_max window_min window_sum
-window_stddev window_variance is_valid_variant is_variant_null parse_json schema_of_variant schema_of_variant_agg
+window_stddev window_variance is_valid_variant is_variant_null octet_length parse_json schema_of_variant schema_of_variant_agg substring_index
 to_variant_object try_parse_json try_variant_get variant_get
 variant_literal
 variant_array_append try_variant_array_append variant_insert try_variant_insert variant_set try_variant_set variant_delete
@@ -199,6 +199,10 @@ __all__ = [  # noqa: F405
     "TiePolicy",
     "abs",
     "acos",
+    "asin",
+    "ascii",
+    "atan",
+    "atan2",
     "add_months",
     "base64",
     "bround",
@@ -236,6 +240,8 @@ __all__ = [  # noqa: F405
     "concat_ws",
     "coalesce",
     "ceil",
+    "char_length",
+    "cos",
     "count",
     "count_distinct",
     "corr",
@@ -248,6 +254,7 @@ __all__ = [  # noqa: F405
     "date_trunc",
     "dayofmonth",
     "datediff",
+    "degrees",
     "decode",
     "cume_dist",
     "dedupe_earliest_by",
@@ -274,6 +281,7 @@ __all__ = [  # noqa: F405
     "hash",
     "hour",
     "hypot",
+    "left",
     "initcap",
     "inline_struct",
     "inline_outer_struct",
@@ -305,7 +313,10 @@ __all__ = [  # noqa: F405
     "lower",
     "lpad",
     "ltrim",
+    "locate",
+    "ln",
     "log",
+    "log10",
     "limit",
     "md5",
     "map_entries",
@@ -324,12 +335,14 @@ __all__ = [  # noqa: F405
     "minute",
     "month",
     "next_day",
+    "octet_length",
     "nanvl",
     "nvl",
     "nvl2",
     "nullif",
     "pow",
     "rand",
+    "radians",
     "not_exists",
     "nth_value",
     "ntile",
@@ -367,7 +380,11 @@ __all__ = [  # noqa: F405
     "rtrim",
     "round",
     "rpad",
+    "repeat",
+    "replace",
+    "right",
     "signum",
+    "sin",
     "slice",
     "sha1",
     "sha2",
@@ -386,6 +403,7 @@ __all__ = [  # noqa: F405
     "sum",
     "stddev",
     "sqrt",
+    "substring_index",
     "size",
     "sequence",
     "session_window",
@@ -410,6 +428,7 @@ __all__ = [  # noqa: F405
     "unbounded_following",
     "unbounded_preceding",
     "variance",
+    "tan",
     "when",
     "year",
     "xxhash64",

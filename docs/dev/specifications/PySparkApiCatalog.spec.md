@@ -50,7 +50,7 @@ Every detailed ledger row contains:
 capability id; status; public spelling; source PySpark API; operand and result schemas;
 null/empty/duplicate/order semantics; cardinality; batch/streaming/Connect support;
 diagnostic code; source/recipe/evaluator/renderer owner; example client; public docs;
-source, generated, parity, capability, and live test evidence; Gaps.md link when deferred.
+source, generated, parity, capability, and live test evidence; PySpark function gate link when deferred.
 ```
 
 The v6 raw-hook inventory remains a checked companion at
@@ -91,7 +91,7 @@ The matrix's checked test paths are:
 - `tests/specifications/compatibility/test_pyspark_transformation_coverage.py`
 - `tests/specifications/backend-capabilities/test_backend_capabilities.py`
 
-Before a capability is marked implemented in the public catalog or `docs/dev/Gaps.md`, add its evidence row and update
+Before a capability is marked implemented in the public catalog or `docs/dev/Parity.md`, add its evidence row and update
 the catalog, gap register, and checked coverage source in the same change.
 
 ## Streaming and Deferred Families

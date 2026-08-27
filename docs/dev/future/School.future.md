@@ -137,5 +137,5 @@ boundary and its limits.
 ## References
 
 - Current School application: `examples/school/Readme.md`
-- Current future API boundaries: `docs/dev/future/API.future.md`
-- Current streaming boundaries: `docs/dev/future/Streaming.future.md`
+- Current API deferred work: `docs/dev/deferred/ApiCatalog.deferred.md`
+- Current streaming deferred work: `docs/dev/deferred/Streaming.deferred.md`

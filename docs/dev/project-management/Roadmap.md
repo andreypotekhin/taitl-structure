@@ -32,7 +32,7 @@ The project should prioritize:
 ## Pre-Coding Gate
 
 Before the first vertical slice, Sprint 00 must retire the highest-risk unknowns called out in
-[Challenges.md](../design/Challenges.design.md).
+[Challenges design](../../../close/archive/design/Challenges.design.md).
 
 Required spikes:
 
@@ -180,7 +180,8 @@ generated lifecycle code can rely on a complete enough PySpark-family contract.
 
 ### v3 must include
 
-- Planned Column API and SQL function gaps from [Gaps.md](../Gaps.md).
+- Planned Column API and SQL function gaps from the [Parity register](../Parity.md), with function-specific gates in
+  [Function Gates](../gated/Functions.gates.md).
 - Using-key joins, right/full diagnostics hardening, cross join safety, supported join strategy directives, and forward
   as-of joins.
 - Explicit grouping sets and post-aggregate `having(...)`.
@@ -288,7 +289,7 @@ honest boundary for actions, driver algorithms, arbitrary Python, sources/sinks,
 
 ### v6 sequence (active)
 
-- Sprint 23 (+): published the v6 API ledger, checked Gaps register, raw-hook migration fixtures, and initial focused
+- Sprint 23 (+): published the v6 API ledger, checked parity register, raw-hook migration fixtures, and initial focused
   PySpark delegates without
   feature changes.
 - Sprint 24 (+): admitted lambda-bound struct field access, explicit analytic maxima, deterministic ordered
@@ -475,8 +476,12 @@ separate Structure-owned typed transformations from caller-owned PySpark lifecyc
 ## v10 Scope
 
 V10 follows the completed V9 design-gate closeout and expands only the core API and streaming contracts explicitly
-adopted from `docs/dev/future/API.future.md` and `docs/dev/future/Streaming.future.md`. It keeps streaming lifecycle,
+adopted from `docs/dev/deferred/ApiCatalog.deferred.md` and `docs/dev/deferred/Streaming.deferred.md`. It keeps streaming lifecycle,
 deployment, recovery, and side effects caller-owned.
+
+The current detailed parity and boundary register is [Parity.md](../Parity.md). Function-specific gates are indexed in
+[Functions.gates.md](../gated/Functions.gates.md); cross-family and streaming gates are in
+[ApiCatalog.gates.md](../gated/ApiCatalog.gates.md) and [Streaming.gates.md](../gated/Streaming.gates.md).
 
 ### v10 closeout status
 

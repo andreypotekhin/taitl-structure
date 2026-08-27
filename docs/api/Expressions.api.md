@@ -99,6 +99,13 @@ explicit design gate are marked in the details below.
 | `lpad(...)`, `rpad(...)` | `lpad`, `rpad` | `lpad(o.code, length=8, pad="0")` |
 | `length(...)` | `length` | `length(o.name)` |
 | `concat_ws(...)` | `concat_ws` | `concat_ws("-", o.region, o.code)`; `concat_ws("\u001f", o.path_ids)` for `array<string>` |
+| `ascii(...)`, `char_length(...)` | `ascii`, `char_length` | `char_length(o.name)` |
+| `left(...)`, `right(...)` | `left`, `right` | `left(o.name, length=3)` |
+| `locate(...)` | `locate` | `locate(o.name, substring="Ada", position=1)` |
+| `octet_length(...)` | `octet_length` | `octet_length(o.name)` |
+| `repeat(...)` | `repeat` | `repeat(o.code, count=2)` |
+| `replace(...)` | `replace` | `replace(o.name, search="-", replacement="_")` |
+| `substring_index(...)` | `substring_index` | `substring_index(o.path, delimiter="/", count=2)` |
 | `initcap(...)` | `initcap` | `initcap(o.name)` |
 | `reverse(...)` | `reverse` | `reverse(o.name)` |
 | `translate(...)` | `translate` | `translate(o.name, matching="-", replacement="_")` |
@@ -133,6 +140,10 @@ explicit design gate are marked in the details below.
 | `log(...)` | `log` | `log(o.total, base=10)` |
 | `exp(...)` | `exp` | `exp(o.total)` |
 | `signum(...)` | `signum` | `signum(o.total)` |
+| `asin(...)`, `atan(...)`, `atan2(...)` | `asin`, `atan`, `atan2` | `atan2(o.y, o.x)` |
+| `cos(...)`, `sin(...)`, `tan(...)` | `cos`, `sin`, `tan` | `sin(o.angle)` |
+| `degrees(...)`, `radians(...)` | `degrees`, `radians` | `degrees(o.angle)` |
+| `ln(...)`, `log10(...)` | `ln`, `log10` | `log10(o.amount)` |
 | `isnull(...)` | `isnull` | `isnull(o.score)` |
 | `isnotnull(...)` | `isnotnull` | `isnotnull(o.score)` |
 | `isnan(...)` | `isnan` | `isnan(o.score)` |

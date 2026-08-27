@@ -65,7 +65,7 @@ the pre-coding decision inventory.
 
 ## Challenge Resolution Index
 
-The pre-coding documentation gaps from [Challenges.design.md](Challenges.design.md) are resolved as follows:
+The pre-coding documentation gaps from [Challenges.design.md](../../../close/archive/design/Challenges.design.md) are resolved as follows:
 
 | Challenge | Resolution |
 | --- | --- |
@@ -241,7 +241,7 @@ use provisional examples until the registry exists, but implementation tests mus
 
 ## Acceptance Criteria
 
-- Every item from [Challenges.design.md](Challenges.design.md) under "Recommended Pre-Coding Docs to Add" has an owning
+- Every item from [Challenges.design.md](../../../close/archive/design/Challenges.design.md) under "Recommended Pre-Coding Docs to Add" has an owning
   implementation-ready specification.
 - A contributor can identify whether a feature belongs in Sprint 01, v1, v2, v3, or v4 without reading design discussion
   transcripts.

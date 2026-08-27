@@ -11,7 +11,7 @@ The extended v9 posture is support-first. Each row should attempt a typed Struct
 executable caller-owned adoption contract before it remains gated. `streaming-ineligible` is the result of evidence, not
 the default.
 
-The companion design is [V9StreamingDesignGates.design.md](../design/V9StreamingDesignGates.design.md). The broader catalog
+The companion gate register is [Streaming Gates](../gated/Streaming.gates.md). The broader catalog
 specification is [V9ApiCatalogDesignGatedFeatures.spec.md](V9ApiCatalogDesignGatedFeatures.spec.md). The governing coverage
 ledger is `src/structure/plugin/pyspark/resources/pyspark-streaming-api-coverage.json`.
 

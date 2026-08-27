@@ -7,8 +7,8 @@ design gates and non-streaming planned/deferred rows such as `sample`, aggregate
 functions, join reordering, nearest as-of joins, and missing-column set composition. XML is recorded as deprioritized
 design-gated work and is not part of the active v9 implementation path unless another approved slice needs it.
 
-The companion designs are [V9ApiCatalogDesignGates.design.md](../design/V9ApiCatalogDesignGates.design.md) and
-[V9StreamingDesignGates.design.md](../design/V9StreamingDesignGates.design.md).
+The companion gate registers are [API Catalog Gates](../gated/ApiCatalog.gates.md) and
+[Streaming Gates](../gated/Streaming.gates.md).
 
 The executable Variant completion sequence is [P07302602.V9-variant-type-and-helpers.plan.md](../planning/P07302602.V9-variant-type-and-helpers.plan.md).
 
@@ -312,7 +312,7 @@ The v9 API catalog design-gate plan is accepted when:
 
 ## V10 Continuation
 
-V10 carries forward only the actionable core API slices from `docs/dev/future/API.future.md`: provider-neutral Geometry,
+V10 carries forward only the actionable core API slices from `docs/dev/deferred/ApiCatalog.deferred.md`: provider-neutral Geometry,
 sampling refinements, and typed missing-column schema evolution. The grouped V10 API plan also records explicit
 dispositions for XML, unreleased Variant mutation profiles, and opt-in join reordering. Application-specific future
 documents are not part of the V10 implementation boundary.

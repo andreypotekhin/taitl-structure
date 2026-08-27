@@ -112,7 +112,7 @@ Structure.
 
 No relation operation is supported until source validation, immutable recipes, capability checks, online execution,
 generated source, explain/traceability, diagnostics, and parity evidence agree. If a Search migration exposes a missing
-contract, the hook remains and the gap is recorded in `docs/dev/Gaps.md`.
+contract, the hook remains and the gap is recorded in `docs/dev/Parity.md`.
 
 ## Typed Generator Expansion
 

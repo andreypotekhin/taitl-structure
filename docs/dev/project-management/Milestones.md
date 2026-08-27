@@ -450,9 +450,9 @@ The governing completed plan is
   a current rationale.
 - Design-gated streaming rows and non-streaming APICatalog planned/deferred rows have dedicated design,
   implementation specification, and active follow-up planning:
-  `docs/dev/design/V9StreamingDesignGates.design.md`,
+  `docs/dev/gated/Streaming.gates.md`,
   `docs/dev/specifications/V9StreamingDesignGatedFeatures.spec.md`,
-  `docs/dev/design/V9ApiCatalogDesignGates.design.md`,
+  `docs/dev/gated/ApiCatalog.gates.md`,
   `docs/dev/specifications/V9ApiCatalogDesignGatedFeatures.spec.md`,
 `docs/dev/planning/P07302601.V9-api-catalog-design-gates.plan.md`, and the Variant child plan
 `docs/dev/planning/P07302602.V9-variant-type-and-helpers.plan.md`.

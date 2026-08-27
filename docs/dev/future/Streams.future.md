@@ -124,5 +124,5 @@ make generated transforms remain pure DataFrame transformations.
 ## References
 
 - Current Streams application: `examples/streams/Readme.md`
-- Streaming future boundary: `docs/dev/future/Streaming.future.md`
+- Streaming future boundary: `docs/dev/deferred/Streaming.deferred.md`
 - Current streaming architecture: `docs/background/Streaming.back.md`

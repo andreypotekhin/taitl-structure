@@ -31,4 +31,4 @@ What did we decide?
 - README.md
 - [UserStories.md](../../specifications/UserStories.spec.md)
 - devdocs/Architecture.md
-- devdocs/Implementation.md
+- close/archive/implementation/Implementation.md (historical phase checklist)

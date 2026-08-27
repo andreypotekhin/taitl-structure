@@ -1,6 +1,7 @@
 # Architecture
 
-The maintained design index and current open contract register are in [Design.md](Design.md).
+The detailed parity and boundary register is [Parity.md](Parity.md). Current API and streaming gates are maintained in
+[docs/dev/gated](gated/), with deferred direction in [docs/dev/deferred](deferred/).
 
 Structure is a schema-driven compiler and runtime toolkit. Core owns the public workflow: it discovers source,
 resolves configuration and a plugin target, analyzes transform structure, manages artifacts, and presents diagnostics.

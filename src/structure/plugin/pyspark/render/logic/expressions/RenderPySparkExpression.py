@@ -621,6 +621,17 @@ class RenderPySparkExpression:
             return f"F.regexp_extract({args[0]}, {expression.data['pattern']!r}, {expression.data['group']})"
         if function in {"lpad", "rpad"}:
             return f"F.{function}({args[0]}, {expression.data['length']}, {expression.data['pad']!r})"
+        if function in {"ascii", "char_length", "length", "octet_length"}:
+            return f"F.{function}({args[0]})"
+        if function in {"left", "right", "repeat"}:
+            parameter = "length" if function in {"left", "right"} else "count"
+            return f"F.{function}({args[0]}, {expression.data[parameter]})"
+        if function == "locate":
+            return f"F.locate({expression.data['substring']!r}, {args[0]}, {expression.data['position']})"
+        if function == "replace":
+            return f"F.replace({args[0]}, {expression.data['search']!r}, {expression.data['replacement']!r})"
+        if function == "substring_index":
+            return f"F.substring_index({args[0]}, {expression.data['delimiter']!r}, {expression.data['count']})"
         if function == "length":
             return f"F.length({args[0]})"
         if function in {"initcap", "reverse"}:
@@ -665,10 +676,12 @@ class RenderPySparkExpression:
             )
         if function == "abs":
             return f"F.abs({args[0]})"
-        if function == "acos":
-            return f"F.acos({args[0]})"
+        if function in {"acos", "asin", "atan", "cos", "degrees", "ln", "log10", "radians", "sin", "tan"}:
+            return f"F.{function}({args[0]})"
         if function == "hypot":
             return f"F.hypot({args[0]}, {args[1]})"
+        if function == "atan2":
+            return f"F.atan2({args[0]}, {args[1]})"
         if function == "rand":
             seed = expression.data.get("seed")
             return "F.rand()" if seed is None else f"F.rand(seed={seed})"

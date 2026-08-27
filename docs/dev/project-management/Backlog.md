@@ -245,7 +245,7 @@
 ## v3 Completed Scope
 
 All scheduled v3 implementation items below are complete. This retained pre-delivery checklist records the release
-boundary; unimplemented parity work is now marked `planned` in `docs/dev/Gaps.md` and will receive separate plans.
+boundary; unimplemented parity work is now marked `planned` in `docs/dev/Parity.md` and will receive separate plans.
 
 - Design a unified, minimal decorator parameter vocabulary for `@step` and `@raw`, including binding, output, target,
   schema, and streaming options.
@@ -433,7 +433,7 @@ future documents are not V10 backlog commitments.
 ### Epic: API Ledger and Plugin Decomposition
 
 - Publish a single v6 PySpark API ledger linking catalog status, contract, capability, diagnostics, examples, and test
-  evidence; update `docs/dev/Gaps.md` with every postponed/deferred disposition.
+  evidence; update `docs/dev/Parity.md` with every postponed/deferred disposition.
 - Add a raw-hook inventory test for all shipped examples and require an explicit retirement/defer/intentional status.
 - Extract focused delegates from `operations_api`, expression construction, `InputScope`, result-body building,
   expression evaluation, online execution, step rendering, transform-module rendering, and compiler traceability.

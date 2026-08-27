@@ -124,5 +124,5 @@ portfolio and backtesting workflows should not quietly change the meaning of the
 ## References
 
 - Current Stocks application: `examples/stocks/Readme.md`
-- Current API admission guidance: `docs/dev/future/API.future.md`
-- Current streaming boundary: `docs/dev/future/Streaming.future.md`
+- Current API admission guidance: `docs/dev/gated/ApiCatalog.gates.md`
+- Current streaming boundary: `docs/dev/gated/Streaming.gates.md`

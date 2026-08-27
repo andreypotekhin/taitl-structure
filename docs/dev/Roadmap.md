@@ -6,6 +6,11 @@ pipelines, while later hardening broadened PySpark parity and caller-owned strea
 now explicit through a public Plugin API: Core continues to orchestrate every workflow, the bundled PySpark plugin
 supplies target-specific service facets, and external wheels can supply equivalent plugin integrations.
 
+The historical phase checklist is archived in
+[Implementation.md](../../close/archive/implementation/Implementation.md). Current parity and boundary detail is in
+[Parity.md](Parity.md); current API and streaming gates are in [gated/](gated/), and deferred direction is in
+[deferred/](deferred/).
+
 ## Foundations
 
 - Typed schema definitions.

@@ -1,5 +1,6 @@
 import sys
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
+from dataclasses import replace as dataclass_replace
 from inspect import signature
 from types import ModuleType, SimpleNamespace
 from typing import Any, cast
@@ -1844,8 +1845,8 @@ def _online_plan() -> PySparkExecutionPlan:
 
 
 def _with_operations(plan: PySparkExecutionPlan, *operations: PySparkOperationRecipe) -> PySparkExecutionPlan:
-    step = replace(plan.steps[0], operations=operations)
-    return replace(plan, steps=(step,))
+    step = dataclass_replace(plan.steps[0], operations=operations)
+    return dataclass_replace(plan, steps=(step,))
 
 
 def _join_and_hook_plan() -> PySparkExecutionPlan:
@@ -2807,14 +2808,14 @@ def _explode_struct_plan() -> PySparkExecutionPlan:
         ),
     )
     step = plan.steps[0]
-    updated = replace(
+    updated = dataclass_replace(
         step,
         output_schema=PublishedExplodedRuntimeTerm,
         output_alias="published",
         projection=projection,
         operations=(PySparkOperationRecipe.explode_struct_operation(generator),),
         results=(
-            replace(
+            dataclass_replace(
                 step.results[0],
                 schema=PublishedExplodedRuntimeTerm,
                 projection=projection,
@@ -2822,11 +2823,11 @@ def _explode_struct_plan() -> PySparkExecutionPlan:
             ),
         ),
     )
-    return replace(
+    return dataclass_replace(
         plan,
         steps=(updated,),
         outputs=(
-            replace(
+            dataclass_replace(
                 plan.outputs[0],
                 input_schema=PublishedExplodedRuntimeTerm,
                 output_schema=PublishedExplodedRuntimeTerm,
@@ -2860,13 +2861,13 @@ def _explode_outer_struct_plan() -> PySparkExecutionPlan:
         ),
     )
     step = plan.steps[0]
-    updated = replace(
+    updated = dataclass_replace(
         step,
         output_schema=PublishedOuterExplodedRuntimeTerm,
         projection=projection,
         operations=(PySparkOperationRecipe.explode_outer_struct_operation(generator),),
         results=(
-            replace(
+            dataclass_replace(
                 step.results[0],
                 schema=PublishedOuterExplodedRuntimeTerm,
                 projection=projection,
@@ -2874,11 +2875,11 @@ def _explode_outer_struct_plan() -> PySparkExecutionPlan:
             ),
         ),
     )
-    return replace(
+    return dataclass_replace(
         plan,
         steps=(updated,),
         outputs=(
-            replace(
+            dataclass_replace(
                 plan.outputs[0],
                 input_schema=PublishedOuterExplodedRuntimeTerm,
                 output_schema=PublishedOuterExplodedRuntimeTerm,
@@ -2916,13 +2917,13 @@ def _posexplode_outer_struct_plan() -> PySparkExecutionPlan:
         ),
     )
     step = plan.steps[0]
-    updated = replace(
+    updated = dataclass_replace(
         step,
         output_schema=PublishedOuterPositionedRuntimeTerm,
         projection=projection,
         operations=(PySparkOperationRecipe.posexplode_outer_struct_operation(generator),),
         results=(
-            replace(
+            dataclass_replace(
                 step.results[0],
                 schema=PublishedOuterPositionedRuntimeTerm,
                 projection=projection,
@@ -2930,11 +2931,11 @@ def _posexplode_outer_struct_plan() -> PySparkExecutionPlan:
             ),
         ),
     )
-    return replace(
+    return dataclass_replace(
         plan,
         steps=(updated,),
         outputs=(
-            replace(
+            dataclass_replace(
                 plan.outputs[0],
                 input_schema=PublishedOuterPositionedRuntimeTerm,
                 output_schema=PublishedOuterPositionedRuntimeTerm,
@@ -2954,11 +2955,11 @@ def _inline_struct_plan() -> PySparkExecutionPlan:
         function="inline",
     )
     step = plan.steps[0]
-    updated = replace(
+    updated = dataclass_replace(
         step,
         operations=(PySparkOperationRecipe.inline_struct_operation(generator),),
     )
-    return replace(plan, steps=(updated,))
+    return dataclass_replace(plan, steps=(updated,))
 
 
 def _inline_outer_struct_plan() -> PySparkExecutionPlan:
@@ -2972,11 +2973,11 @@ def _inline_outer_struct_plan() -> PySparkExecutionPlan:
         outer=True,
     )
     step = plan.steps[0]
-    updated = replace(
+    updated = dataclass_replace(
         step,
         operations=(PySparkOperationRecipe.inline_outer_struct_operation(generator),),
     )
-    return replace(plan, steps=(updated,))
+    return dataclass_replace(plan, steps=(updated,))
 
 
 def _relation_set_plan(

@@ -34,7 +34,7 @@ read from that generated scope through normal Structure projection.
   `contains_null=False`.
 - An outer form is a separate future admission because its null-row contract differs.
 - The operation is row-expanding and batch-only until a streaming contract is separately accepted.
-- `explode`, `explode_outer`, `inline`, and `inline_outer` remain deferred in `Gaps.md` until their distinct schemas
+- `explode`, `explode_outer`, `inline`, and `inline_outer` remain deferred in `Parity.md` until their distinct schemas
   and null/empty semantics have dedicated tests.
 
 ## Set Composition

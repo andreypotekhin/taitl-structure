@@ -466,16 +466,31 @@ def test_deterministic_numeric_helpers_return_typed_null_propagating_expressions
     assert rounded.nullable is True
     for expression in (
         acos(nullable_decimal),
+        asin(nullable_decimal),
+        atan(nullable_decimal),
+        cos(nullable_decimal),
+        degrees(nullable_decimal),
         hypot(nullable_decimal, required_integer),
+        ln(nullable_decimal),
+        log10(nullable_decimal),
         sqrt(nullable_decimal),
         pow(nullable_decimal, required_integer),
         log(nullable_decimal),
         log(nullable_decimal, base=10),
+        radians(nullable_decimal),
+        sin(nullable_decimal),
         exp(nullable_decimal),
         signum(nullable_decimal),
+        tan(nullable_decimal),
     ):
         assert expression.type is not None and expression.type.name == "double"
         assert expression.nullable is True
+    assert atan2(nullable_decimal, required_integer).nullable is True
+
+
+def test_atan2_requires_two_numeric_operands() -> None:
+    with pytest.raises(TypeError, match=r"atan2\(\.\.\.\) requires a numeric Structure expression"):
+        atan2("not numeric", 1)
 
 
 def test_rand_requires_explicit_reproducibility_policy_and_returns_non_null_double() -> None:
@@ -507,7 +522,7 @@ def test_rand_rejects_implicit_or_invalid_seed_policy(call, message: str) -> Non
         call()
 
 
-@pytest.mark.parametrize("function", [sqrt, exp, signum])
+@pytest.mark.parametrize("function", [asin, atan, cos, degrees, exp, ln, log10, radians, signum, sin, sqrt, tan])
 def test_unary_deterministic_numeric_helpers_require_numeric_values(function) -> None:
     with pytest.raises(TypeError, match=r"requires a numeric Structure expression"):
         function("not numeric")
@@ -605,6 +620,46 @@ def test_padding_helpers_require_valid_literal_arguments(function) -> None:
         function("value", length=-1, pad="0")
     with pytest.raises(TypeError, match=r"pad must be a non-empty string literal"):
         function("value", length=2, pad="")
+
+
+def test_string_slicing_position_and_byte_helpers_preserve_types() -> None:
+    nullable_text = _expression(types.string(), nullable=True)
+    required_binary = _expression(types.binary(), nullable=False)
+
+    for expression in (
+        ascii(nullable_text),
+        char_length(nullable_text),
+        locate(nullable_text, substring="a"),
+        octet_length(nullable_text),
+    ):
+        assert expression.type is not None and expression.type.name == "integer"
+        assert expression.nullable is True
+    assert octet_length(required_binary).nullable is False
+    for expression in (
+        left(nullable_text, length=2),
+        repeat(nullable_text, count=2),
+        replace(nullable_text, search="a", replacement="b"),
+        right(nullable_text, length=2),
+        substring_index(nullable_text, delimiter="/", count=2),
+    ):
+        assert expression.type is not None and expression.type.name == "string"
+        assert expression.nullable is True
+
+
+@pytest.mark.parametrize(
+    ("function", "keyword", "value"),
+    [(left, "length", -1), (right, "length", -1), (repeat, "count", -1)],
+)
+def test_string_count_helpers_require_non_negative_literals(function, keyword: str, value: int) -> None:
+    with pytest.raises(TypeError, match=r"must be a non-negative integer literal"):
+        function("value", **{keyword: value})
+
+
+def test_locate_and_substring_index_require_valid_literal_arguments() -> None:
+    with pytest.raises(TypeError, match=r"position must be a positive integer literal"):
+        locate("value", substring="a", position=0)
+    with pytest.raises(TypeError, match=r"count must be an integer literal"):
+        substring_index("value", delimiter="/", count=cast(int, "two"))
 
 
 @pytest.mark.parametrize("day", ["", "weekday", "Monday; SELECT 1", 1])

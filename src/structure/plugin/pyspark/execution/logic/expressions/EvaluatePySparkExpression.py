@@ -809,6 +809,17 @@ class EvaluatePySparkExpression:
             return functions.regexp_extract(args[0], expression.data["pattern"], expression.data["group"])
         if function in {"lpad", "rpad"}:
             return getattr(functions, function)(args[0], expression.data["length"], expression.data["pad"])
+        if function in {"ascii", "char_length", "length", "octet_length"}:
+            return getattr(functions, function)(args[0])
+        if function in {"left", "right", "repeat"}:
+            parameter = "length" if function in {"left", "right"} else "count"
+            return getattr(functions, function)(args[0], expression.data[parameter])
+        if function == "locate":
+            return functions.locate(expression.data["substring"], args[0], expression.data["position"])
+        if function == "replace":
+            return functions.replace(args[0], expression.data["search"], expression.data["replacement"])
+        if function == "substring_index":
+            return functions.substring_index(args[0], expression.data["delimiter"], expression.data["count"])
         if function == "length":
             return functions.length(args[0])
         if function in {"initcap", "reverse"}:
@@ -853,10 +864,12 @@ class EvaluatePySparkExpression:
             )
         if function == "abs":
             return functions.abs(args[0])
-        if function == "acos":
-            return functions.acos(args[0])
+        if function in {"acos", "asin", "atan", "cos", "degrees", "ln", "log10", "radians", "sin", "tan"}:
+            return getattr(functions, function)(args[0])
         if function == "hypot":
             return functions.hypot(args[0], args[1])
+        if function == "atan2":
+            return functions.atan2(args[0], args[1])
         if function == "rand":
             seed = expression.data.get("seed")
             return functions.rand() if seed is None else functions.rand(seed=seed)

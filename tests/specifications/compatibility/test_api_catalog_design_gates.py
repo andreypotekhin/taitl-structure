@@ -5,15 +5,17 @@ import structure.plugin.pyspark as pyspark
 
 ROOT = Path(__file__).resolve().parents[3]
 API_CATALOG = ROOT / "docs/APICatalog.md"
-DESIGN = ROOT / "docs/dev/design/ApiCatalogDesignGates.design.md"
+DESIGN = ROOT / "docs/dev/gated/ApiCatalog.gates.md"
+DEFERRED = ROOT / "docs/dev/deferred/ApiCatalog.deferred.md"
 SPEC = ROOT / "docs/dev/specifications/PySparkApiCatalog.spec.md"
+V9_SPEC = ROOT / "docs/dev/specifications/V9ApiCatalogDesignGatedFeatures.spec.md"
 
 
 def test_api_catalog_open_rows_use_design_gate_language() -> None:
     text = API_CATALOG.read_text(encoding="utf-8")
 
     assert "planned" not in text.lower()
-    assert "deferred" not in text.lower()
+    assert "| deferred |" not in text.lower()
     assert "| XML, URL, and provider/runtime functions | design-gated or unsupported |" in text
     assert "| Variant functions | partial |" in text
     assert "Variant mutation helpers remain design-gated" in text
@@ -27,13 +29,15 @@ def test_api_catalog_open_rows_use_design_gate_language() -> None:
 
 def test_api_catalog_design_gate_docs_cover_non_streaming_open_rows() -> None:
     design = DESIGN.read_text(encoding="utf-8")
+    deferred = DEFERRED.read_text(encoding="utf-8")
     spec = SPEC.read_text(encoding="utf-8")
-    combined = design + "\n" + spec
+    v9_spec = V9_SPEC.read_text(encoding="utf-8")
+    combined = design + "\n" + deferred + "\n" + spec + "\n" + v9_spec
 
     for phrase in (
         "XML remains low priority",
-        "Variant And Geospatial Helpers",
-        "Variant and Geospatial Helpers",
+        "Variant Mutation Profiles",
+        "Geospatial Provider Boundary",
         "geometry(srid=..., nullable=True)",
         "Apache Sedona 1.9.0",
         "never the bundled PySpark plugin",

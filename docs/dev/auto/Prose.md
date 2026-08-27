@@ -80,7 +80,7 @@ Internal stage: a stage whose transform code is in same package as parent transf
 External stage: a stage whose transform code is outside parent transform package and its subpackages.
 
 Text notation: compact plain text notation for schemas, transforms and their parts: stages, step methods. 
-Ex: See Chunking.comb.md: 
+Ex: See Chunking.ext.md:
 - 'DocumentChunking' section for examples of step and transform notation.
 - 'Result' section for example of composed transform notation.
 Formula notation: Structure Formula Notation defined in [Notation.md](prose/Notation.md)
@@ -128,7 +128,7 @@ Keep enumeration-oriented sections concise. Write the Solution section as the su
 - Do not add internal subsection headings inside Solution.
 - Do not duplicate the detailed stage mechanics, notation, or code that belong in later sections.
 - Preserve the project's terminology and distinguish established behavior from proposed behavior.
-- Keep the remaining sections concise and structurally useful for the Combine operator.
+- Keep the remaining sections concise and structurally useful for the Extend operator.
 
 The Solution must be useful to a technically confident reader who understands software but may be unfamiliar with the 
 industry topic or this project's vocabulary.
@@ -152,7 +152,7 @@ do not refer to earlier text-pipeline steps.
 - `Notation`: include one fenced text block for the workflow. List stages in execution order and list every meaningful step
   with its input and output relations. Every return/output position must use the concrete schema class or classes, never a
   vague relation label such as `targets`, `embeddings`, or `scores` when the schema is known. Keep the notation lossless
-  and concise; do not add implementation prose or Combine reference markers.
+  and concise; do not add implementation prose or Extend reference markers.
 - `Implementation`: write a second substantive narrative, more concrete than Solution and less mechanical than Code. Begin with the implementation's intent and boundary, then explain how data moves through the stages in the order established by Notation. Name the relevant transforms and schemas, explain why responsibilities are separated, and describe the contracts that make the flow reliable.
   - Use approximately four to seven paragraphs, expanding with topic complexity.
   - Explain stage responsibilities and ordering in prose; use a short numbered sequence when order is itself an important behavior.
@@ -241,26 +241,26 @@ Present annotated source as continuous narrative.
     'Workflow' section may become redundant/duplicating.
       - Trim texts between code listings in the 'Workflow' to avoid repetition/duplication.
 
-## Combine
-Present combined continuous narrative based on draft, background and collected documents.
+## Extend
+Present extended continuous narrative based on draft, background and collected documents.
 
-### Combine process
+### Extend process
 - Inputs: close/draft, close/collected, .back.md
-- Output: close/combined
+- Output: close/extended
 - Scope: close/collected/search
-- Name: Combine. Usage: Combine(dir)
+- Name: Extend. Usage: Extend(dir)
 - Invocation: manual
 
-### Combine operator
-- Name: combine(), usage: combine(dir)
+### Extend operator
+- Name: extend(), usage: extend(dir)
 - Input: .draft.md, .back.md and .cnd.md describing a transform. Ex: chunking.draft.md
-- Output: .comb.md describing a transform in combined narrative. Ex: chunking.comb.md
-- Goal: present combined continuous narrative based on draft, background, planning and collected documents.
+- Output: .ext.md describing a transform in extended narrative. Ex: chunking.ext.md
+- Goal: present extended continuous narrative based on draft, background, planning and collected documents.
  
-### Combine operator instructions
-Combine draft (.draft.md), background (.back.md), plan (plan.md) and collected (.cnd.md) docs:
+### Extend operator instructions
+Extend draft (.draft.md), background (.back.md), plan (plan.md) and collected (.cnd.md) docs:
 - Draft (close/draft) contains structured chapter (.draft.md) of the future user manual, including a substantive Solution narrative.
-- Combine draft doc with background and collected docs to create an introduction narrative focused on a search engine topic, such as 'chunking'
+- Extend draft doc with background and collected docs to create an introduction narrative focused on a search engine topic, such as 'chunking'
 - Use relevant plan documents (.plan.md) for deep insight into decisions/tradeoffs/inner worsings. Use to extend the narrative without explicit importing parts of plan. Avoid citing/referring the plan docs.
 - Maintain content and structure set by draft doc
  - Make improvements/corrections to draft as needed, but keep it brief/succinct where it is already 
@@ -270,11 +270,11 @@ Combine draft (.draft.md), background (.back.md), plan (plan.md) and collected (
 - Audience: technically confident reader may not be familiar with industry specifics, field terminology or what comprises the target system.
 - Do not modify draft, background and collected docs (other than an update from source/annotated, if needed). We only produce the new output doc.
 
-Combining Draft with Background docs:
+Extending Draft with Background docs:
 
 'Solution' section:
 - Preserve the draft's substantive Solution narrative and enrich it with the background document where useful.
-- Treat Solution as the conceptual center of the combined document, rather than as a short summary of Background.
+- Treat Solution as the conceptual center of the extended document, rather than as a short summary of Background.
 - Make Solution content available for first-time reader: more conceptual, easier on technical details (ok to mention code components).
 - Include textbook-grade explanations as needed.
 - Technical details go to other sections, e.g. Implementation
@@ -286,17 +286,17 @@ Combining Draft with Background docs:
 - Transfer as is from input doc, apply formatting as described below.
 
 Implementation section:
-- 'How it works' section of the background doc gets combined with 'Implementation' section from the draft doc
+- 'How it works' section of the background doc gets extended with 'Implementation' section from the draft doc
 - For 'How it works' section:
   - Drop implementation direction content such as discussion of invalid inputs, 'should'/'must' paragraphs
   - Drop content from decisions sections and on
 - Preserve the substantive Implementation prose from the draft before the workflow notation. Do not replace those
   paragraphs with a list or hide them after the notation.
-- Preserve the complete combined document before `## Implementation`: retain the H1 and every preceding `Problem`,
+- Preserve the complete extended document before `## Implementation`: retain the H1 and every preceding `Problem`,
   `Solution`, `Builds on`, `Used by`, `Definitions`, `Inputs`, `Outputs`, and `Stages` section. Never rebuild the output
   starting at `## Implementation`.
-- Use this exact order inside the combined `Implementation` section:
-  1. the combined conceptual/technical prose from the background and draft Implementation;
+- Use this exact order inside the extended `Implementation` section:
+  1. the extended conceptual/technical prose from the background and draft Implementation;
   2. one subsection (a Stage subsection) for each workflow stage transform, including its explanatory items, 
      individual typed step notation, and its final compact text notation;
   3. (only when workflow is a composed transform) a `Result` subsection containing the complete workflow notation.
@@ -341,7 +341,7 @@ Implementation section:
   `Result`; if no such class exists, omit `Result`, any parent-named Implementation subsection, and any package-level
   parent notation. This applies to aggregate topics such as Evaluation and Experiments.
   Preserve workflow inputs, stage calls and concrete output schemas in result notation. Use the typed
-  workflow format of `Indexing.comb.md`: list `inputs`, child transform assignments, and typed `outputs`. Do not repeat
+  workflow format of `Indexing.ext.md`: list `inputs`, child transform assignments, and typed `outputs`. Do not repeat
   stage transform notations in Result section; the parent workflow shape must be distinct.
 - Refer to transforms, stages, and steps from the numbered items. Consider joining cohesive notation lines when that
   keeps the correspondence clear, but retain every meaningful step in the stage transform and result notations.
@@ -362,7 +362,7 @@ over prescription/direction, gradually build understanding.
  - Make accessible for the first-time reader.  
 
 Code section:
-- Combine the above results with Collected doc (.cnd.md):
+- Extend the above results with Collected doc (.cnd.md):
  - Include collected doc as Code section
  - Avoid small-info intro like 'The code below follows the declared workflow'.
  - Step methods:
@@ -401,12 +401,12 @@ Avoid:
   - Ex: 'Search needs more than a match/no-match signal. Ranking and field constraints need normalized terms,'
     - Consider refactoring: 'Ranking and field constraints need normalized terms, because'
 
-#### Combine operator instructions - Quality assurance
+#### Extend operator instructions - Quality assurance
 Quality assurance rules
 
 General
-- Before publishing a combined document, verify that its H1 and every section before Implementation section are preserved
-  from the source draft/combined structure.
+- Before publishing an extended document, verify that its H1 and every section before Implementation section are preserved
+  from the source draft/extended structure.
 - Normalize prose wrapping before publishing: continuation lines in ordinary paragraphs and numbered-item prose must start at
   column zero. Preserve indentation only inside fenced code, structured text notation, lists, and display math; reject runs of
   leading spaces that would render as literal whitespace in Typora.
@@ -500,26 +500,26 @@ Automation:
 - For every standalone step transform, verify that its text `Resulting transform shape` contains the exact class name
   followed by one complete typed signature per public step, one signature per line. Reject `methods:` summaries,
   abbreviated method-name lists, `inputs:`/`outputs:` summary blocks, and any signature not traceable to that transform.
-- Combine preserves source-level raw/special helper discussion; raw/special omission is a Format-only rule applied while
-  producing formula notation, never a reason to replace a complete combined transform narrative with a method summary.
-- In Combine, include every `@raw` and `@special` method in its owning text step narrative and standalone transform
+- Extend preserves source-level raw/special helper discussion; raw/special omission is a Format-only rule applied while
+  producing formula notation, never a reason to replace a complete extended transform narrative with a method summary.
+- In Extend, include every `@raw` and `@special` method in its owning text step narrative and standalone transform
   notation, with its typed input and output signature. Format alone omits those methods from formula notation.
 
 ## Format
-Create formatted documents (.form.md), based on combined documents (.comb.md).
+Create formatted documents (.form.md), based on extended documents (.ext.md).
 
 ### Format process
-- Inputs: close/combined, .comb.md
+- Inputs: close/extended, .ext.md
 - Output: close/form
-- Scope: close/combined/search
+- Scope: close/extended/search
 - Name: Format. Usage: Format(dir)
 - Invocation: manual
 
 ### Format operator
 - Name: format(), usage: format(dir)
-- Input: .comb.md
+- Input: .ext.md
 - Output: .form.md
-- Goal: create formatted documents based on combined documents.
+- Goal: create formatted documents based on extended documents.
  
 ### Format operator instructions
 Structure Formula Notation: see [Notation.md](prose/Notation.md)
@@ -554,7 +554,7 @@ Step methods:
 
 Special/opaque methods:
 - Omit opaque helpers such as `@special`, and omit `@raw` methods only when they are implementation helpers without an
-  explicit typed step notation in Combine. Preserve a typed `@raw` method that Combine documents as a step,
+  explicit typed step notation in Extend. Preserve a typed `@raw` method that Extend documents as a step,
   in its step formula and transform method vectors.
 
 Transform - standalone (as in 'Resulting transform shape' sections of .form.md docs):
@@ -625,8 +625,8 @@ Quality assurance:
     variant stage formulas.
   - Apply the raw/special omission rule to every formula context, including method vectors nested inside composed-transform
     stage calls. Reject opaque `@special` helpers and undocumented `@raw` helpers in formulas; a typed `@raw` step
-    explicitly documented by Combine must remain present in its corresponding formula contexts.
-  - For every typed step signature in a combined explanatory item, require exactly one corresponding step formula and
+    explicitly documented by Extend must remain present in its corresponding formula contexts.
+  - For every typed step signature in an extended explanatory item, require exactly one corresponding step formula and
     require its method name in the owning standalone transform shape and any composed-transform stage method vector.
   - Use the GitHub/Typora-compatible `\operatorname{...}` command for every displayed operator. Reject the invalid
     `\operator{...}` form, raw text such as `extract: Document -> Document`, and any standalone shape whose name is not the

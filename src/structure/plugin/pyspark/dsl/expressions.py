@@ -40,10 +40,10 @@ __all__ = [
     "dayofmonth", "event_time_between", "exp", "floor", "from_csv", "from_json", "hash", "hour", "ifnull", "initcap",
     "instr", "isnan", "isnotnull", "isnull", "CsvOptions", "JsonOptions", "length", "levenshtein", "literal", "log",
     "lower", "lpad", "ltrim", "md5",
-    "minute", "month", "nanvl", "nullif", "nvl", "nvl2", "pow", "regexp_extract", "regexp_replace", "reverse",
+    "minute", "month", "nanvl", "nullif", "nvl", "nvl2", "pow", "regexp_extract", "regexp_replace", "repeat", "replace", "reverse",
     "round", "rpad", "rtrim", "sha1", "sha2", "second", "signum", "split", "sqrt", "substring", "to_csv", "to_date",
-    "to_decimal", "to_json", "to_timestamp", "translate", "trim", "trunc", "unbase64", "decode", "encode", "upper",
-    "when", "xxhash64", "year", "zeroifnull", "acos", "hypot", "add_months", "next_day", "rand", "is_valid_variant", "is_variant_null", "parse_json",
+    "to_decimal", "to_json", "to_timestamp", "translate", "trim", "trunc", "unbase64", "decode", "encode", "upper", "ascii", "char_length", "left", "locate", "octet_length", "right", "substring_index",
+    "when", "xxhash64", "year", "zeroifnull", "acos", "asin", "atan", "atan2", "cos", "degrees", "hypot", "ln", "log10", "radians", "sin", "tan", "add_months", "next_day", "rand", "is_valid_variant", "is_variant_null", "parse_json",
     "schema_of_variant", "to_variant_object", "try_parse_json", "try_variant_get", "variant_get", "variant_literal",
     "variant_array_append", "try_variant_array_append", "variant_insert", "try_variant_insert", "variant_set",
     "try_variant_set", "variant_delete",
@@ -666,6 +666,100 @@ def length(value: object) -> Expression:
     )
 
 
+def ascii(value: object) -> Expression:
+    """Return the numeric value of the first character in a string."""
+    argument = _string_argument(value, "ascii(...)")
+    return Expression(kind="call", type=IntegerType(), nullable=argument.nullable, data={"function": "ascii"}, args=(argument,))
+
+
+def char_length(value: object) -> Expression:
+    """Return the character length of a string expression."""
+    argument = _string_argument(value, "char_length(...)")
+    return Expression(
+        kind="call", type=IntegerType(), nullable=argument.nullable, data={"function": "char_length"}, args=(argument,)
+    )
+
+
+def left(value: object, *, length: int) -> Expression:
+    """Return the leftmost literal number of characters from a string."""
+    argument = _string_argument(value, "left(...)")
+    _padding_length(length, "left(...)")
+    return Expression(
+        kind="call", type=StringType(), nullable=argument.nullable, data={"function": "left", "length": length}, args=(argument,)
+    )
+
+
+def right(value: object, *, length: int) -> Expression:
+    """Return the rightmost literal number of characters from a string."""
+    argument = _string_argument(value, "right(...)")
+    _padding_length(length, "right(...)")
+    return Expression(
+        kind="call", type=StringType(), nullable=argument.nullable, data={"function": "right", "length": length}, args=(argument,)
+    )
+
+
+def locate(value: object, *, substring: str, position: int = 1) -> Expression:
+    """Return the one-based position of a literal substring."""
+    argument = _string_argument(value, "locate(...)")
+    _string_literal(substring, "locate(...)", "substring")
+    if isinstance(position, bool) or not isinstance(position, int) or position < 1:
+        raise TypeError("locate(...) position must be a positive integer literal")
+    return Expression(
+        kind="call",
+        type=IntegerType(),
+        nullable=argument.nullable,
+        data={"function": "locate", "substring": substring, "position": position},
+        args=(argument,),
+    )
+
+
+def octet_length(value: object) -> Expression:
+    """Return the UTF-8 byte length of a String or Binary expression."""
+    argument = _string_or_binary_argument(value, "octet_length(...)")
+    return Expression(
+        kind="call", type=IntegerType(), nullable=argument.nullable, data={"function": "octet_length"}, args=(argument,)
+    )
+
+
+def repeat(value: object, *, count: int) -> Expression:
+    """Repeat a string a non-negative literal number of times."""
+    argument = _string_argument(value, "repeat(...)")
+    if isinstance(count, bool) or not isinstance(count, int) or count < 0:
+        raise TypeError("repeat(...) count must be a non-negative integer literal")
+    return Expression(
+        kind="call", type=StringType(), nullable=argument.nullable, data={"function": "repeat", "count": count}, args=(argument,)
+    )
+
+
+def replace(value: object, *, search: str, replacement: str) -> Expression:
+    """Replace literal occurrences in a string expression."""
+    argument = _string_argument(value, "replace(...)")
+    _string_literal(search, "replace(...)", "search")
+    _string_literal(replacement, "replace(...)", "replacement")
+    return Expression(
+        kind="call",
+        type=StringType(),
+        nullable=argument.nullable,
+        data={"function": "replace", "search": search, "replacement": replacement},
+        args=(argument,),
+    )
+
+
+def substring_index(value: object, *, delimiter: str, count: int) -> Expression:
+    """Return the substring before a literal delimiter occurrence count."""
+    argument = _string_argument(value, "substring_index(...)")
+    _string_literal(delimiter, "substring_index(...)", "delimiter")
+    if isinstance(count, bool) or not isinstance(count, int):
+        raise TypeError("substring_index(...) count must be an integer literal")
+    return Expression(
+        kind="call",
+        type=StringType(),
+        nullable=argument.nullable,
+        data={"function": "substring_index", "delimiter": delimiter, "count": count},
+        args=(argument,),
+    )
+
+
 def initcap(value: object) -> Expression:
     """Title-case words in a string expression, like Spark ``initcap``."""
     return _string_call("initcap", value)
@@ -962,6 +1056,26 @@ def acos(value: object) -> Expression:
     return _double_numeric_call("acos", value)
 
 
+def asin(value: object) -> Expression:
+    """Return the arc sine of a numeric expression in radians."""
+    return _double_numeric_call("asin", value)
+
+
+def atan(value: object) -> Expression:
+    """Return the arc tangent of a numeric expression in radians."""
+    return _double_numeric_call("atan", value)
+
+
+def atan2(y: object, x: object) -> Expression:
+    """Return the two-argument arc tangent in radians."""
+    return _double_numeric_binary_call("atan2", y, x)
+
+
+def cos(value: object) -> Expression:
+    """Return the cosine of a numeric expression in radians."""
+    return _double_numeric_call("cos", value)
+
+
 def hypot(left: object, right: object) -> Expression:
     """Return the hypotenuse of two numeric expressions."""
     left_argument = _numeric_argument(left, "hypot(...)")
@@ -1099,9 +1213,39 @@ def exp(value: object) -> Expression:
     return _double_numeric_call("exp", value)
 
 
+def degrees(value: object) -> Expression:
+    """Convert a numeric angle from radians to degrees."""
+    return _double_numeric_call("degrees", value)
+
+
+def ln(value: object) -> Expression:
+    """Return the natural logarithm of a numeric expression."""
+    return _double_numeric_call("ln", value)
+
+
+def log10(value: object) -> Expression:
+    """Return the base-ten logarithm of a numeric expression."""
+    return _double_numeric_call("log10", value)
+
+
+def radians(value: object) -> Expression:
+    """Convert a numeric angle from degrees to radians."""
+    return _double_numeric_call("radians", value)
+
+
+def sin(value: object) -> Expression:
+    """Return the sine of a numeric expression in radians."""
+    return _double_numeric_call("sin", value)
+
+
 def signum(value: object) -> Expression:
     """Return the sign of a numeric expression."""
     return _double_numeric_call("signum", value)
+
+
+def tan(value: object) -> Expression:
+    """Return the tangent of a numeric expression in radians."""
+    return _double_numeric_call("tan", value)
 
 
 def isnull(value: object) -> Expression:
@@ -1300,6 +1444,13 @@ def _string_argument(value: object, call: str) -> Expression:
     argument = literal(value)
     if not isinstance(argument.type, StringType):
         raise TypeError(f"{call} requires a String Structure expression")
+    return argument
+
+
+def _string_or_binary_argument(value: object, call: str) -> Expression:
+    argument = literal(value)
+    if not isinstance(argument.type, (StringType, BinaryType)):
+        raise TypeError(f"{call} requires a String or Binary Structure expression")
     return argument
 
 
@@ -1630,6 +1781,18 @@ def _double_numeric_call(function: str, value: object) -> Expression:
     argument = _numeric_argument(value, f"{function}(...)")
     return Expression(
         kind="call", type=DoubleType(), nullable=argument.nullable, data={"function": function}, args=(argument,)
+    )
+
+
+def _double_numeric_binary_call(function: str, left: object, right: object) -> Expression:
+    left_argument = _numeric_argument(left, f"{function}(...)")
+    right_argument = _numeric_argument(right, f"{function}(...)")
+    return Expression(
+        kind="call",
+        type=DoubleType(),
+        nullable=left_argument.nullable or right_argument.nullable,
+        data={"function": function},
+        args=(left_argument, right_argument),
     )
 
 

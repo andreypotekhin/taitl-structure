@@ -9,7 +9,7 @@ The sprint plan assumes the documentation set from the Structure design package 
 - [UserStories.md](../specifications/UserStories.spec.md)
 - [GeneratedSource.md](../../GeneratedSource.md)
 - `devdocs/Architecture.md`
-- `devdocs/Implementation.md`
+- `close/archive/implementation/Implementation.md` (historical phase checklist)
 - `devdocs/Testing.md`
 - `devdocs/design/*.md`
 
@@ -94,7 +94,7 @@ project-management/
 
 ## Pre-Coding Spike Gate
 
-Sprint 00 includes a short spike gate before implementation of the first vertical slice. These spikes close the highest-risk design questions from [Challenges.md](../design/Challenges.design.md):
+Sprint 00 includes a short spike gate before implementation of the first vertical slice. These spikes close the highest-risk design questions from [Challenges.md](../../../close/archive/design/Challenges.design.md):
 
 - `@raw(lane=lane)` binding inside class bodies.
 - Class-local `@special(type="expr")` helpers callable through `self` without a `self` parameter.

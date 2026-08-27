@@ -12,7 +12,8 @@ wrapper: admitted APIs remain typed, symbolic, capability-checked, explainable, 
 
 The default target is ordinary PySpark `>=3.5,<4.1`; batch features also target Spark
 Connect. See [Compatibility.md](Compatibility.md) for the full target policy, [APICatalog.md](APICatalog.md) for the
-public API catalog and checked coverage table, and [API Gaps](dev/Gaps.md) for the developer backlog.
+public API catalog and checked coverage table, and the [Parity register](dev/Parity.md) for
+the developer backlog.
 For additions on top of PySpark, see [APIExtensions.md](APIExtensions.md). For the detailed
 reference page, see [API.ref.md](reference/API.ref.md).
 
@@ -84,7 +85,7 @@ stay outside Structure's scope.
 | Raw APIs/lifecycle | unsupported | `expr`, raw `WindowSpec`, UDTF | Use hooks; caller owns lifecycle. Scalar `@special(type="udf")` is row-local ordinary-PySpark supported. |
 
 For detailed restrictions, diagnostics, and feature-admission rationale, consult [APICatalog.md](APICatalog.md),
-[API Gaps](dev/Gaps.md), and the linked reference pages.
+[Parity register](dev/Parity.md), with function-specific gates in [Function Gates](dev/gated/Functions.gates.md), and the linked reference pages.
 
 ## Next Steps
 

@@ -228,5 +228,5 @@ independent references, generated artifacts, and parity tests.
 - Store application: `examples/store/Readme.md`
 - Store design background: `docs/background/Store.back.md`; the Store README is the current public boundary.
 - Search future backlog: `docs/dev/future/Search.future.md`
-- Streaming future boundary: `docs/dev/future/Streaming.future.md`
-- API admission criteria: `docs/dev/future/API.future.md`
+- Streaming future boundary: `docs/dev/deferred/Streaming.deferred.md`
+- API admission criteria: `docs/dev/gated/ApiCatalog.gates.md`

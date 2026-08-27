@@ -70,8 +70,8 @@ remaining gates below are intentionally release-blocking.
 
 ### Gaps Closed by This Review
 
-- `docs/dev/Gaps.md` now defines every status it currently uses and distinguishes pre-catalog `planned` work from
-  catalog `scheduled` work. A `deferred` item now has an explicit meaning rather than looking like untracked work.
+- `docs/dev/Parity.md` now owns the detailed function-family tables, while `docs/dev/gated/Functions.gates.md` indexes
+  function-specific gates. A `deferred` item now has an explicit meaning rather than looking like untracked work.
 - This release-level record now connects v3 lessons to v4 admission and release gates, so future work can distinguish
   a completed v3 scope from an unfinished PySpark coverage program.
 
@@ -80,7 +80,8 @@ remaining gates below are intentionally release-blocking.
 1. Sprint 17 must create the checked local PySpark 3.5.x/4.0.x inventory, the public coverage catalog, its integrity
    tests, and the v4 fixture. No catalog file exists yet, so the release cannot yet demonstrate its coverage promise.
 2. Each catalog entry must be classified as supported, scheduled, deferred, or unsupported and must give a Structure
-   spelling, an alternative, or a specific rationale. Existing `Gaps.md` tables are planning input, not the catalog.
+   spelling, an alternative, or a specific rationale. The detailed `Parity.md` tables are the parity register, not the
+   public catalog.
 3. Every supported v4 family needs target-specific capability and live online/generated parity evidence. The current
    classic integration matrix is not yet a release-evidence baseline. During this review, `make integration
    BACKEND=pyspark35` reached its 19 tests and failed once in `tests/integration/pyspark/v1/test_execution_parity.py`;
