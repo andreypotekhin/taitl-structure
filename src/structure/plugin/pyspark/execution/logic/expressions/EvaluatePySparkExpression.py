@@ -864,12 +864,26 @@ class EvaluatePySparkExpression:
             )
         if function == "abs":
             return functions.abs(args[0])
-        if function in {"acos", "asin", "atan", "cos", "degrees", "ln", "log10", "radians", "sin", "tan"}:
+        if function in {"bin", "hex", "unhex"}:
+            return getattr(functions, function)(args[0])
+        if function in {"e", "pi"}:
+            return getattr(functions, function)()
+        if function in {
+            "acos", "acosh", "asin", "asinh", "atan", "atanh", "cbrt", "cos", "cosh", "cot", "csc", "degrees",
+            "expm1", "ln", "log10", "log1p", "log2", "radians", "rint", "sec", "sign", "sin", "sinh",
+            "tan", "tanh",
+        }:
             return getattr(functions, function)(args[0])
         if function == "hypot":
             return functions.hypot(args[0], args[1])
         if function == "atan2":
             return functions.atan2(args[0], args[1])
+        if function == "factorial":
+            return functions.factorial(args[0])
+        if function == "pmod":
+            return functions.pmod(args[0], args[1])
+        if function in {"greatest", "least"}:
+            return getattr(functions, function)(*args)
         if function == "rand":
             seed = expression.data.get("seed")
             return functions.rand() if seed is None else functions.rand(seed=seed)

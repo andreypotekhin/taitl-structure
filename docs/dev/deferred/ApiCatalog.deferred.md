@@ -27,7 +27,8 @@ The provider-neutral contract must define `geometry(srid=..., nullable=True)`, W
 SRID compatibility, and nullable `intersects`, `contains`, and `within` predicates without exposing provider imports.
 Optional providers own materialization, lowering, imports, and runtime availability. Sedona is not bundled, and
 `GEOGRAPHY`, CRS transformation, measurements, spatial joins, indexes, collections, non-WKT forms, and raw `ST_*`
-wrappers remain outside the contract.
+wrappers remain outside the contract. The pinned Docker lane now supplies positive Sedona WKT round-trip evidence on
+PySpark 3.5/4.0 and focused Spark Connect 3.5/4.0, but that evidence does not promote the broader provider surface.
 
 ### Join Reordering
 

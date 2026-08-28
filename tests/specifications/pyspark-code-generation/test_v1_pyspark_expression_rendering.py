@@ -432,6 +432,130 @@ def test_v4_expression_renderer_renders_trigonometric_and_logarithmic_functions(
     assert render(projection["tangent"], scope_aliases={"rows": "orders"}) == 'F.tan(F.col("orders.angle"))'
 
 
+def test_v4_expression_renderer_renders_hyperbolic_and_extended_numeric_functions() -> None:
+    class Raw(Schema):
+        amount = double(nullable=True)
+
+    class Published(Schema):
+        acosh_value = double(nullable=True)
+        asinh_value = double(nullable=True)
+        atanh_value = double(nullable=True)
+        cbrt_value = double(nullable=True)
+        cosh_value = double(nullable=True)
+        cot_value = double(nullable=True)
+        csc_value = double(nullable=True)
+        expm1_value = double(nullable=True)
+        log1p_value = double(nullable=True)
+        log2_value = double(nullable=True)
+        rint_value = double(nullable=True)
+        sec_value = double(nullable=True)
+        sign_value = double(nullable=True)
+        sinh_value = double(nullable=True)
+        tanh_value = double(nullable=True)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(
+                acosh_value=acosh(row.amount),
+                asinh_value=asinh(row.amount),
+                atanh_value=atanh(row.amount),
+                cbrt_value=cbrt(row.amount),
+                cosh_value=cosh(row.amount),
+                cot_value=cot(row.amount),
+                csc_value=csc(row.amount),
+                expm1_value=expm1(row.amount),
+                log1p_value=log1p(row.amount),
+                log2_value=log2(row.amount),
+                rint_value=rint(row.amount),
+                sec_value=sec(row.amount),
+                sign_value=sign(row.amount),
+                sinh_value=sinh(row.amount),
+                tanh_value=tanh(row.amount),
+            )
+
+    recipe = _recipe(Publish)
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    expected = {
+        "acosh_value": "acosh",
+        "asinh_value": "asinh",
+        "atanh_value": "atanh",
+        "cbrt_value": "cbrt",
+        "cosh_value": "cosh",
+        "cot_value": "cot",
+        "csc_value": "csc",
+        "expm1_value": "expm1",
+        "log1p_value": "log1p",
+        "log2_value": "log2",
+        "rint_value": "rint",
+        "sec_value": "sec",
+        "sign_value": "sign",
+        "sinh_value": "sinh",
+        "tanh_value": "tanh",
+    }
+    for field, function in expected.items():
+        assert render(projection[field], scope_aliases={"rows": "orders"}) == (
+            f'F.{function}(F.col("orders.amount"))'
+        )
+
+
+def test_v4_expression_renderer_renders_remaining_admitted_numeric_functions() -> None:
+    class Raw(Schema):
+        amount = integer(nullable=True)
+
+    class Published(Schema):
+        e_value = double(nullable=False)
+        pi_value = double(nullable=False)
+        binary_value = string(nullable=True)
+        hexadecimal_value = string(nullable=True)
+        decoded_value = binary(nullable=True)
+        factorial_value = long(nullable=True)
+        greatest_value = integer(nullable=True)
+        least_value = integer(nullable=True)
+        pmod_value = integer(nullable=True)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(
+                e_value=e(),
+                pi_value=pi(),
+                binary_value=bin(row.amount),
+                hexadecimal_value=hex(row.amount),
+                decoded_value=unhex("ff"),
+                factorial_value=factorial(row.amount),
+                greatest_value=greatest(row.amount, 2),
+                least_value=least(row.amount, 2),
+                pmod_value=pmod(row.amount, 2),
+            )
+
+    recipe = _recipe(Publish)
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    expected = {
+        "e_value": "F.e()",
+        "pi_value": "F.pi()",
+        "binary_value": 'F.bin(F.col("orders.amount"))',
+        "hexadecimal_value": 'F.hex(F.col("orders.amount"))',
+        "decoded_value": "F.unhex(F.lit('ff'))",
+        "factorial_value": 'F.factorial(F.col("orders.amount"))',
+        "greatest_value": 'F.greatest(F.col("orders.amount"), F.lit(2))',
+        "least_value": 'F.least(F.col("orders.amount"), F.lit(2))',
+        "pmod_value": 'F.pmod(F.col("orders.amount"), F.lit(2))',
+    }
+    for field, expected_render in expected.items():
+        assert render(projection[field], scope_aliases={"rows": "orders"}) == expected_render
+
+
 def test_v4_expression_renderer_renders_seeded_and_unseeded_rand() -> None:
     class Raw(Schema):
         amount = double(nullable=False)

@@ -466,26 +466,87 @@ def test_deterministic_numeric_helpers_return_typed_null_propagating_expressions
     assert rounded.nullable is True
     for expression in (
         acos(nullable_decimal),
+        acosh(nullable_decimal),
         asin(nullable_decimal),
+        asinh(nullable_decimal),
         atan(nullable_decimal),
+        atanh(nullable_decimal),
+        cbrt(nullable_decimal),
         cos(nullable_decimal),
+        cosh(nullable_decimal),
+        cot(nullable_decimal),
+        csc(nullable_decimal),
         degrees(nullable_decimal),
+        expm1(nullable_decimal),
         hypot(nullable_decimal, required_integer),
         ln(nullable_decimal),
         log10(nullable_decimal),
+        log1p(nullable_decimal),
+        log2(nullable_decimal),
         sqrt(nullable_decimal),
         pow(nullable_decimal, required_integer),
         log(nullable_decimal),
         log(nullable_decimal, base=10),
         radians(nullable_decimal),
+        rint(nullable_decimal),
+        sec(nullable_decimal),
+        sign(nullable_decimal),
         sin(nullable_decimal),
+        sinh(nullable_decimal),
         exp(nullable_decimal),
         signum(nullable_decimal),
         tan(nullable_decimal),
+        tanh(nullable_decimal),
     ):
         assert expression.type is not None and expression.type.name == "double"
         assert expression.nullable is True
     assert atan2(nullable_decimal, required_integer).nullable is True
+
+
+def test_remaining_admitted_numeric_helpers_have_typed_contracts() -> None:
+    nullable_decimal = _expression(types.decimal(12, 2), nullable=True)
+    required_integer = _expression(types.integer(), nullable=False)
+    required_long = _expression(types.long(), nullable=False)
+
+    for expression in (e(), pi()):
+        assert expression.type is not None and expression.type.name == "double"
+        assert expression.nullable is False
+
+    nullable_integer = _expression(types.integer(), nullable=True)
+    factorial_value = factorial(nullable_integer)
+    assert factorial_value.type is not None and factorial_value.type.name == "long"
+    assert factorial_value.nullable is True
+
+    for expression in (greatest(nullable_decimal, required_integer), least(nullable_decimal, required_integer)):
+        assert isinstance(expression.type, DecimalType)
+        assert expression.type.precision == 12 and expression.type.scale == 2
+        assert expression.nullable is False
+    assert greatest(nullable_decimal, nullable_integer).nullable is True
+    assert least(nullable_decimal, nullable_integer).nullable is True
+
+    positive_modulo = pmod(required_integer, required_long)
+    assert positive_modulo.type is not None and positive_modulo.type.name == "long"
+    assert positive_modulo.nullable is False
+
+    for expression in (bin(nullable_integer), hex(nullable_integer)):
+        assert expression.type is not None and expression.type.name == "string"
+        assert expression.nullable is True
+    decoded = unhex(_expression(types.string(), nullable=True))
+    assert isinstance(decoded.type, BinaryType)
+    assert decoded.nullable is True
+
+    with pytest.raises(TypeError, match=r"factorial\(\.\.\.\) requires an integer or long"):
+        factorial(1.5)
+    with pytest.raises(TypeError, match=r"greatest\(\.\.\.\) requires at least two values"):
+        greatest(1)
+    with pytest.raises(TypeError, match=r"pmod\(\.\.\.\) requires a numeric Structure expression"):
+        pmod("not numeric", 1)
+    with pytest.raises(TypeError, match=r"bin\(\.\.\.\) requires an integer or long"):
+        bin(1.5)
+    with pytest.raises(TypeError, match=r"hex\(\.\.\.\) requires a Binary, Integer, or Long"):
+        hex("not numeric or binary")
+    with pytest.raises(TypeError, match=r"unhex\(\.\.\.\) requires a String Structure expression"):
+        unhex(1)
 
 
 def test_atan2_requires_two_numeric_operands() -> None:
@@ -522,7 +583,13 @@ def test_rand_rejects_implicit_or_invalid_seed_policy(call, message: str) -> Non
         call()
 
 
-@pytest.mark.parametrize("function", [asin, atan, cos, degrees, exp, ln, log10, radians, signum, sin, sqrt, tan])
+@pytest.mark.parametrize(
+    "function",
+    [
+        acos, acosh, asin, asinh, atan, atanh, cbrt, cos, cosh, cot, csc, degrees, exp, expm1, ln, log, log1p,
+        log2, log10, radians, rint, sec, sign, signum, sin, sinh, sqrt, tan, tanh,
+    ],
+)
 def test_unary_deterministic_numeric_helpers_require_numeric_values(function) -> None:
     with pytest.raises(TypeError, match=r"requires a numeric Structure expression"):
         function("not numeric")

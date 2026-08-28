@@ -36,14 +36,14 @@ from structure.plugin.pyspark.dsl.types import (
 )
 
 __all__ = [
-    "abs", "base64", "bround", "ceil", "coalesce", "concat_ws", "date_add", "date_sub", "date_trunc", "datediff",
+    "abs", "base64", "bin", "bround", "ceil", "coalesce", "concat_ws", "date_add", "date_sub", "date_trunc", "datediff",
     "dayofmonth", "event_time_between", "exp", "floor", "from_csv", "from_json", "hash", "hour", "ifnull", "initcap",
     "instr", "isnan", "isnotnull", "isnull", "CsvOptions", "JsonOptions", "length", "levenshtein", "literal", "log",
     "lower", "lpad", "ltrim", "md5",
     "minute", "month", "nanvl", "nullif", "nvl", "nvl2", "pow", "regexp_extract", "regexp_replace", "repeat", "replace", "reverse",
     "round", "rpad", "rtrim", "sha1", "sha2", "second", "signum", "split", "sqrt", "substring", "to_csv", "to_date",
-    "to_decimal", "to_json", "to_timestamp", "translate", "trim", "trunc", "unbase64", "decode", "encode", "upper", "ascii", "char_length", "left", "locate", "octet_length", "right", "substring_index",
-    "when", "xxhash64", "year", "zeroifnull", "acos", "asin", "atan", "atan2", "cos", "degrees", "hypot", "ln", "log10", "radians", "sin", "tan", "add_months", "next_day", "rand", "is_valid_variant", "is_variant_null", "parse_json",
+    "to_decimal", "to_json", "to_timestamp", "translate", "trim", "trunc", "unbase64", "decode", "encode", "hex", "unhex", "upper", "ascii", "char_length", "left", "locate", "octet_length", "right", "substring_index",
+    "when", "xxhash64", "year", "zeroifnull", "acos", "acosh", "asin", "asinh", "atan", "atan2", "atanh", "cbrt", "cos", "cosh", "cot", "csc", "degrees", "e", "expm1", "factorial", "greatest", "hypot", "least", "ln", "log10", "log1p", "log2", "pmod", "pi", "radians", "rint", "sec", "sign", "sin", "sinh", "tan", "tanh", "add_months", "next_day", "rand", "is_valid_variant", "is_variant_null", "parse_json",
     "schema_of_variant", "to_variant_object", "try_parse_json", "try_variant_get", "variant_get", "variant_literal",
     "variant_array_append", "try_variant_array_append", "variant_insert", "try_variant_insert", "variant_set",
     "try_variant_set", "variant_delete",
@@ -1051,14 +1051,37 @@ def abs(value: object) -> Expression:
     )
 
 
+def bin(value: object) -> Expression:
+    """Return the binary representation of an integral expression."""
+    argument = _integral_argument(value, "bin(...)")
+    return Expression(
+        kind="call", type=StringType(), nullable=argument.nullable, data={"function": "bin"}, args=(argument,)
+    )
+
+
+def e() -> Expression:
+    """Return Euler's number as a non-null Double expression."""
+    return _constant_double_call("e")
+
+
 def acos(value: object) -> Expression:
     """Return the arc cosine of a numeric expression in radians."""
     return _double_numeric_call("acos", value)
 
 
+def acosh(value: object) -> Expression:
+    """Return the inverse hyperbolic cosine of a numeric expression."""
+    return _double_numeric_call("acosh", value)
+
+
 def asin(value: object) -> Expression:
     """Return the arc sine of a numeric expression in radians."""
     return _double_numeric_call("asin", value)
+
+
+def asinh(value: object) -> Expression:
+    """Return the inverse hyperbolic sine of a numeric expression."""
+    return _double_numeric_call("asinh", value)
 
 
 def atan(value: object) -> Expression:
@@ -1071,9 +1094,34 @@ def atan2(y: object, x: object) -> Expression:
     return _double_numeric_binary_call("atan2", y, x)
 
 
+def atanh(value: object) -> Expression:
+    """Return the inverse hyperbolic tangent of a numeric expression."""
+    return _double_numeric_call("atanh", value)
+
+
+def cbrt(value: object) -> Expression:
+    """Return the cube root of a numeric expression."""
+    return _double_numeric_call("cbrt", value)
+
+
 def cos(value: object) -> Expression:
     """Return the cosine of a numeric expression in radians."""
     return _double_numeric_call("cos", value)
+
+
+def cosh(value: object) -> Expression:
+    """Return the hyperbolic cosine of a numeric expression."""
+    return _double_numeric_call("cosh", value)
+
+
+def cot(value: object) -> Expression:
+    """Return the cotangent of a numeric expression in radians."""
+    return _double_numeric_call("cot", value)
+
+
+def csc(value: object) -> Expression:
+    """Return the cosecant of a numeric expression in radians."""
+    return _double_numeric_call("csc", value)
 
 
 def hypot(left: object, right: object) -> Expression:
@@ -1087,6 +1135,21 @@ def hypot(left: object, right: object) -> Expression:
         data={"function": "hypot"},
         args=(left_argument, right_argument),
     )
+
+
+def hex(value: object) -> Expression:
+    """Return the hexadecimal representation of an integral or binary expression."""
+    argument = literal(value)
+    if not isinstance(argument.type, (BinaryType, IntegerType, LongType)):
+        raise TypeError("hex(...) requires a Binary, Integer, or Long Structure expression")
+    return Expression(
+        kind="call", type=StringType(), nullable=argument.nullable, data={"function": "hex"}, args=(argument,)
+    )
+
+
+def least(*values: object) -> Expression:
+    """Return the least value among at least two compatible expressions."""
+    return _common_value_call("least", values)
 
 
 def rand(*, seed: int | None = None, reproducible: bool = True) -> Expression:
@@ -1190,6 +1253,22 @@ def pow(value: object, exponent: object) -> Expression:
     )
 
 
+def pi() -> Expression:
+    """Return pi as a non-null Double expression."""
+    return _constant_double_call("pi")
+
+
+def unhex(value: object) -> Expression:
+    """Decode a hexadecimal String expression into nullable Binary."""
+    argument = _string_argument(value, "unhex(...)")
+    return Expression(kind="call", type=BinaryType(), nullable=True, data={"function": "unhex"}, args=(argument,))
+
+
+def pmod(left: object, right: object) -> Expression:
+    """Return the positive modulo of two numeric expressions."""
+    return _numeric_binary_common_call("pmod", left, right)
+
+
 def log(value: object, *, base: float | int | None = None) -> Expression:
     """Return the natural logarithm or a logarithm with a literal base."""
     argument = _numeric_argument(value, "log(...)")
@@ -1213,6 +1292,24 @@ def exp(value: object) -> Expression:
     return _double_numeric_call("exp", value)
 
 
+def expm1(value: object) -> Expression:
+    """Return ``e`` raised to a numeric expression minus one."""
+    return _double_numeric_call("expm1", value)
+
+
+def factorial(value: object) -> Expression:
+    """Return the factorial of an integral expression as a nullable Long."""
+    argument = _integral_argument(value, "factorial(...)")
+    return Expression(
+        kind="call", type=LongType(), nullable=argument.nullable, data={"function": "factorial"}, args=(argument,)
+    )
+
+
+def greatest(*values: object) -> Expression:
+    """Return the greatest value among at least two compatible expressions."""
+    return _common_value_call("greatest", values)
+
+
 def degrees(value: object) -> Expression:
     """Convert a numeric angle from radians to degrees."""
     return _double_numeric_call("degrees", value)
@@ -1228,14 +1325,44 @@ def log10(value: object) -> Expression:
     return _double_numeric_call("log10", value)
 
 
+def log1p(value: object) -> Expression:
+    """Return the natural logarithm of one plus a numeric expression."""
+    return _double_numeric_call("log1p", value)
+
+
+def log2(value: object) -> Expression:
+    """Return the base-two logarithm of a numeric expression."""
+    return _double_numeric_call("log2", value)
+
+
 def radians(value: object) -> Expression:
     """Convert a numeric angle from degrees to radians."""
     return _double_numeric_call("radians", value)
 
 
+def rint(value: object) -> Expression:
+    """Round a numeric expression to the nearest integer-valued Double."""
+    return _double_numeric_call("rint", value)
+
+
+def sec(value: object) -> Expression:
+    """Return the secant of a numeric expression in radians."""
+    return _double_numeric_call("sec", value)
+
+
+def sign(value: object) -> Expression:
+    """Return the sign of a numeric expression."""
+    return _double_numeric_call("sign", value)
+
+
 def sin(value: object) -> Expression:
     """Return the sine of a numeric expression in radians."""
     return _double_numeric_call("sin", value)
+
+
+def sinh(value: object) -> Expression:
+    """Return the hyperbolic sine of a numeric expression."""
+    return _double_numeric_call("sinh", value)
 
 
 def signum(value: object) -> Expression:
@@ -1246,6 +1373,11 @@ def signum(value: object) -> Expression:
 def tan(value: object) -> Expression:
     """Return the tangent of a numeric expression in radians."""
     return _double_numeric_call("tan", value)
+
+
+def tanh(value: object) -> Expression:
+    """Return the hyperbolic tangent of a numeric expression."""
+    return _double_numeric_call("tanh", value)
 
 
 def isnull(value: object) -> Expression:
@@ -1793,6 +1925,48 @@ def _double_numeric_binary_call(function: str, left: object, right: object) -> E
         nullable=left_argument.nullable or right_argument.nullable,
         data={"function": function},
         args=(left_argument, right_argument),
+    )
+
+
+def _constant_double_call(function: str) -> Expression:
+    return Expression(kind="call", type=DoubleType(), nullable=False, data={"function": function})
+
+
+def _integral_argument(value: object, call: str) -> Expression:
+    argument = literal(value)
+    if not isinstance(argument.type, (IntegerType, LongType)):
+        raise TypeError(f"{call} requires an integer or long Structure expression")
+    return argument
+
+
+def _numeric_binary_common_call(function: str, left: object, right: object) -> Expression:
+    left_argument = _numeric_argument(left, f"{function}(...)")
+    right_argument = _numeric_argument(right, f"{function}(...)")
+    if left_argument.type is None or right_argument.type is None:
+        raise AssertionError("numeric argument validation must reject untyped expressions")
+    result_type = _common_numeric_type(function, (left_argument.type, right_argument.type))
+    return Expression(
+        kind="call",
+        type=result_type,
+        nullable=left_argument.nullable or right_argument.nullable,
+        data={"function": function},
+        args=(left_argument, right_argument),
+    )
+
+
+def _common_value_call(function: str, values: tuple[object, ...]) -> Expression:
+    if len(values) < 2:
+        raise TypeError(f"{function}(...) requires at least two values")
+    arguments = tuple(literal(value) for value in values)
+    result_type = _common_type(f"{function}(...)", arguments)
+    if result_type is None:
+        raise TypeError(f"{function}(...) requires at least one typed Structure expression")
+    return Expression(
+        kind="call",
+        type=result_type,
+        nullable=all(argument.nullable for argument in arguments),
+        data={"function": function},
+        args=arguments,
     )
 
 

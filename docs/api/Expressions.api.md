@@ -139,11 +139,19 @@ explicit design gate are marked in the details below.
 | `pow(...)` | `pow` | `pow(o.total, 2)` |
 | `log(...)` | `log` | `log(o.total, base=10)` |
 | `exp(...)` | `exp` | `exp(o.total)` |
+| `e()`, `pi()` | `e`, `pi` | `e()`; `pi()` |
+| `factorial(...)` | `factorial` | `factorial(o.count)` |
+| `greatest(...)`, `least(...)` | `greatest`, `least` | `greatest(o.left, o.right)` |
+| `pmod(...)` | `pmod` | `pmod(o.value, 7)` |
+| `bin(...)`, `hex(...)`, `unhex(...)` | `bin`, `hex`, `unhex` | `hex(o.id)`; `unhex(o.value)` |
 | `signum(...)` | `signum` | `signum(o.total)` |
 | `asin(...)`, `atan(...)`, `atan2(...)` | `asin`, `atan`, `atan2` | `atan2(o.y, o.x)` |
 | `cos(...)`, `sin(...)`, `tan(...)` | `cos`, `sin`, `tan` | `sin(o.angle)` |
 | `degrees(...)`, `radians(...)` | `degrees`, `radians` | `degrees(o.angle)` |
 | `ln(...)`, `log10(...)` | `ln`, `log10` | `log10(o.amount)` |
+| Hyperbolic helpers | `acosh`, `asinh`, `atanh`, `cosh`, `sinh`, `tanh` | `tanh(o.amount)` |
+| Additional transcendental helpers | `cbrt`, `cot`, `csc`, `expm1`, `log1p`, `log2`, `sec` | `cbrt(o.amount)` |
+| Rounding/sign helper | `rint`, `sign` | `rint(o.amount)` |
 | `isnull(...)` | `isnull` | `isnull(o.score)` |
 | `isnotnull(...)` | `isnotnull` | `isnotnull(o.score)` |
 | `isnan(...)` | `isnan` | `isnan(o.score)` |
@@ -194,6 +202,12 @@ explicit design gate are marked in the details below.
 - `lpad(...)` and `rpad(...)` accept a String expression, a non-negative integer literal, and a non-empty padding
   literal. They return a String expression with the input nullability.
 - `acos(...)` and `hypot(...)` accept numeric expressions and return nullable Double results.
+- `e()` and `pi()` return non-null Double constants. `factorial(...)` accepts Integer/Long expressions and returns a
+  nullable Long. `greatest(...)` and `least(...)` require at least two compatible values, preserve their common type,
+  and return null only when all arguments are null. `pmod(...)` accepts two numeric expressions, preserves their common
+  numeric type, and propagates operand nullability.
+- `bin(...)` accepts Integer/Long and returns nullable String; `hex(...)` accepts Integer/Long or Binary and returns
+  nullable String; `unhex(...)` accepts String and returns nullable Binary because malformed input can decode to null.
 - `rand(...)` returns a non-null Double in `[0.0, 1.0)`. It requires an integer `seed` by default; omitting the seed
   requires `reproducible=False`. The seed makes the use auditable but does not promise identical random values across
   repartitioning, retries, Spark versions, or query restarts. Streaming support follows the target-specific coverage

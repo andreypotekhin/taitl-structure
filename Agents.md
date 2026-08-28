@@ -161,8 +161,8 @@ Focus each suggestion on a specific topic, so it may be implemented in parallel 
 Upon completion, move suggestions to /close/archive/suggestions.
 
 ## Task completion
-Ensure the project fully builds with tests ('make build') at the end of each task.
-Resolve any build or test issues revealed before completing the task.
+Ensure the project fully builds with tests ('make build') at the end of each coding task.
+Resolve any build or test issues revealed before completing the coding task.
 
 Suggestion items
 - Upon completion, move suggestion items to close/archive/suggestions.

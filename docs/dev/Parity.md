@@ -66,6 +66,24 @@ spelling is `add_months` rather than `add_month`; and the implementation slices 
 status remains target-evidence driven. The implementation sequence is the [PySpark SQL function coverage ExecPlan]
 (planning/P08222601.PySpark-SQL-function-coverage.plan.md).
 
+## Docker Live Evidence Checkpoint
+
+The repository Compose stack under `infra/compose/` was rerun on 2026-08-27. These results are runtime evidence for the
+listed slices only; a passing infrastructure lane does not promote an unrelated family or clear a design gate.
+
+| Backend | Collected | Passed | Skipped | Failed | Evidence boundary |
+| --- | ---: | ---: | ---: | ---: | --- |
+| `pyspark35` | 65 | 53 | 6 | 6 | Full integration/concept selection; foreachBatch restart, stream/static restart, stateless streaming, and Sedona geometry passed. |
+| `pyspark40` | 65 | 56 | 3 | 6 | Full integration/concept selection; the same admitted ordinary-runtime slices passed. |
+| `spark-connect35` | 24 | 15 | 9 | 0 | Focused Connect boundary/UDF, v7 generator/parsing, v9 geometry, and selected concept parity tests. Search and classic-only restart/state tests were excluded or skipped. |
+| `spark-connect40` | 24 | 18 | 6 | 0 | The same focused Connect slice on the 4.0 target. |
+
+The six ordinary failures are shared generated-result contract failures in four Search cases, the generated security
+fixture, and the generated chained event-time window. They raise `TypeError: Generated transform executor must return a
+stage-aware TransformResult when composed stage outputs are enabled`; therefore they are recorded as current open
+implementation evidence, not as support. Exact Search vector retrieval, Search generated/online comparison, full Connect
+Search proving, and broader streaming state/lifecycle claims remain gated or deferred.
+
 ## SQL Function Family Register
 
 The table records the current family-level gaps. “Covered” includes a typed equivalent where the Structure API is
@@ -75,10 +93,10 @@ intentionally more explicit; “open” names the remaining PySpark functions or
 | --- | --- | --- | --- |
 | Normal, conditional, predicate, and sort | partial | `literal`, `when`, null-control helpers, `isnull`, `isnotnull`, `isnan` | `equal_null`, function-form `like`/`ilike`/`regexp`/`regexp_like`/`rlike`, and null-ordering sort helpers. `expr` and `call_function` remain unsupported. |
 | String | partial | `ascii`, `char_length`, `lower`, `upper`, trim variants, `lpad`, `rpad`, `left`, `right`, `substring`, `substring_index`, `split`, regex extraction/replacement, `concat_ws`, `length`, `locate`, `octet_length`, `repeat`, `replace`, `initcap`, `reverse`, `translate`, `instr`, `levenshtein` | `btrim`, `char`, `contains`, `elt`, `find_in_set`, formatting, `mask`, `overlay`, `position`, `printf`, regex-count/instruction/substr variants, `sentences`, `soundex`, `split_part`, and UTF-8 helpers. |
-| Numeric and mathematical | partial | `abs`, `acos`, `asin`, `atan`, `atan2`, `bround`, `ceil`, `cos`, `degrees`, `exp`, `floor`, `hypot`, `ln`, `log`, `log10`, `pow`, `radians`, `round`, `signum`, `sin`, `sqrt`, `tan` | `acosh`, `asinh`, `atanh`, `bin`, `cbrt`, `conv`, `cosh`, `cot`, `csc`, `e`, `expm1`, `factorial`, `greatest`, `hex`, `least`, `log1p`, `log2`, `pi`, `pmod`, `rint`, `sec`, `sign`, `sinh`, `tanh`, `unhex`, and `width_bucket`. |
+| Numeric and mathematical | partial | `abs`, `acos`, `acosh`, `asin`, `asinh`, `atan`, `atan2`, `atanh`, `bin`, `bround`, `cbrt`, `ceil`, `cos`, `cosh`, `cot`, `csc`, `degrees`, `e`, `exp`, `expm1`, `factorial`, `floor`, `greatest`, `hex`, `hypot`, `least`, `ln`, `log`, `log10`, `log1p`, `log2`, `pmod`, `pi`, `pow`, `radians`, `rint`, `round`, `sec`, `sign`, `signum`, `sin`, `sinh`, `sqrt`, `tan`, `tanh`, `unhex` | `conv` and `width_bucket`. |
 | Random and seeded | partial | `rand` with explicit seed/reproducibility policy | `randn`, `uniform`, `randstr`, and other random helpers need separate contracts; streaming support is target-evidence driven. |
 | Date and timestamp | partial | `add_months`, `date_add`, `date_sub`, `datediff`, `date_trunc`, `trunc`, calendar extraction including `hour`, `next_day`, and date/timestamp parsing | timezone/current-time functions, date formatting/parts, day/week/name helpers, Unix/UTC conversion, `last_day`, `make_*` constructors, `months_between`, quarter, timestamp arithmetic/construction, `try_*` temporal helpers, and week helpers. |
-| Bitwise and binary | partial | typed Column bitwise methods, `base64`, `unbase64`, `encode`, `decode` | SQL bitwise functions, shifts, `to_binary`, `try_to_binary`, `hex`/`unhex`, and UTF-8/binary validation helpers. |
+| Bitwise and binary | partial | typed Column bitwise methods, `base64`, `unbase64`, `encode`, `decode`, `hex`, `unhex` | SQL bitwise functions, shifts, `to_binary`, `try_to_binary`, and UTF-8/binary validation helpers. |
 | Hash | partial | `hash`, `xxhash64`, `md5`, `sha1`, `sha2` | `crc32` and remaining baseline aliases need a parity decision; hashes remain non-identity and non-password-storage primitives. |
 | JSON and CSV | partial | Schema-carrying `from_json`, `to_json`, `from_csv`, `to_csv` | `schema_of_csv`, `schema_of_json`, `get_json_object`, `json_array_length`, `json_object_keys`, and `json_tuple`. |
 | Arrays and higher-order functions | partial | Typed array construction, lookup, mutation, set, sort, `sequence`, `slice`, and symbolic callbacks through `arr_*`/`array_*` | `cardinality`, `concat`, `array_join`, `array_max`, `array_min`, `array_size`, `arrays_overlap`, `arrays_zip`, `get`, `shuffle`, `sort_array`, and `reduce`; callback nullability and random shuffle need evidence. |

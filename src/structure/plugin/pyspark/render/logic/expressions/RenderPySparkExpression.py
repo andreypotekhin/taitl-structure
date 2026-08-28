@@ -676,12 +676,26 @@ class RenderPySparkExpression:
             )
         if function == "abs":
             return f"F.abs({args[0]})"
-        if function in {"acos", "asin", "atan", "cos", "degrees", "ln", "log10", "radians", "sin", "tan"}:
+        if function in {"bin", "hex", "unhex"}:
+            return f"F.{function}({args[0]})"
+        if function in {"e", "pi"}:
+            return f"F.{function}()"
+        if function in {
+            "acos", "acosh", "asin", "asinh", "atan", "atanh", "cbrt", "cos", "cosh", "cot", "csc", "degrees",
+            "expm1", "ln", "log10", "log1p", "log2", "radians", "rint", "sec", "sign", "sin", "sinh",
+            "tan", "tanh",
+        }:
             return f"F.{function}({args[0]})"
         if function == "hypot":
             return f"F.hypot({args[0]}, {args[1]})"
         if function == "atan2":
             return f"F.atan2({args[0]}, {args[1]})"
+        if function == "factorial":
+            return f"F.factorial({args[0]})"
+        if function == "pmod":
+            return f"F.pmod({args[0]}, {args[1]})"
+        if function in {"greatest", "least"}:
+            return f"F.{function}({', '.join(args)})"
         if function == "rand":
             seed = expression.data.get("seed")
             return "F.rand()" if seed is None else f"F.rand(seed={seed})"

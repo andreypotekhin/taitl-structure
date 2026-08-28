@@ -49,8 +49,11 @@ is never promoted to support.
 
 These environment or target constraints block a stronger support claim without changing the design boundary:
 
-- PySpark 3.5/4.0 live streaming and Spark Connect lanes remain unavailable when the Docker engine cannot be reached.
-- Optional Geometry provider evidence is target-gated; the provider is not bundled with the PySpark plugin.
+- The ordinary PySpark 3.5/4.0 Docker lanes now have live evidence for the current integration selection, but the six
+  shared generated-result failures remain open; the focused Spark Connect 3.5/4.0 slices pass only for the selected
+  boundary/parity cases and do not clear full Search evidence.
+- Optional Geometry provider evidence is positive for the pinned Sedona WKT round-trip test in the Docker lanes, but the
+  provider is not bundled with the PySpark plugin and the broader provider surface remains target-gated.
 - `is_valid_variant(...)` has released-profile capability evidence but no positive PySpark 4.2 live lane in this
   workspace.
 - Exact Search vector retrieval and the Search generated/online comparison still need a live target lane.

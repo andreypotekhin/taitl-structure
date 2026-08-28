@@ -192,9 +192,9 @@ Present annotated source as continuous narrative.
 - Instructions
   - Top header: convert to gerund, optionally extend to fuller phrase.
     - Ex: 'Rerank Documents' becomes 'Reranking the Documents'
-  - Low-level headers: drop low-level headers. If that affects clarity, repeat the header as part of intro section paragraph.
-    - Ex: 'Select fallback options' dropped, 'select fallback options' embedded in section paragraph.
-  - Avoid merging code listings, maintain a text sentence in between.
+  - Low-level headers: convert section headings to italicized intent-setting sentence at the beginning of section paragraph.
+    - Ex: 'Select fallback options' heading converted to italicized 'Select fallback options. ' added in front of section paragraph.
+  - Avoid merging code listings - maintain a text sentence in between.
   - Drop import statements.
   - Workflow transform is the main transform in a package - a composed transform that rules other transforms in the package.   
   Usually, the workflow transform is alphabetically the last file in dir (Ex: 'SearchDocuments'). Not all dirs contain the workflow transform. 

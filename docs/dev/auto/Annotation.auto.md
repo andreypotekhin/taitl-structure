@@ -125,8 +125,24 @@ without explaining (e.g. '(from cache batch)' when used first time).
  - Try this: 'The `Browse` step summarizes interaction weights by tenant, customer, session, product, and category.'
  - Instead of: 'The `Score` step joins eligible products to preferences and matching history, then records each personal component and
 the algorithm version used to calculate it.'
- - Try this: 'The `Score` step joins products to preferences and matching history.'
+- Try this: 'The `Score` step joins products to preferences and matching history.'
 - Do not explain the obvious.
+
+### Quality assurance
+
+Before considering an annotated source document complete, verify the following:
+- For a transform with multiple step methods, split the source into one-step sections or coherent step-group
+  sections. Never place the complete method inventory in one code listing merely because the methods share a class.
+- Put a short, business-focused explanation immediately before each step or step-group code listing. Group repetitive
+  grain variants only when the group has one clear purpose; mention the meaningful difference between the variants.
+- Keep the source order and show every step exactly once. Do not omit a step because it is repetitive, and do not
+  duplicate a step in both a group and a later detail section.
+- Put the transform's essential inputs, lanes, and outputs in the initial class listing when they help the reader
+  follow the flow. Do not create a separate `Inputs and outputs` section for them.
+- Do not add generic framing sections such as `Reading the unit`, or boilerplate such as 'The file defines ... Its
+  important executable boundaries are ...'. The introduction and step-group prose must explain the actual transform.
+- Before delivery, compare the headings and code blocks with the source file and confirm that each non-trivial block
+  has an explanation that tells the reader why the code matters.
 
 ### Non-example app annotated source 
 Non-example app annotated source, e.g. annotated source for core packages, 
