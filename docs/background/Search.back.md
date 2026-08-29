@@ -1,8 +1,8 @@
-# Search Example Background
+# Search
 
-The Search example shows how to build transparent search evidence from a caller-owned document corpus. It is a
-collection of typed transformations, not a hosted search product: callers supply documents and query batches, choose
-where artifacts live, serve results, and decide how an application turns evidence into an answer.
+The Search example builds transparent evidence from a caller-owned document corpus. It is a collection of typed
+transformations, not a hosted search product. Callers supply documents and query batches, choose where artifacts live,
+serve results, and decide how an application turns evidence into an answer.
 
 The example deliberately keeps three kinds of evidence separate:
 
@@ -14,12 +14,12 @@ None is a calibrated probability of relevance, and none is silently substituted 
 
 The executable source is the Search example under `examples/search/`, with transforms under
 `examples/search/transforms/`. Those transforms are organized around typed relation boundaries: each relation names
-its identity, grain, snapshot, and failure behavior. This background describes the rationale for those boundaries; it
+its identity, grain, snapshot, and failure behavior. This page describes the rationale for those boundaries; it
 does not introduce a separate search API or a hosted-service promise.
 
-## Search Pipeline At A Glance
+## Search Pipeline
 
-The example is easiest to understand as four separately inspectable flows:
+The example has four separate evidence flows:
 
 ```text
 document text
@@ -452,9 +452,10 @@ document, section, paragraph, and sentence targets, and reduces reciprocal direc
 relations. It is an offline artifact producer; it does not present pure-lexical similarity-search results.
 
 `SearchSimilarity` and its paragraph variant are the similarity-search boundaries. They consume lexical candidates plus
-vector candidates, fuse the lanes with RRF, and publish `IndexedSimilarDocument` or `IndexedSimilarParagraph`. The target
-and query must use the same text grain. Similarity does not imply semantic equivalence, an embedding score, or a calibrated
-probability. It is a bounded, inspectable relationship whose vector lane may be supplied by an exact reference producer
+vector candidates, fuse the lanes with RRF, and publish `IndexedSimilarDocument` or `IndexedSimilarParagraph`. The
+target and query must use the same text grain. Similarity does not imply semantic equivalence,
+an embedding score, or a calibrated probability. It is a bounded, inspectable relationship whose vector lane may be
+supplied by an exact reference producer
 or a caller-owned ANN provider.
 
 Callers may prune common terms through a maximum document-frequency ratio and may apply source, language, access, or

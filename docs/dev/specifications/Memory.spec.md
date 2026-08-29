@@ -108,6 +108,32 @@ four rounds and completed with `rows=0`. Running from the read-only `/workspace`
 directory requirement. Spark Connect 3.5 smoke coverage passed independently, but materialization helpers remain
 unsupported for Connect because no helper-method capability claim has been accepted.
 
+## Search Proving-Case Follow-up
+
+The Search proving failures are a separate instance of the same driver-side lazy-lineage class, but the original attribution
+to `ReduceSimilarityScores` was incorrect: `SearchDocuments` does not include that transform. Its compiled plan contains 91
+steps and 77 published stage outputs after the feedback-option branch rewrite, with several joins and unions over expanded
+indexed relations. The current per-step `PYSPARK-W2701` analysis does not report this cross-step common-ancestor fan-out.
+
+On the PySpark 3.5 Compose image with `-Xmx1g`, the document-reranking proving case first failed after 629.32 seconds at
+`reranked.merge_feedback_options`, while Catalyst analyzed a generated `DataFrame.union`; the stack reached
+`DeduplicateRelations` and reported `OutOfMemoryError: Java heap space`. The semantics-preserving rewrite in
+[`rerank.py`](../../../examples/search/transforms/searching/search_docs/rerank.py) combines global and fallback options in one
+left join, preserving the original global-row and fallback-row rules. Focused local tests passed, and the subsequent live run
+no longer failed at that union. It still failed at the final online/generated parity `collectToPython` after 495.11 seconds,
+with `OutOfMemoryError: Java heap space` (`failed reallocation of scalar replaced objects`).
+
+An experiment that called `persist()` on the offline index inputs without forcing an action did not complete within a
+576-second bounded run. This is consistent with the boundary contract: persistence may improve physical reuse, but it does not
+truncate the logical plan. Increasing the driver heap is likewise only a diagnostic or postponement; the 3 GiB bounded run
+did not produce a proving result.
+
+Decision: retain the feedback-option branch rewrite as a safe **Diminish** optimization, but do not claim that Search proving
+is fixed and do not insert an automatic checkpoint. A reliable end-user restructuring must introduce a true materialization
+boundary before expanded offline artifacts are reused, or redesign the graph around a small stable base relation. A future
+cross-step fan-out diagnostic may improve the warning, but it requires a separate false-positive-controlled design and is not
+part of the completed materialization feature.
+
 ## Design Decisions
 
 ### Explicit helpers are compiler-visible
@@ -170,3 +196,4 @@ The bounded Docker evidence is:
 - Reproducer: [spark_driver_heap_oom.py](../../troubleshooting/memory/spark_driver_heap_oom.py)
 - Implementation plan: [P08232601](../planning/P08232601.PySpark-lineage-materialization-and-diagnostics.plan.md)
 - Diagnostics catalog: [Diagnostics.md](../../Diagnostics.md)
+- Search proving test: [`test_search.py`](../../../tests/integration/pyspark/search/test_search.py)

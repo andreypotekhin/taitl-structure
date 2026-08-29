@@ -1,7 +1,7 @@
 # Testing Helpers
 
 Structure exposes reusable pytest-oriented helpers from `structure.lib.testing`. They are fixture-agnostic and safe to
-import in Spark-free test collection. The governing testing guidance is [Testing](../dev/Testing.md).
+import during Spark-free test collection. See [Testing](../dev/Testing.md) for the governing guidance.
 
 Use these helpers in downstream projects to keep compiler and generated-code assertions terse:
 
@@ -16,7 +16,7 @@ def test_structure_generated_output_is_current(tmp_path):
     assert_generated_snapshot(tmp_path / "generated", generated_files("tests/snapshots/generated"))
 ```
 
-## Test Strategy At A Glance
+## Test Strategy
 
 The helpers cover four different contracts. Use the narrowest one that proves the behavior under test:
 

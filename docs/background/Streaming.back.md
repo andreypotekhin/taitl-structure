@@ -1,12 +1,12 @@
 # Streaming
 
-Structure supports compiler-visible Spark Structured Streaming transformations while leaving streaming lifecycle with
-the application. The application creates streaming and static DataFrames, passes them to an ordinary Structure
-transform, and controls sources, sinks, checkpoints, triggers, output modes, query start/stop, deployment, and recovery.
+Structure supports compiler-visible Spark Structured Streaming transformations while leaving the streaming lifecycle
+with the application. The application creates streaming and static DataFrames, passes them to a Structure transform,
+and controls sources, sinks, checkpoints, triggers, output modes, query start/stop, deployment, and recovery.
 
 The [Streaming reference](../reference/Streaming.ref.md) lists practical declarations and corrections. The
-[Streaming API](../api/Streaming.api.md) lists supported declarations and parity. This background combines runtime
-shape, compatibility analysis, supported operations, deferred features, hooks, validation, and generated-code rules.
+[Streaming API](../api/Streaming.api.md) lists supported declarations and parity. This page combines runtime shape,
+compatibility analysis, supported operations, deferred features, hooks, validation, and generated-code rules.
 The normative sources are [Spark Streaming](../dev/specifications/SparkStreaming.spec.md),
 [Streaming Compatibility](../dev/specifications/StreamingCompatibility.spec.md), and the
 [Spark Streaming design](../dev/design/SparkStreaming.design.md).
@@ -92,7 +92,7 @@ unknown     an opaque operation prevents proof, with no known incompatibility
 An undeclared stream-to-batch boundary follows `stream_to_batch_policy`. A strict policy requires an explicit streaming
 declaration or `allow_stream_to_batch=True`; no allowance suppresses a known incompatible operation.
 
-### Compatibility Policy At A Glance
+### Compatibility Policy
 
 Use this policy matrix to predict whether a streaming finding is silent, advisory, or an error.
 

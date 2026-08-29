@@ -20,7 +20,7 @@ from structure.plugin.pyspark import (
     select_first_qualified,
     unbounded_following,
     unbounded_preceding,
-    union_all,
+    when,
     where,
     window,
     window_max,
@@ -39,8 +39,6 @@ class RerankDocuments(Transform):
     document_popularity = input(DocumentPopularity)
     band_fallbacks = input(BandFallback)
     policy = input(RelevancePolicy)
-    global_options = lane(DocumentFeedbackOption)
-    fallback_options = lane(DocumentFeedbackOption)
     feedback_options = lane(DocumentFeedbackOption)
     query_feedback = lane(QueryDocumentFeedback)
     popularity_feedback = lane(PopularityFeedback)
@@ -49,37 +47,22 @@ class RerankDocuments(Transform):
     ranked_results = lane(DocumentSearchResult)
     results = output(DocumentSearchResult)
 
-    @step(input=[candidates, band_fallbacks, policy], output=fallback_options)
-    def select_fallback_options(
+    @step(input=[candidates, band_fallbacks, policy], output=feedback_options)
+    def select_feedback_options(
         self, candidate: DocumentSearchCandidate, fallback: BandFallback, policy: RelevancePolicy
     ) -> DocumentFeedbackOption:
-        where(candidate.candidate_rank <= self.maximum_candidates, candidate.user_band_id.is_not_null())
-        inner_join(fallback, on=fallback.user_band_id == candidate.user_band_id)
+        left_join(fallback, on=fallback.user_band_id == candidate.user_band_id)
+        where(
+            candidate.candidate_rank <= self.maximum_candidates,
+            candidate.user_band_id.is_null() | fallback.user_band_id.is_not_null(),
+        )
         policy = param_join(policy)
+        is_global = candidate.user_band_id.is_null()
         return DocumentFeedbackOption.project(candidate)(
-            feedback_band_id=fallback.user_band_fallback_id,
-            fallback_ordinal=fallback.ordinal,
+            feedback_band_id=when(is_global, literal(None)).otherwise(fallback.user_band_fallback_id),
+            fallback_ordinal=coalesce(fallback.ordinal, literal(0)),
             minimum_band_impressions=policy.minimum_band_impressions,
         )
-
-    @step(input=[candidates, policy], output=global_options)
-    def select_global_options(
-        self, candidate: DocumentSearchCandidate, policy: RelevancePolicy
-    ) -> DocumentFeedbackOption:
-        where(candidate.candidate_rank <= self.maximum_candidates, candidate.user_band_id.is_null())
-        policy = param_join(policy)
-        return DocumentFeedbackOption.project(candidate)(
-            feedback_band_id=literal(None),
-            fallback_ordinal=0,
-            minimum_band_impressions=policy.minimum_band_impressions,
-        )
-
-    @step(input=[fallback_options, global_options], output=feedback_options)
-    def merge_feedback_options(
-        self, fallback_option: DocumentFeedbackOption, global_option: DocumentFeedbackOption
-    ) -> DocumentFeedbackOption:
-        merged = union_all(global_option)
-        return DocumentFeedbackOption.project(merged)
 
     @step(input=[feedback_options, query_document_signals], output=query_feedback)
     def select_query_feedback(

@@ -1,10 +1,9 @@
 # CLI
 
-The Structure CLI is the command-line entrypoint for working with Structure projects. It initializes configuration,
-validates Structure source, generates optional PySpark artifacts, verifies checked-in generated output, explains
-compiler understanding, and cleans generated files.
+The Structure CLI initializes configuration, validates source, generates optional PySpark artifacts, checks generated
+output, explains compiler understanding, and cleans generated files.
 
-The CLI is intentionally a compiler surface, not a Spark job runner. `structure check`, `structure compile`, and
+The CLI is a compiler surface, not a Spark job runner. `structure check`, `structure compile`, and
 `structure compile --fail-on-diff` must run without PySpark, Java, Spark startup, a `SparkSession`, or a Spark cluster.
 Direct runtime execution remains available through `StructureSession`, not through the CLI.
 

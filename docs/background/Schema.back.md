@@ -1,18 +1,19 @@
 # Schema
 
-Schemas are Structure's typed row contracts. They drive compiler checks, generated Spark `StructType` values, online
-execution, runtime validation, diagnostics, traceability, generated code, and generated documentation. A schema is a
-declarative contract, not a data class, Python row object, raw PySpark `StructType`, primary-key declaration, or
-uniqueness proof.
+Schemas are Structure's typed row contracts. They drive compiler checks, generated Spark `StructType` values, execution,
+validation, diagnostics, traceability, generated code, and documentation. A schema is a declarative contract, not a
+data class, Python row object, raw PySpark `StructType`, primary-key declaration, or uniqueness proof.
 
-The [Schema reference](../reference/Schema.ref.md) is the end-user operation inventory. This background gathers the
+The [Schema reference](../reference/Schema.ref.md) is the end-user operation inventory. This page gathers the
 semantic, model, inheritance, construction, nullability, validation, and data-quality contracts in reader order. The
 normative source documents are [Schema Semantics](../dev/specifications/SchemaSemantics.spec.md),
 [Schema Declaration Syntax](../dev/specifications/SchemaDeclarationSyntax.spec.md),
-[Schema Model](../dev/specifications/SchemaModel.spec.md), [Schema Inheritance](../dev/specifications/SchemaInheritance.spec.md),
+[Schema Model](../dev/specifications/SchemaModel.spec.md),
+[Schema Inheritance](../dev/specifications/SchemaInheritance.spec.md),
 [Nullability and Type Coercion](../dev/specifications/NullabilityAndTypeCoercion.spec.md), and
 [Data Quality Constraints](../dev/specifications/DataQualityConstraints.spec.md). The design sources are
-[Schema Model](../dev/design/SchemaModel.design.md) and [Data Quality Constraints](../dev/design/DataQualityConstraints.design.md).
+[Schema Model](../dev/design/SchemaModel.design.md) and
+[Data Quality Constraints](../dev/design/DataQualityConstraints.design.md).
 
 ## Semantic Layers and Identity
 

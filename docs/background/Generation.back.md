@@ -1,10 +1,10 @@
 # Generation
 
-Structure generation turns a checked transform plan into deterministic, reviewable PySpark source and generated
-documentation. Discovery, plan validation, artifact identity, and write-if-changed behavior belong to the compiler;
-target-specific lowering and rendering belong to the selected plugin.
+Generation turns a checked transform plan into deterministic, reviewable PySpark source and generated documentation.
+The compiler owns discovery, plan validation, artifact identity, and write-if-changed behavior; the selected plugin
+owns target-specific lowering and rendering.
 
-The [Transform background](Transform.back.md) explains authoring semantics. This background explains source modules,
+The [Transform background](Transform.back.md) explains authoring semantics. This page explains source modules,
 generated Python, generated schemas, runtime support, documentation, provenance, and performance guardrails.
 The normative sources are [PySpark Code Generation](../dev/specifications/PySparkCodeGeneration.spec.md) and the
 [PySpark Code Generator design](../dev/design/PySparkCodeGenerator.design.md).

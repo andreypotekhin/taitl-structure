@@ -8,6 +8,7 @@ code is predictable and failures point to the DSL call that caused them.
 
 from __future__ import annotations
 
+import builtins
 import json
 from dataclasses import dataclass
 from datetime import date, datetime
@@ -36,14 +37,14 @@ from structure.plugin.pyspark.dsl.types import (
 )
 
 __all__ = [
-    "abs", "base64", "bin", "bround", "ceil", "coalesce", "concat_ws", "date_add", "date_sub", "date_trunc", "datediff",
+    "abs", "base64", "bin", "bround", "ceil", "coalesce", "concat_ws", "conv", "date_add", "date_sub", "date_trunc", "datediff",
     "dayofmonth", "event_time_between", "exp", "floor", "from_csv", "from_json", "hash", "hour", "ifnull", "initcap",
     "instr", "isnan", "isnotnull", "isnull", "CsvOptions", "JsonOptions", "length", "levenshtein", "literal", "log",
     "lower", "lpad", "ltrim", "md5",
     "minute", "month", "nanvl", "nullif", "nvl", "nvl2", "pow", "regexp_extract", "regexp_replace", "repeat", "replace", "reverse",
     "round", "rpad", "rtrim", "sha1", "sha2", "second", "signum", "split", "sqrt", "substring", "to_csv", "to_date",
     "to_decimal", "to_json", "to_timestamp", "translate", "trim", "trunc", "unbase64", "decode", "encode", "hex", "unhex", "upper", "ascii", "char_length", "left", "locate", "octet_length", "right", "substring_index",
-    "when", "xxhash64", "year", "zeroifnull", "acos", "acosh", "asin", "asinh", "atan", "atan2", "atanh", "cbrt", "cos", "cosh", "cot", "csc", "degrees", "e", "expm1", "factorial", "greatest", "hypot", "least", "ln", "log10", "log1p", "log2", "pmod", "pi", "radians", "rint", "sec", "sign", "sin", "sinh", "tan", "tanh", "add_months", "next_day", "rand", "is_valid_variant", "is_variant_null", "parse_json",
+    "when", "width_bucket", "xxhash64", "year", "zeroifnull", "acos", "acosh", "asin", "asinh", "atan", "atan2", "atanh", "cbrt", "cos", "cosh", "cot", "csc", "degrees", "e", "expm1", "factorial", "greatest", "hypot", "least", "ln", "log10", "log1p", "log2", "pmod", "pi", "radians", "rint", "sec", "sign", "sin", "sinh", "tan", "tanh", "add_months", "next_day", "rand", "is_valid_variant", "is_variant_null", "parse_json",
     "schema_of_variant", "to_variant_object", "try_parse_json", "try_variant_get", "variant_get", "variant_literal",
     "variant_array_append", "try_variant_array_append", "variant_insert", "try_variant_insert", "variant_set",
     "try_variant_set", "variant_delete",
@@ -1059,6 +1060,20 @@ def bin(value: object) -> Expression:
     )
 
 
+def conv(value: object, *, from_base: int, to_base: int) -> Expression:
+    """Convert a String number between validated literal bases."""
+    argument = _string_argument(value, "conv(...)")
+    _number_base(from_base, "conv(...) from_base")
+    _number_base(to_base, "conv(...) to_base")
+    return Expression(
+        kind="call",
+        type=StringType(),
+        nullable=True,
+        data={"function": "conv", "from_base": from_base, "to_base": to_base},
+        args=(argument,),
+    )
+
+
 def e() -> Expression:
     """Return Euler's number as a non-null Double expression."""
     return _constant_double_call("e")
@@ -1262,6 +1277,22 @@ def unhex(value: object) -> Expression:
     """Decode a hexadecimal String expression into nullable Binary."""
     argument = _string_argument(value, "unhex(...)")
     return Expression(kind="call", type=BinaryType(), nullable=True, data={"function": "unhex"}, args=(argument,))
+
+
+def width_bucket(value: object, minimum: object, maximum: object, *, num_buckets: int) -> Expression:
+    """Return a nullable integer histogram bucket for compatible numeric values."""
+    arguments = tuple(_numeric_argument(item, "width_bucket(...)") for item in (value, minimum, maximum))
+    if any(argument.type is None for argument in arguments):
+        raise AssertionError("numeric argument validation must reject untyped expressions")
+    _positive_integer_literal(num_buckets, "width_bucket(...) num_buckets")
+    _common_numeric_type("width_bucket(...)", tuple(argument.type for argument in arguments if argument.type is not None))
+    return Expression(
+        kind="call",
+        type=IntegerType(),
+        nullable=True,
+        data={"function": "width_bucket", "num_buckets": num_buckets},
+        args=arguments,
+    )
 
 
 def pmod(left: object, right: object) -> Expression:
@@ -1803,6 +1834,16 @@ def _padding_length(value: object, call: str) -> None:
 def _padding_string(value: object, call: str) -> None:
     if not isinstance(value, str) or not value:
         raise TypeError(f"{call} pad must be a non-empty string literal")
+
+
+def _number_base(value: object, parameter: str) -> None:
+    if isinstance(value, bool) or not isinstance(value, int) or not 2 <= builtins.abs(value) <= 36:
+        raise TypeError(f"{parameter} must be an integer literal from -36 through -2 or 2 through 36")
+
+
+def _positive_integer_literal(value: object, parameter: str) -> None:
+    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+        raise TypeError(f"{parameter} must be a positive integer literal")
 
 
 def _weekday_literal(value: object, call: str) -> str:

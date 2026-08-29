@@ -1,11 +1,10 @@
 # Configuration Schema
 
 Structure configuration controls source discovery, generated output, execution mode, target backend, validation,
-traceability, Spark SQL assumptions, and CI behavior. Configuration errors must fail early with structured diagnostics
-and
-allowed values.
+traceability, Spark SQL assumptions, and CI behavior. Invalid configuration fails early with a structured diagnostic
+that names allowed values.
 
-This reference covers configuration files, resolution order, keys, defaults, validation rules, diagnostics, and tests.
+This page covers configuration files, resolution order, keys, defaults, validation rules, diagnostics, and tests.
 The normative sources are [ConfigSchema](../dev/specifications/ConfigSchema.spec.md) and
 [PluginConfiguration](../dev/specifications/PluginConfiguration.spec.md).
 

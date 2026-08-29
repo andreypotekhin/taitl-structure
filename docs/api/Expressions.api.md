@@ -144,6 +144,8 @@ explicit design gate are marked in the details below.
 | `greatest(...)`, `least(...)` | `greatest`, `least` | `greatest(o.left, o.right)` |
 | `pmod(...)` | `pmod` | `pmod(o.value, 7)` |
 | `bin(...)`, `hex(...)`, `unhex(...)` | `bin`, `hex`, `unhex` | `hex(o.id)`; `unhex(o.value)` |
+| `conv(...)` | `conv` | `conv(o.digits, from_base=2, to_base=16)` |
+| `width_bucket(...)` | `width_bucket` | `width_bucket(o.value, 0, 100, num_buckets=10)` |
 | `signum(...)` | `signum` | `signum(o.total)` |
 | `asin(...)`, `atan(...)`, `atan2(...)` | `asin`, `atan`, `atan2` | `atan2(o.y, o.x)` |
 | `cos(...)`, `sin(...)`, `tan(...)` | `cos`, `sin`, `tan` | `sin(o.angle)` |
@@ -208,6 +210,9 @@ explicit design gate are marked in the details below.
   numeric type, and propagates operand nullability.
 - `bin(...)` accepts Integer/Long and returns nullable String; `hex(...)` accepts Integer/Long or Binary and returns
   nullable String; `unhex(...)` accepts String and returns nullable Binary because malformed input can decode to null.
+- `conv(...)` accepts a String expression and base literals from -36 through -2 or 2 through 36, returning nullable
+  String. `width_bucket(...)` accepts compatible numeric value/minimum/maximum expressions and a positive integer
+  bucket-count literal, returning nullable Integer because invalid runtime ranges produce null.
 - `rand(...)` returns a non-null Double in `[0.0, 1.0)`. It requires an integer `seed` by default; omitting the seed
   requires `reproducible=False`. The seed makes the use auditable but does not promise identical random values across
   repartitioning, retries, Spark versions, or query restarts. Streaming support follows the target-specific coverage

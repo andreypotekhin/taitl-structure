@@ -507,6 +507,7 @@ def test_v4_expression_renderer_renders_hyperbolic_and_extended_numeric_function
 def test_v4_expression_renderer_renders_remaining_admitted_numeric_functions() -> None:
     class Raw(Schema):
         amount = integer(nullable=True)
+        digits = string(nullable=True)
 
     class Published(Schema):
         e_value = double(nullable=False)
@@ -518,6 +519,8 @@ def test_v4_expression_renderer_renders_remaining_admitted_numeric_functions() -
         greatest_value = integer(nullable=True)
         least_value = integer(nullable=True)
         pmod_value = integer(nullable=True)
+        converted_value = string(nullable=True)
+        bucket_value = integer(nullable=True)
 
     @transform
     class Publish(Transform):
@@ -535,6 +538,8 @@ def test_v4_expression_renderer_renders_remaining_admitted_numeric_functions() -
                 greatest_value=greatest(row.amount, 2),
                 least_value=least(row.amount, 2),
                 pmod_value=pmod(row.amount, 2),
+                converted_value=conv(row.digits, from_base=2, to_base=16),
+                bucket_value=width_bucket(row.amount, 0, 100, num_buckets=10),
             )
 
     recipe = _recipe(Publish)
@@ -551,6 +556,8 @@ def test_v4_expression_renderer_renders_remaining_admitted_numeric_functions() -
         "greatest_value": 'F.greatest(F.col("orders.amount"), F.lit(2))',
         "least_value": 'F.least(F.col("orders.amount"), F.lit(2))',
         "pmod_value": 'F.pmod(F.col("orders.amount"), F.lit(2))',
+        "converted_value": 'F.conv(F.col("orders.digits"), 2, 16)',
+        "bucket_value": 'F.width_bucket(F.col("orders.amount"), F.lit(0), F.lit(100), 10)',
     }
     for field, expected_render in expected.items():
         assert render(projection[field], scope_aliases={"rows": "orders"}) == expected_render

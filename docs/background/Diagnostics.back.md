@@ -1,10 +1,10 @@
 # Diagnostics
 
-Structure diagnostics are the stable error and warning contract for configuration, discovery, schemas, symbolic
-execution, IR validation, joins, hooks, backend capability checks, streaming compatibility, generated-code drift, CLI
+Structure diagnostics define the stable error and warning contract for configuration, discovery, schemas, symbolic
+execution, IR validation, joins, hooks, backend capabilities, streaming compatibility, generated-code drift, CLI
 behavior, and runtime execution.
 
-Diagnostics must explain what failed, why it matters, and how to fix it. They are also stable enough for tests, CI
+Each diagnostic explains what failed, why it matters, and how to fix it. Codes and fields are stable for tests, CI
 annotations, IDEs, troubleshooting guides, and documentation links.
 
 The normative sources are [Diagnostics](../dev/specifications/Diagnostics.spec.md) and the
@@ -26,7 +26,7 @@ This reference covers:
 - renderer responsibilities.
 
 Feature references still own the domain meaning of their diagnostics. For example,
-[Join](Join.back.md) owns which join shapes are invalid. This document owns the code, lifecycle, and
+[Join](Join.back.md) owns which join shapes are invalid. This page owns the code, lifecycle, and
 documentation contract that makes that join diagnostic stable.
 
 

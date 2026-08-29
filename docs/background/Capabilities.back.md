@@ -1,12 +1,11 @@
 # Capabilities
 
-Capabilities describe what a configured execution target can run or generate from Structure's checked transform plan.
-They keep backend-specific rules in the target boundary while the compiler, discovery system, symbolic execution, and
-generic IR remain backend-neutral.
+Capabilities tell whether a configured target can run or generate a checked Structure transform plan. Backend-specific
+rules stay at the target boundary while discovery, symbolic execution, and generic IR remain backend-neutral.
 
-This document combines the capability interface, compatibility policy, target variants, and alternative-backend
-extension boundary. It starts with the decision model, then explains configuration and PySpark support, and ends with
-the requirements for a future backend. The normative sources are the [Backend Capabilities
+This page covers the capability interface, compatibility policy, target variants, and alternative-backend extension
+boundary. It explains the decision model, configuration, PySpark support, and requirements for a future backend. The
+normative sources are the [Backend Capabilities
 specification](../dev/specifications/BackendCapabilities.spec.md),
 [Alternative Backends](../dev/specifications/AlternativeBackends.spec.md), [Compatibility
 Policy](../dev/specifications/CompatibilityPolicy.spec.md),

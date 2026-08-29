@@ -1,13 +1,12 @@
 # Transform
 
 Transforms are Structure's compiler-visible units of DataFrame work. A transform declares named schema inputs and
-outputs, expresses rowset operations in ordinary Python, and can run directly or produce generated PySpark. The same
-checked transform meaning feeds execution, generation, diagnostics, explain output, traceability, and streaming
-compatibility analysis.
+outputs, expresses rowset operations in ordinary Python, and can run directly or produce generated PySpark. One checked
+meaning feeds execution, generation, diagnostics, explain output, traceability, and streaming compatibility analysis.
 
-The [Transforms API](../api/Transforms.api.md) and the related API tables provide the concise callable inventory. This
-background gathers the authoring, composition, and compiler-visible rules in the order a reader needs to understand a
-transform: declaration, invocation, operations, reuse, and compilation boundaries.
+The [Transforms API](../api/Transforms.api.md) and related API tables provide the callable inventory. This page gathers
+authoring, composition, and compiler-visible rules in reader order: declaration, invocation, operations, reuse, and
+compilation boundaries.
 The normative sources are [DSL](../dev/specifications/DSL.spec.md),
 [Typed Relation Operations](../dev/specifications/TypedRelationOperations.spec.md),
 [Hook Semantics](../dev/specifications/HookSemantics.spec.md), and
@@ -301,18 +300,20 @@ class OrderPipeline(Transform):
     outputs = output(name=enriched.enriched)
 ```
 
-The compatibility `stage(...)` wrapper remains supported. Ordinary class assignments that are not transform invocations or
-declared output mappings remain ordinary Python values and do not become pipeline stages.
+The compatibility `stage(...)` wrapper remains supported. Ordinary class assignments that are not transform invocations
+or declared output mappings remain ordinary Python values and do not become pipeline stages.
 
 
 ## Composition Graph Details
 
 Class-field assignments whose values are transform invocations may form a dependency graph, while ordinary assignments
-remain ordinary Python values. Existing explicit stage declarations remain supported. A wrapper may collect stage outputs
-in one output mapping, but its public output declaration order remains authoritative. Stage constructor inputs bind to
-wrapper inputs, not runtime DataFrames created during class definition. The compiler flattens a valid graph into one
-generated artifact, prefixes stage methods, retains hook owners, and rejects cycles, unresolved outputs, cross-target
-pipelines, internal-lane bindings, and wrapper-local interleaving that has no explicit contract.
+remain ordinary Python values. Existing explicit stage declarations remain supported.
+A wrapper may collect stage outputs in one output mapping, but its public output declaration order remains
+authoritative.
+Stage constructor inputs bind to wrapper inputs, not runtime DataFrames created during class definition. The compiler
+flattens a valid graph into one generated artifact, prefixes stage methods, and retains hook owners. It rejects cycles,
+unresolved outputs, cross-target pipelines, internal-lane bindings, and wrapper-local interleaving that has no explicit
+contract.
 
 ## Transform Inheritance
 
@@ -358,8 +359,8 @@ class StrictPublishOrders(NormalizeBase):
 Supported parent-call forms are `super().method(row)`, `Base.method(self, row)`, and
 `super(Base, self).method(row)`. The parent retains its hooks, validation boundary, lane writes, and traceability entry.
 Compiled step methods may not call other step methods directly; use source order and lanes, private inline helpers,
-invocation-level `.to(...)`, or ordinary reachable helpers for reusable compiler-visible expressions. `@special(type="expr")`
-is optional when explicit metadata or named rendering is useful.
+invocation-level `.to(...)`, or ordinary reachable helpers for reusable compiler-visible expressions.
+`@special(type="expr")` is optional when explicit metadata or named rendering is useful.
 
 The parent implementation remains a separate plan step when it is scheduled explicitly:
 
@@ -724,8 +725,9 @@ source transform
 ```
 
 The compiler never runs the user's pipeline during symbolic execution. Unsupported source behavior fails at compile time
-with a structured diagnostic identifying the transform, helper, and schema field when available. Structure never silently
-falls back to opaque generated code. Use `@special(type="ignore")` only for code that must remain outside compilation;
+with a structured diagnostic identifying the transform, helper, and schema field when available. Structure never
+silently falls back to opaque generated code. Use `@special(type="ignore")` only for code that must remain outside
+compilation;
 calling it from compiled logic remains an error. Use `@special(type="udf")` for intentional scalar Python execution or
 an explicit hook for arbitrary DataFrame logic.
 

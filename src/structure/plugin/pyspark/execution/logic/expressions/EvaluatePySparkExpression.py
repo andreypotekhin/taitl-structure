@@ -866,6 +866,8 @@ class EvaluatePySparkExpression:
             return functions.abs(args[0])
         if function in {"bin", "hex", "unhex"}:
             return getattr(functions, function)(args[0])
+        if function == "conv":
+            return functions.conv(args[0], expression.data["from_base"], expression.data["to_base"])
         if function in {"e", "pi"}:
             return getattr(functions, function)()
         if function in {
@@ -884,6 +886,8 @@ class EvaluatePySparkExpression:
             return functions.pmod(args[0], args[1])
         if function in {"greatest", "least"}:
             return getattr(functions, function)(*args)
+        if function == "width_bucket":
+            return functions.width_bucket(args[0], args[1], args[2], expression.data["num_buckets"])
         if function == "rand":
             seed = expression.data.get("seed")
             return functions.rand() if seed is None else functions.rand(seed=seed)

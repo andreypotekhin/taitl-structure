@@ -134,6 +134,26 @@ The variants are as described in 'Notation Variants' section:
 The canonic step-method form omits argument names and the separating colons, but retains each argument's schema
 type. Its return schema retains the schema name and field names while omitting field type annotations.
 
+## Non-step Method Notation
+Non-step method notation describes a typed Python helper that participates in an implementation without being a
+transform boundary, such as a `@special` supplier. It preserves the helper name, argument types, and return type
+without implying that the helper is a step.
+
+### Non-step Method Notation - Single-Argument
+Use the single-argument form for one typed parameter. Preserve ordinary Python type expressions in the return position.
+
+\operatorname{default\_sentence\_spans}(Any) \rightarrow \operatorname{list}\{\operatorname{dict}\{str, object\}\}
+
+### Non-step Method Notation - Multiple-Argument
+Use a vertical argument vector for multiple typed parameters.
+
+\operatorname{helper}\!\begin{pmatrix} X \\ Y \end{pmatrix} \rightarrow Z
+
+### Non-step Method Notation Variants
+- single_argument: one argument type in parentheses, without `\!`.
+- vertical: multiple argument types in a `pmatrix` preceded by `\!`.
+- canonic: omit argument names while retaining argument types and the complete Python return type expression.
+
 ## Step Transform Notation
 Notation for a step transform - a transform with (implicit or explicit) step methods. 
 

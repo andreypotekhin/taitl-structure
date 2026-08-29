@@ -678,6 +678,8 @@ class RenderPySparkExpression:
             return f"F.abs({args[0]})"
         if function in {"bin", "hex", "unhex"}:
             return f"F.{function}({args[0]})"
+        if function == "conv":
+            return f"F.conv({args[0]}, {expression.data['from_base']}, {expression.data['to_base']})"
         if function in {"e", "pi"}:
             return f"F.{function}()"
         if function in {
@@ -696,6 +698,8 @@ class RenderPySparkExpression:
             return f"F.pmod({args[0]}, {args[1]})"
         if function in {"greatest", "least"}:
             return f"F.{function}({', '.join(args)})"
+        if function == "width_bucket":
+            return f"F.width_bucket({args[0]}, {args[1]}, {args[2]}, {expression.data['num_buckets']})"
         if function == "rand":
             seed = expression.data.get("seed")
             return "F.rand()" if seed is None else f"F.rand(seed={seed})"

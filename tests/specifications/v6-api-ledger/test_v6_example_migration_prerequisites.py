@@ -289,13 +289,12 @@ def test_search_document_reranking_is_typed_and_has_no_opaque_hook_boundary() ->
     )
 
     assert traceability.opaque_boundaries == ()
-    assert [operation.kind for operation in _step(plan, "reranked.select_fallback_options").operations] == [
-        "filter",
-        "filter",
+    assert [operation.kind for operation in _step(plan, "reranked.select_feedback_options").operations] == [
         "join",
+        "filter",
+        "filter",
         "join",
     ]
-    assert [operation.kind for operation in _step(plan, "reranked.merge_feedback_options").operations] == ["union_all"]
     assert [operation.kind for operation in _step(plan, "reranked.select_query_feedback").operations] == [
         "join",
         "select_first_qualified",

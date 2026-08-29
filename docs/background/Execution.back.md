@@ -1,11 +1,10 @@
 # Execution
 
-Execution is the default way to run Structure transforms. A user depends on the Structure library, supplies an
-existing Spark session, constructs a transform invocation with input DataFrames, and runs it through a
-`StructureSession`. The user does not need to commit generated PySpark code to their repository.
+Execution runs Structure transforms through a caller-owned Spark session and `StructureSession`. The caller supplies
+input DataFrames and does not need to commit generated PySpark code to the repository.
 
-Generated PySpark remains available for provenance, review, debugging, CI diff checks, and projects that deliberately
-choose generated-code execution.
+Generated PySpark remains available for provenance, review, debugging, CI diff checks, and projects that choose
+generated-code execution.
 
 The normative sources are [Execution](../dev/specifications/Execution.spec.md),
 [Execution Semantic Contract](../dev/specifications/ExecutionSemanticContract.spec.md), and

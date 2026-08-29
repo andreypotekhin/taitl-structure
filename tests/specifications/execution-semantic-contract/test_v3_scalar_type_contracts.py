@@ -535,6 +535,13 @@ def test_remaining_admitted_numeric_helpers_have_typed_contracts() -> None:
     assert isinstance(decoded.type, BinaryType)
     assert decoded.nullable is True
 
+    converted = conv(_expression(types.string(), nullable=True), from_base=2, to_base=16)
+    assert isinstance(converted.type, StringType)
+    assert converted.nullable is True
+    bucket = width_bucket(nullable_decimal, 0, 100, num_buckets=10)
+    assert bucket.type is not None and bucket.type.name == "integer"
+    assert bucket.nullable is True
+
     with pytest.raises(TypeError, match=r"factorial\(\.\.\.\) requires an integer or long"):
         factorial(1.5)
     with pytest.raises(TypeError, match=r"greatest\(\.\.\.\) requires at least two values"):
@@ -547,6 +554,12 @@ def test_remaining_admitted_numeric_helpers_have_typed_contracts() -> None:
         hex("not numeric or binary")
     with pytest.raises(TypeError, match=r"unhex\(\.\.\.\) requires a String Structure expression"):
         unhex(1)
+    with pytest.raises(TypeError, match=r"conv\(\.\.\.\) requires a String Structure expression"):
+        conv(101, from_base=2, to_base=10)
+    with pytest.raises(TypeError, match=r"from_base must be an integer literal"):
+        conv("101", from_base=1, to_base=10)
+    with pytest.raises(TypeError, match=r"width_bucket\(\.\.\.\) num_buckets must be a positive integer literal"):
+        width_bucket(1, 0, 10, num_buckets=0)
 
 
 def test_atan2_requires_two_numeric_operands() -> None:

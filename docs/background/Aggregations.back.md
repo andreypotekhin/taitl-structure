@@ -1,15 +1,15 @@
 # Aggregations
 
-Advanced analytical operations are the broader aggregation, window, and collection-helper features that let Structure
-cover multi-level summaries, explicit window frames, and richer array/map logic while keeping the work visible to Spark.
+Advanced analytical operations cover grouped aggregates, windows, and collection helpers. They support multi-level
+summaries, explicit window frames, and array/map logic while keeping the work visible to Spark.
 
 See the exhaustive [aggregations](../api/Aggregations.api.md), [windows](../api/Windows.api.md), and
 [collections](../api/Collections.api.md) API tables for supported names, parity, and examples.
 
 The governing sources are the
 [Advanced Analytical Operations specification](../dev/specifications/AdvancedAnalyticalOperations.spec.md) and
-[design](../dev/design/AdvancedAnalyticalOperations.design.md). This background follows the implemented, tested contract and
-labels genuinely deferred behavior below.
+[design](../dev/design/AdvancedAnalyticalOperations.design.md). This page follows the implemented, tested contract
+and labels deferred behavior below.
 
 The analytical surface supports common grouped aggregates, custom grouping sets, ranking, lag/lead, rolling row
 metrics, deterministic latest/earliest selection, exact/subset duplicate removal, and basic array/map callbacks. This

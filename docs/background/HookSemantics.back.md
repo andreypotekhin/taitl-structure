@@ -1,16 +1,15 @@
 # Hook Semantics
 
-The normative source is [Hook Semantics](../dev/specifications/HookSemantics.spec.md). Composed hook ownership is defined by
-the [Composed Hook Ownership design](../dev/design/ComposedHookOwnership.design.md).
+The normative source is [Hook Semantics](../dev/specifications/HookSemantics.spec.md). Composed hook ownership is
+defined by the [Composed Hook Ownership design](../dev/design/ComposedHookOwnership.design.md).
 
-Hooks are Structure's explicit runtime escape hatch. A hook is a method decorated with `@raw`; it lets a developer run
-arbitrary backend DataFrame logic at a precise point in the transform class without pretending the hook body is
-compiler-visible.
+Hooks are Structure's explicit runtime escape hatch. A method decorated with `@raw` runs arbitrary backend DataFrame
+logic at a declared point in the transform without making the hook body compiler-visible.
 
-This reference covers hook decorator behavior, signatures, source ordering, input access, schema handling,
+This page covers hook decorator behavior, signatures, source ordering, input access, schema handling,
 streaming-safety metadata, generated and online invocation, diagnostics, and tests.
 
-## Hook Lifecycle At A Glance
+## Hook Lifecycle
 
 A hook crosses the compiler/runtime boundary at a declared lane position:
 
@@ -311,8 +310,9 @@ pipeline invocation; hooks from separate stages never share an instance. `embed_
 under a deterministic stage/owner-qualified name, and is all-or-error for the composed artifact. Embedding changes
 packaging, not hook order, bindings, validation, traceability, or streaming classification.
 
-Composition follows invocation-level `.to(...)` order or dependency order induced by graph output references. Independent branches
-retain local hook order but promise no order between branches until a later stage consumes both. Internal lanes remain
+Composition follows invocation-level `.to(...)` order or dependency order induced by graph output references.
+Independent branches retain local hook order but promise no order between branches until a later stage consumes both.
+Internal lanes remain
 internal to their declaring transform and are not composition boundaries.
 
 The shared PySpark execution plan lowers each `HookDef` to a deterministic hook call recipe consumed by execution and

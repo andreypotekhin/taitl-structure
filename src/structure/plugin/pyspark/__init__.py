@@ -144,7 +144,7 @@ AsOf BinaryType CsvOptions DecimalType Join JoinDedupe JoinHint JoinStrategy Jso
 approx_count_distinct approx_percentile arr_aggregate arr_append arr_compact arr_distinct arr_exists arr_filter
 arr_flatten arr_forall arr_position arr_prepend arr_reverse arr_insert arr_remove arr_sort arr_sort_by arr_transform
 arr_zip_with array array_contains array_except array_intersect array_repeat array_union avg as_of_one bool_and bool_or
-collect_list collect_set concat_ws coalesce ceil char_length count count_distinct corr covar cos cosh cot csc cross_join cube current_row date_add
+collect_list collect_set concat_ws coalesce ceil char_length count count_distinct corr covar cos cosh cot csc cross_join cube current_row conv date_add
 date_sub date_trunc dayofmonth datediff decode cume_dist cbrt bin dedupe_earliest_by dedupe_latest_by dense_rank degrees distinct
 drop_duplicates drop_duplicates_within_watermark earliest_by element_at encode event_time_between exactly_one except_all e exp expm1 factorial exists floor from_csv from_json hash hour hypot left
 initcap ifnull instr intersect intersect_all first_value following full_join greatest grouping_id grouping_sets having inner_join isnan
@@ -155,7 +155,7 @@ ntile offset order_by param_join percent_rank percentile pi posexplode_array pos
 sample sec select_first_qualified signum sin sinh slice sha1 sha2 second rand radians rint right_join rollup row_number rowset_join rows_between rolling_avg rolling_max
 rolling_min rolling_sum scan subtract sum stddev sqrt size sequence session_window skewness split translate substring temporal_one next_day
 to_csv to_decimal to_date to_json to_timestamp TimeWindow trim trunc try_element_at unbase64 union_all union_by_name upper unbounded_following unbounded_preceding hex unhex
-variance when year xxhash64 zeroifnull where watermark window window_avg window_bool_and window_bool_or rpad repeat replace right sign tan tanh
+variance when width_bucket year xxhash64 zeroifnull where watermark window window_avg window_bool_and window_bool_or rpad repeat replace right sign tan tanh
 window_time
 window_collect_list window_collect_set window_count window_count_distinct window_max window_min window_sum
 window_stddev window_variance is_valid_variant is_variant_null octet_length parse_json schema_of_variant schema_of_variant_agg substring_index
@@ -245,6 +245,7 @@ __all__ = [  # noqa: F405
     "coalesce",
     "ceil",
     "char_length",
+    "conv",
     "cos",
     "cosh",
     "cot",
@@ -459,6 +460,7 @@ __all__ = [  # noqa: F405
     "zeroifnull",
     "where",
     "watermark",
+    "width_bucket",
     "window_time",
     "is_valid_variant",
     "is_variant_null",

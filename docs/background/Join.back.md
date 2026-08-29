@@ -1,7 +1,7 @@
 # Join
 
-Structure joins relate typed row flows while keeping conditions, cardinality, null behavior, aliases, projection, and
-backend capabilities visible to the compiler and Spark optimizer. Most transforms start with rowset helpers:
+Joins relate typed row flows while keeping conditions, cardinality, null behavior, aliases, projection, and backend
+capabilities visible to the compiler and Spark optimizer. Most transforms start with rowset helpers:
 `left_join(...)` for optional enrichment and `inner_join(...)` for required matches. Use `cross_join(...)` for explicit
 candidate or evaluation expansion; the Store rowset fixtures also exercise `right_join(...)` and `full_join(...)`.
 

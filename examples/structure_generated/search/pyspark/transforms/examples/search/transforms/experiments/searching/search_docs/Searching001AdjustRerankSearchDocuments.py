@@ -6520,23 +6520,28 @@ class FuseDocumentsGenerated:
 
 
 class RerankDocumentsGenerated:
-    def _step_reranked_select_fallback_options_84(self, frames):
-        # Step method: reranked.select_fallback_options
-        reranked__fallback_options = frames["fused__candidates"].alias("document_search_candidate")
+    def _step_reranked_select_feedback_options_84(self, frames):
+        # Step method: reranked.select_feedback_options
+        reranked__feedback_options = frames["fused__candidates"].alias("document_search_candidate")
         __structure_streaming_step = (
             frames["fused__candidates"].isStreaming
             or frames["band_fallbacks"].isStreaming
             or frames["policy"].isStreaming
         )
-        reranked__fallback_options = reranked__fallback_options.where(
-            ((F.col("document_search_candidate.candidate_rank") <= F.lit(1000)))
-            & (F.col("document_search_candidate.user_band_id").isNotNull())
-        )
         band_fallbacks_joined = frames["band_fallbacks"].alias("band_fallbacks")
-        reranked__fallback_options = reranked__fallback_options.join(
+        reranked__feedback_options = reranked__feedback_options.join(
             band_fallbacks_joined,
             (F.col("band_fallbacks.user_band_id") == F.col("document_search_candidate.user_band_id")),
-            "inner",
+            "left",
+        )
+        reranked__feedback_options = reranked__feedback_options.where(
+            ((F.col("document_search_candidate.candidate_rank") <= F.lit(1000)))
+            & (
+                (
+                    F.col("document_search_candidate.user_band_id").isNull()
+                    | F.col("band_fallbacks.user_band_id").isNotNull()
+                )
+            )
         )
         policy_2_param_joined = frames["policy"]
         if not __structure_streaming_step:
@@ -6551,123 +6556,34 @@ class RerankDocumentsGenerated:
                 "__structure_exactly_one"
             )
         policy_2_joined = policy_2_param_joined.alias("policy_2")
-        reranked__fallback_options = reranked__fallback_options.crossJoin(policy_2_joined)
-        reranked__fallback_options = reranked__fallback_options.select(
-            F.col("document_search_candidate.search_query_id"),
-            F.col("document_search_candidate.experiment_id"),
-            F.col("document_search_candidate.user_band_id"),
-            F.col("document_search_candidate.band_id"),
-            F.col("document_search_candidate.query"),
-            F.col("document_search_candidate.candidate_rank"),
-            F.col("document_search_candidate.document_id"),
-            F.col("document_search_candidate.title"),
-            F.col("document_search_candidate.url"),
-            F.col("document_search_candidate.score"),
-            F.col("document_search_candidate.retrieval_score"),
-            F.col("document_search_candidate.score_feedback"),
-            F.col("document_search_candidate.score_rank"),
-            F.col("document_search_candidate.score_weight"),
-            F.col("document_search_candidate.feedback_weight"),
-            F.col("document_search_candidate.lexical_rank"),
-            F.col("document_search_candidate.vector_rank"),
-            F.col("document_search_candidate.vector_similarity"),
-            F.col("document_search_candidate.rrf_score"),
-            F.col("document_search_candidate.rrf_k"),
-            F.col("document_search_candidate.vector_backend"),
-            F.col("band_fallbacks.user_band_fallback_id").alias("feedback_band_id"),
-            F.col("band_fallbacks.ordinal").alias("fallback_ordinal"),
-            F.col("policy_2.minimum_band_impressions"),
-        )
-        assert_schema(
-            reranked__fallback_options, DOCUMENT_FEEDBACK_OPTION_SCHEMA, name="DocumentFeedbackOption", mode="strict"
-        )
-        return {
-            "reranked__fallback_options": reranked__fallback_options,
-        }
-
-    def _step_reranked_select_global_options_85(self, frames):
-        # Step method: reranked.select_global_options
-        reranked__global_options = frames["fused__candidates"].alias("document_search_candidate")
-        __structure_streaming_step = frames["fused__candidates"].isStreaming or frames["policy"].isStreaming
-        reranked__global_options = reranked__global_options.where(
-            ((F.col("document_search_candidate.candidate_rank") <= F.lit(1000)))
-            & (F.col("document_search_candidate.user_band_id").isNull())
-        )
-        policy_param_joined = frames["policy"]
-        if not __structure_streaming_step:
-            policy_param_joined_count = frames["policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
-            policy_param_joined_count = policy_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            policy_param_joined = policy_param_joined_count.crossJoin(frames["policy"]).drop("__structure_exactly_one")
-        policy_joined = policy_param_joined.alias("policy")
-        reranked__global_options = reranked__global_options.crossJoin(policy_joined)
-        reranked__global_options = reranked__global_options.select(
-            F.col("document_search_candidate.search_query_id"),
-            F.col("document_search_candidate.experiment_id"),
-            F.col("document_search_candidate.user_band_id"),
-            F.col("document_search_candidate.band_id"),
-            F.col("document_search_candidate.query"),
-            F.col("document_search_candidate.candidate_rank"),
-            F.col("document_search_candidate.document_id"),
-            F.col("document_search_candidate.title"),
-            F.col("document_search_candidate.url"),
-            F.col("document_search_candidate.score"),
-            F.col("document_search_candidate.retrieval_score"),
-            F.col("document_search_candidate.score_feedback"),
-            F.col("document_search_candidate.score_rank"),
-            F.col("document_search_candidate.score_weight"),
-            F.col("document_search_candidate.feedback_weight"),
-            F.col("document_search_candidate.lexical_rank"),
-            F.col("document_search_candidate.vector_rank"),
-            F.col("document_search_candidate.vector_similarity"),
-            F.col("document_search_candidate.rrf_score"),
-            F.col("document_search_candidate.rrf_k"),
-            F.col("document_search_candidate.vector_backend"),
-            F.lit(None).cast(T.StringType()).alias("feedback_band_id"),
-            F.lit(0).cast(T.LongType()).alias("fallback_ordinal"),
-            F.col("policy.minimum_band_impressions"),
-        )
-        assert_schema(
-            reranked__global_options, DOCUMENT_FEEDBACK_OPTION_SCHEMA, name="DocumentFeedbackOption", mode="strict"
-        )
-        return {
-            "reranked__global_options": reranked__global_options,
-        }
-
-    def _step_reranked_merge_feedback_options_86(self, frames):
-        # Step method: reranked.merge_feedback_options
-        reranked__feedback_options = frames["reranked__fallback_options"].alias("document_feedback_option")
-        reranked__feedback_options = reranked__feedback_options.union(frames["reranked__global_options"])
-        reranked__feedback_options = reranked__feedback_options.alias("document_feedback_option")
+        reranked__feedback_options = reranked__feedback_options.crossJoin(policy_2_joined)
         reranked__feedback_options = reranked__feedback_options.select(
-            F.col("search_query_id"),
-            F.col("experiment_id"),
-            F.col("user_band_id"),
-            F.col("band_id"),
-            F.col("query"),
-            F.col("candidate_rank"),
-            F.col("document_id"),
-            F.col("title"),
-            F.col("url"),
-            F.col("score"),
-            F.col("retrieval_score"),
-            F.col("score_feedback"),
-            F.col("score_rank"),
-            F.col("score_weight"),
-            F.col("feedback_weight"),
-            F.col("lexical_rank"),
-            F.col("vector_rank"),
-            F.col("vector_similarity"),
-            F.col("rrf_score"),
-            F.col("rrf_k"),
-            F.col("vector_backend"),
-            F.col("feedback_band_id"),
-            F.col("fallback_ordinal"),
-            F.col("minimum_band_impressions"),
+            F.col("document_search_candidate.search_query_id"),
+            F.col("document_search_candidate.experiment_id"),
+            F.col("document_search_candidate.user_band_id"),
+            F.col("document_search_candidate.band_id"),
+            F.col("document_search_candidate.query"),
+            F.col("document_search_candidate.candidate_rank"),
+            F.col("document_search_candidate.document_id"),
+            F.col("document_search_candidate.title"),
+            F.col("document_search_candidate.url"),
+            F.col("document_search_candidate.score"),
+            F.col("document_search_candidate.retrieval_score"),
+            F.col("document_search_candidate.score_feedback"),
+            F.col("document_search_candidate.score_rank"),
+            F.col("document_search_candidate.score_weight"),
+            F.col("document_search_candidate.feedback_weight"),
+            F.col("document_search_candidate.lexical_rank"),
+            F.col("document_search_candidate.vector_rank"),
+            F.col("document_search_candidate.vector_similarity"),
+            F.col("document_search_candidate.rrf_score"),
+            F.col("document_search_candidate.rrf_k"),
+            F.col("document_search_candidate.vector_backend"),
+            F.when(F.col("document_search_candidate.user_band_id").isNull(), F.lit(None))
+            .otherwise(F.col("band_fallbacks.user_band_fallback_id"))
+            .alias("feedback_band_id"),
+            F.coalesce(F.col("band_fallbacks.ordinal"), F.lit(0)).alias("fallback_ordinal"),
+            F.col("policy_2.minimum_band_impressions"),
         )
         assert_schema(
             reranked__feedback_options, DOCUMENT_FEEDBACK_OPTION_SCHEMA, name="DocumentFeedbackOption", mode="strict"
@@ -6676,7 +6592,7 @@ class RerankDocumentsGenerated:
             "reranked__feedback_options": reranked__feedback_options,
         }
 
-    def _step_reranked_select_query_feedback_87(self, frames):
+    def _step_reranked_select_query_feedback_85(self, frames):
         # Step method: reranked.select_query_feedback
         reranked__query_feedback = frames["reranked__feedback_options"].alias("document_feedback_option")
         query_document_signals_joined = frames["query_document_signals"].alias("query_document_signals")
@@ -6814,7 +6730,7 @@ class RerankDocumentsGenerated:
             "reranked__query_feedback": reranked__query_feedback,
         }
 
-    def _step_reranked_select_popularity_feedback_88(self, frames):
+    def _step_reranked_select_popularity_feedback_86(self, frames):
         # Step method: reranked.select_popularity_feedback
         reranked__popularity_feedback = frames["reranked__feedback_options"].alias("document_feedback_option")
         document_popularity_joined = frames["document_popularity"].alias("document_popularity")
@@ -6949,7 +6865,7 @@ class RerankDocumentsGenerated:
             "reranked__popularity_feedback": reranked__popularity_feedback,
         }
 
-    def _step_reranked_normalize_score_90(self, frames):
+    def _step_reranked_normalize_score_88(self, frames):
         # Step method: reranked.normalize_score
         reranked__normalized_candidates = frames["reranked__scored_candidates"].alias("document_search_candidate")
         reranked__normalized_candidates = reranked__normalized_candidates.select(
@@ -7002,7 +6918,7 @@ class RerankDocumentsGenerated:
             "reranked__normalized_candidates": reranked__normalized_candidates,
         }
 
-    def _step_reranked_rank_results_91(self, frames):
+    def _step_reranked_rank_results_89(self, frames):
         # Step method: reranked.rank_results
         reranked__ranked_results = frames["reranked__normalized_candidates"].alias("document_search_candidate")
         reranked__ranked_results = reranked__ranked_results.select(
@@ -7045,7 +6961,7 @@ class RerankDocumentsGenerated:
             "reranked__ranked_results": reranked__ranked_results,
         }
 
-    def _step_reranked_select_results_92(self, frames):
+    def _step_reranked_select_results_90(self, frames):
         # Step method: reranked.select_results
         reranked__results = frames["reranked__ranked_results"].alias("document_search_result")
         reranked__results = reranked__results.where(((F.col("document_search_result.rank") <= F.lit(100))))
@@ -7076,7 +6992,7 @@ class RerankDocumentsGenerated:
 
 
 class Searching001AdjustRerankDocumentsGenerated:
-    def _step_reranked_score_candidates_89(self, frames):
+    def _step_reranked_score_candidates_87(self, frames):
         # Step method: reranked.score_candidates
         reranked__scored_candidates = frames["fused__candidates"].alias("document_search_candidate")
         __structure_streaming_step = (
@@ -7524,15 +7440,13 @@ class Searching001AdjustRerankSearchDocumentsGenerated(
         frames.update(self._step_fused_score_candidates_81(frames))
         frames.update(self._step_fused_rank_candidates_82(frames))
         frames.update(self._step_fused_select_candidates_83(frames))
-        frames.update(self._step_reranked_select_fallback_options_84(frames))
-        frames.update(self._step_reranked_select_global_options_85(frames))
-        frames.update(self._step_reranked_merge_feedback_options_86(frames))
-        frames.update(self._step_reranked_select_query_feedback_87(frames))
-        frames.update(self._step_reranked_select_popularity_feedback_88(frames))
-        frames.update(self._step_reranked_score_candidates_89(frames))
-        frames.update(self._step_reranked_normalize_score_90(frames))
-        frames.update(self._step_reranked_rank_results_91(frames))
-        frames.update(self._step_reranked_select_results_92(frames))
+        frames.update(self._step_reranked_select_feedback_options_84(frames))
+        frames.update(self._step_reranked_select_query_feedback_85(frames))
+        frames.update(self._step_reranked_select_popularity_feedback_86(frames))
+        frames.update(self._step_reranked_score_candidates_87(frames))
+        frames.update(self._step_reranked_normalize_score_88(frames))
+        frames.update(self._step_reranked_rank_results_89(frames))
+        frames.update(self._step_reranked_select_results_90(frames))
 
         # Step method: results
         results = frames["reranked__results"].alias("document_search_result")

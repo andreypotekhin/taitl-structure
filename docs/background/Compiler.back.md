@@ -1,11 +1,11 @@
 # Compiler
 
 The compiler turns compiler-visible Structure source into a checked, backend-neutral representation. Symbolic execution
-captures what a transform means; the intermediate representation records that meaning; validation, capability checks,
-execution, generation, provenance, traceability, and diagnostics consume the same model.
+captures transform meaning; the intermediate representation records it; validation, execution, generation, provenance,
+traceability, and diagnostics consume the same model.
 
-This background combines symbolic execution, intermediate representation, and cross-stage invariants. It is
-implementation oriented; authoring behavior remains in [Transform](Transform.back.md), [Schema](Schema.back.md), and
+This page combines symbolic execution, intermediate representation, and cross-stage invariants. Authoring behavior
+remains in [Transform](Transform.back.md), [Schema](Schema.back.md), and
 [Join](Join.back.md). The normative sources are [Intermediate
 Representation](../dev/specifications/IntermediateRepresentation.spec.md),
 [Symbolic Execution](../dev/specifications/SymbolicExecution.spec.md), [Compileability

@@ -1,9 +1,8 @@
-# Store Example Background
+# Store
 
-The Store example models a multi-tenant retail flow from product facts and recommendation serving through commercial
-demand, fulfillment planning, shipment-backed actuals, and analytics. It is a collection of typed transformations, not
-a hosted commerce platform: callers provide source relations, persistence, stream lifecycle, and the business actions
-taken from the results.
+The Store example models a multi-tenant retail flow from product facts and recommendations through commercial demand,
+fulfillment planning, shipment-backed actuals, and analytics. It is a collection of typed transformations, not a hosted
+commerce platform. Callers provide source relations, persistence, stream lifecycle, and business actions.
 
 The example keeps planned decisions, observed facts, and descriptive analytics separate. A recommendation can shape
 demand before an order exists; an order can become valid demand without being allocated; a plan can be reconciled with a
@@ -11,13 +10,12 @@ later shipment; and an analytic summary can describe those facts without mutatin
 
 The executable source and fixture contract are the Store example under `examples/store/`, with transforms under
 `examples/store/transforms/`. The business boundaries are typed relations whose tenant identity, grain, timestamp,
-and planned-versus-observed state remain explicit. This background explains those boundaries; it does not add a
+and planned-versus-observed state remain explicit. This page explains those boundaries; it does not add a
 production commerce-service contract.
 
-## Store Flow At A Glance
+## Store Flow
 
-The example is easiest to understand as several connected evidence flows. Each flow has a distinct grain and a
-different answer that it is allowed to provide:
+The example has several connected evidence flows. Each flow has a distinct grain and a different answer it can provide:
 
 ```text
 product facts ──> prepared catalog ──> recommendation candidates ──> served products

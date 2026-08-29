@@ -3,7 +3,8 @@ import sys
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from types import ModuleType
+from types import ModuleType, SimpleNamespace
+from typing import cast
 from uuid import uuid4
 
 import pytest
@@ -465,6 +466,38 @@ def test_v1_generated_session_delegates_to_generated_class() -> None:
     finally:
         for name in installed:
             sys.modules.pop(name, None)
+
+
+def test_v1_generated_session_normalizes_generated_stage_result(monkeypatch) -> None:
+    from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
+    from structure.plugin.pyspark.execution.commands.RunGeneratedPySparkTransform import RunGeneratedPySparkTransform
+
+    class GeneratedResult:
+
+        _structure_stage_outputs_enabled = True
+        _structure_stage_names = ("stage",)
+        stages = {"stage": SimpleNamespace(published="stage-df")}
+
+        def as_dict(self):
+            return {"published": "result-df"}
+
+    runner = RunGeneratedPySparkTransform()
+    module = ModuleType("generated")
+    setattr(module, "PublishGenerated", object)
+    monkeypatch.setattr(runner, "_import_module", lambda *args, **kwargs: module)
+    monkeypatch.setattr(runner, "_run", lambda *args, **kwargs: GeneratedResult())
+    plan = cast(PySparkExecutionPlan, SimpleNamespace(
+        transform="Publish",
+        outputs=(SimpleNamespace(name="published", aliases=()),),
+        stage_outputs=(object(),),
+        allow_stage_outputs=True,
+    ))
+
+    result = runner(object(), plan, session=SimpleNamespace())
+
+    assert isinstance(result, TransformResult)
+    assert result.published == "result-df"
+    assert result.stage.published == "stage-df"
 
 
 def test_v1_generated_session_can_import_from_memory_storage() -> None:
