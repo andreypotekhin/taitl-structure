@@ -51,22 +51,25 @@ Step methods:
 - Separate consecutive standalone step method formulas with two consecutive dedicated full lines (\\) rather than
   adjusting line height of the leading formula's final row;
 
-Non-step methods and code preservation:
+Non-step methods:
 - Preserve every Python code listing from the extended document in the Code section.
-- Convert every typed method listing to a formula, including non-step `@special` helpers and typed `@raw` helpers,
-  using Non-step Method Notation from `Notation.md` when the method is not a transform step.
-- Give every numbered Implementation item exactly one corresponding method formula immediately after its intent and
-  explanation; use Non-step Method Notation for a numbered helper item.
+- Convert every method listing to a formula, including non-step `@special` helpers and typed `@raw` helpers.
+  When the method is not a transform step, use 'Non-step Method Notation' from `Notation.md` .
+
+Convent preservation:
+- In Implementation section, every numbered method group must use Structure formula notation inside `$$ ... $$`.
+  Fenced `text` signatures belong only to `.ext.md` - never carry text notation into a formatted method group.
+- Preserve each intent and explanation content.
+- Preserve input document’s Stage group boundaries and method order.
 
 Transform - standalone (as in 'Resulting transform shape' sections of .form.md docs):
-- Use the canonic transform notation: show transform name and colon, place input vector on the left,
-  the step-method vector in the middle, and the output vector on the right. Omit \\odot.
-- Put exactly one schema type on each input and output vector row; never collapse multiple comma-separated types into one
+- Use canonic transform notation: transform name, colon, input vector on the left, step-method vector in the middle
+  and the output vector on the right. Omit \\odot.
+- Put exactly one schema type on each input and output vector row; do not collapse multiple comma-separated types into one
   row, even when several methods consume or produce the same relation set.
-- Preserve transform name in formula, including workflow stages such as Features;
-  omit a name only in workflow Result formula when the surrounding prose already names it.
+- Preserve transform name in formula, including workflow stages such as Features; omit transform name in workflow Result formula.
 - In the canonic transform shape, the middle method vector contains method names only. Do not place argument types,
-  argument vectors, arrows, return schemas, or full step signatures inside that vector; those belong in the explanatory
+  argument vectors, arrows, return schemas, or full step signatures inside method vector; those belong in the explanatory
   step formulas.
 - Define external stages by source package: a stage is external when its transform class is outside the package tree rooted at
   the main/workflow transform; imports alone do not make a same-package or child-package stage external. For an external
@@ -130,7 +133,7 @@ Additional Rules
   output `pmatrix` with exactly one schema per row. Reject comma-separated return lists, including lists in abstract or
   variant stage formulas.
 - Require every typed `@special` and `@raw` method from the Code section to appear in formula notation. Use
-  Non-step Method Notation for helpers and step-method notation for actual steps; reject any typed method omitted from
+  'Non-step Method Notation' for helpers and 'Step-method notation' for actual steps; reject any typed method omitted from
   the numbered item, its owning transform shape, or its applicable workflow method vector.
 - For every typed step signature in an extended explanatory item, require exactly one corresponding step formula and
   require its method name in the owning standalone transform shape and any composed-transform stage method vector.
