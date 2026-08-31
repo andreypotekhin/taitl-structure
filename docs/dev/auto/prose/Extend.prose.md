@@ -57,6 +57,20 @@ Implementation section - narrative:
   `Solution`, `Builds on`, `Used by`, `Definitions`, `Inputs`, `Outputs`, and `Stages` section. Never rebuild the output
   starting at `## Implementation`.
 
+Implementation preamble:
+- Before the first Stage subsection, method group, or numbered item, write a short continuous preamble that introduces
+  the implementation from general to specific.
+- Start with the workflow's purpose and main data movement, then introduce the core relation/object concepts, and finish
+  with the policy or boundary rationale needed to understand the numbered items. Introduce a concept before its first
+  use; add reusable domain concepts to Definitions when a brief definition will serve the reader elsewhere.
+- Use the same concise style as explanation items: concrete subjects, active verbs, and one main transition or rationale
+  per sentence. Explain why a boundary exists when the numbered item would otherwise leave that purpose unclear.
+- Keep the preamble to the essential context, usually in two or three short paragraphs. Use continuous paragraphs rather
+  than bullets or numbered items, avoid exhaustive stage/method inventories, and leave field-level mechanics to the
+  numbered items and Code section.
+- Do not add document-structure commentary such as “The stage subsections below …”; the headings already provide that
+  orientation.
+
 Content style:
 - Problem section: no need to ground in previous steps. Ground in industry wisdom and project needs.
 - Solution section:
@@ -83,6 +97,10 @@ Code section:
   - Methods and method groups:
     - Identify coherent method groups from the collected source. A group begins with the a short italicized intent
       sentence and explanatory paragraph.
+    - Implementation method groups contain public methods only. Preserve private/helper methods (including names that
+      begin with `_`) in Code listings, but exclude them from numbered Implementation narratives and standalone
+      transform shapes. If a collected group contains only private/helper methods, omit that Implementation group and
+      do not invent replacement prose or consume a global number.
     - Add global number (non-circled) in front of each group.
     - The code must be preserved.
     - Render each collected intent/explanation exactly once in Code. Put it on the numbered group that owns its
@@ -113,16 +131,36 @@ Implementation section - Stage subsections:
 - Name each Stage subsection with its its transform class name and use that name in text notation.
   Derive the names from the source `Stages` inventory and the collected Code classes; never rename a child stage.
 - Treat each Stage subsection as a step-transform narrative, not just as a method inventory. 
-  Partition transform's public methods into groups in source order, following the groupings from collected source. 
-  Code section's method-group boundaries and source order are binding for the matching Stage subsection.
-- The collected source is canonical. Implementation may only change the numbering style and notation syntax;
-  do not split, merge, reorder, or reassign a method to a different group. Use collected source for group’s canonical
-  prose, and Code section to verify method membership and order.
-- Mark each group with a global number (circled), reuse the intent sentence and explanation from the
-  collected-source group
+- Begin every Stage subsection that has prose before its numbered items with one self-contained narrative sentence.
+  Explain the stage's main data transition and responsibility using concrete subjects and active verbs; keep minor
+  field-level mechanics for the numbered method groups and Code section. Do not use generic inventory prose such as
+  “The stage handles …” or document-production commentary.
+
+Step/helper method narrative/method groups:
+- Partition transform's public methods into groups in source order, following the groupings from collected source.
+  Code section's method-group boundaries and source order are binding for the Stage subsection.
+- Mark each group with a global number (circled). Reuse upstream intent sentence and italic formatting when the
+  upstream prose contains italicized intent.
+- Use collected source for group’s canonical group boundaries, intent sentence, and use Code section
+  to verify method membership and order. Do not split, merge, reorder, or reassign a method to a different group.
+- Do not invent an intent sentence when the upstream prose has none.
+- Explanatory prose is the text that immediately follows the intent sentence.
+- Give every group its own explanatory prose, explain data transition and responsibility in prose.
+- Do not blind copy the collected source for group’s explanatory prose - instead, create
+  explanation as part of implementation narrative, based on deep understanding of what the group step does,
+  expressed as a single sentence accessible to a first-time reader.
+- Adjust to narrative style fit for continuous reading by first-time reader.
+  External or conceptual implementation concerns take precedence over minor details (which we show later in Code section).
+- Write one self-contained sentence that explains the most meaningful data transition and why the group performs it.
+  Prefer concrete domain subjects such as scores, lanes, candidates, evidence, feedback, or results, with clear active
+  verbs such as align, combine, receive, check, group, calculate, normalize, or limit.
+- Consider an imperative opening such as “Check …”, “Merge …”, or “Normalize …” when the responsible actor is obvious and
+  the command reads naturally. Otherwise use a subject-led narrative sentence such as “Lexical and vector lanes
+  receive independent ranks …”. Do not force either form, and avoid repetitive subjects such as “The stage …”.
+- Prefer the sentence that makes the responsibility and data transition easiest for a first-time reader, even when a
+  shorter sentence merely lists an operation. Avoid vague commands, method-inventory language, passive constructions
+  when an active alternative is natural, and low-level field or policy details that belong in Code.
 - Put typed method signatures in a text notation block immediately following the explanation. 
-- Do not italicize the explanatory prose that follows the intent sentence. 
-- Do not paraphrase the collected group's intent, or invent a replacement narrative.
 - Use named typed arguments and a return type, for example `tokenize(sentence: MaterializedSentence) -> LexicalOccurrence`. 
 - Do not place explanatory prose before intent sentence, and do not duplicate the intent or explanation as separate numbered items.
 - A method group may contain several methods forming one responsibility, such as stored and streamed candidate
@@ -131,6 +169,8 @@ Implementation section - Stage subsections:
 - Step notation is reserved for step methods. Do not present a step-method signature as if it were a composed transform.
 - Refer to transforms, stages, and steps from the numbered items. Consider joining cohesive notation lines when that
   keeps the correspondence clear, but retain every meaningful step in the stage transform and result notations.
+ 
+Internal vs external stages:
 - Internal stages: 
  - For every internal stage whose collected code includes a transform class, copy its complete public method
   coverage into explanatory groups in the stage subsection. Do not stop at the stage inputs/outputs or its compact
@@ -140,8 +180,12 @@ Implementation section - Stage subsections:
  - Remove the circled reference markers, if any, from stage notation block; the typed individual 
   signatures remain under their explanatory items.
 - External stages:
-  - Keep one stage subsection per actual external stage call, with one short numbered intent and one canonical stage-call
-   notation block
+  - Keep one stage subsection per actual external stage call. When the external stage's source context provides an
+   explanatory sentence, express its source-backed meaning as one self-contained narrative sentence focused on the
+   stage's data transition and responsibility, then pair it with one canonical stage-call notation block. Use active
+   voice naturally, preserve italic formatting only if it is present upstream, and do not force-split a source-backed
+   intent or invent one. When no source-backed explanation exists, emit only the canonical stage-call notation without
+   a number or invented prose.
   - Do not include external stages' typed step methods, step groups, method inventory, or `Resulting transform shape:`.
 
 Result subsection
@@ -154,6 +198,9 @@ Result subsection
   Preserve workflow inputs, stage calls and concrete output schemas in result notation. Use the typed
   workflow format of `Indexing.ext.md`: list `inputs`, child transform assignments, and typed `outputs`. Do not repeat
   stage transform notations in Result section; the parent workflow shape must be distinct.
+  Precede the notation with one self-contained narrative sentence that explains how the workflow combines its stages
+  into the published result. Use the same active, concrete, data-transition style as stage explanations; avoid generic
+  wording such as “The workflow composes …”.
 
 #### Extend operator instructions - General tips
 
@@ -205,11 +252,12 @@ Implementation section - subsections
     - Is a child stage subsection, never a subsection named after the parent/workflow transform. Parent orchestration and
       its stage assignments belong in the `Result` subsection.
     - For internal stages, ends with `Resulting transform shape:` and canonical transform notation.
-      For external stages, contains one numbered intent and one canonical stage-call notation without typed step methods
-      or a `Resulting transform shape:` block.
+      For external stages, contains one canonical stage-call notation without typed step methods or a `Resulting
+      transform shape:` block.
   - Verify each numbered item:
     - Cross-check Implementation item against its corresponding collected-source group.
-    - Verify the same short italicized intent sentence followed by the exact plain-text explanatory prose.
+    - Verify the upstream intent wording and formatting, followed by one concise narrative explanation that identifies
+      the group's data transition and responsibility, uses active voice naturally, and does not copy Code prose verbatim.
     - Reject an Implementation item whose item has no matching collected-source group.
     - Verify every numbered item is followed by its complete individual notation. 
      - A notation block must not begin or end with a continuation line torn from a neighboring item; 
@@ -267,9 +315,11 @@ Stage subsections:
 - Reject a section that copies methods or assignments from a parent or sibling stage, even when the resulting schemas look plausible.
 
 External stages:
-- For every external stage subsection, verify that the subsection names the called class exactly, contains one concise
-  numbered intent and one canonical stage-call notation, and contains no typed step signature, step group, method vector,
-  or `Resulting transform shape:` block. The parent workflow shows the stage assignment in its Result shape.
+- For every external stage subsection, verify that the subsection names the called class exactly and contains one
+  canonical stage-call notation. Preserve one complete numbered sentence when matching stage context exists, including
+  italic formatting only when present upstream; otherwise do not invent prose or a number. In either case, contain no
+  typed step signature, step group, method vector, or `Resulting transform shape:` block. The parent workflow shows the
+  stage assignment in its Result shape.
 
 Stage transforms:
 - If a stage transform is itself a composed transform, use composed transform notation with stage calls.
@@ -282,6 +332,9 @@ Stage transforms:
   both may be present only in addition to the complete grouped step narrative.
 
 Step/helper method narrative:
+- Private/helper methods are Code-only evidence unless the collected source explicitly makes them public API. Do not
+  include them in numbered Implementation groups, method narratives, or standalone transform shapes, and do not invent
+  replacement intent or explanation for their omission.
 - Reject Stage subsection if it includes a method from another stage.
 - Reject a standalone `Step methods:` inventory block or any equivalent dump of signatures that is not attached to
   explanatory items. Every signature must be traceable to exactly one group and its prose explanation.

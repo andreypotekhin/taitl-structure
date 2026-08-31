@@ -50,6 +50,8 @@ Step method:
 Step methods:
 - Separate consecutive standalone step method formulas with two consecutive dedicated full lines (\\) rather than
   adjusting line height of the leading formula's final row;
+- Every method with more than one argument uses vertical step-method notation: `\\operatorname{method}\\!\begin{pmatrix}`
+  with one argument type per row. Horizontal comma-separated argument lists are prohibited in method formulas.
 
 Non-step methods:
 - Preserve every Python code listing from the extended document in the Code section.
@@ -60,7 +62,17 @@ Convent preservation:
 - In Implementation section, every numbered method group must use Structure formula notation inside `$$ ... $$`.
   Fenced `text` signatures belong only to `.ext.md` - never carry text notation into a formatted method group.
 - Preserve each intent and explanation content.
+- Preserve the extended document's Implementation preamble, stage-introduction prose, and italic formatting exactly.
+  Do not add italic markup to plain upstream prose, do not force-break a sentence, and do not invent an italicized
+  intent sentence. The preamble must remain continuous prose that moves from workflow purpose to core concepts, then to
+  boundary or policy rationale; retain its short, essential shape rather than turning it into a list or adding
+  document-structure commentary.
+- Preserve the extended document's external-stage explanations and `Result` prose exactly; these passages follow the
+  same style contract: one self-contained sentence when prose is present, concrete data transition, active voice when
+  natural, and no generic inventory or document-production commentary.
 - Preserve input document’s Stage group boundaries and method order.
+- Private/helper methods remain Code listings and are not numbered Implementation method groups or Implementation
+  formulas unless the source explicitly treats them as public methods.
 
 Transform - standalone (as in 'Resulting transform shape' sections of .form.md docs):
 - Use canonic transform notation: transform name, colon, input vector on the left, step-method vector in the middle
@@ -102,6 +114,9 @@ Additional Rules
 ### Format operator - Quality assurance
 
 - For every `.form.md` output, audit every formula block in the document.
+- Verify the Implementation preamble remains before the first Stage subsection, method group, or numbered item; it must
+  use continuous general-to-specific prose, introduce concepts before use, and contain no list markers or
+  document-structure commentary.
 - Outside fenced code, structured text notation, and display math, require ordinary paragraph and numbered-item
   continuation lines to start at column zero. Reject indentation introduced only by wrapping prose, because Typora
   renders those leading spaces as visible whitespace.
