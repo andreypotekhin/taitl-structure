@@ -2,7 +2,9 @@
 
 ## Shared Prose context
 This chapter operator is governed by the common concepts and conventions in [Prose.md](../Prose.md). Read its
-[Definitions](../Prose.md#definitions), text-process model, and shared authoring guidance before applying this file.
+text-process model, and shared authoring guidance before applying this file.
+Definitions: [Definitions](Definitions.prose.md),
+Styles: [Implementation narrative style](Implementation.style.md)
 
 ## Extend
 Present extended continuous narrative based on draft, background and collected documents.
@@ -32,23 +34,35 @@ Extend draft (.draft.md), background (.back.md), plan (plan.md) and collected (.
  - Insert contents of background and collected docs as described below.
 - Audience: technically confident reader may not be familiar with industry specifics, field terminology or what comprises the target system.
 - Do not modify draft, background and collected docs (other than an update from source/annotated, if needed). We only produce the new output doc.
+- A Draft may contain a Design section for source planning. Use its requirements to understand the draft when needed, but
+  do not emit or proliferate a Design section in the extended document; keep design-specific detail in Implementation.
 
 #### Extending Draft inputs with Background inputs
+
+Problem section:
+- Preserve a concise general-to-specific narrative that introduces the central concepts before stating the topic's
+  specific tension or constraint.
+- Enrich the problem only when the background adds essential reader context; do not turn it into a problem inventory or
+  implementation walkthrough.
+- Also consider less-technical parts from 'How it works'/'Implementation' to go to the main section
+- Use casual language, prioritize thoughtful explanation/intent over prescription/direction, gradually build understanding.
+- Merge-in Solution section from draft doc if not already covered.
 
 Solution section:
 - Preserve the draft's substantive Solution narrative and enrich it with the background document where useful.
 - Treat Solution as the conceptual center of the extended document, rather than as a short summary of Background.
+- Preserve the draft's concise general-to-specific progression. Enrich a concept or tradeoff when the background adds
+  essential reader context, but do not expand the section into a component inventory or implementation walkthrough.
 - Make Solution content available for first-time reader: more conceptual, easier on technical details (ok to mention code components).
 - Include textbook-grade explanations as needed.
 - Technical details go to other sections, e.g. Implementation
-- Also consider less-technical parts from 'How it works'/'Implementation' to go to the main section
-- Use casual language, prioritize thoughtful explanation/intent over prescription/direction, gradually build understanding.
-- Merge-in Solution section from draft doc if not already covered.
 
 Stages section:
 - Transfer as is from input doc, apply formatting as described below.
 
 Implementation section - narrative:
+- Apply [Implementation.style.md](Implementation.style.md) to the narrative body, preamble, stage introductions,
+  explanatory items, and external-stage explanations.
 - 'How it works' section of the background doc gets extended with 'Implementation' section from the draft doc
 - For 'How it works' section:
   - Drop implementation direction content such as discussion of invalid inputs, 'should'/'must' paragraphs
@@ -58,18 +72,8 @@ Implementation section - narrative:
   starting at `## Implementation`.
 
 Implementation preamble:
-- Before the first Stage subsection, method group, or numbered item, write a short continuous preamble that introduces
-  the implementation from general to specific.
-- Start with the workflow's purpose and main data movement, then introduce the core relation/object concepts, and finish
-  with the policy or boundary rationale needed to understand the numbered items. Introduce a concept before its first
-  use; add reusable domain concepts to Definitions when a brief definition will serve the reader elsewhere.
-- Use the same concise style as explanation items: concrete subjects, active verbs, and one main transition or rationale
-  per sentence. Explain why a boundary exists when the numbered item would otherwise leave that purpose unclear.
-- Keep the preamble to the essential context, usually in two or three short paragraphs. Use continuous paragraphs rather
-  than bullets or numbered items, avoid exhaustive stage/method inventories, and leave field-level mechanics to the
-  numbered items and Code section.
-- Do not add document-structure commentary such as “The stage subsections below …”; the headings already provide that
-  orientation.
+- Apply the shared [Implementation narrative style](Implementation.style.md), especially its rules for general-to-specific
+  progression, concise continuous prose, concept introduction, and boundary rationale.
 
 Content style:
 - Problem section: no need to ground in previous steps. Ground in industry wisdom and project needs.
@@ -82,9 +86,8 @@ Content style:
  - 'Builds on', 'Used by' sections list top stages (Chunking, Fields) and top collections (Documents).
  - Notation: Must mention all input/output schemas, transform steps.
 - Implementation section:
- - Body text other than bullet/numbered lists: prioritize thoughtful description/intent/proposal style
-over prescription/direction, gradually build understanding.
- - Make accessible for the first-time reader.
+ - Apply [Implementation.style.md](Implementation.style.md) to body text, stage introductions, and explanatory items.
+ - Make the implementation narrative accessible for the first-time reader.
 
 #### Extending combined content with Collected document inputs
 
@@ -131,10 +134,8 @@ Implementation section - Stage subsections:
 - Name each Stage subsection with its its transform class name and use that name in text notation.
   Derive the names from the source `Stages` inventory and the collected Code classes; never rename a child stage.
 - Treat each Stage subsection as a step-transform narrative, not just as a method inventory. 
-- Begin every Stage subsection that has prose before its numbered items with one self-contained narrative sentence.
-  Explain the stage's main data transition and responsibility using concrete subjects and active verbs; keep minor
-  field-level mechanics for the numbered method groups and Code section. Do not use generic inventory prose such as
-  “The stage handles …” or document-production commentary.
+- Use [Implementation.style.md](Implementation.style.md) for the stage's introductory sentence and explanatory prose;
+  keep minor field-level mechanics for the numbered method groups and Code section.
 
 Step/helper method narrative/method groups:
 - Partition transform's public methods into groups in source order, following the groupings from collected source.
@@ -148,18 +149,7 @@ Step/helper method narrative/method groups:
 - Give every group its own explanatory prose, explain data transition and responsibility in prose.
 - Do not blind copy the collected source for group’s explanatory prose - instead, create
   explanation as part of implementation narrative, based on deep understanding of what the group step does,
-  expressed as a single sentence accessible to a first-time reader.
-- Adjust to narrative style fit for continuous reading by first-time reader.
-  External or conceptual implementation concerns take precedence over minor details (which we show later in Code section).
-- Write one self-contained sentence that explains the most meaningful data transition and why the group performs it.
-  Prefer concrete domain subjects such as scores, lanes, candidates, evidence, feedback, or results, with clear active
-  verbs such as align, combine, receive, check, group, calculate, normalize, or limit.
-- Consider an imperative opening such as “Check …”, “Merge …”, or “Normalize …” when the responsible actor is obvious and
-  the command reads naturally. Otherwise use a subject-led narrative sentence such as “Lexical and vector lanes
-  receive independent ranks …”. Do not force either form, and avoid repetitive subjects such as “The stage …”.
-- Prefer the sentence that makes the responsibility and data transition easiest for a first-time reader, even when a
-  shorter sentence merely lists an operation. Avoid vague commands, method-inventory language, passive constructions
-  when an active alternative is natural, and low-level field or policy details that belong in Code.
+  expressed according to [Implementation.style.md](Implementation.style.md) and accessible to a first-time reader.
 - Put typed method signatures in a text notation block immediately following the explanation. 
 - Use named typed arguments and a return type, for example `tokenize(sentence: MaterializedSentence) -> LexicalOccurrence`. 
 - Do not place explanatory prose before intent sentence, and do not duplicate the intent or explanation as separate numbered items.
@@ -248,7 +238,9 @@ General
 
 Implementation section - subsections
   - Verify each Stage subsection:
-    - Contains all and only that stage transform steps, in order, and that each return/output uses concrete schema classes.
+    - Contains all and only that stage transform's public steps, in order, and that each return/output uses concrete schema
+      classes. Cross-check the class declaration, including trailing output-publishing methods, against the collected
+      method inventory so no public method is lost after the last collected group.
     - Is a child stage subsection, never a subsection named after the parent/workflow transform. Parent orchestration and
       its stage assignments belong in the `Result` subsection.
     - For internal stages, ends with `Resulting transform shape:` and canonical transform notation.
@@ -276,6 +268,9 @@ Implementation section - subsections
 Code section
 - Every collected transform/method section is represented.
 - Code listings order matches the collected source.
+- Cross-check every public step/helper in each Code class against the numbered Implementation groups and formulas,
+  including trailing output-publishing methods; reject any public method that appears in a class listing or transform
+  shape without a corresponding group and notation.
 - Root workflows include all child and external stages.
 - Method groups use the collected input as the sole source of method group breakdown and their intent, explanatory
   prose and and code listings.

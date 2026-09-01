@@ -2,7 +2,8 @@
 
 ## Shared Prose context
 This chapter operator is governed by the common concepts and conventions in [Prose.md](../Prose.md). Read its
-[Definitions](../Prose.md#definitions), text-process model, and shared authoring guidance before applying this file.
+text-process model, and shared authoring guidance before applying this file.
+Definitions: [Definitions](Definitions.prose.md),
 
 ## Collection
 Present annotated source as continuous narrative.
@@ -66,6 +67,10 @@ Present annotated source as continuous narrative.
       - Verify each output has exactly one top-level header, and that its first nonblank line is that header.
       - Verify each workflow output has exactly one parent `Workflow` section before inserted child sections.
       - For transform steps, verify code listing is present in each transform step section.
+      - For every transform class, inventory all public `@step`, `@special`, and `@raw` methods in source order and
+        verify that each method appears exactly once in a collected low-level section. Include trailing methods after
+        the last existing section, especially methods that publish declared outputs. A public method must not disappear
+        merely because a neighboring section contains a private helper.
       - Enumerate every step or helper section heading below each transform or stage heading, including sections containing
         `@step`, `@special`, or `@raw` listings. Verify that each is represented exactly once in the collected output,
         in source order, with the heading removed and its exact title converted to an italicized intent sentence at the

@@ -2,6 +2,11 @@
 
 Maintain annotated sources for certain parts of project code.
 
+## Shared Prose context
+This chapter operator is governed by the common concepts and conventions in [Prose.md](../Prose.md). Read its
+text-process model, and shared authoring guidance before applying this file.
+Definitions: [Definitions](Definitions.prose.md),
+
 ## Scope
 Currently, we only maintain annotated code for these code dirs and their subdirs:
 - examples/search/transforms/chunking
@@ -19,6 +24,7 @@ Currently, we only maintain annotated code for these code dirs and their subdirs
 - examples/search/transforms/vectorization
 - examples/search/transforms/searching/search_docs
 - examples/search/transforms/training
+- examples/search/schemas/scoring
 - examples/store/transforms/catalog
 - examples/store/transforms/personalization
 - examples/store/transforms/recommender
@@ -71,7 +77,8 @@ close/annotated/
           rerank.anno.md
           workflow.anno.md
 ```
-- Of example code, we only currently target transform code. Schema definitions are not listed, just named in transform code.
+- Of example code, target transform code and explicitly scoped schema packages. Other schema definitions are not listed,
+  only named in transform code.
 - Annotated source document structure for a Transform class: 
  - Heading (follows class name), Sections: Intro (no heading), Inputs (no heading), Step sections (follow step method names)
 
@@ -129,8 +136,13 @@ the algorithm version used to calculate it.'
 - Do not explain the obvious.
 
 ### Quality assurance
-
 Before considering an annotated source document complete, verify the following:
+- Recursively inventory every eligible source module under the configured annotation scope and confirm that each source
+  file has one corresponding `.anno.md` document under the established output mapping. Include newly added nested
+  transform packages; do not treat a missing directory or an unlisted module as intentional without an explicit scope rule.
+- For every transform class in those source modules, confirm that its annotation includes the class declaration and all
+  public `@step`, `@special`, and `@raw` methods in source order. Recheck the inventory when a source file moves or a
+  new stage subdirectory is added.
 - For a transform with multiple step methods, split the source into one-step sections or coherent step-group
   sections. Never place the complete method inventory in one code listing merely because the methods share a class.
 - If one Python file defines multiple transform classes, give each class its own class listing and narrative. Apply the

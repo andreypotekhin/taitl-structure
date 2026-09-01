@@ -2,7 +2,9 @@
 
 ## Shared Prose context
 This chapter operator is governed by the common concepts and conventions in [Prose.md](../Prose.md). Read its
-[Definitions](../Prose.md#definitions), text-process model, and shared authoring guidance before applying this file.
+text-process model, and shared authoring guidance before applying this file.
+Definitions: [Definitions](Definitions.prose.md),
+Styles: [Implementation narrative style](Implementation.style.md)
 
 ## Format
 Create formatted documents (.form.md), based on extended documents (.ext.md).
@@ -62,6 +64,10 @@ Convent preservation:
 - In Implementation section, every numbered method group must use Structure formula notation inside `$$ ... $$`.
   Fenced `text` signatures belong only to `.ext.md` - never carry text notation into a formatted method group.
 - Preserve each intent and explanation content.
+- Preserve the extended document's Solution prose and paragraph order exactly; convert display-math delimiters only as
+  required by the formatting rules.
+- Preserve the extended document's Problem prose and paragraph order exactly; apply only the required formatting
+  conversions.
 - Preserve the extended document's Implementation preamble, stage-introduction prose, and italic formatting exactly.
   Do not add italic markup to plain upstream prose, do not force-break a sentence, and do not invent an italicized
   intent sentence. The preamble must remain continuous prose that moves from workflow purpose to core concepts, then to
@@ -122,6 +128,10 @@ Additional Rules
   renders those leading spaces as visible whitespace.
 - Verify every display formula has balanced, properly nested `\\begin{...}`/`\\end{...}` environments. Reject an
   unclosed nested `aligned`, `gathered`, `pmatrix`, or `Bmatrix` environment, including when one is embedded in another.
+- For every transform class, inventory all public `@step`, `@special`, and `@raw` methods in the collected source and
+  verify that each appears exactly once in the corresponding Code section and has a matching Implementation group and
+  formula. Include trailing methods that publish declared outputs; do not drop a method because a neighboring section
+  contains a private helper.
 - Step methods must use the canonic step method notation from `Notation.md`: argument names and separating colons
   are omitted, argument schema types remain, and every returned schema retains its name plus a field-name projection.
   Reject a bare return schema, lone ellipses (\\vdots) return schema, a missing `return_schema_definitions` projection,
