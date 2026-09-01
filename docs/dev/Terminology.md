@@ -666,7 +666,7 @@ shape, and diagnostics for unsupported cases.
 
 ## Related Documents
 
-- [Concepts.md](Concepts.md): concept-test coverage map.
+- [Concepts.testing.md](testing/Concepts.testing.md): concept-test coverage map.
 - [DSL.md](specifications/DSL.spec.md): public DSL contract.
 - [SymbolicExecution.md](specifications/SymbolicExecution.spec.md): symbolic capture contract.
 - [IntermediateRepresentation.md](specifications/IntermediateRepresentation.spec.md): IR shape and invariants.

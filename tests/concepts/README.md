@@ -1,6 +1,6 @@
 # Concept Coverage Map
 
-Concept tests are public-facing end-to-end tests for the project vocabulary in `docs/dev/Concepts.md`.
+Concept tests are public-facing end-to-end tests for the project vocabulary in `docs/dev/testing/Concepts.testing.md`.
 
 Starting coverage is intentionally focused on concepts visible to Structure users:
 

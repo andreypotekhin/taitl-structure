@@ -148,11 +148,11 @@ Directory structure:
 - /tests/specifications/[specification-doc-slug]/ - tests for specifications/ documents
 
 #### Concepts Testing
-We maintain a list of concepts in [Concepts.md](Concepts.md) that we want to be covered with tests.
+We maintain a list of concepts in [Concepts.testing.md](testing/Concepts.testing.md) that we want to be covered with tests.
 Concept tests are end-to-end tests proving correctness around a specific concept, like 'join'
 
 Directory structure:
-- /tests/concepts/ - tests for concepts in project vocabulary (Concepts.md)
+- /tests/concepts/ - tests for concepts in project vocabulary (Concepts.testing.md)
 - /tests/concepts/[concept]/ tests for the concepts that have subcontcepts
 (e.g. join with subconcepts left_join, lookup_join)
 

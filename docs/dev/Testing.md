@@ -165,7 +165,7 @@ support. Record the exact commands, runtime versions, and passed/skipped totals 
 ## Concept Tests
 
 Concept tests live under `tests/concepts`. They are end-to-end, black-box tests for the project vocabulary in
-[Concepts.md](Concepts.md). Their job is to prove that a named concept works through public user-facing surfaces such as
+[Concepts.testing.md](testing/Concepts.testing.md). Their job is to prove that a named concept works through public user-facing surfaces such as
 the DSL, CLI, `StructureSession`, generated packages, runtime diagnostics, and execution/generated-code parity.
 
 Concept tests are also the concept coverage map. One test may cover several concept leaves, but the covered concept
@@ -265,7 +265,7 @@ Use these directories consistently:
 
 - `tests/app/[app]/[subapp]/...`: tests for app implementation code. Keep nesting aligned with the app and subapp
   package path.
-- `tests/concepts/[concept]/...`: end-to-end black-box tests for concepts from [Concepts.md](Concepts.md).
+- `tests/concepts/[concept]/...`: end-to-end black-box tests for concepts from [Concepts.testing.md](testing/Concepts.testing.md).
 - `tests/golden/...`: generated-output golden comparisons for public examples.
 - `tests/differential/...`: comparisons against independently written reference behavior.
 - `tests/metamorphic/...`: relationship-based and property-based behavior tests.

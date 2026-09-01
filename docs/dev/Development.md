@@ -6,7 +6,7 @@
 ## Terminology
 See [Terminology.md](Terminology.md) for project language.
 
-See [Concepts.md](Concepts.md) for the
+See [Concepts.testing.md](testing/Concepts.testing.md) for the
 concept-test coverage map.
 
 ## Architecture
