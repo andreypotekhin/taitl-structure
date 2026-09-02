@@ -3,8 +3,11 @@
 ## Shared Prose context
 This chapter operator is governed by the common concepts and conventions in [Prose.md](../Prose.md). Read its
 text-process model, and shared authoring guidance before applying this file.
-Definitions: [Definitions](Definitions.prose.md),
-Styles: [Implementation narrative style](Implementation.style.md)
+Definitions: [Definitions](Definitions.prose.md)
+Styles: 
+- [Problem and Solution narrative style](Solution.style.md)
+- [Implementation narrative style](Implementation.style.md)
+- [General narrative style](General.style.md)
 
 ## Extend
 Present extended continuous narrative based on draft, background and collected documents.
@@ -24,8 +27,13 @@ Present extended continuous narrative based on draft, background and collected d
 
 ### Extend operator instructions
 Extend draft (.draft.md), background (.back.md), plan (plan.md) and collected (.cnd.md) docs:
-- Draft (close/draft) contains structured chapter (.draft.md) of the future user manual, including a substantive Solution narrative.
-- Extend draft doc with background and collected docs to create an introduction narrative focused on a search engine topic, such as 'chunking'
+- Author Problem, Solution, and Implementation narrative anew from these current inputs and the shared style rules. Do
+  not copy, paraphrase, or use sibling, archived, or variant outputs as narrative sources; preserve source-derived
+  stage, notation, and code coverage as required by this operator.
+- Draft (close/draft) contains a structured chapter (.draft.md) of the future user manual, including a substantive
+  Solution narrative that answers the motivating use-case problem.
+- Extend draft doc with background and collected docs to create an introduction narrative focused on a search-engine use
+  case, such as building a system that retrieves useful passages from documents.
 - Use relevant plan documents (.plan.md) for deep insight into decisions/tradeoffs/inner worsings. Use to extend the narrative without explicit importing parts of plan. Avoid citing/referring the plan docs.
 - Maintain content and structure set by draft doc
  - Make improvements/corrections to draft as needed, but keep it brief/succinct where it is already
@@ -40,22 +48,31 @@ Extend draft (.draft.md), background (.back.md), plan (plan.md) and collected (.
 #### Extending Draft inputs with Background inputs
 
 Problem section:
-- Preserve a concise general-to-specific narrative that introduces the central concepts before stating the topic's
-  specific tension or constraint.
+- Apply [Solution.style.md](Solution.style.md). Ground Problem in the search-engine use case and keep it focused on the
+  user's need, topic-specific difficulty, and consequences; do not import the answer, solution mechanisms, transform
+  responsibilities, or implementation requirements.
+- Preserve a concise general-to-specific narrative that introduces only the concepts needed to make the use-case
+  problem clear, then stop before explaining how the system solves it.
 - Enrich the problem only when the background adds essential reader context; do not turn it into a problem inventory or
   implementation walkthrough.
 - Also consider less-technical parts from 'How it works'/'Implementation' to go to the main section
 - Use casual language, prioritize thoughtful explanation/intent over prescription/direction, gradually build understanding.
-- Merge-in Solution section from draft doc if not already covered.
+- Merge in the draft Solution only as the conceptual answer; do not let its algorithms, policies, transform duties, or
+  implementation requirements leak back into Problem.
 
 Solution section:
-- Preserve the draft's substantive Solution narrative and enrich it with the background document where useful.
-- Treat Solution as the conceptual center of the extended document, rather than as a short summary of Background.
-- Preserve the draft's concise general-to-specific progression. Enrich a concept or tradeoff when the background adds
-  essential reader context, but do not expand the section into a component inventory or implementation walkthrough.
+- Apply [Solution.style.md](Solution.style.md).
+- Preserve the draft's substantive Solution narrative and enrich it with theory and practical search-engine context
+  from the background where useful.
+- Treat Solution as the conceptual answer to the stated use-case problem, rather than as a short summary of Background
+  or a system-design section.
+- Preserve the draft's concise general-to-specific progression from theory and practice to the central abstraction,
+  behavior, and tradeoffs. Do not expand the section into a component inventory, transform walkthrough, or requirements
+  list.
 - Make Solution content available for first-time reader: more conceptual, easier on technical details (ok to mention code components).
 - Include textbook-grade explanations as needed.
-- Technical details go to other sections, e.g. Implementation
+- Describe the answer directly; do not write “The solution is” or refer to the Solution section as a document part.
+- Technical details, algorithm mechanics, policies, and transform responsibilities go to Design or Implementation.
 
 Stages section:
 - Transfer as is from input doc, apply formatting as described below.
@@ -74,10 +91,18 @@ Implementation section - narrative:
 Implementation preamble:
 - Apply the shared [Implementation narrative style](Implementation.style.md), especially its rules for general-to-specific
   progression, concise continuous prose, concept introduction, and boundary rationale.
+- Allow occasional connective words such as “then” or “from there” when they clarify live data movement. Keep the
+  preamble centered on purpose, concepts, and boundary rationale rather than turning it into a step-by-step account.
+- For a composed workflow, identify the actual parent workflow and its actual stage flow in direct, active prose. State
+  what enters the workflow, how the major data moves, and what boundary or policy makes the result reliable.
+- For a standalone transform, identify the input evidence, the transformation it performs, and the observable output it
+  enables. Use the exact transform name and avoid vague references to “the stage” or “the workflow.”
 
 Content style:
-- Problem section: no need to ground in previous steps. Ground in industry wisdom and project needs.
-- Solution section:
+ - Problem section: apply [Solution.style.md](Solution.style.md); ground it in industry wisdom and project needs, and
+   keep proposed behavior and implementation requirements out.
+ - Solution section:
+  - Apply [Solution.style.md](Solution.style.md).
  - Ground in industry wisdom and project needs.
  - Include ample industry background as needed for the topic. Use formulas.
  - Make accessible for the person who gets familiar or refreshes the concepts.
@@ -225,6 +250,8 @@ Avoid:
 - Cut down on starting with negative statements
   - Ex: 'Search needs more than a match/no-match signal. Ranking and field constraints need normalized terms,'
     - Consider refactoring: 'Ranking and field constraints need normalized terms, because'
+- Do not mention numbered items, explanation prose, Code, Format, or other document-production structure in generated
+  Problem, Solution, or Implementation narrative.
 
 #### Extend operator instructions - Quality assurance
 Quality assurance rules
@@ -347,7 +374,7 @@ Resulting transform shape:
 - Verify each stage transform notation block is introduced by `Resulting transform shape:`.
 - For every `Resulting transform shape:` block, verify the exact transform class name, canonical shape structure, and method
   inventory against the owning class. Reject a helper-shaped or stage-call-shaped block, such as `extract: Document ->
-  Document`, in place of `ExtractDocumentFields:` with its typed vectors and complete method signatures.
+  Document`, in place of `Fields:` with its typed vectors and complete method signatures.
 - For every standalone step transform, verify that its text `Resulting transform shape` contains the exact class name
   followed by one complete typed signature per public typed method, including non-step helpers, one signature per line. 
   Reject `methods:` summaries, abbreviated method-name lists, `inputs:`/`outputs:` summary blocks, and any signature not 

@@ -3,8 +3,11 @@
 ## Shared Prose context
 This chapter operator is governed by the common concepts and conventions in [Prose.md](../Prose.md). Read its
 text-process model, and shared authoring guidance before applying this file.
-Definitions: [Definitions](Definitions.prose.md),
-Styles: [Implementation narrative style](Implementation.style.md)
+Definitions: [Definitions](Definitions.prose.md)
+Styles:
+- [Problem and Solution narrative style](Solution.style.md)
+- [Implementation narrative style](Implementation.style.md)
+- [General narrative style](General.style.md)
 
 ## Format
 Create formatted documents (.form.md), based on extended documents (.ext.md).
@@ -60,7 +63,7 @@ Non-step methods:
 - Convert every method listing to a formula, including non-step `@special` helpers and typed `@raw` helpers.
   When the method is not a transform step, use 'Non-step Method Notation' from `Notation.md` .
 
-Convent preservation:
+Content preservation:
 - In Implementation section, every numbered method group must use Structure formula notation inside `$$ ... $$`.
   Fenced `text` signatures belong only to `.ext.md` - never carry text notation into a formatted method group.
 - Preserve each intent and explanation content.
@@ -68,7 +71,10 @@ Convent preservation:
   required by the formatting rules.
 - Preserve the extended document's Problem prose and paragraph order exactly; apply only the required formatting
   conversions.
-- Preserve the extended document's Implementation preamble, stage-introduction prose, and italic formatting exactly.
+- Preserve the meaning and paragraph order.
+- Convert every display formula in Problem or Solution to one balanced `$$ ... $$` block. Never leave `\[`, `\]`, or a
+  lone `$` as visible plain-text LaTeX in a `.form.md` document.
+- Preserve Implementation preamble, stage-introduction prose, and italic formatting exactly.
   Do not add italic markup to plain upstream prose, do not force-break a sentence, and do not invent an italicized
   intent sentence. The preamble must remain continuous prose that moves from workflow purpose to core concepts, then to
   boundary or policy rationale; retain its short, essential shape rather than turning it into a list or adding

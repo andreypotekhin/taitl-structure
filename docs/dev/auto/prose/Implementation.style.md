@@ -17,15 +17,19 @@ coverage, notation, and formatting rules.
 - Distinguish caller-owned, transform-owned, provider-owned, and backend-owned responsibilities.
 - Prefer thoughtful description and intent over prescription, status, checklists, or low-level operator inventories.
 - Use the workflow notation as the source of truth without repeating every notation line mechanically.
-- Keep field-level mechanics and source code in the numbered explanation or Code section. End with the implementation
+- Keep field-level mechanics and source code in the detailed method prose or Code section. End with the implementation
   shape and observable behavior it enables.
 
 ## Preamble
 
-The preamble before the first stage subsection, method group, or numbered item should be short and continuous. Introduce
-the workflow purpose and main data movement first, then the core relation or object concepts, and finish with the policy
-or boundary rationale needed to read the detailed items. Keep it to the essential context, usually two or three short
-paragraphs. Do not use bullets, exhaustive stage or method inventories, or document-structure commentary.
+The preamble before the first stage subsection or method group should be short and continuous. Introduce the workflow
+purpose and main data movement first, then the core relation or object concepts, and finish with the policy or boundary
+rationale that makes the flow reliable. For a composed workflow, name the actual parent transform and its actual stage
+flow; for a standalone transform, name the input evidence, central transformation, and observable output. Occasional
+connective words such as “then” or “from there” may make the movement easier to follow, but do not make progression the
+organizing subject of the whole preamble. Keep it to the essential context, usually one to three short paragraphs. Do
+not use bullets, exhaustive inventories, or references to numbered items, explanation prose, code, formatting, or other
+document structure.
 
 ## Stage and item explanations
 
@@ -43,6 +47,7 @@ paragraphs. Do not use bullets, exhaustive stage or method inventories, or docum
 ## Quality assurance
 
 Verify that every Implementation narrative, preamble, stage introduction, and explanatory item follows the same
-general-to-specific, concrete, active, rationale-aware style. Reject prose that is merely a method inventory, repeats
+general-to-specific, concrete, active, rationale-aware style. Allow light connective cues where they improve readability,
+but do not require a step-by-step progression. Reject prose that is merely a method inventory, repeats
 code mechanics, hides ownership or failure behavior that the reader needs, or adds generic document-production
-commentary.
+commentary. Reject preambles that describe what later document parts contain instead of explaining the live data flow.

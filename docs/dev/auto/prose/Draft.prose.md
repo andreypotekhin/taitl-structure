@@ -3,7 +3,11 @@
 ## Shared Prose context
 This chapter operator is governed by the common concepts and conventions in [Prose.md](../Prose.md). Read its
 text-process model, and shared authoring guidance before applying this file.
-Definitions: [Definitions](Definitions.prose.md),
+Definitions: [Definitions](Definitions.prose.md)
+Styles: 
+- [Problem and Solution narrative style](Solution.style.md) 
+- [Implementation narrative style](Implementation.style.md)
+- [General narrative style](General.style.md)
 
 ## Draft
 
@@ -23,41 +27,49 @@ Definitions: [Definitions](Definitions.prose.md),
 Create a `.draft.md` from the topic background and retain the standard chapter structure:
 Problem, Solution, Builds on, Used by, Definitions, Inputs, Outputs, Stages, Notation, Design, Implementation, and Code.
 
-Keep enumeration-oriented sections concise. Write the Solution section as the substantive chapter narrative:
+Each run must author the Problem, Solution, Design, and Implementation prose anew from the current background and prompt
+rules. Do not copy, paraphrase, or use sibling, archived, or variant outputs as narrative sources. Preserve only the
+required structure, vocabulary, notation coverage, and source-derived code references.
+
+Keep enumeration-oriented sections concise. Write the Solution section as the substantive answer to the use-case problem,
+not as a system-design summary:
 - Use approximately three to five short paragraphs, expanding with topic complexity when a formula or important tradeoff
   needs room rather than enforcing a fixed word count.
-- Begin with general theory or industry context before introducing project-specific names.
+- Begin with the theory and practice of solving the motivating use case before introducing project-specific names.
 - Explain the central abstraction, its purpose, and the important semantic tradeoffs.
 - Define concepts before using them.
 - Progress gradually from the problem's concepts to the solution's meaning and enabled behavior.
 - Include a formula, small model, or monochrome diagram when it materially clarifies the topic.
 - Explain relevant identity, ownership, compatibility, lifecycle, failure, fallback, or concurrency concerns.
-- End by stating what the solution makes possible; keep implementation requirements in Design.
+- End by stating what the approach makes possible; keep architecture, implementation requirements, and mechanics in
+  Design and Implementation.
 - Use thoughtful overview/proposal prose rather than implementation instructions, status reports, or checklists.
 - Do not add internal subsection headings inside Solution.
 - Do not duplicate the detailed stage mechanics, notation, or code that belong in later sections.
-- Do not call Solution a design or describe system architecture, implementation requirements, or stage boundaries there;
-  move those details to Design.
+- Do not call Solution a design or describe system architecture, transform responsibilities, implementation requirements,
+  or stage boundaries there; move those details to Design and Implementation.
 - Use the same concise style as Implementation explanation items: concrete subjects, active verbs, and one main idea or
   transition per paragraph. Avoid exhaustive component inventories, long semicolon chains, and document-structure
   commentary.
 - Preserve the project's terminology and distinguish established behavior from proposed behavior.
 - Keep the remaining sections concise and structurally useful for the Extend operator.
 
-Write the Problem section as a short narrative that moves from the general user or system need to the specific tension
-the topic must resolve. Introduce the topic's central concepts as the narrative narrows, then state the boundary or
-constraint that makes the problem non-trivial. Use concrete subjects, active verbs, and one main idea or transition per
-paragraph; avoid catalog-like lists, implementation detail, and document-structure commentary.
+Write the Problem section according to [Solution.style.md](Solution.style.md). Keep the problem focused on the need,
+central difficulty, and consequences; do not let it contain the answer, transform responsibilities, or implementation
+requirements.
 
-The Solution must be useful to a technically confident reader who understands software but may be unfamiliar with the
-industry topic or this project's vocabulary.
+Write Problem and Solution according to [Solution.style.md](Solution.style.md). The Solution must be useful to a
+technically confident reader who understands software but may be unfamiliar with the industry topic or this project's
+vocabulary.
 
 Draft the remaining sections in the concise, structured style exemplified by `close/draft/search/transforms/indexing/Indexing.draft.md`:
-- `Problem`: describe the industry and project need in one or two focused paragraphs. Ground the problem in the topic itself;
-  state the problem rather than prescribing requirements or implementation; do not refer to earlier text-pipeline steps.
+- `Problem`: describe the industry and project need in one or two focused paragraphs. For Search topics, ground it in
+  building and using a search engine. State the user-facing difficulty and consequences without proposing the answer, naming
+  solution mechanisms, prescribing requirements, or describing implementation.
 - `Solution`: provide the full conceptual narrative described above. Explain how the solution addresses the problem,
-  its central concepts, semantic tradeoffs, and enabled behavior. Do not call it a design or describe architecture,
-  requirements, stage boundaries, or implementation responsibilities.
+  using relevant theory and practical search-engine wisdom. Explain its central concepts, why the approach works, semantic
+  tradeoffs, and enabled behavior. Do not call it a design or describe architecture, transform responsibilities,
+  requirements, stage boundaries, or implementation mechanics; do not announce it with “The solution is.”
 - `Builds on`: list only principal top-level topics that supply the topic's inputs, using canonical topic names such as
   `Chunking` or `Scoring`. Omit schema classes, step methods, internal stage transforms, policy objects, and generic
   prose; leave the section empty when no top-level topic applies.
@@ -77,7 +89,9 @@ Draft the remaining sections in the concise, structured style exemplified by `cl
 - `Implementation`: write a second substantive narrative, more concrete than Solution and less mechanical than Code.
   Apply [Implementation.style.md](Implementation.style.md) to its narrative, preamble, and explanation items. Begin with
   the implementation's intent and boundary, then explain how data moves through the stages in the order established by
-  Notation. Name relevant transforms and schemas, and explain why responsibilities are separated.
+  Notation. Use an occasional connective word when it clarifies the movement, but keep the narrative centered on the
+  concepts and responsibilities rather than on progression itself. Name relevant transforms and schemas, and explain why
+  responsibilities are separated.
   - Use approximately four to seven paragraphs, expanding with topic complexity.
   - Use Notation as the source of truth without repeating every notation line mechanically.
   - Do not include source code, collected-code references, implementation checklists, or low-level operator inventories.
@@ -89,21 +103,26 @@ argument, and its Design records implementation requirements.
 
 ### Draft operator - Problem section
 Problem section:
-- Preserve a concise general-to-specific narrative that introduces the central concepts before stating the topic's
-  specific tension or constraint.
+- Apply [Solution.style.md](Solution.style.md).
+- Ground the opening in the motivating use case, then narrow to the topic's specific difficulty or constraint.
+- Stop once the problem and its consequences are clear; do not preview the answer, algorithms, stages, policies, or
+  implementation responsibilities.
 - Enrich the problem only when the background adds essential reader context; do not turn it into a problem inventory or
   implementation walkthrough.
 - Use casual language, prioritize thoughtful explanation/intent over prescription/direction, gradually build understanding.
-- Avoid Overly Complicated Language.
 
 ### Draft operator - Solution section
 Solution section:
-- Treat Solution as the conceptual center of the document, rather than as a short summary of Background.
-- Preserve general-to-specific progression. Do not call Solution a design or expand it into a component inventory,
-  requirements list, or implementation walkthrough.
-- Make Solution content available for first-time reader: conceptual, easier on technical details (ok to mention code components).
+- Apply [Solution.style.md](Solution.style.md).
+- Treat Solution as the conceptual answer to the use-case problem, rather than as a short summary of Background or a
+  system-design section.
+- Preserve general-to-specific progression from theory and practice to the topic's central abstraction and enabled
+  behavior. Do not call Solution a design or expand it into a component inventory, requirements list, or implementation
+  walkthrough.
+- Use casual language, prioritize thoughtful explanation/intent over prescription/direction, gradually build understanding.
+- Make Solution content available for first-time reader: conceptual, easier on technical details.
 - Include textbook-grade explanations as needed.
-- Avoid Overly Complicated Language.
+- Describe the answer directly; do not write “The solution is,” refer to the Solution section, or leave a component-only sketch.
 
 ### Draft operator - Design section
 Design section:
@@ -113,10 +132,11 @@ Design section:
 - Keep Design concrete enough to guide Implementation, but do not reproduce stage mechanics, notation, or code.
 
 ### Draft operator - Quality assurance
-- Verify that `Problem` moves from general need to topic-specific tension in concise paragraphs, introducing concepts
-  before use and keeping requirements and implementation detail out.
-- Verify that `Solution` explains how the solution addresses the problem, introduces concepts before use, and does not
-  call itself a design or describe architecture, requirements, or implementation responsibilities.
+- Verify that `Problem` moves from general need to topic-specific difficulty in concise paragraphs, introducing concepts
+  before use, keeping the answer, requirements, and implementation detail out, and using active, expressive language.
+- Verify that `Solution` explains how the solution addresses the problem, introduces concepts before use, does not
+  call itself a design, “the solution,” or describe architecture, requirements, or implementation
+  responsibilities.
 - Verify that `Solution` moves from general purpose to central concepts and enabled behavior in approximately three to
   five concise paragraphs, avoiding catalog-like prose.
 - Verify that `Design` immediately precedes `Implementation` and contains the requirements, boundaries, contracts,

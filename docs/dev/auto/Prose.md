@@ -6,6 +6,7 @@ Documenting: [Documenting.md](../Documenting.md)
 Source Annotation: [Annotation.prose.md](prose/Annotation.prose.md).
 Definitions: [Definitions.prose.md](prose/Definitions.prose.md)
 Implementation narrative style: [Implementation.style.md](prose/Implementation.style.md)
+Problem and Solution narrative style: [Solution.style.md](prose/Solution.style.md)
 
 
 ## Text processes
@@ -63,7 +64,7 @@ Existing text operators:
 
 ## Definitions
 
-Shared chapter-operator definitions are maintained in [Definitions.prose.md](prose/Definitions.prose.md).
+Shared chapter-operator definitions: [Definitions.prose.md](prose/Definitions.prose.md).
 
 ## Chapter operators
 The chapter operators are defined in focused specifications under `docs/dev/auto/prose/`:
