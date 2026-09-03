@@ -335,7 +335,9 @@ OrderWithCustomer.base(order)(customer_name=customer.name)
 ### Field Reference
 
 A field reference is an expression node pointing at a scoped schema field, such as `order.customer_id`. It records the
-owning scope, field path, type, nullability, field origin, and source context when available.
+owning scope, field path, type, nullability, field origin, and source context when available. Supported symbolic Column
+methods, such as `order.name.substr(1, 10)`, can be chained from the resulting expression; SQL functions such as
+`trim` and `lower` remain explicit helper calls.
 
 Field references are never raw string column paths in compiler-visible source.
 

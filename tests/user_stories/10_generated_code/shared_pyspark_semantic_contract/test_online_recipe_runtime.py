@@ -260,6 +260,7 @@ def test_online_expression_evaluator_preserves_pyspark_column_semantics() -> Non
         (_cast(_field(RawOrder, "status"), "int"), "cast(col(orders.status) as int)"),
         (_try_cast(_field(RawOrder, "status"), "int"), "try_cast(col(orders.status) as int)"),
         (_call("substring", _field(RawOrder, "status"), start=1, length=3), "substring(col(orders.status),1,3)"),
+        (_call("substr", _field(RawOrder, "status"), _literal(1), _literal(3)), "col(orders.status).substr(1,3)"),
         (_call("split", _field(RawOrder, "status"), pattern="-", limit=-1), "split(col(orders.status),'-',-1)"),
         (
             _call("regexp_replace", _field(RawOrder, "status"), pattern=r"\s+", replacement=" "),
@@ -4072,6 +4073,9 @@ class FakeColumn:
 
     def try_cast(self, target: str):
         return FakeColumn(f"try_cast({self.expression} as {target})", self.source_name)
+
+    def substr(self, start, length):
+        return FakeColumn(f"{self.expression}.substr({start},{length})")
 
     def over(self, window):
         return FakeColumn(f"{self.expression}.over({window.expression})")

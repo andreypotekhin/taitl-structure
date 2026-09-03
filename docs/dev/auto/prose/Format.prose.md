@@ -26,6 +26,10 @@ Create formatted documents (.form.md), based on extended documents (.ext.md).
 - Goal: create formatted documents based on extended documents.
 
 ### Format operator instructions
+Output-shape template: [Form.prose.temp.md](Form.prose.temp.md). Read it with these instructions; it captures the
+formatted-document structure and formula variants for standalone, internal-only, and internal/external workflows
+without replacing the source-preservation and notation rules below.
+
 Structure Formula Notation: see [Notation.md](Notation.md)
 
 ## Format operator instructions - General rules
@@ -75,6 +79,8 @@ Content preservation:
 - Preserve the meaning and paragraph order.
 - Convert every display formula in Problem or Solution to one balanced `$$ ... $$` block. Never leave `\[`, `\]`, or a
   lone `$` as visible plain-text LaTeX in a `.form.md` document.
+- Reject single-dollar math delimiters in Problem or Solution entirely; every display formula must use a paired `$$`
+  delimiter so the formatted document cannot expose `$` or LaTeX commands as literal prose.
 - Preserve Implementation preamble, stage-introduction prose, and italic formatting exactly.
   Do not add italic markup to plain upstream prose, do not force-break a sentence, and do not invent an italicized
   intent sentence. The preamble must remain continuous prose that moves from workflow purpose to core concepts, then to
@@ -135,6 +141,11 @@ Additional Rules
   individual step methods, non-step typed helpers, standalone transforms, and the workflow transform.
 - Preserve every Code-section listing and provide formula notation for every typed method it contains. Code listings are
   source evidence; formulas are the compact typed representation of the same methods.
+- Do not preserve or create a scope or production line between the `Code` heading and its first subsection. If the
+  `Workflow` subsection lacks source-grounded descriptive prose, preserve or create one concise sentence summarizing
+  the workflow logic as its first prose line inside `Workflow`.
+- Outside fenced blocks, reject literal escaped-backtick sequences (`\\``); do not introduce visible delimiter text when
+  ordinary prose is intended.
 - Preserve every numbered Code-item marker, intent sentence, and explanatory sentence from the `.ext.md` input exactly;
   formatting may change notation delimiters only. Do not rewrite Code prose from Implementation content or expand,
   condense, or renumber it during formatting.
@@ -177,10 +188,9 @@ Additional Rules
   `Term` wherever the chapter discusses normalized term artifacts.
 - Verify every numbered Implementation explanatory item begins with the required circled-number marker and that the
   sequence remains global across all stage subsections; do not substitute ASCII `1.`-style markers there.
-- For every external stage with source-backed stage context, verify one circled numbered item appears immediately before
-  its canonical stage-call formula. Use a short italicized source intent when present, including a directly applicable
-  parent workflow class docstring when the external stage has no collected class listing; otherwise use the shortest
-  plain source-backed sentence. External stages without source-backed context remain unnumbered.
+- For every external stage subsection, verify at least one source-backed description line appears immediately before its
+  canonical stage-call formula and carries the next global circled Implementation marker. Do not require or invent
+  italicized intent formatting for this description; reject an external subsection containing only a formula.
 - Step methods must use the canonic step method notation from `Notation.md`: argument names and separating colons
   are omitted, argument schema types remain, and every returned schema retains its name plus a field-name projection.
   Reject a bare return schema, lone ellipses (\\vdots) return schema, a missing `return_schema_definitions` projection,
@@ -227,10 +237,13 @@ Additional Rules
   `\\operator{...}` form, raw text such as `extract: Document -> Document`, and any standalone shape whose name is not the
   exact source transform class.
 - A workflow Result section must use canonic 'Composed Transform Notation': typed `name : Type` workflow inputs, assigned stage
-  calls with name-only stage arguments, each stage's method vector and output vector, and typed final outputs without
-  assignments. Omit the workflow name and do not repeat the `Resulting transform shape:` label in `Result`.
+  calls with name-only stage arguments, each stage's method vector and unqualified output relation names, and typed final
+  outputs without assignments. Omit the workflow name and do not repeat the `Resulting transform shape:` label in `Result`.
 - For a composed root transform, use a `### Result` section for the parent composition; never emit the parent as an
   additional `Resulting transform shape:` block. Reserve that label for internal standalone stage shapes.
+- In a composed `Result` formula, show each assigned stage's unqualified output relation names (for example, `targets` or
+  `document_scores`) after the stage arrow; schema types belong in the typed workflow input and final-output vectors,
+  not in the assigned stage-output vector.
 - Emit `### Result` only after verifying an exact parent/workflow class with composed stage assignments in the collected
   Code. If the topic contains no such class, reject any Result section, parent-named implementation narrative, or
   invented package-level transform notation.

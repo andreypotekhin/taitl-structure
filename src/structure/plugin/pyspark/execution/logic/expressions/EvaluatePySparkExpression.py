@@ -817,6 +817,9 @@ class EvaluatePySparkExpression:
             return functions.get_json_object(args[0], expression.data["path"])
         if function in {"json_array_length", "json_object_keys"}:
             return getattr(functions, function)(args[0])
+        if function in {"schema_of_json", "schema_of_csv"}:
+            options = expression.data["options"]
+            return getattr(functions, function)(args[0]) if not options else getattr(functions, function)(args[0], options)
         if function in {
             "is_valid_variant",
             "parse_json",
@@ -874,6 +877,18 @@ class EvaluatePySparkExpression:
             scale = expression.data["scale"]
             return args[0].cast(f"decimal({precision},{scale})")
         if function in {"substring", "substr"}:
+            if len(args) == 3:
+                start = (
+                    expression.args[1].data["value"]
+                    if expression.args[1].kind == "literal"
+                    else args[1]
+                )
+                length = (
+                    expression.args[2].data["value"]
+                    if expression.args[2].kind == "literal"
+                    else args[2]
+                )
+                return args[0].substr(start, length)
             return functions.substring(args[0], expression.data["start"], expression.data["length"])
         if function == "elt":
             return functions.elt(*args)
@@ -948,8 +963,17 @@ class EvaluatePySparkExpression:
             return functions.trunc(args[0], expression.data["unit"])
         if function == "next_day":
             return functions.next_day(args[0], expression.data["day_of_week"])
-        if function in {"year", "month", "dayofmonth", "hour", "minute", "second"}:
+        if function in {"year", "month", "dayofmonth", "dayofweek", "dayofyear", "hour", "minute", "quarter", "second", "weekofyear"}:
             return getattr(functions, function)(args[0])
+        if function == "last_day":
+            return functions.last_day(args[0])
+        if function == "date_format":
+            return functions.date_format(args[0], expression.data["format"])
+        if function == "mask":
+            chars = cast(tuple[str | None, ...], expression.data["chars"])
+            return functions.mask(args[0], *chars)
+        if function == "overlay":
+            return functions.overlay(args[0], args[1], args[2], args[3])
         if function in {"to_date", "to_timestamp"}:
             return (
                 getattr(functions, function)(args[0], expression.data["format"])

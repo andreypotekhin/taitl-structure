@@ -26,6 +26,10 @@ Present extended continuous narrative based on draft, background and collected d
 - Goal: present extended continuous narrative based on draft, background, planning and collected documents.
 
 ### Extend operator instructions
+Output-shape template: [Extend.prose.temp.md](Extend.prose.temp.md). Read it with these instructions; it captures the
+extended-document structure and the standalone, internal-only, and internal/external stage variants without replacing
+the source and narrative rules below.
+
 Extend draft (.draft.md), background (.back.md), plan (plan.md) and collected (.cnd.md) docs:
 - Author Problem, Solution, and Implementation narrative anew from these current inputs and the shared style rules. Do
   not copy, paraphrase, or use sibling, archived, or variant outputs as narrative sources; preserve source-derived
@@ -123,7 +127,9 @@ Content style:
 Code section:
 - Extend the above results with Collected doc (.cnd.md):
  - Include collected doc as Code section
- - Avoid small-info intro like 'The code below follows the declared workflow'.
+ - Do not add a scope or production line between the `Code` heading and its first subsection. If the `Workflow`
+   subsection has no source-grounded description, add one concise sentence summarizing the workflow logic as its first
+   prose line before the workflow listing.
   - Methods and method groups:
     - Identify coherent method groups from the collected source. A group begins with the a short italicized intent
       sentence and explanatory paragraph.
@@ -208,13 +214,11 @@ Internal vs external stages:
  - Remove the circled reference markers, if any, from stage notation block; the typed individual 
   signatures remain under their explanatory items.
 - External stages:
-  - Keep one stage subsection per actual external stage call. When the external stage's source context provides an
-   explanatory sentence, express its source-backed meaning as one circled numbered item immediately before one canonical
-   stage-call notation block. Use the shortest source-backed intent sentence as the item lead: preserve italic formatting
-   when a short italicized intent is present upstream. For an external stage without its own collected class listing,
-   also inspect the parent workflow's short class docstring when it directly states the purpose of that stage call. Keep
-   any longer source-backed explanation plain, use active voice naturally, and do not invent an intent. When no
-   source-backed explanation exists, emit only the canonical stage-call notation without a number or invented prose.
+  - Keep one stage subsection per actual external stage call. Include at least one source-backed description line before
+   its canonical stage-call notation block and number that description with the next global circled Implementation marker.
+   The description need not be italicized and must not be presented as an invented intent sentence. For an external stage
+   without its own collected class listing, inspect the parent workflow's stage context and the stage source description;
+   keep the shortest accurate description, use active voice naturally, and do not invent implementation detail.
   - Do not include external stages' typed step methods, step groups, method inventory, or `Resulting transform shape:`.
 
 Result subsection
@@ -225,7 +229,8 @@ Result subsection
   `Result`; if no such class exists, omit `Result`, any parent-named Implementation subsection, and any package-level
   parent notation. This applies to aggregate topics such as Evaluation and Experiments.
   Preserve workflow inputs, stage calls and concrete output schemas in result notation. Use the typed
-  workflow format of `Indexing.ext.md`: list `inputs`, child transform assignments, and typed `outputs`. Do not repeat
+  workflow format of `Indexing.ext.md`: list typed `inputs`, child transform assignments whose stage arrows expose
+  assigned output relation names, and typed final `outputs`. Do not repeat
   stage transform notations in Result section; the parent workflow shape must be distinct.
   Precede the notation with one self-contained narrative sentence that explains how the workflow combines its stages
   into the published result. Use the same active, concrete, data-transition style as stage explanations; avoid generic
@@ -284,6 +289,9 @@ Implementation section - subsections
     - Contains all and only that stage transform's public steps, in order, and that each return/output uses concrete schema
       classes. Cross-check the class declaration, including trailing output-publishing methods, against the collected
       method inventory so no public method is lost after the last collected group.
+    - Inventory every actual child-stage assignment in the parent/workflow class, including stages whose transform class
+      is outside the topic package. Require one subsection for every such external stage, with at least one source-backed
+      description line, a global circled marker, and its canonical stage-call notation.
     - Is a child stage subsection, never a subsection named after the parent/workflow transform. Parent orchestration and
       its stage assignments belong in the `Result` subsection.
     - For internal stages, ends with `Resulting transform shape:` and canonical transform notation.
@@ -310,6 +318,11 @@ Implementation section - subsections
 
 Code section
 - Every collected transform/method section is represented.
+- Verify that no scope or production line appears between the `Code` heading and its first subsection. If the `Workflow`
+  subsection lacks source-grounded descriptive prose, verify that its first prose line is one concise sentence
+  summarizing the workflow logic.
+- Verify prose outside fenced blocks contains no literal escaped-backtick sequence (`\\``). When inline-code styling is
+  not source-backed or needed for an identifier, emit ordinary prose instead.
 - Code listings order matches the collected source.
 - Every public method-group clause begins with one short italicized intent and its global numeric marker. Verify that the
   markers are visible in Code and continue one independent sequence across public method groups only; do not number

@@ -1526,7 +1526,9 @@ class RunOnlinePySparkTransform:
             "collect_set",
             "corr",
             "covar",
+            "count_if",
             "count_distinct",
+            "median",
             "max",
             "mode",
             "min",
@@ -1535,7 +1537,11 @@ class RunOnlinePySparkTransform:
             "schema_of_variant_agg",
             "skewness",
             "stddev",
+            "stddev_pop",
+            "stddev_samp",
             "sum",
+            "var_pop",
+            "var_samp",
             "variance",
         }
 
@@ -1550,7 +1556,9 @@ class RunOnlinePySparkTransform:
             "collect_set": "collect_set",
             "corr": "corr",
             "covar": "covar_samp",
+            "count_if": "count_if",
             "count_distinct": "countDistinct",
+            "median": "median",
             "max": "max",
             "mode": "mode",
             "min": "min",
@@ -1559,7 +1567,11 @@ class RunOnlinePySparkTransform:
             "schema_of_variant_agg": "schema_of_variant_agg",
             "skewness": "skewness",
             "stddev": "stddev",
+            "stddev_pop": "stddev_pop",
+            "stddev_samp": "stddev_samp",
             "sum": "sum",
+            "var_pop": "var_pop",
+            "var_samp": "var_samp",
             "variance": "variance",
         }[function]
         return getattr(functions, name)

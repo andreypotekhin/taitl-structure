@@ -38,13 +38,13 @@ from structure.plugin.pyspark.dsl.types import (
 
 __all__ = [
     "abs", "base64", "bin", "bround", "ceil", "coalesce", "concat_ws", "conv", "date_add", "date_sub", "date_trunc", "datediff",
-    "dayofmonth", "event_time_between", "exp", "floor", "from_csv", "from_json", "hash", "hour", "ifnull", "initcap",
+    "dayofmonth", "dayofweek", "dayofyear", "event_time_between", "exp", "floor", "from_csv", "from_json", "hash", "hour", "ifnull", "initcap",
     "instr", "isnan", "isnotnull", "isnull", "CsvOptions", "JsonOptions", "length", "levenshtein", "literal", "log",
-    "get_json_object", "json_array_length", "json_object_keys",
-    "lower", "lpad", "ltrim", "md5", "crc32", "elt", "format_string", "printf", "substr",
+    "get_json_object", "json_array_length", "json_object_keys", "schema_of_csv", "schema_of_json",
+    "lower", "lpad", "ltrim", "mask", "md5", "crc32", "elt", "format_string", "printf", "substr",
     "minute", "month", "nanvl", "nullif", "nvl", "nvl2", "pow", "regexp_extract", "regexp_replace", "repeat", "replace", "reverse",
     "round", "rpad", "rtrim", "sha1", "sha2", "second", "signum", "split", "sqrt", "substring", "to_csv", "to_date",
-    "to_decimal", "to_json", "to_timestamp", "translate", "trim", "trunc", "unbase64", "decode", "encode", "hex", "unhex", "upper", "ascii", "btrim", "char", "char_length", "find_in_set", "format_number", "left", "locate", "octet_length", "position", "right", "soundex", "split_part", "substring_index", "regexp_count", "regexp_extract_all", "regexp_instr", "regexp_substr", "bit_count", "bit_get", "getbit",
+    "to_decimal", "to_json", "to_timestamp", "translate", "trim", "trunc", "unbase64", "decode", "encode", "hex", "unhex", "upper", "ascii", "btrim", "char", "char_length", "date_format", "find_in_set", "format_number", "last_day", "left", "locate", "mask", "octet_length", "overlay", "position", "quarter", "right", "soundex", "split_part", "substring_index", "regexp_count", "regexp_extract_all", "regexp_instr", "regexp_substr", "weekofyear", "bit_count", "bit_get", "getbit",
     "when", "width_bucket", "xxhash64", "year", "zeroifnull", "acos", "acosh", "asin", "asinh", "atan", "atan2", "atanh", "cbrt", "cos", "cosh", "cot", "csc", "degrees", "e", "expm1", "factorial", "greatest", "hypot", "least", "ln", "log10", "log1p", "log2", "pmod", "pi", "radians", "rint", "sec", "sign", "sin", "sinh", "tan", "tanh", "add_months", "next_day", "rand", "randn", "is_valid_variant", "is_variant_null", "parse_json",
     "schema_of_variant", "to_variant_object", "try_parse_json", "try_variant_get", "variant_get", "variant_literal",
     "variant_array_append", "try_variant_array_append", "variant_insert", "try_variant_insert", "variant_set",
@@ -462,6 +462,40 @@ def json_object_keys(value: object) -> Expression:
     )
 
 
+def schema_of_json(value: object, *, options: JsonOptions = JsonOptions()) -> Expression:
+    """Infer a Spark SQL schema string from a valid JSON literal."""
+    if not isinstance(value, str) or not value:
+        raise TypeError("schema_of_json(...) requires non-empty JSON text literal")
+    try:
+        json.loads(value, parse_constant=_reject_non_json_constant)
+    except (TypeError, ValueError) as error:
+        raise ValueError("schema_of_json(...) requires valid JSON text") from error
+    if not isinstance(options, JsonOptions):
+        raise TypeError("schema_of_json(...) options must be a JsonOptions value")
+    return Expression(
+        kind="call",
+        type=StringType(),
+        nullable=False,
+        data={"function": "schema_of_json", "options": options.spark_options()},
+        args=(literal(value),),
+    )
+
+
+def schema_of_csv(value: object, *, options: CsvOptions = CsvOptions()) -> Expression:
+    """Infer a Spark SQL schema string from a CSV text literal."""
+    if not isinstance(value, str) or not value:
+        raise TypeError("schema_of_csv(...) requires non-empty CSV text literal")
+    if not isinstance(options, CsvOptions):
+        raise TypeError("schema_of_csv(...) options must be a CsvOptions value")
+    return Expression(
+        kind="call",
+        type=StringType(),
+        nullable=False,
+        data={"function": "schema_of_csv", "options": options.spark_options()},
+        args=(literal(value),),
+    )
+
+
 def parse_json(value: object) -> Expression:
     """Parse JSON text into a Variant value, failing for invalid JSON."""
     argument = _string_argument(value, "parse_json(...)")
@@ -593,7 +627,7 @@ def schema_of_variant(value: object) -> Expression:
     return _variant_call("schema_of_variant", argument, type=StringType(), nullable=argument.nullable)
 
 
-def substring(value: object, *, start: int, length: int) -> Expression:
+def substring(value: object, *, start: object, length: object) -> Expression:
     """Return a substring expression using Spark's one-based indexing.
 
     Args:
@@ -610,7 +644,7 @@ def substring(value: object, *, start: int, length: int) -> Expression:
     return _substring_call("substring", value, start=start, length=length)
 
 
-def substr(value: object, *, start: int, length: int) -> Expression:
+def substr(value: object, *, start: object, length: object) -> Expression:
     """Return a substring expression using Spark's ``substr`` spelling."""
     return _substring_call("substr", value, start=start, length=length)
 
@@ -1179,6 +1213,96 @@ def month(value: object) -> Expression:
 def dayofmonth(value: object) -> Expression:
     """Extract the day of month from a Date or Timestamp expression."""
     return _calendar_part("dayofmonth", value, _date_or_timestamp_argument)
+
+
+def dayofweek(value: object) -> Expression:
+    """Extract the day of week from a Date or Timestamp expression.
+
+    Spark numbers Sunday as 1 and Saturday as 7.
+    """
+    return _calendar_part("dayofweek", value, _date_or_timestamp_argument)
+
+
+def dayofyear(value: object) -> Expression:
+    """Extract the day of year from a Date or Timestamp expression."""
+    return _calendar_part("dayofyear", value, _date_or_timestamp_argument)
+
+
+def quarter(value: object) -> Expression:
+    """Extract the calendar quarter from a Date or Timestamp expression."""
+    return _calendar_part("quarter", value, _date_or_timestamp_argument)
+
+
+def weekofyear(value: object) -> Expression:
+    """Extract the ISO week number from a Date or Timestamp expression."""
+    return _calendar_part("weekofyear", value, _date_or_timestamp_argument)
+
+
+def last_day(value: object) -> Expression:
+    """Return the last day of the month containing a Date or Timestamp."""
+    argument = _date_or_timestamp_argument(value, "last_day(...)")
+    return Expression(
+        kind="call", type=DateType(), nullable=argument.nullable, data={"function": "last_day"}, args=(argument,)
+    )
+
+
+def date_format(value: object, *, format: str) -> Expression:
+    """Format a Date or Timestamp expression with a non-empty Spark pattern."""
+    argument = _date_or_timestamp_argument(value, "date_format(...)")
+    format_literal = _temporal_format(format, "date_format(...)")
+    assert format_literal is not None
+    return Expression(
+        kind="call",
+        type=StringType(),
+        nullable=argument.nullable,
+        data={"function": "date_format", "format": format_literal},
+        args=(argument,),
+    )
+
+
+def mask(
+    value: object,
+    *,
+    upper_char: str | None = None,
+    lower_char: str | None = None,
+    digit_char: str | None = None,
+    other_char: str | None = None,
+) -> Expression:
+    """Mask upper/lower-case letters and digits in a String expression."""
+    argument = _string_argument(value, "mask(...)")
+    chars = tuple(
+        _mask_character(character, parameter, "mask(...)")
+        for parameter, character in (
+            ("upper_char", upper_char),
+            ("lower_char", lower_char),
+            ("digit_char", digit_char),
+            ("other_char", other_char),
+        )
+    )
+    return Expression(
+        kind="call",
+        type=StringType(),
+        nullable=argument.nullable,
+        data={"function": "mask", "chars": chars},
+        args=(argument,),
+    )
+
+
+def overlay(value: object, replace: object, *, pos: object, length: object = -1) -> Expression:
+    """Replace part of a String or Binary expression at a typed position."""
+    argument = _string_or_binary_argument(value, "overlay(...)")
+    replacement = _string_or_binary_argument(replace, "overlay(...)")
+    if not isinstance(argument.type, type(replacement.type)):
+        raise TypeError("overlay(...) value and replace must use the same String or Binary type")
+    position = _integral_argument(pos, "overlay(...)")
+    replace_length = _integral_argument(length, "overlay(...)")
+    return Expression(
+        kind="call",
+        type=argument.type,
+        nullable=argument.nullable or replacement.nullable or position.nullable or replace_length.nullable,
+        data={"function": "overlay"},
+        args=(argument, replacement, position, replace_length),
+    )
 
 
 def next_day(value: object, *, day_of_week: str) -> Expression:
@@ -2039,18 +2163,27 @@ def _string_call(function: str, value: object) -> Expression:
     )
 
 
-def _substring_call(function: str, value: object, *, start: int, length: int) -> Expression:
+def _substring_call(function: str, value: object, *, start: object, length: object) -> Expression:
     argument = _string_argument(value, f"{function}(...)")
-    if isinstance(start, bool) or not isinstance(start, int) or start < 1:
-        raise TypeError(f"{function}(...) start must be a positive integer")
-    if isinstance(length, bool) or not isinstance(length, int) or length < 0:
-        raise TypeError(f"{function}(...) length must be a non-negative integer")
+    start_argument = _integral_argument(start, f"{function}(...)")
+    length_argument = _integral_argument(length, f"{function}(...)")
+    if start_argument.kind == "literal" and start_argument.data is not None:
+        _positive_integer_literal(start_argument.data["value"], f"{function}(...) start")
+    if length_argument.kind == "literal" and length_argument.data is not None:
+        length_value = length_argument.data["value"]
+        if isinstance(length_value, int) and length_value < 0:
+            raise TypeError(f"{function}(...) length must be a non-negative integer")
+    data: dict[str, object] = {"function": function}
+    if start_argument.kind == "literal" and start_argument.data is not None:
+        data["start"] = start_argument.data["value"]
+    if length_argument.kind == "literal" and length_argument.data is not None:
+        data["length"] = length_argument.data["value"]
     return Expression(
         kind="call",
         type=StringType(),
-        nullable=argument.nullable,
-        data={"function": function, "start": start, "length": length},
-        args=(argument,),
+        nullable=argument.nullable or start_argument.nullable or length_argument.nullable,
+        data=data,
+        args=(argument, start_argument, length_argument),
     )
 
 
@@ -2121,6 +2254,14 @@ def _weekday_literal(value: object, call: str) -> str:
         "sat", "saturday", "sun", "sunday",
     }:
         raise TypeError(f"{call} day_of_week must name a weekday such as 'Mon' or 'Monday'")
+    return value
+
+
+def _mask_character(value: object, parameter: str, call: str) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str) or len(value) != 1:
+        raise TypeError(f"{call} {parameter} must be a single-character string literal or None")
     return value
 
 

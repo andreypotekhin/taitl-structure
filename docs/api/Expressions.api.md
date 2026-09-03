@@ -6,6 +6,9 @@ typed `order` row scope as `o`.
 The default transformation baseline is ordinary PySpark `>=3.5,<4.1`. Helpers with a narrower target profile or an
 explicit design gate are marked in the details below.
 
+Column methods and SQL function helpers are separate APIs. Structure exposes a method when it is part of the supported
+PySpark `Column` surface; functions such as `trim` and `lower` remain function-form helpers.
+
 ## Simple Field And Predicate Expressions
 
 | Structure API | PySpark parity | Example |
@@ -58,6 +61,7 @@ explicit design gate are marked in the details below.
 | `bitwise_not()` | `functions.bitwise_not` | `o.flags.bitwise_not()` |
 | `expr[index]` | `getItem` | `o.tags[0]` |
 | `expr[key]` | `getItem` | `o.attributes["region"]` |
+| `substr(startPos, length)` | `Column.substr` | `o.name.substr(1, 10)` |
 | `contains(...)` | `contains` | `o.name.contains("A")` |
 | `startswith(...)` | `startswith` | `o.name.startswith("order-")` |
 | `endswith(...)` | `endswith` | `o.name.endswith("-hold")` |
@@ -77,6 +81,8 @@ explicit design gate are marked in the details below.
 **Details And Differences**
 
 - Array and map lookup results are nullable. String predicates require String expressions; `rlike(...)` uses Java regex.
+- `substr(...)` requires a String expression and integral start/length literals or expressions. Its result is nullable
+  when the receiver or either bound is nullable. The equivalent function form is `substr(o.name, start=1, length=10)`.
 - `try_cast(...)` is always nullable and needs target profile `>=4.0,<4.1`.
 - Division, remainder, and negation require numeric expressions. Integral division returns Double; Decimal division uses
   Spark's bounded Decimal precision rules. Raw `Column.over(...)` remains unsupported.
@@ -191,6 +197,7 @@ explicit design gate are marked in the details below.
 | `get_json_object(...)` | `get_json_object` | `get_json_object(o.payload_json, "$.customer.id")` |
 | `json_array_length(...)` | `json_array_length` | `json_array_length(o.payload_json)` |
 | `json_object_keys(...)` | `json_object_keys` | `json_object_keys(o.payload_json)` |
+| `schema_of_json(...)`, `schema_of_csv(...)` | `schema_of_json`, `schema_of_csv` | `schema_of_json('{"id": 1}')` |
 | `parse_json(...)`, `try_parse_json(...)` | Variant JSON parsing | `parse_json(o.payload_json)` |
 | `variant_literal(...)` | Compile-time JSON Variant literal | `variant_literal('{"source":"migration"}')` |
 | **Design-gated:** `variant_array_append(...)`, `try_variant_array_append(...)` | Variant array mutation | `variant_array_append(o.payload, "$.items", 1)` |
@@ -222,8 +229,16 @@ explicit design gate are marked in the details below.
 - `add_months(...)` accepts Date or Timestamp values and an integer literal or integral expression; the result is a
   nullable Date when either input is nullable. `next_day(...)` accepts a Date or Timestamp and a weekday literal from
   Monday through Sunday (short names such as `Mon` are accepted) and returns a nullable Date.
+- `dayofweek(...)`, `dayofyear(...)`, `quarter(...)`, and `weekofyear(...)` accept Date or Timestamp values and
+  return nullable Integer calendar parts. `dayofweek(...)` numbers Sunday as 1 through Saturday as 7, while
+  `weekofyear(...)` follows Spark's ISO week numbering.
+- `last_day(...)` accepts a Date or Timestamp and returns the nullable month-end Date. `date_format(...)` accepts a
+  Date or Timestamp plus a non-empty format literal and returns a nullable String.
 - `lpad(...)` and `rpad(...)` accept a String expression, a non-negative integer literal, and a non-empty padding
   literal. They return a String expression with the input nullability.
+- `mask(...)` accepts a String expression and optional single-character literals for uppercase, lowercase, digit, and
+  other characters. `overlay(...)` accepts same-family String or Binary values plus integral position and length
+  expressions, returning the source type with combined nullability.
 - `elt(...)` uses a one-based integral index and requires compatible scalar candidates; its result is nullable because
   the index may be null, out of range, or select a nullable candidate.
 - `format_string(...)` and `printf(...)` require a literal format string and scalar arguments. Their String result is
@@ -255,6 +270,9 @@ explicit design gate are marked in the details below.
 - `get_json_object(...)` requires a non-empty literal JSON path and returns nullable String. `json_array_length(...)`
   returns nullable Integer, and `json_object_keys(...)` returns nullable `array<string>`. `json_tuple(...)` remains
   deferred because it produces multiple output columns rather than one typed expression.
+- `schema_of_json(...)` and `schema_of_csv(...)` accept non-empty text literals plus immutable parser options and
+  return non-nullable SQL-format schema Strings. Dynamic input is rejected because schema inference must be resolved
+  before the typed output schema is compiled.
 - Raw `expr(...)`, `call_function(...)`, direct UDF/UDTF expressions, and implicit Python-to-UDF conversion are
   unsupported. Scalar `@special(type="udf")` remains an ordinary-PySpark row-local feature with its warning policy;
   see the [Transforms API](Transforms.api.md).

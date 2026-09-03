@@ -341,8 +341,10 @@ Supported expression forms are:
 - Predicate helpers: `isnull(...)`, `isnotnull(...)`, and `isnan(...)`.
 - String helpers:  `contains(...)`, `like(...)`, `ilike(...)`, `rlike(...)`,
   array/map indexing, `lower(...)`, `upper(...)`, `trim(...)`, `to_decimal(...)`, `coalesce(...)`, and
-  `substring(...)`, `split(...)`,
+  `substring(...)`, `substr(...)`, `split(...)`,
   `regexp_replace(...)`, `regexp_extract(...)`, `length(...)`, `concat_ws(...)`,   `initcap(...)`, `reverse(...)`, `translate(...)`, `instr(...)`.
+- PySpark Column method parity: string expressions support `order.name.substr(1, 10)`. `trim(...)` and `lower(...)`
+  remain function helpers, so the equivalent composition is `substr(lower(trim(order.name)), start=1, length=10)`.
 - Struct fields may be read with `.get_field(name)`.
 
 - Temporal helpers: `date_add(...)`, `datediff(...)`, and `date_trunc(...)`.

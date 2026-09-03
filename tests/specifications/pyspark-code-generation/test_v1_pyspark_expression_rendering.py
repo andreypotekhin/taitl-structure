@@ -237,6 +237,8 @@ def test_v7_expression_renderer_renders_schema_carrying_parsing_helpers() -> Non
         json_value = string(nullable=True)
         json_length = integer(nullable=True)
         json_keys = array(string(), contains_null=False, nullable=True)
+        json_schema = string(nullable=False)
+        csv_schema = string(nullable=False)
 
     @transform
     class Publish(Transform):
@@ -252,6 +254,8 @@ def test_v7_expression_renderer_renders_schema_carrying_parsing_helpers() -> Non
                 json_value=get_json_object(row.payload_json, "$.customer.id"),
                 json_length=json_array_length(row.payload_json),
                 json_keys=json_object_keys(row.payload_json),
+                json_schema=schema_of_json('{"id": 1}'),
+                csv_schema=schema_of_csv("Ada|42", options=CsvOptions(delimiter="|")),
             )
 
     recipe = _recipe(Publish)
@@ -282,6 +286,12 @@ def test_v7_expression_renderer_renders_schema_carrying_parsing_helpers() -> Non
     )
     assert render(projection["json_keys"], scope_aliases={"rows": "raw"}) == (
         'F.json_object_keys(F.col("raw.payload_json"))'
+    )
+    assert render(projection["json_schema"], scope_aliases={"rows": "raw"}) == (
+        'F.schema_of_json(F.lit(\'{"id": 1}\'), {\'mode\': \'PERMISSIVE\'})'
+    )
+    assert render(projection["csv_schema"], scope_aliases={"rows": "raw"}) == (
+        "F.schema_of_csv(F.lit('Ada|42'), {'sep': '|', 'mode': 'PERMISSIVE'})"
     )
 
 
@@ -657,11 +667,15 @@ def test_v4_expression_renderer_renders_temporal_helpers() -> None:
 def test_v4_expression_renderer_renders_calendar_and_padding_helpers() -> None:
     class Raw(Schema):
         observed_on = date(nullable=True)
+        observed_at = timestamp(nullable=True)
         label = string(nullable=True)
 
     class Published(Schema):
         shifted = date(nullable=True)
         following_monday = date(nullable=True)
+        month_end = date(nullable=True)
+        week_number = integer(nullable=True)
+        formatted = string(nullable=True)
         left_padded = string(nullable=True)
         right_padded = string(nullable=True)
 
@@ -674,6 +688,9 @@ def test_v4_expression_renderer_renders_calendar_and_padding_helpers() -> None:
             return Published(
                 shifted=add_months(row.observed_on, months=2),
                 following_monday=next_day(row.observed_on, day_of_week="Mon"),
+                month_end=last_day(row.observed_on),
+                week_number=weekofyear(row.observed_on),
+                formatted=date_format(row.observed_at, format="yyyy-MM-dd"),
                 left_padded=lpad(row.label, length=8, pad="0"),
                 right_padded=rpad(row.label, length=8, pad="0"),
             )
@@ -687,6 +704,15 @@ def test_v4_expression_renderer_renders_calendar_and_padding_helpers() -> None:
     )
     assert render(projection["following_monday"], scope_aliases={"rows": "orders"}) == (
         'F.next_day(F.col("orders.observed_on"), \'Mon\')'
+    )
+    assert render(projection["month_end"], scope_aliases={"rows": "orders"}) == (
+        'F.last_day(F.col("orders.observed_on"))'
+    )
+    assert render(projection["week_number"], scope_aliases={"rows": "orders"}) == (
+        'F.weekofyear(F.col("orders.observed_on"))'
+    )
+    assert render(projection["formatted"], scope_aliases={"rows": "orders"}) == (
+        'F.date_format(F.col("orders.observed_at"), \'yyyy-MM-dd\')'
     )
     assert render(projection["left_padded"], scope_aliases={"rows": "orders"}) == (
         'F.lpad(F.col("orders.label"), 8, \'0\')'
@@ -710,6 +736,8 @@ def test_v4_expression_renderer_renders_string_position_and_slicing_helpers() ->
         repeated = string(nullable=True)
         replaced = string(nullable=True)
         path_prefix = string(nullable=True)
+        masked = string(nullable=True)
+        overlaid = string(nullable=True)
 
     @transform
     class Publish(Transform):
@@ -727,6 +755,8 @@ def test_v4_expression_renderer_renders_string_position_and_slicing_helpers() ->
                 repeated=repeat(row.label, count=2),
                 replaced=replace_text(row.label, search="-", replacement="_"),
                 path_prefix=substring_index(row.label, delimiter="/", count=2),
+                masked=mask(row.label, upper_char="X", digit_char="9"),
+                overlaid=overlay(row.label, "***", pos=2, length=3),
             )
 
     recipe = _recipe(Publish)
@@ -757,6 +787,12 @@ def test_v4_expression_renderer_renders_string_position_and_slicing_helpers() ->
     )
     assert render(projection["path_prefix"], scope_aliases={"rows": "orders"}) == (
         "F.substring_index(F.col(\"orders.label\"), '/', 2)"
+    )
+    assert render(projection["masked"], scope_aliases={"rows": "orders"}) == (
+        "F.mask(F.col(\"orders.label\"), 'X', None, '9', None)"
+    )
+    assert render(projection["overlaid"], scope_aliases={"rows": "orders"}) == (
+        "F.overlay(F.col(\"orders.label\"), F.lit('***'), F.lit(2), F.lit(3))"
     )
 
 
@@ -1176,6 +1212,39 @@ def test_v4_expression_renderer_renders_elt_and_substr() -> None:
         'F.elt(F.lit(2), F.lit(\'first\'), F.col("orders.label"))',
         'F.substr(F.col("orders.label"), 1, 4)',
     ]
+
+
+def test_v4_expression_renderer_renders_column_substr_method_bounds() -> None:
+    class Raw(Schema):
+        label = string(nullable=False)
+        start = integer(nullable=False)
+        length = long(nullable=False)
+
+    class Published(Schema):
+        literal = string(nullable=False)
+        dynamic = string(nullable=False)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(
+                literal=row.label.substr(1, 4),
+                dynamic=row.label.substr(row.start, row.length),
+            )
+
+    recipe = _recipe(Publish)
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    assert render(projection["literal"], scope_aliases={"rows": "orders"}) == (
+        'F.substr(F.col("orders.label"), 1, 4)'
+    )
+    assert render(projection["dynamic"], scope_aliases={"rows": "orders"}) == (
+        'F.substr(F.col("orders.label"), F.col("orders.start"), F.col("orders.length"))'
+    )
 
 
 def test_v4_expression_renderer_renders_format_string_and_printf() -> None:

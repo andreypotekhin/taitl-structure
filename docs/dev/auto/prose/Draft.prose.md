@@ -24,6 +24,10 @@ Styles:
   Design section records the requirements that guide its implementation.
 
 ### Draft operator instructions
+Output-shape template: [Draft.prose.temp.md](Draft.prose.temp.md). Read it with these instructions; it captures the
+fixed chapter structure and the standalone, internal-only, and internal/external shape variants without replacing the
+source and narrative rules below.
+
 Create a `.draft.md` from the topic background and retain the standard chapter structure:
 Problem, Solution, Builds on, Used by, Definitions, Inputs, Outputs, Stages, Notation, Design, Implementation, and Code.
 

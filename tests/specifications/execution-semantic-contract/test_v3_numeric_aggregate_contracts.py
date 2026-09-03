@@ -53,6 +53,28 @@ def test_exact_percentile_and_moment_statistics_require_numeric_values() -> None
         percentile(1, 0.5, frequency=0)
 
 
+def test_aggregate_aliases_preserve_typed_numeric_contracts() -> None:
+    required_number = Expression(kind="number", type=types.long(), nullable=False)
+    required_boolean = Expression(kind="predicate", type=types.boolean(), nullable=False)
+
+    counted = count_if(required_boolean)
+    assert counted.type is not None and counted.type.name == "long"
+    for expression in (
+        median(required_number),
+        stddev_pop(required_number),
+        stddev_samp(required_number),
+        var_pop(required_number),
+        var_samp(required_number),
+    ):
+        assert expression.type is not None and expression.type.name == "double"
+        assert expression.nullable is True
+
+    with pytest.raises(TypeError, match=r"count_if\(\.\.\.\) requires a Boolean"):
+        count_if(required_number)
+    with pytest.raises(TypeError, match=r"median\(\.\.\.\) requires a numeric"):
+        median("not numeric")
+
+
 def test_mode_preserves_candidate_type_and_deterministic_tie_contract() -> None:
     required_text = Expression(kind="text", type=types.string(), nullable=False)
     nullable_text = Expression(kind="nullable_text", type=types.string(), nullable=True)

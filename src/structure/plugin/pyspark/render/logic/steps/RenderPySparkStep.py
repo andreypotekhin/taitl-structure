@@ -1562,7 +1562,9 @@ class RenderPySparkStep:
             "collect_set",
             "corr",
             "covar",
+            "count_if",
             "count_distinct",
+            "median",
             "max",
             "mode",
             "min",
@@ -1571,7 +1573,11 @@ class RenderPySparkStep:
             "schema_of_variant_agg",
             "skewness",
             "stddev",
+            "stddev_pop",
+            "stddev_samp",
             "sum",
+            "var_pop",
+            "var_samp",
             "variance",
         }
 
@@ -1586,7 +1592,9 @@ class RenderPySparkStep:
             "collect_set": "F.collect_set",
             "corr": "F.corr",
             "covar": "F.covar_samp",
+            "count_if": "F.count_if",
             "count_distinct": "F.countDistinct",
+            "median": "F.median",
             "max": "F.max",
             "mode": "F.mode",
             "min": "F.min",
@@ -1595,7 +1603,11 @@ class RenderPySparkStep:
             "schema_of_variant_agg": "F.schema_of_variant_agg",
             "skewness": "F.skewness",
             "stddev": "F.stddev",
+            "stddev_pop": "F.stddev_pop",
+            "stddev_samp": "F.stddev_samp",
             "sum": "F.sum",
+            "var_pop": "F.var_pop",
+            "var_samp": "F.var_samp",
             "variance": "F.variance",
         }[function]
 

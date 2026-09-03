@@ -687,6 +687,64 @@ def test_string_sql_helpers_are_typed_symbolic_expressions() -> None:
     ]
 
 
+def test_column_substr_method_accepts_literal_and_symbolic_bounds() -> None:
+    """I can use the PySpark Column substring method on a schema field."""
+
+    class Raw(Schema):
+        label = string(nullable=True)
+        start = integer(nullable=True)
+        length = long(nullable=False)
+
+    class Published(Schema):
+        literal = string(nullable=True)
+        dynamic = string(nullable=True)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(
+                literal=row.label.substr(1, 3),
+                dynamic=row.label.substr(row.start, row.length),
+            )
+
+    projection = {assignment.field.name: assignment.expression for assignment in _body(Publish).projection}
+
+    assert projection["literal"].data == {"function": "substr", "start": 1, "length": 3}
+    assert projection["literal"].nullable is True
+    assert projection["literal"].type.name == "string"
+    assert projection["dynamic"].data == {"function": "substr"}
+    assert projection["dynamic"].nullable is True
+    assert projection["dynamic"].args[1].type.name == "integer"
+    assert projection["dynamic"].args[2].type.name == "long"
+
+
+def test_column_substr_method_rejects_non_integral_bounds() -> None:
+    """I get an actionable diagnostic for invalid Column substring bounds."""
+
+    class Raw(Schema):
+        label = string(nullable=False)
+        start = string(nullable=False)
+
+    class Published(Schema):
+        value = string(nullable=True)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(value=row.label.substr(row.start, 3))
+
+    with pytest.raises(StructureCompileError) as raised:
+        _compile(Publish)
+
+    assert "substr(...) requires an integer or long Structure expression" in raised.value.diagnostic.problem_text()
+
+
 def test_string_sql_helpers_reject_opaque_patterns_and_non_string_inputs() -> None:
     """I get compile diagnostics before an invalid SQL helper reaches Spark."""
 

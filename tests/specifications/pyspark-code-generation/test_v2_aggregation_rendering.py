@@ -58,6 +58,12 @@ class AdvancedCustomerTotal(Schema):
     paid_quantity = long(nullable=True)
     any_large = boolean(nullable=True)
     quantity_stddev = double(nullable=True)
+    quantity_stddev_pop = double(nullable=True)
+    quantity_stddev_samp = double(nullable=True)
+    quantity_var_pop = double(nullable=True)
+    quantity_var_samp = double(nullable=True)
+    quantity_median = double(nullable=True)
+    positive_count = long(nullable=False)
     exact_quantity_percentile = double(nullable=True)
     quantity_skewness = double(nullable=True)
     quantity_kurtosis = double(nullable=True)
@@ -149,6 +155,12 @@ class AdvancedCustomerTotals(Transform):
             paid_quantity=sum(row.quantity, where=literal(row.quantity) > 0),
             any_large=bool_or(literal(row.quantity) > 10),
             quantity_stddev=stddev(row.quantity),
+            quantity_stddev_pop=stddev_pop(row.quantity),
+            quantity_stddev_samp=stddev_samp(row.quantity),
+            quantity_var_pop=var_pop(row.quantity),
+            quantity_var_samp=var_samp(row.quantity),
+            quantity_median=median(row.quantity),
+            positive_count=count_if(row.quantity > 0),
             exact_quantity_percentile=percentile(row.quantity, 0.5),
             quantity_skewness=skewness(row.quantity),
             quantity_kurtosis=kurtosis(row.quantity),
@@ -341,6 +353,12 @@ def test_advanced_aggregate_helpers_render_spark_visible_rollup_and_metrics() ->
     assert 'F.sum(F.when((F.col("raw_order.quantity") > F.lit(0)), F.col("raw_order.quantity")))' in text
     assert 'F.bool_or((F.col("raw_order.quantity") > F.lit(10))).cast(T.BooleanType()).alias("any_large")' in text
     assert 'F.stddev(F.col("raw_order.quantity")).cast(T.DoubleType()).alias("quantity_stddev")' in text
+    assert 'F.stddev_pop(F.col("raw_order.quantity")).cast(T.DoubleType()).alias("quantity_stddev_pop")' in text
+    assert 'F.stddev_samp(F.col("raw_order.quantity")).cast(T.DoubleType()).alias("quantity_stddev_samp")' in text
+    assert 'F.var_pop(F.col("raw_order.quantity")).cast(T.DoubleType()).alias("quantity_var_pop")' in text
+    assert 'F.var_samp(F.col("raw_order.quantity")).cast(T.DoubleType()).alias("quantity_var_samp")' in text
+    assert 'F.median(F.col("raw_order.quantity")).cast(T.DoubleType()).alias("quantity_median")' in text
+    assert 'F.count_if((F.col("raw_order.quantity") > F.lit(0))).cast(T.LongType()).alias("positive_count")' in text
     assert (
         'F.percentile(F.col("raw_order.quantity"), 0.5, 1).cast(T.DoubleType()).alias("exact_quantity_percentile")'
         in text

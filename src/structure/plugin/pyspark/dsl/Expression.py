@@ -126,6 +126,20 @@ class Expression:
         """Return ``lower <= self <= upper`` using Structure comparison rules."""
         return (self >= lower) & (self <= upper)
 
+    def substr(self, startPos: object, length: object) -> "Expression":
+        """Return a substring using PySpark's ``Column.substr`` method shape.
+
+        Args:
+            startPos: Integral literal or expression containing the one-based start position.
+            length: Integral literal or expression containing the substring length.
+
+        Returns:
+            A nullable String expression.
+        """
+        from structure.plugin.pyspark.dsl.expressions import substr
+
+        return substr(self, start=startPos, length=length)
+
     def contains(self, value: str) -> "Expression":
         return self._string_predicate("contains", value)
 

@@ -74,5 +74,11 @@ The chapter operators are defined in focused specifications under `docs/dev/auto
 - [Extend.prose.md](prose/Extend.prose.md): extend draft chapters with background and collected source.
 - [Format.prose.md](prose/Format.prose.md): convert extended chapters into formula-formatted documents.
 
+Companion output-shape templates:
+
+- [Draft.prose.temp.md](prose/Draft.prose.temp.md)
+- [Extend.prose.temp.md](prose/Extend.prose.temp.md)
+- [Form.prose.temp.md](prose/Form.prose.temp.md), the formatted-output template for the Format operator
+
 Each operator file is subordinate to this document. Apply its rules together with the shared definitions, text-process
 model, notation, and authoring guidance above; the operator file's `Shared Prose context` section links back here directly.

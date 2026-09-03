@@ -200,6 +200,12 @@ def count_distinct(value: object, *, where: object | None = None) -> Expression:
     return _aggregate("count_distinct", literal(value), type=LongType(), nullable=False, where=where)
 
 
+def count_if(condition: object, *, where: object | None = None) -> Expression:
+    """Count rows whose Boolean condition is true."""
+    argument = _window_boolean(condition, "count_if(...)")
+    return _aggregate("count_if", argument, type=LongType(), nullable=False, where=where)
+
+
 def min(value: object, *, where: object | None = None) -> Expression:
     """Return the smallest value in each aggregate group, like Spark ``min``."""
     argument = literal(value)
@@ -292,6 +298,29 @@ def variance(value: object, *, where: object | None = None) -> Expression:
     return _aggregate("variance", literal(value), type=DoubleType(), nullable=True, where=where)
 
 
+def median(value: object, *, where: object | None = None) -> Expression:
+    """Return the exact median as a nullable Double aggregate."""
+    return _aggregate("median", _numeric_expression(value, "median(...)"), type=DoubleType(), nullable=True, where=where)
+
+
+def stddev_pop(value: object, *, where: object | None = None) -> Expression:
+    """Return population standard deviation as a nullable Double aggregate."""
+    return _aggregate("stddev_pop", _numeric_expression(value, "stddev_pop(...)"), type=DoubleType(), nullable=True, where=where)
+
+
+def stddev_samp(value: object, *, where: object | None = None) -> Expression:
+    """Return sample standard deviation as a nullable Double aggregate."""
+    return _aggregate("stddev_samp", _numeric_expression(value, "stddev_samp(...)"), type=DoubleType(), nullable=True, where=where)
+
+
+def var_pop(value: object, *, where: object | None = None) -> Expression:
+    """Return population variance as a nullable Double aggregate."""
+    return _aggregate("var_pop", _numeric_expression(value, "var_pop(...)"), type=DoubleType(), nullable=True, where=where)
+
+
+def var_samp(value: object, *, where: object | None = None) -> Expression:
+    """Return sample variance as a nullable Double aggregate."""
+    return _aggregate("var_samp", _numeric_expression(value, "var_samp(...)"), type=DoubleType(), nullable=True, where=where)
 def skewness(value: object, *, where: object | None = None) -> Expression:
     """Return the skewness aggregate as a double."""
     return _aggregate("skewness", literal(value), type=DoubleType(), nullable=True, where=where)

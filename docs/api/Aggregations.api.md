@@ -14,6 +14,7 @@ the current `order` row scope as `o`.
 | `min(...)` | `min` | `min(order.total)` |
 | `max(...)` | `max` | `max(order.total)` |
 | `avg(...)` | `avg` | `avg(order.total)` |
+| `count_if(...)` | `count_if` | `count_if(order.is_paid)` |
 
 **Details And Differences**
 
@@ -52,7 +53,10 @@ the current `order` row scope as `o`.
 | `bool_and(...)` | `bool_and` | `bool_and(order.is_verified)` |
 | `bool_or(...)` | `bool_or` | `bool_or(order.is_priority)` |
 | `stddev(...)` | `stddev` | `stddev(order.total)` |
+| `stddev_pop(...)`, `stddev_samp(...)` | `stddev_pop`, `stddev_samp` | `stddev_pop(order.total)` |
 | `variance(...)` | `variance` | `variance(order.total)` |
+| `var_pop(...)`, `var_samp(...)` | `var_pop`, `var_samp` | `var_pop(order.total)` |
+| `median(...)` | `median` | `median(order.total)` |
 | `corr(...)` | `corr` | `corr(order.price, order.quantity)` |
 | `covar(...)` | `covar` | `covar(order.price, order.quantity)` |
 | `approx_count_distinct(...)` | `approx_count_distinct` | `approx_count_distinct(o.customer_id, relative_sd=0.05)` |
@@ -71,6 +75,8 @@ the current `order` row scope as `o`.
 
 - Statistical metrics return nullable doubles. `collect_list(...)` can preserve an explicit `order_by=` sequence;
   without it, and for `collect_set(...)`, collection order is Spark-dependent.
+- `count_if(...)` accepts a Boolean expression and returns a non-null Long. `median(...)` and the population/sample
+  standard-deviation and variance aliases return nullable Double values.
 - `collect_list(...)` and `collect_set(...)` skip null inputs and return an empty non-null array when no values qualify.
 - `first_value(...)` and `last_value(...)` aggregate forms require a scalar `order_by=` and currently use
   `"error"`; `ignore_nulls=` is supported only with `over=`.

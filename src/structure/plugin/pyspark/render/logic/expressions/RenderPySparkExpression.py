@@ -600,6 +600,9 @@ class RenderPySparkExpression:
             return f"F.get_json_object({args[0]}, {expression.data['path']!r})"
         if function in {"json_array_length", "json_object_keys"}:
             return f"F.{function}({args[0]})"
+        if function in {"schema_of_json", "schema_of_csv"}:
+            options = cast(dict[str, str], expression.data["options"])
+            return f"F.{function}({args[0]})" if not options else f"F.{function}({args[0]}, {options!r})"
         if function in {
             "is_valid_variant",
             "parse_json",
@@ -657,6 +660,18 @@ class RenderPySparkExpression:
             scale = expression.data["scale"]
             return f'{args[0]}.cast("decimal({precision},{scale})")'
         if function in {"substring", "substr"}:
+            if len(args) == 3:
+                start = (
+                    self._render_literal_value(expression.args[1])
+                    if expression.args[1].kind == "literal"
+                    else args[1]
+                )
+                length = (
+                    self._render_literal_value(expression.args[2])
+                    if expression.args[2].kind == "literal"
+                    else args[2]
+                )
+                return f"F.{function}({args[0]}, {start}, {length})"
             return f"F.{function}({args[0]}, {expression.data['start']}, {expression.data['length']})"
         if function == "elt":
             return f"F.elt({', '.join(args)})"
@@ -731,8 +746,19 @@ class RenderPySparkExpression:
             return f"F.trunc({args[0]}, {expression.data['unit']!r})"
         if function == "next_day":
             return f"F.next_day({args[0]}, {expression.data['day_of_week']!r})"
-        if function in {"year", "month", "dayofmonth", "hour", "minute", "second"}:
+        if function in {"year", "month", "dayofmonth", "dayofweek", "dayofyear", "hour", "minute", "quarter", "second", "weekofyear"}:
             return f"F.{function}({args[0]})"
+        if function == "last_day":
+            return f"F.last_day({args[0]})"
+        if function == "date_format":
+            return f"F.date_format({args[0]}, {expression.data['format']!r})"
+        if function == "mask":
+            chars = cast(tuple[str | None, ...], expression.data["chars"])
+            if all(character is None for character in chars):
+                return f"F.mask({args[0]})"
+            return f"F.mask({args[0]}, {', '.join(repr(character) for character in chars)})"
+        if function == "overlay":
+            return f"F.overlay({', '.join(args)})"
         if function in {"to_date", "to_timestamp"}:
             return (
                 f"F.{function}({args[0]}, {expression.data['format']!r})"

@@ -184,6 +184,24 @@ def test_json_inspection_helpers_have_typed_nullable_results() -> None:
         json_array_length(1)
 
 
+def test_literal_json_and_csv_schema_helpers_have_non_nullable_string_results() -> None:
+    json_schema = schema_of_json('{"id": 1}')
+    csv_schema = schema_of_csv("Ada|42", options=CsvOptions(delimiter="|"))
+
+    assert isinstance(json_schema.type, StringType)
+    assert json_schema.nullable is False
+    assert isinstance(csv_schema.type, StringType)
+    assert csv_schema.nullable is False
+    assert csv_schema.data is not None and csv_schema.data["options"] == {"sep": "|", "mode": "PERMISSIVE"}
+
+    with pytest.raises(TypeError, match=r"schema_of_json\(\.\.\.\) requires non-empty JSON text literal"):
+        schema_of_json(_expression(types.string(), nullable=False))
+    with pytest.raises(ValueError, match=r"schema_of_json\(\.\.\.\) requires valid JSON text"):
+        schema_of_json("not json")
+    with pytest.raises(TypeError, match=r"schema_of_csv\(\.\.\.\) requires non-empty CSV text literal"):
+        schema_of_csv("")
+
+
 class RequiredUdfSource(Schema):
     label = string(nullable=False)
 
@@ -712,7 +730,15 @@ def test_temporal_helpers_preserve_typed_calendar_contracts() -> None:
     month_start = trunc(required_date, unit="month")
     assert previous.type is not None and previous.type.name == "date"
     assert month_start.type is not None and month_start.type.name == "date"
-    for expression in (year(required_date), month(required_date), dayofmonth(required_date)):
+    for expression in (
+        year(required_date),
+        month(required_date),
+        dayofmonth(required_date),
+        dayofweek(required_date),
+        dayofyear(required_date),
+        quarter(required_date),
+        weekofyear(required_date),
+    ):
         assert expression.type is not None and expression.type.name == "integer"
         assert expression.nullable is False
     for expression in (hour(nullable_timestamp), minute(nullable_timestamp), second(nullable_timestamp)):
@@ -720,6 +746,10 @@ def test_temporal_helpers_preserve_typed_calendar_contracts() -> None:
         assert expression.nullable is True
     assert to_date(required_text, format="yyyy-MM-dd").nullable is True
     assert to_timestamp(required_text, format="yyyy-MM-dd HH:mm:ss").nullable is True
+    month_end = last_day(required_date)
+    assert month_end.type is not None
+    assert month_end.type.name == "date"
+    assert date_format(nullable_timestamp, format="yyyy-MM-dd").nullable is True
 
 
 def test_calendar_and_padding_helpers_preserve_typed_contracts() -> None:
@@ -782,6 +812,9 @@ def test_extended_string_helpers_preserve_types_and_nullability() -> None:
     assert format_number(nullable_number, decimals=2).type is not None
     assert position("Ada", nullable_text, start=2).nullable is True
     assert split_part(nullable_text, "/", -1).nullable is True
+    assert mask(nullable_text).nullable is True
+    assert overlay(nullable_text, "X", pos=2).nullable is True
+    assert overlay(_expression(types.binary(), nullable=False), b"X", pos=2).type is not None
 
 
 def test_extended_string_helpers_require_valid_arguments() -> None:
@@ -797,6 +830,19 @@ def test_extended_string_helpers_require_valid_arguments() -> None:
         position("a", "value", start=0)
     with pytest.raises(ValueError, match=r"part_num cannot be zero"):
         split_part("a.b", ".", 0)
+
+
+@pytest.mark.parametrize("parameter", ["upper_char", "lower_char", "digit_char", "other_char"])
+def test_mask_requires_single_character_literals(parameter: str) -> None:
+    with pytest.raises(TypeError, match=r"must be a single-character string literal or None"):
+        mask("value", **{parameter: "XX"})
+
+
+def test_overlay_requires_matching_string_or_binary_types() -> None:
+    with pytest.raises(TypeError, match=r"same String or Binary type"):
+        overlay("value", b"X", pos=1)
+    with pytest.raises(TypeError, match=r"requires an integer or long Structure expression"):
+        overlay("value", "X", pos="1")
 
 
 def test_character_and_regex_helpers_preserve_types_and_nullability() -> None:
@@ -870,6 +916,21 @@ def test_next_day_requires_a_weekday_literal(day: object) -> None:
 def test_time_extraction_requires_timestamp_values(function) -> None:
     with pytest.raises(TypeError, match=r"requires a Timestamp Structure expression"):
         function(_expression(types.date(), nullable=False))
+
+
+@pytest.mark.parametrize("function", [date_format, last_day, dayofweek, dayofyear, quarter, weekofyear])
+def test_temporal_helpers_require_date_or_timestamp_values(function) -> None:
+    with pytest.raises(TypeError, match=r"requires a Date or Timestamp Structure expression"):
+        if function is date_format:
+            function(_expression(types.string(), nullable=False), format="yyyy-MM-dd")
+        else:
+            function(_expression(types.string(), nullable=False))
+
+
+@pytest.mark.parametrize("format", ["", 1])
+def test_date_format_requires_a_non_empty_format_literal(format: object) -> None:
+    with pytest.raises(TypeError, match=r"date_format\(\.\.\.\) format must be a non-empty string literal"):
+        date_format(_expression(types.date(), nullable=False), format=format)  # type: ignore[arg-type]
 
 
 @pytest.mark.parametrize("unit", ["day", "season", "month; SELECT 1"])

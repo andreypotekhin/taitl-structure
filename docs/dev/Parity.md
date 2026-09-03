@@ -69,6 +69,22 @@ status remains target-evidence driven. The current String slice also covers `btr
 one-based while `get` is zero-based. The implementation sequence is the [PySpark SQL
 function coverage ExecPlan](planning/P08222601.PySpark-SQL-function-coverage.plan.md).
 
+## Column Method Register
+
+The symbolic `Expression` API is Structure's compiler-visible Column surface. It preserves the established Pythonic
+spellings for existing methods, such as `is_null()`, `is_not_null()`, `null_safe_eq(...)`, and `get_field(...)`, while
+matching PySpark method semantics. The first explicitly reconciled method slice is `substr(startPos, length)`.
+
+| Disposition | Column methods | Structure surface or boundary |
+| --- | --- | --- |
+| Implemented | `between`, bitwise methods, `cast`, `contains`, `desc`/`asc` and null-order variants, `endswith`, `ilike`, `isin`, `like`, `rlike`, `startswith`, `substr` | Typed `Expression` methods; `__getitem__`, `get_field`, `with_field`, and `drop_fields` cover the corresponding nested access/mutation forms. |
+| Function-form | `trim`, `lower`, and other SQL functions | Remain explicit `functions.*`-style Structure helpers; they are not PySpark `Column` methods in the active baseline. |
+| Unsupported or design-gated | `alias`/`name`, `isNaN`, `when`/`otherwise`, `over`, `outer`, `transform` | Require a separate typed output, conditional, window, correlated-expression, or higher-order contract. |
+
+`substr(startPos, length)` accepts integral literals or symbolic integral expressions, returns String, and propagates
+nullability from the receiver and both bounds. Generated code uses canonical function-form `F.substr(...)`; this is
+semantically equivalent to the method-form source expression.
+
 ## Docker Live Evidence Checkpoint
 
 The repository Compose stack under `infra/compose/` was rerun on 2026-08-27. These results are runtime evidence for the
@@ -95,16 +111,16 @@ intentionally more explicit; “open” names the remaining PySpark functions or
 | Family | Status | Covered now | Open gaps / boundary |
 | --- | --- | --- | --- |
 | Normal, conditional, predicate, and sort | partial | `literal`, `when`, null-control helpers, `isnull`, `isnotnull`, `isnan` | `equal_null`, function-form `like`/`ilike`/`regexp`/`regexp_like`/`rlike`, and null-ordering sort helpers. `expr` and `call_function` remain unsupported. |
-| String | partial | `ascii`, `btrim`, `char`, `char_length`, `contains`, `elt`, `find_in_set`, `format_number`, `format_string`, `printf`, `lower`, `upper`, trim variants, `lpad`, `rpad`, `left`, `right`, `substring`, `substr`, `substring_index`, `split`, regex extraction/count/instruction/substr variants, `regexp_extract_all`, `concat_ws`, `length`, `locate`, `octet_length`, `position`, `repeat`, `replace`, `initcap`, `reverse`, `soundex`, `translate`, `instr`, `levenshtein`, `split_part` | `mask`, `overlay`, `randstr`, and UTF-8 helpers. Regex patterns and capture-group indexes use the current literal-argument policy. |
+| String | partial | `ascii`, `btrim`, `char`, `char_length`, `contains`, `elt`, `find_in_set`, `format_number`, `format_string`, `printf`, `lower`, `upper`, trim variants, `lpad`, `rpad`, `left`, `right`, `substring`, `substr`, `substring_index`, `split`, regex extraction/count/instruction/substr variants, `regexp_extract_all`, `concat_ws`, `length`, `locate`, `mask`, `octet_length`, `overlay`, `position`, `repeat`, `replace`, `initcap`, `reverse`, `soundex`, `translate`, `instr`, `levenshtein`, `split_part` | `randstr` and UTF-8 helpers. Regex patterns and capture-group indexes use the current literal-argument policy. |
 | Numeric and mathematical | implemented | `abs`, `acos`, `acosh`, `asin`, `asinh`, `atan`, `atan2`, `atanh`, `bin`, `bround`, `cbrt`, `ceil`, `conv`, `cos`, `cosh`, `cot`, `csc`, `degrees`, `e`, `exp`, `expm1`, `factorial`, `floor`, `greatest`, `hex`, `hypot`, `least`, `ln`, `log`, `log10`, `log1p`, `log2`, `pmod`, `pi`, `pow`, `radians`, `rint`, `round`, `sec`, `sign`, `signum`, `sin`, `sinh`, `sqrt`, `tan`, `tanh`, `unhex`, `width_bucket` | All currently reviewed baseline numeric functions have typed contracts; `width_bucket` uses a positive bucket-count literal. |
 | Random and seeded | partial | `rand`, `randn` with explicit seed/reproducibility policy | `uniform`, `randstr`, and other random helpers need separate contracts; streaming support is target-evidence driven. |
-| Date and timestamp | partial | `add_months`, `date_add`, `date_sub`, `datediff`, `date_trunc`, `trunc`, calendar extraction including `hour`, `next_day`, and date/timestamp parsing | timezone/current-time functions, date formatting/parts, day/week/name helpers, Unix/UTC conversion, `last_day`, `make_*` constructors, `months_between`, quarter, timestamp arithmetic/construction, `try_*` temporal helpers, and week helpers. |
+| Date and timestamp | partial | `add_months`, `date_add`, `date_sub`, `date_format`, `datediff`, `date_trunc`, `trunc`, calendar extraction including `dayofweek`, `dayofyear`, `hour`, `next_day`, `quarter`, `weekofyear`, `last_day`, and date/timestamp parsing | timezone/current-time functions, date part/name helpers, Unix/UTC conversion, `make_*` constructors, `months_between`, timestamp arithmetic/construction, `try_*` temporal helpers, and `weekday`. |
 | Bitwise and binary | partial | typed Column bitwise methods, SQL `bit_count`, `bit_get`, `getbit`, `base64`, `unbase64`, `encode`, `decode`, `hex`, `unhex` | SQL shifts, `to_binary`, `try_to_binary`, and UTF-8/binary validation helpers. |
 | Hash | implemented | `hash`, `xxhash64`, `crc32`, `md5`, `sha1`, `sha2` | Hashes remain non-identity and non-password-storage primitives; CRC-32 is a checksum rather than a cryptographic digest. |
-| JSON and CSV | partial | Schema-carrying `from_json`, `to_json`, `from_csv`, `to_csv`, plus typed `get_json_object`, `json_array_length`, and `json_object_keys` | `schema_of_csv`, `schema_of_json`, and `json_tuple`; `json_tuple` remains deferred until multi-column output schemas are supported. |
+| JSON and CSV | partial | Schema-carrying `from_json`, `to_json`, `from_csv`, `to_csv`, typed `get_json_object`, `json_array_length`, `json_object_keys`, and literal `schema_of_json`/`schema_of_csv` | `json_tuple` remains deferred until multi-column output schemas are supported; dynamic schema inference remains unsupported. |
 | Arrays and higher-order functions | implemented | Typed array construction, lookup, mutation, set, concatenation, size, join, extrema, overlap, sort, shuffle, `sequence`, `slice`, `reduce`, `arrays_zip`, and symbolic callbacks through `arr_*`/`array_*` | Remaining baseline callback/array aliases require only a parity decision; stable `array_N` field names keep `arrays_zip` schema-visible. |
 | Struct and map | partial | Typed map construction/lookup/entries/callbacks; schema constructors own struct shape | `create_map`, `map_from_arrays`, `str_to_map`, `named_struct`, and exact constructor parity. |
-| Aggregates | partial | Core, boolean, statistical, percentile, collection, and deterministic `mode` aggregates | `any_value`, `array_agg`, bitwise aggregates, `count_if`, `first`/`last`, `max_by`/`min_by`, `median`, `product`, regression aggregates, population/sample aliases, distinct/string aggregation, and sketch/bitmap aggregates. |
+| Aggregates | partial | Core, boolean, statistical, `count_if`, `median`, population/sample standard-deviation and variance aliases, percentile, collection, and deterministic `mode` aggregates | `any_value`, `array_agg`, bitwise aggregates, `first`/`last`, `max_by`/`min_by`, `product`, regression aggregates, distinct/string aggregation, and sketch/bitmap aggregates. |
 | Windows | partial | Typed ranking, lag/lead, value selection, and aggregate-window helpers | Raw `Column.over`, complete null-ordering options, and any aggregate/window form not admitted through typed `WindowSpec`. |
 | Generators and partition transforms | partial | Typed array/map/struct generators and Variant TVFs | `stack`, generic PySpark generator spellings, and partition transforms `years`, `months`, `days`, `hours`, `bucket`; cardinality, schema, and streaming contracts are required. |
 | Variant | partial | Released-profile parsing, extraction, validation, schema inspection, conversion, and TVF expansion | `is_valid_variant` is profile-gated; Variant mutations remain design-gated until a released target and mutation contract exist. |
