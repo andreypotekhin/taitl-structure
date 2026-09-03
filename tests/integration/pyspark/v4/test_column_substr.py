@@ -12,7 +12,6 @@ from structure.plugin.pyspark import integer, string
 
 pytestmark = pytest.mark.integration
 
-SOURCE_MODULE = "integration.pyspark.v4.test_column_substr"
 PACKAGE = "integration_v4_column_substr_generated"
 
 
@@ -44,14 +43,15 @@ class ColumnSubstr(Transform):
 
 
 def test_column_substr_matches_online_and_generated_execution(spark, tmp_path) -> None:
+    source_module = ColumnSubstr.__module__
     files = render_generated_project(
         ColumnSubstr,
-        source_transform=f"{SOURCE_MODULE}.ColumnSubstr",
+        source_transform=f"{source_module}.ColumnSubstr",
         generated_package=PACKAGE,
-        source_schema_modules={SOURCE_MODULE: [SubstrInput, SubstrOutput]},
+        source_schema_modules={source_module: [SubstrInput, SubstrOutput]},
     )
-    transform_path = f"{PACKAGE}/pyspark/transforms/integration/pyspark/v4/test_column_substr.py"
-    assert "F.substr(" in files[transform_path]
+    transform_path = f"{PACKAGE}/pyspark/transforms/{source_module.replace('.', '/')}.py"
+    assert ".substr(" in files[transform_path]
 
     with generated_project(tmp_path, PACKAGE, files):
         generated_schemas = importlib.import_module(f"{PACKAGE}.pyspark.schemas.test_column_substr")

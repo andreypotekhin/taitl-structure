@@ -30,6 +30,7 @@ PySpark `Column` surface; functions such as `trim` and `lower` remain function-f
 | `is_null()` | `isNull` | `o.customer_id.is_null()` |
 | `is_not_null()` | `isNotNull` | `o.customer_id.is_not_null()` |
 | `null_safe_eq(...)` | `eqNullSafe` | `o.code.null_safe_eq("A")` |
+| `equal_null(...)` | `equal_null` | `equal_null(o.code, "A")` |
 | `isin(...)` | `isin` | `o.state.isin("CA", "OR")` |
 | `between(...)` | `between` | `o.total.between(1, 100)` |
 
@@ -39,7 +40,7 @@ PySpark `Column` surface; functions such as `trim` and `lower` remain function-f
   require Boolean expressions. Reflected `&` and `|` are also supported for IDE and type-checker compatibility while
   preserving the authored operand order.
 - Comparisons and Boolean operators preserve SQL three-valued null semantics. `between(...)` is inclusive;
-  `null_safe_eq(...)` considers two nulls equal and is never null.
+  `null_safe_eq(...)` and `equal_null(...)` consider two nulls equal and are never null.
 - Comparisons and `isin(...)` require compatible typed values. Numeric values and Date/Timestamp pairs may be compared;
   Map values are not comparable.
 - Struct mutation requires an explicit declared result Schema. It is rejected unless that schema exactly preserves the
@@ -81,8 +82,11 @@ PySpark `Column` surface; functions such as `trim` and `lower` remain function-f
 **Details And Differences**
 
 - Array and map lookup results are nullable. String predicates require String expressions; `rlike(...)` uses Java regex.
+  Function-form `like(...)`, `ilike(...)`, `regexp(...)`, `regexp_like(...)`, and `rlike(...)` accept typed String
+  expressions for both the value and pattern.
 - `substr(...)` requires a String expression and integral start/length literals or expressions. Its result is nullable
-  when the receiver or either bound is nullable. The equivalent function form is `substr(o.name, start=1, length=10)`.
+  when the receiver or either bound is nullable. Generated method calls use `o.name.substr(...)`; the equivalent
+  function form is `substr(o.name, start=1, length=10)`.
 - `try_cast(...)` is always nullable and needs target profile `>=4.0,<4.1`.
 - Division, remainder, and negation require numeric expressions. Integral division returns Double; Decimal division uses
   Spark's bounded Decimal precision rules. Raw `Column.over(...)` remains unsupported.
@@ -118,6 +122,8 @@ PySpark `Column` surface; functions such as `trim` and `lower` remain function-f
 | `left(...)`, `right(...)` | `left`, `right` | `left(o.name, length=3)` |
 | `locate(...)` | `locate` | `locate(o.name, substring="Ada", position=1)` |
 | `contains(...)` | `contains` | `contains(o.name, "Ada")` |
+| `like(...)`, `ilike(...)` | `like`, `ilike` | `like(o.name, "A%")` |
+| `regexp(...)`, `regexp_like(...)`, `rlike(...)` | `regexp`, `regexp_like`, `rlike` | `regexp_like(o.name, "^A")` |
 | `find_in_set(...)` | `find_in_set` | `find_in_set(o.name, o.candidates)` |
 | `format_number(...)` | `format_number` | `format_number(o.amount, decimals=2)` |
 | `octet_length(...)` | `octet_length` | `octet_length(o.name)` |

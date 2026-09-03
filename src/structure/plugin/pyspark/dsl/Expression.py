@@ -136,9 +136,9 @@ class Expression:
         Returns:
             A nullable String expression.
         """
-        from structure.plugin.pyspark.dsl.expressions import substr
+        from structure.plugin.pyspark.dsl.expressions import _column_substr
 
-        return substr(self, start=startPos, length=length)
+        return _column_substr(self, startPos, length)
 
     def contains(self, value: str) -> "Expression":
         return self._string_predicate("contains", value)

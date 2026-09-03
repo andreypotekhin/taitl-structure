@@ -48,6 +48,38 @@ def test_v1_expression_renderer_renders_arithmetic_and_comparison() -> None:
     )
 
 
+def test_v1_expression_renderer_renders_function_predicates() -> None:
+    class Raw(Schema):
+        label = string(nullable=True)
+        pattern = string(nullable=False)
+
+    class Published(Schema):
+        same = boolean(nullable=False)
+        matches = boolean(nullable=True)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(
+                same=equal_null(row.label, row.pattern),
+                matches=like(row.label, row.pattern),
+            )
+
+    recipe = _recipe(Publish)
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    assert render(projection["same"], scope_aliases={"rows": "orders"}) == (
+        'F.col("orders.label").eqNullSafe(F.col("orders.pattern"))'
+    )
+    assert render(projection["matches"], scope_aliases={"rows": "orders"}) == (
+        'F.like(F.col("orders.label"), F.col("orders.pattern"))'
+    )
+
+
 def test_v4_expression_renderer_renders_division_modulo_and_negation() -> None:
     class Raw(Schema):
         amount = integer(nullable=True)
@@ -1240,10 +1272,10 @@ def test_v4_expression_renderer_renders_column_substr_method_bounds() -> None:
     render = PySpark.render.expression()
 
     assert render(projection["literal"], scope_aliases={"rows": "orders"}) == (
-        'F.substr(F.col("orders.label"), 1, 4)'
+        'F.col("orders.label").substr(1, 4)'
     )
     assert render(projection["dynamic"], scope_aliases={"rows": "orders"}) == (
-        'F.substr(F.col("orders.label"), F.col("orders.start"), F.col("orders.length"))'
+        'F.col("orders.label").substr(F.col("orders.start"), F.col("orders.length"))'
     )
 
 

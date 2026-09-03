@@ -576,6 +576,8 @@ class RenderPySparkExpression:
             return f"F.btrim({args[0]}, {expression.data['trim']!r})"
         if function == "contains":
             return f"F.contains({args[0]}, {args[1]})"
+        if function in {"like", "ilike", "regexp", "regexp_like", "rlike"}:
+            return f"F.{function}({args[0]}, {args[1]})"
         if function in {"base64", "unbase64"}:
             return f"F.{function}({args[0]})"
         if function in {"encode", "decode"}:
@@ -671,6 +673,8 @@ class RenderPySparkExpression:
                     if expression.args[2].kind == "literal"
                     else args[2]
                 )
+                if expression.data.get("method"):
+                    return f"{args[0]}.substr({start}, {length})"
                 return f"F.{function}({args[0]}, {start}, {length})"
             return f"F.{function}({args[0]}, {expression.data['start']}, {expression.data['length']})"
         if function == "elt":

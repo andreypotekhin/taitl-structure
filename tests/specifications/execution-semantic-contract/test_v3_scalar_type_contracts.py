@@ -817,6 +817,23 @@ def test_extended_string_helpers_preserve_types_and_nullability() -> None:
     assert overlay(_expression(types.binary(), nullable=False), b"X", pos=2).type is not None
 
 
+def test_function_predicates_preserve_string_types_and_nullability() -> None:
+    nullable_text = _expression(types.string(), nullable=True)
+    required_text = _expression(types.string(), nullable=False)
+
+    assert equal_null(nullable_text, required_text).nullable is False
+    for predicate in (like, ilike, regexp, regexp_like, rlike):
+        expression = predicate(nullable_text, required_text)
+        assert expression.type is not None and expression.type.name == "boolean"
+        assert expression.nullable is True
+
+
+def test_function_predicates_require_string_operands() -> None:
+    for predicate in (like, ilike, regexp, regexp_like, rlike):
+        with pytest.raises(TypeError, match=r"requires a String Structure expression"):
+            predicate("value", 1)
+
+
 def test_extended_string_helpers_require_valid_arguments() -> None:
     with pytest.raises(TypeError, match=r"btrim\(\.\.\.\) requires a String"):
         btrim(1)

@@ -7,8 +7,9 @@ coverage, notation, and formatting rules.
 ## Narrative
 
 - Treat Implementation as a narrative between the conceptual Solution and the mechanical Code section.
-- Move from workflow purpose and main data movement to the relations, objects, policies, and boundaries that make the
-  flow reliable.
+- Move from workflow purpose and main data movement to the relations, objects, policies, limits, and boundaries that
+  make the flow reliable. Keep the preamble substantive enough to explain the contract and important limits; do not
+  shrink it into a two-sentence component summary.
 - Introduce a concept before its first use. Add it to Definitions when a reusable domain explanation will help
   elsewhere.
 - Use concrete subjects and active verbs. Give each sentence one main data transition, rationale, or connection.
@@ -34,8 +35,8 @@ method-specific reference is necessary to explain a pressing architectural bound
 
 ## Stage and item explanations
 
-- Begin each stage subsection that has prose with one self-contained sentence describing its main data transition and
-  responsibility.
+- Begin each stage subsection that has prose with one self-contained, active sentence describing its main data transition
+  and responsibility. Prefer an imperative opening such as “Match terms” or “Publish results” when it reads naturally.
 - Give every explanatory item one self-contained sentence that explains the most meaningful data transition and why it
   performs it. Use an imperative opening only when it reads naturally; otherwise use a subject-led sentence.
 - Keep explanatory prose accessible to a first-time reader. Prefer clear domain subjects such as scores, lanes,

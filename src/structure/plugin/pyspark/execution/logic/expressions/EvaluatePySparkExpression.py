@@ -799,6 +799,8 @@ class EvaluatePySparkExpression:
             return functions.btrim(args[0], expression.data["trim"])
         if function == "contains":
             return functions.contains(args[0], args[1])
+        if function in {"like", "ilike", "regexp", "regexp_like", "rlike"}:
+            return getattr(functions, function)(args[0], args[1])
         if function in {"base64", "unbase64"}:
             return getattr(functions, function)(args[0])
         if function in {"encode", "decode"}:

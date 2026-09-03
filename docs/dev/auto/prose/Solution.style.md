@@ -5,11 +5,12 @@ documents retain responsibility for section order, source coverage, and notation
 
 ## Problem
 
-- Ground the opening in the motivating use case, then narrow to the topic's specific difficulty or constraint in
-  preferably one focused paragraph.
-- Introduce only the domain concepts needed to make that use-case difficulty clear, then state why the user's task becomes
-  difficult, unreliable, slow, or ambiguous.
-- Use concrete subjects and active verbs. Prefer lively, precise language over abstract status or requirement language.
+- Ground the opening in the motivating use case, then narrow to the topic's specific industry requirement in
+  preferably one focused paragraph. A Problem section may be a single vivid sentence when that fully states the need.
+- Introduce only the domain concepts needed to make that use-case requirement clear, then state the user's desired
+  outcome. Do not turn Problem into a catalog of implementation challenges, risks, or possible failure modes.
+- Use concrete subjects and active, lively verbs. Prefer expressive language over abstract status or requirement
+  language.
 - State the problem and its consequences, then stop. Do not explain how to solve it, name a proposed abstraction,
   describe a transform or workflow, introduce solution algorithms, or prescribe implementation requirements.
 - Treat boundaries, policies, indexes, formulas, stages, and data structures as possible solution material. If a sentence
@@ -24,6 +25,9 @@ implementation plan.
 
 - Make Solution the conceptual center: explain the general theory and practice that answer the
   stated use-case problem, then move to the topic's central abstraction, behavior, and tradeoffs.
+- Begin with a short general introduction to the domain practice before naming project-specific components or describing
+  the concrete data structure. When the topic centers on query or request structure, include representative examples
+  early enough for a first-time reader to see how the abstraction is used.
 - Write direct narrative. Do not announce the section with “The solution is” or refer to “this Solution section.”
 - Use active, expressive language with concrete subjects and varied sentence rhythm. Favor explanatory verbs such as
   represent, compare, preserve, connect, and recover. Avoid sketches that merely name components without explaining how

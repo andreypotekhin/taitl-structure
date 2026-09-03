@@ -144,14 +144,14 @@ AsOf BinaryType CsvOptions DecimalType Join JoinDedupe JoinHint JoinStrategy Jso
 approx_count_distinct approx_percentile arr_aggregate arr_append arr_compact arr_distinct arr_exists arr_filter
 arr_flatten arr_forall arr_position arr_prepend arr_reverse arr_insert arr_remove arr_sort arr_sort_by arr_transform
 arr_zip_with array array_contains array_except array_intersect array_join array_max array_min array_repeat array_size array_union arrays_overlap avg as_of_one bool_and bool_or
-collect_list collect_set concat_ws coalesce ceil char_length count count_if count_distinct corr covar cos cosh cot csc cross_join cube current_row conv date_add btrim char soundex regexp_count regexp_extract_all regexp_instr regexp_substr bit_count bit_get getbit
+collect_list collect_set concat_ws coalesce ceil char_length count count_if count_distinct corr covar cos cosh cot csc cross_join cube current_row conv date_add btrim char soundex regexp_count regexp_extract_all regexp_instr regexp_substr bit_count bit_get getbit equal_null
 date_sub date_trunc date_format dayofmonth dayofweek dayofyear datediff decode cume_dist cbrt bin dedupe_earliest_by dedupe_latest_by dense_rank degrees distinct
 drop_duplicates drop_duplicates_within_watermark earliest_by element_at encode event_time_between exactly_one except_all e exp expm1 factorial exists floor from_csv from_json get hash hour hypot last_day left
 initcap ifnull instr intersect intersect_all first_value following full_join greatest grouping_id grouping_sets having inner_join isnan
 isnotnull isnull is_grouped kurtosis lag left_join latest_by lead lookup_join last_value length levenshtein lower lpad find_in_set format_number mask overlay
 ltrim ln locate log log10 log1p log2 least limit md5 map_entries map_concat map_contains_key map_filter map_from_entries map_keys map_transform_keys median
 map_transform_values map_values map_zip_with max min minute mode month nanvl nvl nvl2 nullif pow not_exists nth_value
-ntile offset order_by param_join percent_rank percentile pi posexplode_array posexplode_outer_array posexplode_struct posexplode_outer_struct posexplode_map posexplode_outer_map explode_array explode_outer_array explode_struct explode_outer_struct explode_map explode_outer_map inline_struct inline_outer_struct variant_explode variant_explode_outer preceding pmod project quarter rank range_between relation_alias regexp_extract regexp_replace require_all require_parent_hierarchy require_reference require_unique hierarchy_closure hierarchy_fallbacks reverse rtrim round
+ntile offset order_by param_join percent_rank percentile pi posexplode_array posexplode_outer_array posexplode_struct posexplode_outer_struct posexplode_map posexplode_outer_map explode_array explode_outer_array explode_struct explode_outer_struct explode_map explode_outer_map inline_struct inline_outer_struct variant_explode variant_explode_outer preceding pmod project quarter rank range_between relation_alias regexp_extract regexp_replace regexp regexp_like rlike like ilike require_all require_parent_hierarchy require_reference require_unique hierarchy_closure hierarchy_fallbacks reverse rtrim round
 sample sec select_first_qualified signum sin sinh slice sha1 sha2 second rand randn radians rint right_join rollup row_number rowset_join rows_between rolling_avg rolling_max position sort_array split_part elt format_string printf substr
 rolling_min rolling_sum scan subtract sum stddev sqrt size sequence session_window skewness split translate substring temporal_one next_day
 to_csv to_decimal to_date to_json to_timestamp TimeWindow trim trunc try_element_at unbase64 union_all union_by_name upper unbounded_following unbounded_preceding hex unhex cardinality weekofyear
@@ -264,6 +264,7 @@ __all__ = [  # noqa: F405
     "csc",
     "count",
     "count_if",
+    "equal_null",
     "count_distinct",
     "corr",
     "covar",
@@ -428,6 +429,11 @@ __all__ = [  # noqa: F405
     "regexp_instr",
     "regexp_replace",
     "regexp_substr",
+    "like",
+    "ilike",
+    "regexp",
+    "regexp_like",
+    "rlike",
     "require_all",
     "require_parent_hierarchy",
     "require_reference",

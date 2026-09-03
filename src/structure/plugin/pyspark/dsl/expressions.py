@@ -45,7 +45,7 @@ __all__ = [
     "minute", "month", "nanvl", "nullif", "nvl", "nvl2", "pow", "regexp_extract", "regexp_replace", "repeat", "replace", "reverse",
     "round", "rpad", "rtrim", "sha1", "sha2", "second", "signum", "split", "sqrt", "substring", "to_csv", "to_date",
     "to_decimal", "to_json", "to_timestamp", "translate", "trim", "trunc", "unbase64", "decode", "encode", "hex", "unhex", "upper", "ascii", "btrim", "char", "char_length", "date_format", "find_in_set", "format_number", "last_day", "left", "locate", "mask", "octet_length", "overlay", "position", "quarter", "right", "soundex", "split_part", "substring_index", "regexp_count", "regexp_extract_all", "regexp_instr", "regexp_substr", "weekofyear", "bit_count", "bit_get", "getbit",
-    "when", "width_bucket", "xxhash64", "year", "zeroifnull", "acos", "acosh", "asin", "asinh", "atan", "atan2", "atanh", "cbrt", "cos", "cosh", "cot", "csc", "degrees", "e", "expm1", "factorial", "greatest", "hypot", "least", "ln", "log10", "log1p", "log2", "pmod", "pi", "radians", "rint", "sec", "sign", "sin", "sinh", "tan", "tanh", "add_months", "next_day", "rand", "randn", "is_valid_variant", "is_variant_null", "parse_json",
+    "when", "width_bucket", "xxhash64", "year", "zeroifnull", "acos", "acosh", "asin", "asinh", "atan", "atan2", "atanh", "cbrt", "cos", "cosh", "cot", "csc", "degrees", "e", "expm1", "factorial", "greatest", "hypot", "least", "ln", "log10", "log1p", "log2", "pmod", "pi", "radians", "rint", "sec", "sign", "sin", "sinh", "tan", "tanh", "add_months", "next_day", "rand", "randn", "equal_null", "like", "ilike", "regexp", "regexp_like", "rlike", "is_valid_variant", "is_variant_null", "parse_json",
     "schema_of_variant", "to_variant_object", "try_parse_json", "try_variant_get", "variant_get", "variant_literal",
     "variant_array_append", "try_variant_array_append", "variant_insert", "try_variant_insert", "variant_set",
     "try_variant_set", "variant_delete",
@@ -649,6 +649,10 @@ def substr(value: object, *, start: object, length: object) -> Expression:
     return _substring_call("substr", value, start=start, length=length)
 
 
+def _column_substr(value: object, start: object, length: object) -> Expression:
+    return _substring_call("substr", value, start=start, length=length, method=True)
+
+
 def elt(index: object, *values: object) -> Expression:
     """Return the one-based selected value from compatible scalar expressions."""
     if not values:
@@ -873,6 +877,36 @@ def find_in_set(value: object, values: object) -> Expression:
         data={"function": "find_in_set"},
         args=arguments,
     )
+
+
+def equal_null(left: object, right: object) -> Expression:
+    """Compare two values with Spark's null-safe equality semantics."""
+    return literal(left).null_safe_eq(right)
+
+
+def like(value: object, pattern: object) -> Expression:
+    """Match a String expression against a SQL LIKE pattern."""
+    return _string_match_call("like", value, pattern)
+
+
+def ilike(value: object, pattern: object) -> Expression:
+    """Match a String expression against a case-insensitive SQL LIKE pattern."""
+    return _string_match_call("ilike", value, pattern)
+
+
+def regexp(value: object, pattern: object) -> Expression:
+    """Match a String expression against a regular expression."""
+    return _string_match_call("regexp", value, pattern)
+
+
+def regexp_like(value: object, pattern: object) -> Expression:
+    """Match a String expression against a regular expression."""
+    return _string_match_call("regexp_like", value, pattern)
+
+
+def rlike(value: object, pattern: object) -> Expression:
+    """Match a String expression against a regular expression."""
+    return _string_match_call("rlike", value, pattern)
 
 
 def format_number(value: object, *, decimals: int) -> Expression:
@@ -1952,6 +1986,20 @@ def _string_argument(value: object, call: str) -> Expression:
     return argument
 
 
+def _string_match_call(function: str, value: object, pattern: object) -> Expression:
+    arguments = tuple(
+        _string_argument(argument, f"{function}(...)")
+        for argument in (value, pattern)
+    )
+    return Expression(
+        kind="call",
+        type=BooleanType(),
+        nullable=any(argument.nullable for argument in arguments),
+        data={"function": function},
+        args=arguments,
+    )
+
+
 def _string_or_binary_argument(value: object, call: str) -> Expression:
     argument = literal(value)
     if not isinstance(argument.type, (StringType, BinaryType)):
@@ -2163,7 +2211,9 @@ def _string_call(function: str, value: object) -> Expression:
     )
 
 
-def _substring_call(function: str, value: object, *, start: object, length: object) -> Expression:
+def _substring_call(
+    function: str, value: object, *, start: object, length: object, method: bool = False
+) -> Expression:
     argument = _string_argument(value, f"{function}(...)")
     start_argument = _integral_argument(start, f"{function}(...)")
     length_argument = _integral_argument(length, f"{function}(...)")
@@ -2174,6 +2224,8 @@ def _substring_call(function: str, value: object, *, start: object, length: obje
         if isinstance(length_value, int) and length_value < 0:
             raise TypeError(f"{function}(...) length must be a non-negative integer")
     data: dict[str, object] = {"function": function}
+    if method:
+        data["method"] = True
     if start_argument.kind == "literal" and start_argument.data is not None:
         data["start"] = start_argument.data["value"]
     if length_argument.kind == "literal" and length_argument.data is not None:

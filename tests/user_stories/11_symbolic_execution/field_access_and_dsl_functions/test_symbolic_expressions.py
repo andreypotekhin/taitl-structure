@@ -712,10 +712,10 @@ def test_column_substr_method_accepts_literal_and_symbolic_bounds() -> None:
 
     projection = {assignment.field.name: assignment.expression for assignment in _body(Publish).projection}
 
-    assert projection["literal"].data == {"function": "substr", "start": 1, "length": 3}
+    assert projection["literal"].data == {"function": "substr", "method": True, "start": 1, "length": 3}
     assert projection["literal"].nullable is True
     assert projection["literal"].type.name == "string"
-    assert projection["dynamic"].data == {"function": "substr"}
+    assert projection["dynamic"].data == {"function": "substr", "method": True}
     assert projection["dynamic"].nullable is True
     assert projection["dynamic"].args[1].type.name == "integer"
     assert projection["dynamic"].args[2].type.name == "long"

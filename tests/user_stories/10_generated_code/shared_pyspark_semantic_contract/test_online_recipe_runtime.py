@@ -254,6 +254,11 @@ def test_online_expression_evaluator_preserves_pyspark_column_semantics() -> Non
             _string_predicate("rlike", _field(RawOrder, "status"), r"release-[0-9]+"),
             "col(orders.status).rlike('release-[0-9]+')",
         ),
+        (_call("like", _field(RawOrder, "status"), _literal("new%")), "like(col(orders.status),lit('new%'))"),
+        (_call("ilike", _field(RawOrder, "status"), _literal("NEW%")), "ilike(col(orders.status),lit('NEW%'))"),
+        (_call("regexp", _field(RawOrder, "status"), _literal(r"release-[0-9]+")), "regexp(col(orders.status),lit('release-[0-9]+'))"),
+        (_call("regexp_like", _field(RawOrder, "status"), _literal(r"release-[0-9]+")), "regexp_like(col(orders.status),lit('release-[0-9]+'))"),
+        (_call("rlike", _field(RawOrder, "status"), _literal(r"release-[0-9]+")), "rlike(col(orders.status),lit('release-[0-9]+'))"),
         (_item(_field(RawTagBatch, "tags"), _literal(0)), "col(RawTagBatch.tags)[0]"),
         (_item(_field(RawMapBatch, "attributes"), _literal("region")), "col(RawMapBatch.attributes)['region']"),
         (_get_field(_field(RawShippedOrder, "shipping"), "city"), "col(RawShippedOrder.shipping).getField('city')"),
@@ -3825,6 +3830,21 @@ class FakeFunctions(ModuleType):
 
     def xxhash64(self, *columns):
         return FakeColumn("xxhash64(" + ",".join(column.expression for column in columns) + ")")
+
+    def like(self, column, pattern):
+        return FakeColumn(f"like({column.expression},{pattern.expression})")
+
+    def ilike(self, column, pattern):
+        return FakeColumn(f"ilike({column.expression},{pattern.expression})")
+
+    def regexp(self, column, pattern):
+        return FakeColumn(f"regexp({column.expression},{pattern.expression})")
+
+    def regexp_like(self, column, pattern):
+        return FakeColumn(f"regexp_like({column.expression},{pattern.expression})")
+
+    def rlike(self, column, pattern):
+        return FakeColumn(f"rlike({column.expression},{pattern.expression})")
 
     def md5(self, column):
         return FakeColumn(f"md5({column.expression})")

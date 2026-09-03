@@ -40,6 +40,8 @@ not as a system-design summary:
 - Use approximately three to five short paragraphs, expanding with topic complexity when a formula or important tradeoff
   needs room rather than enforcing a fixed word count.
 - Begin with the theory and practice of solving the motivating use case before introducing project-specific names.
+- Open with a brief general domain introduction before moving to the concrete project abstraction. If the topic has a
+  user-visible query or request structure, show representative examples before explaining its internal representation.
 - Explain the central abstraction, its purpose, and the important semantic tradeoffs.
 - Define concepts before using them.
 - Progress gradually from the problem's concepts to the solution's meaning and enabled behavior.
@@ -68,8 +70,9 @@ vocabulary.
 
 Draft the remaining sections in the concise, structured style exemplified by `close/draft/search/transforms/indexing/Indexing.draft.md`:
 - `Problem`: describe the industry and project need in one or two focused paragraphs. For Search topics, ground it in
-  building and using a search engine. State the user-facing difficulty and consequences without proposing the answer, naming
-  solution mechanisms, prescribing requirements, or describing implementation.
+  building and using a modern search system. State the user-facing need and desired outcome in active, lively language;
+  one focused sentence is acceptable. Do not turn Problem into a list of challenges, risks, limits, or failure modes;
+  move those to Solution, Design, or Implementation.
 - `Solution`: provide the full conceptual narrative described above. Explain how the solution addresses the problem,
   using relevant theory and practical search-engine wisdom. Explain its central concepts, why the approach works, semantic
   tradeoffs, and enabled behavior. Do not call it a design or describe architecture, transform responsibilities,
@@ -114,6 +117,8 @@ Problem section:
 - Enrich the problem only when the background adds essential reader context; do not turn it into a problem inventory or
   implementation walkthrough.
 - Use casual language, prioritize thoughtful explanation/intent over prescription/direction, gradually build understanding.
+- Prefer one vivid, active statement of the general use-case or industry requirement. Move candidate, identity, policy,
+  scale, and availability challenges into Design or Implementation instead of accumulating them in Problem.
 
 ### Draft operator - Solution section
 Solution section:
@@ -125,6 +130,9 @@ Solution section:
   walkthrough.
 - Use casual language, prioritize thoughtful explanation/intent over prescription/direction, gradually build understanding.
 - Make Solution content available for first-time reader: conceptual, easier on technical details.
+- Start with a general explanation of the domain practice before introducing the project's concrete abstraction. For
+  query-structure topics such as SearchFields, include representative metadata-only, body-only, mixed, or aggregate
+  query examples and explain what each example means before naming the implementation stages.
 - Include textbook-grade explanations as needed.
 - Describe the answer directly; do not write “The solution is,” refer to the Solution section, or leave a component-only sketch.
 

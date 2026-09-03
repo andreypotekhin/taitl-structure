@@ -126,11 +126,11 @@ Model source code covers the happy path; unhappy paths are expected to be create
 The generated source is not fixed, may adjust to the project as we evolve/refactor. 
 The generated source is also 'more' than the developed project until the current version scope is complete. 
 
-### Infrastructure - Live PySpark
+### Infrastructure - Live PySpark Runtime
 Live PySpark infrastructure is defined as Docker-Compose scripts under infra/compose.
-This infrastructure is not needed for most tests - with the exception of integration tests.
+This infrastructure is needed only for integration tests.
 
-The live PySpark infrastructure can also be used in development for activities that require live Spark, 
+The live PySpark infrastructure can also be used in development for activities that require PySpark runtime, 
 such as collecting external live evidence, validating runtime-support claims, proofing and prototyping.  
 
 See [Testing.md](docs/dev/Testing.md) sections for details:

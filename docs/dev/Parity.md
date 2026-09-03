@@ -82,8 +82,12 @@ matching PySpark method semantics. The first explicitly reconciled method slice 
 | Unsupported or design-gated | `alias`/`name`, `isNaN`, `when`/`otherwise`, `over`, `outer`, `transform` | Require a separate typed output, conditional, window, correlated-expression, or higher-order contract. |
 
 `substr(startPos, length)` accepts integral literals or symbolic integral expressions, returns String, and propagates
-nullability from the receiver and both bounds. Generated code uses canonical function-form `F.substr(...)`; this is
-semantically equivalent to the method-form source expression.
+nullability from the receiver and both bounds. Generated code uses canonical method-form
+`receiver.substr(start, length)`, which preserves PySpark's valid argument contract for integer bounds.
+
+The focused live parity test passed through the configured Docker Compose runtimes on 2026-09-03: PySpark 3.5
+(`1 passed` in 51.43 seconds) and PySpark 4.0 (`1 passed` in 71.30 seconds). The scenario covers nullable and
+non-nullable String inputs, literal and symbolic integral bounds, online execution, and generated execution.
 
 ## Docker Live Evidence Checkpoint
 
@@ -110,7 +114,7 @@ intentionally more explicit; “open” names the remaining PySpark functions or
 
 | Family | Status | Covered now | Open gaps / boundary |
 | --- | --- | --- | --- |
-| Normal, conditional, predicate, and sort | partial | `literal`, `when`, null-control helpers, `isnull`, `isnotnull`, `isnan` | `equal_null`, function-form `like`/`ilike`/`regexp`/`regexp_like`/`rlike`, and null-ordering sort helpers. `expr` and `call_function` remain unsupported. |
+| Normal, conditional, predicate, and sort | partial | `literal`, `when`, null-control helpers, `isnull`, `isnotnull`, `isnan`, `equal_null`, function-form `like`/`ilike`/`regexp`/`regexp_like`/`rlike` | Null-ordering sort helpers remain open. `expr` and `call_function` remain unsupported. |
 | String | partial | `ascii`, `btrim`, `char`, `char_length`, `contains`, `elt`, `find_in_set`, `format_number`, `format_string`, `printf`, `lower`, `upper`, trim variants, `lpad`, `rpad`, `left`, `right`, `substring`, `substr`, `substring_index`, `split`, regex extraction/count/instruction/substr variants, `regexp_extract_all`, `concat_ws`, `length`, `locate`, `mask`, `octet_length`, `overlay`, `position`, `repeat`, `replace`, `initcap`, `reverse`, `soundex`, `translate`, `instr`, `levenshtein`, `split_part` | `randstr` and UTF-8 helpers. Regex patterns and capture-group indexes use the current literal-argument policy. |
 | Numeric and mathematical | implemented | `abs`, `acos`, `acosh`, `asin`, `asinh`, `atan`, `atan2`, `atanh`, `bin`, `bround`, `cbrt`, `ceil`, `conv`, `cos`, `cosh`, `cot`, `csc`, `degrees`, `e`, `exp`, `expm1`, `factorial`, `floor`, `greatest`, `hex`, `hypot`, `least`, `ln`, `log`, `log10`, `log1p`, `log2`, `pmod`, `pi`, `pow`, `radians`, `rint`, `round`, `sec`, `sign`, `signum`, `sin`, `sinh`, `sqrt`, `tan`, `tanh`, `unhex`, `width_bucket` | All currently reviewed baseline numeric functions have typed contracts; `width_bucket` uses a positive bucket-count literal. |
 | Random and seeded | partial | `rand`, `randn` with explicit seed/reproducibility policy | `uniform`, `randstr`, and other random helpers need separate contracts; streaming support is target-evidence driven. |
