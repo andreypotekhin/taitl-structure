@@ -945,7 +945,7 @@ def render_search_example() -> dict[str, str]:
             SelectExperimentScores,
         )
         from examples.search.transforms.features import BuildDocumentFeatures, BuildQueryFeatures, Features
-        from examples.search.transforms.fields import ExtractDocumentFields
+        from examples.search.transforms.fields import Fields
         from examples.search.transforms.indexing import FieldIndex, Indexing
         from examples.search.transforms.labeling import CreateQueryLabels, Labeling, MergeQueryLabels
         from examples.search.transforms.offline.scoring.lexical.MergeOfflineQueries import MergeOfflineQueries
@@ -1253,7 +1253,7 @@ def render_search_example() -> dict[str, str]:
             (AnalyzeText, "examples.search.transforms.stats.AnalyzeText.AnalyzeText"),
             (CorpusText, "examples.search.transforms.stats.CorpusText.CorpusText"),
             (Indexing, "examples.search.transforms.indexing.Indexing.Indexing"),
-            (ExtractDocumentFields, "examples.search.transforms.fields.ExtractDocumentFields.ExtractDocumentFields"),
+            (Fields, "examples.search.transforms.fields.Fields.Fields"),
             (FieldIndex, "examples.search.transforms.indexing.fields.FieldIndex.FieldIndex"),
             (SearchFields, "examples.search.transforms.searching.search_fields.SearchFields.SearchFields"),
             (

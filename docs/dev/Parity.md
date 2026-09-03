@@ -51,7 +51,7 @@ gaps. PySpark 4.1 adoption has a separate ledger in [APICatalog.md](../APICatalo
 
 ## Current Baseline
 
-This register is current as of 2026-08-27. The default target remains PySpark `>=3.5,<4.1`, ordinary PySpark, with
+This register is current as of 2026-08-31. The default target remains PySpark `>=3.5,<4.1`, ordinary PySpark, with
 Spark Connect claims only for completed compiler-visible batch features. The authoritative inventory is the intersection
 of the PySpark 3.5.x and 4.0.x public APIs, not the newest Spark documentation.
 
@@ -63,8 +63,11 @@ The eight examples raised during the audit resolve as follows: `hour` and `exp` 
 spelling is `add_months` rather than `add_month`; and the implementation slices now cover `add_months`, `next_day`,
 `acos`, `hypot`, `lpad`, `rpad`, `asin`, `atan`, `atan2`, `cos`, `degrees`, `ln`, `log10`, `radians`, `sin`, and
 `tan`. `rand` is admitted as an explicitly nondeterministic scalar with a seed/reproducibility policy; its streaming
-status remains target-evidence driven. The implementation sequence is the [PySpark SQL function coverage ExecPlan]
-(planning/P08222601.PySpark-SQL-function-coverage.plan.md).
+status remains target-evidence driven. The current String slice also covers `btrim`, function-form `contains`,
+`find_in_set`, `format_number`, `position`, and `split_part`. The current collection slice also covers `cardinality`,
+`array_size`, `array_max`, `array_min`, `array_join`, `arrays_overlap`, `get`, `sort_array`, and typed `concat`; `element_at` remains
+one-based while `get` is zero-based. The implementation sequence is the [PySpark SQL
+function coverage ExecPlan](planning/P08222601.PySpark-SQL-function-coverage.plan.md).
 
 ## Docker Live Evidence Checkpoint
 
@@ -92,14 +95,14 @@ intentionally more explicit; “open” names the remaining PySpark functions or
 | Family | Status | Covered now | Open gaps / boundary |
 | --- | --- | --- | --- |
 | Normal, conditional, predicate, and sort | partial | `literal`, `when`, null-control helpers, `isnull`, `isnotnull`, `isnan` | `equal_null`, function-form `like`/`ilike`/`regexp`/`regexp_like`/`rlike`, and null-ordering sort helpers. `expr` and `call_function` remain unsupported. |
-| String | partial | `ascii`, `char_length`, `lower`, `upper`, trim variants, `lpad`, `rpad`, `left`, `right`, `substring`, `substring_index`, `split`, regex extraction/replacement, `concat_ws`, `length`, `locate`, `octet_length`, `repeat`, `replace`, `initcap`, `reverse`, `translate`, `instr`, `levenshtein` | `btrim`, `char`, `contains`, `elt`, `find_in_set`, formatting, `mask`, `overlay`, `position`, `printf`, regex-count/instruction/substr variants, `sentences`, `soundex`, `split_part`, and UTF-8 helpers. |
+| String | partial | `ascii`, `btrim`, `char`, `char_length`, `contains`, `elt`, `find_in_set`, `format_number`, `format_string`, `printf`, `lower`, `upper`, trim variants, `lpad`, `rpad`, `left`, `right`, `substring`, `substr`, `substring_index`, `split`, regex extraction/count/instruction/substr variants, `regexp_extract_all`, `concat_ws`, `length`, `locate`, `octet_length`, `position`, `repeat`, `replace`, `initcap`, `reverse`, `soundex`, `translate`, `instr`, `levenshtein`, `split_part` | `mask`, `overlay`, `randstr`, and UTF-8 helpers. Regex patterns and capture-group indexes use the current literal-argument policy. |
 | Numeric and mathematical | implemented | `abs`, `acos`, `acosh`, `asin`, `asinh`, `atan`, `atan2`, `atanh`, `bin`, `bround`, `cbrt`, `ceil`, `conv`, `cos`, `cosh`, `cot`, `csc`, `degrees`, `e`, `exp`, `expm1`, `factorial`, `floor`, `greatest`, `hex`, `hypot`, `least`, `ln`, `log`, `log10`, `log1p`, `log2`, `pmod`, `pi`, `pow`, `radians`, `rint`, `round`, `sec`, `sign`, `signum`, `sin`, `sinh`, `sqrt`, `tan`, `tanh`, `unhex`, `width_bucket` | All currently reviewed baseline numeric functions have typed contracts; `width_bucket` uses a positive bucket-count literal. |
-| Random and seeded | partial | `rand` with explicit seed/reproducibility policy | `randn`, `uniform`, `randstr`, and other random helpers need separate contracts; streaming support is target-evidence driven. |
+| Random and seeded | partial | `rand`, `randn` with explicit seed/reproducibility policy | `uniform`, `randstr`, and other random helpers need separate contracts; streaming support is target-evidence driven. |
 | Date and timestamp | partial | `add_months`, `date_add`, `date_sub`, `datediff`, `date_trunc`, `trunc`, calendar extraction including `hour`, `next_day`, and date/timestamp parsing | timezone/current-time functions, date formatting/parts, day/week/name helpers, Unix/UTC conversion, `last_day`, `make_*` constructors, `months_between`, quarter, timestamp arithmetic/construction, `try_*` temporal helpers, and week helpers. |
-| Bitwise and binary | partial | typed Column bitwise methods, `base64`, `unbase64`, `encode`, `decode`, `hex`, `unhex` | SQL bitwise functions, shifts, `to_binary`, `try_to_binary`, and UTF-8/binary validation helpers. |
-| Hash | partial | `hash`, `xxhash64`, `md5`, `sha1`, `sha2` | `crc32` and remaining baseline aliases need a parity decision; hashes remain non-identity and non-password-storage primitives. |
-| JSON and CSV | partial | Schema-carrying `from_json`, `to_json`, `from_csv`, `to_csv` | `schema_of_csv`, `schema_of_json`, `get_json_object`, `json_array_length`, `json_object_keys`, and `json_tuple`. |
-| Arrays and higher-order functions | partial | Typed array construction, lookup, mutation, set, sort, `sequence`, `slice`, and symbolic callbacks through `arr_*`/`array_*` | `cardinality`, `concat`, `array_join`, `array_max`, `array_min`, `array_size`, `arrays_overlap`, `arrays_zip`, `get`, `shuffle`, `sort_array`, and `reduce`; callback nullability and random shuffle need evidence. |
+| Bitwise and binary | partial | typed Column bitwise methods, SQL `bit_count`, `bit_get`, `getbit`, `base64`, `unbase64`, `encode`, `decode`, `hex`, `unhex` | SQL shifts, `to_binary`, `try_to_binary`, and UTF-8/binary validation helpers. |
+| Hash | implemented | `hash`, `xxhash64`, `crc32`, `md5`, `sha1`, `sha2` | Hashes remain non-identity and non-password-storage primitives; CRC-32 is a checksum rather than a cryptographic digest. |
+| JSON and CSV | partial | Schema-carrying `from_json`, `to_json`, `from_csv`, `to_csv`, plus typed `get_json_object`, `json_array_length`, and `json_object_keys` | `schema_of_csv`, `schema_of_json`, and `json_tuple`; `json_tuple` remains deferred until multi-column output schemas are supported. |
+| Arrays and higher-order functions | implemented | Typed array construction, lookup, mutation, set, concatenation, size, join, extrema, overlap, sort, shuffle, `sequence`, `slice`, `reduce`, `arrays_zip`, and symbolic callbacks through `arr_*`/`array_*` | Remaining baseline callback/array aliases require only a parity decision; stable `array_N` field names keep `arrays_zip` schema-visible. |
 | Struct and map | partial | Typed map construction/lookup/entries/callbacks; schema constructors own struct shape | `create_map`, `map_from_arrays`, `str_to_map`, `named_struct`, and exact constructor parity. |
 | Aggregates | partial | Core, boolean, statistical, percentile, collection, and deterministic `mode` aggregates | `any_value`, `array_agg`, bitwise aggregates, `count_if`, `first`/`last`, `max_by`/`min_by`, `median`, `product`, regression aggregates, population/sample aliases, distinct/string aggregation, and sketch/bitmap aggregates. |
 | Windows | partial | Typed ranking, lag/lead, value selection, and aggregate-window helpers | Raw `Column.over`, complete null-ordering options, and any aggregate/window form not admitted through typed `WindowSpec`. |

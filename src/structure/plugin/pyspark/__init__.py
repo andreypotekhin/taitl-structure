@@ -143,18 +143,18 @@ _DSL_EXPORTS = """
 AsOf BinaryType CsvOptions DecimalType Join JoinDedupe JoinHint JoinStrategy JsonOptions OverlapPolicy StreamingOutputMode TiePolicy abs acos acosh asin ascii asinh atan atan2 atanh add_months base64 bround cache checkpoint local_checkpoint persist unpersist
 approx_count_distinct approx_percentile arr_aggregate arr_append arr_compact arr_distinct arr_exists arr_filter
 arr_flatten arr_forall arr_position arr_prepend arr_reverse arr_insert arr_remove arr_sort arr_sort_by arr_transform
-arr_zip_with array array_contains array_except array_intersect array_repeat array_union avg as_of_one bool_and bool_or
-collect_list collect_set concat_ws coalesce ceil char_length count count_distinct corr covar cos cosh cot csc cross_join cube current_row conv date_add
+arr_zip_with array array_contains array_except array_intersect array_join array_max array_min array_repeat array_size array_union arrays_overlap avg as_of_one bool_and bool_or
+collect_list collect_set concat_ws coalesce ceil char_length count count_distinct corr covar cos cosh cot csc cross_join cube current_row conv date_add btrim char soundex regexp_count regexp_extract_all regexp_instr regexp_substr bit_count bit_get getbit
 date_sub date_trunc dayofmonth datediff decode cume_dist cbrt bin dedupe_earliest_by dedupe_latest_by dense_rank degrees distinct
-drop_duplicates drop_duplicates_within_watermark earliest_by element_at encode event_time_between exactly_one except_all e exp expm1 factorial exists floor from_csv from_json hash hour hypot left
+drop_duplicates drop_duplicates_within_watermark earliest_by element_at encode event_time_between exactly_one except_all e exp expm1 factorial exists floor from_csv from_json get hash hour hypot left
 initcap ifnull instr intersect intersect_all first_value following full_join greatest grouping_id grouping_sets having inner_join isnan
-isnotnull isnull is_grouped kurtosis lag left_join latest_by lead lookup_join last_value length levenshtein lower lpad
+isnotnull isnull is_grouped kurtosis lag left_join latest_by lead lookup_join last_value length levenshtein lower lpad find_in_set format_number
 ltrim ln locate log log10 log1p log2 least limit md5 map_entries map_concat map_contains_key map_filter map_from_entries map_keys map_transform_keys
 map_transform_values map_values map_zip_with max min minute mode month nanvl nvl nvl2 nullif pow not_exists nth_value
 ntile offset order_by param_join percent_rank percentile pi posexplode_array posexplode_outer_array posexplode_struct posexplode_outer_struct posexplode_map posexplode_outer_map explode_array explode_outer_array explode_struct explode_outer_struct explode_map explode_outer_map inline_struct inline_outer_struct variant_explode variant_explode_outer preceding pmod project rank range_between relation_alias regexp_extract regexp_replace require_all require_parent_hierarchy require_reference require_unique hierarchy_closure hierarchy_fallbacks reverse rtrim round
-sample sec select_first_qualified signum sin sinh slice sha1 sha2 second rand radians rint right_join rollup row_number rowset_join rows_between rolling_avg rolling_max
+sample sec select_first_qualified signum sin sinh slice sha1 sha2 second rand randn radians rint right_join rollup row_number rowset_join rows_between rolling_avg rolling_max position sort_array split_part elt format_string printf substr
 rolling_min rolling_sum scan subtract sum stddev sqrt size sequence session_window skewness split translate substring temporal_one next_day
-to_csv to_decimal to_date to_json to_timestamp TimeWindow trim trunc try_element_at unbase64 union_all union_by_name upper unbounded_following unbounded_preceding hex unhex
+to_csv to_decimal to_date to_json to_timestamp TimeWindow trim trunc try_element_at unbase64 union_all union_by_name upper unbounded_following unbounded_preceding hex unhex cardinality
 variance when width_bucket year xxhash64 zeroifnull where watermark window window_avg window_bool_and window_bool_or rpad repeat replace right sign tan tanh
 window_time
 window_collect_list window_collect_set window_count window_count_distinct window_max window_min window_sum
@@ -208,7 +208,11 @@ __all__ = [  # noqa: F405
     "atanh",
     "add_months",
     "base64",
+    "bit_count",
+    "bit_get",
     "bin",
+    "btrim",
+    "char",
     "bround",
     "approx_count_distinct",
     "approx_percentile",
@@ -233,8 +237,16 @@ __all__ = [  # noqa: F405
     "array_contains",
     "array_except",
     "array_intersect",
+    "array_join",
+    "concat",
+    "array_max",
+    "array_min",
     "array_repeat",
+    "array_size",
     "array_union",
+    "arrays_overlap",
+    "arrays_zip",
+    "cardinality",
     "avg",
     "as_of_one",
     "bool_and",
@@ -265,6 +277,8 @@ __all__ = [  # noqa: F405
     "cbrt",
     "degrees",
     "decode",
+    "elt",
+    "format_string",
     "cume_dist",
     "dedupe_earliest_by",
     "dedupe_latest_by",
@@ -290,6 +304,13 @@ __all__ = [  # noqa: F405
     "floor",
     "from_csv",
     "from_json",
+    "get_json_object",
+    "json_array_length",
+    "json_object_keys",
+    "get",
+    "find_in_set",
+    "format_number",
+    "crc32",
     "hash",
     "hex",
     "hour",
@@ -307,6 +328,7 @@ __all__ = [  # noqa: F405
     "full_join",
     "group_by",
     "greatest",
+    "getbit",
     "grouping_id",
     "grouping_sets",
     "having",
@@ -359,7 +381,9 @@ __all__ = [  # noqa: F405
     "nullif",
     "pow",
     "rand",
+    "randn",
     "radians",
+    "reduce",
     "rint",
     "not_exists",
     "nth_value",
@@ -370,6 +394,7 @@ __all__ = [  # noqa: F405
     "percent_rank",
     "percentile",
     "pi",
+    "position",
     "posexplode_outer_struct",
     "posexplode_struct",
     "posexplode_array",
@@ -387,7 +412,11 @@ __all__ = [  # noqa: F405
     "range_between",
     "relation_alias",
     "regexp_extract",
+    "regexp_count",
+    "regexp_extract_all",
+    "regexp_instr",
     "regexp_replace",
+    "regexp_substr",
     "require_all",
     "require_parent_hierarchy",
     "require_reference",
@@ -409,6 +438,8 @@ __all__ = [  # noqa: F405
     "sin",
     "sinh",
     "slice",
+    "sort_array",
+    "shuffle",
     "sha1",
     "sha2",
     "second",
@@ -433,8 +464,12 @@ __all__ = [  # noqa: F405
     "session_window",
     "skewness",
     "split",
+    "split_part",
+    "soundex",
     "translate",
     "substring",
+    "substr",
+    "printf",
     "temporal_one",
     "to_csv",
     "to_decimal",

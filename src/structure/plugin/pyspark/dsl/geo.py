@@ -23,6 +23,15 @@ def intersects(left: object, right: object) -> Expression:
 
 
 def contains(left: object, right: object) -> Expression:
+    first, second = literal(left), literal(right)
+    if isinstance(first.type, StringType) and isinstance(second.type, StringType):
+        return Expression(
+            kind="call",
+            type=BooleanType(),
+            nullable=first.nullable or second.nullable,
+            data={"function": "contains"},
+            args=(first, second),
+        )
     return _predicate("geo_contains", left, right)
 
 

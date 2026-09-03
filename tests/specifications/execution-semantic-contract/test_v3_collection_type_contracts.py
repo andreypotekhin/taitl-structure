@@ -3,7 +3,17 @@ import pytest
 from structure import *
 from structure.plugin.pyspark import *
 from structure.plugin.pyspark.dsl.Expression import Expression
-from structure.plugin.pyspark.dsl.types import ArrayType, LongType, MapType, StructType, StructureType
+from structure.plugin.pyspark.dsl.types import (
+    ArrayType,
+    BinaryType,
+    BooleanType,
+    IntegerType,
+    LongType,
+    MapType,
+    StringType,
+    StructType,
+    StructureType,
+)
 
 
 class MapEntry(Schema):
@@ -162,6 +172,167 @@ def test_array_position_is_required_when_its_array_is_required() -> None:
 
     assert required.nullable is False
     assert arr_position(nullable_array, "missing").nullable is True
+
+
+def test_array_sql_lookup_and_size_functions_preserve_collection_contracts() -> None:
+    nullable_array = Expression(
+        kind="test_nullable_array",
+        type=types.array(types.string(), contains_null=True),
+        nullable=True,
+    )
+    required_array = Expression(
+        kind="test_required_array",
+        type=types.array(types.string(), contains_null=False),
+        nullable=False,
+    )
+    required_map = _map(types.string(), types.integer())
+
+    array_cardinality = cardinality(nullable_array)
+    map_cardinality = cardinality(required_map)
+    array_size_result = array_size(nullable_array)
+    array_get = get(required_array, 0)
+
+    assert array_cardinality.type == IntegerType()
+    assert array_cardinality.nullable is True
+    assert map_cardinality.type == IntegerType()
+    assert map_cardinality.nullable is False
+    assert array_size_result.type == IntegerType()
+    assert array_size_result.nullable is True
+    assert array_get.type == types.string()
+    assert array_get.nullable is True
+
+
+def test_array_sql_ordering_and_join_functions_validate_types_and_nullability() -> None:
+    nullable_array = Expression(
+        kind="test_nullable_array",
+        type=types.array(types.string(), contains_null=True),
+        nullable=True,
+    )
+    required_array = Expression(
+        kind="test_required_array",
+        type=types.array(types.string(), contains_null=False),
+        nullable=False,
+    )
+    integer_array = Expression(
+        kind="test_integer_array",
+        type=types.array(types.integer(), contains_null=False),
+        nullable=False,
+    )
+
+    maximum = array_max(nullable_array)
+    minimum = array_min(required_array)
+    joined = array_join(nullable_array, ",", "<null>")
+    overlap = arrays_overlap(nullable_array, required_array)
+    sorted_values = sort_array(integer_array, ascending=False)
+
+    assert maximum.type == types.string()
+    assert maximum.nullable is True
+    assert minimum.type == types.string()
+    assert minimum.nullable is True
+    assert joined.type == StringType()
+    assert joined.nullable is True
+    assert overlap.type == BooleanType()
+    assert overlap.nullable is True
+    assert sorted_values.type == integer_array.type
+    assert sorted_values.nullable is False
+
+    with pytest.raises(TypeError, match=r"array_join\(\.\.\.\) requires an array<string>"):
+        array_join(integer_array, ",")
+    with pytest.raises(TypeError, match=r"array_max\(\.\.\.\) array element.*orderable"):
+        array_max(
+            Expression(
+                kind="test_map_array",
+                type=types.array(types.map(types.string(), types.string())),
+                nullable=False,
+            )
+        )
+    with pytest.raises(TypeError, match=r"get\(\.\.\.\) Array index.*integral"):
+        get(required_array, "zero")
+    with pytest.raises(TypeError, match=r"sort_array\(\.\.\.\) ascending must be a Boolean"):
+        sort_array(integer_array, ascending=1)  # type: ignore[arg-type]
+
+
+def test_concat_preserves_typed_string_binary_and_array_contracts() -> None:
+    nullable_text = Expression(kind="test_nullable_text", type=types.string(), nullable=True)
+    nullable_array = Expression(
+        kind="test_nullable_array",
+        type=types.array(types.string(), contains_null=True),
+        nullable=True,
+    )
+
+    text = concat("left", nullable_text)
+    binary_value = concat(b"left", b"right")
+    values = concat(array("left"), nullable_array)
+
+    assert text.type == StringType()
+    assert text.nullable is True
+    assert isinstance(binary_value.type, BinaryType)
+    assert binary_value.nullable is False
+    assert isinstance(values.type, ArrayType)
+    assert isinstance(values.type.element, StringType)
+    assert values.type.contains_null is True
+    assert values.nullable is True
+
+    with pytest.raises(TypeError, match=r"concat\(\.\.\.\) requires at least two values"):
+        concat("only")
+    with pytest.raises(TypeError, match=r"concat\(\.\.\.\) requires all values"):
+        concat("text", 1)
+    with pytest.raises(TypeError, match=r"concat\(\.\.\.\) requires all values"):
+        concat(array("text"), "text")
+
+
+def test_shuffle_preserves_array_type_and_records_nondeterminism() -> None:
+    values = Expression(
+        kind="test_values",
+        type=types.array(types.integer(), contains_null=True),
+        nullable=True,
+    )
+
+    shuffled = shuffle(values)
+
+    assert shuffled.type == values.type
+    assert shuffled.nullable is True
+    assert shuffled.data is not None
+    assert shuffled.data["nondeterministic"] is True
+
+    with pytest.raises(TypeError, match=r"shuffle\(\.\.\.\) requires an Array expression"):
+        shuffle("not an array")
+
+
+def test_reduce_reuses_typed_accumulator_and_finish_contracts() -> None:
+    values = Expression(
+        kind="test_values",
+        type=types.array(types.integer(), contains_null=False),
+        nullable=True,
+    )
+
+    reduced = reduce(values, 0, lambda accumulator, item: accumulator + item, lambda accumulator: accumulator)
+
+    assert isinstance(reduced.type, IntegerType)
+    assert reduced.nullable is True
+    assert reduced.args[0] is values
+
+    with pytest.raises(TypeError, match=r"reduce\(\.\.\.\) merge callback must return the initial accumulator type"):
+        reduce(array("text"), 0, lambda accumulator, item: item)
+
+
+def test_arrays_zip_returns_nullable_named_struct_fields() -> None:
+    left = Expression(kind="test_left", type=types.array(types.string(), contains_null=False), nullable=True)
+    right = Expression(kind="test_right", type=types.array(types.integer(), contains_null=True), nullable=False)
+
+    zipped = arrays_zip(left, right)
+
+    assert isinstance(zipped.type, ArrayType)
+    assert zipped.type.contains_null is False
+    assert isinstance(zipped.type.element, StructType)
+    fields = zipped.type.element.schema._structure_fields
+    assert tuple(fields) == ("array_0", "array_1")
+    assert fields["array_0"].nullable is True
+    assert fields["array_1"].nullable is True
+    assert zipped.nullable is True
+
+    with pytest.raises(TypeError, match=r"arrays_zip\(\.\.\.\) requires at least one Array expression"):
+        arrays_zip()
 
 
 def test_map_contains_key_requires_a_literal_key_for_pyspark_35_compatibility() -> None:

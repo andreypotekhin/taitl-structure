@@ -29,7 +29,8 @@ flow; for a standalone transform, name the input evidence, central transformatio
 connective words such as “then” or “from there” may make the movement easier to follow, but do not make progression the
 organizing subject of the whole preamble. Keep it to the essential context, usually one to three short paragraphs. Do
 not use bullets, exhaustive inventories, or references to numbered items, explanation prose, code, formatting, or other
-document structure.
+document structure. Keep the preamble at workflow and component level; do not name individual methods unless a
+method-specific reference is necessary to explain a pressing architectural boundary.
 
 ## Stage and item explanations
 

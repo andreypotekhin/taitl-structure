@@ -41,6 +41,7 @@ from structure.plugin.pyspark.dsl.operations.CacheOperations import (
 from structure.plugin.pyspark.dsl.TimeWindow import TimeWindow
 from structure.plugin.pyspark.dsl.types import (
     ArrayType,
+    BinaryType,
     BooleanType,
     DecimalType,
     DoubleType,
@@ -1821,16 +1822,37 @@ def arr_aggregate(
     Example:
         total = arr_aggregate(order.amounts, 0, lambda acc, amount: acc + amount)
     """
+    return _array_reduce("arr_aggregate", "array_aggregate", value, initial, merge, finish)
+
+
+def reduce(
+    value: object,
+    initial: object,
+    merge: Callable[[Expression, Expression], object],
+    finish: Callable[[Expression], object] | None = None,
+) -> Expression:
+    """Reduce an array with typed callbacks, using PySpark's ``reduce`` spelling."""
+    return _array_reduce("reduce", "array_reduce", value, initial, merge, finish)
+
+
+def _array_reduce(
+    call: str,
+    function: str,
+    value: object,
+    initial: object,
+    merge: Callable[[Expression, Expression], object],
+    finish: Callable[[Expression], object] | None,
+) -> Expression:
     argument = literal(value)
     initial_value = literal(initial)
-    array = _array_type(argument, "arr_aggregate(...)")
-    accumulator_type = _typed_type("arr_aggregate(...) initial", initial_value)
+    array = _array_type(argument, f"{call}(...)")
+    accumulator_type = _typed_type(f"{call}(...) initial", initial_value)
     accumulator = _lambda_arg(accumulator_type, nullable=initial_value.nullable, name="acc")
     item = _lambda_arg(array.element, nullable=array.contains_null, name="item")
-    merged = _callback_expression("arr_aggregate(...)", merge, accumulator, item)
-    merged_type = _typed_type("arr_aggregate(...) merge", merged)
+    merged = _callback_expression(f"{call}(...)", merge, accumulator, item)
+    merged_type = _typed_type(f"{call}(...) merge", merged)
     if not _same_type(accumulator_type, merged_type):
-        raise TypeError("arr_aggregate(...) merge callback must return the initial accumulator type")
+        raise TypeError(f"{call}(...) merge callback must return the initial accumulator type")
     # A merge callback may turn an initially required accumulator into null.  The
     # finish callback receives that final accumulator, not merely the initial
     # value, so its expression contract must retain both nullability sources.
@@ -1839,7 +1861,7 @@ def arr_aggregate(
         nullable=initial_value.nullable or merged.nullable,
         name="acc",
     )
-    finished = _callback_expression("arr_aggregate(...)", finish, finish_accumulator) if finish is not None else merged
+    finished = _callback_expression(f"{call}(...)", finish, finish_accumulator) if finish is not None else merged
     result_type = finished.type
     if result_type is None:
         raise AssertionError("higher-order callback validation must reject untyped results")
@@ -1848,9 +1870,9 @@ def arr_aggregate(
         # Spark returns the initial accumulator unchanged for an empty array.
         result_nullable = result_nullable or initial_value.nullable
     return _reserved_expression(
-        "array_aggregate",
+        function,
         group="higher_order",
-        name="array_aggregate",
+        name=function,
         type=result_type,
         nullable=result_nullable,
         args=(argument, initial_value, accumulator, item, merged, finished),
@@ -1973,6 +1995,201 @@ def size(value: object) -> Expression:
         type=IntegerType(),
         nullable=argument.nullable,
         args=(argument,),
+    )
+
+
+def cardinality(value: object) -> Expression:
+    """Return the cardinality of an array or map."""
+    argument = literal(value)
+    _collection_type(argument, "cardinality(...)")
+    return _reserved_expression(
+        "cardinality",
+        group="higher_order",
+        name="cardinality",
+        type=IntegerType(),
+        nullable=argument.nullable,
+        args=(argument,),
+    )
+
+
+def array_size(value: object) -> Expression:
+    """Return the number of elements in an array."""
+    argument = literal(value)
+    _array_type(argument, "array_size(...)")
+    return _reserved_expression(
+        "array_size",
+        group="higher_order",
+        name="array_size",
+        type=IntegerType(),
+        nullable=argument.nullable,
+        args=(argument,),
+    )
+
+
+def array_max(value: object) -> Expression:
+    """Return the greatest orderable element in an array."""
+    argument = literal(value)
+    array = _array_type(argument, "array_max(...)")
+    _sortable_type("array_max(...) array element", _lambda_arg(array.element, nullable=array.contains_null, name="item"))
+    return _reserved_expression(
+        "array_max",
+        group="higher_order",
+        name="array_max",
+        type=array.element,
+        nullable=True,
+        args=(argument,),
+    )
+
+
+def array_min(value: object) -> Expression:
+    """Return the least orderable element in an array."""
+    argument = literal(value)
+    array = _array_type(argument, "array_min(...)")
+    _sortable_type("array_min(...) array element", _lambda_arg(array.element, nullable=array.contains_null, name="item"))
+    return _reserved_expression(
+        "array_min",
+        group="higher_order",
+        name="array_min",
+        type=array.element,
+        nullable=True,
+        args=(argument,),
+    )
+
+
+def array_join(value: object, delimiter: str, null_replacement: str | None = None) -> Expression:
+    """Join array string elements with a literal delimiter."""
+    argument = literal(value)
+    array = _array_type(argument, "array_join(...)")
+    if not isinstance(array.element, StringType):
+        raise TypeError("array_join(...) requires an array<string> expression")
+    if not isinstance(delimiter, str):
+        raise TypeError("array_join(...) delimiter must be a string literal")
+    if null_replacement is not None and not isinstance(null_replacement, str):
+        raise TypeError("array_join(...) null_replacement must be a string literal or None")
+    return _reserved_expression(
+        "array_join",
+        group="higher_order",
+        name="array_join",
+        type=StringType(),
+        nullable=argument.nullable,
+        args=(argument,),
+        data=(("delimiter", delimiter), ("null_replacement", null_replacement)),
+    )
+
+
+def concat(*values: object) -> Expression:
+    """Concatenate compatible strings, binary values, or arrays."""
+    arguments = tuple(literal(value) for value in values)
+    if len(arguments) < 2:
+        raise TypeError("concat(...) requires at least two values")
+    types = tuple(_typed_type("concat(...)", argument) for argument in arguments)
+    first = types[0]
+    result_type: StructureType
+    if isinstance(first, ArrayType):
+        if not all(isinstance(type, ArrayType) for type in types):
+            raise TypeError("concat(...) requires all values to be strings, binary values, or arrays")
+        arrays = cast(tuple[ArrayType, ...], types)
+        element_type = _unify_types("concat(...)", tuple(array.element for array in arrays))
+        result_type = ArrayType(element_type, contains_null=any(array.contains_null for array in arrays))
+    elif isinstance(first, StringType):
+        if not all(isinstance(other, StringType) for other in types):
+            raise TypeError("concat(...) requires all values to be strings, binary values, or arrays")
+        result_type = StringType()
+    elif isinstance(first, BinaryType):
+        if not all(isinstance(other, BinaryType) for other in types):
+            raise TypeError("concat(...) requires all values to be strings, binary values, or arrays")
+        result_type = BinaryType()
+    else:
+        raise TypeError("concat(...) requires all values to be strings, binary values, or arrays")
+    return _reserved_expression(
+        "concat",
+        group="higher_order",
+        name="concat",
+        type=result_type,
+        nullable=any(argument.nullable for argument in arguments),
+        args=arguments,
+    )
+
+
+def arrays_overlap(left: object, right: object) -> Expression:
+    """Return whether two arrays share a non-null element."""
+    left_argument, right_argument = literal(left), literal(right)
+    left_array = _array_type(left_argument, "arrays_overlap(...)")
+    right_array = _array_type(right_argument, "arrays_overlap(...)")
+    _unify_types("arrays_overlap(...)", (left_array.element, right_array.element))
+    return _reserved_expression(
+        "arrays_overlap",
+        group="higher_order",
+        name="arrays_overlap",
+        type=BooleanType(),
+        nullable=left_argument.nullable or right_argument.nullable or left_array.contains_null or right_array.contains_null,
+        args=(left_argument, right_argument),
+    )
+
+
+def get(value: object, index: object) -> Expression:
+    """Return an array element by its zero-based integral index."""
+    argument = literal(value)
+    array = _array_type(argument, "get(...)")
+    offset = literal(index)
+    if not isinstance(offset.type, (IntegerType, LongType)):
+        raise TypeError("get(...) Array index must be an integral Structure expression")
+    return _reserved_expression(
+        "get",
+        group="higher_order",
+        name="get",
+        type=array.element,
+        nullable=True,
+        args=(argument, offset),
+    )
+
+
+def sort_array(value: object, *, ascending: bool = True) -> Expression:
+    """Sort an array of orderable scalar elements."""
+    _boolean_option("sort_array(...)", "ascending", ascending)
+    argument = literal(value)
+    array = _array_type(argument, "sort_array(...)")
+    _sortable_type("sort_array(...) array element", _lambda_arg(array.element, nullable=array.contains_null, name="item"))
+    return _reserved_expression(
+        "sort_array",
+        group="higher_order",
+        name="sort_array",
+        type=argument.type,
+        nullable=argument.nullable,
+        args=(argument,),
+        data=(("ascending", ascending),),
+    )
+
+
+def shuffle(value: object) -> Expression:
+    """Randomly reorder an array while preserving its typed array contract."""
+    argument = literal(value)
+    _array_type(argument, "shuffle(...)")
+    return _reserved_expression(
+        "shuffle",
+        group="higher_order",
+        name="shuffle",
+        type=argument.type,
+        nullable=argument.nullable,
+        args=(argument,),
+        data=(("nondeterministic", True),),
+    )
+
+
+def arrays_zip(*values: object) -> Expression:
+    """Zip arrays into nullable-field structs with stable generated field names."""
+    arguments = tuple(literal(value) for value in values)
+    if not arguments:
+        raise TypeError("arrays_zip(...) requires at least one Array expression")
+    arrays = tuple(_array_type(argument, "arrays_zip(...)") for argument in arguments)
+    entry_type = _arrays_zip_entry_type(tuple(array.element for array in arrays))
+    return _reserved_expression(
+        "arrays_zip",
+        group="higher_order",
+        name="arrays_zip",
+        type=ArrayType(entry_type, contains_null=False),
+        nullable=any(argument.nullable for argument in arguments),
+        args=arguments,
     )
 
 
@@ -2537,6 +2754,16 @@ def _map_entry_type(map_type: MapType) -> StructType:
             "key": FieldDeclaration(map_type.key, nullable=False),
             "value": FieldDeclaration(map_type.value, nullable=map_type.value_contains_null),
         },
+    )
+    return StructType(schema)
+
+
+@cached
+def _arrays_zip_entry_type(element_types: tuple[StructureType, ...]) -> StructType:
+    schema = type(
+        "_ArraysZipEntry",
+        (Schema,),
+        {f"array_{index}": FieldDeclaration(element_type, nullable=True) for index, element_type in enumerate(element_types)},
     )
     return StructType(schema)
 

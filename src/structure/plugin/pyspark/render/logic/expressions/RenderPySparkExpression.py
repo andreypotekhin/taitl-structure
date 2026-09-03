@@ -234,6 +234,17 @@ class RenderPySparkExpression:
             if finished != merged:
                 rendered += f", lambda {acc_name}: {self._render(finished, aliases)}"
             return f"{rendered})"
+        if function == "array_reduce":
+            array, initial, accumulator, item, merged, finished = expression.args
+            acc_name = self._lambda_name(accumulator, "acc")
+            item_name = self._lambda_name(item, "item")
+            rendered = (
+                f"F.reduce({self._render(array, aliases)}, {self._render(initial, aliases)}, "
+                f"lambda {acc_name}, {item_name}: {self._render(merged, aliases)}"
+            )
+            if finished != merged:
+                rendered += f", lambda {acc_name}: {self._render(finished, aliases)}"
+            return f"{rendered})"
         if function == "array_sort_by":
             array, left_key, right_key = expression.args
             comparator = self._array_sort_comparator(
@@ -261,6 +272,32 @@ class RenderPySparkExpression:
         if function == "collection_size":
             [value] = expression.args
             return f"F.size({self._render(value, aliases)})"
+        if function in {"cardinality", "array_size", "array_max", "array_min"}:
+            [value] = expression.args
+            return f"F.{function}({self._render(value, aliases)})"
+        if function == "array_join":
+            [value] = expression.args
+            null_replacement = expression.data.get("null_replacement")
+            rendered_arguments = [self._render(value, aliases), repr(expression.data["delimiter"])]
+            if null_replacement is not None:
+                rendered_arguments.append(repr(null_replacement))
+            return f"F.array_join({', '.join(rendered_arguments)})"
+        if function == "concat":
+            return f"F.concat({', '.join(self._render(value, aliases) for value in expression.args)})"
+        if function == "arrays_overlap":
+            left, right = expression.args
+            return f"F.arrays_overlap({self._render(left, aliases)}, {self._render(right, aliases)})"
+        if function == "get":
+            value, index = expression.args
+            return f"F.get({self._render(value, aliases)}, {self._render(index, aliases)})"
+        if function == "sort_array":
+            [value] = expression.args
+            return f"F.sort_array({self._render(value, aliases)}, {expression.data['ascending']!r})"
+        if function == "shuffle":
+            [value] = expression.args
+            return f"F.shuffle({self._render(value, aliases)})"
+        if function == "arrays_zip":
+            return f"F.arrays_zip({', '.join(self._render(value, aliases) for value in expression.args)})"
         if function == "array_contains":
             array, item = expression.args
             rendered_item = self._render_literal_value(item) if item.kind == "literal" else self._render(item, aliases)
@@ -535,6 +572,10 @@ class RenderPySparkExpression:
         args = [self._render(argument, aliases) for argument in expression.args]
         if function in {"lower", "ltrim", "rtrim", "trim", "upper"}:
             return f"F.{function}({args[0]})"
+        if function == "btrim":
+            return f"F.btrim({args[0]}, {expression.data['trim']!r})"
+        if function == "contains":
+            return f"F.contains({args[0]}, {args[1]})"
         if function in {"base64", "unbase64"}:
             return f"F.{function}({args[0]})"
         if function in {"encode", "decode"}:
@@ -555,6 +596,10 @@ class RenderPySparkExpression:
                 if not options
                 else f"F.from_csv({args[0]}, {schema!r}, {options!r})"
             )
+        if function == "get_json_object":
+            return f"F.get_json_object({args[0]}, {expression.data['path']!r})"
+        if function in {"json_array_length", "json_object_keys"}:
+            return f"F.{function}({args[0]})"
         if function in {
             "is_valid_variant",
             "parse_json",
@@ -611,27 +656,45 @@ class RenderPySparkExpression:
             precision = expression.data["precision"]
             scale = expression.data["scale"]
             return f'{args[0]}.cast("decimal({precision},{scale})")'
-        if function == "substring":
-            return f"F.substring({args[0]}, {expression.data['start']}, {expression.data['length']})"
+        if function in {"substring", "substr"}:
+            return f"F.{function}({args[0]}, {expression.data['start']}, {expression.data['length']})"
+        if function == "elt":
+            return f"F.elt({', '.join(args)})"
         if function == "split":
             return f"F.split({args[0]}, {expression.data['pattern']!r}, {expression.data['limit']})"
         if function == "regexp_replace":
             return f"F.regexp_replace({args[0]}, {expression.data['pattern']!r}, {expression.data['replacement']!r})"
         if function == "regexp_extract":
             return f"F.regexp_extract({args[0]}, {expression.data['pattern']!r}, {expression.data['group']})"
+        if function == "regexp_count":
+            return f"F.regexp_count({args[0]}, {expression.data['pattern']!r})"
+        if function == "regexp_extract_all":
+            return f"F.regexp_extract_all({args[0]}, {expression.data['pattern']!r}, {expression.data['group']})"
+        if function == "regexp_instr":
+            return f"F.regexp_instr({args[0]}, {expression.data['pattern']!r}, {expression.data['group']})"
+        if function == "regexp_substr":
+            return f"F.regexp_substr({args[0]}, {expression.data['pattern']!r})"
         if function in {"lpad", "rpad"}:
             return f"F.{function}({args[0]}, {expression.data['length']}, {expression.data['pad']!r})"
-        if function in {"ascii", "char_length", "length", "octet_length"}:
+        if function in {"ascii", "char", "char_length", "length", "octet_length", "soundex"}:
             return f"F.{function}({args[0]})"
         if function in {"left", "right", "repeat"}:
             parameter = "length" if function in {"left", "right"} else "count"
             return f"F.{function}({args[0]}, {expression.data[parameter]})"
         if function == "locate":
             return f"F.locate({expression.data['substring']!r}, {args[0]}, {expression.data['position']})"
+        if function == "find_in_set":
+            return f"F.find_in_set({args[0]}, {args[1]})"
+        if function == "format_number":
+            return f"F.format_number({args[0]}, {expression.data['decimals']})"
+        if function == "position":
+            return f"F.position({args[0]}, {args[1]}, {expression.data['start']})"
         if function == "replace":
             return f"F.replace({args[0]}, {expression.data['search']!r}, {expression.data['replacement']!r})"
         if function == "substring_index":
             return f"F.substring_index({args[0]}, {expression.data['delimiter']!r}, {expression.data['count']})"
+        if function == "split_part":
+            return f"F.split_part({args[0]}, {args[1]}, {args[2]})"
         if function == "length":
             return f"F.length({args[0]})"
         if function in {"initcap", "reverse"}:
@@ -644,7 +707,9 @@ class RenderPySparkExpression:
             return f"F.levenshtein({args[0]}, {args[1]})"
         if function == "concat_ws":
             return f"F.concat_ws({expression.data['separator']!r}, {', '.join(args)})"
-        if function in {"hash", "xxhash64"}:
+        if function in {"format_string", "printf"}:
+            return f"F.{function}({expression.data['format']!r}{', ' if args else ''}{', '.join(args)})"
+        if function in {"hash", "xxhash64", "crc32"}:
             return f"F.{function}({', '.join(args)})"
         if function in {"md5", "sha1"}:
             return f"F.{function}({args[0]})"
@@ -676,6 +741,10 @@ class RenderPySparkExpression:
             )
         if function == "abs":
             return f"F.abs({args[0]})"
+        if function == "bit_count":
+            return f"F.bit_count({args[0]})"
+        if function in {"bit_get", "getbit"}:
+            return f"F.{function}({args[0]}, {args[1]})"
         if function in {"bin", "hex", "unhex"}:
             return f"F.{function}({args[0]})"
         if function == "conv":
@@ -700,9 +769,9 @@ class RenderPySparkExpression:
             return f"F.{function}({', '.join(args)})"
         if function == "width_bucket":
             return f"F.width_bucket({args[0]}, {args[1]}, {args[2]}, {expression.data['num_buckets']})"
-        if function == "rand":
+        if function in {"rand", "randn"}:
             seed = expression.data.get("seed")
-            return "F.rand()" if seed is None else f"F.rand(seed={seed})"
+            return f"F.{function}()" if seed is None else f"F.{function}(seed={seed})"
         if function == "round":
             return f"F.round({args[0]}, {expression.data['scale']})"
         if function == "bround":

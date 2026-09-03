@@ -234,6 +234,9 @@ def test_v7_expression_renderer_renders_schema_carrying_parsing_helpers() -> Non
         from_csv_payload = struct(Payload, nullable=True)
         payload_json = string(nullable=True)
         payload_csv = string(nullable=True)
+        json_value = string(nullable=True)
+        json_length = integer(nullable=True)
+        json_keys = array(string(), contains_null=False, nullable=True)
 
     @transform
     class Publish(Transform):
@@ -246,6 +249,9 @@ def test_v7_expression_renderer_renders_schema_carrying_parsing_helpers() -> Non
                 from_csv_payload=from_csv(row.payload_csv, as_=Payload, options=CsvOptions(delimiter="|")),
                 payload_json=to_json(row.payload),
                 payload_csv=to_csv(row.payload, options=CsvOptions(delimiter="|")),
+                json_value=get_json_object(row.payload_json, "$.customer.id"),
+                json_length=json_array_length(row.payload_json),
+                json_keys=json_object_keys(row.payload_json),
             )
 
     recipe = _recipe(Publish)
@@ -267,6 +273,15 @@ def test_v7_expression_renderer_renders_schema_carrying_parsing_helpers() -> Non
     assert render(projection["payload_json"], scope_aliases={"rows": "raw"}) == 'F.to_json(F.col("raw.payload"))'
     assert render(projection["payload_csv"], scope_aliases={"rows": "raw"}) == (
         'F.to_csv(F.col("raw.payload"), {\'sep\': \'|\'})'
+    )
+    assert render(projection["json_value"], scope_aliases={"rows": "raw"}) == (
+        'F.get_json_object(F.col("raw.payload_json"), \'$.customer.id\')'
+    )
+    assert render(projection["json_length"], scope_aliases={"rows": "raw"}) == (
+        'F.json_array_length(F.col("raw.payload_json"))'
+    )
+    assert render(projection["json_keys"], scope_aliases={"rows": "raw"}) == (
+        'F.json_object_keys(F.col("raw.payload_json"))'
     )
 
 
@@ -570,6 +585,7 @@ def test_v4_expression_renderer_renders_seeded_and_unseeded_rand() -> None:
     class Published(Schema):
         seeded = double(nullable=False)
         unseeded = double(nullable=False)
+        normal = double(nullable=False)
 
     @transform
     class Publish(Transform):
@@ -577,7 +593,7 @@ def test_v4_expression_renderer_renders_seeded_and_unseeded_rand() -> None:
         published = output(Published)
 
         def publish(self, row: Raw) -> Published:
-            return Published(seeded=rand(seed=17), unseeded=rand(reproducible=False))
+            return Published(seeded=rand(seed=17), unseeded=rand(reproducible=False), normal=randn(seed=17))
 
     recipe = _recipe(Publish)
     projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
@@ -585,6 +601,7 @@ def test_v4_expression_renderer_renders_seeded_and_unseeded_rand() -> None:
 
     assert render(projection["seeded"], scope_aliases={"rows": "orders"}) == "F.rand(seed=17)"
     assert render(projection["unseeded"], scope_aliases={"rows": "orders"}) == "F.rand()"
+    assert render(projection["normal"], scope_aliases={"rows": "orders"}) == "F.randn(seed=17)"
 
 
 def test_v4_expression_renderer_renders_temporal_helpers() -> None:
@@ -751,6 +768,7 @@ def test_v4_expression_renderer_renders_hash_helpers() -> None:
     class Published(Schema):
         hash_code = integer(nullable=True)
         long_hash = long(nullable=True)
+        crc32_hash = long(nullable=True)
         md5_hash = string(nullable=True)
         sha1_hash = string(nullable=True)
         sha2_hash = string(nullable=True)
@@ -764,6 +782,7 @@ def test_v4_expression_renderer_renders_hash_helpers() -> None:
             return Published(
                 hash_code=hash(row.id, row.label),
                 long_hash=xxhash64(row.id, row.label),
+                crc32_hash=crc32(row.label),
                 md5_hash=md5(row.label),
                 sha1_hash=sha1(row.label),
                 sha2_hash=sha2(row.label, bits=512),
@@ -779,6 +798,7 @@ def test_v4_expression_renderer_renders_hash_helpers() -> None:
     assert render(projection["long_hash"], scope_aliases={"rows": "orders"}) == (
         'F.xxhash64(F.col("orders.id"), F.col("orders.label"))'
     )
+    assert render(projection["crc32_hash"], scope_aliases={"rows": "orders"}) == 'F.crc32(F.col("orders.label"))'
     assert render(projection["md5_hash"], scope_aliases={"rows": "orders"}) == 'F.md5(F.col("orders.label"))'
     assert render(projection["sha1_hash"], scope_aliases={"rows": "orders"}) == 'F.sha1(F.col("orders.label"))'
     assert render(projection["sha2_hash"], scope_aliases={"rows": "orders"}) == 'F.sha2(F.col("orders.label"), 512)'
@@ -1129,6 +1149,64 @@ def test_v3_expression_renderer_renders_string_sql_helpers() -> None:
     ]
 
 
+def test_v4_expression_renderer_renders_elt_and_substr() -> None:
+    class Raw(Schema):
+        label = string(nullable=True)
+
+    class Published(Schema):
+        selected = string(nullable=True)
+        shortened = string(nullable=True)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(
+                selected=elt(2, "first", row.label),
+                shortened=substr(row.label, start=1, length=4),
+            )
+
+    recipe = _recipe(Publish)
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    assert [render(expression, scope_aliases={"rows": "orders"}) for expression in projection.values()] == [
+        'F.elt(F.lit(2), F.lit(\'first\'), F.col("orders.label"))',
+        'F.substr(F.col("orders.label"), 1, 4)',
+    ]
+
+
+def test_v4_expression_renderer_renders_format_string_and_printf() -> None:
+    class Raw(Schema):
+        label = string(nullable=True)
+
+    class Published(Schema):
+        formatted = string(nullable=True)
+        printed = string(nullable=False)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(
+                formatted=format_string("label=%s", row.label),
+                printed=printf("status=%s", "ready"),
+            )
+
+    recipe = _recipe(Publish)
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    assert [render(expression, scope_aliases={"rows": "orders"}) for expression in projection.values()] == [
+        'F.format_string(\'label=%s\', F.col("orders.label"))',
+        "F.printf('status=%s', F.lit('ready'))",
+    ]
+
+
 def test_v3_expression_renderer_renders_temporal_sql_helpers() -> None:
     class Raw(Schema):
         start_date = date(nullable=False)
@@ -1254,4 +1332,146 @@ def test_v3_expression_renderer_renders_struct_get_field() -> None:
 
     assert PySpark.render.expression()(expression, scope_aliases={"rows": "orders"}) == (
         'F.col("orders.address").getField(\'city-name\')'
+    )
+
+
+def test_v4_expression_renderer_renders_extended_string_helpers() -> None:
+    class Raw(Schema):
+        label = string(nullable=True)
+        candidates = string(nullable=False)
+        amount = decimal(12, 2, nullable=True)
+
+    class Published(Schema):
+        cleaned = string(nullable=True)
+        present = boolean(nullable=True)
+        index = integer(nullable=True)
+        formatted = string(nullable=True)
+        located = integer(nullable=True)
+        part = string(nullable=True)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(
+                cleaned=btrim(row.label, trim="0"),
+                present=contains(row.label, "Ada"),
+                index=find_in_set(row.label, row.candidates),
+                formatted=format_number(row.amount, decimals=2),
+                located=position("Ada", row.label, start=2),
+                part=split_part(row.candidates, ",", 2),
+            )
+
+    recipe = _recipe(Publish)
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    assert render(projection["cleaned"], scope_aliases={"rows": "orders"}) == (
+        'F.btrim(F.col("orders.label"), \'0\')'
+    )
+    assert render(projection["present"], scope_aliases={"rows": "orders"}) == (
+        'F.contains(F.col("orders.label"), F.lit(\'Ada\'))'
+    )
+    assert render(projection["index"], scope_aliases={"rows": "orders"}) == (
+        'F.find_in_set(F.col("orders.label"), F.col("orders.candidates"))'
+    )
+    assert render(projection["formatted"], scope_aliases={"rows": "orders"}) == (
+        'F.format_number(F.col("orders.amount"), 2)'
+    )
+    assert render(projection["located"], scope_aliases={"rows": "orders"}) == (
+        'F.position(F.lit(\'Ada\'), F.col("orders.label"), 2)'
+    )
+    assert render(projection["part"], scope_aliases={"rows": "orders"}) == (
+        'F.split_part(F.col("orders.candidates"), F.lit(\',\'), F.lit(2))'
+    )
+
+
+def test_v4_expression_renderer_renders_character_and_regex_helpers() -> None:
+    class Raw(Schema):
+        label = string(nullable=True)
+        code_point = integer(nullable=False)
+
+    class Published(Schema):
+        character = string(nullable=False)
+        sounds_like = string(nullable=True)
+        count = integer(nullable=True)
+        matches = array(string(), contains_null=False, nullable=True)
+        match_position = integer(nullable=True)
+        match_text = string(nullable=True)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(
+                character=char(row.code_point),
+                sounds_like=soundex(row.label),
+                count=regexp_count(row.label, pattern="Ada"),
+                matches=regexp_extract_all(row.label, pattern="(Ada)", group=1),
+                match_position=regexp_instr(row.label, pattern="Ada"),
+                match_text=regexp_substr(row.label, pattern="Ada"),
+            )
+
+    recipe = _recipe(Publish)
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    assert render(projection["character"], scope_aliases={"rows": "orders"}) == (
+        'F.char(F.col("orders.code_point"))'
+    )
+    assert render(projection["sounds_like"], scope_aliases={"rows": "orders"}) == (
+        'F.soundex(F.col("orders.label"))'
+    )
+    assert render(projection["count"], scope_aliases={"rows": "orders"}) == (
+        'F.regexp_count(F.col("orders.label"), \'Ada\')'
+    )
+    assert render(projection["matches"], scope_aliases={"rows": "orders"}) == (
+        'F.regexp_extract_all(F.col("orders.label"), \'(Ada)\', 1)'
+    )
+    assert render(projection["match_position"], scope_aliases={"rows": "orders"}) == (
+        'F.regexp_instr(F.col("orders.label"), \'Ada\', 0)'
+    )
+    assert render(projection["match_text"], scope_aliases={"rows": "orders"}) == (
+        'F.regexp_substr(F.col("orders.label"), \'Ada\')'
+    )
+
+
+def test_v4_expression_renderer_renders_sql_bitwise_helpers() -> None:
+    class Raw(Schema):
+        flags = long(nullable=True)
+        position = integer(nullable=False)
+
+    class Published(Schema):
+        count = long(nullable=True)
+        selected = integer(nullable=True)
+        selected_alias = integer(nullable=True)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(
+                count=bit_count(row.flags),
+                selected=bit_get(row.flags, row.position),
+                selected_alias=getbit(row.flags, row.position),
+            )
+
+    recipe = _recipe(Publish)
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    assert render(projection["count"], scope_aliases={"rows": "orders"}) == (
+        'F.bit_count(F.col("orders.flags"))'
+    )
+    assert render(projection["selected"], scope_aliases={"rows": "orders"}) == (
+        'F.bit_get(F.col("orders.flags"), F.col("orders.position"))'
+    )
+    assert render(projection["selected_alias"], scope_aliases={"rows": "orders"}) == (
+        'F.getbit(F.col("orders.flags"), F.col("orders.position"))'
     )

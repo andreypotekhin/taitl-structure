@@ -15,7 +15,7 @@ Focused boundary contracts are collected in the [Search example specifications](
 | Concern | Typed boundary | Result | Details |
 | --- | --- | --- | --- |
 | Chunking | `Chunking` | sections, paragraphs, sentences | Plain-text hierarchy. |
-| Indexing | `Chunking`, `ExtractDocumentFields`, `Indexing` | content terms plus positional metadata postings | `Indexing` owns `LexIndex` and its `FieldIndex` child; field postings serve boolean/phrase metadata constraints. |
+| Indexing | `Chunking`, `Fields`, `Indexing` | content terms plus positional metadata postings | `Indexing` owns `LexIndex` and its `FieldIndex` child; field postings serve boolean/phrase metadata constraints. |
 | Scoring | `OfflineScoring`, `Scoring`, `OnlineScoring` | timestamped score relations | Score popular and seven-day recent queries offline; fill ad-hoc gaps online and persist bridge rows in the same relations. |
 | Vectorization | `OfflineVectorization`, `Vectorization`, `OnlineVectorization` | query/document embeddings and inference statuses | Reuse compatible cache rows, infer only gaps, and emit successful embeddings for caller-owned persistence. |
 | Ranking | `RankVectors`, `FuseDocuments` | bounded vector and hybrid candidate relations | `RankVectors` remains the standalone offline artifact ranker; online document search ranks and caps both lexical/vector lanes in `FuseDocuments`. |
@@ -30,7 +30,7 @@ Focused boundary contracts are collected in the [Search example specifications](
 
 `All` workflow is a one-call pre-serving build. It accepts corpus documents, one similarity policy, one `ScorePolicy`, field profiles and analyzer policies, queries and label configuration, persisted daily feedback facts, user/band catalogs, one relevance policy, an optional query-embedding cache, a document-vector cache, a `VectorIndexPolicy`, and an `InferencePolicy`. `OfflineVectorization` reuses compatible rows and invokes the configured inference adapter for missing query/document vectors with `streaming=False`; its embedding and status outputs can be persisted for later runs. `OfflineScoring` caps by 1000 most popular queries plus every query observed in the preceding seven days; standalone `RankVectors` applies `VectorIndexPolicy.maximum_candidates` after deterministic ranking for offline candidate artifacts. Raw vector scores are also published so serving can merge them with online scores before ranking.
 
-`Document.fields` is the authoritative map for string metadata. `ExtractDocumentFields` copies its reserved values back
+`Document.fields` is the authoritative map for string metadata. `Fields` copies its reserved values back
 to the preserved named `Document` fields and flattens arbitrary keys into `DocumentField` rows. `FieldIndex` removes
 configured metadata stop words while preserving their original positions, so a phrase such as
 `title:"release notes"` is checked against one metadata field. `DocumentFields` also generates the reserved `meta`

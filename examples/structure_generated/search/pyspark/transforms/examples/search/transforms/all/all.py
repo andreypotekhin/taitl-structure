@@ -620,7 +620,7 @@ class SentenceChunkingGenerated:
         }
 
 
-class ExtractDocumentFieldsGenerated:
+class FieldsGenerated:
     def _step_extracted_extract_11(self, frames):
         # Step method: extracted.extract
         extracted__documents = frames["documents"].alias("document")
@@ -15096,7 +15096,7 @@ class CorpusTextGenerated:
 class AllGenerated(
     DocumentChunkingGenerated,
     SentenceChunkingGenerated,
-    ExtractDocumentFieldsGenerated,
+    FieldsGenerated,
     ProfileDocumentsGenerated,
     LexIndexGenerated,
     FieldIndexGenerated,

@@ -298,6 +298,29 @@ class EvaluatePySparkExpression:
                     window=window,
                 ),
             )
+        if function == "array_reduce":
+            array, initial, _, _, merged, finished = expression.args
+            reduce_arguments = (
+                self.evaluate(array, functions=functions, aliases=aliases, window=window),
+                self.evaluate(initial, functions=functions, aliases=aliases, window=window),
+                lambda acc, item: self.evaluate(
+                    self._bind_lambdas(merged, {"acc": acc, "item": item}),
+                    functions=functions,
+                    aliases=aliases,
+                    window=window,
+                ),
+            )
+            if finished == merged:
+                return functions.reduce(*reduce_arguments)
+            return functions.reduce(
+                *reduce_arguments,
+                lambda acc: self.evaluate(
+                    self._bind_lambdas(finished, {"acc": acc}),
+                    functions=functions,
+                    aliases=aliases,
+                    window=window,
+                ),
+            )
         if function == "array_sort_by":
             array, left_key, right_key = expression.args
             return functions.array_sort(
@@ -344,6 +367,49 @@ class EvaluatePySparkExpression:
         if function == "collection_size":
             [value] = expression.args
             return functions.size(self.evaluate(value, functions=functions, aliases=aliases, window=window))
+        if function in {"cardinality", "array_size", "array_max", "array_min"}:
+            [value] = expression.args
+            return getattr(functions, function)(
+                self.evaluate(value, functions=functions, aliases=aliases, window=window)
+            )
+        if function == "array_join":
+            [value] = expression.args
+            arguments = [
+                self.evaluate(value, functions=functions, aliases=aliases, window=window),
+                expression.data["delimiter"],
+            ]
+            if expression.data["null_replacement"] is not None:
+                arguments.append(expression.data["null_replacement"])
+            return functions.array_join(*arguments)
+        if function == "concat":
+            return functions.concat(
+                *(self.evaluate(value, functions=functions, aliases=aliases, window=window) for value in expression.args)
+            )
+        if function == "arrays_overlap":
+            left, right = expression.args
+            return functions.arrays_overlap(
+                self.evaluate(left, functions=functions, aliases=aliases, window=window),
+                self.evaluate(right, functions=functions, aliases=aliases, window=window),
+            )
+        if function == "get":
+            value, index = expression.args
+            return functions.get(
+                self.evaluate(value, functions=functions, aliases=aliases, window=window),
+                self.evaluate(index, functions=functions, aliases=aliases, window=window),
+            )
+        if function == "sort_array":
+            [value] = expression.args
+            return functions.sort_array(
+                self.evaluate(value, functions=functions, aliases=aliases, window=window),
+                expression.data["ascending"],
+            )
+        if function == "shuffle":
+            [value] = expression.args
+            return functions.shuffle(self.evaluate(value, functions=functions, aliases=aliases, window=window))
+        if function == "arrays_zip":
+            return functions.arrays_zip(
+                *(self.evaluate(value, functions=functions, aliases=aliases, window=window) for value in expression.args)
+            )
         if function in {"array_contains", "map_contains_key"}:
             collection, item = expression.args
             needle = (
@@ -729,6 +795,10 @@ class EvaluatePySparkExpression:
         ]
         if function in {"lower", "ltrim", "rtrim", "trim", "upper"}:
             return getattr(functions, function)(args[0])
+        if function == "btrim":
+            return functions.btrim(args[0], expression.data["trim"])
+        if function == "contains":
+            return functions.contains(args[0], args[1])
         if function in {"base64", "unbase64"}:
             return getattr(functions, function)(args[0])
         if function in {"encode", "decode"}:
@@ -743,6 +813,10 @@ class EvaluatePySparkExpression:
             schema = self._ddl_schema(cast(type, expression.data["schema"]))
             options = expression.data["options"]
             return functions.from_csv(args[0], schema) if not options else functions.from_csv(args[0], schema, options)
+        if function == "get_json_object":
+            return functions.get_json_object(args[0], expression.data["path"])
+        if function in {"json_array_length", "json_object_keys"}:
+            return getattr(functions, function)(args[0])
         if function in {
             "is_valid_variant",
             "parse_json",
@@ -799,27 +873,45 @@ class EvaluatePySparkExpression:
             precision = expression.data["precision"]
             scale = expression.data["scale"]
             return args[0].cast(f"decimal({precision},{scale})")
-        if function == "substring":
+        if function in {"substring", "substr"}:
             return functions.substring(args[0], expression.data["start"], expression.data["length"])
+        if function == "elt":
+            return functions.elt(*args)
         if function == "split":
             return functions.split(args[0], expression.data["pattern"], expression.data["limit"])
         if function == "regexp_replace":
             return functions.regexp_replace(args[0], expression.data["pattern"], expression.data["replacement"])
         if function == "regexp_extract":
             return functions.regexp_extract(args[0], expression.data["pattern"], expression.data["group"])
+        if function == "regexp_count":
+            return functions.regexp_count(args[0], expression.data["pattern"])
+        if function == "regexp_extract_all":
+            return functions.regexp_extract_all(args[0], expression.data["pattern"], expression.data["group"])
+        if function == "regexp_instr":
+            return functions.regexp_instr(args[0], expression.data["pattern"], expression.data["group"])
+        if function == "regexp_substr":
+            return functions.regexp_substr(args[0], expression.data["pattern"])
         if function in {"lpad", "rpad"}:
             return getattr(functions, function)(args[0], expression.data["length"], expression.data["pad"])
-        if function in {"ascii", "char_length", "length", "octet_length"}:
+        if function in {"ascii", "char", "char_length", "length", "octet_length", "soundex"}:
             return getattr(functions, function)(args[0])
         if function in {"left", "right", "repeat"}:
             parameter = "length" if function in {"left", "right"} else "count"
             return getattr(functions, function)(args[0], expression.data[parameter])
         if function == "locate":
             return functions.locate(expression.data["substring"], args[0], expression.data["position"])
+        if function == "find_in_set":
+            return functions.find_in_set(args[0], args[1])
+        if function == "format_number":
+            return functions.format_number(args[0], expression.data["decimals"])
+        if function == "position":
+            return functions.position(args[0], args[1], expression.data["start"])
         if function == "replace":
             return functions.replace(args[0], expression.data["search"], expression.data["replacement"])
         if function == "substring_index":
             return functions.substring_index(args[0], expression.data["delimiter"], expression.data["count"])
+        if function == "split_part":
+            return functions.split_part(args[0], args[1], args[2])
         if function == "length":
             return functions.length(args[0])
         if function in {"initcap", "reverse"}:
@@ -832,7 +924,9 @@ class EvaluatePySparkExpression:
             return functions.levenshtein(args[0], args[1])
         if function == "concat_ws":
             return functions.concat_ws(expression.data["separator"], *args)
-        if function in {"hash", "xxhash64"}:
+        if function in {"format_string", "printf"}:
+            return getattr(functions, function)(expression.data["format"], *args)
+        if function in {"hash", "xxhash64", "crc32"}:
             return getattr(functions, function)(*args)
         if function in {"md5", "sha1"}:
             return getattr(functions, function)(args[0])
@@ -864,6 +958,10 @@ class EvaluatePySparkExpression:
             )
         if function == "abs":
             return functions.abs(args[0])
+        if function == "bit_count":
+            return functions.bit_count(args[0])
+        if function in {"bit_get", "getbit"}:
+            return getattr(functions, function)(args[0], args[1])
         if function in {"bin", "hex", "unhex"}:
             return getattr(functions, function)(args[0])
         if function == "conv":
@@ -888,9 +986,10 @@ class EvaluatePySparkExpression:
             return getattr(functions, function)(*args)
         if function == "width_bucket":
             return functions.width_bucket(args[0], args[1], args[2], expression.data["num_buckets"])
-        if function == "rand":
+        if function in {"rand", "randn"}:
             seed = expression.data.get("seed")
-            return functions.rand() if seed is None else functions.rand(seed=seed)
+            call = getattr(functions, function)
+            return call() if seed is None else call(seed=seed)
         if function == "round":
             return functions.round(args[0], expression.data["scale"])
         if function == "bround":

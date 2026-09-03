@@ -37,7 +37,7 @@ The application has two independent indexing lanes:
         -> existing full-text scoring and document search
 
     Document
-        -> Chunking + ExtractDocumentFields
+        -> Chunking + Fields
         -> Indexing
            -> LexIndex
            -> FieldIndex
@@ -75,22 +75,22 @@ content_summary is intentionally not included. It can be added later as an expli
 experience shows that a short synthesized field is valuable.
 
 The map is the source of truth. Existing named Document fields remain present because they are useful to callers and
-presentations, but ExtractDocumentFields assigns their values from the map in its enriched Document output. When a
+presentations, but Fields assigns their values from the map in its enriched Document output. When a
 typed value and map value both exist, the map value wins; downstream consumers therefore use one consistent value.
 
 Non-string identity and lifecycle fields, such as document ID, collection ID, and timestamps, remain typed fields rather
 than being stringified into the map.
 
-## ExtractDocumentFields
+## Fields
 
-ExtractDocumentFields follows Chunking. Chunking establishes content structure; extraction owns metadata
+Fields follows Chunking. Chunking establishes content structure; extraction owns metadata
 canonicalization and flattening while enriching the same `Document` relation.
 
 Its dataflow is:
 
     Document
         -> Chunking
-            -> ExtractDocumentFields
+            -> Fields
             -> enriched Document
             -> DocumentField rows
 

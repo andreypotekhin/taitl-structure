@@ -260,7 +260,7 @@ from examples.search.transforms.experiment import (
     SelectExperimentScores,
 )
 from examples.search.transforms.features import BuildDocumentFeatures, BuildQueryFeatures, Features
-from examples.search.transforms.fields import ExtractDocumentFields
+from examples.search.transforms.fields import Fields
 from examples.search.transforms.indexing import FieldIndex, Indexing
 from examples.search.transforms.labeling import CreateQueryLabels, Labeling, MergeQueryLabels
 from examples.search.transforms.offline.scoring.lexical.MergeOfflineQueries import MergeOfflineQueries
@@ -571,7 +571,7 @@ TRANSFORMS = (
     (AnalyzeText, "examples.search.transforms.stats.AnalyzeText.AnalyzeText"),
     (CorpusText, "examples.search.transforms.stats.CorpusText.CorpusText"),
     (Indexing, "examples.search.transforms.indexing.Indexing.Indexing"),
-    (ExtractDocumentFields, "examples.search.transforms.fields.ExtractDocumentFields.ExtractDocumentFields"),
+    (Fields, "examples.search.transforms.fields.Fields.Fields"),
     (FieldIndex, "examples.search.transforms.indexing.fields.FieldIndex.FieldIndex"),
     (SearchFields, "examples.search.transforms.searching.search_fields.SearchFields.SearchFields"),
     (SearchSentences, "examples.search.transforms.searching.search_sentences.SearchSentences.SearchSentences"),
@@ -1878,7 +1878,7 @@ def _run_indexing(spark, documents, sentences, *, execution_mode: str, generated
         f"{generated_package or PACKAGE}.pyspark.schemas.fields",
         fromlist=["ANALYZER_POLICY_SCHEMA", "FIELD_PROFILE_SCHEMA"],
     )
-    extracted = ExtractDocumentFields(source_documents=documents).run(
+    extracted = Fields(source_documents=documents).run(
         session(spark, execution_mode=execution_mode, generated_package=generated_package)
     )
     field_profiles = spark.createDataFrame(

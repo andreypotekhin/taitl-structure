@@ -189,6 +189,7 @@ aggregate.last_value
 aggregate.stddev
 aggregate.variance
 higher_order.array_aggregate
+higher_order.array_reduce
 higher_order.array_distinct
 higher_order.array_exists
 higher_order.array_transform
@@ -196,6 +197,17 @@ higher_order.array_filter
 higher_order.array_flatten
 higher_order.array_forall
 higher_order.array_position
+higher_order.cardinality
+higher_order.array_size
+higher_order.array_max
+higher_order.array_min
+higher_order.array_join
+higher_order.concat
+higher_order.arrays_overlap
+higher_order.get
+higher_order.sort_array
+higher_order.shuffle
+higher_order.arrays_zip
 higher_order.array_sort_by
 higher_order.array_zip_with
 higher_order.map_entries

@@ -1,0 +1,114 @@
+{
+  "generated_by": "Structure",
+  "schemas": [
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "orders.transforms.publish",
+      "name": "OrderNormalized"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "orders.schemas.order",
+      "name": "OrderPublished"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "orders.schemas.order",
+      "name": "OrderRaw"
+    }
+  ],
+  "transforms": [
+    {
+      "dependencies": [],
+      "inputs": [
+        {
+          "name": "orders",
+          "ordinal": 0,
+          "schema": "OrderRaw"
+        }
+      ],
+      "name": "PublishOrders",
+      "outputs": [
+        {
+          "name": "published",
+          "ordinal": 0,
+          "schema": "OrderPublished"
+        }
+      ],
+      "source": "orders.transforms.publish.PublishOrders",
+      "step_methods": [
+        {
+          "input_lane": "orders",
+          "input_schema": "OrderRaw",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "order",
+              "schema": "OrderRaw",
+              "source": "orders"
+            }
+          ],
+          "name": "normalize",
+          "output_lane": "orders",
+          "output_schema": "OrderNormalized",
+          "results": [
+            {
+              "frame": "orders",
+              "lane": "orders",
+              "schema": "OrderNormalized"
+            }
+          ]
+        },
+        {
+          "input_lane": "orders",
+          "input_schema": "OrderNormalized",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "order",
+              "schema": "OrderNormalized",
+              "source": "orders"
+            }
+          ],
+          "name": "publish",
+          "output_lane": "orders",
+          "output_schema": "OrderPublished",
+          "results": [
+            {
+              "frame": "orders",
+              "lane": "orders",
+              "schema": "OrderPublished"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/orders/transforms/publish.py"
+      }
+    }
+  ]
+}

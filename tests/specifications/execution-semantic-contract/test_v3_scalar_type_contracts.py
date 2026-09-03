@@ -11,7 +11,7 @@ from structure.plugin.pyspark import *
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.expressions import literal
-from structure.plugin.pyspark.dsl.types import BinaryType, DecimalType, StringType, StructType
+from structure.plugin.pyspark.dsl.types import ArrayType, BinaryType, DecimalType, IntegerType, StringType, StructType
 
 
 def _compile(transform):
@@ -162,6 +162,26 @@ def test_v7_schema_carrying_parsing_helpers_reject_untyped_options_and_schemas()
         from_csv("paid,2", as_=ParsedPayload, options=CsvOptions(delimiter=""))
     with pytest.raises(TypeError, match="to_json\\(\\.\\.\\.\\) requires a Struct Structure expression"):
         to_json("paid")
+
+
+def test_json_inspection_helpers_have_typed_nullable_results() -> None:
+    payload = _expression(types.string(), nullable=True)
+
+    extracted = get_json_object(payload, "$.customer.id")
+    length = json_array_length(payload)
+    keys = json_object_keys(payload)
+
+    assert isinstance(extracted.type, StringType)
+    assert isinstance(length.type, IntegerType)
+    assert isinstance(keys.type, ArrayType)
+    assert isinstance(keys.type.element, StringType)
+    assert keys.type.contains_null is False
+    assert extracted.nullable is length.nullable is keys.nullable is True
+
+    with pytest.raises(TypeError, match=r"get_json_object\(\.\.\.\) path must be a non-empty string literal"):
+        get_json_object(payload, "")
+    with pytest.raises(TypeError, match=r"json_array_length\(\.\.\.\) requires a String"):
+        json_array_length(1)
 
 
 class RequiredUdfSource(Schema):
@@ -580,6 +600,20 @@ def test_rand_requires_explicit_reproducibility_policy_and_returns_non_null_doub
         "nondeterministic": True,
     }
     assert dict(unseeded.data or {})["seed"] is None
+
+
+def test_randn_uses_the_same_explicit_seed_policy_as_rand() -> None:
+    seeded = randn(seed=17)
+    unseeded = randn(reproducible=False)
+
+    assert seeded.type is not None and seeded.type.name == "double"
+    assert seeded.nullable is False
+    assert dict(seeded.data or {})["function"] == "randn"
+    assert dict(seeded.data or {})["seed"] == 17
+    assert dict(unseeded.data or {})["seed"] is None
+
+    with pytest.raises(TypeError, match=r"randn\(\.\.\.\) seed is required"):
+        randn()
     assert dict(unseeded.data or {})["reproducible"] is False
 
 
@@ -620,10 +654,13 @@ def test_hash_helpers_have_typed_results_and_explicit_null_contracts() -> None:
 
     hash_code = hash(nullable_label, required_id)
     long_hash = xxhash64(nullable_label)
+    checksum = crc32(nullable_label)
     assert hash_code.type is not None and hash_code.type.name == "integer"
     assert hash(nullable_label).nullable is True
     assert long_hash.type is not None and long_hash.type.name == "long"
     assert long_hash.nullable is True
+    assert checksum.type is not None and checksum.type.name == "long"
+    assert checksum.nullable is True
     for expression in (md5(nullable_label), sha1(nullable_label), sha2(nullable_label, bits=512)):
         assert expression.type is not None and expression.type.name == "string"
         assert expression.nullable is True
@@ -651,6 +688,13 @@ def test_zeroifnull_requires_a_numeric_expression() -> None:
 def test_hash_helpers_require_scalar_values(function) -> None:
     with pytest.raises(TypeError, match=r"requires scalar Structure expressions"):
         function(_expression(types.map(types.string(), types.string()), nullable=False))
+
+
+def test_crc32_requires_string_or_binary_input() -> None:
+    checksum = crc32(b"payload")
+    assert checksum.type is not None and checksum.type.name == "long"
+    with pytest.raises(TypeError, match=r"crc32\(\.\.\.\) requires a String or Binary"):
+        crc32(17)
 
 
 @pytest.mark.parametrize("bits", [0, 128, 225, 1024])
@@ -724,6 +768,80 @@ def test_string_slicing_position_and_byte_helpers_preserve_types() -> None:
     ):
         assert expression.type is not None and expression.type.name == "string"
         assert expression.nullable is True
+
+
+def test_extended_string_helpers_preserve_types_and_nullability() -> None:
+    nullable_text = _expression(types.string(), nullable=True)
+    required_text = _expression(types.string(), nullable=False)
+    nullable_number = _expression(types.decimal(12, 2), nullable=True)
+
+    assert btrim(nullable_text, trim="0").nullable is True
+    contains_expression = contains(required_text, "Ada")
+    assert contains_expression.type is not None and contains_expression.type.name == "boolean"
+    assert find_in_set(nullable_text, required_text).nullable is True
+    assert format_number(nullable_number, decimals=2).type is not None
+    assert position("Ada", nullable_text, start=2).nullable is True
+    assert split_part(nullable_text, "/", -1).nullable is True
+
+
+def test_extended_string_helpers_require_valid_arguments() -> None:
+    with pytest.raises(TypeError, match=r"btrim\(\.\.\.\) requires a String"):
+        btrim(1)
+    with pytest.raises(TypeError, match=r"trim must be a string literal"):
+        btrim("value", trim=cast(str, 1))
+    with pytest.raises(TypeError, match=r"format_number\(\.\.\.\) requires a numeric"):
+        format_number("value", decimals=2)
+    with pytest.raises(TypeError, match=r"decimals must be a non-negative integer literal"):
+        format_number(1, decimals=-1)
+    with pytest.raises(TypeError, match=r"start must be a positive integer literal"):
+        position("a", "value", start=0)
+    with pytest.raises(ValueError, match=r"part_num cannot be zero"):
+        split_part("a.b", ".", 0)
+
+
+def test_character_and_regex_helpers_preserve_types_and_nullability() -> None:
+    nullable_text = _expression(types.string(), nullable=True)
+    required_number = _expression(types.integer(), nullable=False)
+
+    char_expression = char(required_number)
+    assert char_expression.type is not None and char_expression.type.name == "string"
+    assert soundex(nullable_text).nullable is True
+    assert regexp_count(nullable_text, pattern="Ada").type is not None
+    assert regexp_extract_all(nullable_text, pattern="(Ada)", group=1).type is not None
+    assert regexp_instr(nullable_text, pattern="Ada").nullable is True
+    assert regexp_substr(nullable_text, pattern="Ada").nullable is True
+
+
+def test_sql_bitwise_helpers_preserve_integral_contracts() -> None:
+    nullable_value = _expression(types.long(), nullable=True)
+    required_position = _expression(types.integer(), nullable=False)
+
+    bit_count_expression = bit_count(nullable_value)
+    assert bit_count_expression.type is not None and bit_count_expression.type.name == "long"
+    assert bit_count_expression.nullable is True
+    for function in (bit_get, getbit):
+        expression = function(nullable_value, required_position)
+        assert expression.type is not None and expression.type.name == "integer"
+        assert expression.nullable is True
+
+
+def test_bit_count_requires_an_integral_operand() -> None:
+    with pytest.raises(TypeError, match=r"requires an integer or long Structure expression"):
+        bit_count(_expression(types.string(), nullable=False))
+
+
+@pytest.mark.parametrize("function", [bit_get, getbit])
+def test_bit_position_helpers_require_integral_operands(function) -> None:
+    with pytest.raises(TypeError, match=r"requires an integer or long Structure expression"):
+        function(_expression(types.string(), nullable=False), 1)
+    with pytest.raises(TypeError, match=r"requires an integer or long Structure expression"):
+        function(1, _expression(types.string(), nullable=False))
+
+
+@pytest.mark.parametrize("function", [regexp_extract_all, regexp_instr])
+def test_regex_group_helpers_require_non_negative_literal_groups(function) -> None:
+    with pytest.raises(TypeError, match=r"group must be a non-negative integer"):
+        function("value", pattern="value", group=-1)
 
 
 @pytest.mark.parametrize(
@@ -1232,3 +1350,39 @@ def test_nullable_negation_cannot_fill_a_non_nullable_output() -> None:
         _compile(NullableNegation)
 
     assert raised.value.diagnostic.code == "SCHEMA-E0301"
+
+
+def test_elt_and_substr_preserve_typed_scalar_contracts() -> None:
+    nullable_label = _expression(types.string(), nullable=True)
+    selected = elt(2, "first", nullable_label)
+    shortened = substr(nullable_label, start=1, length=4)
+
+    assert selected.type is not None and selected.type.name == "string"
+    assert selected.nullable is True
+    assert shortened.type is not None and shortened.type.name == "string"
+    assert shortened.nullable is True
+
+    with pytest.raises(TypeError, match=r"elt\(\.\.\.\) requires at least one value"):
+        elt(1)
+    with pytest.raises(TypeError, match=r"elt\(\.\.\.\) requires an integer or long"):
+        elt("one", "value")
+    with pytest.raises(TypeError, match=r"substr\(\.\.\.\) start must be a positive integer"):
+        substr(nullable_label, start=0, length=1)
+    with pytest.raises(TypeError, match=r"substr\(\.\.\.\) length must be a non-negative integer"):
+        substr(nullable_label, start=1, length=-1)
+
+
+def test_format_string_and_printf_require_literal_formats_and_preserve_nullable_scalars() -> None:
+    nullable_label = _expression(types.string(), nullable=True)
+    formatted = format_string("label=%s", nullable_label)
+    printed = printf("label=%s", "ready")
+
+    assert formatted.type is not None and formatted.type.name == "string"
+    assert formatted.nullable is True
+    assert printed.type is not None and printed.type.name == "string"
+    assert printed.nullable is False
+
+    with pytest.raises(TypeError, match=r"format_string\(\.\.\.\) format must be a string literal"):
+        format_string(1, nullable_label)  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match=r"printf\(\.\.\.\) requires scalar"):
+        printf("value=%s", array("value"))

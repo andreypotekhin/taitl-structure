@@ -37,7 +37,9 @@ Extend draft (.draft.md), background (.back.md), plan (plan.md) and collected (.
 - Use relevant plan documents (.plan.md) for deep insight into decisions/tradeoffs/inner worsings. Use to extend the narrative without explicit importing parts of plan. Avoid citing/referring the plan docs.
 - Maintain content and structure set by draft doc
  - Make improvements/corrections to draft as needed, but keep it brief/succinct where it is already
-  - Specifically, some sections are mention/enumeration only: Builds on, Used by, Inputs/Outpus/Stages, Notation
+ - Specifically, some sections are mention/enumeration only: Builds on, Used by, Inputs, Outputs, and Stages.
+ - Do not emit a top-level `## Notation` section in `.ext.md`; text notation belongs in the required Implementation
+   stage and Result blocks.
  - Only include concepts under Definitions, concept name is mostly single-word.
  - Insert contents of background and collected docs as described below.
 - Audience: technically confident reader may not be familiar with industry specifics, field terminology or what comprises the target system.
@@ -129,11 +131,19 @@ Code section:
       begin with `_`) in Code listings, but exclude them from numbered Implementation narratives and standalone
       transform shapes. If a collected group contains only private/helper methods, omit that Implementation group and
       do not invent replacement prose or consume a global number.
-    - Add global number (non-circled) in front of each group.
+    - Add a global number (non-circled) in front of every public method-group clause. Begin each such clause with one
+      short italicized intent, preserving the collected intent when present and deriving a concise source-backed intent
+      from the group's plain explanation when needed. This Code-section sequence is independent of the circled
+      Implementation sequence. Do not number workflow, class, stage-assignment, plain explanatory, or private/helper
+      clauses.
     - The code must be preserved.
     - Render each collected intent/explanation exactly once in Code. Put it on the numbered group that owns its
-      notation, and remove any standalone or trailing copy of that same prose. Never emit a collected paragraph
-      before the numbered item and again inside the item.
+      notation, immediately before the code listing or notation it explains, and remove any standalone or trailing copy of
+      that same prose. Never emit a collected paragraph before the numbered item and again inside the item.
+    - When a collected class or workflow listing has no source-backed intent, explanation, or class-level description,
+      preserve the listing without inventing a numbered Code item. Keep class, workflow, and stage-assignment listings
+      unnumbered even when they contain short docstrings. Public method groups always receive the short italicized intent
+      and marker described above; private/helper listings remain unnumbered. Keep prose preceding class listings plain.
     - Do not take prose from Implementation section.
 
 ##### Implementation section - subsections
@@ -167,6 +177,9 @@ Step/helper method narrative/method groups:
   Code section's method-group boundaries and source order are binding for the Stage subsection.
 - Mark each group with a global number (circled). Reuse upstream intent sentence and italic formatting when the
   upstream prose contains italicized intent.
+- When a collected class listing contains a short class docstring, use that one-sentence docstring as the circled
+  italicized intent for the class-level group. Keep any longer prose preceding the listing plain and use it as the
+  group's explanation; never expand that prose into an italicized intent.
 - Use collected source for group’s canonical group boundaries, intent sentence, and use Code section
   to verify method membership and order. Do not split, merge, reorder, or reassign a method to a different group.
 - Do not invent an intent sentence when the upstream prose has none.
@@ -196,11 +209,12 @@ Internal vs external stages:
   signatures remain under their explanatory items.
 - External stages:
   - Keep one stage subsection per actual external stage call. When the external stage's source context provides an
-   explanatory sentence, express its source-backed meaning as one self-contained narrative sentence focused on the
-   stage's data transition and responsibility, then pair it with one canonical stage-call notation block. Use active
-   voice naturally, preserve italic formatting only if it is present upstream, and do not force-split a source-backed
-   intent or invent one. When no source-backed explanation exists, emit only the canonical stage-call notation without
-   a number or invented prose.
+   explanatory sentence, express its source-backed meaning as one circled numbered item immediately before one canonical
+   stage-call notation block. Use the shortest source-backed intent sentence as the item lead: preserve italic formatting
+   when a short italicized intent is present upstream. For an external stage without its own collected class listing,
+   also inspect the parent workflow's short class docstring when it directly states the purpose of that stage call. Keep
+   any longer source-backed explanation plain, use active voice naturally, and do not invent an intent. When no
+   source-backed explanation exists, emit only the canonical stage-call notation without a number or invented prose.
   - Do not include external stages' typed step methods, step groups, method inventory, or `Resulting transform shape:`.
 
 Result subsection
@@ -224,7 +238,7 @@ Formatting:
  - Diagrams: GitHub/Typora-compatible mermaid,
    - Monochrome diagrams only
  - Definitions: bold defined concept name
- - Inputs, Outputs, Stages sections: use bold, instead of inline code, for the class/schema/transform names.
+ - In `.ext.md`, keep Builds on, Used by, Inputs, Outputs, and Stages as plain list text without bold names.
 
 Finishing touches:
 - Ensure continuous narrative from top to bottom, gradual buildup of concepts and understanding,
@@ -259,6 +273,8 @@ Quality assurance rules
 General
 - Before publishing an extended document, verify that its H1 and every section before Implementation section are preserved
   from the source draft/extended structure.
+- Verify that Builds on, Used by, Inputs, Outputs, and Stages contain plain list text without bold markup.
+- Verify that no top-level `## Notation` section appears in `.ext.md`.
 - Normalize prose wrapping before publishing: continuation lines in ordinary paragraphs and numbered-item prose must start at
   column zero. Preserve indentation only inside fenced code, structured text notation, lists, and display math; reject runs of
   leading spaces that would render as literal whitespace in Typora.
@@ -295,15 +311,25 @@ Implementation section - subsections
 Code section
 - Every collected transform/method section is represented.
 - Code listings order matches the collected source.
-- Cross-check every public step/helper in each Code class against the numbered Implementation groups and formulas,
-  including trailing output-publishing methods; reject any public method that appears in a class listing or transform
-  shape without a corresponding group and notation.
+- Every public method-group clause begins with one short italicized intent and its global numeric marker. Verify that the
+  markers are visible in Code and continue one independent sequence across public method groups only; do not number
+  workflow, class, stage-assignment, plain explanatory, or private/helper clauses. Do not require the numbers to match
+  the circled Implementation groups, and never adjust Code numbering in response to Implementation content.
+- Verify each numbered Code item appears immediately before the code listing or notation for its own group. Reject a
+  numbered item placed after its corresponding listing, a numbered item with no source-backed Code group, or an invented
+  numbered item for a listing whose collected source has no intent/explanation.
+- Verify every pair of adjacent fenced Code listings is separated by at least one ordinary prose line. Reject a closing
+  code fence immediately followed by an opening code fence, and do not use duplicated intent text or another code block as
+  the separator.
+- Cross-check every public step/helper in each Code class against corresponding Implementation method coverage and
+  formulas, including trailing output-publishing methods; this is a method-coverage check, not a numbering rule. Reject
+  any public method that appears in a class listing or transform shape without corresponding coverage and notation.
 - Root workflows include all child and external stages.
 - Method groups use the collected input as the sole source of method group breakdown and their intent, explanatory
   prose and and code listings.
 - Emit group explanation exactly once with one leading group number; replace stale generated intent prose rather than
-prepending or wrapping it again. Reject duplicated sentences, adjacent italic spans such as `**`, and any group whose
-italicized intent does not match the collected source.
+  prepending or wrapping it again. Reject duplicated sentences, adjacent italic spans such as `**`, and any group whose
+  italicized intent does not match the collected source.
 - Reject prose duplicated before the numbered item, a separate unnumbered explanation before the intent, 
   or an item containing only the intent with its explanation outside the item.
 
@@ -338,10 +364,12 @@ Stage subsections:
 
 External stages:
 - For every external stage subsection, verify that the subsection names the called class exactly and contains one
-  canonical stage-call notation. Preserve one complete numbered sentence when matching stage context exists, including
-  italic formatting only when present upstream; otherwise do not invent prose or a number. In either case, contain no
-  typed step signature, step group, method vector, or `Resulting transform shape:` block. The parent workflow shows the
-  stage assignment in its Result shape.
+  canonical stage-call notation. When matching source context exists, require one circled numbered item immediately
+  before the notation; use the short italicized intent when present upstream, including a directly applicable parent
+  workflow class docstring when the external stage has no collected class listing. Otherwise use the shortest plain
+  source-backed sentence. Keep longer explanation plain and do not convert it to italics. When no matching source
+  context exists, emit no number or invented prose. In either case, contain no typed step signature, step group, method
+  vector, or `Resulting transform shape:` block. The parent workflow shows the stage assignment in its Result shape.
 
 Stage transforms:
 - If a stage transform is itself a composed transform, use composed transform notation with stage calls.
@@ -379,6 +407,13 @@ Resulting transform shape:
   followed by one complete typed signature per public typed method, including non-step helpers, one signature per line. 
   Reject `methods:` summaries, abbreviated method-name lists, `inputs:`/`outputs:` summary blocks, and any signature not 
   traceable to that transform.
+- When a source-backed method group names parallel grain paths, expand every named path into its own typed signature in
+  the explanatory text notation and in the `Resulting transform shape`; do not collapse section, paragraph, or sentence
+  methods into a representative document method or a prose-only “same pattern” statement.
+- QA failure: when a source-backed method group names parallel grain paths or says that finer grains use the same formula,
+  enumerate every named grain and verify one typed signature for each in the explanatory notation and one corresponding
+  method name for each in the `Resulting transform shape`. Reject a representative document method, a prose-only “same
+  pattern” statement, or a shape whose grain method inventory is shorter than the prose-described inventory.
 
 Workflow transform:
 - Parent Result shape must reproduce stage calls and typed outputs exactly;

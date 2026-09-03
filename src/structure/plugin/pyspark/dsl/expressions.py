@@ -40,11 +40,12 @@ __all__ = [
     "abs", "base64", "bin", "bround", "ceil", "coalesce", "concat_ws", "conv", "date_add", "date_sub", "date_trunc", "datediff",
     "dayofmonth", "event_time_between", "exp", "floor", "from_csv", "from_json", "hash", "hour", "ifnull", "initcap",
     "instr", "isnan", "isnotnull", "isnull", "CsvOptions", "JsonOptions", "length", "levenshtein", "literal", "log",
-    "lower", "lpad", "ltrim", "md5",
+    "get_json_object", "json_array_length", "json_object_keys",
+    "lower", "lpad", "ltrim", "md5", "crc32", "elt", "format_string", "printf", "substr",
     "minute", "month", "nanvl", "nullif", "nvl", "nvl2", "pow", "regexp_extract", "regexp_replace", "repeat", "replace", "reverse",
     "round", "rpad", "rtrim", "sha1", "sha2", "second", "signum", "split", "sqrt", "substring", "to_csv", "to_date",
-    "to_decimal", "to_json", "to_timestamp", "translate", "trim", "trunc", "unbase64", "decode", "encode", "hex", "unhex", "upper", "ascii", "char_length", "left", "locate", "octet_length", "right", "substring_index",
-    "when", "width_bucket", "xxhash64", "year", "zeroifnull", "acos", "acosh", "asin", "asinh", "atan", "atan2", "atanh", "cbrt", "cos", "cosh", "cot", "csc", "degrees", "e", "expm1", "factorial", "greatest", "hypot", "least", "ln", "log10", "log1p", "log2", "pmod", "pi", "radians", "rint", "sec", "sign", "sin", "sinh", "tan", "tanh", "add_months", "next_day", "rand", "is_valid_variant", "is_variant_null", "parse_json",
+    "to_decimal", "to_json", "to_timestamp", "translate", "trim", "trunc", "unbase64", "decode", "encode", "hex", "unhex", "upper", "ascii", "btrim", "char", "char_length", "find_in_set", "format_number", "left", "locate", "octet_length", "position", "right", "soundex", "split_part", "substring_index", "regexp_count", "regexp_extract_all", "regexp_instr", "regexp_substr", "bit_count", "bit_get", "getbit",
+    "when", "width_bucket", "xxhash64", "year", "zeroifnull", "acos", "acosh", "asin", "asinh", "atan", "atan2", "atanh", "cbrt", "cos", "cosh", "cot", "csc", "degrees", "e", "expm1", "factorial", "greatest", "hypot", "least", "ln", "log10", "log1p", "log2", "pmod", "pi", "radians", "rint", "sec", "sign", "sin", "sinh", "tan", "tanh", "add_months", "next_day", "rand", "randn", "is_valid_variant", "is_variant_null", "parse_json",
     "schema_of_variant", "to_variant_object", "try_parse_json", "try_variant_get", "variant_get", "variant_literal",
     "variant_array_append", "try_variant_array_append", "variant_insert", "try_variant_insert", "variant_set",
     "try_variant_set", "variant_delete",
@@ -231,6 +232,19 @@ def rtrim(value: object) -> Expression:
 def trim(value: object) -> Expression:
     """Trim leading and trailing whitespace from a string expression."""
     return _string_call("trim", value)
+
+
+def btrim(value: object, *, trim: str = " ") -> Expression:
+    """Trim literal characters from both ends of a string expression."""
+    argument = _string_argument(value, "btrim(...)")
+    _string_literal(trim, "btrim(...)", "trim")
+    return Expression(
+        kind="call",
+        type=StringType(),
+        nullable=argument.nullable,
+        data={"function": "btrim", "trim": trim},
+        args=(argument,),
+    )
 
 
 def upper(value: object) -> Expression:
@@ -424,6 +438,30 @@ def to_csv(value: object, *, options: CsvOptions = CsvOptions()) -> Expression:
     )
 
 
+def get_json_object(value: object, path: str) -> Expression:
+    """Extract a JSON value as nullable String using a literal JSON path."""
+    argument = _string_argument(value, "get_json_object(...)")
+    if not isinstance(path, str) or not path:
+        raise TypeError("get_json_object(...) path must be a non-empty string literal")
+    return Expression(
+        kind="call", type=StringType(), nullable=True, data={"function": "get_json_object", "path": path}, args=(argument,)
+    )
+
+
+def json_array_length(value: object) -> Expression:
+    """Return the nullable length of a JSON array string."""
+    argument = _string_argument(value, "json_array_length(...)")
+    return Expression(kind="call", type=IntegerType(), nullable=True, data={"function": "json_array_length"}, args=(argument,))
+
+
+def json_object_keys(value: object) -> Expression:
+    """Return nullable JSON object keys as an array of Strings."""
+    argument = _string_argument(value, "json_object_keys(...)")
+    return Expression(
+        kind="call", type=ArrayType(StringType(), contains_null=False), nullable=True, data={"function": "json_object_keys"}, args=(argument,)
+    )
+
+
 def parse_json(value: object) -> Expression:
     """Parse JSON text into a Variant value, failing for invalid JSON."""
     argument = _string_argument(value, "parse_json(...)")
@@ -569,18 +607,40 @@ def substring(value: object, *, start: int, length: int) -> Expression:
     Example:
         short_code = substring(order.code, start=1, length=3)
     """
-    argument = _string_argument(value, "substring(...)")
-    if isinstance(start, bool) or not isinstance(start, int) or start < 1:
-        raise TypeError("substring(...) start must be a positive integer")
-    if isinstance(length, bool) or not isinstance(length, int) or length < 0:
-        raise TypeError("substring(...) length must be a non-negative integer")
+    return _substring_call("substring", value, start=start, length=length)
+
+
+def substr(value: object, *, start: int, length: int) -> Expression:
+    """Return a substring expression using Spark's ``substr`` spelling."""
+    return _substring_call("substr", value, start=start, length=length)
+
+
+def elt(index: object, *values: object) -> Expression:
+    """Return the one-based selected value from compatible scalar expressions."""
+    if not values:
+        raise TypeError("elt(...) requires at least one value")
+    position = _integral_argument(index, "elt(...)")
+    arguments = tuple(_scalar_argument(value, "elt(...)") for value in values)
+    result_type = _common_type("elt(...)", arguments)
+    if result_type is None:
+        raise TypeError("elt(...) requires at least one typed Structure expression")
     return Expression(
         kind="call",
-        type=StringType(),
-        nullable=argument.nullable,
-        data={"function": "substring", "start": start, "length": length},
-        args=(argument,),
+        type=result_type,
+        nullable=position.nullable or any(argument.nullable for argument in arguments),
+        data={"function": "elt"},
+        args=(position, *arguments),
     )
+
+
+def format_string(format: str, *values: object) -> Expression:
+    """Format scalar expressions with a literal Spark format string."""
+    return _format_string_call("format_string", format, values)
+
+
+def printf(format: str, *values: object) -> Expression:
+    """Format scalar expressions using Spark's ``printf`` spelling."""
+    return _format_string_call("printf", format, values)
 
 
 def split(value: object, *, pattern: str, limit: int = -1) -> Expression:
@@ -624,6 +684,53 @@ def regexp_extract(value: object, *, pattern: str, group: int = 1) -> Expression
         nullable=argument.nullable,
         data={"function": "regexp_extract", "pattern": pattern, "group": group},
         args=(argument,),
+    )
+
+
+def regexp_count(value: object, *, pattern: str) -> Expression:
+    """Count non-overlapping matches of a literal regular expression."""
+    argument = _string_argument(value, "regexp_count(...)")
+    _string_literal(pattern, "regexp_count(...)", "pattern")
+    return Expression(
+        kind="call", type=IntegerType(), nullable=argument.nullable,
+        data={"function": "regexp_count", "pattern": pattern}, args=(argument,)
+    )
+
+
+def regexp_extract_all(value: object, *, pattern: str, group: int = 1) -> Expression:
+    """Return all matches of a literal regular expression capture group."""
+    argument = _string_argument(value, "regexp_extract_all(...)")
+    _string_literal(pattern, "regexp_extract_all(...)", "pattern")
+    if isinstance(group, bool) or not isinstance(group, int) or group < 0:
+        raise TypeError("regexp_extract_all(...) group must be a non-negative integer")
+    return Expression(
+        kind="call",
+        type=ArrayType(StringType(), contains_null=False),
+        nullable=argument.nullable,
+        data={"function": "regexp_extract_all", "pattern": pattern, "group": group},
+        args=(argument,),
+    )
+
+
+def regexp_instr(value: object, *, pattern: str, group: int = 0) -> Expression:
+    """Return the one-based start position of a literal regular-expression match."""
+    argument = _string_argument(value, "regexp_instr(...)")
+    _string_literal(pattern, "regexp_instr(...)", "pattern")
+    if isinstance(group, bool) or not isinstance(group, int) or group < 0:
+        raise TypeError("regexp_instr(...) group must be a non-negative integer")
+    return Expression(
+        kind="call", type=IntegerType(), nullable=argument.nullable,
+        data={"function": "regexp_instr", "pattern": pattern, "group": group}, args=(argument,)
+    )
+
+
+def regexp_substr(value: object, *, pattern: str) -> Expression:
+    """Return the first substring matching a literal regular expression."""
+    argument = _string_argument(value, "regexp_substr(...)")
+    _string_literal(pattern, "regexp_substr(...)", "pattern")
+    return Expression(
+        kind="call", type=StringType(), nullable=True,
+        data={"function": "regexp_substr", "pattern": pattern}, args=(argument,)
     )
 
 
@@ -673,6 +780,14 @@ def ascii(value: object) -> Expression:
     return Expression(kind="call", type=IntegerType(), nullable=argument.nullable, data={"function": "ascii"}, args=(argument,))
 
 
+def char(value: object) -> Expression:
+    """Return the character represented by an integral expression."""
+    argument = _integral_argument(value, "char(...)")
+    return Expression(
+        kind="call", type=StringType(), nullable=argument.nullable, data={"function": "char"}, args=(argument,)
+    )
+
+
 def char_length(value: object) -> Expression:
     """Return the character length of a string expression."""
     argument = _string_argument(value, "char_length(...)")
@@ -711,6 +826,47 @@ def locate(value: object, *, substring: str, position: int = 1) -> Expression:
         nullable=argument.nullable,
         data={"function": "locate", "substring": substring, "position": position},
         args=(argument,),
+    )
+
+
+def find_in_set(value: object, values: object) -> Expression:
+    """Return the one-based position of a string in a comma-delimited string."""
+    arguments = (_string_argument(value, "find_in_set(...)"), _string_argument(values, "find_in_set(...)"))
+    return Expression(
+        kind="call",
+        type=IntegerType(),
+        nullable=any(argument.nullable for argument in arguments),
+        data={"function": "find_in_set"},
+        args=arguments,
+    )
+
+
+def format_number(value: object, *, decimals: int) -> Expression:
+    """Format a numeric expression with a literal number of decimal places."""
+    argument = _numeric_argument(value, "format_number(...)")
+    if isinstance(decimals, bool) or not isinstance(decimals, int) or decimals < 0:
+        raise TypeError("format_number(...) decimals must be a non-negative integer literal")
+    return Expression(
+        kind="call",
+        type=StringType(),
+        nullable=argument.nullable,
+        data={"function": "format_number", "decimals": decimals},
+        args=(argument,),
+    )
+
+
+def position(substring: object, value: object, *, start: int = 1) -> Expression:
+    """Return the one-based position of a substring after a literal start."""
+    substring_argument = _string_argument(substring, "position(...)")
+    value_argument = _string_argument(value, "position(...)")
+    if isinstance(start, bool) or not isinstance(start, int) or start < 1:
+        raise TypeError("position(...) start must be a positive integer literal")
+    return Expression(
+        kind="call",
+        type=IntegerType(),
+        nullable=substring_argument.nullable or value_argument.nullable,
+        data={"function": "position", "start": start},
+        args=(substring_argument, value_argument),
     )
 
 
@@ -761,6 +917,22 @@ def substring_index(value: object, *, delimiter: str, count: int) -> Expression:
     )
 
 
+def split_part(value: object, delimiter: object, part_num: object) -> Expression:
+    """Return a one-based or negative-indexed delimiter-separated part."""
+    source = _string_argument(value, "split_part(...)")
+    separator = _string_argument(delimiter, "split_part(...)")
+    part = _integral_argument(part_num, "split_part(...)")
+    if part.kind == "literal" and part.data is not None and part.data.get("value") == 0:
+        raise ValueError("split_part(...) part_num cannot be zero")
+    return Expression(
+        kind="call",
+        type=StringType(),
+        nullable=source.nullable or separator.nullable or part.nullable,
+        data={"function": "split_part"},
+        args=(source, separator, part),
+    )
+
+
 def initcap(value: object) -> Expression:
     """Title-case words in a string expression, like Spark ``initcap``."""
     return _string_call("initcap", value)
@@ -769,6 +941,11 @@ def initcap(value: object) -> Expression:
 def reverse(value: object) -> Expression:
     """Reverse a string expression, like Spark ``reverse`` for strings."""
     return _string_call("reverse", value)
+
+
+def soundex(value: object) -> Expression:
+    """Return the SoundEx code for a string expression."""
+    return _string_call("soundex", value)
 
 
 def translate(value: object, *, matching: str, replacement: str) -> Expression:
@@ -835,6 +1012,20 @@ def hash(*values: object) -> Expression:
 def xxhash64(*values: object) -> Expression:
     """Return Spark's 64-bit xxHash for one or more scalar expressions."""
     return _hash_call("xxhash64", LongType(), values)
+
+
+def crc32(value: object) -> Expression:
+    """Return the CRC-32 checksum of a string or binary expression."""
+    argument = literal(value)
+    if not isinstance(argument.type, (StringType, BinaryType)):
+        raise TypeError("crc32(...) requires a String or Binary expression")
+    return Expression(
+        kind="call",
+        type=LongType(),
+        nullable=argument.nullable,
+        data={"function": "crc32"},
+        args=(argument,),
+    )
 
 
 def md5(value: object) -> Expression:
@@ -1052,6 +1243,24 @@ def abs(value: object) -> Expression:
     )
 
 
+def bit_count(value: object) -> Expression:
+    """Return the number of set bits in an integral expression."""
+    argument = _integral_argument(value, "bit_count(...)")
+    return Expression(
+        kind="call", type=LongType(), nullable=argument.nullable, data={"function": "bit_count"}, args=(argument,)
+    )
+
+
+def bit_get(value: object, position: object) -> Expression:
+    """Return the bit at an integral position in an integral expression."""
+    return _bit_position_call("bit_get", value, position)
+
+
+def getbit(value: object, position: object) -> Expression:
+    """Alias for :func:`bit_get`, matching Spark's SQL spelling."""
+    return _bit_position_call("getbit", value, position)
+
+
 def bin(value: object) -> Expression:
     """Return the binary representation of an integral expression."""
     argument = _integral_argument(value, "bin(...)")
@@ -1175,18 +1384,27 @@ def rand(*, seed: int | None = None, reproducible: bool = True) -> Expression:
     values across repartitioning, retries, Spark versions, or query restarts.
     Set ``reproducible=False`` to explicitly allow an omitted seed.
     """
+    return _random_call("rand", seed=seed, reproducible=reproducible)
+
+
+def randn(*, seed: int | None = None, reproducible: bool = True) -> Expression:
+    """Generate a non-null standard-normal random Double expression."""
+    return _random_call("randn", seed=seed, reproducible=reproducible)
+
+
+def _random_call(function: str, *, seed: int | None, reproducible: bool) -> Expression:
     if not isinstance(reproducible, bool):
-        raise TypeError("rand(...) reproducible must be a Boolean")
+        raise TypeError(f"{function}(...) reproducible must be a Boolean")
     if seed is not None and (isinstance(seed, bool) or not isinstance(seed, int)):
-        raise TypeError("rand(...) seed must be an integer literal or None")
+        raise TypeError(f"{function}(...) seed must be an integer literal or None")
     if reproducible and seed is None:
-        raise TypeError("rand(...) seed is required unless reproducible=False")
+        raise TypeError(f"{function}(...) seed is required unless reproducible=False")
     return Expression(
         kind="call",
         type=DoubleType(),
         nullable=False,
         data={
-            "function": "rand",
+            "function": function,
             "seed": seed,
             "reproducible": reproducible,
             "nondeterministic": True,
@@ -1821,6 +2039,57 @@ def _string_call(function: str, value: object) -> Expression:
     )
 
 
+def _substring_call(function: str, value: object, *, start: int, length: int) -> Expression:
+    argument = _string_argument(value, f"{function}(...)")
+    if isinstance(start, bool) or not isinstance(start, int) or start < 1:
+        raise TypeError(f"{function}(...) start must be a positive integer")
+    if isinstance(length, bool) or not isinstance(length, int) or length < 0:
+        raise TypeError(f"{function}(...) length must be a non-negative integer")
+    return Expression(
+        kind="call",
+        type=StringType(),
+        nullable=argument.nullable,
+        data={"function": function, "start": start, "length": length},
+        args=(argument,),
+    )
+
+
+def _scalar_argument(value: object, call: str) -> Expression:
+    argument = literal(value)
+    if argument.type is None and argument.nullable:
+        return argument
+    if isinstance(
+        argument.type,
+        (
+            BinaryType,
+            BooleanType,
+            DateType,
+            TimestampType,
+            StringType,
+            IntegerType,
+            LongType,
+            FloatType,
+            DoubleType,
+            DecimalType,
+        ),
+    ):
+        return argument
+    raise TypeError(f"{call} requires scalar Structure expressions")
+
+
+def _format_string_call(function: str, format: object, values: tuple[object, ...]) -> Expression:
+    if not isinstance(format, str):
+        raise TypeError(f"{function}(...) format must be a string literal")
+    arguments = tuple(_scalar_argument(value, f"{function}(...)") for value in values)
+    return Expression(
+        kind="call",
+        type=StringType(),
+        nullable=any(argument.nullable for argument in arguments),
+        data={"function": function, "format": format},
+        args=arguments,
+    )
+
+
 def _string_literal(value: object, call: str, parameter: str) -> None:
     if not isinstance(value, str):
         raise TypeError(f"{call} {parameter} must be a string literal")
@@ -1978,6 +2247,18 @@ def _integral_argument(value: object, call: str) -> Expression:
     if not isinstance(argument.type, (IntegerType, LongType)):
         raise TypeError(f"{call} requires an integer or long Structure expression")
     return argument
+
+
+def _bit_position_call(function: str, value: object, position: object) -> Expression:
+    value_argument = _integral_argument(value, f"{function}(...)")
+    position_argument = _integral_argument(position, f"{function}(...)")
+    return Expression(
+        kind="call",
+        type=IntegerType(),
+        nullable=value_argument.nullable or position_argument.nullable,
+        data={"function": function},
+        args=(value_argument, position_argument),
+    )
 
 
 def _numeric_binary_common_call(function: str, left: object, right: object) -> Expression:

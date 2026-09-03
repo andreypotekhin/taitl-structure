@@ -1,7 +1,7 @@
 import pytest
 
 from examples.search.algorithms.field_search import parse_field_search_query
-from examples.search.transforms.fields import ExtractDocumentFields
+from examples.search.transforms.fields import Fields
 from examples.search.transforms.indexing import FieldIndex
 from examples.search.transforms.searching.search_fields import SearchFields
 from structure.core.compiler.api import Compiler
@@ -40,6 +40,6 @@ def test_field_query_parser_rejects_mixed_or_content_and_uppercase_operators() -
         parse_field_search_query("q", "title:release or content:upgrade")
 
 
-@pytest.mark.parametrize("transform", [ExtractDocumentFields, FieldIndex, SearchFields])
+@pytest.mark.parametrize("transform", [Fields, FieldIndex, SearchFields])
 def test_field_search_transforms_compile(transform) -> None:
     Compiler.frontend.compile()(transform, materialize_schemas=False)

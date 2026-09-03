@@ -8,7 +8,7 @@ from structure import *
 from structure.plugin.pyspark import *
 
 
-class ExtractDocumentFields(Transform):
+class Fields(Transform):
     """Preserve typed document fields, fill the map, and expose flat field rows."""
 
     source_documents = input(Document)

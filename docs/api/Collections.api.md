@@ -46,6 +46,40 @@ Structure contract.
   Spark's `flatten` behavior.
 - Lookup results are nullable because a map key can be absent and a safe array lookup can be out of range.
 
+## Array SQL Helpers
+
+| Structure API | PySpark parity | Example |
+| --- | --- | --- |
+| `concat(...)` | `concat` | `concat(order.tags, order.extra_tags)` |
+| `cardinality(...)` | `cardinality` | `cardinality(order.tags)` or `cardinality(order.attributes)` |
+| `array_size(...)` | `array_size` | `array_size(order.tags)` |
+| `array_join(...)` | `array_join` | `array_join(order.tags, ",", "<null>")` |
+| `array_max(...)`, `array_min(...)` | `array_max`, `array_min` | `array_max(order.scores)` |
+| `arrays_overlap(...)` | `arrays_overlap` | `arrays_overlap(order.tags, order.extra_tags)` |
+| `get(...)` | `get` | `get(order.tags, 0)` |
+| `sort_array(...)` | `sort_array` | `sort_array(order.scores, ascending=False)` |
+| `shuffle(...)` | `shuffle` | `shuffle(order.tags)` |
+
+**Details And Differences**
+
+- `concat(...)` accepts at least two homogeneous string, binary, or array values. Array elements may use the existing
+  compatible numeric widening rules; mixed families are rejected before lowering. The result preserves source
+  nullability and, for arrays, propagates element nullability.
+- `cardinality(...)` accepts arrays and maps; `array_size(...)` accepts arrays only. Both return nullable Integer values
+  when their collection input is nullable.
+- `array_join(...)` requires `array<string>` and literal string delimiter/replacement arguments. Its result follows the
+  source-array nullability.
+- `array_max(...)` and `array_min(...)` require orderable scalar elements and return a nullable element value, including
+  for empty arrays or arrays that contain nulls.
+- `arrays_overlap(...)` requires compatible array element types and is nullable when either array or either element
+  domain can be null.
+- `get(...)` uses Spark's zero-based array index. It returns a nullable element for out-of-range or null input; use
+  `element_at(...)` or `try_element_at(...)` for one-based lookup semantics.
+- `sort_array(...)` requires orderable scalar elements and a Boolean `ascending` flag; it preserves the source array
+  type and nullability.
+- `shuffle(...)` preserves the source array type and nullability but is nondeterministic; callers must not depend on
+  the returned element order, including across retries, repartitioning, or query restarts.
+
 ## Array Callbacks
 
 | Structure API | PySpark parity | Example |
@@ -55,7 +89,9 @@ Structure contract.
 | `arr_exists(...)` | `exists` | `arr_exists(order.tags, lambda tag: tag == "priority")` |
 | `arr_forall(...)` | `forall` | `arr_forall(order.tags, lambda tag: tag.is_not_null())` |
 | `arr_zip_with(...)` | `zip_with` | `arr_zip_with(order.tags, order.tags, lambda left, right: left)` |
+| `arrays_zip(...)` | `arrays_zip` | `arrays_zip(order.tags, order.priorities)` |
 | `arr_aggregate(...)` | `aggregate` | `arr_aggregate(order.scores, 0, lambda acc, score: acc + score)` |
+| `reduce(...)` | `reduce` | `reduce(order.scores, 0, lambda acc, score: acc + score)` |
 | `arr_sort(...)` | `array_sort` | `arr_sort(order.tags)` |
 | `arr_sort_by(...)` | `array_sort` | `arr_sort_by(order.tags, lambda tag: tag, descending=True)` |
 | `arr_reverse(...)` | `reverse` | `arr_reverse(order.tags)` |
@@ -75,6 +111,11 @@ Structure contract.
   so a nullable initial accumulator also makes the result nullable.
 - `arr_aggregate(...)` merge callbacks must return exactly the initial accumulator type; `finish=` may convert that
   accumulated value to a different final type.
+- `reduce(...)` has the same typed accumulator and optional finish contract, but renders the exact PySpark `reduce`
+  spelling. Its merge callback must return exactly the initial accumulator type.
+- `arrays_zip(...)` accepts one or more arrays and returns an array of structs with stable nullable fields named
+  `array_0`, `array_1`, and so on. The result is nullable when any input array is nullable; padded fields are nullable
+  because Spark fills shorter arrays with null.
 - `map_zip_with(...)` requires identical map key types; it does not apply numeric key widening.
 - `arr_sort_by(..., descending=...)` requires a Boolean direction flag.
 - `arr_sort(...)` accepts arrays whose element type Spark can order; `arr_reverse(...)` preserves the array element type.

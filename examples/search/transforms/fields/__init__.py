@@ -1,5 +1,5 @@
 """Document field extraction transforms."""
 
-from examples.search.transforms.fields.ExtractDocumentFields import ExtractDocumentFields
+from examples.search.transforms.fields.Fields import Fields
 
-__all__ = ["ExtractDocumentFields"]
+__all__ = ["Fields"]

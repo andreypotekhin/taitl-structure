@@ -7,9 +7,11 @@ from structure.core.cli.commands.RenderExplainReport import render_explain_repor
 from structure.core.compiler.api import Compiler
 from structure.plugin.pyspark import *
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
+from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.types import ArrayType, IntegerType, LongType, MapType, StringType
 from structure.plugin.pyspark.render.commands.RenderPySparkStep import render_pyspark_step
+from structure.plugin.pyspark.render.logic.expressions.RenderPySparkExpression import RenderPySparkExpression
 
 
 class CollectionSource(Schema):
@@ -23,11 +25,20 @@ class CollectionSource(Schema):
 class CollectionSummary(Schema):
     id = string(nullable=False)
     tag_count = integer(nullable=True)
+    cardinality_count = integer(nullable=True)
+    array_size_count = integer(nullable=True)
+    max_tag = string(nullable=True)
+    min_tag = string(nullable=True)
+    joined_tags = string(nullable=True)
+    tags_overlap = boolean(nullable=True)
+    indexed_tag = string(nullable=True)
+    descending_tags = array(string(), contains_null=False, nullable=True)
     has_priority = boolean(nullable=True)
     has_region = boolean(nullable=True)
     defaults = array(string(), contains_null=False, nullable=False)
     repeated = array(string(), contains_null=False, nullable=False)
     unioned = array(string(), contains_null=False, nullable=True)
+    concatenated = array(string(), contains_null=False, nullable=True)
     excluded = array(string(), contains_null=False, nullable=True)
     intersected = array(string(), contains_null=False, nullable=True)
     first_two_tags = array(string(), contains_null=False, nullable=True)
@@ -38,6 +49,8 @@ class CollectionSummary(Schema):
     removed_tags = array(string(), contains_null=False, nullable=True)
     compacted_tags = array(string(), contains_null=False, nullable=True)
     sorted_tags = array(string(), contains_null=False, nullable=True)
+    shuffled_tags = array(string(), contains_null=False, nullable=True)
+    reduced_tag_count = integer(nullable=True)
     reversed_tags = array(string(), contains_null=False, nullable=True)
     first_tag = string(nullable=True)
     safe_tag = string(nullable=True)
@@ -55,11 +68,20 @@ class CollectionHelperTransform(Transform):
         return CollectionSummary(
             id=row.id,
             tag_count=size(row.tags),
+            cardinality_count=cardinality(row.tags),
+            array_size_count=array_size(row.tags),
+            max_tag=array_max(row.tags),
+            min_tag=array_min(row.tags),
+            joined_tags=array_join(row.tags, ",", "<null>"),
+            tags_overlap=arrays_overlap(row.tags, row.extra_tags),
+            indexed_tag=get(row.tags, 0),
+            descending_tags=sort_array(row.tags, ascending=False),
             has_priority=array_contains(row.tags, "priority"),
             has_region=map_contains_key(row.attributes, "region"),
             defaults=array("priority", "standard"),
             repeated=array_repeat("priority", 2),
             unioned=array_union(row.tags, row.extra_tags),
+            concatenated=concat(row.tags, row.extra_tags),
             excluded=array_except(row.tags, row.extra_tags),
             intersected=array_intersect(row.tags, row.extra_tags),
             first_two_tags=slice(row.tags, 1, 2),
@@ -70,6 +92,8 @@ class CollectionHelperTransform(Transform):
             removed_tags=arr_remove(row.tags, "deprecated"),
             compacted_tags=arr_compact(row.tags),
             sorted_tags=arr_sort(row.tags),
+            shuffled_tags=shuffle(row.tags),
+            reduced_tag_count=reduce(row.tags, 0, lambda accumulator, item: accumulator + 1),
             reversed_tags=arr_reverse(row.tags),
             first_tag=element_at(row.tags, 1),
             safe_tag=try_element_at(row.tags, 2),
@@ -88,11 +112,20 @@ def test_collection_helpers_render_as_readable_pyspark_functions() -> None:
     text = render_pyspark_step(plan.steps[0], current="rows", sources={"rows": "rows"})
 
     assert 'F.size(F.col("collection_source.tags")).alias("tag_count")' in text
+    assert 'F.cardinality(F.col("collection_source.tags")).alias("cardinality_count")' in text
+    assert 'F.array_size(F.col("collection_source.tags")).alias("array_size_count")' in text
+    assert 'F.array_max(F.col("collection_source.tags")).alias("max_tag")' in text
+    assert 'F.array_min(F.col("collection_source.tags")).alias("min_tag")' in text
+    assert "F.array_join(F.col(\"collection_source.tags\"), ',', '<null>').alias(\"joined_tags\")" in text
+    assert 'F.arrays_overlap(F.col("collection_source.tags"), F.col("collection_source.extra_tags")).alias("tags_overlap")' in text
+    assert 'F.get(F.col("collection_source.tags"), F.lit(0)).alias("indexed_tag")' in text
+    assert 'F.sort_array(F.col("collection_source.tags"), False).alias("descending_tags")' in text
     assert "F.array_contains(F.col(\"collection_source.tags\"), 'priority').alias(\"has_priority\")" in text
     assert "F.map_contains_key(F.col(\"collection_source.attributes\"), 'region').alias(\"has_region\")" in text
     assert "F.array(F.lit('priority'), F.lit('standard')).alias(\"defaults\")" in text
     assert "F.array_repeat(F.lit('priority'), 2).alias(\"repeated\")" in text
     assert 'F.array_union(F.col("collection_source.tags"), F.col("collection_source.extra_tags"))' in text
+    assert 'F.concat(F.col("collection_source.tags"), F.col("collection_source.extra_tags"))' in text
     assert 'F.array_except(F.col("collection_source.tags"), F.col("collection_source.extra_tags"))' in text
     assert 'F.array_intersect(F.col("collection_source.tags"), F.col("collection_source.extra_tags"))' in text
     assert 'F.slice(F.col("collection_source.tags"), 1, 2)' in text
@@ -103,6 +136,8 @@ def test_collection_helpers_render_as_readable_pyspark_functions() -> None:
     assert 'F.array_remove(F.col("collection_source.tags"), \'deprecated\')' in text
     assert 'F.array_compact(F.col("collection_source.tags"))' in text
     assert 'F.array_sort(F.col("collection_source.tags"))' in text
+    assert 'F.shuffle(F.col("collection_source.tags"))' in text
+    assert 'F.reduce(F.col("collection_source.tags"), F.lit(0), lambda acc, item: (acc + F.lit(1)))' in text
     assert 'F.reverse(F.col("collection_source.tags"))' in text
     assert 'F.element_at(F.col("collection_source.tags"), F.lit(1)).alias("first_tag")' in text
     assert 'F.try_element_at(F.col("collection_source.tags"), F.lit(2)).alias("safe_tag")' in text
@@ -110,10 +145,20 @@ def test_collection_helpers_render_as_readable_pyspark_functions() -> None:
     assert 'F.map_concat(F.col("collection_source.attributes"), F.col("collection_source.extra_attributes"))' in text
 
 
+def test_arrays_zip_renders_the_native_pyspark_function() -> None:
+    expression = arrays_zip(array("left"), array("right"))
+
+    assert RenderPySparkExpression()(cast(PySparkExpressionRecipe, expression)) == "F.arrays_zip(F.array(F.lit('left')), F.array(F.lit('right')))"
+
+
 def test_explain_names_collection_helpers_and_their_inputs() -> None:
     report = render_explain_report(CollectionHelperTransform)
 
-    assert "collection helpers: collection_size(tags), array_contains(tags), map_contains_key(attributes)" in report
+    assert (
+        "collection helpers: collection_size(tags), cardinality(tags), array_size(tags), array_max(tags), "
+        "array_min(tags), array_join(tags), arrays_overlap(tags,extra_tags), get(tags), sort_array(tags), "
+        "array_contains(tags), map_contains_key(attributes)"
+    ) in report
     assert "element_at(tags), try_element_at(tags)" in report
     assert "map_concat(attributes,extra_attributes)" in report
 

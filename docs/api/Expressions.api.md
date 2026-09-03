@@ -92,27 +92,43 @@ explicit design gate are marked in the details below.
 | `ltrim(...)` | `ltrim` | `ltrim(o.name)` |
 | `rtrim(...)` | `rtrim` | `rtrim(o.name)` |
 | `trim(...)` | `trim` | `trim(o.name)` |
+| `btrim(...)` | `btrim` | `btrim(o.name, trim="0")` |
+| `char(...)` | `char` | `char(o.code_point)` |
 | `substring(...)` | `substring` | `substring(o.code, start=1, length=3)` |
+| `substr(...)` | `substr` | `substr(o.code, start=1, length=3)` |
+| `elt(...)` | `elt` | `elt(2, o.primary, o.fallback)` |
+| `format_string(...)`, `printf(...)` | `format_string`, `printf` | `format_string("id=%s", o.id)` |
 | `split(...)` | `split` | `split(o.code, pattern="-")` |
 | `regexp_replace(...)` | `regexp_replace` | `regexp_replace(o.code, pattern="-", replacement="")` |
 | `regexp_extract(...)` | `regexp_extract` | `regexp_extract(o.code, pattern="(.*)", group=1)` |
+| `regexp_count(...)` | `regexp_count` | `regexp_count(o.code, pattern="Ada")` |
+| `regexp_extract_all(...)` | `regexp_extract_all` | `regexp_extract_all(o.code, pattern="(Ada)", group=1)` |
+| `regexp_instr(...)` | `regexp_instr` | `regexp_instr(o.code, pattern="Ada", group=0)` |
+| `regexp_substr(...)` | `regexp_substr` | `regexp_substr(o.code, pattern="Ada")` |
 | `lpad(...)`, `rpad(...)` | `lpad`, `rpad` | `lpad(o.code, length=8, pad="0")` |
 | `length(...)` | `length` | `length(o.name)` |
 | `concat_ws(...)` | `concat_ws` | `concat_ws("-", o.region, o.code)`; `concat_ws("\u001f", o.path_ids)` for `array<string>` |
 | `ascii(...)`, `char_length(...)` | `ascii`, `char_length` | `char_length(o.name)` |
 | `left(...)`, `right(...)` | `left`, `right` | `left(o.name, length=3)` |
 | `locate(...)` | `locate` | `locate(o.name, substring="Ada", position=1)` |
+| `contains(...)` | `contains` | `contains(o.name, "Ada")` |
+| `find_in_set(...)` | `find_in_set` | `find_in_set(o.name, o.candidates)` |
+| `format_number(...)` | `format_number` | `format_number(o.amount, decimals=2)` |
 | `octet_length(...)` | `octet_length` | `octet_length(o.name)` |
+| `position(...)` | `position` | `position("Ada", o.name, start=1)` |
 | `repeat(...)` | `repeat` | `repeat(o.code, count=2)` |
 | `replace(...)` | `replace` | `replace(o.name, search="-", replacement="_")` |
 | `substring_index(...)` | `substring_index` | `substring_index(o.path, delimiter="/", count=2)` |
+| `split_part(...)` | `split_part` | `split_part(o.path, "/", 2)` |
 | `initcap(...)` | `initcap` | `initcap(o.name)` |
 | `reverse(...)` | `reverse` | `reverse(o.name)` |
+| `soundex(...)` | `soundex` | `soundex(o.name)` |
 | `translate(...)` | `translate` | `translate(o.name, matching="-", replacement="_")` |
 | `instr(...)` | `instr` | `instr(o.name, substring="A")` |
 | `levenshtein(...)` | `levenshtein` | `levenshtein(o.name, "Ada")` |
 | `hash(...)` | `hash` | `hash(o.tenant, o.id)` |
 | `xxhash64(...)` | `xxhash64` | `xxhash64(o.tenant, o.id)` |
+| `crc32(...)` | `crc32` | `crc32(o.payload)` |
 | `md5(...)` | `md5` | `md5(o.name)` |
 | `sha1(...)` | `sha1` | `sha1(o.name)` |
 | `sha2(...)` | `sha2` | `sha2(o.name, bits=256)` |
@@ -128,9 +144,11 @@ explicit design gate are marked in the details below.
 | `to_date(...)` | `to_date` | `to_date(o.raw_day, format="yyyy-MM-dd")` |
 | `to_timestamp(...)` | `to_timestamp` | `to_timestamp(o.raw_at, format="yyyy-MM-dd HH:mm:ss")` |
 | `abs(...)` | `abs` | `abs(o.total)` |
+| `bit_count(...)` | `bit_count` | `bit_count(o.flags)` |
+| `bit_get(...)`, `getbit(...)` | `bit_get`, `getbit` | `bit_get(o.flags, o.position)` |
 | `acos(...)` | `acos` | `acos(o.total)` |
 | `hypot(...)` | `hypot` | `hypot(o.x, o.y)` |
-| `rand(...)` | `rand` | `rand(seed=42)`; `rand(reproducible=False)` |
+| `rand(...)`, `randn(...)` | `rand`, `randn` | `rand(seed=42)`; `randn(seed=42)` |
 | `round(...)` | `round` | `round(o.total, scale=2)` |
 | `bround(...)` | `bround` | `bround(o.total, scale=2)` |
 | `ceil(...)` | `ceil` | `ceil(o.total)` |
@@ -170,6 +188,9 @@ explicit design gate are marked in the details below.
 | `encode(...)`, `decode(...)` | `encode`, `decode` | `decode(encode(o.name, charset="UTF-8"), charset="UTF-8")` |
 | `from_json(...)`, `to_json(...)` | `from_json`, `to_json` | `from_json(o.payload_json, as_=Payload)` |
 | `from_csv(...)`, `to_csv(...)` | `from_csv`, `to_csv` | `from_csv(o.payload_csv, as_=Payload)` |
+| `get_json_object(...)` | `get_json_object` | `get_json_object(o.payload_json, "$.customer.id")` |
+| `json_array_length(...)` | `json_array_length` | `json_array_length(o.payload_json)` |
+| `json_object_keys(...)` | `json_object_keys` | `json_object_keys(o.payload_json)` |
 | `parse_json(...)`, `try_parse_json(...)` | Variant JSON parsing | `parse_json(o.payload_json)` |
 | `variant_literal(...)` | Compile-time JSON Variant literal | `variant_literal('{"source":"migration"}')` |
 | **Design-gated:** `variant_array_append(...)`, `try_variant_array_append(...)` | Variant array mutation | `variant_array_append(o.payload, "$.items", 1)` |
@@ -203,6 +224,10 @@ explicit design gate are marked in the details below.
   Monday through Sunday (short names such as `Mon` are accepted) and returns a nullable Date.
 - `lpad(...)` and `rpad(...)` accept a String expression, a non-negative integer literal, and a non-empty padding
   literal. They return a String expression with the input nullability.
+- `elt(...)` uses a one-based integral index and requires compatible scalar candidates; its result is nullable because
+  the index may be null, out of range, or select a nullable candidate.
+- `format_string(...)` and `printf(...)` require a literal format string and scalar arguments. Their String result is
+  nullable when any candidate argument is nullable.
 - `acos(...)` and `hypot(...)` accept numeric expressions and return nullable Double results.
 - `e()` and `pi()` return non-null Double constants. `factorial(...)` accepts Integer/Long expressions and returns a
   nullable Long. `greatest(...)` and `least(...)` require at least two compatible values, preserve their common type,
@@ -217,13 +242,19 @@ explicit design gate are marked in the details below.
   requires `reproducible=False`. The seed makes the use auditable but does not promise identical random values across
   repartitioning, retries, Spark versions, or query restarts. Streaming support follows the target-specific coverage
   ledger and is not implied by batch support.
-- `hash(...)` and `xxhash64(...)` accept scalar inputs. They are Spark hash functions, not cryptographic identifiers;
+- `randn(...)` uses the same explicit seed/reproducibility policy and returns a non-null standard-normal Double. It is
+  nondeterministic and streaming evidence remains target-specific.
+- `hash(...)` and `xxhash64(...)` accept scalar inputs. `crc32(...)` accepts String or Binary input and returns a
+  nullable Long checksum. These are Spark hash/checksum functions, not cryptographic identifiers;
   do not use them for security, cross-engine interchange, or persistent identifiers. `md5(...)`, `sha1(...)`, and
   `sha2(...)` are deterministic digests of String values, not password-storage primitives.
 - `base64(...)` and `decode(...)` return String values; `unbase64(...)` and `encode(...)` return Binary values.
   `encode(...)` and `decode(...)` accept compiler-visible charset names.
 - `from_json(...)` and `from_csv(...)` require an explicit result Schema; `to_json(...)` and `to_csv(...)` require a
   Struct expression. Parsing and rendering results are nullable.
+- `get_json_object(...)` requires a non-empty literal JSON path and returns nullable String. `json_array_length(...)`
+  returns nullable Integer, and `json_object_keys(...)` returns nullable `array<string>`. `json_tuple(...)` remains
+  deferred because it produces multiple output columns rather than one typed expression.
 - Raw `expr(...)`, `call_function(...)`, direct UDF/UDTF expressions, and implicit Python-to-UDF conversion are
   unsupported. Scalar `@special(type="udf")` remains an ordinary-PySpark row-local feature with its warning policy;
   see the [Transforms API](Transforms.api.md).

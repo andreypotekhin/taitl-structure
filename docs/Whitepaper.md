@@ -8,7 +8,7 @@ while running or generating clean PySpark DataFrame code suitable for Airflow, S
 
 Structure is designed for teams that want object-oriented data transformations without giving up Spark optimizer-friendly DataFrame execution model.
 
-The idea is simple: write compact, typed data transformation code, execute as optimizer-visible PySpark, optionally generate explicit PySpark artifacts.
+The idea is simple: write compact, typed data transformation code, execute as optimizer-visible PySpark, optionally generate explicit PySpark artifacts.
 
 ## Problem
 
@@ -29,7 +29,7 @@ Structure attempts to address these problems by providing a typed DSL that compi
 PySpark operations. This allows code author to deal with classes, fields and methods instead 
 of dealing with strings and freely-mutating data frames. 
 
-## Performance and Optimization Rationale
+## Performance Rationale
 
 Structure's focus on PySpark DataFrame and Column operations is not merely an implementation preference - it is a
 performance strategy. Spark optimizes work that remains visible in its logical plan. Projection, filtering, joins, predicate pushdown, column pruning, aggregation planning, broadcast joins, whole-stage code generation, and many runtime optimizations depend on transformations being expressed through Spark's DataFrame and Column APIs.
@@ -120,7 +120,7 @@ Public instance methods with schema return annotations are compiled as step meth
 OrderRaw -> OrderNormalized -> OrderWithCustomer -> OrderEnriched
 ```
 
-## Execution and Code Generation Model
+## Execution and Code Generation 
 
 Execution is the default:
 
@@ -167,7 +167,7 @@ Generated code uses Spark DataFrame operations such as:
 If a transform has no hooks, generated code does not import the source transform class at runtime. This keeps hook-free
 generated code clean and standalone in generated mode.
 
-## Less Code Without Hiding Runtime Behavior
+## Less Code 
 
 Structure source code is shorter because it focuses on semantic schema transitions.
 
@@ -284,7 +284,7 @@ customer_name=customer.name
 
 Serial joins are N-step enrichment chains. They are not limited to three inputs.
 
-## Streaming Compatibility
+## Streaming 
 
 Structure does not generate streaming lifecycle code. It generates DataFrame transforms that can operate on streaming
 DataFrames when the operations used are compatible with Spark Structured Streaming.
@@ -303,7 +303,7 @@ diagnostics, and live streaming evidence. It covers adoption APIs, lifecycle bou
 requirements, watermarks, event-time/session windows, bounded dedupe, admitted stream-static and bounded stream-stream
 joins, and explicit deferred/unsupported stateful families.
 
-## Compatibility Policy
+## Compatibility 
 
 Structure targets Python 3.11+ and execution/generated-code execution for PySpark 3.5.x and 4.0.x. The default project
 settings are `execution_mode = "online"` and the PySpark plugin options `profile = ">=3.5,<4.1"` and
@@ -385,33 +385,6 @@ Configuration workaround:
   to avoid row-level checks at that phase.
   This does not change compile-time field/type checking.
 ```
-
-## Compiler Performance
-
-Structure should be fast enough to run during normal development and CI.
-
-Compile-time performance is a product feature. Implementation should track metrics such as:
-
-- number of discovered modules
-- number of transform classes
-- symbolic execution time
-- IR check time
-- code generation time
-- formatting time
-- compiler provenance time
-- static dataflow traceability time
-- total wall-clock time
-
-The compiler should avoid starting Spark during normal compile/check operations.
-
-Recommended implementation techniques:
-
-- source fingerprints that enable future production incremental compilation
-- compiler cache directory
-- parallel code generation
-- lazy module inspection where possible
-- fast IR tests that do not require Spark
-- optional formatting only when generated content changes
 
 ## Roadmap
 

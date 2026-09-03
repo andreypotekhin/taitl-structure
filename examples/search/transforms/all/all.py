@@ -61,7 +61,7 @@ class All(Transform):
     maximum_offline_queries = parameter(100000)
 
     chunked = Chunking(documents=documents)
-    extracted = ExtractDocumentFields(source_documents=documents)
+    extracted = Fields(source_documents=documents)
     profiled = ProfileDocuments(documents=extracted.documents)
 
     indexed = Indexing(
