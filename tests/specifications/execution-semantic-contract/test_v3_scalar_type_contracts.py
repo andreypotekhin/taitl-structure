@@ -750,6 +750,16 @@ def test_temporal_helpers_preserve_typed_calendar_contracts() -> None:
     assert month_end.type is not None
     assert month_end.type.name == "date"
     assert date_format(nullable_timestamp, format="yyyy-MM-dd").nullable is True
+    epoch_days = unix_date(required_date)
+    assert epoch_days.type is not None and epoch_days.type.name == "integer"
+    assert date_from_unix_date(_expression(types.long(), nullable=True)).nullable is True
+
+
+def test_unix_date_helpers_require_their_declared_temporal_types() -> None:
+    with pytest.raises(TypeError, match=r"unix_date\(\.\.\.\) requires a Date"):
+        unix_date(_expression(types.timestamp(), nullable=False))
+    with pytest.raises(TypeError, match=r"date_from_unix_date\(\.\.\.\) requires an integer or long"):
+        date_from_unix_date(_expression(types.string(), nullable=False))
 
 
 def test_calendar_and_padding_helpers_preserve_typed_contracts() -> None:
@@ -760,6 +770,12 @@ def test_calendar_and_padding_helpers_preserve_typed_contracts() -> None:
     assert add_months(required_date, months=2).type is not None
     assert add_months(nullable_timestamp, months=1).nullable is True
     assert add_months(required_date, months=_expression(types.integer(), nullable=True)).nullable is True
+    month_difference = months_between(required_date, nullable_timestamp, round_off=False)
+    assert month_difference.type is not None and month_difference.type.name == "double"
+    assert month_difference.nullable is True
+    week_day = weekday(nullable_timestamp)
+    assert week_day.type is not None and week_day.type.name == "integer"
+    assert week_day.nullable is True
     assert next_day(required_date, day_of_week="Mon").type is not None
     assert next_day(nullable_timestamp, day_of_week="Monday").nullable is True
     assert lpad(nullable_text, length=8, pad="0").nullable is True
@@ -774,6 +790,26 @@ def test_padding_helpers_require_valid_literal_arguments(function) -> None:
         function("value", length=-1, pad="0")
     with pytest.raises(TypeError, match=r"pad must be a non-empty string literal"):
         function("value", length=2, pad="")
+
+
+def test_months_between_requires_temporal_arguments_and_boolean_rounding() -> None:
+    required_date = _expression(types.date(), nullable=False)
+    with pytest.raises(TypeError, match=r"months_between\(\.\.\.\) requires a Date or Timestamp"):
+        months_between(_expression(types.string(), nullable=False), required_date)
+    with pytest.raises(TypeError, match=r"round_off must be a Boolean literal"):
+        months_between(required_date, required_date, round_off=1)  # type: ignore[arg-type]
+
+
+def test_bit_shift_helpers_preserve_integral_contracts() -> None:
+    nullable_value = _expression(types.long(), nullable=True)
+    for function in (shiftleft, shiftright, shiftrightunsigned):
+        shifted = function(nullable_value, bits=2)
+        assert shifted.type is not None and shifted.type.name == "long"
+        assert shifted.nullable is True
+        with pytest.raises(TypeError, match=r"bits must be an integer literal"):
+            function(nullable_value, bits=types.integer())  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match=r"requires an integer or long"):
+        shiftleft(_expression(types.string(), nullable=False), bits=2)
 
 
 def test_string_slicing_position_and_byte_helpers_preserve_types() -> None:

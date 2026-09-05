@@ -151,6 +151,25 @@ def test_arrays_zip_renders_the_native_pyspark_function() -> None:
     assert RenderPySparkExpression()(cast(PySparkExpressionRecipe, expression)) == "F.arrays_zip(F.array(F.lit('left')), F.array(F.lit('right')))"
 
 
+def test_map_constructors_render_the_native_pyspark_functions() -> None:
+    assert (
+        RenderPySparkExpression()(cast(PySparkExpressionRecipe, create_map("region", "west")))
+        == "F.create_map(F.lit('region'), F.lit('west'))"
+    )
+    assert (
+        RenderPySparkExpression()(cast(PySparkExpressionRecipe, map_from_arrays(array("region"), array("west"))))
+        == "F.map_from_arrays(F.array(F.lit('region')), F.array(F.lit('west')))"
+    )
+    assert (
+        RenderPySparkExpression()(cast(PySparkExpressionRecipe, str_to_map("region=west", ";", "=")))
+        == "F.str_to_map(F.lit('region=west'), ';', '=')"
+    )
+    assert (
+        RenderPySparkExpression()(cast(PySparkExpressionRecipe, named_struct("region", "west")))
+        == "F.named_struct('region', F.lit('west'))"
+    )
+
+
 def test_explain_names_collection_helpers_and_their_inputs() -> None:
     report = render_explain_report(CollectionHelperTransform)
 

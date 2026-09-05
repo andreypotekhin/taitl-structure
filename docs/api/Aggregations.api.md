@@ -11,10 +11,21 @@ the current `order` row scope as `o`.
 | `count(...)` | `count` | `count()` |
 | `count_distinct(...)` | `count_distinct` | `count_distinct(order.customer_id)` |
 | `sum(...)` | `sum` | `sum(order.total)` |
+| `sum_distinct(...)` | `sum_distinct` | `sum_distinct(order.total)` |
 | `min(...)` | `min` | `min(order.total)` |
 | `max(...)` | `max` | `max(order.total)` |
 | `avg(...)` | `avg` | `avg(order.total)` |
 | `count_if(...)` | `count_if` | `count_if(order.is_paid)` |
+| `any_value(...)` | `any_value` | `any_value(order.category, ignore_nulls=True)` |
+| `array_agg(...)` | `array_agg` | `array_agg(order.customer_id)` |
+| `first(...)`, `last(...)` | `first`, `last` | `first(order.category, ignore_nulls=True)` |
+| `max_by(...)`, `min_by(...)` | `max_by`, `min_by` | `max_by(order.category, order.total)` |
+| `product(...)` | `product` | `product(order.quantity)` |
+| `bit_and(...)`, `bit_or(...)`, `bit_xor(...)` | `bit_and`, `bit_or`, `bit_xor` | `bit_and(order.flags)` |
+| `regr_avgx(...)`, `regr_avgy(...)` | `regr_avgx`, `regr_avgy` | `regr_slope(order.quantity, order.price)` |
+| `regr_count(...)` | `regr_count` | `regr_count(order.quantity, order.price)` |
+| `regr_intercept(...)`, `regr_r2(...)`, `regr_slope(...)` | `regr_intercept`, `regr_r2`, `regr_slope` | `regr_r2(order.quantity, order.price)` |
+| `regr_sxx(...)`, `regr_sxy(...)`, `regr_syy(...)` | `regr_sxx`, `regr_sxy`, `regr_syy` | `regr_sxy(order.quantity, order.price)` |
 
 **Details And Differences**
 
@@ -26,6 +37,18 @@ the current `order` row scope as `o`.
   matching Spark's aggregate result type.
 - `avg(...)` returns Double for non-Decimal inputs; Decimal averages grow precision and scale by four digits, each
   capped at 38.
+- `any_value(...)` returns the candidate type and accepts `ignore_nulls=`; because its selected row is not ordered,
+  callers must not treat it as deterministic. `array_agg(...)` returns a non-null array and does not promise order.
+- `first(...)` and `last(...)` return nullable candidate values and accept `ignore_nulls=`. They preserve Spark's
+  aggregate input-order semantics; use `first_value(...)` or `last_value(...)` with `order_by=` when selection order
+  must be explicit.
+- `max_by(...)` and `min_by(...)` return the value associated with the extremal order expression. `product(...)`
+  returns nullable Double. `bit_and(...)`, `bit_or(...)`, and `bit_xor(...)` require integral inputs and return
+  nullable Long values.
+- Regression helpers require paired numeric `y` and `x` expressions. `regr_count(...)` returns a non-null Long;
+  the other regression helpers return nullable Double values when no valid paired observations exist.
+- `sum_distinct(...)` accepts numeric values, removes duplicate non-null values before aggregation, and uses the same
+  Integer-to-Long, Float-to-Double, and Decimal widening rules as `sum(...)`.
 
 ## Subtotals And Aggregate Metadata
 

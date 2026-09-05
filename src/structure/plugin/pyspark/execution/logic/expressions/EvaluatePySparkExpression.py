@@ -420,6 +420,29 @@ class EvaluatePySparkExpression:
             return getattr(functions, function)(
                 self.evaluate(collection, functions=functions, aliases=aliases, window=window), needle
             )
+        if function == "create_map":
+            return functions.create_map(
+                *(self.evaluate(value, functions=functions, aliases=aliases, window=window) for value in expression.args)
+            )
+        if function == "map_from_arrays":
+            key_array, value_array = expression.args
+            return functions.map_from_arrays(
+                self.evaluate(key_array, functions=functions, aliases=aliases, window=window),
+                self.evaluate(value_array, functions=functions, aliases=aliases, window=window),
+            )
+        if function == "str_to_map":
+            [value] = expression.args
+            return functions.str_to_map(
+                self.evaluate(value, functions=functions, aliases=aliases, window=window),
+                expression.data["pair_delimiter"],
+                expression.data["key_value_delimiter"],
+            )
+        if function == "named_struct":
+            evaluated = tuple(
+                self.evaluate(value, functions=functions, aliases=aliases, window=window)
+                for value in expression.args
+            )
+            return functions.named_struct(*evaluated)
         if function == "array":
             return functions.array(
                 *(
@@ -799,6 +822,16 @@ class EvaluatePySparkExpression:
             return functions.btrim(args[0], expression.data["trim"])
         if function == "contains":
             return functions.contains(args[0], args[1])
+        if function == "create_map":
+            return functions.create_map(*args)
+        if function == "map_from_arrays":
+            return functions.map_from_arrays(args[0], args[1])
+        if function == "str_to_map":
+            return functions.str_to_map(
+                args[0], expression.data["pair_delimiter"], expression.data["key_value_delimiter"]
+            )
+        if function == "named_struct":
+            return functions.named_struct(*args)
         if function in {"like", "ilike", "regexp", "regexp_like", "rlike"}:
             return getattr(functions, function)(args[0], args[1])
         if function in {"base64", "unbase64"}:
@@ -959,18 +992,22 @@ class EvaluatePySparkExpression:
             return functions.add_months(args[0], months)
         if function == "datediff":
             return functions.datediff(args[0], args[1])
+        if function == "months_between":
+            return functions.months_between(args[0], args[1], roundOff=expression.data["round_off"])
         if function == "date_trunc":
             return functions.date_trunc(expression.data["unit"], args[0])
         if function == "trunc":
             return functions.trunc(args[0], expression.data["unit"])
         if function == "next_day":
             return functions.next_day(args[0], expression.data["day_of_week"])
-        if function in {"year", "month", "dayofmonth", "dayofweek", "dayofyear", "hour", "minute", "quarter", "second", "weekofyear"}:
+        if function in {"year", "month", "dayofmonth", "dayofweek", "weekday", "dayofyear", "hour", "minute", "quarter", "second", "weekofyear"}:
             return getattr(functions, function)(args[0])
         if function == "last_day":
             return functions.last_day(args[0])
         if function == "date_format":
             return functions.date_format(args[0], expression.data["format"])
+        if function in {"unix_date", "date_from_unix_date"}:
+            return getattr(functions, function)(args[0])
         if function == "mask":
             chars = cast(tuple[str | None, ...], expression.data["chars"])
             return functions.mask(args[0], *chars)
@@ -988,6 +1025,8 @@ class EvaluatePySparkExpression:
             return functions.bit_count(args[0])
         if function in {"bit_get", "getbit"}:
             return getattr(functions, function)(args[0], args[1])
+        if function in {"shiftleft", "shiftright", "shiftrightunsigned"}:
+            return getattr(functions, function)(args[0], expression.data["bits"])
         if function in {"bin", "hex", "unhex"}:
             return getattr(functions, function)(args[0])
         if function == "conv":

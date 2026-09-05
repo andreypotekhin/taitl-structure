@@ -1480,6 +1480,8 @@ class RenderPySparkStep:
                     rendered_arguments.append(repr(options["accuracy"]))
             if assignment.function == "percentile":
                 rendered_arguments.extend((repr(options["percentage"]), repr(options["frequency"])))
+            if assignment.function == "any_value":
+                rendered_arguments.append(repr(options["ignore_nulls"]))
             expression = f"{function}({', '.join(rendered_arguments)})"
             if not self._keeps_struct_collection_type(assignment, backend_target=backend_target):
                 expression = f"{expression}.cast({self._schema.type(assignment.field.type)})"
@@ -1494,9 +1496,11 @@ class RenderPySparkStep:
                 order_by = f"F.when({predicate}, {order_by})"
             function = "F.min_by" if assignment.function == "first_value" else "F.max_by"
             return f"{function}({value}, {order_by}).alias({alias})"
-        if assignment.function == "first" and assignment.expression is not None:
+        if assignment.function in {"first", "last"} and assignment.expression is not None:
             expression = render_pyspark_expression(assignment.expression, scope_aliases=self._scope_aliases(step))
-            return f"F.first({expression}, ignorenulls=False).alias({alias})"
+            function = "first" if assignment.function == "first" else "last"
+            ignore_nulls = dict(assignment.options).get("ignore_nulls", False)
+            return f"F.{function}({expression}, ignorenulls={ignore_nulls}).alias({alias})"
         raise TypeError(f"Unsupported aggregate assignment: {assignment.function}")
 
     def _ordered_collect_list(self, assignment: PySparkAggregateAssignment, *, step, alias: str) -> str:
@@ -1555,27 +1559,45 @@ class RenderPySparkStep:
         return {
             "approx_count_distinct",
             "approx_percentile",
+            "any_value",
+            "array_agg",
             "avg",
+            "bit_and",
+            "bit_or",
+            "bit_xor",
             "bool_and",
             "bool_or",
             "collect_list",
             "collect_set",
             "corr",
             "covar",
+            "regr_avgx",
+            "regr_avgy",
+            "regr_count",
+            "regr_intercept",
+            "regr_r2",
+            "regr_slope",
+            "regr_sxx",
+            "regr_sxy",
+            "regr_syy",
             "count_if",
             "count_distinct",
             "median",
             "max",
+            "max_by",
             "mode",
             "min",
+            "min_by",
             "kurtosis",
             "percentile",
+            "product",
             "schema_of_variant_agg",
             "skewness",
             "stddev",
             "stddev_pop",
             "stddev_samp",
             "sum",
+            "sum_distinct",
             "var_pop",
             "var_samp",
             "variance",
@@ -1585,27 +1607,45 @@ class RenderPySparkStep:
         return {
             "approx_count_distinct": "F.approx_count_distinct",
             "approx_percentile": "F.percentile_approx",
+            "any_value": "F.any_value",
+            "array_agg": "F.array_agg",
             "avg": "F.avg",
+            "bit_and": "F.bit_and",
+            "bit_or": "F.bit_or",
+            "bit_xor": "F.bit_xor",
             "bool_and": "F.bool_and",
             "bool_or": "F.bool_or",
             "collect_list": "F.collect_list",
             "collect_set": "F.collect_set",
             "corr": "F.corr",
             "covar": "F.covar_samp",
+            "regr_avgx": "F.regr_avgx",
+            "regr_avgy": "F.regr_avgy",
+            "regr_count": "F.regr_count",
+            "regr_intercept": "F.regr_intercept",
+            "regr_r2": "F.regr_r2",
+            "regr_slope": "F.regr_slope",
+            "regr_sxx": "F.regr_sxx",
+            "regr_sxy": "F.regr_sxy",
+            "regr_syy": "F.regr_syy",
             "count_if": "F.count_if",
             "count_distinct": "F.countDistinct",
             "median": "F.median",
             "max": "F.max",
+            "max_by": "F.max_by",
             "mode": "F.mode",
             "min": "F.min",
+            "min_by": "F.min_by",
             "kurtosis": "F.kurtosis",
             "percentile": "F.percentile",
+            "product": "F.product",
             "schema_of_variant_agg": "F.schema_of_variant_agg",
             "skewness": "F.skewness",
             "stddev": "F.stddev",
             "stddev_pop": "F.stddev_pop",
             "stddev_samp": "F.stddev_samp",
             "sum": "F.sum",
+            "sum_distinct": "F.sum_distinct",
             "var_pop": "F.var_pop",
             "var_samp": "F.var_samp",
             "variance": "F.variance",

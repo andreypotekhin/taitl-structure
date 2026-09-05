@@ -1413,6 +1413,8 @@ class RunOnlinePySparkTransform:
                     columns.append(options["accuracy"])
             if assignment.function == "percentile":
                 columns.extend((options["percentage"], options["frequency"]))
+            if assignment.function == "any_value":
+                columns.append(options["ignore_nulls"])
             result = self._aggregate_function(functions, assignment.function)(*columns)
             if not self._keeps_struct_collection_type(assignment):
                 result = result.cast(self._spark_type(assignment.field.type, types))
@@ -1435,13 +1437,15 @@ class RunOnlinePySparkTransform:
                 order_by = functions.when(predicate, order_by)
             function = functions.min_by if assignment.function == "first_value" else functions.max_by
             return function(column, order_by).alias(assignment.field.column)
-        if assignment.function == "first" and assignment.expression is not None:
+        if assignment.function in {"first", "last"} and assignment.expression is not None:
             column = self._expressions.evaluate(
                 assignment.expression,
                 functions=functions,
                 aliases=self._scope_aliases(step),
             )
-            return functions.first(column, ignorenulls=False).alias(assignment.field.column)
+            function = functions.first if assignment.function == "first" else functions.last
+            ignore_nulls = dict(assignment.options).get("ignore_nulls", False)
+            return function(column, ignorenulls=ignore_nulls).alias(assignment.field.column)
         raise TypeError(f"Unsupported aggregate assignment: {assignment.function}")
 
     def _ordered_collect_list(self, assignment, *, step, functions):
@@ -1519,27 +1523,45 @@ class RunOnlinePySparkTransform:
         return {
             "approx_count_distinct",
             "approx_percentile",
+            "any_value",
+            "array_agg",
             "avg",
+            "bit_and",
+            "bit_or",
+            "bit_xor",
             "bool_and",
             "bool_or",
             "collect_list",
             "collect_set",
             "corr",
             "covar",
+            "regr_avgx",
+            "regr_avgy",
+            "regr_count",
+            "regr_intercept",
+            "regr_r2",
+            "regr_slope",
+            "regr_sxx",
+            "regr_sxy",
+            "regr_syy",
             "count_if",
             "count_distinct",
             "median",
             "max",
+            "max_by",
             "mode",
             "min",
+            "min_by",
             "kurtosis",
             "percentile",
+            "product",
             "schema_of_variant_agg",
             "skewness",
             "stddev",
             "stddev_pop",
             "stddev_samp",
             "sum",
+            "sum_distinct",
             "var_pop",
             "var_samp",
             "variance",
@@ -1549,27 +1571,45 @@ class RunOnlinePySparkTransform:
         name = {
             "approx_count_distinct": "approx_count_distinct",
             "approx_percentile": "percentile_approx",
+            "any_value": "any_value",
+            "array_agg": "array_agg",
             "avg": "avg",
+            "bit_and": "bit_and",
+            "bit_or": "bit_or",
+            "bit_xor": "bit_xor",
             "bool_and": "bool_and",
             "bool_or": "bool_or",
             "collect_list": "collect_list",
             "collect_set": "collect_set",
             "corr": "corr",
             "covar": "covar_samp",
+            "regr_avgx": "regr_avgx",
+            "regr_avgy": "regr_avgy",
+            "regr_count": "regr_count",
+            "regr_intercept": "regr_intercept",
+            "regr_r2": "regr_r2",
+            "regr_slope": "regr_slope",
+            "regr_sxx": "regr_sxx",
+            "regr_sxy": "regr_sxy",
+            "regr_syy": "regr_syy",
             "count_if": "count_if",
             "count_distinct": "countDistinct",
             "median": "median",
             "max": "max",
+            "max_by": "max_by",
             "mode": "mode",
             "min": "min",
+            "min_by": "min_by",
             "kurtosis": "kurtosis",
             "percentile": "percentile",
+            "product": "product",
             "schema_of_variant_agg": "schema_of_variant_agg",
             "skewness": "skewness",
             "stddev": "stddev",
             "stddev_pop": "stddev_pop",
             "stddev_samp": "stddev_samp",
             "sum": "sum",
+            "sum_distinct": "sum_distinct",
             "var_pop": "var_pop",
             "var_samp": "var_samp",
             "variance": "variance",

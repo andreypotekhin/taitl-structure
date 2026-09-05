@@ -208,7 +208,7 @@ def test_online_expression_evaluator_preserves_pyspark_column_semantics() -> Non
     functions = FakeFunctions("functions")
     aliases = {RawOrder.__name__: "orders"}
 
-    cases = [
+    cases: list[tuple[object, str]] = [
         (_is_null(_field(RawOrder, "status")), "col(orders.status).isNull()"),
         (
             _binary("and", _not_null(_field(RawOrder, "id")), _is_null(_field(RawOrder, "status"))),
@@ -261,6 +261,22 @@ def test_online_expression_evaluator_preserves_pyspark_column_semantics() -> Non
         (_call("rlike", _field(RawOrder, "status"), _literal(r"release-[0-9]+")), "rlike(col(orders.status),lit('release-[0-9]+'))"),
         (_item(_field(RawTagBatch, "tags"), _literal(0)), "col(RawTagBatch.tags)[0]"),
         (_item(_field(RawMapBatch, "attributes"), _literal("region")), "col(RawMapBatch.attributes)['region']"),
+        (
+            create_map("region", "west"),
+            "create_map(lit('region'),lit('west'))",
+        ),
+        (
+            map_from_arrays(array("region"), array("west")),
+            "map_from_arrays(array(lit('region')),array(lit('west')))",
+        ),
+        (
+            str_to_map("region=west"),
+            "str_to_map(lit('region=west'),',',':')",
+        ),
+        (
+            named_struct("region", "west"),
+            "named_struct(lit('region'),lit('west'))",
+        ),
         (_get_field(_field(RawShippedOrder, "shipping"), "city"), "col(RawShippedOrder.shipping).getField('city')"),
         (_cast(_field(RawOrder, "status"), "int"), "cast(col(orders.status) as int)"),
         (_try_cast(_field(RawOrder, "status"), "int"), "try_cast(col(orders.status) as int)"),
@@ -305,11 +321,16 @@ def test_online_expression_evaluator_preserves_pyspark_column_semantics() -> Non
             _call("datediff", _field(RawOrder, "id"), _field(RawOrder, "status")),
             "datediff(col(orders.id),col(orders.status))",
         ),
+        (
+            _call("months_between", _field(RawOrder, "status"), _field(RawOrder, "status"), round_off=False),
+            "months_between(col(orders.status),col(orders.status),roundOff=False)",
+        ),
         (_call("date_trunc", _field(RawOrder, "status"), unit="month"), "date_trunc('month',col(orders.status))"),
         (_call("trunc", _field(RawOrder, "status"), unit="month"), "trunc(col(orders.status),'month')"),
         (_call("year", _field(RawOrder, "status")), "year(col(orders.status))"),
         (_call("month", _field(RawOrder, "status")), "month(col(orders.status))"),
         (_call("dayofmonth", _field(RawOrder, "status")), "dayofmonth(col(orders.status))"),
+        (_call("weekday", _field(RawOrder, "status")), "weekday(col(orders.status))"),
         (_call("hour", _field(RawOrder, "status")), "hour(col(orders.status))"),
         (_call("minute", _field(RawOrder, "status")), "minute(col(orders.status))"),
         (_call("second", _field(RawOrder, "status")), "second(col(orders.status))"),
@@ -389,7 +410,10 @@ def test_online_expression_evaluator_preserves_pyspark_column_semantics() -> Non
         (_to_decimal(_field(RawOrder, "status"), precision=12, scale=2), "cast(col(orders.status) as decimal(12,2))"),
     ]
 
-    assert [evaluator.evaluate(recipe, functions=functions, aliases=aliases).expression for recipe, _ in cases] == [
+    assert [
+        evaluator.evaluate(cast(PySparkExpressionRecipe, recipe), functions=functions, aliases=aliases).expression
+        for recipe, _ in cases
+    ] == [
         expected for _, expected in cases
     ]
 
@@ -3864,6 +3888,9 @@ class FakeFunctions(ModuleType):
     def datediff(self, end, start):
         return FakeColumn(f"datediff({end.expression},{start.expression})")
 
+    def months_between(self, left, right, roundOff=True):
+        return FakeColumn(f"months_between({left.expression},{right.expression},roundOff={roundOff})")
+
     def date_trunc(self, unit, column):
         return FakeColumn(f"date_trunc({unit!r},{column.expression})")
 
@@ -3879,6 +3906,9 @@ class FakeFunctions(ModuleType):
     def dayofmonth(self, column):
         return FakeColumn(f"dayofmonth({column.expression})")
 
+    def weekday(self, column):
+        return FakeColumn(f"weekday({column.expression})")
+
     def hour(self, column):
         return FakeColumn(f"hour({column.expression})")
 
@@ -3887,6 +3917,15 @@ class FakeFunctions(ModuleType):
 
     def second(self, column):
         return FakeColumn(f"second({column.expression})")
+
+    def shiftleft(self, column, bits):
+        return FakeColumn(f"shiftleft({column.expression},{bits})")
+
+    def shiftright(self, column, bits):
+        return FakeColumn(f"shiftright({column.expression},{bits})")
+
+    def shiftrightunsigned(self, column, bits):
+        return FakeColumn(f"shiftrightunsigned({column.expression},{bits})")
 
     def to_date(self, column, format=None):
         suffix = "" if format is None else f",{format!r}"
@@ -3961,6 +4000,9 @@ class FakeFunctions(ModuleType):
         fields = ",".join(f"{column.output_name or column.expression}={column.expression}" for column in columns)
         return FakeColumn(f"struct({fields})")
 
+    def array(self, *columns):
+        return FakeColumn("array(" + ",".join(column.expression for column in columns) + ")")
+
     def transform(self, column, function):
         item = FakeColumn("item")
         if len(signature(function).parameters) == 2:
@@ -4018,6 +4060,18 @@ class FakeFunctions(ModuleType):
         value = FakeColumn("value")
         return FakeColumn(f"map_filter({column.expression}, lambda key, value: {function(key, value).expression})")
 
+    def create_map(self, *columns):
+        return FakeColumn("create_map(" + ",".join(column.expression for column in columns) + ")")
+
+    def map_from_arrays(self, keys, values):
+        return FakeColumn(f"map_from_arrays({keys.expression},{values.expression})")
+
+    def str_to_map(self, column, pair_delimiter, key_value_delimiter):
+        return FakeColumn(f"str_to_map({column.expression},{pair_delimiter!r},{key_value_delimiter!r})")
+
+    def named_struct(self, *columns):
+        return FakeColumn("named_struct(" + ",".join(column.expression for column in columns) + ")")
+
     def count(self, column):
         return FakeColumn(f"count({column.expression})")
 
@@ -4026,6 +4080,9 @@ class FakeFunctions(ModuleType):
 
     def sum(self, column):
         return FakeColumn(f"sum({column.expression})")
+
+    def sum_distinct(self, column):
+        return FakeColumn(f"sum_distinct({column.expression})")
 
     def min(self, column):
         return FakeColumn(f"min({column.expression})")
@@ -4036,17 +4093,65 @@ class FakeFunctions(ModuleType):
     def avg(self, column):
         return FakeColumn(f"avg({column.expression})")
 
+    def any_value(self, column, ignoreNulls=False):
+        return FakeColumn(f"any_value({column.expression},{ignoreNulls})")
+
+    def array_agg(self, column):
+        return FakeColumn(f"array_agg({column.expression})")
+
+    def bit_and(self, column):
+        return FakeColumn(f"bit_and({column.expression})")
+
+    def bit_or(self, column):
+        return FakeColumn(f"bit_or({column.expression})")
+
+    def bit_xor(self, column):
+        return FakeColumn(f"bit_xor({column.expression})")
+
     def min_by(self, value, order):
         return FakeColumn(f"min_by({value.expression},{order.expression})")
 
     def max_by(self, value, order):
         return FakeColumn(f"max_by({value.expression},{order.expression})")
 
+    def regr_avgx(self, y, x):
+        return FakeColumn(f"regr_avgx({y.expression},{x.expression})")
+
+    def regr_avgy(self, y, x):
+        return FakeColumn(f"regr_avgy({y.expression},{x.expression})")
+
+    def regr_count(self, y, x):
+        return FakeColumn(f"regr_count({y.expression},{x.expression})")
+
+    def regr_intercept(self, y, x):
+        return FakeColumn(f"regr_intercept({y.expression},{x.expression})")
+
+    def regr_r2(self, y, x):
+        return FakeColumn(f"regr_r2({y.expression},{x.expression})")
+
+    def regr_slope(self, y, x):
+        return FakeColumn(f"regr_slope({y.expression},{x.expression})")
+
+    def regr_sxx(self, y, x):
+        return FakeColumn(f"regr_sxx({y.expression},{x.expression})")
+
+    def regr_sxy(self, y, x):
+        return FakeColumn(f"regr_sxy({y.expression},{x.expression})")
+
+    def regr_syy(self, y, x):
+        return FakeColumn(f"regr_syy({y.expression},{x.expression})")
+
     def countDistinct(self, column):
         return FakeColumn(f"countDistinct({column.expression})")
 
     def first(self, column, *, ignorenulls: bool):
         return FakeColumn(f"first({column.expression}, ignorenulls={ignorenulls})")
+
+    def last(self, column, *, ignorenulls: bool):
+        return FakeColumn(f"last({column.expression}, ignorenulls={ignorenulls})")
+
+    def product(self, column):
+        return FakeColumn(f"product({column.expression})")
 
     def when(self, condition, value):
         return FakeWhen(condition, value)

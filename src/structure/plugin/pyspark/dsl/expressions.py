@@ -45,7 +45,7 @@ __all__ = [
     "minute", "month", "nanvl", "nullif", "nvl", "nvl2", "pow", "regexp_extract", "regexp_replace", "repeat", "replace", "reverse",
     "round", "rpad", "rtrim", "sha1", "sha2", "second", "signum", "split", "sqrt", "substring", "to_csv", "to_date",
     "to_decimal", "to_json", "to_timestamp", "translate", "trim", "trunc", "unbase64", "decode", "encode", "hex", "unhex", "upper", "ascii", "btrim", "char", "char_length", "date_format", "find_in_set", "format_number", "last_day", "left", "locate", "mask", "octet_length", "overlay", "position", "quarter", "right", "soundex", "split_part", "substring_index", "regexp_count", "regexp_extract_all", "regexp_instr", "regexp_substr", "weekofyear", "bit_count", "bit_get", "getbit",
-    "when", "width_bucket", "xxhash64", "year", "zeroifnull", "acos", "acosh", "asin", "asinh", "atan", "atan2", "atanh", "cbrt", "cos", "cosh", "cot", "csc", "degrees", "e", "expm1", "factorial", "greatest", "hypot", "least", "ln", "log10", "log1p", "log2", "pmod", "pi", "radians", "rint", "sec", "sign", "sin", "sinh", "tan", "tanh", "add_months", "next_day", "rand", "randn", "equal_null", "like", "ilike", "regexp", "regexp_like", "rlike", "is_valid_variant", "is_variant_null", "parse_json",
+    "when", "width_bucket", "xxhash64", "year", "zeroifnull", "acos", "acosh", "asin", "asinh", "atan", "atan2", "atanh", "cbrt", "cos", "cosh", "cot", "csc", "degrees", "e", "expm1", "factorial", "greatest", "hypot", "least", "ln", "log10", "log1p", "log2", "pmod", "pi", "radians", "rint", "sec", "sign", "sin", "sinh", "tan", "tanh", "add_months", "months_between", "next_day", "rand", "randn", "equal_null", "like", "ilike", "regexp", "regexp_like", "rlike", "date_from_unix_date", "unix_date", "weekday", "shiftleft", "shiftright", "shiftrightunsigned", "is_valid_variant", "is_variant_null", "parse_json",
     "schema_of_variant", "to_variant_object", "try_parse_json", "try_variant_get", "variant_get", "variant_literal",
     "variant_array_append", "try_variant_array_append", "variant_insert", "try_variant_insert", "variant_set",
     "try_variant_set", "variant_delete",
@@ -1208,6 +1208,21 @@ def datediff(end: object, start: object) -> Expression:
     )
 
 
+def months_between(left: object, right: object, *, round_off: bool = True) -> Expression:
+    """Return the fractional month difference between two Date or Timestamp expressions."""
+    left_argument = _date_or_timestamp_argument(left, "months_between(...)")
+    right_argument = _date_or_timestamp_argument(right, "months_between(...)")
+    if not isinstance(round_off, bool):
+        raise TypeError("months_between(...) round_off must be a Boolean literal")
+    return Expression(
+        kind="call",
+        type=DoubleType(),
+        nullable=left_argument.nullable or right_argument.nullable,
+        data={"function": "months_between", "round_off": round_off},
+        args=(left_argument, right_argument),
+    )
+
+
 def date_trunc(value: object, *, unit: str) -> Expression:
     """Truncate a Date or Timestamp expression to a supported Spark unit."""
     argument = _date_or_timestamp_argument(value, "date_trunc(...)")
@@ -1255,6 +1270,11 @@ def dayofweek(value: object) -> Expression:
     Spark numbers Sunday as 1 and Saturday as 7.
     """
     return _calendar_part("dayofweek", value, _date_or_timestamp_argument)
+
+
+def weekday(value: object) -> Expression:
+    """Extract the zero-based Monday-first weekday from a Date or Timestamp expression."""
+    return _calendar_part("weekday", value, _date_or_timestamp_argument)
 
 
 def dayofyear(value: object) -> Expression:
@@ -1393,6 +1413,26 @@ def to_timestamp(value: object, *, format: str | None = None) -> Expression:
     )
 
 
+def unix_date(value: object) -> Expression:
+    """Return the number of days since 1970-01-01 for a Date expression."""
+    argument = _date_argument(value, "unix_date(...)")
+    return Expression(
+        kind="call", type=IntegerType(), nullable=argument.nullable, data={"function": "unix_date"}, args=(argument,)
+    )
+
+
+def date_from_unix_date(days: object) -> Expression:
+    """Convert whole days since 1970-01-01 to a Date expression."""
+    argument = _integral_argument(days, "date_from_unix_date(...)")
+    return Expression(
+        kind="call",
+        type=DateType(),
+        nullable=argument.nullable,
+        data={"function": "date_from_unix_date"},
+        args=(argument,),
+    )
+
+
 def abs(value: object) -> Expression:
     """Return the absolute value of a numeric expression."""
     argument = _numeric_argument(value, "abs(...)")
@@ -1417,6 +1457,21 @@ def bit_get(value: object, position: object) -> Expression:
 def getbit(value: object, position: object) -> Expression:
     """Alias for :func:`bit_get`, matching Spark's SQL spelling."""
     return _bit_position_call("getbit", value, position)
+
+
+def shiftleft(value: object, *, bits: int) -> Expression:
+    """Shift an integral expression left by an integer literal count."""
+    return _bit_shift_call("shiftleft", value, bits)
+
+
+def shiftright(value: object, *, bits: int) -> Expression:
+    """Shift an integral expression right by an integer literal count."""
+    return _bit_shift_call("shiftright", value, bits)
+
+
+def shiftrightunsigned(value: object, *, bits: int) -> Expression:
+    """Shift an integral expression right without sign extension."""
+    return _bit_shift_call("shiftrightunsigned", value, bits)
 
 
 def bin(value: object) -> Expression:
@@ -2451,6 +2506,19 @@ def _bit_position_call(function: str, value: object, position: object) -> Expres
         nullable=value_argument.nullable or position_argument.nullable,
         data={"function": function},
         args=(value_argument, position_argument),
+    )
+
+
+def _bit_shift_call(function: str, value: object, bits: int) -> Expression:
+    argument = _integral_argument(value, f"{function}(...)")
+    if isinstance(bits, bool) or not isinstance(bits, int):
+        raise TypeError(f"{function}(...) bits must be an integer literal")
+    return Expression(
+        kind="call",
+        type=LongType(),
+        nullable=argument.nullable,
+        data={"function": function, "bits": bits},
+        args=(argument,),
     )
 
 

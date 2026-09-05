@@ -306,6 +306,26 @@ class RenderPySparkExpression:
             mapping, key = expression.args
             rendered_key = self._render_literal_value(key) if key.kind == "literal" else self._render(key, aliases)
             return f"F.map_contains_key({self._render(mapping, aliases)}, {rendered_key})"
+        if function == "create_map":
+            return f"F.create_map({', '.join(self._render(value, aliases) for value in expression.args)})"
+        if function == "map_from_arrays":
+            key_array, value_array = expression.args
+            return f"F.map_from_arrays({self._render(key_array, aliases)}, {self._render(value_array, aliases)})"
+        if function == "str_to_map":
+            [value] = expression.args
+            return (
+                f"F.str_to_map({self._render(value, aliases)}, "
+                f"{expression.data['pair_delimiter']!r}, {expression.data['key_value_delimiter']!r})"
+            )
+        if function == "named_struct":
+            named_arguments = []
+            for argument_index, value in enumerate(expression.args):
+                named_arguments.append(
+                    self._render_literal_value(value)
+                    if argument_index % 2 == 0
+                    else self._render(value, aliases)
+                )
+            return f"F.named_struct({', '.join(named_arguments)})"
         if function == "array":
             return f"F.array({', '.join(self._render(value, aliases) for value in expression.args)})"
         if function == "array_repeat":
@@ -744,18 +764,22 @@ class RenderPySparkExpression:
             return f"F.add_months({args[0]}, {months})"
         if function == "datediff":
             return f"F.datediff({args[0]}, {args[1]})"
+        if function == "months_between":
+            return f"F.months_between({args[0]}, {args[1]}, roundOff={expression.data['round_off']})"
         if function == "date_trunc":
             return f"F.date_trunc({expression.data['unit']!r}, {args[0]})"
         if function == "trunc":
             return f"F.trunc({args[0]}, {expression.data['unit']!r})"
         if function == "next_day":
             return f"F.next_day({args[0]}, {expression.data['day_of_week']!r})"
-        if function in {"year", "month", "dayofmonth", "dayofweek", "dayofyear", "hour", "minute", "quarter", "second", "weekofyear"}:
+        if function in {"year", "month", "dayofmonth", "dayofweek", "weekday", "dayofyear", "hour", "minute", "quarter", "second", "weekofyear"}:
             return f"F.{function}({args[0]})"
         if function == "last_day":
             return f"F.last_day({args[0]})"
         if function == "date_format":
             return f"F.date_format({args[0]}, {expression.data['format']!r})"
+        if function in {"unix_date", "date_from_unix_date"}:
+            return f"F.{function}({args[0]})"
         if function == "mask":
             chars = cast(tuple[str | None, ...], expression.data["chars"])
             if all(character is None for character in chars):
@@ -775,6 +799,8 @@ class RenderPySparkExpression:
             return f"F.bit_count({args[0]})"
         if function in {"bit_get", "getbit"}:
             return f"F.{function}({args[0]}, {args[1]})"
+        if function in {"shiftleft", "shiftright", "shiftrightunsigned"}:
+            return f"F.{function}({args[0]}, {expression.data['bits']})"
         if function in {"bin", "hex", "unhex"}:
             return f"F.{function}({args[0]})"
         if function == "conv":

@@ -657,6 +657,8 @@ def test_v4_expression_renderer_renders_temporal_helpers() -> None:
         month_start = date(nullable=True)
         year_part = integer(nullable=True)
         hour_part = integer(nullable=True)
+        epoch_days = integer(nullable=True)
+        restored_day = date(nullable=True)
         parsed_date = date(nullable=True)
         parsed_timestamp = timestamp(nullable=True)
 
@@ -671,6 +673,8 @@ def test_v4_expression_renderer_renders_temporal_helpers() -> None:
                 month_start=trunc(row.observed_on, unit="month"),
                 year_part=year(row.observed_on),
                 hour_part=hour(row.observed_at),
+                epoch_days=unix_date(row.observed_on),
+                restored_day=date_from_unix_date(1),
                 parsed_date=to_date(row.raw_observed_at, format="yyyy-MM-dd HH:mm:ss"),
                 parsed_timestamp=to_timestamp(row.raw_observed_at, format="yyyy-MM-dd HH:mm:ss"),
             )
@@ -688,6 +692,8 @@ def test_v4_expression_renderer_renders_temporal_helpers() -> None:
     )
     assert render(projection["year_part"], scope_aliases={"rows": "orders"}) == 'F.year(F.col("orders.observed_on"))'
     assert render(projection["hour_part"], scope_aliases={"rows": "orders"}) == 'F.hour(F.col("orders.observed_at"))'
+    assert render(projection["epoch_days"], scope_aliases={"rows": "orders"}) == 'F.unix_date(F.col("orders.observed_on"))'
+    assert render(projection["restored_day"], scope_aliases={"rows": "orders"}) == 'F.date_from_unix_date(F.lit(1))'
     assert render(projection["parsed_date"], scope_aliases={"rows": "orders"}) == (
         'F.to_date(F.col("orders.raw_observed_at"), \'yyyy-MM-dd HH:mm:ss\')'
     )
@@ -704,6 +710,8 @@ def test_v4_expression_renderer_renders_calendar_and_padding_helpers() -> None:
 
     class Published(Schema):
         shifted = date(nullable=True)
+        month_difference = double(nullable=True)
+        week_day = integer(nullable=True)
         following_monday = date(nullable=True)
         month_end = date(nullable=True)
         week_number = integer(nullable=True)
@@ -719,6 +727,8 @@ def test_v4_expression_renderer_renders_calendar_and_padding_helpers() -> None:
         def publish(self, row: Raw) -> Published:
             return Published(
                 shifted=add_months(row.observed_on, months=2),
+                month_difference=months_between(row.observed_on, row.observed_on, round_off=False),
+                week_day=weekday(row.observed_on),
                 following_monday=next_day(row.observed_on, day_of_week="Mon"),
                 month_end=last_day(row.observed_on),
                 week_number=weekofyear(row.observed_on),
@@ -733,6 +743,12 @@ def test_v4_expression_renderer_renders_calendar_and_padding_helpers() -> None:
 
     assert render(projection["shifted"], scope_aliases={"rows": "orders"}) == (
         'F.add_months(F.col("orders.observed_on"), 2)'
+    )
+    assert render(projection["month_difference"], scope_aliases={"rows": "orders"}) == (
+        'F.months_between(F.col("orders.observed_on"), F.col("orders.observed_on"), roundOff=False)'
+    )
+    assert render(projection["week_day"], scope_aliases={"rows": "orders"}) == (
+        'F.weekday(F.col("orders.observed_on"))'
     )
     assert render(projection["following_monday"], scope_aliases={"rows": "orders"}) == (
         'F.next_day(F.col("orders.observed_on"), \'Mon\')'
@@ -1550,6 +1566,9 @@ def test_v4_expression_renderer_renders_sql_bitwise_helpers() -> None:
         count = long(nullable=True)
         selected = integer(nullable=True)
         selected_alias = integer(nullable=True)
+        shifted_left = long(nullable=True)
+        shifted_right = long(nullable=True)
+        shifted_unsigned = long(nullable=True)
 
     @transform
     class Publish(Transform):
@@ -1561,6 +1580,9 @@ def test_v4_expression_renderer_renders_sql_bitwise_helpers() -> None:
                 count=bit_count(row.flags),
                 selected=bit_get(row.flags, row.position),
                 selected_alias=getbit(row.flags, row.position),
+                shifted_left=shiftleft(row.flags, bits=2),
+                shifted_right=shiftright(row.flags, bits=2),
+                shifted_unsigned=shiftrightunsigned(row.flags, bits=2),
             )
 
     recipe = _recipe(Publish)
@@ -1575,4 +1597,13 @@ def test_v4_expression_renderer_renders_sql_bitwise_helpers() -> None:
     )
     assert render(projection["selected_alias"], scope_aliases={"rows": "orders"}) == (
         'F.getbit(F.col("orders.flags"), F.col("orders.position"))'
+    )
+    assert render(projection["shifted_left"], scope_aliases={"rows": "orders"}) == (
+        'F.shiftleft(F.col("orders.flags"), 2)'
+    )
+    assert render(projection["shifted_right"], scope_aliases={"rows": "orders"}) == (
+        'F.shiftright(F.col("orders.flags"), 2)'
+    )
+    assert render(projection["shifted_unsigned"], scope_aliases={"rows": "orders"}) == (
+        'F.shiftrightunsigned(F.col("orders.flags"), 2)'
     )

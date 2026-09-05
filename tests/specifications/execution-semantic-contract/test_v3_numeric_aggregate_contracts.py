@@ -5,7 +5,7 @@ import pytest
 from structure import *
 from structure.plugin.pyspark import *
 from structure.plugin.pyspark.dsl.Expression import Expression
-from structure.plugin.pyspark.dsl.types import DecimalType
+from structure.plugin.pyspark.dsl.types import ArrayType, DecimalType
 from structure.plugin.pyspark.dsl.windows import WindowFrame
 
 
@@ -95,6 +95,64 @@ def test_mode_preserves_candidate_type_and_deterministic_tie_contract() -> None:
         mode(array("category"), deterministic=True)
 
 
+def test_advanced_aggregate_helpers_preserve_result_contracts() -> None:
+    required_text = Expression(kind="text", type=types.string(), nullable=False)
+    nullable_text = Expression(kind="nullable_text", type=types.string(), nullable=True)
+    required_number = Expression(kind="number", type=types.long(), nullable=False)
+
+    selected = any_value(nullable_text, ignore_nulls=True)
+    collected = array_agg(required_text)
+    first_text = first(required_text, ignore_nulls=True)
+    last_text = last(nullable_text)
+    maximum_text = max_by(required_text, required_number)
+    minimum_text = min_by(required_text, required_number)
+    multiplied = product(required_number)
+    bitwise_results = (bit_and(required_number), bit_or(required_number), bit_xor(required_number))
+    regression_results = (
+        regr_avgx(required_number, required_number),
+        regr_avgy(required_number, required_number),
+        regr_count(required_number, required_number),
+        regr_intercept(required_number, required_number),
+        regr_r2(required_number, required_number),
+        regr_slope(required_number, required_number),
+        regr_sxx(required_number, required_number),
+        regr_sxy(required_number, required_number),
+        regr_syy(required_number, required_number),
+    )
+
+    assert selected.type is nullable_text.type
+    assert selected.nullable is True
+    assert dict(selected.data or {})["ignore_nulls"] is True
+    assert isinstance(collected.type, ArrayType)
+    assert collected.type.element is required_text.type
+    assert collected.type.contains_null is False
+    assert collected.nullable is False
+    assert first_text.type is required_text.type and first_text.nullable is True
+    assert last_text.type is nullable_text.type and last_text.nullable is True
+    assert maximum_text.type is required_text.type and maximum_text.nullable is True
+    assert minimum_text.type is required_text.type and minimum_text.nullable is True
+    assert multiplied.type is not None and multiplied.type.name == "double"
+    assert multiplied.nullable is True
+    assert all(result.type is not None and result.type.name == "long" and result.nullable for result in bitwise_results)
+    assert all(result.type is not None and result.type.name == "double" and result.nullable for result in regression_results[:2])
+    assert regression_results[2].type is not None and regression_results[2].type.name == "long"
+    assert regression_results[2].nullable is False
+    assert all(result.type is not None and result.type.name == "double" and result.nullable for result in regression_results[3:])
+
+    with pytest.raises(TypeError, match="ignore_nulls must be a Boolean"):
+        any_value(required_text, ignore_nulls=cast(bool, "yes"))
+    with pytest.raises(TypeError, match="requires an orderable scalar expression"):
+        max_by(required_text, array("ordering"))
+    with pytest.raises(TypeError, match="requires a numeric expression"):
+        product("not numeric")
+    with pytest.raises(TypeError, match="requires an integer or long"):
+        bit_xor("not integral")
+    with pytest.raises(TypeError, match="requires a numeric expression"):
+        sum_distinct("not numeric")
+    with pytest.raises(TypeError, match="requires a numeric expression"):
+        regr_slope(required_text, required_number)
+
+
 def test_sum_uses_spark_widened_types_and_filtered_aggregate_nullability() -> None:
     required_integer = Expression(kind="test_integer", type=types.integer(), nullable=False)
     required_float = Expression(kind="test_float", type=types.float(), nullable=False)
@@ -111,6 +169,7 @@ def test_sum_uses_spark_widened_types_and_filtered_aggregate_nullability() -> No
     )
 
     integer_sum = sum(required_integer)
+    distinct_integer_sum = sum_distinct(required_integer)
     float_sum = sum(required_float)
     decimal_sum = sum(decimal)
     filtered_sum = sum(required_integer, where=True)
@@ -143,6 +202,8 @@ def test_sum_uses_spark_widened_types_and_filtered_aggregate_nullability() -> No
     current_window_maximum = window_max(required_integer, over=current_frame)
 
     assert integer_sum.type is not None and integer_sum.type.name == "long"
+    assert distinct_integer_sum.type is not None and distinct_integer_sum.type.name == "long"
+    assert distinct_integer_sum.nullable is False
     assert float_sum.type is not None and float_sum.type.name == "double"
     assert isinstance(decimal_sum.type, DecimalType)
     assert decimal_sum.type.precision == 38

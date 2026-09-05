@@ -73,6 +73,30 @@ class AdvancedCustomerTotal(Schema):
     customers = array(string(), contains_null=False, nullable=True)
 
 
+class ExtendedAggregateTotal(Schema):
+    customer_id = string(nullable=False)
+    any_category = string(nullable=True)
+    category_values = array(string(), contains_null=False, nullable=False)
+    first_category = string(nullable=True)
+    last_category = string(nullable=True)
+    max_category_by_quantity = string(nullable=True)
+    min_category_by_quantity = string(nullable=True)
+    quantity_product = double(nullable=True)
+    quantity_sum_distinct = long(nullable=True)
+    quantity_bit_and = long(nullable=True)
+    quantity_bit_or = long(nullable=True)
+    quantity_bit_xor = long(nullable=True)
+    regression_avgx = double(nullable=True)
+    regression_avgy = double(nullable=True)
+    regression_count = long(nullable=False)
+    regression_intercept = double(nullable=True)
+    regression_r2 = double(nullable=True)
+    regression_slope = double(nullable=True)
+    regression_sxx = double(nullable=True)
+    regression_sxy = double(nullable=True)
+    regression_syy = double(nullable=True)
+
+
 class LabelEntry(Schema):
     key = string(nullable=False)
     value = long(nullable=False)
@@ -168,6 +192,38 @@ class AdvancedCustomerTotals(Transform):
             ordered_first_customer=first_value(row.customer_id, order_by=row.quantity, where=row.quantity > 0),
             ordered_last_customer=last_value(row.customer_id, order_by=row.quantity, where=row.quantity > 0),
             customers=collect_set(row.customer_id, element_type=types.string()),
+        )
+
+
+@transform
+class ExtendedAggregateTotals(Transform):
+    rows = input(RawOrder)
+    totals = output(ExtendedAggregateTotal)
+
+    def summarize(self, row: RawOrder) -> ExtendedAggregateTotal:
+        group_by(row.customer_id)
+        return ExtendedAggregateTotal(
+            customer_id=row.customer_id,
+            any_category=any_value(row.category, ignore_nulls=True),
+            category_values=array_agg(row.category),
+            first_category=first(row.category, ignore_nulls=True),
+            last_category=last(row.category),
+            max_category_by_quantity=max_by(row.category, row.quantity),
+            min_category_by_quantity=min_by(row.category, row.quantity),
+            quantity_product=product(row.quantity),
+            quantity_sum_distinct=sum_distinct(row.quantity),
+            quantity_bit_and=bit_and(row.quantity),
+            quantity_bit_or=bit_or(row.quantity),
+            quantity_bit_xor=bit_xor(row.quantity),
+            regression_avgx=regr_avgx(row.quantity, row.quantity),
+            regression_avgy=regr_avgy(row.quantity, row.quantity),
+            regression_count=regr_count(row.quantity, row.quantity),
+            regression_intercept=regr_intercept(row.quantity, row.quantity),
+            regression_r2=regr_r2(row.quantity, row.quantity),
+            regression_slope=regr_slope(row.quantity, row.quantity),
+            regression_sxx=regr_sxx(row.quantity, row.quantity),
+            regression_sxy=regr_sxy(row.quantity, row.quantity),
+            regression_syy=regr_syy(row.quantity, row.quantity),
         )
 
 
@@ -375,6 +431,42 @@ def test_advanced_aggregate_helpers_render_spark_visible_rollup_and_metrics() ->
         'F.col("raw_order.quantity"))).alias("ordered_last_customer")' in text
     )
     assert 'F.collect_set(F.col("raw_order.customer_id")).cast(T.ArrayType(T.StringType(), containsNull=False))' in text
+
+
+def test_extended_aggregate_helpers_render_spark_visible_functions() -> None:
+    plan = _recipe(ExtendedAggregateTotals)
+
+    text = render_pyspark_step(plan.steps[0], current="rows", sources={"rows": "rows"})
+
+    assert 'F.any_value(F.col("raw_order.category"), True).cast(T.StringType()).alias("any_category")' in text
+    assert (
+        'F.array_agg(F.col("raw_order.category")).cast(T.ArrayType(T.StringType(), containsNull=False))'
+        in text
+    )
+    assert 'F.first(F.col("raw_order.category"), ignorenulls=True).alias("first_category")' in text
+    assert 'F.last(F.col("raw_order.category"), ignorenulls=False).alias("last_category")' in text
+    assert 'F.max_by(F.col("raw_order.category"), F.col("raw_order.quantity")).cast(T.StringType())' in text
+    assert 'F.min_by(F.col("raw_order.category"), F.col("raw_order.quantity")).cast(T.StringType())' in text
+    assert 'F.product(F.col("raw_order.quantity")).cast(T.DoubleType()).alias("quantity_product")' in text
+    assert 'F.sum_distinct(F.col("raw_order.quantity")).cast(T.LongType()).alias("quantity_sum_distinct")' in text
+    assert 'F.bit_and(F.col("raw_order.quantity")).cast(T.LongType()).alias("quantity_bit_and")' in text
+    assert 'F.bit_or(F.col("raw_order.quantity")).cast(T.LongType()).alias("quantity_bit_or")' in text
+    assert 'F.bit_xor(F.col("raw_order.quantity")).cast(T.LongType()).alias("quantity_bit_xor")' in text
+    for function, field in (
+        ("regr_avgx", "regression_avgx"),
+        ("regr_avgy", "regression_avgy"),
+        ("regr_intercept", "regression_intercept"),
+        ("regr_r2", "regression_r2"),
+        ("regr_slope", "regression_slope"),
+        ("regr_sxx", "regression_sxx"),
+        ("regr_sxy", "regression_sxy"),
+        ("regr_syy", "regression_syy"),
+    ):
+        assert f'F.{function}(F.col("raw_order.quantity"), F.col("raw_order.quantity")).cast(T.DoubleType()).alias("{field}")' in text
+    assert (
+        'F.regr_count(F.col("raw_order.quantity"), F.col("raw_order.quantity")).cast(T.LongType()).alias("regression_count")'
+        in text
+    )
 
 
 def test_grouping_sets_lower_to_explicit_levels_and_render_union_branches() -> None:

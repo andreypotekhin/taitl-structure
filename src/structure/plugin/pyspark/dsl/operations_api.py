@@ -218,6 +218,85 @@ def max(value: object, *, where: object | None = None) -> Expression:
     return _aggregate("max", argument, type=argument.type, nullable=argument.nullable or where is not None, where=where)
 
 
+def any_value(value: object, *, ignore_nulls: bool = False, where: object | None = None) -> Expression:
+    """Return an arbitrary aggregate value, optionally ignoring null candidates."""
+    _boolean_option("any_value(...)", "ignore_nulls", ignore_nulls)
+    argument = literal(value)
+    return _aggregate(
+        "any_value",
+        argument,
+        type=argument.type,
+        nullable=True,
+        where=where,
+        options=(("ignore_nulls", ignore_nulls),),
+    )
+
+
+def array_agg(
+    value: object,
+    *,
+    element_type: StructureType | None = None,
+    where: object | None = None,
+) -> Expression:
+    """Collect aggregate values into an array, matching PySpark ``array_agg``."""
+    argument = literal(value)
+    return _aggregate(
+        "array_agg",
+        argument,
+        type=ArrayType(_collection_element_type(argument, element_type), contains_null=False),
+        nullable=False,
+        where=where,
+    )
+
+
+def first(value: object, *, ignore_nulls: bool = False, where: object | None = None) -> Expression:
+    """Return the first aggregate value, with Spark's input-order semantics."""
+    _boolean_option("first(...)", "ignore_nulls", ignore_nulls)
+    return _ordered_value_aggregate("first", value, ignore_nulls=ignore_nulls, where=where)
+
+
+def last(value: object, *, ignore_nulls: bool = False, where: object | None = None) -> Expression:
+    """Return the last aggregate value, with Spark's input-order semantics."""
+    _boolean_option("last(...)", "ignore_nulls", ignore_nulls)
+    return _ordered_value_aggregate("last", value, ignore_nulls=ignore_nulls, where=where)
+
+
+def max_by(value: object, order: object, *, where: object | None = None) -> Expression:
+    """Return the value associated with the greatest order expression."""
+    return _ordered_pair_aggregate("max_by", value, order, where=where)
+
+
+def min_by(value: object, order: object, *, where: object | None = None) -> Expression:
+    """Return the value associated with the smallest order expression."""
+    return _ordered_pair_aggregate("min_by", value, order, where=where)
+
+
+def product(value: object, *, where: object | None = None) -> Expression:
+    """Return the product of numeric values in each aggregate group."""
+    return _aggregate(
+        "product",
+        _numeric_expression(value, "product(...)"),
+        type=DoubleType(),
+        nullable=True,
+        where=where,
+    )
+
+
+def bit_and(value: object, *, where: object | None = None) -> Expression:
+    """Return the bitwise AND of integral values in each aggregate group."""
+    return _bitwise_aggregate("bit_and", value, where=where)
+
+
+def bit_or(value: object, *, where: object | None = None) -> Expression:
+    """Return the bitwise OR of integral values in each aggregate group."""
+    return _bitwise_aggregate("bit_or", value, where=where)
+
+
+def bit_xor(value: object, *, where: object | None = None) -> Expression:
+    """Return the bitwise XOR of integral values in each aggregate group."""
+    return _bitwise_aggregate("bit_xor", value, where=where)
+
+
 def mode(value: object, *, deterministic: bool = False, where: object | None = None) -> Expression:
     """Return the most frequent non-null value in each aggregate group.
 
@@ -269,6 +348,18 @@ def sum(value: object, *, where: object | None = None) -> Expression:
     argument = literal(value)
     return _aggregate(
         "sum", argument, type=_sum_type(argument), nullable=argument.nullable or where is not None, where=where
+    )
+
+
+def sum_distinct(value: object, *, where: object | None = None) -> Expression:
+    """Return a sum aggregate over distinct numeric values with Spark widening."""
+    argument = _numeric_expression(value, "sum_distinct(...)")
+    return _aggregate(
+        "sum_distinct",
+        argument,
+        type=_sum_type(argument),
+        nullable=argument.nullable or where is not None,
+        where=where,
     )
 
 
@@ -339,6 +430,51 @@ def corr(left: object, right: object, *, where: object | None = None) -> Express
 def covar(left: object, right: object, *, where: object | None = None) -> Expression:
     """Return sample covariance for two numeric expressions."""
     return _aggregate("covar", literal(left), literal(right), type=DoubleType(), nullable=True, where=where)
+
+
+def regr_avgx(y: object, x: object, *, where: object | None = None) -> Expression:
+    """Return the nullable average of the independent regression variable."""
+    return _regression_aggregate("regr_avgx", y, x, type=DoubleType(), nullable=True, where=where)
+
+
+def regr_avgy(y: object, x: object, *, where: object | None = None) -> Expression:
+    """Return the nullable average of the dependent regression variable."""
+    return _regression_aggregate("regr_avgy", y, x, type=DoubleType(), nullable=True, where=where)
+
+
+def regr_count(y: object, x: object, *, where: object | None = None) -> Expression:
+    """Return the non-null count of paired regression observations."""
+    return _regression_aggregate("regr_count", y, x, type=LongType(), nullable=False, where=where)
+
+
+def regr_intercept(y: object, x: object, *, where: object | None = None) -> Expression:
+    """Return the nullable regression intercept."""
+    return _regression_aggregate("regr_intercept", y, x, type=DoubleType(), nullable=True, where=where)
+
+
+def regr_r2(y: object, x: object, *, where: object | None = None) -> Expression:
+    """Return the nullable coefficient of determination."""
+    return _regression_aggregate("regr_r2", y, x, type=DoubleType(), nullable=True, where=where)
+
+
+def regr_slope(y: object, x: object, *, where: object | None = None) -> Expression:
+    """Return the nullable regression slope."""
+    return _regression_aggregate("regr_slope", y, x, type=DoubleType(), nullable=True, where=where)
+
+
+def regr_sxx(y: object, x: object, *, where: object | None = None) -> Expression:
+    """Return the nullable sum of squared independent-variable deviations."""
+    return _regression_aggregate("regr_sxx", y, x, type=DoubleType(), nullable=True, where=where)
+
+
+def regr_sxy(y: object, x: object, *, where: object | None = None) -> Expression:
+    """Return the nullable sum of paired independent/dependent deviations."""
+    return _regression_aggregate("regr_sxy", y, x, type=DoubleType(), nullable=True, where=where)
+
+
+def regr_syy(y: object, x: object, *, where: object | None = None) -> Expression:
+    """Return the nullable sum of squared dependent-variable deviations."""
+    return _regression_aggregate("regr_syy", y, x, type=DoubleType(), nullable=True, where=where)
 
 
 def approx_count_distinct(
@@ -1210,7 +1346,7 @@ def _aggregate(
     if context := current_context():
         context.aggregate_requested = True
     if (
-        function in {"avg", "bool_and", "bool_or", "first_value", "last_value", "max", "min", "sum"}
+        function in {"avg", "bool_and", "bool_or", "first_value", "last_value", "max", "min", "sum", "sum_distinct"}
         and _global_aggregate_may_be_empty()
     ):
         nullable = True
@@ -1545,6 +1681,51 @@ def _numeric_expression(value: object, call: str) -> Expression:
     if argument.type is None or argument.type.name not in {"integer", "long", "float", "double", "decimal"}:
         raise TypeError(f"{call} requires a numeric expression")
     return argument
+
+
+def _regression_aggregate(
+    function: str,
+    y: object,
+    x: object,
+    *,
+    type: StructureType,
+    nullable: bool,
+    where: object | None,
+) -> Expression:
+    y_argument = _numeric_expression(y, f"{function}(...)")
+    x_argument = _numeric_expression(x, f"{function}(...)")
+    return _aggregate(function, y_argument, x_argument, type=type, nullable=nullable, where=where)
+
+
+def _ordered_value_aggregate(
+    function: str,
+    value: object,
+    *,
+    ignore_nulls: bool,
+    where: object | None,
+) -> Expression:
+    argument = literal(value)
+    return _aggregate(
+        function,
+        argument,
+        type=argument.type,
+        nullable=True,
+        where=where,
+        options=(("ignore_nulls", ignore_nulls),),
+    )
+
+
+def _ordered_pair_aggregate(function: str, value: object, order: object, *, where: object | None) -> Expression:
+    value_argument = literal(value)
+    order_argument = _orderable_expression(order, f"{function}(...) order")
+    return _aggregate(function, value_argument, order_argument, type=value_argument.type, nullable=True, where=where)
+
+
+def _bitwise_aggregate(function: str, value: object, *, where: object | None) -> Expression:
+    argument = literal(value)
+    if not isinstance(argument.type, (IntegerType, LongType)):
+        raise TypeError(f"{function}(...) requires an integer or long Structure expression")
+    return _aggregate(function, argument, type=LongType(), nullable=True, where=where)
 
 
 def _sum_type(argument: Expression) -> StructureType | None:
@@ -2253,6 +2434,90 @@ def map_contains_key(value: object, key: object) -> Expression:
         type=BooleanType(),
         nullable=argument.nullable,
         args=(argument, key_expression),
+    )
+
+
+def create_map(*values: object) -> Expression:
+    """Build a typed map from alternating key and value expressions."""
+    if not values or len(values) % 2:
+        raise TypeError("create_map(...) requires alternating key and value expressions")
+    arguments = tuple(literal(value) for value in values)
+    keys = arguments[::2]
+    entries = arguments[1::2]
+    key_type = _unified_argument_type("create_map(...)", keys)
+    value_type = _unified_argument_type("create_map(...)", entries)
+    if any(argument.nullable for argument in keys):
+        raise TypeError("create_map(...) requires non-null key expressions")
+    return _reserved_expression(
+        "create_map",
+        group="higher_order",
+        name="create_map",
+        type=MapType(key_type, value_type, value_contains_null=any(argument.nullable for argument in entries)),
+        nullable=False,
+        args=arguments,
+    )
+
+
+def map_from_arrays(keys: object, values: object) -> Expression:
+    """Build a typed map from parallel key and value arrays."""
+    key_argument = literal(keys)
+    value_argument = literal(values)
+    key_array = _array_type(key_argument, "map_from_arrays(...)")
+    value_array = _array_type(value_argument, "map_from_arrays(...)")
+    if key_array.contains_null:
+        raise TypeError("map_from_arrays(...) requires an array with non-null keys")
+    return _reserved_expression(
+        "map_from_arrays",
+        group="higher_order",
+        name="map_from_arrays",
+        type=MapType(key_array.element, value_array.element, value_contains_null=value_array.contains_null),
+        nullable=key_argument.nullable or value_argument.nullable,
+        args=(key_argument, value_argument),
+    )
+
+
+def str_to_map(text: object, pair_delimiter: str = ",", key_value_delimiter: str = ":") -> Expression:
+    """Parse a String into a nullable-value String map using literal delimiters."""
+    argument = literal(text)
+    if not isinstance(argument.type, StringType):
+        raise TypeError("str_to_map(...) requires a String expression")
+    if not isinstance(pair_delimiter, str) or not isinstance(key_value_delimiter, str):
+        raise TypeError("str_to_map(...) delimiters must be String literals")
+    if not pair_delimiter or not key_value_delimiter:
+        raise ValueError("str_to_map(...) delimiters must not be empty")
+    return _reserved_expression(
+        "str_to_map",
+        group="higher_order",
+        name="str_to_map",
+        type=MapType(StringType(), StringType(), value_contains_null=True),
+        nullable=argument.nullable,
+        args=(argument,),
+        data=(("pair_delimiter", pair_delimiter), ("key_value_delimiter", key_value_delimiter)),
+    )
+
+
+def named_struct(*values: object) -> Expression:
+    """Build a schema-visible Struct from alternating literal names and values."""
+    if not values or len(values) % 2:
+        raise TypeError("named_struct(...) requires alternating field names and values")
+    names = tuple(cast(str, name) for name in values[::2])
+    raw_values = tuple(literal(value) for value in values[1::2])
+    if any(not isinstance(name, str) or not name for name in names):
+        raise TypeError("named_struct(...) field names must be non-empty String literals")
+    if len(set(names)) != len(names):
+        raise TypeError("named_struct(...) field names must be unique")
+    schema = type(
+        "_NamedStruct",
+        (Schema,),
+        {name: FieldDeclaration(_typed_type("named_struct(...)", value), nullable=value.nullable) for name, value in zip(names, raw_values)},
+    )
+    return _reserved_expression(
+        "named_struct",
+        group="higher_order",
+        name="named_struct",
+        type=StructType(schema),
+        nullable=False,
+        args=tuple(argument for pair in zip(names, raw_values) for argument in (literal(pair[0]), pair[1])),
     )
 
 

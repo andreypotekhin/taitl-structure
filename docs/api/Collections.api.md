@@ -172,6 +172,10 @@ empty maps preserve their source row. Nested maps, structs, variants, and compat
 
 | Structure API | PySpark parity | Example |
 | --- | --- | --- |
+| `create_map(...)` | `create_map` | `create_map("region", order.region, "tier", order.tier)` |
+| `map_from_arrays(...)` | `map_from_arrays` | `map_from_arrays(array("region"), array(order.region))` |
+| `str_to_map(...)` | `str_to_map` | `str_to_map(order.attributes_text, ";", "=")` |
+| `named_struct(...)` | `named_struct` | `named_struct("region", order.region, "tier", order.tier)` |
 | `map_keys(...)` | `map_keys` | `map_keys(order.attributes)` |
 | `map_values(...)` | `map_values` | `map_values(order.attributes)` |
 | `map_entries(...)` | `map_entries` | `map_entries(order.attributes)` |
@@ -188,6 +192,11 @@ empty maps preserve their source row. Nested maps, structs, variants, and compat
 **Details And Differences**
 
 - Transform and filter callbacks receive symbolic key/value expressions.
+- `create_map(...)` accepts alternating typed key/value expressions and rejects nullable keys.
+- `map_from_arrays(...)` requires typed arrays with non-null keys and preserves value-element nullability.
+- `str_to_map(...)` returns `map<string,string>`; both delimiters are non-empty String literals.
+- `named_struct(...)` creates a schema-visible Struct; field names are non-empty, unique String literals and value
+  nullability is preserved.
 - Duplicate transformed keys are rejected by Structure's strict map contract.
 - Map keys cannot contain maps, including through an array or struct key shape, matching Spark's map-key domain.
 - `map_concat(...)` requires matching key and value types; it does not apply numeric widening between maps.

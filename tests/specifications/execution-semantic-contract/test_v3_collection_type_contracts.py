@@ -505,6 +505,40 @@ def test_map_from_entries_requires_non_null_key_value_struct_entries() -> None:
         map_from_entries(array("not-an-entry"))
 
 
+def test_map_constructors_preserve_typed_shapes_and_validate_literals() -> None:
+    created = create_map("region", "west", "tier", "gold")
+    assert isinstance(created.type, MapType)
+    assert isinstance(created.type.key, StringType)
+    assert isinstance(created.type.value, StringType)
+    assert created.type.value_contains_null is False
+    assert created.nullable is False
+
+    from_arrays = map_from_arrays(array("region", "tier"), array("west", None))
+    assert isinstance(from_arrays.type, MapType)
+    assert from_arrays.type.value_contains_null is True
+    assert from_arrays.nullable is False
+
+    parsed = str_to_map("region=west,tier=gold", ";", "=")
+    assert isinstance(parsed.type, MapType)
+    assert parsed.type.value_contains_null is True
+
+    nullable_value = Expression(kind="test_nullable_value", type=StringType(), nullable=True)
+    named = named_struct("region", "west", "tier", nullable_value)
+    assert isinstance(named.type, StructType)
+    fields = named.type.schema._structure_fields
+    assert tuple(fields) == ("region", "tier")
+    assert fields["tier"].nullable is True
+
+    with pytest.raises(TypeError, match=r"create_map\(\.\.\.\) requires alternating"):
+        create_map("region")
+    with pytest.raises(TypeError, match=r"map_from_arrays\(\.\.\.\) requires an Array"):
+        map_from_arrays("region", array("west"))
+    with pytest.raises(ValueError, match=r"str_to_map\(\.\.\.\) delimiters must not be empty"):
+        str_to_map("region=west", "", "=")
+    with pytest.raises(TypeError, match=r"named_struct\(\.\.\.\) field names must be unique"):
+        named_struct("region", "west", "region", "east")
+
+
 @pytest.mark.parametrize(
     ("entry_type", "message"),
     [

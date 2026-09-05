@@ -148,8 +148,12 @@ PySpark `Column` surface; functions such as `trim` and `lower` remain function-f
 | `date_sub(...)` | `date_sub` | `date_sub(o.day, days=1)` |
 | `add_months(...)` | `add_months` | `add_months(o.day, months=1)` |
 | `datediff(...)` | `datediff` | `datediff(o.end_day, o.start_day)` |
+| `months_between(...)` | `months_between` | `months_between(o.end_day, o.start_day, round_off=True)` |
 | `date_trunc(...)` | `date_trunc` | `date_trunc(o.at, unit="month")` |
 | `trunc(...)` | `trunc` | `trunc(o.day, unit="month")` |
+| `unix_date(...)` | `unix_date` | `unix_date(o.day)` |
+| `date_from_unix_date(...)` | `date_from_unix_date` | `date_from_unix_date(o.epoch_days)` |
+| `weekday(...)` | `weekday` | `weekday(o.day)` |
 | `year(...)`, `month(...)`, `dayofmonth(...)` | Calendar extraction | `year(o.day)` |
 | `hour(...)`, `minute(...)`, `second(...)` | Time extraction | `hour(o.at)` |
 | `next_day(...)` | `next_day` | `next_day(o.day, day_of_week="Mon")` |
@@ -158,6 +162,7 @@ PySpark `Column` surface; functions such as `trim` and `lower` remain function-f
 | `abs(...)` | `abs` | `abs(o.total)` |
 | `bit_count(...)` | `bit_count` | `bit_count(o.flags)` |
 | `bit_get(...)`, `getbit(...)` | `bit_get`, `getbit` | `bit_get(o.flags, o.position)` |
+| `shiftleft(...)`, `shiftright(...)`, `shiftrightunsigned(...)` | SQL bit shifts | `shiftleft(o.flags, bits=2)` |
 | `acos(...)` | `acos` | `acos(o.total)` |
 | `hypot(...)` | `hypot` | `hypot(o.x, o.y)` |
 | `rand(...)`, `randn(...)` | `rand`, `randn` | `rand(seed=42)`; `randn(seed=42)` |
@@ -235,11 +240,20 @@ PySpark `Column` surface; functions such as `trim` and `lower` remain function-f
 - `add_months(...)` accepts Date or Timestamp values and an integer literal or integral expression; the result is a
   nullable Date when either input is nullable. `next_day(...)` accepts a Date or Timestamp and a weekday literal from
   Monday through Sunday (short names such as `Mon` are accepted) and returns a nullable Date.
+- `months_between(...)` accepts Date or Timestamp values and returns a nullable Double. Its `round_off` argument must
+  be a Boolean literal and renders to Spark's `roundOff` parameter.
 - `dayofweek(...)`, `dayofyear(...)`, `quarter(...)`, and `weekofyear(...)` accept Date or Timestamp values and
   return nullable Integer calendar parts. `dayofweek(...)` numbers Sunday as 1 through Saturday as 7, while
   `weekofyear(...)` follows Spark's ISO week numbering.
 - `last_day(...)` accepts a Date or Timestamp and returns the nullable month-end Date. `date_format(...)` accepts a
   Date or Timestamp plus a non-empty format literal and returns a nullable String.
+- `unix_date(...)` accepts a Date expression and returns nullable Integer epoch days; `date_from_unix_date(...)`
+  accepts an Integer or Long day count and returns a nullable Date.
+- `weekday(...)` accepts a Date or Timestamp expression and returns a nullable zero-based Integer, with Monday as
+  zero and Sunday as six.
+- `shiftleft(...)`, `shiftright(...)`, and `shiftrightunsigned(...)` accept an integral expression plus an integer
+  literal `bits` count and return a nullable Long. The count remains literal so generated PySpark uses the supported
+  `numBits` argument form.
 - `lpad(...)` and `rpad(...)` accept a String expression, a non-negative integer literal, and a non-empty padding
   literal. They return a String expression with the input nullability.
 - `mask(...)` accepts a String expression and optional single-character literals for uppercase, lowercase, digit, and
