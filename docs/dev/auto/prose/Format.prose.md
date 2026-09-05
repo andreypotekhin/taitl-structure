@@ -74,6 +74,9 @@ Content preservation:
 - Preserve each intent and explanation content.
 - Preserve the extended document's Solution prose and paragraph order exactly; convert display-math delimiters only as
   required by the formatting rules.
+- Validate the Solution contract before formatting and preserve it exactly: the opening must provide general domain/user
+  framing, a conceptual bridge must precede concrete abstractions and formulas, and the ending must explain behavior,
+  tradeoffs, and value. Formatting must not conceal or repair a component-first or algorithm-first Solution.
 - Preserve the extended document's Problem prose and paragraph order exactly; apply only the required formatting
   conversions.
 - Preserve the meaning and paragraph order.
@@ -86,6 +89,9 @@ Content preservation:
   intent sentence. The preamble must remain continuous prose that moves from workflow purpose to core concepts, then to
   boundary or policy rationale; retain its short, essential shape rather than turning it into a list or adding
   document-structure commentary.
+- Preserve a substantive preamble rather than shrinking it. It may explain the input contract, major data movement, and
+  important limits before the stage subsections. Preserve active imperative stage introductions such as “Match terms” or
+  “Publish results” when they are present in the extended source.
 - Preserve the extended document's external-stage explanations and `Result` prose exactly; these passages follow the
   same style contract: one self-contained sentence when prose is present, concrete data transition, active voice when
   natural, and no generic inventory or document-production commentary.
@@ -101,10 +107,12 @@ Definitions formatting:
 
 Implementation item markers:
 - Preserve circled-number markers for numbered Implementation explanatory items: use ① through ⑳, then ㉑ through ㉓
-  as needed. Keep Code-section method-group markers visibly numbered with the global sequence independently.
-- When a collected class listing contains a short class docstring, preserve that one-sentence docstring as the
-  circled italicized intent for the class-level group. Keep any longer prose preceding the listing plain; do not turn
-  that prose into an italicized intent.
+  as needed. Keep Code-section method-group markers visibly numbered independently. For multiple independent composed
+  transforms without a common parent, restart both numbering sequences for each top-level transform.
+ - Keep stage introductions as plain, active, unnumbered prose. If the stage has public method groups, do not turn its
+   class docstring or stage summary into a circled italicized item; circled markers belong to method-group items only.
+   The sole exception is a no-parent internal composed class with no public methods, whose source-backed class/child-stage
+   description may be one numbered transform group.
 
 Transform - standalone (as in 'Resulting transform shape' sections of .form.md docs):
 - Use canonic transform notation: transform name, colon, input vector on the left, step-method vector in the middle
@@ -119,7 +127,8 @@ Transform - standalone (as in 'Resulting transform shape' sections of .form.md d
   the main/workflow transform; imports alone do not make a same-package or child-package stage external. For an external
   stage whose implementation and step methods are not discussed in the document, keep one canonical standalone transform
   notation: transform name followed by colon, schema types with omitted input/output names, and no `Resulting transform
-  shape:` label or block. Internal stages retain their methods and one `Resulting transform shape:` block.
+  shape:` label or block. Internal step stages retain their methods and one `Resulting transform shape:` block; composed
+  top-level transforms retain their nested child-stage sections and one nested `Result` formula.
 
 Stage call:
 - Use 'Stage Call Notation' for stages in a workflow.
@@ -141,6 +150,11 @@ Additional Rules
   individual step methods, non-step typed helpers, standalone transforms, and the workflow transform.
 - Preserve every Code-section listing and provide formula notation for every typed method it contains. Code listings are
   source evidence; formulas are the compact typed representation of the same methods.
+- Classify the topic before applying parent-workflow rules. If no exact main/workflow transform exists, treat every
+  collected transform class in the topic subtree as an internal document stage: preserve its complete Code listing,
+  numbered method-group prose, and formulas. A standalone step transform gets `Resulting transform shape:`; an
+  independent composed transform gets nested child-stage subsections and one nested `Result` formula. Do not invent a
+  package-level parent/workflow subsection or Result for this shape.
 - Do not preserve or create a scope or production line between the `Code` heading and its first subsection. If the
   `Workflow` subsection lacks source-grounded descriptive prose, preserve or create one concise sentence summarizing
   the workflow logic as its first prose line inside `Workflow`.
@@ -151,10 +165,15 @@ Additional Rules
   condense, or renumber it during formatting.
 - Do not repeat the 'Resulting transform shape': label in the workflow's Result section when the
   transform notation is already shown in the preceding sections.
+- Do not expose document-production or operator terminology in generated prose. When external detail is omitted, use a
+  direct chapter reference such as “See Scoring chapter for details on the Scoring transform.” rather than describing
+  ownership of an external stage or what the document records.
 
 ### Format operator - Quality assurance
 
 - For every `.form.md` output, audit every formula block in the document.
+- Verify the complete Solution contract is preserved: the opening provides general domain/user framing, a conceptual
+  bridge precedes concrete abstractions and formulas, and the ending explains behavior, tradeoffs, and practical value.
 - Verify that no top-level `## Notation` section appears in `.form.md`.
 - Verify that Builds on, Used by, Inputs, and Outputs use plain list text without bold names, and that Stages bolds
   only the stage names while leaving its schema names plain.
@@ -171,10 +190,11 @@ Additional Rules
   verify that each appears exactly once in the corresponding Code section and has matching Implementation method
   coverage and a formula. This is a method-coverage check, not a numbering rule. Include trailing methods that publish
   declared outputs; do not drop a method because a neighboring section contains a private helper.
-- Verify every public Code method-group clause has one short italicized intent and its global numeric marker preserved, and
-  that Code uses one independent sequence across public method groups only. Workflow, class, stage-assignment, plain
-  explanatory, and private/helper clauses remain unnumbered. Do not require Code markers to match circled Implementation
-  markers, and never adjust Code numbering in response to Implementation content.
+- Verify every public Code method-group clause has one short italicized intent and its numeric marker preserved. Code uses
+  one independent sequence across public method groups only within a common workflow; for independent composed
+  top-level transforms, restart the sequence for each transform. Workflow, class, stage-assignment, plain explanatory,
+  and private/helper clauses remain unnumbered. Do not require Code markers to match circled Implementation markers, and
+  never adjust Code numbering in response to Implementation content.
 - For class and workflow Code listings, preserve any class docstring and preceding prose as unnumbered source evidence.
   Do not turn a class docstring or class-level paragraph into a numbered Code method-group item.
 - Verify every numbered Code item appears immediately before the code listing or notation for its own source-backed group.
@@ -186,10 +206,11 @@ Additional Rules
 - Verify every `.form.md` Definitions section uses bold definition names without colons and places each definition
   sentence on exactly one indented sub-bullet. Verify the inventory includes all essential domain terms, including
   `Term` wherever the chapter discusses normalized term artifacts.
-- Verify every numbered Implementation explanatory item begins with the required circled-number marker and that the
-  sequence remains global across all stage subsections; do not substitute ASCII `1.`-style markers there.
+- Verify every numbered Implementation explanatory item begins with the required circled-number marker. The sequence is
+  global across a common workflow's stage subsections, but restarts at ① for each independent composed top-level
+  transform; do not substitute ASCII `1.`-style markers there.
 - For every external stage subsection, verify at least one source-backed description line appears immediately before its
-  canonical stage-call formula and carries the next global circled Implementation marker. Do not require or invent
+  canonical stage-call formula and carries the next circled Implementation marker in that owning transform. Do not require or invent
   italicized intent formatting for this description; reject an external subsection containing only a formula.
 - Step methods must use the canonic step method notation from `Notation.md`: argument names and separating colons
   are omitted, argument schema types remain, and every returned schema retains its name plus a field-name projection.
@@ -205,9 +226,14 @@ Additional Rules
   full `\\` rows, and use short spacing only between methods inside a dense workflow method vector.
 - Escape every identifier underscore as `\\_` inside displayed formulas. A formula audit must reject any unescaped `_`,
   because subscripts are not part of Structure formula notation.
-- Each standalone `Resulting transform shape:` must be the canonic step-transform shape: transform name and colon,
+- Each step-transform `Resulting transform shape:` must be the canonic step-transform shape: transform name and colon,
   typed input vector on the left, method `Bmatrix` in the middle, `\\rightarrow`, and output vector on the right. Do not
   replace that structure with a vertically stacked prose/list rendering or duplicate the transform name elsewhere.
+- A composed internal child stage's `Resulting transform shape:` must instead use composed-transform notation: named typed
+  inputs, one assigned child-stage call per source assignment, the assigned internal child's method vector when applicable,
+  unqualified child-output relation names, and typed final outputs. Do not collapse a composed stage to child type names or
+  substitute a method-only shape for its workflow. An independent composed top-level transform puts this notation in its
+  nested `Result` instead of under `Resulting transform shape:`.
 - When a source-backed method group names parallel grain paths, expand every named path into its own typed formula and
   include every corresponding method in the `Resulting transform shape`; do not collapse section, paragraph, or sentence
   methods into a representative document method or a prose-only “same pattern” statement.
@@ -233,6 +259,8 @@ Additional Rules
   describe the method named by that item, including a non-step helper when the item documents one.
 - Reject generated prose that discusses document-production stages, says a helper is omitted from a formula, or refers
   to Code/Format as the reason a method is or is not represented.
+- Reject generated prose that exposes text-operator terminology or document-production commentary. When external detail
+  is omitted, prefer a direct chapter reference such as “See Scoring chapter for details on the Scoring transform.”
 - Use the GitHub/Typora-compatible `\\operatorname{...}` command for every displayed method name. Reject the invalid
   `\\operator{...}` form, raw text such as `extract: Document -> Document`, and any standalone shape whose name is not the
   exact source transform class.
@@ -241,12 +269,29 @@ Additional Rules
   outputs without assignments. Omit the workflow name and do not repeat the `Resulting transform shape:` label in `Result`.
 - For a composed root transform, use a `### Result` section for the parent composition; never emit the parent as an
   additional `Resulting transform shape:` block. Reserve that label for internal standalone stage shapes.
+- For a no-parent topic, require one formatted internal stage subsection per collected transform class and require every
+  public method group and its formula in the owning subsection. The absence of a parent does not make those transforms
+  external and does not waive Code preservation. A standalone class gets its step-transform shape; an independent
+  composed class gets nested child-stage subsections and one nested `Result` formula.
+- Recursively resolve every internal stage assignment before collecting downstream sections. A child transform remains
+  internal when its source is collected under a sibling family directory; include its complete method groups and exact Code
+  listing in the owning stage subsection. Use a boundary-only subsection only for an explicitly external child.
+- For a no-parent composed internal class with no public methods, preserve its one source-backed numbered transform-group
+  description in both Implementation and Code; do not manufacture method formulas or additional Code items.
+- For an external call nested inside a no-parent internal class, preserve only its lightweight boundary subsection and
+  canonical notation; do not import the external transform's method groups or Code listing.
 - In a composed `Result` formula, show each assigned stage's unqualified output relation names (for example, `targets` or
   `document_scores`) after the stage arrow; schema types belong in the typed workflow input and final-output vectors,
   not in the assigned stage-output vector.
+- For an internal step child, reject any standalone transform formula before its method formulas; its transform notation
+  appears once under `Resulting transform shape:`. For an independent composed top-level transform, require nested child
+  stage subsections followed by one nested `Result` formula, and do not use `Resulting transform shape:` for that wrapper.
+- Audit named internal step transforms for duplicate notation blocks; a transform such as AllDocumentTargets may appear
+  once under `Resulting transform shape:` and nowhere else in its internal stage subsection.
 - Emit `### Result` only after verifying an exact parent/workflow class with composed stage assignments in the collected
   Code. If the topic contains no such class, reject any Result section, parent-named implementation narrative, or
-  invented package-level transform notation.
+  invented package-level transform notation. The independent-composed shape is the exception only at the nested-transform
+  level: each independent composed class has one nested `Result`, while the package has no root Result.
 - Classify a named shape as standalone or composed from the source transform before formatting. A composed transform must
   use `Composed Transform Notation - With name`: `TransformClassName :`, typed input/output name pairs, and assigned stage
   calls with their canonic stage method vectors. Never render a composed transform as a standalone step-transform shape.
@@ -280,8 +325,9 @@ Additional Rules
   make the aggregate source block longer; verify shorter, viewer-safe formulas have no artificial wrap.
 - Classify every stage by source package before formatting: only a transform outside main transform package tree is
   external. External stages may have one transform formula with a colon and unnamed schema vectors, but must
-  not have a `Resulting transform shape:` block when their step methods are not discussed. Internal stages must
-  retain their documented methods and exactly one `Resulting transform shape:` block.
+  not have a `Resulting transform shape:` block when their step methods are not discussed. Internal step stages must
+  retain their documented methods and exactly one `Resulting transform shape:` block; independent composed top-level
+  transforms must retain their nested child stages and exactly one nested `Result` formula.
 - Verify every standalone transform notation names its exact transform class, composed transforms have visible
   spacing between input, stage, and output rows, and consecutive standalone step formulas contain two dedicated
   full `\\` separator rows.

@@ -13,6 +13,8 @@ coverage, notation, and formatting rules.
 - Introduce a concept before its first use. Add it to Definitions when a reusable domain explanation will help
   elsewhere.
 - Use concrete subjects and active verbs. Give each sentence one main data transition, rationale, or connection.
+- Render exact transform, class, schema, and relation names as inline code when they are named in narrative prose;
+  leave general domain concepts in ordinary text.
 - Explain why a boundary exists and what it guarantees to the next boundary. Include relevant validation, identity,
   ownership, failure, fallback, freshness, concurrency, and observability behavior.
 - Distinguish caller-owned, transform-owned, provider-owned, and backend-owned responsibilities.

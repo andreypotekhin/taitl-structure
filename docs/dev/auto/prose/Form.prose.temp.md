@@ -9,6 +9,9 @@ Use the phrase search engine at most once, and omit it when it adds no value.
 Shape variants:
 - Standalone transform / no composed workflow: one transform subsection with one Resulting transform shape and no
   parent Result.
+- No main/workflow transform but multiple independent collected composed transforms, as in Offline: one formatted
+  top-level transform subsection per transform; each has local Implementation and Code numbering, nested internal/
+  external stage subsections, and one nested Result. Do not synthesize a package-level parent, Workflow, or Result.
 - Composed internal-only workflow, as in Chunking: Implementation has internal stage shapes followed by one parent
   Result; Code has Workflow first, followed by the collected stage/class subsections.
 - Composed internal-plus-external workflow, as in Similarities: Implementation has internal stage shapes, external
@@ -22,7 +25,9 @@ Shape variants:
 
 ## Solution
 
-{{Exact Solution prose and paragraph order from .ext.md; convert display formulas to balanced $$ blocks only.}}
+{{Exact Solution prose and paragraph order from .ext.md; preserve the Solution contract's general domain opening,
+conceptual bridge, concrete abstraction/formula progression, and closing account of behavior, tradeoffs, and value;
+convert display formulas to balanced $$ blocks only.}}
 
 ## Builds on
 
@@ -55,12 +60,15 @@ Shape variants:
 
 ## Implementation
 
-{{Exact Implementation preamble and stage-introduction prose from .ext.md. Preserve continuous prose and paragraph
-order.}}
+{{Exact substantive Implementation preamble and active stage-introduction prose from .ext.md. Preserve continuous prose,
+paragraph order, inline class/schema formatting, and the explanation of important limits.}}
 
 ### {{InternalStageName}}
 
-{{Exact stage introduction and numbered group prose from .ext.md. Preserve circled markers and italic formatting.}}
+{{Exact plain stage introduction plus numbered group prose from .ext.md. Keep the stage introduction unnumbered and plain;
+preserve circled markers and italic formatting only for method-group items. Include every assigned child stage in nested
+subsections, using boundary-only formulas for external children. For an independent composed top-level transform, keep
+its child stages and nested Result together and restart its circled sequence at ①.}}
 
 $$
 \operatorname{{public\_method}}\!\begin{pmatrix}
@@ -96,6 +104,11 @@ $$
 \end{pmatrix}
 $$
 
+<!-- For a composed stage, replace the step-transform shape above with composed-transform notation: named typed inputs,
+assigned child-stage calls in source order, the assigned internal child's method vector when applicable, unqualified relation
+outputs, and typed final outputs. For an independent composed top-level transform, put this whole-transform notation in a
+nested Result subsection instead of under Resulting transform shape. -->
+
 ### {{ExternalStageName}}
 
 {{Exact plain, source-backed external-stage description from .ext.md, including its circled marker. Do not italicize
@@ -115,6 +128,9 @@ $$
 $$
 
 <!-- External stages have no typed step methods, method vector, or Resulting transform shape. -->
+
+<!-- For a common parent/workflow, use the following root Result. For independent composed transforms, repeat the same
+block as a nested `#### Result` inside each top-level transform subsection, after that transform's child stages. -->
 
 ### Result
 
@@ -169,12 +185,14 @@ summary here. Never place an intro/scope line between Code and Workflow.}}
 ~~~
 
 <!-- For a standalone transform, omit Workflow above and begin with the transform class subsection. -->
+<!-- For a no-parent topic, also omit Workflow and begin with the first collected internal transform subsection in source order. -->
 
 ### {{InternalStageName}}
 
 {{Preserve every Code prose clause exactly, including one short italicized intent and its independent non-circled
-number for each public method group. Keep Workflow, class, stage-assignment, plain explanatory, and private/helper
-clauses unnumbered.}}
+number for each public method group. Use one sequence across a common workflow, but restart it for each independent
+composed top-level transform. Keep Workflow, class, stage-assignment, plain explanatory, and private/helper clauses
+unnumbered.}}
 
 ~~~python
 {{Exact Python listing copied without alteration.}}
@@ -188,14 +206,32 @@ content. Every collected listing appears once, in source order. Separate adjacen
 <!--
 QA checklist:
 - Problem and Solution prose and paragraph order are preserved.
+- Solution satisfies the contract inherited from `.ext.md`: general domain/user framing first, conceptual bridge second,
+  concrete abstraction and formulas later, and behavior/tradeoffs/value at the end.
 - Builds on, Used by, Inputs, and Outputs are plain lists; Stages bolds stage names only.
 - Definitions use bold names without colons and one indented definition sentence per item.
 - There is no top-level Notation section.
 - Every Implementation group keeps its circled marker and is followed by exactly one formula.
-- Every internal stage has complete public method coverage and one Resulting transform shape.
+- Every internal step stage has complete public method coverage and one Resulting transform shape. Every independent
+  composed top-level transform has complete nested child-stage coverage and one nested Result.
+- When no parent/workflow class exists, every collected transform class is still internal. Standalone classes get complete
+  Code and Implementation coverage with a step-transform shape; independent composed classes get complete nested stage
+  coverage and one nested Result, with no synthetic package-level parent subsection or Result.
+- For an internal step child, reject any standalone transform formula before its method formulas; its transform notation
+  appears once under Resulting transform shape. Keep generated prose free of text-operator terminology; use a direct
+  chapter reference when external detail is omitted.
+- Audit each internal step transform for duplicate named notation; for example, AllDocumentTargets may appear once under
+  Resulting transform shape and nowhere else in its internal stage subsection.
+- Resolve internal child assignments recursively across collected family directories before classifying boundaries; a child
+  called by an internal stage retains its complete method-group formulas and exact Code listing in the owning subsection.
+- For a no-parent composed class with no public methods, preserve its single source-backed numbered transform-group
+  description in both sections without creating method formulas or extra Code items.
+- For a nested external call from a no-parent internal class, preserve only its boundary subsection and canonical formula,
+  without importing external methods or Code.
 - Every external stage has one plain numbered description and one standalone formula, with no Resulting transform shape.
 - Every composed Result formula uses typed named workflow inputs, unqualified stage-output relation names, and typed
-  final outputs.
+  final outputs. For independent composed top-level transforms, require one nested Result per transform and restart both
+  circled Implementation numbering and Code method-group numbering for each transform.
 - All displayed formulas use balanced $$ delimiters and balanced LaTeX environments with escaped identifier
   underscores.
 - Code listings and Code prose are preserved exactly; Code numbering remains an independent sequence.

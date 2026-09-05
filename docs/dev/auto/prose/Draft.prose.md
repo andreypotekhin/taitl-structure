@@ -64,6 +64,14 @@ Write the Problem section according to [Solution.style.md](Solution.style.md). K
 central difficulty, and consequences; do not let it contain the answer, transform responsibilities, or implementation
 requirements.
 
+Stage and workflow classification:
+- First determine whether the collected source contains an exact main/workflow transform class for the topic.
+- If a main/workflow transform exists, list its actual child transforms as stages and distinguish internal children from
+  external calls by source package.
+- If no main/workflow transform exists, do not invent a parent or workflow. Treat every collected transform class in the
+  topic's source subtree as an internal stage of the document; retain each class's inputs, outputs, and complete method
+  coverage for downstream operators. This shape still has no parent Result section.
+
 Write Problem and Solution according to [Solution.style.md](Solution.style.md). The Solution must be useful to a
 technically confident reader who understands software but may be unfamiliar with the industry topic or this project's
 vocabulary.
@@ -136,6 +144,14 @@ Solution section:
 - Include textbook-grade explanations as needed.
 - Describe the answer directly; do not write “The solution is,” refer to the Solution section, or leave a component-only sketch.
 
+Solution contract:
+- Paragraph 1 must establish the general domain practice, user goal, and desired outcome. Do not begin with a project
+  transform, schema, method, algorithm, policy, formula, or implementation term.
+- Paragraph 2 must bridge that practice to the topic's conceptual model and explain why the model is useful.
+- Only after that bridge may the narrative introduce the concrete project abstraction and a formula, model, or example.
+- The final paragraph(s) must explain enabled behavior, semantic tradeoffs, and practical value. Adapt paragraph count to
+  the topic, but preserve this general-to-specific-to-value order.
+
 ### Draft operator - Design section
 Design section:
 - Place Design immediately before Implementation.
@@ -151,8 +167,19 @@ Design section:
   responsibilities.
 - Verify that `Solution` moves from general purpose to central concepts and enabled behavior in approximately three to
   five concise paragraphs, avoiding catalog-like prose.
+- Verify that `Solution` begins with a general domain introduction before project-specific structures. For query-
+  structure topics such as SearchFields, require representative metadata-only, body-only, mixed, or aggregate examples
+  and an explanation of what those examples mean.
+- Verify the Solution contract: the opening paragraph states domain practice, user goal, and desired outcome without
+  project-specific names or mechanics; a conceptual bridge precedes concrete abstractions and formulas; the ending
+  explains behavior, tradeoffs, and practical value.
+- Verify that `Implementation` remains substantive, covers the input contract, major data movement, important limits,
+  and boundary rationale, and moves candidate, identity, scale, availability, and failure challenges out of Problem.
 - Verify that `Design` immediately precedes `Implementation` and contains the requirements, boundaries, contracts,
   policies, and invariants needed to guide implementation.
 - Verify that `Builds on` and `Used by` contain only canonical names of principal top-level topics or workflows. Reject
   schema classes, step methods, internal stage transforms, policy objects, and generic relationship prose; allow an empty
   section when no top-level topic applies.
+- Verify workflow classification before checking stage coverage: when no exact main/workflow class exists, require every
+  collected transform class in the topic subtree to remain represented as an internal stage and reject any invented parent
+  or parent Result shape.

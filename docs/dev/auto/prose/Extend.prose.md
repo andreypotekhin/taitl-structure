@@ -63,6 +63,8 @@ Problem section:
   implementation walkthrough.
 - Also consider less-technical parts from 'How it works'/'Implementation' to go to the main section
 - Use casual language, prioritize thoughtful explanation/intent over prescription/direction, gradually build understanding.
+- Prefer one vivid, active statement of the general use-case or industry requirement. Do not turn Problem into a catalog
+  of candidate, identity, policy, scale, or availability challenges; move those details to Implementation.
 - Merge in the draft Solution only as the conceptual answer; do not let its algorithms, policies, transform duties, or
   implementation requirements leak back into Problem.
 
@@ -70,6 +72,9 @@ Solution section:
 - Apply [Solution.style.md](Solution.style.md).
 - Preserve the draft's substantive Solution narrative and enrich it with theory and practical search-engine context
   from the background where useful.
+- Preserve a short general domain introduction at the start of Solution before moving to project-specific structures.
+  For query-structure topics such as SearchFields, retain or add representative metadata-only, body-only, mixed, or
+  aggregate query examples and explain their meaning for a first-time reader.
 - Treat Solution as the conceptual answer to the stated use-case problem, rather than as a short summary of Background
   or a system-design section.
 - Preserve the draft's concise general-to-specific progression from theory and practice to the central abstraction,
@@ -79,6 +84,14 @@ Solution section:
 - Include textbook-grade explanations as needed.
 - Describe the answer directly; do not write “The solution is” or refer to the Solution section as a document part.
 - Technical details, algorithm mechanics, policies, and transform responsibilities go to Design or Implementation.
+
+Solution contract:
+- The opening paragraph must establish the general domain practice, user goal, and desired outcome. Do not begin with a
+  project transform, schema, method, algorithm, policy, formula, or implementation term.
+- The next paragraph must bridge that practice to the topic's conceptual model and explain why the model is useful.
+- Only after that bridge may the narrative introduce the concrete project abstraction and a formula, model, or example.
+- The ending must explain enabled behavior, semantic tradeoffs, and practical value. Preserve this general-to-specific-
+  to-value order while adapting paragraph count to topic complexity.
 
 Stages section:
 - Transfer as is from input doc, apply formatting as described below.
@@ -103,6 +116,8 @@ Implementation preamble:
   what enters the workflow, how the major data moves, and what boundary or policy makes the result reliable.
 - For a standalone transform, identify the input evidence, the transformation it performs, and the observable output it
   enables. Use the exact transform name and avoid vague references to “the stage” or “the workflow.”
+- Keep the preamble substantive: explain the input contract, major data movement, important limits, and the boundary
+  rationale that makes the result reliable. Do not reduce it to a short component inventory or generic summary.
 
 Content style:
  - Problem section: apply [Solution.style.md](Solution.style.md); ground it in industry wisdom and project needs, and
@@ -137,11 +152,12 @@ Code section:
       begin with `_`) in Code listings, but exclude them from numbered Implementation narratives and standalone
       transform shapes. If a collected group contains only private/helper methods, omit that Implementation group and
       do not invent replacement prose or consume a global number.
-    - Add a global number (non-circled) in front of every public method-group clause. Begin each such clause with one
-      short italicized intent, preserving the collected intent when present and deriving a concise source-backed intent
-      from the group's plain explanation when needed. This Code-section sequence is independent of the circled
-      Implementation sequence. Do not number workflow, class, stage-assignment, plain explanatory, or private/helper
-      clauses.
+     - Add a number (non-circled) in front of every public method-group clause. Within a common workflow, use one
+       sequence across its public method groups; for independent composed top-level transforms, restart the sequence for
+       each transform. Begin each clause with one short italicized intent, preserving the collected intent when present
+       and deriving a concise source-backed intent from the group's plain explanation when needed. This Code-section
+       sequence is independent of the circled Implementation sequence. Do not number workflow, class, stage-assignment,
+       plain explanatory, or private/helper clauses.
     - The code must be preserved.
     - Render each collected intent/explanation exactly once in Code. Put it on the numbered group that owns its
       notation, immediately before the code listing or notation it explains, and remove any standalone or trailing copy of
@@ -205,17 +221,49 @@ Step/helper method narrative/method groups:
   keeps the correspondence clear, but retain every meaningful step in the stage transform and result notations.
  
 Internal vs external stages:
+- First classify the topic shape. Confirm whether the collected source contains an exact main/workflow transform class.
+- If the source contains multiple independent top-level composed transform classes and no common main/workflow class,
+  treat this as the independent-composed-transforms shape. Each top-level transform is a complete composed transform:
+  restart circled Implementation numbering and Code method-group numbering at that transform, enumerate its nested
+  internal and external stages, and end that transform's Implementation subsection with its own `Result` subsection.
+  Do not invent a common parent, root `Workflow`, or root `Result` for the package.
+- When no main/workflow transform exists, treat every collected transform class in the topic's source subtree as an
+  internal document stage. Include one subsection per class, with its complete public method groups, numbered items,
+  signatures, and either its step-transform `Resulting transform shape` or its composed-transform child-stage sections
+  and nested `Result`, according to the class shape.
+- If such a no-parent internal transform is a composed class with no public step methods, use its source-backed class
+  description and child-stage responsibility as the single numbered group for that class in both Implementation and Code.
+  This is a transform group, not an invented method: do not add method signatures or extra numbered items.
+- If a no-parent internal composed class calls a transform outside the topic source subtree, represent that nested call
+  with one lightweight external-stage subsection and boundary notation only; do not expand the external transform's
+  implementation or code into this document.
+- Resolve each internal stage's composed child assignments recursively before classifying boundaries. A child transform
+  called by an internal stage remains internal even when its collected source lives in a sibling family directory; include
+  its complete public method groups in the owning stage subsection. Classify a child as external only when the source
+  explicitly places it outside the topic's internal implementation boundary.
 - Internal stages: 
- - For every internal stage whose collected code includes a transform class, copy its complete public method
-  coverage into explanatory groups in the stage subsection. Do not stop at the stage inputs/outputs or its compact
-  transform shape; internal stages must expose their individual methods through coherent narrative groups.
- - End every internal stage subsection with a fenced text block containing stage notation, preceded with
- `Resulting transform shape:` body-text line. Do not add an explicit `Notation` heading. 
+  - Keep the stage introduction as plain, active, unnumbered prose. When the stage has source-backed public method
+   groups, do not promote its class description or stage summary into a circled italicized item; those markers belong only
+   to the method groups. A class/child-stage description may be one numbered transform group only for a no-parent internal
+   composed class that has no public methods.
+  - For every internal stage whose collected code includes a transform class, copy its complete public method
+   coverage into explanatory groups in the stage subsection. Do not stop at the stage inputs/outputs or its compact
+   transform shape; internal stages must expose their individual methods through coherent narrative groups.
+  - If the internal stage class is composed, enumerate every assigned child stage in source order in nested stage
+   subsections. Apply the external-stage boundary rule to children outside the stage's implementation boundary; retain
+   internal child method groups. A composed internal child stage uses composed-transform notation with named typed inputs,
+   assigned stage calls, unqualified stage-output relation names, and typed final outputs, not a method-only shape. For an
+   independent composed top-level transform, put that whole-transform notation in its nested `Result` instead.
+ - End every internal step-transform subsection with a fenced text block containing its method shape, preceded with
+ `Resulting transform shape:` body-text line. A composed top-level transform uses a nested `Result` subsection for its
+ whole-transform workflow shape instead; do not label that workflow shape `Resulting transform shape:`. Do not add an
+ explicit `Notation` heading.
  - Remove the circled reference markers, if any, from stage notation block; the typed individual 
   signatures remain under their explanatory items.
 - External stages:
   - Keep one stage subsection per actual external stage call. Include at least one source-backed description line before
-   its canonical stage-call notation block and number that description with the next global circled Implementation marker.
+   its canonical stage-call notation block and number that description with the next circled Implementation marker in its
+   owning top-level transform.
    The description need not be italicized and must not be presented as an invented intent sentence. For an external stage
    without its own collected class listing, inspect the parent workflow's stage context and the stage source description;
    keep the shortest accurate description, use active voice naturally, and do not invent implementation detail.
@@ -224,10 +272,13 @@ Internal vs external stages:
 Result subsection
 - After all stage subsections, add a Result subsection with a fenced text notation block for the workflow transform,
   only when an actual parent workflow transform exists and is a composed transform. A single transform with internal
-  steps does not need a Result section. Do not invent a parent transform for a package that has only child transforms.
+  steps does not need a Result section. For the independent-composed-transforms shape, add one nested `Result`
+  subsection to each top-level composed transform after its child-stage subsections. Do not invent a parent transform for
+  the package and do not add a package-level Result.
   Confirm the exact parent class declaration and its composed stage assignments in the collected source before emitting
-  `Result`; if no such class exists, omit `Result`, any parent-named Implementation subsection, and any package-level
-  parent notation. This applies to aggregate topics such as Evaluation and Experiments.
+  `Result`; if no such class exists, omit a package-level `Result`, any parent-named Implementation subsection, and any
+  package-level parent notation. This applies to aggregate topics such as Evaluation and Experiments. The per-transform
+  nested Results described above are still required for independent top-level composed transforms.
   Preserve workflow inputs, stage calls and concrete output schemas in result notation. Use the typed
   workflow format of `Indexing.ext.md`: list typed `inputs`, child transform assignments whose stage arrows expose
   assigned output relation names, and typed final `outputs`. Do not repeat
@@ -283,18 +334,30 @@ General
 - Normalize prose wrapping before publishing: continuation lines in ordinary paragraphs and numbered-item prose must start at
   column zero. Preserve indentation only inside fenced code, structured text notation, lists, and display math; reject runs of
   leading spaces that would render as literal whitespace in Typora.
+- Verify that Problem states the general use-case or industry requirement in active, lively language and does not become a
+  catalog of candidate, identity, policy, scale, availability, or failure challenges.
+- Verify that Solution opens with a general domain explanation before concrete project structures. For query-structure
+  topics such as SearchFields, require representative metadata-only, body-only, mixed, or aggregate query examples with
+  their meaning explained for a first-time reader.
+- Verify the Solution contract: the opening paragraph contains domain practice, user goal, and desired outcome without
+  project-specific names or mechanics; a conceptual bridge precedes concrete abstractions and formulas; the ending
+  explains behavior, tradeoffs, and practical value. Do not accept a component-first or algorithm-first opening.
+- Verify that the Implementation preamble remains substantive: it must explain the input contract, major data movement,
+  important limits, and boundary rationale rather than shrinking into a component summary. Stage introductions should use
+  active imperative phrasing when natural.
 
 Implementation section - subsections
   - Verify each Stage subsection:
     - Contains all and only that stage transform's public steps, in order, and that each return/output uses concrete schema
       classes. Cross-check the class declaration, including trailing output-publishing methods, against the collected
       method inventory so no public method is lost after the last collected group.
-    - Inventory every actual child-stage assignment in the parent/workflow class, including stages whose transform class
-      is outside the topic package. Require one subsection for every such external stage, with at least one source-backed
-      description line, a global circled marker, and its canonical stage-call notation.
+    - Inventory every actual child-stage assignment in each composed transform, including stages whose transform class is
+      outside the topic package. Require one subsection for every such external stage, with at least one source-backed
+      description line, a circled marker local to its owning top-level transform, and its canonical stage-call notation.
     - Is a child stage subsection, never a subsection named after the parent/workflow transform. Parent orchestration and
       its stage assignments belong in the `Result` subsection.
-    - For internal stages, ends with `Resulting transform shape:` and canonical transform notation.
+    - For internal step stages, ends with `Resulting transform shape:` and canonical transform notation. An independent
+      composed top-level transform ends with its nested `Result` instead.
       For external stages, contains one canonical stage-call notation without typed step methods or a `Resulting
       transform shape:` block.
   - Verify each numbered item:
@@ -313,19 +376,37 @@ Implementation section - subsections
     - For a composed workflow, reject any numbered implementation narrative, child-stage heading, or stage notation block
     that presents the parent/workflow transform as one of its own stages. 
     - The only workflow transform notation is the composed notation in Result section.
+    - When no exact parent/workflow class exists, verify that every collected transform class in the topic subtree has an
+      internal stage subsection with complete method groups and either a step-transform Resulting transform shape or,
+      for an independent composed transform, nested child-stage subsections followed by exactly one nested Result.
+      Verify that no synthetic package-level parent subsection or package-level Result is present.
+    - For independent composed transforms, verify that Implementation circled numbering restarts at ① for each
+      top-level transform and that each transform's child-stage subsections and Result are complete before the next
+      top-level transform begins.
   - Overall
     - Verify no repeat/duplication of transform notations.
+    - For every internal step stage, verify that its named transform notation appears only once, under `Resulting
+      transform shape:`; reject a second standalone transform block before or after the method-group explanations.
 
 Code section
 - Every collected transform/method section is represented.
+- For a topic without an exact main/workflow transform, begin with the collected internal transform classes in source
+  order; do not add a `Workflow` subsection, and do not omit a class or its method listings because no parent calls it.
+- For independent composed transforms without a common parent, keep each top-level transform's nested stage subsections
+  and nested Result together; do not add a synthetic package-level Workflow or Result.
 - Verify that no scope or production line appears between the `Code` heading and its first subsection. If the `Workflow`
   subsection lacks source-grounded descriptive prose, verify that its first prose line is one concise sentence
   summarizing the workflow logic.
 - Verify prose outside fenced blocks contains no literal escaped-backtick sequence (`\\``). When inline-code styling is
   not source-backed or needed for an identifier, emit ordinary prose instead.
+- Verify generated narrative does not expose document-production or operator terminology. When external detail is
+  omitted, refer to the owning chapter directly (for example, “See Scoring chapter for details on the Scoring
+  transform.”), rather than saying that an external stage owns work, that this document records a boundary, or that an
+  operator omitted content.
 - Code listings order matches the collected source.
-- Every public method-group clause begins with one short italicized intent and its global numeric marker. Verify that the
-  markers are visible in Code and continue one independent sequence across public method groups only; do not number
+- Every public method-group clause begins with one short italicized intent and its numeric marker. In a common parent
+  workflow, Code markers continue one independent sequence across public method groups only. In the independent-
+  composed-transforms shape, restart the Code sequence for each top-level transform. Do not number
   workflow, class, stage-assignment, plain explanatory, or private/helper clauses. Do not require the numbers to match
   the circled Implementation groups, and never adjust Code numbering in response to Implementation content.
 - Verify each numbered Code item appears immediately before the code listing or notation for its own group. Reject a
@@ -350,16 +431,30 @@ Code section
 Additional instructions generated by automation
 
 Stage subsections:
+- Determine whether a main/workflow transform actually exists before applying parent-child rules. If it does not, every
+  collected transform class in the topic subtree is an internal document stage: require its own subsection, complete
+  public method groups and numbered items. Do not classify these stages as external merely because no parent workflow is
+  present.
+- If multiple such top-level classes are composed transforms with no common parent, treat them as independent composed
+  transforms. Restart circled Implementation numbering and Code method-group numbering for each class; nest that class's
+  child-stage subsections under it and finish it with one nested `Result`. Do not emit a synthetic package-level parent,
+  Workflow, or Result.
+- For a no-parent composed class with no public methods, count the source-backed class description/child-stage
+  responsibility as its one numbered transform group in Implementation and Code; preserve the class listing unchanged.
+- For nested external calls inside such a class, require the external boundary description and canonical notation, but no
+  external method groups, Resulting transform shape, or copied external code.
 - For every internal stage, distinguish its transform class from every parent-workflow assignment that invokes it.
+- Recursively follow internal stage assignments when assembling source coverage. Do not let a child class disappear merely
+  because it is collected under a sibling family; its public methods belong in the parent stage's downstream subsection.
 - The stage subsection must explain the stage transform inputs, step transitions, and outputs; no stage call may appear
   there. Reject a subsection whose apparent method is merely the assigned stage name in snake case,
   such as `score_overlap(...)` for `ScoreOverlap`, unless that exact method exists as a public `@step` in the collected class.
 - Cross-check every method-looking name in an internal stage subsection against the collected source. Reject
   stage calls, lane names, output aliases, or invented summaries presented as step methods. For every displayed step,
   verify method name, argument names, argument types and return type against source, not merely the schema set.
-- For parent workflow, audit every child stage, including imported or shared transforms: each stage must have its own
-  stage subsection, internal stages have explanatory narrative and one complete Resulting transform shape with concrete
-  inputs, methods or child stages, and outputs. 
+- For a parent workflow or independent composed transform, audit every child stage, including imported or shared
+  transforms: each stage must have its own stage subsection. Internal step stages have explanatory narrative and one
+  complete Resulting transform shape; composed top-level transforms have nested child stages and one complete Result.
 - Derive the stage inventory from every actual transform call in the parent workflow source and Code, not from the draft
   `Stages` list alone. If a called class is outside the main/workflow package tree, require an external stage subsection
   for it even when the draft inventory omitted it; if it is inside the tree, require the corresponding internal narrative.
@@ -391,6 +486,12 @@ Stage transforms:
 - Run this check as a document-wide stage audit: enumerate every child transform class from `Stages` and `Code`,
   then perform the class-to-method comparison for each one. The audit fails if any internal stage remains represented
   by a parent assignment, a stage call, or a synthetic method-shaped summary while another stage has been corrected.
+- For a no-parent topic, enumerate transform classes directly from the collected source rather than from parent calls;
+  the audit fails if any such class is absent from Implementation or Code.
+- For an independent composed top-level class, audit its child assignments recursively and require the complete composed
+  Result shape under that class. For an internal child step transform, keep its method-only `Resulting transform shape:`
+  as the sole transform notation in that child subsection; do not repeat the child transform notation before its method
+  groups.
 - Treat stage transform input/output signature and a `Resulting transform shape` notation as partial evidence;
   both may be present only in addition to the complete grouped step narrative.
 
@@ -410,8 +511,9 @@ Step/helper method narrative:
   notation, with its typed input and output signature.
 
 Resulting transform shape:
-- Verify every stage subsection has exactly one associated `Resulting transform shape:` block and that no
-  child subsection borrows a shape from a sibling. 
+- Verify every internal step-transform subsection has exactly one associated `Resulting transform shape:` block and that
+  no child subsection borrows a shape from a sibling. Composed top-level transforms use their nested `Result` instead;
+  external stages have neither shape.
 - Verify each stage transform notation block is introduced by `Resulting transform shape:`.
 - For every `Resulting transform shape:` block, verify the exact transform class name, canonical shape structure, and method
   inventory against the owning class. Reject a helper-shaped or stage-call-shaped block, such as `extract: Document ->
@@ -438,4 +540,7 @@ Workflow transform:
 - Verify that `Result` contains only a distinct typed parent workflow notation and no repeated stage notation block(s).
 - Verify Implementation section has no duplicate parent workflow notations: one parent composition shape may appear in
   `Result`, while each internal stage has exactly one stage shape and no additional parent-shaped copy.
+- For an independent composed top-level transform, require one composed workflow shape under its nested `Result` and no
+  `Resulting transform shape:` label on that top-level transform. For an internal step child, reject any standalone
+  transform notation before its method groups; its transform notation appears once, under `Resulting transform shape:`.
 - The parent workflow shape may occur only in the `Result` section; reject a parent-shaped block after the last stage subsection. 

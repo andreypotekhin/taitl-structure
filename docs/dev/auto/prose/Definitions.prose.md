@@ -17,8 +17,7 @@ Step transform: a transform that consists of step methods (as opposed to compose
 Composed transform: a transform that consists of stages (other transforms) rather than step methods.
 Workflow transform: the main transform which is simultaneously a composed transform.
 Stage: a stage of composed transform, usually defined as assignment of a Transform to a field in the composed transform.
-Stage transform: a transform that serves as/implements a stage in a bigger (parent) transform,
-usually as a stage of the workflow transform.
+Stage transform: a transform that serves as/implements a stage of a bigger (parent) transform.
 Internal stage: a stage whose transform code is in same package as parent transform, or its subpackages.
 External stage: a stage whose transform code is outside parent transform package and its subpackages.
 
