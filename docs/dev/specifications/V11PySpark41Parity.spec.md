@@ -14,8 +14,10 @@ safe to implement yet. `caller-owned-guided` means callers may use the upstream 
 The implementation inventory compares the PySpark 4.0 and 4.1 Python references and records every newly added or
 signature-changed row-preserving function. Deterministic numeric, string, binary, temporal, and collection functions
 with explicit scalar input/output types are candidates for `supported`. `Column.transform` is a candidate for a typed
-higher-order array transformation: the callback receives a symbolic element and must return one symbolic element with a
-declared result type. Random functions such as `random`, `uniform`, `randstr`, and `uuid` require an explicit seed
+whole-expression transformation: the callback receives the complete symbolic expression and returns one symbolic
+expression. The result may have a different type and nullability from the input. This is distinct from array
+`functions.transform`, represented by Structure's `arr_transform(...)`, whose callback receives an array element.
+Random functions such as `random`, `uniform`, `randstr`, and `uuid` require an explicit seed
 policy; without one they are `design-gated` or `streaming-ineligible` rather than silently treated as deterministic.
 
 Acceptance requires schema/type inference, nullability tests, compiler capability diagnostics, online and generated

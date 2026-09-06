@@ -29,9 +29,10 @@ PySpark `Column` surface; functions such as `trim` and `lower` remain function-f
 | `~` | `Column.__invert__` | `~o.active` |
 | `is_null()` | `isNull` | `o.customer_id.is_null()` |
 | `is_not_null()` | `isNotNull` | `o.customer_id.is_not_null()` |
+| `isnan()` | `isNaN` | `o.score.isnan()` |
 | `null_safe_eq(...)` | `eqNullSafe` | `o.code.null_safe_eq("A")` |
 | `equal_null(...)` | `equal_null` | `equal_null(o.code, "A")` |
-| `isin(...)` | `isin` | `o.state.isin("CA", "OR")` |
+| `isin(...)` | `isin` | `o.state.isin("CA", "OR")` or `o.state.isin(["CA", "OR"])` |
 | `between(...)` | `between` | `o.total.between(1, 100)` |
 
 **Details And Differences**
@@ -41,8 +42,12 @@ PySpark `Column` surface; functions such as `trim` and `lower` remain function-f
   preserving the authored operand order.
 - Comparisons and Boolean operators preserve SQL three-valued null semantics. `between(...)` is inclusive;
   `null_safe_eq(...)` and `equal_null(...)` consider two nulls equal and are never null.
+- `isnan()` is a non-null Boolean method on Float and Double expressions. Its Python spelling is lowercase to match
+  Structure's existing `isnan(...)` function helper; it lowers to PySpark's `isNaN` capability through `F.isnan(...)`.
 - Comparisons and `isin(...)` require compatible typed values. Numeric values and Date/Timestamp pairs may be compared;
-  Map values are not comparable.
+  Map values are not comparable. `isin(...)` accepts either variadic values or one list; list contents are captured when
+  the expression is authored, and duplicates, nulls, and symbolic scalar expressions retain their authored order.
+  An empty list, nested list, or list mixed with additional positional values is rejected.
 - Struct mutation requires an explicit declared result Schema. It is rejected unless that schema exactly preserves the
   source shape apart from the named replacement or removals.
 
@@ -63,9 +68,9 @@ PySpark `Column` surface; functions such as `trim` and `lower` remain function-f
 | `expr[index]` | `getItem` | `o.tags[0]` |
 | `expr[key]` | `getItem` | `o.attributes["region"]` |
 | `substr(startPos, length)` | `Column.substr` | `o.name.substr(1, 10)` |
-| `contains(...)` | `contains` | `o.name.contains("A")` |
-| `startswith(...)` | `startswith` | `o.name.startswith("order-")` |
-| `endswith(...)` | `endswith` | `o.name.endswith("-hold")` |
+| `contains(...)` | `contains` | `o.name.contains("A")` or `o.name.contains(o.prefix)` |
+| `startswith(...)` | `startswith` | `o.name.startswith("order-")` or `o.name.startswith(o.prefix)` |
+| `endswith(...)` | `endswith` | `o.name.endswith("-hold")` or `o.name.endswith(o.suffix)` |
 | `like(...)` | `like` | `o.name.like("A%")` |
 | `ilike(...)` | `ilike` | `o.name.ilike("a%")` |
 | `rlike(...)` | `rlike` | `o.name.rlike("^A")` |
@@ -81,7 +86,9 @@ PySpark `Column` surface; functions such as `trim` and `lower` remain function-f
 
 **Details And Differences**
 
-- Array and map lookup results are nullable. String predicates require String expressions; `rlike(...)` uses Java regex.
+- Array and map lookup results are nullable. String predicates require String expressions; `contains(...)`,
+  `startswith(...)`, and `endswith(...)` accept either a string literal or a String expression operand and become
+  nullable when either operand is nullable. `rlike(...)` uses Java regex.
   Function-form `like(...)`, `ilike(...)`, `regexp(...)`, `regexp_like(...)`, and `rlike(...)` accept typed String
   expressions for both the value and pattern.
 - `substr(...)` requires a String expression and integral start/length literals or expressions. Its result is nullable

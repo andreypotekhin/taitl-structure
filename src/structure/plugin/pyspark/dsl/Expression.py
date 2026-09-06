@@ -95,6 +95,12 @@ class Expression:
         """Return a non-null boolean expression for Spark ``isNotNull``."""
         return Expression(kind="is_not_null", type=BooleanType(), nullable=False, args=(self,))
 
+    def isnan(self) -> "Expression":
+        """Return whether a Float or Double expression is NaN."""
+        if not isinstance(self.type, (FloatType, DoubleType)):
+            raise TypeError("isnan(...) requires a Float or Double Structure expression")
+        return Expression(kind="is_nan", type=BooleanType(), nullable=False, args=(self,))
+
     def null_safe_eq(self, other: object) -> "Expression":
         """Compare with Spark null-safe equality.
 
@@ -107,11 +113,24 @@ class Expression:
         return self._comparison("null_safe_eq", other, nullable=False)
 
     def isin(self, *values: object) -> "Expression":
-        """Build a Spark ``isin`` predicate from compatible literal values."""
+        """Build a Spark ``isin`` predicate from compatible values.
+
+        PySpark accepts either variadic values or one list of values.  The
+        list is copied while the expression is authored so later mutation of
+        the caller's list cannot change the compiled expression.
+        """
         from structure.plugin.pyspark.dsl.expressions import literal
 
+        if len(values) == 1 and isinstance(values[0], list):
+            values = tuple(values[0])
+        elif any(isinstance(value, list) for value in values):
+            raise TypeError("isin(...) accepts either one list or variadic values")
         if not values:
             raise TypeError("isin(...) requires at least one value")
+
+        if any(isinstance(value, (list, tuple, set, dict)) for value in values):
+            raise TypeError("isin(...) list values must be scalar literals or Structure expressions")
+
         arguments = tuple(literal(value) for value in values)
         if any(not self._comparison_compatible(argument) for argument in arguments):
             raise TypeError("isin(...) requires values compatible with its expression type")
@@ -140,14 +159,14 @@ class Expression:
 
         return _column_substr(self, startPos, length)
 
-    def contains(self, value: str) -> "Expression":
-        return self._string_predicate("contains", value)
+    def contains(self, value: str | "Expression") -> "Expression":
+        return self._string_predicate("contains", value, allow_expression=True)
 
-    def startswith(self, prefix: str) -> "Expression":
-        return self._string_predicate("startswith", prefix)
+    def startswith(self, prefix: str | "Expression") -> "Expression":
+        return self._string_predicate("startswith", prefix, allow_expression=True)
 
-    def endswith(self, suffix: str) -> "Expression":
-        return self._string_predicate("endswith", suffix)
+    def endswith(self, suffix: str | "Expression") -> "Expression":
+        return self._string_predicate("endswith", suffix, allow_expression=True)
 
     def like(self, pattern: str) -> "Expression":
         return self._string_predicate("like", pattern)
@@ -576,13 +595,25 @@ class Expression:
             return DecimalType(precision=38, scale=6)
         return DecimalType(precision=38, scale=min(38 - integer_digits, scale))
 
-    def _string_predicate(self, name: str, pattern: str) -> "Expression":
+    def _string_predicate(
+        self, name: str, pattern: str | "Expression", *, allow_expression: bool = False
+    ) -> "Expression":
         if not isinstance(self.type, StringType):
             raise TypeError(f"{name}(...) requires a String Structure expression")
-        if not isinstance(pattern, str):
+
+        if isinstance(pattern, str):
+            return Expression(
+                kind=name, type=BooleanType(), nullable=self.nullable, data={"pattern": pattern}, args=(self,)
+            )
+
+        if not allow_expression or not isinstance(pattern, Expression) or not isinstance(pattern.type, StringType):
             raise TypeError(f"{name}(...) requires a string literal")
+
         return Expression(
-            kind=name, type=BooleanType(), nullable=self.nullable, data={"pattern": pattern}, args=(self,)
+            kind=name,
+            type=BooleanType(),
+            nullable=self.nullable or pattern.nullable,
+            args=(self, pattern),
         )
 
     def _cast(self, target: StructureType) -> "Expression":

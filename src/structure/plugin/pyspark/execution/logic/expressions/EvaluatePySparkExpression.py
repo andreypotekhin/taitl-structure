@@ -143,7 +143,12 @@ class EvaluatePySparkExpression:
             )
         if expression.kind in {"contains", "startswith", "endswith", "like", "ilike", "rlike"}:
             value = self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window)
-            return getattr(value, expression.kind)(expression.data["pattern"])
+            pattern = (
+                self.evaluate(expression.args[1], functions=functions, aliases=aliases, window=window)
+                if len(expression.args) == 2
+                else expression.data["pattern"]
+            )
+            return getattr(value, expression.kind)(pattern)
         if expression.kind == "item":
             collection, key = expression.args
             item = (

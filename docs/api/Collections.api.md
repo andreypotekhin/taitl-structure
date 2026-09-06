@@ -84,7 +84,7 @@ Structure contract.
 
 | Structure API | PySpark parity | Example |
 | --- | --- | --- |
-| `arr_transform(...)` | `transform` | `arr_transform(order.tags, lambda tag: lower(tag))` or `arr_transform(order.values, lambda value, index: value + index)` |
+| `arr_transform(...)` | `functions.transform` | Array-element transform: `arr_transform(order.tags, lambda tag: lower(tag))` or `arr_transform(order.values, lambda value, index: value + index)` |
 | `arr_filter(...)` | `filter` | `arr_filter(order.tags, lambda tag: tag.is_not_null())` or `arr_filter(order.values, lambda value, index: index % 2 == 0)` |
 | `arr_exists(...)` | `exists` | `arr_exists(order.tags, lambda tag: tag == "priority")` |
 | `arr_forall(...)` | `forall` | `arr_forall(order.tags, lambda tag: tag.is_not_null())` |

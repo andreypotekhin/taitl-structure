@@ -338,13 +338,16 @@ Supported expression forms are:
 - Field references, literals, `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`, `-`, `*`,
   boolean `&`, `|`, `~`, null checks, `null_safe_eq(...)`, `when(...).otherwise(...)`.
 - Type casts: `cast(...)`, `astype(...)`, `try_cast(...)` (PySpark 4), 
-- Predicate helpers: `isnull(...)`, `isnotnull(...)`, and `isnan(...)`.
+- Predicate helpers: `isnull(...)`, `isnotnull(...)`, and `isnan(...)`; Float/Double columns also support chained
+  `order.score.isnan()`.
 - String helpers:  `contains(...)`, `like(...)`, `ilike(...)`, `rlike(...)`,
   array/map indexing, `lower(...)`, `upper(...)`, `trim(...)`, `to_decimal(...)`, `coalesce(...)`, and
   `substring(...)`, `substr(...)`, `split(...)`,
   `regexp_replace(...)`, `regexp_extract(...)`, `length(...)`, `concat_ws(...)`,   `initcap(...)`, `reverse(...)`, `translate(...)`, `instr(...)`.
-- PySpark Column method parity: string expressions support `order.name.substr(1, 10)`. `trim(...)` and `lower(...)`
-  remain function helpers, so the equivalent composition is `substr(lower(trim(order.name)), start=1, length=10)`.
+- PySpark Column method parity: string expressions support `order.name.substr(1, 10)`,
+  `order.status.isin(["new", "paid"])`, and dynamic matching such as `order.name.startswith(order.prefix)`.
+  `trim(...)` and `lower(...)` remain function helpers, so the equivalent composition is
+  `substr(lower(trim(order.name)), start=1, length=10)`.
 - Struct fields may be read with `.get_field(name)`.
 
 - Temporal helpers: `date_add(...)`, `datediff(...)`, and `date_trunc(...)`.

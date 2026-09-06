@@ -1062,11 +1062,15 @@ def test_v1_expression_renderer_renders_extended_plain_python_expressions() -> N
 def test_v3_expression_renderer_renders_string_predicates() -> None:
     class Raw(Schema):
         status = string(nullable=True)
+        pattern = string(nullable=False)
 
     class Published(Schema):
         contains_new = boolean(nullable=True)
         starts_new = boolean(nullable=True)
         ends_new = boolean(nullable=True)
+        contains_pattern = boolean(nullable=True)
+        starts_pattern = boolean(nullable=True)
+        ends_pattern = boolean(nullable=True)
         matches_new = boolean(nullable=True)
         matches_new_case_insensitive = boolean(nullable=True)
         matches_release = boolean(nullable=True)
@@ -1082,6 +1086,9 @@ def test_v3_expression_renderer_renders_string_predicates() -> None:
                 contains_new=status.contains("new"),
                 starts_new=status.startswith("new"),
                 ends_new=status.endswith("new"),
+                contains_pattern=status.contains(cast(Any, row).pattern),
+                starts_pattern=status.startswith(cast(Any, row).pattern),
+                ends_pattern=status.endswith(cast(Any, row).pattern),
                 matches_new=status.like("new%"),
                 matches_new_case_insensitive=status.ilike("NEW%"),
                 matches_release=status.rlike(r"release-[0-9]+"),
@@ -1095,6 +1102,9 @@ def test_v3_expression_renderer_renders_string_predicates() -> None:
         'F.col("orders.status").contains(\'new\')',
         'F.col("orders.status").startswith(\'new\')',
         'F.col("orders.status").endswith(\'new\')',
+        'F.col("orders.status").contains(F.col("orders.pattern"))',
+        'F.col("orders.status").startswith(F.col("orders.pattern"))',
+        'F.col("orders.status").endswith(F.col("orders.pattern"))',
         'F.col("orders.status").like(\'new%\')',
         'F.col("orders.status").ilike(\'NEW%\')',
         "F.col(\"orders.status\").rlike('release-[0-9]+')",
@@ -1402,6 +1412,7 @@ def test_v3_expression_renderer_renders_predicate_sql_helpers() -> None:
         missing_label = boolean(nullable=False)
         present_label = boolean(nullable=False)
         invalid_score = boolean(nullable=False)
+        chained_invalid_score = boolean(nullable=False)
 
     @transform
     class Publish(Transform):
@@ -1413,6 +1424,7 @@ def test_v3_expression_renderer_renders_predicate_sql_helpers() -> None:
                 missing_label=isnull(row.label),
                 present_label=isnotnull(row.label),
                 invalid_score=isnan(row.score),
+                chained_invalid_score=row.score.isnan(),
             )
 
     recipe = _recipe(Publish)
@@ -1422,6 +1434,7 @@ def test_v3_expression_renderer_renders_predicate_sql_helpers() -> None:
     assert [render(expression, scope_aliases={"rows": "orders"}) for expression in projection.values()] == [
         'F.col("orders.label").isNull()',
         'F.col("orders.label").isNotNull()',
+        'F.isnan(F.col("orders.score"))',
         'F.isnan(F.col("orders.score"))',
     ]
 

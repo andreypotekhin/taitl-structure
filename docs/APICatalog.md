@@ -21,7 +21,7 @@ when its 4.1-specific evidence passes. The governing design and specification ar
 
 | PySpark 4.1 addition | Status | Structure boundary | Design evidence or remedy |
 | --- | --- | --- | --- |
-| `Column.transform` and new higher-order column operations | design-gated | Typed symbolic element callback with declared result type; row-preserving array transformation only | Expression design, nullability/type tests, online/generated ordinary 4.1 parity, then Connect parity if documented |
+| `Column.transform` and new higher-order column operations | design-gated | Typed whole-expression callback with declared result type and nullability; row-preserving expression transformation. Array element transformation remains `arr_transform(...)`. | Expression design, nullability/type tests, online/generated ordinary 4.1 parity, then Connect parity if documented |
 | New deterministic scalar, string, binary, temporal, and collection functions | design-gated | Admit only functions with explicit type, nullability, generated spelling, and streaming contracts | 4.0-to-4.1 inventory diff and one capability/test/evidence row per function family |
 | Random and seeded 4.1 helpers such as `random`, `uniform`, `randstr`, and `uuid` | design-gated | Baseline `rand(...)` is covered separately with an explicit seed/reproducibility policy; newer helpers remain gated | Streaming support is claimed only per target evidence; use caller-owned PySpark for unadmitted helpers |
 | `DataFrame.exists` and IN-subquery operations | design-gated | Correlated boolean relation predicate with explicit aliases and null semantics | Query design, duplicate/empty/null/correlation tests, explain traceability, ordinary and proven Connect evidence |
@@ -213,9 +213,9 @@ references provide the user-facing operation details.
 
 | PySpark family | Status | Structure spelling or alternative | Contract / notes |
 | --- | --- | --- | --- |
-| Column comparisons, boolean, arithmetic | supported | Symbolic operators, `between`, `isin`, null predicates | Typed expressions preserve rows. |
+| Column comparisons, boolean, arithmetic | supported | Symbolic operators, `between`, `isin`, `isNaN`, null predicates | Typed expressions preserve rows; `isNaN` is exposed as `isnan()`, and `isin` supports variadic values or one list. |
 | Column bitwise operations | supported | `bitwise_and`, `bitwise_or`, `bitwise_xor`, `bitwise_not` | Integer/long only; preserves rows. |
-| Column string predicates | supported | `contains`, `startswith`, `endswith`, `like`, `ilike`, `rlike` | Typed String predicates preserve rows. |
+| Column string predicates | supported | `contains`, `startswith`, `endswith`, `like`, `ilike`, `rlike` | Typed String predicates preserve rows; `contains`, `startswith`, and `endswith` accept literal or String-expression operands. |
 | Column cast and nested access | supported | `cast`, `try_cast`, attributes, `get_field`, indexing | `try_cast` is capability checked. |
 | Struct mutation | supported | `with_field`, `drop_fields` | Requires exact declared struct shape. |
 | Column alias and raw `over` | unsupported | Schema fields; typed window helpers | Names and window contracts remain compiler-visible. |

@@ -1416,6 +1416,67 @@ def test_predicates_propagate_nullable_sql_three_valued_logic() -> None:
     assert event_time_between(nullable_timestamp, datetime.datetime(2026, 7, 13), upper="1 hour").nullable is True
 
 
+def test_isin_accepts_a_list_without_aliasing_the_callers_list() -> None:
+    value = _expression(types.string(), nullable=False)
+    allowed = ["active", None, "held"]
+
+    expression = value.isin(allowed)
+    allowed.append("closed")
+
+    assert [argument.data for argument in expression.args[1:]] == [
+        {"value": "active"},
+        {"value": None},
+        {"value": "held"},
+    ]
+    assert expression.nullable is True
+    assert [argument.data for argument in value.isin("active", None, "held").args[1:]] == [
+        {"value": "active"},
+        {"value": None},
+        {"value": "held"},
+    ]
+
+
+def test_isin_accepts_expression_members_and_rejects_ambiguous_list_shapes() -> None:
+    value = _expression(types.string(), nullable=False)
+    candidate = _expression(types.string(), nullable=True)
+
+    expression = value.isin([candidate, "active"])
+
+    assert expression.args[1] is candidate
+    assert expression.nullable is True
+    with pytest.raises(TypeError, match="either one list or variadic values"):
+        value.isin(["active"], "held")
+    with pytest.raises(TypeError, match="list values must be scalar"):
+        value.isin([["active"]])
+
+
+def test_string_column_predicates_accept_string_expression_operands() -> None:
+    value = _expression(types.string(), nullable=False)
+    pattern = _expression(types.string(), nullable=True)
+
+    for predicate in (value.contains, value.startswith, value.endswith):
+        expression = predicate(pattern)
+        assert expression.args == (value, pattern)
+        assert expression.nullable is True
+
+    with pytest.raises(TypeError, match="requires a string literal"):
+        value.contains(cast(Any, 1))
+    with pytest.raises(TypeError, match="requires a string literal"):
+        value.like(cast(Any, pattern))
+
+
+def test_isnan_can_be_chained_on_float_and_double_expressions() -> None:
+    value = _expression(types.double(), nullable=True)
+
+    expression = value.isnan()
+
+    assert expression.kind == "is_nan"
+    assert expression.type is not None and expression.type.name == "boolean"
+    assert expression.nullable is False
+    with pytest.raises(TypeError, match="requires a Float or Double"):
+        _expression(types.string(), nullable=False).isnan()
+
+
 def test_reflected_boolean_operators_preserve_operand_order() -> None:
     expression = _expression(types.boolean(), nullable=True)
 

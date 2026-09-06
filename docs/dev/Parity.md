@@ -77,13 +77,17 @@ matching PySpark method semantics. The first explicitly reconciled method slice 
 
 | Disposition | Column methods | Structure surface or boundary |
 | --- | --- | --- |
-| Implemented | `between`, bitwise methods, `cast`, `contains`, `desc`/`asc` and null-order variants, `endswith`, `ilike`, `isin`, `like`, `rlike`, `startswith`, `substr` | Typed `Expression` methods; `__getitem__`, `get_field`, `with_field`, and `drop_fields` cover the corresponding nested access/mutation forms. |
+| Implemented | `between`, bitwise methods, `cast`, `contains`, `desc`/`asc` and null-order variants, `endswith`, `ilike`, `isNaN`, `isin`, `like`, `rlike`, `startswith`, `substr` | Typed `Expression` methods; `isNaN` is spelled `isnan()`, `isin` supports variadic values or one list, and the plain string predicates accept literal or String-expression operands. `__getitem__`, `get_field`, `with_field`, and `drop_fields` cover the corresponding nested access/mutation forms. |
 | Function-form | `trim`, `lower`, and other SQL functions | Remain explicit `functions.*`-style Structure helpers; they are not PySpark `Column` methods in the active baseline. |
-| Unsupported or design-gated | `alias`/`name`, `isNaN`, `when`/`otherwise`, `over`, `outer`, `transform` | Require a separate typed output, conditional, window, correlated-expression, or higher-order contract. |
+| Unsupported or design-gated | `alias`/`name`, `when`/`otherwise`, `over`, `outer`, `transform` | Require a separate typed output, conditional, window, correlated-expression, or higher-order contract. |
 
 `substr(startPos, length)` accepts integral literals or symbolic integral expressions, returns String, and propagates
 nullability from the receiver and both bounds. Generated code uses canonical method-form
 `receiver.substr(start, length)`, which preserves PySpark's valid argument contract for integer bounds.
+
+`isin(...)` accepts the PySpark variadic form and a single list form. `contains(...)`, `startswith(...)`, and
+`endswith(...)` accept a string literal or a String expression operand; the result is nullable when either operand is
+nullable. SQL function helpers such as `trim(...)` and `lower(...)` remain explicit function-form APIs.
 
 The focused live parity test passed through the configured Docker Compose runtimes on 2026-09-03: PySpark 3.5
 (`1 passed` in 51.43 seconds) and PySpark 4.0 (`1 passed` in 71.30 seconds). The scenario covers nullable and

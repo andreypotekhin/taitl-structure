@@ -24,7 +24,7 @@ default support range until the adoption work closes.
 
 | PySpark 4.1 surface | Planned Structure status | Contract |
 | --- | --- | --- |
-| `Column.transform` and higher-order additions | design-gated | Typed callback/result; nullability; row preservation |
+| `Column.transform` and higher-order additions | design-gated | Typed whole-expression callback/result; type and nullability; row preservation |
 | Deterministic scalar/string/binary/collection functions | design-gated | Typed helpers with capability/parity checks |
 | Random/seeded helpers | design-gated | Explicit seed and nondeterminism policy; no streaming |
 | `DataFrame.exists` and IN subqueries | planned | Correlation, aliases, null behavior, and boolean result |
