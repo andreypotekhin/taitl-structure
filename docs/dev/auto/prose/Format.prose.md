@@ -150,6 +150,8 @@ Additional Rules
   individual step methods, non-step typed helpers, standalone transforms, and the workflow transform.
 - Preserve every Code-section listing and provide formula notation for every typed method it contains. Code listings are
   source evidence; formulas are the compact typed representation of the same methods.
+- Preserve one plain, unnumbered stage-transform description before each internal stage's class listing. This stage
+  context is not a method-group intent and must not consume a Code number.
 - Classify the topic before applying parent-workflow rules. If no exact main/workflow transform exists, treat every
   collected transform class in the topic subtree as an internal document stage: preserve its complete Code listing,
   numbered method-group prose, and formulas. A standalone step transform gets `Resulting transform shape:`; an
@@ -163,6 +165,9 @@ Additional Rules
 - Preserve every numbered Code-item marker, intent sentence, and explanatory sentence from the `.ext.md` input exactly;
   formatting may change notation delimiters only. Do not rewrite Code prose from Implementation content or expand,
   condense, or renumber it during formatting.
+- Keep each Code stage transform description plain and unnumbered before its class/interface listing, and keep the
+  listing itself unnumbered. Place each numbered italicized Code intent and its method-group explanation together in one
+  item immediately before the method listing it owns; never leave a separate unnumbered explanation after that item.
 - Do not repeat the 'Resulting transform shape': label in the workflow's Result section when the
   transform notation is already shown in the preceding sections.
 - Do not expose document-production or operator terminology in generated prose. When external detail is omitted, use a
@@ -200,6 +205,9 @@ Additional Rules
 - Verify every numbered Code item appears immediately before the code listing or notation for its own source-backed group.
   Reject numbered items placed after their corresponding listing, numbered items with no collected Code group, and
   invented numbered items for class or method listings whose collected source has no intent/explanation.
+- For every Code listing containing public method code, verify its immediately preceding prose has exactly one numbered
+  item with a short italicized intent and the method-group explanation, with no separate unnumbered explanation after the
+  item. Stage descriptions and class/interface listings remain unnumbered and do not consume the method-group marker.
 - Verify every pair of adjacent fenced Code listings is separated by at least one ordinary prose line. Reject a closing
   code fence immediately followed by an opening code fence, and do not use duplicated intent text or another code block as
   the separator.

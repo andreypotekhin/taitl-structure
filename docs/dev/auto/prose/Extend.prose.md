@@ -158,7 +158,13 @@ Code section:
        and deriving a concise source-backed intent from the group's plain explanation when needed. This Code-section
        sequence is independent of the circled Implementation sequence. Do not number workflow, class, stage-assignment,
        plain explanatory, or private/helper clauses.
+       Keep each stage transform description plain and unnumbered before its class/interface listing, and keep the
+       listing itself unnumbered. For every public method group, place one numbered italicized intent followed in the same
+       item by its explanatory prose immediately before the method listing it owns. Never put a separate unnumbered
+       explanation between that item and its method listing.
     - The code must be preserved.
+    - Preserve one plain, unnumbered stage-transform description before each internal stage's class listing. This is
+      stage context, not a method-group intent, and must not consume a Code number.
     - Render each collected intent/explanation exactly once in Code. Put it on the numbered group that owns its
       notation, immediately before the code listing or notation it explains, and remove any standalone or trailing copy of
       that same prose. Never emit a collected paragraph before the numbered item and again inside the item.
@@ -412,6 +418,10 @@ Code section
 - Verify each numbered Code item appears immediately before the code listing or notation for its own group. Reject a
   numbered item placed after its corresponding listing, a numbered item with no source-backed Code group, or an invented
   numbered item for a listing whose collected source has no intent/explanation.
+- For every Code listing containing a public method group, verify the immediately preceding prose includes exactly one
+  numbered item with one short italicized intent and the group's explanatory prose, with no separate unnumbered
+  explanation after the item. Keep stage descriptions and class/interface listings unnumbered; do not attach a method-
+  group item to the stage or class description.
 - Verify every pair of adjacent fenced Code listings is separated by at least one ordinary prose line. Reject a closing
   code fence immediately followed by an opening code fence, and do not use duplicated intent text or another code block as
   the separator.

@@ -192,7 +192,12 @@ summary here. Never place an intro/scope line between Code and Workflow.}}
 {{Preserve every Code prose clause exactly, including one short italicized intent and its independent non-circled
 number for each public method group. Use one sequence across a common workflow, but restart it for each independent
 composed top-level transform. Keep Workflow, class, stage-assignment, plain explanatory, and private/helper clauses
-unnumbered.}}
+unnumbered. Keep each Code stage transform description plain and unnumbered before its class listing. Place the numbered
+italicized intent and method-group explanation together in one item immediately before the method listing it owns; never
+leave a separate unnumbered explanation after that item.}}
+
+<!-- The stage description precedes the unnumbered class listing. Each public method group follows that listing as one
+numbered italicized item plus its explanation, immediately followed by that group's exact method listing. -->
 
 ~~~python
 {{Exact Python listing copied without alteration.}}
@@ -235,6 +240,9 @@ QA checklist:
 - All displayed formulas use balanced $$ delimiters and balanced LaTeX environments with escaped identifier
   underscores.
 - Code listings and Code prose are preserved exactly; Code numbering remains an independent sequence.
+- Every public method listing has one immediately preceding numbered item with a short italicized intent and its
+  method-group explanation, with no separate unnumbered explanation after that item. Stage descriptions and
+  class/interface listings remain unnumbered and do not consume a method-group number.
 - No unnumbered transform/stage prose was converted into a long italic intent, and no method group is placed after its
   listing.
 -->

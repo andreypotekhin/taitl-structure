@@ -179,7 +179,12 @@ or production line between Code and its first subsection.}}
 
 {{Collected stage prose and method groups in source order. Number public method-group clauses with one independent
 non-circled sequence per independent top-level transform, or one sequence across a common workflow. Keep class listings,
-stage assignments, and private/helper clauses unnumbered.}}
+stage assignments, and private/helper clauses unnumbered. Keep each stage transform description plain and unnumbered
+before its class listing. Place each numbered italicized intent and its method-group explanation together in one item
+immediately before the method listing it owns; never leave a separate unnumbered explanation after that item.}}
+
+<!-- The stage description precedes the unnumbered class listing. Each public method group follows that listing as one
+numbered italicized item plus its explanation, immediately followed by that group's exact method listing. -->
 
 ~~~python
 {{Exact collected class and method listings, unchanged.}}
@@ -209,5 +214,8 @@ QA:
 - Audit each internal step transform for duplicate named notation; for example, AllDocumentTargets may appear once under
   Resulting transform shape and nowhere else in its internal stage subsection.
 - Compare every Python listing byte-for-byte with the collected source and keep Code numbering independent.
+- For every public method listing, require one immediately preceding numbered item with a short italicized intent and the
+  method-group explanation, with no separate unnumbered explanation after that item. Keep stage descriptions and
+  class/interface listings unnumbered; they do not consume a method-group number.
 - In Implementation, stage subsections precede Result; in Code, Workflow precedes the collected stage/class subsections.
 -->
