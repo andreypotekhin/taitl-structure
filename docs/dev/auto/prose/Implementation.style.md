@@ -1,57 +1,44 @@
-# Implementation narrative style
+# Implementation contract
 
-Apply this style to prose in Implementation sections, including the narrative body, preamble, stage introductions,
-explanatory items, and external-stage explanations. Operator documents retain responsibility for section order, source
-coverage, notation, and formatting rules.
-
-## Narrative
-
-- Treat Implementation as a narrative between the conceptual Solution and the mechanical Code section.
-- Move from workflow purpose and main data movement to the relations, objects, policies, limits, and boundaries that
-  make the flow reliable. Keep the preamble substantive enough to explain the contract and important limits; do not
-  shrink it into a two-sentence component summary.
-- Introduce a concept before its first use. Add it to Definitions when a reusable domain explanation will help
-  elsewhere.
-- Use concrete subjects and active verbs. Give each sentence one main data transition, rationale, or connection.
-- Render exact transform, class, schema, and relation names as inline code when they are named in narrative prose;
-  leave general domain concepts in ordinary text.
-- Explain why a boundary exists and what it guarantees to the next boundary. Include relevant validation, identity,
-  ownership, failure, fallback, freshness, concurrency, and observability behavior.
-- Distinguish caller-owned, transform-owned, provider-owned, and backend-owned responsibilities.
-- Prefer thoughtful description and intent over prescription, status, checklists, or low-level operator inventories.
-- Use the workflow notation as the source of truth without repeating every notation line mechanically.
-- Keep field-level mechanics and source code in the detailed method prose or Code section. End with the implementation
-  shape and observable behavior it enables.
+Implementation connects the conceptual Solution to executable behavior. The structural rules belong to
+[Definitions.prose.md](Definitions.prose.md); this contract governs prose.
 
 ## Preamble
 
-The preamble before the first stage subsection or method group should be short and continuous. Introduce the workflow
-purpose and main data movement first, then the core relation or object concepts, and finish with the policy or boundary
-rationale that makes the flow reliable. For a composed workflow, name the actual parent transform and its actual stage
-flow; for a standalone transform, name the input evidence, central transformation, and observable output. Occasional
-connective words such as “then” or “from there” may make the movement easier to follow, but do not make progression the
-organizing subject of the whole preamble. Keep it to the essential context, usually one to three short paragraphs. Do
-not use bullets, exhaustive inventories, or references to numbered items, explanation prose, code, formatting, or other
-document structure. Keep the preamble at workflow and component level; do not name individual methods unless a
-method-specific reference is necessary to explain a pressing architectural boundary.
+The preamble is a required body of prose immediately after `## Implementation`, before the first subsection. Author it
+in Draft, develop it in Extend, and preserve it paragraph for paragraph in Format. Stage introductions, signatures,
+and Result prose do not replace it. A structural excerpt without a preamble is not a complete chapter.
 
-## Stage and item explanations
+Explain purpose, major data movement, important limits, and the reasons responsibilities are separated. Use enough
+continuous paragraphs to make that account understandable; neither an arbitrary sentence cap nor a component inventory
+is a substitute. Retain source-backed constraints such as a 10,000-target bound, ownership, freshness, fallback, and
+observable outputs when they affect behavior. Distinguish established behavior from proposed requirements.
 
-- Begin each stage subsection that has prose with one self-contained, active sentence describing its main data transition
-  and responsibility. Prefer an imperative opening such as “Match terms” or “Publish results” when it reads naturally.
-- Give every explanatory item one self-contained sentence that explains the most meaningful data transition and why it
-  performs it. Use an imperative opening only when it reads naturally; otherwise use a subject-led sentence.
-- Keep explanatory prose accessible to a first-time reader. Prefer clear domain subjects such as scores, lanes,
-  candidates, evidence, feedback, and results over vague subjects such as “the stage.”
-- Preserve the source order and group boundaries established by the operator. Do not duplicate intent or explanatory
-  prose in a separate numbered item or trailing paragraph.
-- For external stages, use one source-backed sentence focused on the stage's responsibility and pair it with its
-  canonical stage notation. Do not invent an explanation when no source-backed prose exists.
+Stay at component level. Name the main transform and actual data flow, or explain the independent transforms when no
+main exists. Avoid individual method references unless necessary to explain an architectural boundary.
+Keep configuration in proportion: a policy parameterizes the work; its validation and routing should not displace
+the account of what the work achieves. Introduce unfamiliar integration roles before relying on their short names.
 
-## Quality assurance
+For a composed workflow, develop the reader's path from incoming data through the major intermediate representations
+to the published result, explaining why the stages are separated. Several connected paragraphs are normally needed.
+Match the explanatory depth of an accepted chapter reference; do not condense it into a one-paragraph stage inventory.
 
-Verify that every Implementation narrative, preamble, stage introduction, and explanatory item follows the same
-general-to-specific, concrete, active, rationale-aware style. Allow light connective cues where they improve readability,
-but do not require a step-by-step progression. Reject prose that is merely a method inventory, repeats
-code mechanics, hides ownership or failure behavior that the reader needs, or adds generic document-production
-commentary. Reject preambles that describe what later document parts contain instead of explaining the live data flow.
+## Subsections
+
+- Internal introduction: plain, unnumbered active prose that connects the stage's incoming evidence, substantive
+  operation, and useful output. A transform-name subject or an imperative is equally valid; use enough explanation
+  to distinguish the stage's responsibility. "Implement LexIndex" or "Apply the declared transformation" fails this
+  contract. For example: "`LexIndex` materializes source-faithful sentence text, produces one normalized occurrence
+  stream, and assembles public term and summary relations for every lexical grain."
+- Method group: one short italic intent sentence followed by an explanatory paragraph, kept in the same numbered item.
+  Explain the data transition, responsibility, and rationale at useful depth; do not limit the explanation to one sentence
+  or italicize the whole paragraph. Typed signatures supply mechanics, not a replacement for explanation.
+  Read consecutive items as a continuous explanation: carry established context forward, state the next useful
+  transition plainly, and give its rationale. Do not bury that progression under repeated constraints or defensive
+  caveats; put exceptional behavior with the operation that owns it or in the preamble.
+- External call: one short source-backed intent and description with its circled marker, followed by boundary notation.
+  If useful, add a direct reference such as "See Scoring for score production details."
+- Result: one self-contained sentence explaining what the composed transform publishes from its inputs.
+
+Keep source group order. Avoid duplicated intent/explanation text, generic production commentary, and opaque terminology
+where a concrete data or domain name would be clearer.

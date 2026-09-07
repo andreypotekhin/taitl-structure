@@ -1,388 +1,211 @@
 # Structure Formula Notation
-Structure Formula Notation is math formula-like notation for Structure transforms 
-and their parts: inputs, outputs, stages and steps, as well as stage and step method
-arguments and return types.
-The goal is leverage LaTex formatting for compact display of Structure transforms. 
 
-In this notation
-- fields are displayed as vector components, 
-- methods are displayed as math functions, 
-- method arguments as function arguments,
-- method arguments types as :Type annotation on function argument, 
-- method return types as :Type annotation on function;
-- transform's input/output sets as vertical vector (in parenthesis)
-- transform's individual inputs/outputs as 'name : Type' pairs
+Use compact mathematical notation to show transform data flow, public methods, and returned records. This is a
+presentation of source contracts, not permission to reduce their coverage.
 
-## Style tips
-- Include line heights (e.g. \\[12pt]) if needed to prevent overlapping. 
-- Escape every underscore in displayed identifiers as `\\_`; formulas use no subscripts.
+## Chapter profile
 
-## Notation Variants
-Notation comes as default notation and variants
-- Default notation fully features all details such as method return types.
-- 'omit_' variants omit one part of default notation 
-  - Ex: 
-    - omit_argument_names altogether omits arguments (including parentheses after function name)  
-    - omit_argument_types omits function argument types 
-    - omit_input_names omits type annotations (left part and colon from 'name : Type' pair) from transform input vector  
-    - omit_input_types omits type annotations (right part of 'name : Type' pair) from transform input vector  
-    - omit_names omits names in schema notation  
-    - omit_types omits type annotations in schema notation  
-- Combination variants 
-  - Ex: Variant 'compact' is a combination of all omit_: omit_argument_names, omit_return_types, omit_input_output_names
-- Bracing variants
-  - use_parentheses - use pmatrix instead of bmatrix, Bmatrix
-  - use_brackets - use bmatrix instead of pmatrix, Bmatrix
-- Canonic variant
-  - Canonic variant is the default variant for when a construct (transforms and their parts) is used standalone, 
-  e.g. on a dedicated line/paragraph, as opposed to be shown as part of a bigger construct.  
-  By default, it is 'default', but can be additionally specified per-section below. 
+Draft/Extend use complete text notation; Format uses the profile below. These selections are canonical for chapters;
+the vocabulary at the end describes optional variants for other uses.
 
-## Schema Notation
-Structure notation for schema classes.
+### Text coverage
 
-### Schema Notation - Default
-Field name vector without type annotations
+Every public method has its own full named, typed argument list and concrete return type(s), even across similar grains.
+Transform blocks enumerate all named inputs/outputs and all methods or actual child calls. Stage calls retain every
+binding, including policy constants; their arrows name unqualified output relations. Final outputs remain named and
+typed. Never replace known paths or types with "same pattern," "etc.," or ellipses.
 
-\begin{pmatrix}
-x \\
-y \\
-z 
-\end{pmatrix}
+### Formula selection
 
-### Schema Notation - With Types
-Field vector with type annotations
+| Construct | Chapter rendering |
+|---|---|
+| One-argument public method | `\operatorname{method}(Schema) \rightarrow Return`; no `\!` |
+| Multi-argument public method | `\operatorname{method}\!\begin{pmatrix} A \\ B \end{pmatrix} \rightarrow Return` |
+| Multiple returns | Complete return-schema vector, not a selected subset |
+| Public typed non-step helper | Non-step Method Notation; preserve its complete Python type expression |
+| Internal step shape | Named transform + input-schema vector + complete method-name Bmatrix + output-schema vector |
+| External boundary | Named transform + input-schema vector -> output-schema vector; no method vector |
+| Composed Result | Unnamed composition: named typed inputs + all actual stage calls + named typed final outputs |
 
-\begin{pmatrix}
-x : X \\
-y : Y \\
-z : Z
-\end{pmatrix}
+In step shapes, list method names only; their complete signatures already appear in the method-group formulas.
+No `\odot`. In formula Results, omit the parent transform name, but retain each stage's assigned-to alias:
+`inferred_documents = InferDocuments(...)`. Call input vectors contain source relation references, including dot
+qualification when consuming an earlier stage's output; `results=inferred_documents.results` becomes
+`inferred_documents.results`, not an ambiguous `results`. Resolve local forwarding aliases to their producer where
+needed, so `valid_policy = validated.valid_policy` is shown as `validated.valid_policy` when consumed. Do not put
+argument-keyword assignments or schema types inside calls. Stage output vectors retain unqualified output names only.
+Keep complete source bindings in Draft/Extend text notation and Code for verification. The composition's
+opening inputs and final outputs remain named and typed, without value assignments. Internal step calls carry their complete
+method-name vector; external and composed calls do not acquire a fictitious step vector. Each internal composed
+transform has its own Result, including a composed child.
 
-### Schema Notation - With Name
-Notation for defining a schema class.
+### Return definition state
 
-\operatorname{SchemaClass} : \begin{pmatrix}
-x \\
-y \\
-z
-\end{pmatrix}
+Resolve fields from source, never from guesses. A projected return should explain the operation, not merely echo its
+last keyword arguments or reproduce an entire inherited record. Select its visible fields by this rule:
 
-### Schema Notation - With Projection
-Schema class created as projection of another class or classes.
-Based on 'Schema Notation - With Name' but omits the projected fields. 
-Used to describe step method return value obtained as a projection (.project() or .base()). 
-In such case, only non-projected (new/unique) fields are shown.
+~~~text
+visible_fields = explicit_additions_and_overrides + essential_carried_fields
+~~~
 
-\operatorname{SchemaClass} : \begin{pmatrix}
-\vdots \\
-z
-\end{pmatrix}
+Always show every field explicitly supplied by the returned construction, including fields after `.project()` or
+`.base()`, even when a similar projection appeared earlier. Add inherited fields only when they establish the returned
+grain/key or carry the evidence this operation assembles. Ground that choice in the grouping/join/rekeying logic and
+the method-group explanation, not a fixed field-count quota or possible future uses. Preserve the schema's field order.
 
-### Schema Notation Variants
-The variants are as described in 'Notation Variants':
-- omit_names: with_types, omit names
-- omit_types
-- with_name: defined in 'Schema Notation - With Name' above
-- with_projection: defined in 'Schema Notation - With Projection' above
-- default: omit_types 
-- compact: default
-- canonic: default
+For example, sentence materialization can show `vdots, content`: its coordinates and identity are unchanged context.
+A normalized occurrence needs its document/section/paragraph/sentence keys and term; a grouped count needs its complete
+grain key, term, and frequency. A public posting assembled from counts, target statistics, and population frequency
+must expose those contributed facts rather than reducing its return to `vdots, term, term_frequency`.
 
-## Step Method Notation
-Use single-argument/multi-argument notation depending on the number of arguments.
+Use ellipses only when fields are actually omitted. A small core record may legitimately show every field without
+ellipses. Full construction and identity pass-through retain the existing first-definition rule. Track full definitions
+across the whole document, independently of numbering roots; a partial projection never counts as a full definition.
 
-### Step Method Notation - Single-Argument
-Notation for single-argument step methods
-\operatorname{func}(x: X) \rightarrow A
+~~~text
+render_return(schema, construction, essential_carried_fields, seen):
+    if construction is identity project/base (same input schema, no explicit fields):
+        construction = pass_through
+    if construction is project/base:
+        visible = schema_order(ALL explicit_fields + essential_carried_fields)
+        if visible is empty: return schema.name
+        omitted = schema.fields - visible
+        if omitted is empty: record schema in seen.full
+        return schema.name : vector(vdots if omitted, visible)
+    if schema in seen.full:
+        return schema.name
+    return schema.name : vector(ALL schema.fields); record schema in seen.full
+~~~
 
-### Step Method Notation - Horizontal
-\operatorname{func}(x: X, z : Z) \rightarrow A
+Full construction or pass-through of an unseen schema requires the full field vector even when input and return types
+match (including `InferencePolicy.project(policy)`). A partial projection does not count as a full definition.
+Omit field type annotations, not selected field names. Never emit a lone `\vdots` vector, hide an explicit override,
+or remove an essential key or contributed value solely to make a formula narrower.
 
-### Step Method Notation - Vertical
-Notation for a multi-argument methods
-\operatorname{func3}\!\begin{pmatrix} x : X \\ z : Z \end{pmatrix} \rightarrow B
+### Display
 
-### Step Method Notation - Multiple Return Values
-Notation for a multiple return value methods. Uses a vector to show return types.
-Ex (for vertical notation):
-\operatorname{func3}\!\begin{pmatrix} x : X \\ z : Z \end{pmatrix} \rightarrow \begin{pmatrix} B \\ C \end{pmatrix}
+Use balanced `$$` blocks. Escape identifier underscores as `\_`; no backticks inside formulas. Use `\operatorname` for
+method/transform names. Left-align multiline formulas with `aligned`. Separate standalone method formulas and composed
+stage rows with two dedicated empty `\\` rows; compact matrix rows may use `\\[2pt]`.
 
-### Step Method Notation - Colon
-Fancy colon (' : ') after operator. 
-Ex:
-\operatorname{func3} : \begin{pmatrix} x : X \\ z : Z \end{pmatrix} \rightarrow B
+Use the same font size for every formula; never shrink a Result or long call to fit. The default is one horizontal
+expression per method, step shape, or stage call: name, input vector, method vector when applicable, arrow, and output
+stay together. Matrix rows are not a reason to break the surrounding expression. Multiple inputs or a long method
+inventory do not automatically require multiple equation rows.
 
-### Step Method Notation - Return Schema Definitions
-Use with_projection variant of schema notation for the schemas of return types. 
-Ex:
-\operatorname{func3}\!\begin{pmatrix} x : X \\ z : Z \end{pmatrix} \rightarrow B : \begin{pmatrix} c \\ d \end{pmatrix} 
+Do not treat an arbitrary test panel (such as 1,000 pixels) or LaTeX character count as a chapter page-width limit.
+Check the intact expression first. Where the medium supports horizontal scrolling, preserve the mathematical shape
+and let the container scroll. Wrap only for a genuine constraint of the intended reading layout, recording the reason;
+then break at the arrow before separating a transform name from its input/method vectors. Keep vectors intact.
 
-### Step Method Notation Variants
-The variants are as described in 'Notation Variants' section:
-- omit_argument_names
-- omit_argument_types
-- omit_return_types
-- single_argument
-- vertical
-- multiple_return_values
-- return_schema_definitions: 'Step Method Notation - Return Schema Definitions'
-- compact
-- default: (single_argument or vertical) + multiple_return_values
-- canonic: default + omit_argument_names + return_schema_definitions
+## Text notation
 
-The canonic step-method form omits argument names and the separating colons, but retains each argument's schema
-type. Its return schema retains the schema name and field names while omitting field type annotations.
+Use fenced text in Draft Notation and Extend Implementation. These are grammar examples, not literal chapter content.
 
-## Non-step Method Notation
-Non-step method notation describes a typed Python helper that participates in an implementation without being a
-transform boundary, such as a `@special` supplier. It preserves the helper name, argument types, and return type
-without implying that the helper is a step.
+~~~text
+method(argument_name: ArgumentSchema, other_name: OtherSchema) -> ReturnSchema
 
-### Non-step Method Notation - Single-Argument
-Use the single-argument form for one typed parameter. Preserve ordinary Python type expressions in the return position.
+StepTransform:
+  inputs:
+    input_name: InputSchema
+  methods:
+    method: ArgumentSchema, OtherSchema -> ReturnSchema
+  outputs:
+    output_name: OutputSchema
 
-\operatorname{default\_sentence\_spans}(Any) \rightarrow \operatorname{list}\{\operatorname{dict}\{str, object\}\}
+ComposedTransform:
+  inputs:
+    input_name: InputSchema
+  stages:
+    stage_alias = StageName(input_name=input_name, policy=policy) -> output_relation
+  outputs:
+    output_name: OutputSchema
+~~~
 
-### Non-step Method Notation - Multiple-Argument
-Use a vertical argument vector for multiple typed parameters.
+Repeat every real input, method, stage, binding, and output. An external boundary uses the named input/output form without
+a method or stage inventory. Root and internal composed-transform blocks belong in Result, not under the step-shape
+label. Draft's single Notation section inventories the same contracts without Implementation subsections.
 
-\operatorname{helper}\!\begin{pmatrix} X \\ Y \end{pmatrix} \rightarrow Z
+## Formula examples
 
-### Non-step Method Notation Variants
-- single_argument: one argument type in parentheses, without `\!`.
-- vertical: multiple argument types in a `pmatrix` preceded by `\!`.
-- canonic: omit argument names while retaining argument types and the complete Python return type expression.
+### Schema notation
 
-## Step Transform Notation
-Notation for a step transform - a transform with (implicit or explicit) step methods. 
+Full definition:
 
-### Step Transform Notation - Default:
-Combines inputs vector, step methods vector and outputs vector.
+~~~latex
+SchemaName : \begin{pmatrix} first\_field \\ second\_field \end{pmatrix}
+~~~
 
-\begin{pmatrix}
-x : X \\
-y : Y \\
-z : Z
-\end{pmatrix}
-\odot
-\begin{Bmatrix}
-\operatorname{func1}(x : X) \rightarrow D \\
-\operatorname{func2}(y : Y) \rightarrow A \\
-\operatorname{func3}\begin{pmatrix} x : X \\ z : Z \end{pmatrix} \rightarrow B
-\end{Bmatrix}
-\rightarrow
-\begin{pmatrix}
-a : A \\
-b : B \\
-c : C
-\end{pmatrix}
+Projected return with an explicit field:
 
-### Step Transform Notation - With Name
-Notation for defining a transform.
-Based on default notation, preceded with transform name.
+~~~latex
+SchemaName : \begin{pmatrix} \vdots \\ supplied\_field \end{pmatrix}
+~~~
 
-\operatorname{TransformClassName} : \begin{pmatrix}
-x : X \\
-y : Y \\
-z : Z
-\end{pmatrix}
-\begin{Bmatrix}
-\operatorname{func1}(x : X) \rightarrow D \\
-\operatorname{func2}(y : Y) \rightarrow A \\
-\operatorname{func3}\begin{pmatrix} x : X \\ z : Z \end{pmatrix} \rightarrow B
-\end{Bmatrix}
-\rightarrow
-\begin{pmatrix}
-a : A \\
-b : B \\
-c : C
-\end{pmatrix}
+### Step and non-step method notation
 
-### Step Transform Notation - As Expression
-Notation for displaying a transform as right part of stage call assignment in parent transform. 
-Based on 'Step Transform Notation - With Name' notation, with the colon replaced by diminished space (\!).
+~~~latex
+\operatorname{single}(InputSchema) \rightarrow ReturnSchema
 
-\operatorname{TransformClassName}\!\begin{pmatrix}
-x : X \\
-y : Y \\
-z : Z
-\end{pmatrix}
-\begin{Bmatrix}
-\operatorname{func1}(x : X) \rightarrow D \\
-\operatorname{func2}(y : Y) \rightarrow A \\
-\operatorname{func3}\begin{pmatrix} x : X \\ z : Z \end{pmatrix} \rightarrow B
-\end{Bmatrix}
-\rightarrow
-\begin{pmatrix}
-a : A \\
-b : B \\
-c : C
-\end{pmatrix}
+\operatorname{multiple}\!\begin{pmatrix} InputSchema \\ OtherSchema \end{pmatrix}
+\rightarrow \begin{pmatrix} FirstReturn \\ SecondReturn \end{pmatrix}
 
-### Step Transform Notation - Variants
-The variants are as described in 'Notation Variants' and above sections:
-- omit_input_names
-- omit_output_names
-- omit_input_output_names
-- omit_argument_names
-- omit_argument_types
-- omit_return_types
-- omit_odot: omit \odot sign
-- with_name
-- as_expression
-- compact
-- canonic: with_name, omit_input_output_names, omit_argument_names, omit_return_types, omit_odot   
+\operatorname{default\_sentence\_spans}(Any)
+\rightarrow \operatorname{list}\{\operatorname{dict}\{str, object\}\}
+~~~
 
-## Stage Call Notation
-Notation for a stage call to a transform within a parent transform.
-Stage call: assignment of a stage transform to a field of a composed transform.
+Apply return-definition state to every returned schema. Public typed helpers retain complete Python type expressions
+without being reclassified as steps. Omit only receiver parameters such as `self` from method arguments.
 
-### Stage Call Notation - Default:
-Based on as_expression variant of Transform Notation ('Step Transform Notation' or 'Composed Transform Notation), 
-preceded with variable assignment.
+### Step transform notation
 
-Example: step transform:
-s = \operatorname{Stage}\!\begin{pmatrix}
-x : X \\
-y : Y \\
-z : Z
-\end{pmatrix}
-\begin{Bmatrix}
-\operatorname{func1}(x : X) \rightarrow D \\
-\operatorname{func2}(y : Y) \rightarrow A \\
-\operatorname{func3}\begin{pmatrix} x : X \\ z : Z \end{pmatrix} \rightarrow B
-\end{Bmatrix}
-\rightarrow
-\begin{pmatrix}
-a : A \\
-b : B \\
-c : C
-\end{pmatrix}
+~~~latex
+\operatorname{StepTransform} :
+\begin{pmatrix} InputSchema \end{pmatrix}
+\begin{Bmatrix} \operatorname{first\_method} \\ \operatorname{second\_method} \end{Bmatrix}
+\rightarrow \begin{pmatrix} OutputSchema \end{pmatrix}
+~~~
 
-Example: composed transform:
-s = \operatorname{Stage}\!\begin{aligned}
-& \begin{pmatrix} x : X \\ y : Y \\ z : Z \end{pmatrix} \\
-& s1 = \operatorname{Stage}1\!\begin{pmatrix} x \\ y \\ z \end{pmatrix}
-\begin{Bmatrix} \operatorname{func11} \\ \operatorname{func12} \\ \operatorname{func13} \end{Bmatrix}
-\rightarrow \begin{pmatrix} a \\ b \\ c \end{pmatrix} \\
-& s2 = \operatorname{Stage}2\!\begin{pmatrix} a \\ b \\ c \end{pmatrix} 
-\begin{Bmatrix} \operatorname{func21} \\ \operatorname{func22} \\ \operatorname{func23} \end{Bmatrix}
-\rightarrow \begin{pmatrix} d \\ e \\ f \end{pmatrix} \\
-& s3 = \operatorname{Stage}3\!\begin{pmatrix} d \\ e \\ f \end{pmatrix} 
-\begin{Bmatrix} \operatorname{func31} \\ \operatorname{func32} \\ \operatorname{func33} \end{Bmatrix}
-\rightarrow \begin{pmatrix} u \\ v \\ w \end{pmatrix} \\
-& \begin{pmatrix} u : U \\ v : V \\ w : W \end{pmatrix}
-\end{aligned}
+### Stage call and composed transform notation
 
-### Stage Call Notation Variants
-The variants are as described in 'Notation Variants' section:
-- omit_input_names
-- omit_output_names
-- omit_input_output_names
-- omit_input_output_types
-- omit_argument_names
-- omit_argument_types
-- omit_return_types
-- omit_steps: step method vector omitted
-- compact: omit_input_output_types, omit_argument_names, omit_argument_types, omit_return_types
-- canonic: compact 
-
-## Composed Transform Notation
-Composed transform: a transform that consists of stages (other transforms) rather than step methods.
-
-### Composed Transform Notation - Default
-Composed Transform Notation combines canonic Stage Call Notation for stage calls
-and typed outputs without value assignments: 
-- Inputs vector: transform's inputs vector as 'name: Type' pairs
-- For each stage: canonic 'Stage Call Notation'
-- Outputs vector: transform's outputs vector as 'name: Type' pairs without value assignments.
-
+~~~latex
 \begin{aligned}
-& \begin{pmatrix} x : X \\ y : Y \\ z : Z \end{pmatrix} \\
-&\\
-&\\
-& s1 = \operatorname{Stage}1\!\begin{pmatrix} x \\ y \\ z \end{pmatrix}
-\begin{Bmatrix} \operatorname{func11} \\ \operatorname{func12} \\ \operatorname{func13} \end{Bmatrix}
-\rightarrow \begin{pmatrix} a \\ b \\ c \end{pmatrix} \\
-&\\
-&\\
-& s2 = \operatorname{Stage}2\!\begin{pmatrix} a \\ b \\ c \end{pmatrix} 
-\begin{Bmatrix} \operatorname{func21} \\ \operatorname{func22} \\ \operatorname{func23} \end{Bmatrix}
-\rightarrow \begin{pmatrix} d \\ e \\ f \end{pmatrix} \\
-&\\
-&\\
-& s3 = \operatorname{Stage}3\!\begin{pmatrix} d \\ e \\ f \end{pmatrix} 
-\begin{Bmatrix} \operatorname{func31} \\ \operatorname{func32} \\ \operatorname{func33} \end{Bmatrix}
-\rightarrow \begin{pmatrix} u \\ v \\ w \end{pmatrix} \\
-&\\
-&\\
-& \begin{pmatrix} u : U \\ v : V \\ w : W \end{pmatrix}
+& \begin{pmatrix} input\_name : InputSchema \\ policy : PolicySchema \end{pmatrix} \\
+\\
+\\
+& internal = \operatorname{InternalStep}\!\begin{pmatrix}
+input\_name \\ policy
+\end{pmatrix}
+\begin{Bmatrix} \operatorname{first\_method} \\ \operatorname{second\_method} \end{Bmatrix}
+\rightarrow \begin{pmatrix} output\_relation \end{pmatrix} \\
+\\
+\\
+& \begin{pmatrix} output\_name : OutputSchema \end{pmatrix}
 \end{aligned}
+~~~
 
-### Composed Transform Notation - With name
-Based on 'Composed Transform Notation - Default', preceded with transform class name and colon.
+Repeat each stage call in source order, keeping its assignment alias and all input/output names. Producer-qualified
+input references preserve dependencies; output names remain unqualified. Do not label the whole Result with the parent
+transform name. External calls omit the method vector. Composed internal calls also omit it;
+their own stages are shown in their nested Result, not replaced by fictitious methods.
 
-\operatorname{TransformClassName} : \begin{aligned}
-& \begin{pmatrix} x : X \\ y : Y \\ z : Z \end{pmatrix} \\
-&\\
-&\\
-& s1 = \operatorname{Stage}1\!\begin{pmatrix} x \\ y \\ z \end{pmatrix}
-\begin{Bmatrix} \operatorname{func11} \\ \operatorname{func12} \\ \operatorname{func13} \end{Bmatrix}
-\rightarrow \begin{pmatrix} a \\ b \\ c \end{pmatrix} \\
-&\\
-&\\
-& s2 = \operatorname{Stage}2\!\begin{pmatrix} a \\ b \\ c \end{pmatrix} 
-\begin{Bmatrix} \operatorname{func21} \\ \operatorname{func22} \\ \operatorname{func23} \end{Bmatrix}
-\rightarrow \begin{pmatrix} d \\ e \\ f \end{pmatrix} \\
-&\\
-&\\
-& s3 = \operatorname{Stage}3\!\begin{pmatrix} d \\ e \\ f \end{pmatrix} 
-\begin{Bmatrix} \operatorname{func31} \\ \operatorname{func32} \\ \operatorname{func33} \end{Bmatrix}
-\rightarrow \begin{pmatrix} u \\ v \\ w \end{pmatrix} \\
-&\\
-&\\
-& \begin{pmatrix} u : U \\ v : V \\ w : W \end{pmatrix}
-\end{aligned}
+## Variant vocabulary
 
-### Composed Transform Notation - As Expression
-Based on 'Composed Transform Notation - With Name' notation, with the colon replaced by diminished space (\!).
+Variants describe presentation choices, not source omissions. Chapter outputs use the profile above; do not select a
+different compact variant ad hoc.
 
-\operatorname{TransformClassName}\!\begin{aligned}
-& \begin{pmatrix} x : X \\ y : Y \\ z : Z \end{pmatrix} \\
-&\\
-&\\
-& s1 = \operatorname{Stage}1\!\begin{pmatrix} x \\ y \\ z \end{pmatrix}
-\begin{Bmatrix} \operatorname{func11} \\ \operatorname{func12} \\ \operatorname{func13} \end{Bmatrix}
-\rightarrow \begin{pmatrix} a \\ b \\ c \end{pmatrix} \\
-&\\
-&\\
-& s2 = \operatorname{Stage}2\!\begin{pmatrix} a \\ b \\ c \end{pmatrix} 
-\begin{Bmatrix} \operatorname{func21} \\ \operatorname{func22} \\ \operatorname{func23} \end{Bmatrix}
-\rightarrow \begin{pmatrix} d \\ e \\ f \end{pmatrix} \\
-&\\
-&\\
-& s3 = \operatorname{Stage}3\!\begin{pmatrix} d \\ e \\ f \end{pmatrix} 
-\begin{Bmatrix} \operatorname{func31} \\ \operatorname{func32} \\ \operatorname{func33} \end{Bmatrix}
-\rightarrow \begin{pmatrix} u \\ v \\ w \end{pmatrix} \\
-&\\
-&\\
-& \begin{pmatrix} u : U \\ v : V \\ w : W \end{pmatrix}
-\end{aligned}
+| Variant | Meaning |
+|---|---|
+| with_name | Prefix a schema or transform definition with its name and colon |
+| as_expression | Replace a transform's defining colon with `\!` for use in a call |
+| with_projection | Elide inherited fields, retain explicit fields under the definition-state rules |
+| omit_argument_names | Keep argument types, remove parameter names and their colons |
+| omit_argument_types | Keep argument names, remove their type annotations |
+| omit_input_names / omit_output_names | Keep relation schemas, remove relation names and colons |
+| omit_input_types / omit_output_types | Keep relation names, remove schema annotations |
+| omit_steps | Omit the method vector from a call |
+| omit_return_types | Show method names without signatures inside a transform's method vector |
+| use_parentheses / use_brackets | Select pmatrix or bmatrix/Bmatrix delimiters |
 
-### Composed Transform Notation - Variants
-The variants are as described in 'Notation Variants' section:
-- omit_input_names
-- omit_input_types
-- omit_output_names
-- omit_output_types
-- omit_input_output_names
-- omit_input_output_types
-- omit_steps
-- with_name
-- as_expression
-- compact: omit_input_output_names 
-- canonic: default 
-
-## General tips
-- Consecutive standalone step-method formulas: insert two empty line rows (\\) between adjacent formula lines.
+"Canonical" means the profile-selected variant for that construct; it does not imply the same fields are shown in a
+standalone method, a step summary, and an assigned stage call. Complete standalone signatures remain mandatory.

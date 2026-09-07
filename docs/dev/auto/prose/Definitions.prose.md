@@ -1,43 +1,116 @@
-# Shared prose definitions
+# Chapter model
 
-These definitions apply to the chapter operators described in the neighboring `.prose.md` documents.
+These terms define the model used by [Prose.md](../Prose.md)'s chapter operators. Build this inventory before writing;
+it is working data, not chapter prose. Resolve it from source declarations, annotated source, and explicit topic scope.
 
-## Definitions
+## Inventory
 
-Chapter operator: text operator related to creation of chapters in the prospected user manual.
-The chapter operators are specified in the separate files listed below.
+~~~text
+Chapter(topic, main?, roots[], owned_classes[], schemas[])
+Transform(name, source, kind, inputs[], outputs[], groups[], stages[])
+Stage(alias, transform, bindings[], output_relations[], ownership)
+Group(intent, explanation, listing, public_methods[], private_methods[])
+Schema(name, fields[], return_constructions[])
+~~~
 
-Chapter document: resulting document when a chapter operator is applied.
-Ex: Chunking.form.md (produced by Format operator).
-Chapter document usually discusses one big transform, e.g. Chunking.
+- **Main transform**: an actual source class designated as the chapter's subject; never inferred from filename order.
+- **Root**: each independent transform in the established topic scope, including the main when present. A main may
+  coexist with separately invoked topic transforms; Vectorization and its query binders are an example. A called child
+  is not also a root merely because it has its own source file. Preserve declared topic order, then source order where
+  unspecified; never invent calls connecting independent roots.
+- **Step transform**: a transform implemented by methods, including implicit steps and public typed helpers.
+- **Composed transform**: a transform implemented by child-stage assignments. A **workflow transform** is a composed main.
+- **Stage**: one call occurrence, including its alias and complete argument bindings; not just the called class.
+- **Internal stage**: a call whose class belongs to the chapter's implementation scope. Default scope is the selected
+  package subtree; include explicitly established topic-owned helpers outside it. Record such exceptions with evidence.
+- **External stage**: a call to a class outside that scope. Imports alone do not establish ownership.
+- **Method group**: one low-level source section's intent, explanation, and method listing. A listing may contain several
+  related methods. A class declaration or stage assignment is not a method group.
+- **Public method**: a source-declared public step (decorated or implicit), or public typed helper such as a
+  public `@special` or `@raw` method. Private helpers remain in Code, not Implementation.
+- **Explanatory item**: a method-group paragraph or external-call description. Implementation and Code have separate
+  item streams, even when some of their intents describe the same operation.
 
-Main transform: the main transform of the chapter document.
-Step method: a step method of a transform. Optionally decorated with @step in transform code.
-Step transform: a transform that consists of step methods (as opposed to composed transform).
-Composed transform: a transform that consists of stages (other transforms) rather than step methods.
-Workflow transform: the main transform which is simultaneously a composed transform.
-Stage: a stage of composed transform, usually defined as assignment of a Transform to a field in the composed transform.
-Stage transform: a transform that serves as/implements a stage of a bigger (parent) transform.
-Internal stage: a stage whose transform code is in same package as parent transform, or its subpackages.
-External stage: a stage whose transform code is outside parent transform package and its subpackages.
+If a transform genuinely mixes methods and stages, record both in source order and apply both branches below; do not
+drop one to force a binary classification. A transform with stages concludes with Result.
 
-Text notation: compact plain text notation for schemas, transforms and their parts: stages, step methods.
-Ex: See Chunking.ext.md:
-- 'DocumentChunking' section for examples of step and transform notation.
-- 'Result' section for example of composed transform notation.
-Formula notation: Structure Formula Notation defined in [Notation.md](Notation.md)
-Step notation (Typed step notation): notation for step method (text or formula depending on text operator)
+Resolve inherited inputs and public methods as part of each concrete transform's effective contract. Explain inherited
+groups before locally declared groups in that transform's Implementation and retain their signatures in its shape.
+In Code, collect a topic-owned base class once before its first consumer, under its own transform heading; inheritance
+does not create a child-stage call or another numbering root. A shared declaration is not duplicated for each subclass.
 
-Stages section: a top-level 'Stages' section with a concise list of workflow stages.
-Stage subsection: in a document with Implementation section, a subsection of Implementation describing
-a Stage - a transform that serves as a stage in a bigger transform, usually as a stage of the workflow transform.
-Internal stage subsection: stage subsection for an internal stage.
-Resulting shape block: canonic stage transform notation at the end of stage subsection, usually preceded with
-`Resulting transform shape:` label
+## Rendering algebra
 
-Explanatory item: for a step method, the prose which explains it; usually a numbered item.
-Stage call: the assignment of stage to a field of a composed transform.
+~~~text
+Draft.Implementation(chapter) = continuous narrative                 # no subsections or Result
 
-Overly complicated language: narrative style that heavily relies on complicated terminology  
-- The narrative style that relies on overly complicated terminology, such as heavy use of 
-boundary, contract, orchestration, facts, evidence, to convey the meaning.
+Extend.Implementation(chapter) =
+    preamble
+    for root in chapter.roots:
+        reset implementation_counter
+        if chapter.roots has one entry and root == chapter.main and root.kind == composed:
+            children(root) + Result(root)                           # siblings under Implementation
+        else:
+            heading(root) + body(root)                              # independent root owns its subtree
+
+body(internal step) =
+    plain_intro + public_groups + "Resulting transform shape:" + step_shape
+
+body(internal composed) =
+    plain_intro + members_in_source_order + Result                  # nested inside this transform
+    # members = child subsections, plus public groups if source genuinely mixes both
+
+body(external call) =
+    circled_intent_and_description + boundary_notation               # stop recursion at this boundary
+
+Format.Implementation = preserve(Extend.Implementation) + formula_notation
+
+Collect.containers = transform headings                            # Workflow names a sole composed main
+Collect.transform_body = plain_intro + class_listing + groups
+Collect.group = italic_intent_and_explanation + method_listing      # never a heading
+Extend.Code = rebase_headings(Collect) + independent_decimal_items
+Format.Code = exact(Extend.Code)
+~~~
+
+`children` emits one subsection per call in execution order, recursively using internal/external rules. Repeated calls
+retain distinct aliases and arguments. Class/method code is collected once per root; repeated calls do not justify
+duplicating a class listing. Every internal composed transform has its own concluding Result, including composed
+internal stages. An external composed class still uses boundary-only treatment; its Result belongs in its own chapter.
+
+Code headings represent transform containers, never method groups. Below a transform's plain class description and
+listing, each method/helper group is one numbered, intent-led explanatory paragraph immediately before its listing.
+Nested headings are permitted only for actual child transforms or external calls, not for methods or grain passes.
+The stage introduction cannot stand in for public groups: an internal step with N collected public groups has N
+Implementation items, not one synthetic "Run transform" item followed only by its shape.
+
+The top-level **Stages section** is a concise inventory, not the Implementation subsection tree. With multiple roots,
+list those independent transforms, whether a main is designated or not. Otherwise list a step main's public steps or
+a composed main's direct calls. Multiple roots each own their container and counter; none is a child of its neighbor.
+
+## Numbering
+
+| Stream | Consumes a number | Does not consume a number | Scope |
+|---|---|---|---|
+| Implementation | Public method group; external-call item | Internal intro/class/stage, Result, shape | Circled ① onward, reset per root |
+| Code | Intent-led method/helper group; external-call item | Internal class/Workflow description; assignments within parent listing | Decimal 1. onward, independently reset per root |
+
+External stages are single-step items because their method groups are not expanded here. They receive a short italic
+intent and source-backed explanation before the call listing in Code and before boundary notation in Implementation.
+Internal class descriptions remain plain and unnumbered, including composed classes without methods.
+
+Code numbering follows collected groups and external calls, never Implementation items. Private helper groups with
+intents still belong to Code; their absence from Implementation is one reason the streams differ. Keep each short italic
+intent and its explanation in the same numbered paragraph immediately before its listing or notation; never add a
+separate unnumbered explanation after it.
+
+Use actual circled numerals (①–⑳, ㉑–㉟, ㊱–㊿); do not generate them by incrementing one Unicode code point past ⑳.
+If a root exceeds the available circled glyphs, use an explicit circled-number rendering, not parenthesized numerals.
+
+## Notation
+
+- **Text notation**: lossless signatures and named input/method/stage/output blocks in Draft and Extend.
+- **Formula notation**: the chapter profile of [Notation.md](Notation.md#chapter-profile) used by Format.
+- **Step notation**: one complete signature per public method, including every parallel grain path and concrete return.
+- **Resulting shape block**: the step-transform summary, once at the end of that step's subsection.
+- **Result**: a composed transform's concluding subsection, containing its explanation and whole-transform notation.
+  It is not a synonym for step shape or chapter-wide summary.

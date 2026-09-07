@@ -1,58 +1,39 @@
-# Problem and Solution narrative style
+# Problem and Solution contract
 
-Apply this style to Problem and Solution sections in draft, extended, and formatted chapter documents. Operator
-documents retain responsibility for section order, source coverage, and notation.
+Apply when authoring Draft or Extend. Format checks this contract but preserves its input prose.
 
 ## Problem
 
-- Ground the opening in the motivating use case, then narrow to the topic's specific industry requirement in
-  preferably one focused paragraph. A Problem section may be a single vivid sentence when that fully states the need.
-- Introduce only the domain concepts needed to make that use-case requirement clear, then state the user's desired
-  outcome. Do not turn Problem into a catalog of implementation challenges, risks, or possible failure modes.
-- Use concrete subjects and active, lively verbs. Prefer expressive language over abstract status or requirement
-  language.
-- State the problem and its consequences, then stop. Do not explain how to solve it, name a proposed abstraction,
-  describe a transform or workflow, introduce solution algorithms, or prescribe implementation requirements.
-- Treat boundaries, policies, indexes, formulas, stages, and data structures as possible solution material. If a sentence
-  tells the reader what the system should build or how it should behave, move it to Solution, Design, or Implementation.
-- Avoid document-production commentary and phrases such as “The problem is to” when a direct statement is clearer.
-- Avoid 'tension', 'problem', 'issue' in section text (evident from section heading).
+State the motivating use case and desired outcome in active, concrete language. One vivid sentence may suffice.
+Keep implementation mechanisms, limits, risks, and challenge inventories out; discuss them in Solution, Design, or
+Implementation according to their purpose. Do not require an explicit reference to building a search engine.
 
 ## Solution
 
-In this section, “solution” means the conceptual and practical answer to the stated problem, not the system's design or
-implementation plan.
+~~~text
+general domain practice + user goal
+    -> conceptual bridge: why this model answers that goal
+    -> concrete abstraction + explained example/model/formula when useful
+    -> enabled behavior + semantic tradeoffs + practical value
+~~~
 
-- Make Solution the conceptual center: explain the general theory and practice that answer the
-  stated use-case problem, then move to the topic's central abstraction, behavior, and tradeoffs.
-- Begin with a short general introduction to the domain practice before naming project-specific components or describing
-  the concrete data structure. When the topic centers on query or request structure, include representative examples
-  early enough for a first-time reader to see how the abstraction is used.
-- Write direct narrative. Do not announce the section with “The solution is” or refer to “this Solution section.”
-- Use active, expressive language with concrete subjects and varied sentence rhythm. Favor explanatory verbs such as
-  represent, compare, preserve, connect, and recover. Avoid sketches that merely name components without explaining how
-  their ideas fit together.
-- Define concepts before using them, and explain why each concept matters to the user or system.
-- Explain the reason the approach works and the tradeoffs that shape it, such as precision versus recall,
-  context versus focus, flexibility versus consistency, or freshness versus cost.
-- Keep transform names, stage mechanics, method inventories, schemas, implementation requirements, and code in later
-  sections. Named components may appear only when they clarify the conceptual model; do not turn Solution into a system
-  design or architecture list.
-- Avoid 'solution', 'approach', 'design', 'practice' in section text (evident from section heading).
+Preserve this order, not a rigid paragraph count. Usually three to five substantive paragraphs give the explanation room
+to develop. The opening is not a project component, algorithm, schema, or formula. Explain concepts before relying on
+them; a formula must have introduced symbols and an interpretation in prose.
 
-## Formula and continuity
+For query/request structures, show representative supported examples early in the concrete explanation and explain their
+meaning. SearchFields, for example, needs readers to understand field-only, body-only, mixed, and aggregate requests,
+not just the internal names. Use only syntax supported by the inputs.
 
-- Include a formula, model, or monochrome diagram when it makes the concept materially clearer, and introduce its
-  symbols in prose before displaying it.
-- In extended documents, use GitHub/Typora display math with `\[` and `\]` (or an equivalent supported display block).
-- In formatted documents, convert every display formula to a balanced `$$ ... $$` block. Never leave LaTeX delimiters or
-  formula text as a lone `$` or as plain prose.
-- Preserve the same conceptual narrative across Problem and Solution while allowing the formatted document to change
-  only the required mathematical delimiters and typography.
+Keep the conceptual explanation distinct from architecture and method inventories. Explain why the ideas work and what
+they make possible; put limits, component responsibilities, validation, and implementation mechanics in Implementation
+(or Draft Design). Do not replace a developed explanation with a short component summary, and do not pad it to a quota.
 
-## Quality assurance
+Develop the explanation as a book chapter: each paragraph introduces an idea, explains its meaning through the topic,
+and prepares the next idea. Preserve the reasoning, examples, and tradeoffs in a successful reference; a compressed
+abstract with the same keywords is not equivalent coverage. When a reference is supplied, compare both explanatory
+depth and prose volume. A substantial reduction requires restoring the missing development or explaining why it was
+redundant; word counts flag regression but do not substitute for editorial review.
 
-Verify that Problem is grounded in the motivating use case and contains the need, difficulty, and consequences only.
-Verify that Solution gives a complete, general, expressive account of the theory and practical answer without drifting
-into design or implementation. Neither section may refer to document-production structure, and each formula must render
-as display math in the target format.
+Extend retains the Draft's conceptual coverage and improves it using current background and source. Format preserves
+that narrative and paragraph order, converting mathematical typography only.

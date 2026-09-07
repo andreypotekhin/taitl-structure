@@ -1,81 +1,45 @@
-# Collect operator
-
-## Shared Prose context
-This chapter operator is governed by the common concepts and conventions in [Prose.md](../Prose.md). Read its
-text-process model, and shared authoring guidance before applying this file.
-Definitions: [Definitions](Definitions.prose.md),
-
-## Collection
-Present annotated source as continuous narrative.
+## Collect
 
 ### Collect process
-- Input: close/annotated
-- Output: close/collected
-- Scope: close/annotated/search
-- Name: Collect. Usage: Collect(dir)
-- Invocation: manual
+
+Assemble the topic's annotated source into a continuous source document under `close/collected/`, preserving its
+relative path. This manually invoked process follows the chapter's ownership boundaries and does not expand external
+implementations or change application code.
+
+~~~text
+Collect(topic, annotated_source, chapter_scope) -> close/collected/<topic-path>/<Topic>.cnd.md
+~~~
 
 ### Collect operator
-- Name: collect(), usage: collect(dir)
-- Input: .anno.md describing a transform. Ex: rerank.anno.md
-- Output: .cnd.md describing a transform in collectd form. Ex: rerank.cond.md
-- Goal: present annotated source as continuous narrative.
-- Instructions
-  - Top header: convert to gerund, optionally extend to fuller phrase.
-    - Ex: 'Rerank Documents' becomes 'Reranking the Documents'
-  - Low-level headers: convert every step or helper section heading to an italicized intent-setting sentence at the beginning of its section paragraph.
-    This includes sections whose listing contains `@step`, `@special`, or `@raw`; retain workflow and stage container headings.
-    - Ex: 'Select fallback options' heading converted to italicized 'Select fallback options. ' added in front of section paragraph.
-  - Avoid merging code listings - maintain a text sentence in between.
-  - Drop import statements.
-  - Workflow transform is the main transform in a package - a composed transform that rules other transforms in the package.
-    Usually, the workflow transform is alphabetically the last file in dir (Ex: 'SearchDocuments'). Not all dirs contain the workflow transform.
-    - Top header: as-is, do not convert to gerund
-    - Replace subsections as described above
-    - Move workflow class listing from intro section into a new section, 'Workflow'
-    - The `Workflow` section thus contains the parent workflow class listing plus all former sections, except the intro
-      section. It must retain every stage call in execution order, including calls to stages defined outside the workflow
-      directory, so the complete parent orchestration is readable in one place.
-    - Append workflow document with the content (.cnd.md) of stage transforms as additional sections to form continuous narrative.
-      - Order stage transform sections according to their stage's order in the workflow transform.
-      - Convert the headers of the appended content to one level lower, to maintain header structure.
-      - Do not remove any headers: former top-level headers become section headers.
-    - Treat the workflow directory as a package tree: inspect sibling source files and subpackages,
-      - For internal stages, include the annotated source for the stage transform. If one source file defines
-        multiple transform classes, include each class separately in workflow order.
-    - Some stage transforms may be defined outside of workflow dir.
-      - Internal stages: include them into main workflow doc as stage transforms, as described above.
-      - External stages (stages defined outside the workflow dir):
-        - Include a section heading and brief description, ", as described in 'doc_header'".
-        - Keep the full stage call in the parent `Workflow` section and include the complete parameterized stage call in
-          the external stage section as well, so the external reference is self-contained.
-        - Describe the external stage in prose without repeating the assignment inline; the fenced listing is the single
-          external reference for that call.
-        - The intentional duplication is limited to stage assignment; never duplicate parent workflow class
-          listing or a child transform narrative in external stage section.
-        - For example, if the workflow class contains `features = Features(...)`, the external stage section contains the
-          complete `features = Features(...)` assignment, not a second `class Training(Transform):` listing.
-    - Quality assurance:
-      - Verify transform sections follow the order of main transform stages, with no stages missing.
-      - Verify the package stage inventory is complete: every same-package stage class from the workflow has a corresponding section in the collected output.
-      - Verify every internal stage section contains its complete class declaration and all annotated step code,
-        including files that define more than one transform class.
-      - Verify the complete parent orchestration, including every external stage call, appears in `Workflow` in execution order.
-      - Verify every external stage section contains the complete parameterized stage call and that the parent Workflow
-        also contains the call in execution order.
-      - Verify parent workflow class listings and child transform narratives are not duplicated as external listings.
-      - Verify each output has exactly one top-level header, and that its first nonblank line is that header.
-      - Verify each workflow output has exactly one parent `Workflow` section before inserted child sections.
-      - For transform steps, verify code listing is present in each transform step section.
-      - For every transform class, inventory all public `@step`, `@special`, and `@raw` methods in source order and
-        verify that each method appears exactly once in a collected low-level section. Include trailing methods after
-        the last existing section, especially methods that publish declared outputs. A public method must not disappear
-        merely because a neighboring section contains a private helper.
-      - Enumerate every step or helper section heading below each transform or stage heading, including sections containing
-        `@step`, `@special`, or `@raw` listings. Verify that each is represented exactly once in the collected output,
-        in source order, with the heading removed and its exact title converted to an italicized intent sentence at the
-        beginning of the section paragraph. A helper section such as `Default sentence spans` must not be treated as
-        unheaded prose merely because it contains `@special` instead of `@step`.
-    - Since, as result of content inclusion, stage sections carry more detail, the texts between code listings in the
-    'Workflow' section may become redundant/duplicating.
-      - Trim texts between code listings in the 'Workflow' to avoid repetition/duplication.
+
+Organize source into transform containers and intent-led method groups. Read [Prose.md](../Prose.md), [Definitions.prose.md](Definitions.prose.md), and
+[General.style.md](General.style.md), then instantiate [Collect.prose.temp.md](Collect.prose.temp.md).
+Source annotation remains governed by [Annotation.prose.md](Annotation.prose.md).
+
+1. Inventory roots, child calls, ownership, classes, and all annotated method sections against source. Include implicit
+   steps and public/private helpers, including trailing publishing methods. Resolve missing annotation before collection;
+   if repair is outside the request, report it rather than silently producing partial output.
+2. Choose the container shape from the inventory:
+   - Multiple roots, with or without a designated main: use the topic title and a named container for each independent
+     root. Collect each recursively; do not invent a common Workflow or calls between neighboring roots.
+   - Sole main composed transform: preserve its title, put its complete parent listing under Workflow, then collect children
+     in execution order.
+   - Main step transform: use a gerund topic title and its class/method narrative, without Workflow.
+   - No main: use the topic title and named root containers, without a common Workflow.
+3. Preserve internal class descriptions as plain prose before class/interface listings. Retain transform container
+   headings. Replace each low-level method/helper heading with its short italicized intent sentence at the beginning of
+   the explanation paragraph. Preserve the original explanation once, without a duplicate paraphrase or long italic span.
+4. Keep each listing in source order, unchanged except removing module-level imports; retain method-local imports.
+   Do not merge listings. Each method-group listing
+   needs its own opening intent and explanation; when annotation has several listings under one heading, derive a short
+   source-backed intent for each existing description. If a description is missing, repair annotation first. Do not
+   manufacture an extra wrapper paragraph or reinterpret an internal stage description as a method group.
+5. Recurse into internal classes, once per root. For each external call, retain the complete assignment in the parent
+   and a self-contained external section with short italic intent, source-backed explanation, and that exact
+   parameterized assignment. Only the assignment is intentionally repeated; never collect the external implementation
+   or repeat the parent class. An external call is one item, not a fabricated method group.
+6. Run [QA.prose.md](QA.prose.md)'s shared and Collect checks. Emit one H1, with all containers nested beneath it.
+   Collect emits no item numbers; Extend assigns Code numbers to these collected method groups and external calls.
+
+A Workflow or internal class container without descriptive prose needs one source-grounded summary before its listing.
+Keep this inside the container, not between Code and its first heading in downstream chapters.
