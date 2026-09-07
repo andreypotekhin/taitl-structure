@@ -74,7 +74,7 @@ Resulting transform shape:
 
 ### {{ExternalStageName}}
 
-② *{{Short boundary intent.}}* {{Source-backed description.}}
+② {{Source-backed plain description; no italicized intent.}}
 
 ~~~text
 {{ExternalStageName}}:

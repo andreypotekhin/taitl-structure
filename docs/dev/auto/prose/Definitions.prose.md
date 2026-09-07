@@ -39,6 +39,9 @@ groups before locally declared groups in that transform's Implementation and ret
 In Code, collect a topic-owned base class once before its first consumer, under its own transform heading; inheritance
 does not create a child-stage call or another numbering root. A shared declaration is not duplicated for each subclass.
 
+An external boundary still exposes the complete effective input/output contract, including inherited inputs. Stopping
+recursion suppresses methods and child implementations, not the query, index, or target relations passed to the call.
+
 ## Rendering algebra
 
 ~~~text
@@ -61,7 +64,7 @@ body(internal composed) =
     # members = child subsections, plus public groups if source genuinely mixes both
 
 body(external call) =
-    circled_intent_and_description + boundary_notation               # stop recursion at this boundary
+    circled_plain_description + boundary_notation                    # stop recursion at this boundary
 
 Format.Implementation = preserve(Extend.Implementation) + formula_notation
 
@@ -94,13 +97,14 @@ a composed main's direct calls. Multiple roots each own their container and coun
 | Implementation | Public method group; external-call item | Internal intro/class/stage, Result, shape | Circled ① onward, reset per root |
 | Code | Intent-led method/helper group; external-call item | Internal class/Workflow description; assignments within parent listing | Decimal 1. onward, independently reset per root |
 
-External stages are single-step items because their method groups are not expanded here. They receive a short italic
-intent and source-backed explanation before the call listing in Code and before boundary notation in Implementation.
+External stages are single-step items because their method groups are not expanded here. In Implementation, their
+source-backed description has a circled number but no italicized intent; the heading already identifies the operation.
+Code independently retains the collected short italic intent and explanation before the call listing.
 Internal class descriptions remain plain and unnumbered, including composed classes without methods.
 
 Code numbering follows collected groups and external calls, never Implementation items. Private helper groups with
-intents still belong to Code; their absence from Implementation is one reason the streams differ. Keep each short italic
-intent and its explanation in the same numbered paragraph immediately before its listing or notation; never add a
+intents still belong to Code; their absence from Implementation is one reason the streams differ. Where an intent is
+required, keep it and its explanation in the same numbered paragraph immediately before its listing or notation; never add a
 separate unnumbered explanation after it.
 
 Use actual circled numerals (①–⑳, ㉑–㉟, ㊱–㊿); do not generate them by incrementing one Unicode code point past ⑳.

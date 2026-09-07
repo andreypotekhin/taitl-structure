@@ -29,7 +29,8 @@ Source annotation remains governed by [Annotation.prose.md](Annotation.prose.md)
 3. Preserve internal class descriptions as plain prose before class/interface listings. Retain transform container
    headings. Replace each low-level method/helper heading with its short italicized intent sentence at the beginning of
    the explanation paragraph. Preserve the original explanation once, without a duplicate paraphrase or long italic span.
-4. Keep each listing in source order, unchanged except removing module-level imports; retain method-local imports.
+4. Keep each listing in source order, unchanged except removing complete module-level import statements, including
+   every continuation line of a parenthesized import; retain method-local imports.
    Do not merge listings. Each method-group listing
    needs its own opening intent and explanation; when annotation has several listings under one heading, derive a short
    source-backed intent for each existing description. If a description is missing, repair annotation first. Do not

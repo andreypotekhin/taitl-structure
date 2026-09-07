@@ -36,7 +36,8 @@ Match the explanatory depth of an accepted chapter reference; do not condense it
   Read consecutive items as a continuous explanation: carry established context forward, state the next useful
   transition plainly, and give its rationale. Do not bury that progression under repeated constraints or defensive
   caveats; put exceptional behavior with the operation that owns it or in the preamble.
-- External call: one short source-backed intent and description with its circled marker, followed by boundary notation.
+- External call: one source-backed plain description with its circled marker, followed by boundary notation. Do not add
+  an italicized intent that repeats the external stage heading. This does not change Code's independent intent-led items.
   If useful, add a direct reference such as "See Scoring for score production details."
 - Result: one self-contained sentence explaining what the composed transform publishes from its inputs.
 

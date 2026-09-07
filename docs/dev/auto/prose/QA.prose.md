@@ -12,6 +12,7 @@ A failed input check is repaired at its owning operator when authorized; otherwi
 | S1a Independent companions | A main plus independent topic transforms uses separate root containers and counters; inspect actual call assignments, not the chapter's flat Stages list. Vectorization's binders are not children of Vectorization. |
 | S2 Coverage | Ordered public-method and stage inventories equal output coverage. Include every grain path, implicit step, public helper, and trailing publisher. |
 | S2a Inheritance | Concrete-stage contracts include inherited inputs and public groups; Code lists the declaring base once before use. Reject a fabricated base-class stage call and missing inherited query preparation in Scoring. |
+| S2b External contracts | Compare each external boundary with the actual call and effective class inputs, including inheritance. Similarities' scoring boundaries must retain queries, all four term relations, and targets, not only locally declared summaries. |
 | S3 Narrative | Problem states need, not challenges. Solution follows context -> bridge -> concrete example/model -> value. Preamble explains actual data flow and important limits. |
 | S4 Language | Essential terms are defined; exact identifiers use inline code in prose. No production terminology. "Search engine" occurs at most once. |
 | S5 Layout | One H1; correct section tree; blank lines around blocks. Every code fence has preceding descriptive prose; no adjacent listings separated only by whitespace/headings. |
@@ -42,6 +43,8 @@ C4 method/helper group -> short italic intent + original explanation in ONE para
 C5 external call -> short italic intent + source-backed explanation -> complete assignment
 C6 item_numbers == none; containers follow inventory topology
 C7 container_headings == transform_tree; method/helper headings == none
+C8 removed_imports == complete module-level statements; no dangling imported names or closing parentheses
+C9 every internal class has its declaration/interface listing before its first method group
 ~~~
 
 Inspect the paragraph immediately preceding EACH method listing, not just total intent counts. Compare its explanation
@@ -55,7 +58,7 @@ E1 top_level_sections == Draft.top_level_sections - [Notation, Design]
 E2 tree == render(inventory):
        internal step -> groups + exactly one Resulting transform shape
        internal composed -> all child subsections + exactly one concluding Result
-       external -> exactly one item + boundary notation, no methods/Result
+       external -> exactly one circled plain description + boundary notation, no italic intent/methods/Result
 E3 Implementation items == root_local_circled(public_groups + external_calls)
 E4 Code items == root_local_decimal(collected_intent_groups + external_calls)
 E5 strip_number_prefixes(Code prose) == collected prose
@@ -65,12 +68,15 @@ E8 preamble = prose between Implementation heading and first subsection
    preamble is nonempty and develops Draft's component-level account under Implementation.style
 E9 for each internal_step: ordered_item_method_sets == collected_public_group_method_sets
    # a single class-level item or a complete shape alone cannot satisfy group coverage
+   each item explains its concrete data transition and rationale; an intent plus a signature alone fails
 E10 Code headings == collected transform containers; method/helper headings == none
 ~~~
 
 Compare within each subtree, not the document total: a composed internal child needs its own Result even when its parent
 has one. Internal class intros consume no number; external items do. Never reset at ordinary children or derive Code's
 counter from Implementation. An internal step's named standalone shape appears only after its shape label.
+Check the streams independently: external Implementation descriptions have circled numbers and no italicized intent;
+their Code items still preserve collected intents and decimal numbers. Do not strip Code intents to match Implementation.
 
 Check each composed notation against actual call arguments, policies/constants, aliases, and relation names. Stage arrows
 expose unqualified output names, not types or qualified paths; final outputs are named and typed, without assignments.
@@ -102,6 +108,9 @@ bare `results` inputs that erase that distinction. When a reference is requested
 Result formula explicitly; matching the current prompt alone cannot establish reference parity.
 Count formula blocks and validate their ordered mapping to source notation; checking that zero math delimiters are
 balanced cannot pass F4. Preserve a complete Solution and preamble through Format before checking individual formulas.
+Record this mapping by stage, not just as a family total. For SearchDocuments, check all three external boundaries,
+RetrieveDocuments' four methods, FuseDocuments' ten methods, RerankDocuments' current seven methods, all three step shapes,
+and the six-call Result. The older three feedback-option methods in `3/` must not displace the current single method.
 For F6 test: unseen full schema, input=return schema (including identity project/base), pure projection to a different
 schema, projection with additions, repeated full schema,
 and a different projection of the same schema. Full signature coverage is mandatory in every case.
@@ -140,8 +149,10 @@ The older `checks/chunking.cjs` contains an obsolete assertion forbidding Result
 acceptance oracle for the current notation contract until updated. For a prose-only run, perform the checks above
 directly against source, current upstream documents, and the requested reference; do not invoke generation scripts.
 
-For narrative-only changes across the remaining families through Offline, run
-`node docs/dev/auto/prose/checks/narratives.cjs`. It checks reference-depth alarms, paragraph preservation across
+When scripting is permitted, `node docs/dev/auto/prose/checks/narratives.cjs` can supplement narrative review across
+the families through Offline. It checks reference-depth alarms, paragraph preservation across
 Draft/Extend/Form, explained Solution-model conversion, and topic-specific examples and limits. Its negative tests
 reject shared compression, missing preambles, downstream prose drift, and text models left in Form's Solution.
 This focused check does not replace the stage, signature, return-schema, numbering, or full-document formula checks above.
+When scripting is prohibited, inspect those properties directly. Never treat a narrative-only pass as completion of
+a family whose Implementation still contains placeholders or whose Form retains text notation.

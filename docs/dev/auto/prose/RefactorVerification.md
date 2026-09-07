@@ -1,5 +1,43 @@
 # Chapter operator refactor verification
 
+## SearchDocuments Implementation and formula repair — September 7
+
+The extended chapter still contained class-level placeholders, so formatting the existing body could not recover the
+missing method account. Replaced those placeholders upstream, developed each method-group explanation from current
+source, and converted the complete Implementation to formulas. Retained the developed Solution and six-paragraph
+preamble, correcting the latter's claim that reranking normalizes fused retrieval evidence.
+
+| Subtree | Public methods | Circled items | Implementation formula blocks |
+|---|---:|---:|---:|
+| OnlineFiltering / OnlineVectorization / OnlineScoring | External boundaries only | 1–3 | 3 |
+| RetrieveDocuments | 4 | 4–6 | 4: three groups and one shape |
+| FuseDocuments | 10 | 7–10 | 5: four groups and one shape |
+| RerankDocuments | 7 | 11–14 | 5: four groups and one shape |
+| Result | Six actual calls | None | 1 |
+
+Including Solution, 19 Extend notation blocks map to 19 Form display blocks (38 delimiters). Manual source/schema
+inspection checked all 21 public signatures, explicit projection fields, stage contracts, assigned aliases, and producer
+references. No placeholder or text-notation fences remain in Form. Extend/Form diff hunks are confined to math and
+Stages typography: their prose and Code agree. Collected/Code differences are heading rebasing and 15 independent
+decimal prefixes, including the private candidate helper. Restored the three internal class/interface listings.
+
+Compared the Implementation and Result against `close/3/form/search/transforms/searching/search_docs/SearchDocuments.form.md`.
+Intentional differences: current source has one feedback-option method in place of three; external descriptions are
+plain circled prose; the filter-target and cached-vector bindings are retained; projected feedback options expose their
+added fields and essential identity rather than the entire inherited record. Current reranking divides lexical score
+by maximum retrieval score, not RRF by maximum RRF, and declares no zero-denominator guard; the prose now says so.
+
+This was a focused Implementation/Code repair, not a fresh Draft-generation or all-family acceptance run. No generation
+or verification scripts were used. Formula syntax and coverage were inspected; visual rendering was not verified.
+
+## Current external-description clarification
+
+The September 7 review restores plain circled descriptions for external stages in Implementation. No separate italicized
+intent is needed there because the subsection heading identifies the operation. Collect and Code remain independent:
+their external-call items retain the collected italicized intent and decimal numbering. Earlier claims below that both
+streams use intent-led external items are superseded. Definitions, Implementation style, Extend, its template, and QA
+now distinguish the streams explicitly.
+
 ## Current correction: Inference dependencies and reader continuity
 
 The September 6 Inference review supersedes earlier claims below that removing Result assignments and qualified

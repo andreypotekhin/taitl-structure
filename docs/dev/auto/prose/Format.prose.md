@@ -21,6 +21,8 @@ Check upstream narrative against [Solution.style.md](Solution.style.md) and
    is an upstream defect, not permission to improvise one during formatting.
    Use the current extended document as the only structural/prose input: an existing Form is never a template for
    retaining stale groups or sections. Inventory and convert notation across the entire pre-Code body, not only Solution.
+   Before conversion, account for each stage's actual methods, explanation groups, and notation blocks in the QA record;
+   unresolved placeholders or a generic class-level item fail this gate even when Solution and the preamble are complete.
 2. Preserve all prose, paragraph order, headings, group boundaries, circled Implementation markers, and decimal Code
    numbers. Preserve the entire Code section verbatim, including Python whitespace. Never use Implementation to edit Code.
 3. Apply only these presentation changes outside Code:

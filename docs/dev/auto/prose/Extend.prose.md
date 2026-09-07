@@ -27,7 +27,7 @@ Develop the narrative and explain every owned stage and public method group. Rea
      Resulting transform shape. Include all public methods in the shape; never substitute "same pattern" for named paths.
    - Composed: recursively render every child, then a Result subsection with a source-grounded sentence and complete
      composed notation. This applies equally to workflow, independent root, and internal composed stage.
-   - External: one circled intent/description and one canonical boundary block; no methods or Result.
+   - External: one circled plain description and one canonical boundary block; no italicized intent, methods, or Result.
    Reset the circled stream per root, not per child. Do not add a duplicate boundary block before an internal step's groups.
 4. Build Code directly from collected, independently of Implementation. Keep internal container descriptions plain; keep
    exact listing contents and group prose. Prefix each intent-led group or external-call item with its Code number,
