@@ -7,7 +7,7 @@ relative path. This manually invoked process follows the chapter's ownership bou
 implementations or change application code.
 
 ~~~text
-Collect(topic, annotated_source, chapter_scope) -> close/collected/<topic-path>/<Topic>.cnd.md
+Collect(topic, annotated_source, chapter_scope) -> close/collected/<topic-path>/<Topic>.code.md
 ~~~
 
 ### Collect operator

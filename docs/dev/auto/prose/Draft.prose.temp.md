@@ -51,4 +51,4 @@
 
 ## Code
 
-{{Corresponding .cnd.md reference(s).}}
+{{Corresponding .code.md reference(s).}}

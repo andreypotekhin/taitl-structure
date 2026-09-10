@@ -49,7 +49,7 @@ function validate(draft, ext, form, collected) {
     assert.deepEqual([...draft.matchAll(/^## (.+)$/gm)].map(m => m[1]),
         ['Problem', 'Solution', 'Builds on', 'Used by', 'Definitions', 'Inputs', 'Outputs', 'Stages',
             'Notation', 'Design', 'Implementation', 'Code'], 'Draft section contract');
-    assert.equal(section(draft, 'Code'), 'Chunking.cnd.md');
+    assert.equal(section(draft, 'Code'), 'Chunking.code.md');
     assert.equal(preamble(draft), section(draft, 'Implementation'), 'Draft has no stage tree');
     const extBody = ext.split('\n## Code\n')[0];
     const formBody = form.split('\n## Code\n')[0];

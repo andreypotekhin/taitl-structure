@@ -75,7 +75,7 @@ annotated source + scope             -> Collect --/
 | Operator | Output | Template |
 |---|---|---|
 | [Draft](prose/Draft.prose.md) | close/draft/.../Topic.draft.md | [Draft template](prose/Draft.prose.temp.md) |
-| [Collect](prose/Collect.prose.md) | close/collected/.../Topic.cnd.md | [Collect template](prose/Collect.prose.temp.md) |
+| [Collect](prose/Collect.prose.md) | close/collected/.../Topic.code.md | [Collect template](prose/Collect.prose.temp.md) |
 | [Extend](prose/Extend.prose.md) | close/extended/.../Topic.ext.md | [Extend template](prose/Extend.prose.temp.md) |
 | [Format](prose/Format.prose.md) | close/form/.../Topic.form.md | [Form template](prose/Form.prose.temp.md) |
 
