@@ -1,5 +1,214 @@
 # Chapter operator refactor verification
 
+## Filtering family — September 10
+
+The family had annotations and `close/3/` collected references but no current Draft/Collect/Extend/Form files. Created
+all four under `search/transforms/filtering/`. Filtering is a sole composed main with one internal FilterOverlap stage,
+four public methods/groups, one step shape, and one concluding Result. Workflow appears first only in Code; neither
+class introduction consumes a number. Both independent item streams contain four correctly placed intent-led items.
+
+Seven Extend notation blocks map to seven Form displays: the Solution intersection model, four signatures, step shape,
+and Result. The Result retains the `overlap` assignment, three positional relation references, all four method names,
+unqualified stage output, typed final output, and no parent name. Return records show both QueryTerm fields, all four
+DocumentFilterMatch fields, and all five DocumentFilterScore fields in schema order; no fields are hidden unnecessarily.
+
+Compared both `close/3/` collected references with current source. The older aggregate contains a removed
+select_distinct_query_terms method, DocumentIndexTerm/token instead of DocumentTerm/term, and cross_join instead of
+param_join. None was reintroduced. Restored exact method indentation in annotation and placed the match explanation
+in its single intent-led paragraph before the listing. The current collected-to-Code diff contains only heading depths
+and four prefixes. The complete Extend/Form diff contains only Definitions, Stages typography, and notation changes;
+the five-paragraph Solution, five-paragraph preamble, and Code are preserved. No prior narrative phases exist in `3/`.
+
+Source-backed distinctions include deduplication before normalization versus distinct matching afterward, no rows for
+empty/unmatched queries, the publication-only 10,000 bound, and timestamp production versus Online cache validation.
+Existing narrative/coverage checks cover those behaviors. Added S0 family reconciliation to catch a family missing
+from a batch despite its appearance as a stage in other chapters. Structural/manual QA only; no scripts, agents,
+application changes, execution tests, or visual math-render claims.
+
+## Evaluation family — September 10
+
+Completed Draft/Collect/Extend/Form and repaired all eight annotations. Two fully expanded step roots provide eight
+judged-ranking and ten behavior methods. Six independent selector specializations add one local override each, for
+24 public declarations and four private helpers. There is no composed parent, child call, Workflow, or Result.
+Every root has one step shape. Implementation has four items per base and one per selector (14); Code has five judged
+base groups, four behavior base groups, and one per selector (15), with private eligibility helpers numbered only in Code.
+
+Twenty-three Extend notation blocks map to 23 Form displays:
+1 Solution + 5 judged base + 6 judged selectors + 5 behavior base + 6 behavior selectors = 23. Each public signature and
+parallel cutoff field is present; every explicit projection addition/override was checked against source. Full
+EvaluationQuery, BehaviorRequest, exposure, and summary constructions retain their required field definitions; later
+full constructions reuse previously defined records. Partial projections retain keys and contributed evidence.
+
+Read the full Extend/Form diff: only mathematical notation, Definitions, and Stages typography differ. Code is unchanged;
+the seven-paragraph Solution and six-paragraph Implementation preamble survive both downstream phases. The complete
+collected-to-Code tail diff contains only transform-heading depths and 15 independent number prefixes. Compared all
+changes against the `close/3/` collected reference: no method body was removed or changed. Intentional differences are
+separate class listings, module-disambiguated headings and base references, an impression-engagement group, a separate
+private-helper group, and corrected explanations. There are no old Draft/Extend/Form files for narrative comparison.
+
+Source review corrected claims that judged selection filters timestamps, and distinguished fixed-cutoff precision,
+judged recall, null metric eligibility, raw clicks versus clicked impressions, and nullable empty-request flags.
+Documented actual join/partition boundaries instead of promising arbitrary slice isolation. Added S9c to require these
+evidence/denominator/context checks. Label selectors retain the actual repeated-name predicate semantics; null band
+selection is not an all-band wildcard. No application code was changed to conceal these limitations.
+
+Final review used direct source reading, literal patches, and read-only diffs/searches, sequentially and without scripts
+or agents. Formula delimiters, environments, signatures, fields, and non-shrinking notation were reviewed structurally;
+visual rendering and application execution were not performed. All requested remaining families through Evaluation
+now have their four phase documents.
+
+## Experiments family — September 9
+
+Completed all four phases and repaired five annotations. Five independent roots contain six owned classes, eight local
+public methods, and one external replacement call. The selector groups its four grain paths; reranking has one local
+group; judged evaluation has two; behavior evaluation has one. Each root restarts its counters. Scoring and search each
+have a Result; the selector, reranker, and two evaluators have four step shapes in total. Twelve text notation blocks
+map to twelve Form displays. External BM25 has a plain circled description and complete inherited boundary inputs.
+
+Checked the full Extend/Form diff: only Definitions, Stages typography, and notation differ; Code and developed narrative
+are unchanged. Collected/Code differences are heading rebasing and six number prefixes. Checked all current local
+declarations against source and the collected reference in `close/3/`; separated previously merged class/method listings,
+repaired reranker indentation, and preserved all local replacements. No old narrative reference exists for this family.
+
+Inheritance required an explicit specialization branch in Definitions, Extend, Notation, templates, and S2a: exact named
+base plus every replacement, with complete effective inputs/outputs, is distinct from an ordinary shortened step shape.
+Checked Scoring's 16 inputs/14 outputs and SearchDocuments' 23 inputs/output against source; replacement calls retain
+source aliases, producer references, constants, and output names. Return definitions preserve all four full score records,
+all five explicit candidate updates, complete EvaluationQuery/BehaviorRequest records, and result identity/evidence.
+
+Source predicates, not aspirational background, establish null production identity, filtering instead of exceptions,
+the behavior evaluator's exclusion of production, and the absence of assignment/promotion or guaranteed context isolation.
+Solution has six developed paragraphs and the preamble has five, preserved through Format. Structural review only;
+no visual math render, execution validation, scripts, or application-code changes.
+
+## Training family — September 9
+
+Completed all four phases under `search/transforms/training/`. Training is a composed root with external Features,
+internal BuildTrainingData, and its own Result. RankDocumentCandidates is a separate step root, not a child of Training.
+There are two public methods and one private helper. Implementation counters are ①–② for Training and ① for the ranker;
+Code counters are 1–2 for each root, with the private helper consuming only the ranker's second Code number.
+
+Seven Extend notation blocks map to seven Form displays: Solution; Features; build signature/shape; Training Result;
+rank signature/shape. Checked the complete eight-field constructed training return and the candidate projection's two
+explicit updates plus source-backed identity/evidence. Result uses the two assigned aliases and both producer-qualified
+feature relations. External Features has plain circled prose, complete inputs/outputs, and no method expansion.
+
+Full Extend/Form diff inspection found only formulas, Definitions, and Stages typography. The five-paragraph preamble,
+Solution, group prose, and Code are preserved. Collected/Code differences are heading depths and independent prefixes.
+Compared the three collected `close/3/` references: restored current `param_join`, exact source indentation/docstring,
+and the private helper intent. No old Draft/Extend/Form reference is available.
+
+Kept the actual package scope: preparation does not fit/split/promote a model, and scoring does not reorder candidates
+or validate artifact versions/zero scales. Current S1a, S2, S9, and root-local numbering checks cover these distinctions;
+no extra rule was necessary. No scripts or application-code changes; visual math rendering remains unverified.
+
+## Labeling family — September 9
+
+Completed Draft/Collect/Extend/Form and repaired all three annotations before collection. The composed root owns two
+internal steps: CreateQueryLabels has six public methods in three groups; MergeQueryLabels has five in two groups.
+All eleven methods, five global circled items, five independent Code items, two step shapes, and one Result are present.
+Eight Extend notation blocks map to eight Form displays. The Result retains `created.labels` in the second call,
+assigned stage aliases, complete step vectors, unqualified output names, and no parent-transform name.
+
+Inspected the complete Extend/Form diff: only Definitions, Stages typography, and math differ; the developed Solution,
+five-paragraph preamble, group prose, and Code are preserved. Collected/Code changes are heading depths and five number
+prefixes only. Compared all three `close/3/` collected references against current source: repaired indentation, removed
+duplicate annotation bodies, retained the raw method's local import, updated source docstrings and exact call punctuation,
+and used current SearchQuery projections rather than older full constructors. No other phase reference is available.
+
+Corrected stale claims that validation removes bad rows or caller labels win generated collisions. Added the raw-lane
+notation rule with S2c, and overlay/validation guidance with S9b, before moving to Training. The raw method's logical
+signature is explicitly identified as lane-derived, while Code retains every runtime parameter. Projected query returns
+show identity plus all three explicit updates. No scripts or application-code changes; no visual render claimed.
+
+## Relevance family — September 9
+
+Completed all four phases under `search/transforms/relevance/`, restoring the incomplete annotation first. One step
+root contains 12 public methods in four groups (4 exposure, 4 engagement, 2 aggregate, 2 normalize). All four groups
+have circled Implementation items and independently numbered Code items. Six Extend blocks map to six Form displays:
+one Solution model, four complete signature groups, and one complete step shape. No Workflow or Result is invented.
+
+Reviewed the full Extend/Form diff: only formulas, Definitions, and Stages typography differ. Code and narrative are
+unchanged, including the five-paragraph preamble. The collected/Code diff contains only heading rebasing and four
+prefixes. Return notation includes all explicit projection fields, both complete aggregate grains, and the keys,
+denominators, and contributed values explaining normalization. Subsequent context projections focus on the changed
+context mapping after the full daily record has been introduced.
+
+The `close/3/` collected excerpt omits nine method bodies and substitutes calculation fragments; it also says CTR is
+zero below threshold. Current source retains reported ratios and gates only the normalized contribution. Restored
+all bodies, distinguished context expansion from request-time fallback selection, and stated the absence of context
+deduplication and CTR denominator guards. Strengthened the shared behavioral-claim rule and added S9a before advancing.
+No old Draft/Extend/Form exists for narrative-volume comparison. No scripting or application-code changes; mathematical
+coverage and syntax were inspected, but visual rendering remains unverified.
+
+## Clicks family — September 9
+
+Created all four phases under `search/transforms/clicks/`. Both independent streaming roots, Impressions and Clicks,
+retain their implicit `summarize` methods. Repaired annotation to separate each class/interface listing from its
+intent-led method group. Each root has one circled item, one independently numbered Code item, and one step shape;
+there is no composed Result. Five Extend notation blocks map to five Form displays.
+
+Inspected the complete Extend/Form diff and the collected/Code diff: prose and Code are preserved, with only permitted
+presentation changes and independent number prefixes. Both projected returns retain every explicit field and the
+complete exposure key. Compared the collected reference in `close/3/`: both current methods remain source-exact,
+while added method-group prose fixes the older class-only listing structure. No Draft/Extend/Form reference exists.
+The new Solution develops attribution and dwell examples; its five-paragraph preamble is preserved downstream.
+
+Verified the seven-day watermarks, 24-hour attribution interval, impression-day/user ownership, distinct-impression
+CTR basis, and separate raw/capped dwell measures against source. Did not promote background proposals for diagnostic
+outputs or propensity validation into implemented claims. Existing coverage and behavioral-claim QA rules cover these
+cases; no additional prompt rule was needed. No scripts, application-code changes, or claimed visual rendering.
+Relevance, Labeling, Training, Experiments, and Evaluation remain pending.
+
+## Cohorts family — September 9
+
+Created Draft, Collect, Extend, and Form under `search/transforms/cohorts/`, completing the annotation of
+`ResolveCohortBands`. This is one step root: 14 public methods in eight groups, eight circled Implementation items,
+eight independently numbered Code items, one complete step shape, and no Workflow or Result. All ten Extend notation
+blocks (one Solution model, eight signature groups, one shape) have corresponding Form displays.
+
+Compared the complete Extend/Form diff: only Definitions, Stages typography, and formula conversion differ; the
+developed Solution, five-paragraph preamble, group narratives, and Code remain unchanged. The collected/Extend Code
+diff contains only heading rebasing and the eight number prefixes. Checked all return fields against the current
+cohort schemas, including the first full Band return and the distinct direct/resolved membership identities.
+
+The `close/3/` cohort reference is a partial collected excerpt, not a full chapter. Restored the omitted source methods
+and intermediate lanes rather than matching that omission. No older Draft/Extend/Form narrative is available for a
+volume comparison. Context keys hash ordered IDs, not catalog predicates or a revision; the chapter states that limit.
+No generation scripts or application-code changes. Formula coverage and syntax were inspected; visual rendering was
+not verified. Clicks, Relevance, Labeling, Training, Experiments, and Evaluation remain pending.
+
+## Online family — September 7
+
+Created Draft, aggregate Collect, Extend, and Form under `search/transforms/online/`. Source scope contains three
+independent composed roots, ten internal step classes, 23 public methods, and one private freshness helper. The two
+`SelectGapQueries` classes belong to different modules and remain in their own root subtrees. Filtering, Vectorization,
+VectorizeSearchQueries, and Scoring are external calls, with plain circled Implementation descriptions and independent
+intent-led Code items. Restored ten missing helper annotations and the incomplete OnlineFiltering parent listing.
+
+| Root | Public methods | Implementation items | Code items | Implementation notation blocks |
+|---|---:|---:|---:|---:|
+| OnlineFiltering | 4 | 5 | 5 | 8 |
+| OnlineVectorization | 5 | 7 | 7 | 12 |
+| OnlineScoring | 14 | 13 | 14 | 18 |
+
+One Solution model plus 38 Implementation blocks map to 39 Form displays (78 delimiters). Each composed root has its
+own Result; no synthetic Online workflow exists. Manual diff inspection finds only mathematical/Definitions/Stages
+presentation changes between Extend and Form, with unchanged prose and Code. Collected/Code comparison shows heading
+rebasing and independent number prefixes; method coverage includes the trailing paragraph-vector publisher.
+
+The available `close/3/` references for these roots are collected excerpts, not Draft/Extend/Form chapters. Inspected
+each collected root against current source: the new collection restores omitted internal methods, lanes, outputs, and
+source-exact parent bindings. No prior narrative-volume comparison is possible for this family because those reference
+phases are absent. The new Solution develops six prose paragraphs and one explained freshness model; the preamble has
+six component-level paragraphs preserved through Format.
+
+Source-backed distinctions retained: field constraints intersect filter ranks rather than refill them; score-gap markers
+are not filter-hit markers; query embedding merges test identity rather than numeric validity; binding is not numeric
+normalization; unordered deduplication is not latest-row selection; vector invalidation excludes whole query groups.
+Added one shared behavioral-claim rule and matching QA assertion. No application code changed, no generation scripts
+were used, and visual math rendering remains unverified. Cohorts through Evaluation remain pending.
+
 ## SearchDocuments Implementation and formula repair — September 7
 
 The extended chapter still contained class-level placeholders, so formatting the existing body could not recover the

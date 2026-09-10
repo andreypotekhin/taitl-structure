@@ -4,6 +4,9 @@
 This template specifies substitutions, not a second independently authored chapter.
 Emit unchanged sections/paragraphs in their original positions, not these placeholder summaries. -->
 
+<!-- A specialization keeps Extend's exact base/replacement contract. Render it with Notation's normal-size replacement
+vector, preserving every effective input/output and local replacement. Never render inheritance as a called stage. -->
+
 {{Exact Problem, Solution, Builds on, and Used by sections; display math uses $$ delimiters.}}
 
 ## Definitions

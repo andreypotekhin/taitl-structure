@@ -28,6 +28,8 @@ Develop the narrative and explain every owned stage and public method group. Rea
    - Composed: recursively render every child, then a Result subsection with a source-grounded sentence and complete
      composed notation. This applies equally to workflow, independent root, and internal composed stage.
    - External: one circled plain description and one canonical boundary block; no italicized intent, methods, or Result.
+   - Specialization: apply Definitions' exact-base-plus-replacements model, retaining complete effective inputs/outputs
+     and every local group or replacement call; conclude with the appropriate step shape or composed Result.
    Reset the circled stream per root, not per child. Do not add a duplicate boundary block before an internal step's groups.
 4. Build Code directly from collected, independently of Implementation. Keep internal container descriptions plain; keep
    exact listing contents and group prose. Prefix each intent-led group or external-call item with its Code number,

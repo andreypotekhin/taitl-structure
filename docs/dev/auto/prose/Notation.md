@@ -11,6 +11,10 @@ the vocabulary at the end describes optional variants for other uses.
 ### Text coverage
 
 Every public method has its own full named, typed argument list and concrete return type(s), even across similar grains.
+For an untyped `@raw` method with declared data lanes, derive its logical data signature from `inout` and those lane
+schemas. State that this is the declared data contract, not a Python annotation; preserve runtime-injected arguments
+such as `spark` and `ctx` in Code without inventing schema types for them. Include the raw operation in its group and
+shape. If neither annotations nor lane declarations establish the contract, report the missing evidence.
 Transform blocks enumerate all named inputs/outputs and all methods or actual child calls. Stage calls retain every
 binding, including policy constants; their arrows name unqualified output relations. Final outputs remain named and
 typed. Never replace known paths or types with "same pattern," "etc.," or ellipses.
@@ -38,6 +42,21 @@ Keep complete source bindings in Draft/Extend text notation and Code for verific
 opening inputs and final outputs remain named and typed, without value assignments. Internal step calls carry their complete
 method-name vector; external and composed calls do not acquire a fictitious step vector. Each internal composed
 transform has its own Result, including a composed child.
+
+### Specializations
+
+Apply the specialization model in Definitions only when an exact named base is documented elsewhere or already
+expanded in this chapter. Text notation lists the complete effective inputs/outputs and identifies that base plus
+every local method replacement, stage replacement, output rebinding, and parameter change. Give local methods their
+ordinary complete signatures and returned-record definitions. Do not invent an inheritance stage or silently discard
+unchanged inherited members: the named base supplies them.
+
+In Form, render the effective body as `Base` followed by a normal-size bracketed replacement vector. Method replacements
+reference their fully defined local methods; replacement calls retain aliases, complete source references/constants,
+and unqualified output names. A specialized step uses this body in its named Resulting transform shape; a specialized
+composition uses it in its unnamed Result between complete named typed inputs and outputs. Keep replacement vectors
+at normal formula size, not in subscripts. This explicit base-plus-replacements expression is not permission to shorten
+ordinary step shapes or composed Results.
 
 ### Return definition state
 

@@ -10,6 +10,13 @@ Use concrete subjects and active verbs. Format exact class, schema, method, and 
 not in headings or inside math. Keep domain terms in ordinary text. Avoid operator-production language such as
 "collected source," "boundary-only subsection," or "this document records"; a direct chapter reference is clearer.
 
+Ground behavioral claims in the actual operations rather than class names or docstrings. Distinguish compatibility
+checks, numeric normalization, and row-selection precedence instead of treating them as interchangeable guarantees.
+State which returned measure a threshold changes, and distinguish population expansion from selection. Do not infer
+deduplication, denominator protection, or fallback choice from the intended use of a relation.
+For sequential overlays, trace a shared key through every writer, including zero and null cases, before describing
+precedence. Distinguish validation failures from row filtering.
+
 Use "search engine" at most once per document, and omit it when unnecessary. Do not position the system being described
 as its own downstream consumer.
 

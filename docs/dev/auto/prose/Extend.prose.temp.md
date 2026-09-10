@@ -2,6 +2,10 @@
 
 <!-- Follow Extend.prose.md. "for", "if", and named fragments below describe expansion; omit these comments in output. -->
 
+<!-- Specializations use Definitions' named-base-plus-all-replacements branch. Retain complete effective inputs/outputs,
+local method items, and actual replacement-stage subsections. End a specialized step with its shape and a specialized
+composition with Result. Unchanged inherited behavior is supplied by the exact named base, not an invented stage. -->
+
 ## Problem
 
 {{Draft need, improved only where useful.}}

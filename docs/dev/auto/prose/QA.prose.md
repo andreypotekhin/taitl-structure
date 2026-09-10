@@ -8,10 +8,12 @@ A failed input check is repaired at its owning operator when authorized; otherwi
 
 | ID | Assertion |
 |---|---|
+| S0 Family completion | Before declaring a batch complete, reconcile its explicit family checklist with all requested phase files and their QA records. A family mentioned or called in another chapter is not its own completed family; Filtering is distinct from Online and Offline. |
 | S1 Scope | Every root is evidenced; every call has an alias, bindings, outputs, and explicit ownership. No filename-based main or synthetic package workflow. |
 | S1a Independent companions | A main plus independent topic transforms uses separate root containers and counters; inspect actual call assignments, not the chapter's flat Stages list. Vectorization's binders are not children of Vectorization. |
 | S2 Coverage | Ordered public-method and stage inventories equal output coverage. Include every grain path, implicit step, public helper, and trailing publisher. |
-| S2a Inheritance | Concrete-stage contracts include inherited inputs and public groups; Code lists the declaring base once before use. Reject a fabricated base-class stage call and missing inherited query preparation in Scoring. |
+| S2c Raw data contracts | Include untyped raw methods whose data inputs/outputs are declared by `inout`; trace each type to its lane and retain runtime parameters and method-local imports in exact Code. Labeling's pattern matcher is not optional because it lacks Python annotations. |
+| S2a Inheritance | Reconstruct the complete effective contract from source. Expand an owned base once; a specialization may reference that exact documented base plus every local replacement/addition, with complete effective inputs/outputs. Compare the reconstructed method/call inventory, not merely local declarations. Never fabricate an inheritance stage, import external base implementations, or use this rule to omit ordinary internal groups. |
 | S2b External contracts | Compare each external boundary with the actual call and effective class inputs, including inheritance. Similarities' scoring boundaries must retain queries, all four term relations, and targets, not only locally declared summaries. |
 | S3 Narrative | Problem states need, not challenges. Solution follows context -> bridge -> concrete example/model -> value. Preamble explains actual data flow and important limits. |
 | S4 Language | Essential terms are defined; exact identifiers use inline code in prose. No production terminology. "Search engine" occurs at most once. |
@@ -19,6 +21,10 @@ A failed input check is repaired at its owning operator when authorized; otherwi
 | S6 Narrative depth | Compare Solution and preamble with the supplied or accepted reference: retain explanatory progression, examples, reasoning, and tradeoffs, not just keywords. Record before/after prose counts and investigate substantial shrinkage. A structural excerpt cannot establish full-chapter quality. |
 | S7 Stage explanation | Each internal introduction identifies the incoming evidence, substantive operation, and useful output; reject generic "Implement/Run X" placeholders. It remains unnumbered and does not replace method-group items. |
 | S8 Reader continuity | Define the central activity and unfamiliar integration roles before use; principal-topic references stay general. Read adjacent items for progression plus rationale, and reject parameter-validation detail that overshadows the work itself. |
+| S9 Behavioral claims | Resolve behavior from predicates and returned expressions, not names or docstrings. In Online, distinguish filter-hit markers from score-gap markers, identity checks from numeric vector validation, and unordered deduplication from newest-row selection. |
+| S9a Measures and populations | Trace thresholds to individual returned fields and joins/unions to their actual cardinality behavior. In Relevance, minimum exposure gates normalized CTR, not reported CTR; context expansion is neither deduplication nor first-qualified fallback selection. Do not invent denominator guards. |
+| S9b Precedence and validation | Trace a colliding key through all overlays, including zero/null values; distinguish require-style validation from filtering. Labeling applies generated labels last, including generated zeros, and defaults only missing query language rather than retrying every unmatched locale. |
+| S9c Evaluation evidence | Distinguish batch association from timestamp filtering, unjudged from nonrelevant, fixed-cutoff from observed-list denominators, and null eligibility from zero performance. Inspect actual join/group keys before claiming slice isolation; a context column alone is not a guarantee. |
 
 ## Draft
 
@@ -59,6 +65,7 @@ E2 tree == render(inventory):
        internal step -> groups + exactly one Resulting transform shape
        internal composed -> all child subsections + exactly one concluding Result
        external -> exactly one circled plain description + boundary notation, no italic intent/methods/Result
+       specialization -> named base + all local groups/replacement calls + effective shape or Result
 E3 Implementation items == root_local_circled(public_groups + external_calls)
 E4 Code items == root_local_decimal(collected_intent_groups + external_calls)
 E5 strip_number_prefixes(Code prose) == collected prose
@@ -89,7 +96,8 @@ F2 all prose == Extend, except declared Definitions/Stages/math presentation cha
 F3 Code == Extend.Code verbatim
 F4 every notation block outside Code -> one corresponding display-math block
    residual text/LaTeX fences and plain signature/shape blocks outside Code == none
-F5 formula method coverage == Extend signatures == inventory public methods
+F5 resolved formula contracts == Extend contracts == inventory public methods
+   # specializations resolve the exact named base plus every local replacement under S2a
 F6 return definitions == Notation.chapter_profile.return_definition_state
 F7 step shapes, external boundaries, and composed Results each use their distinct notation profile
 F8 preamble is nonempty; preamble paragraphs == Extend.preamble paragraphs

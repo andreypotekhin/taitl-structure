@@ -34,10 +34,20 @@ Schema(name, fields[], return_constructions[])
 If a transform genuinely mixes methods and stages, record both in source order and apply both branches below; do not
 drop one to force a binary classification. A transform with stages concludes with Result.
 
-Resolve inherited inputs and public methods as part of each concrete transform's effective contract. Explain inherited
-groups before locally declared groups in that transform's Implementation and retain their signatures in its shape.
-In Code, collect a topic-owned base class once before its first consumer, under its own transform heading; inheritance
-does not create a child-stage call or another numbering root. A shared declaration is not duplicated for each subclass.
+Resolve inherited inputs, methods, and calls as part of each concrete transform's effective contract. A subclass whose
+base is documented in another chapter, or already fully documented in this chapter, is a **specialization**: represent
+its effective contract as that exact base plus every local replacement/addition. Identify the base by chapter and
+module when names collide. This is an explicit reusable definition, not an omitted-method shortcut for ordinary steps.
+Expand a topic-owned base once before its specializations; do not collect external base implementations.
+Inheritance is not a child-stage call. Each independently invoked specialization is still a numbering root; a called
+specialization belongs to its caller's root.
+
+Specialization body = plain base/behavior introduction + local public groups or actual replacement-stage subsections
++ effective contract. The effective contract lists every inherited input/output and every replacement with complete
+signatures or call bindings, referencing the named base for unchanged members. A specialized step ends with one
+Resulting transform shape; a specialized composition ends with its own Result. Number local method groups and actual
+external replacement calls by the ordinary rules, never the inheritance declaration or a parameter-only class intro.
+Code contains exact local declarations and groups, with a plain base reference when needed to resolve import aliases.
 
 An external boundary still exposes the complete effective input/output contract, including inherited inputs. Stopping
 recursion suppresses methods and child implementations, not the query, index, or target relations passed to the call.
