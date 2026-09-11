@@ -6,7 +6,7 @@ Documenting: [Documenting.md](../Documenting.md)
 Source Annotation: [Annotation.prose.md](prose/Annotation.prose.md).
 Definitions: [Definitions.prose.md](prose/Definitions.prose.md)
 Implementation narrative style: [Implementation.style.md](prose/Implementation.style.md)
-Problem and Solution narrative style: [Solution.style.md](prose/Solution.style.md)
+Intent, Problem, and Solution narrative style: [Solution.style.md](prose/Solution.style.md)
 
 
 ## Text processes
@@ -92,7 +92,7 @@ templates instantiate the contracts rather than supplying competing rules.
 |---|---|
 | [Definitions](prose/Definitions.prose.md) | Inventory, ownership, recursive section tree, numbering |
 | [General style](prose/General.style.md) | Shared language and Markdown conventions |
-| [Solution style](prose/Solution.style.md) | Problem/Solution narrative contract |
+| [Solution style](prose/Solution.style.md) | Intent/Problem/Solution narrative contract |
 | [Implementation style](prose/Implementation.style.md) | Implementation narrative contract |
 | [Notation](prose/Notation.md#chapter-profile) | Text coverage and chapter formula profile |
 | Operator | Input/output boundaries and permitted transformations |
@@ -101,7 +101,8 @@ templates instantiate the contracts rather than supplying competing rules.
 
 Current user requirements take precedence. Source declarations own implemented names, signatures, fields, call bindings,
 and outputs; background/plans explain intent and proposed behavior. Collected text owns Code prose and listings for
-Extend; extended text owns all prose and Code for Format. An older chapter is evidence of useful shape, not authority
+Extend; extended text owns prose and Code for Format, whose public Implementation explanations use the matching Code
+groups under Implementation.style's concise reading projection. An older chapter is evidence of useful shape, not authority
 to omit current source or override a contract.
 
 Resolve a defect at the earliest owning input when the task authorizes it. Otherwise report the invalid input rather

@@ -2,9 +2,15 @@
 
 Write for a technically confident reader who may be new to the domain. Introduce concepts before use; Definitions
 collects every essential reusable term, not a predetermined number of entries.
+Capitalize the first word of every definition sentence; preserve an exact identifier's spelling by introducing it
+with an ordinary capitalized word when needed. In prose references, name the destination as a chapter, for example
+"See the Filtering chapter for overlap matching." Bare topic names remain appropriate in Builds on/Used by inventories.
 Assume no prior knowledge of the topic's integrations or abstractions. Introduce the central activity and fully name
 roles on first use (for example, "inference adapter" and what it translates), before using shortened references.
 Builds on/Used by name principal chapters such as Online and Offline, not their implementation-stage classes.
+
+Name the actor accurately: use "search user," "caller," or "application" for retrieval requests. Use "reader" only
+when discussing someone reading a document or this chapter, not as a blanket synonym for a search user.
 
 Use concrete subjects and active verbs. Format exact class, schema, method, and relation names as inline code in prose,
 not in headings or inside math. Keep domain terms in ordinary text. Avoid operator-production language such as

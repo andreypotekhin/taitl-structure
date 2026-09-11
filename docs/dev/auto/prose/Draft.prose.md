@@ -18,7 +18,7 @@ Author the chapter from general explanation to design and implementation. Read [
 
 1. Establish the chapter inventory. Use the current background and intended chapter scope for narrative; consult source
    contracts for names, complete signatures, return schemas, and actual topology. Do not infer a workflow where none exists.
-2. Author Problem and Solution under the shared narrative contracts. Existing chapter outputs are shape references, not
+2. Author Intent, Problem, and Solution under the shared narrative contracts. Existing chapter outputs are shape references, not
    prose to copy; ignore numbered variants unless explicitly requested.
 3. Fill the concise inventories: canonical principal topics in Builds on/Used by (empty when none), essential domain
    concepts in Definitions, schemas/relations in Inputs/Outputs, and the model's Stages inventory.

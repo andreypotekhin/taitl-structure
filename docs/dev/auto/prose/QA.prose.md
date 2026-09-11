@@ -15,12 +15,15 @@ A failed input check is repaired at its owning operator when authorized; otherwi
 | S2c Raw data contracts | Include untyped raw methods whose data inputs/outputs are declared by `inout`; trace each type to its lane and retain runtime parameters and method-local imports in exact Code. Labeling's pattern matcher is not optional because it lacks Python annotations. |
 | S2a Inheritance | Reconstruct the complete effective contract from source. Expand an owned base once; a specialization may reference that exact documented base plus every local replacement/addition, with complete effective inputs/outputs. Compare the reconstructed method/call inventory, not merely local declarations. Never fabricate an inheritance stage, import external base implementations, or use this rule to omit ordinary internal groups. |
 | S2b External contracts | Compare each external boundary with the actual call and effective class inputs, including inheritance. Similarities' scoring boundaries must retain queries, all four term relations, and targets, not only locally declared summaries. |
-| S3 Narrative | Problem states need, not challenges. Solution follows context -> bridge -> concrete example/model -> value. Preamble explains actual data flow and important limits. |
-| S4 Language | Essential terms are defined; exact identifiers use inline code in prose. No production terminology. "Search engine" occurs at most once. |
+| S3 Narrative | Intent states need/outcome in one or two sentences. Problem develops a familiar situation, topic-specific difficulty, and practical consequences without repeating Intent, prescribing the solution, or listing implementation defects. Solution follows context -> bridge -> concrete example/model -> value. Preamble explains actual data flow and important limits. |
+| S4 Language | Essential terms are defined; definition sentences start with a capital letter. Exact identifiers use inline code in prose; prose references identify other chapters as chapters. No production terminology. "Search engine" occurs at most once. |
 | S5 Layout | One H1; correct section tree; blank lines around blocks. Every code fence has preceding descriptive prose; no adjacent listings separated only by whitespace/headings. |
 | S6 Narrative depth | Compare Solution and preamble with the supplied or accepted reference: retain explanatory progression, examples, reasoning, and tradeoffs, not just keywords. Record before/after prose counts and investigate substantial shrinkage. A structural excerpt cannot establish full-chapter quality. |
 | S7 Stage explanation | Each internal introduction identifies the incoming evidence, substantive operation, and useful output; reject generic "Implement/Run X" placeholders. It remains unnumbered and does not replace method-group items. |
 | S8 Reader continuity | Define the central activity and unfamiliar integration roles before use; principal-topic references stay general. Read adjacent items for progression plus rationale, and reject parameter-validation detail that overshadows the work itself. |
+| S8a First-reading clarity | Read Solution without Code: explain unfamiliar terms on first use, use concrete examples, and reject stacked abstractions. Simplification retains theory, industry context, examples, and tradeoffs rather than shrinking to an abstract. Compare `2/` for accessibility when requested, not as authority for old behavior. |
+| S8b Calculation definitions | Every central algorithm has a formula or precise rule with defined symbols, populations, parameters, and missing/zero behavior, followed by its meaning. Scoring must define weighted overlap and BM25, not only IDF. Check multiplicity and the implemented variant against source. A glossary entry or name alone does not pass. |
+| S8c Actor and chapter references | Use search user/caller/application according to the actual actor; reserve reader for reading. External Implementation stages defined elsewhere explicitly name the owning chapter and transform, without expanding that implementation. |
 | S9 Behavioral claims | Resolve behavior from predicates and returned expressions, not names or docstrings. In Online, distinguish filter-hit markers from score-gap markers, identity checks from numeric vector validation, and unordered deduplication from newest-row selection. |
 | S9a Measures and populations | Trace thresholds to individual returned fields and joins/unions to their actual cardinality behavior. In Relevance, minimum exposure gates normalized CTR, not reported CTR; context expansion is neither deduplication nor first-qualified fallback selection. Do not invent denominator guards. |
 | S9b Precedence and validation | Trace a colliding key through all overlays, including zero/null values; distinguish require-style validation from filtering. Labeling applies generated labels last, including generated zeros, and defaults only missing query language rather than retrying every unmatched locale. |
@@ -29,7 +32,7 @@ A failed input check is repaired at its owning operator when authorized; otherwi
 ## Draft
 
 ~~~text
-D1 top_level_sections == [Problem, Solution, Builds on, Used by, Definitions, Inputs, Outputs,
+D1 top_level_sections == [Intent, Problem, Solution, Builds on, Used by, Definitions, Inputs, Outputs,
                 Stages, Notation, Design, Implementation, Code]
 D2 Implementation == continuous_prose; no stage subsections, numbered items, Workflow, or Result
 D3 Notation covers all roots + public signatures + calls + concrete inputs/returns/outputs
@@ -92,13 +95,15 @@ expose unqualified output names, not types or qualified paths; final outputs are
 
 ~~~text
 F1 headings/tree/item order == Extend
-F2 all prose == Extend, except declared Definitions/Stages/math presentation changes
+F2 all prose == Extend, except public-group explanation projection and Definitions/Stages/math presentation changes
 F3 Code == Extend.Code verbatim
 F4 every notation block outside Code -> one corresponding display-math block
    residual text/LaTeX fences and plain signature/shape blocks outside Code == none
 F5 resolved formula contracts == Extend contracts == inventory public methods
    # specializations resolve the exact named base plus every local replacement under S2a
 F6 return definitions == Notation.chapter_profile.return_definition_state
+   first return of EACH schema -> nonempty field definition, including no-override projections and grouped methods
+   visible fields include explicit overrides + essential grouping/identity keys + defining payload
 F7 step shapes, external boundaries, and composed Results each use their distinct notation profile
 F8 preamble is nonempty; preamble paragraphs == Extend.preamble paragraphs
 F9 Result formula has no parent transform name; every call retains its source assignment alias
@@ -107,9 +112,19 @@ F9 Result formula has no parent transform name; every call retains its source as
 F10 all formula font sizes are equal; method/shape/call expressions stay intact unless the intended layout requires a break
 F11 for each internal_step: Form.item_method_sets == current_Extend.item_method_sets
     # compare the full current subtree, not a previously generated Form
+F12 for each public_group: explanation derives from Code group with the same transform and method membership
+    inherited groups resolve to the owning base's Code group, not a same-numbered helper in the subclass
+    marker and italic intent == Extend; prefer one short explanatory sentence, allow a second for clarity
+    # no clause-packed sentence, unexplained mechanics, synthetic groups, or matching by Code number
+    detailed Extend explanations and all collected/Code content remain intact
+    generic nouns are grounded in schema/field names where ambiguous; no mandatory field-name quota
+    expansion prose describes rows per input element, not an apparent singleton output
+    observable discriminator values survive shortening: SearchFields match_scope is metadata/content/metadata+content
 ~~~
 
 Check F2 paragraph by paragraph, including preamble, external descriptions, and Result; a prose-count match is insufficient.
+Review shortened public explanations separately under F12: each must still explain the useful transition, not merely
+repeat its intent. Compression applies to those explanations only, not Solution, preamble, or formula coverage.
 For F9 trace an actual dependency, not just identifier counts: Inference must distinguish
 `inferred_queries.results` from `inferred_documents.results` at the two publishers. Reject both alias-free calls and
 bare `results` inputs that erase that distinction. When a reference is requested, inspect this relationship in its
@@ -122,6 +137,15 @@ and the six-call Result. The older three feedback-option methods in `3/` must no
 For F6 test: unseen full schema, input=return schema (including identity project/base), pure projection to a different
 schema, projection with additions, repeated full schema,
 and a different projection of the same schema. Full signature coverage is mandatory in every case.
+Regression cases: Chunking's select_paragraph_lines and select_section_headings each need their own first-return
+definition; collect_paragraph_lines must retain document_id, section_ordinal, and paragraph_group as well as its
+explicit assignments; assemble_paragraph_content must define ParagraphContent despite having no overrides.
+Track first occurrences and visible/omitted fields in a chapter-local ledger. Formula counts, balanced delimiters,
+and unchanged-formula hashes do not establish return-definition correctness.
+
+For F12, read Fields' two items alongside their formulas: the referenced map must be identifiable as Document.fields,
+and flattening must read as producing a row per non-empty key. Prefer "a row per ..." unless emphasizing exact
+cardinality is necessary; do not remedy ambiguity by adding schema and field names to every explanation.
 
 For every projected return, check `visible_fields` against the source's explicit return keywords plus the keys and
 contributed payload needed to explain that operation. Reject missing explicit overrides even on repeated projections,
@@ -153,8 +177,9 @@ transform/method coverage, group boundaries, numbering glyphs and scope, Code pr
 coverage. A family-wide count cannot hide a missing subtree or certify another phase. Record each intentional departure
 from the reference against current source or an explicit contract. A focused narrative pass is not full-chapter QA.
 
-The older `checks/chunking.cjs` contains an obsolete assertion forbidding Result stage assignments. It is not an
-acceptance oracle for the current notation contract until updated. For a prose-only run, perform the checks above
+The older `checks/chunking.cjs` contains obsolete assertions forbidding Result stage assignments, omitting Intent,
+and requiring identical public Implementation explanations in Extend/Form. It is not an acceptance oracle for the
+current contract until updated. For a prose-only run, perform the checks above
 directly against source, current upstream documents, and the requested reference; do not invoke generation scripts.
 
 When scripting is permitted, `node docs/dev/auto/prose/checks/narratives.cjs` can supplement narrative review across

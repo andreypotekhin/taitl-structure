@@ -1,5 +1,405 @@
 # Chapter operator refactor verification
 
+## Fourth reading-prose batch — September 10
+
+Sequential scope: Cohorts, Clicks, Relevance, Labeling, Training, Experiments, Evaluation.
+
+### Completion check — September 11
+
+Both requested batches are complete: SearchDocuments/SearchFields/SearchSimilarity/Offline/Online and
+Cohorts/Clicks/Relevance/Labeling/Training/Experiments/Evaluation. Families were edited sequentially and checked before
+the next. Final checks also include the feedback changes to Scoring and Similarities: all fourteen families preserve
+Code exactly, retain Extend's non-projected prose, agree between Draft/Extend openings, and have one formula per
+text-notation block. Display environments balance; no text/LaTeX notation fences or reduced-size commands remain in
+Form's pre-Code body. Fixed three missing blank separators before Online formulas during this check.
+
+The four available `3/` family references retain identical Implementation heading trees in SearchDocuments,
+SearchFields, SearchSimilarity, and Offline. Solution depth is retained rather than compressed (approximate word
+counts including notation: 179→363, 394→452, 302→374, 147→331 respectively). Reference behavior does not override current
+source: notably SearchDocuments keeps its current single feedback-option method. Later requested families have no
+corresponding `3/` references here. No old chapter was copied wholesale. Source-based return ledgers and family checks
+are recorded below; these are not a visual rendering test or a runtime test. Git whitespace checks passed; ignored
+close/ outputs were checked directly. No application code or collected Python listings changed in these batches.
+
+The actor-language feedback was also applied to Fields, Inference, Filtering, and Similarities; genuine passage-reading
+examples in Chunking remain appropriate. Prompt changes are confined to the owning narrative contracts and QA:
+precise central calculations, first-reading rationale, accurate actor names, explicit external-chapter references,
+and preservation of observable discriminator values in concise explanations.
+
+### Cohorts
+
+Added Intent and a developed Problem about overlapping context and sparse feedback. There is no `2/` Cohorts draft;
+used current source and scope. Retained Solution's concrete locale/device example, context-key formula, catalog-version
+qualification, and fallback interpretation. Eight Form groups now use concise Code-grounded explanations; null
+user_band_id, band_id, and user_band_fallback_id meanings remain explicit. Complete preamble and Code are preserved.
+All 14 public methods, 8 items, 10 formula/text blocks, and the sole step shape remain, with no synthetic Result.
+First-return ledger is complete: Band 12, BandMatch 4, BandAncestor 3, UserBandPath 2, UserBand 2, SingletonUserBand 3,
+UserBandMembership 2, BandMembership 3, BandFallback 3. Checked against ResolveCohortBands and both schema modules;
+pass-through and helper-produced first returns are fully defined. Code/preamble/opening parity passes.
+
+### Clicks
+
+Added Intent and a developed Problem distinguishing exposure, response, replay, and cross-day attribution. Retained
+Solution's midnight example, click-versus-clicked-impression distinction, explicit dwell-credit formula and thresholds,
+and the complete preamble. The two independent step roots retain one numbered group each, no Result, two full return
+definitions (DailyImpressions 8; DailyClicks 12), and five mapped formula/text blocks. All explicit projected fields
+and daily grain keys match Impressions.py, Clicks.py, and clicks schemas. Two concise Form explanations preserve the
+24-hour attribution, exposure day, response measures, and null band meaning; Code is untouched. Parity checks pass.
+
+### Relevance
+
+Added Intent and a developed Problem about position bias, age, sparse contexts, and interpretable evidence. Retained
+the weighted-CTR model and added a precise log-dwell normalization, exposure gate, and direct weighted-blend model.
+The new explanation defines populations and parameters and states denominator/propensity/half-life assumptions without
+inventing guards or normalized configuration weights. The gate affects normalized_ctr_score, not reported CTR.
+Four Form groups now derive concise prose from Code, preserving global null context and non-deduplicating expansion.
+All 12 methods, four items, one step shape, and seven formula/text blocks remain; Code and preamble are unchanged.
+
+First returns checked against BuildRelevanceSignals and relevance/clicks/build schemas: ContextDailyImpressions 8,
+ContextDailyClicks 12, QueryDocumentSignalTotals 17, DocumentPopularityTotals 16 fields. Public QueryDocumentSignals
+and DocumentPopularity projections show all five explicit rate/normalization overrides plus context, exposure, and
+weighted-dwell/CTR evidence, eliding unchanged raw activity totals. The first returns are nonempty and essential keys
+remain visible. Formula/text and prose parity pass. The new calculation QA covers this case without another rule.
+
+### Labeling
+
+Added Intent and a developed Problem about hidden query-population regressions and inconsistent label meaning. Kept
+Solution's configured pattern example, missing-locale default, zero-versus-absence distinction, and exact overlay
+precedence. Five Form items are now concise, with value=0, en_US, generated-zero precedence, labels, and both derived
+flags explicit. The raw matcher remains in its group and shape with its declared data signature; runtime arguments
+and method-local imports remain in unchanged Code. All 11 methods, five groups, eight formulas, two shapes and Result
+remain; assigned stage dependencies and exact preamble/Code/opening parity pass.
+
+First-return ledger: Intent 2, IntentPattern 3, QueryIntentLabel 6, QueryLabelAssignmentEntries 2, QueryLabelAssignments 2,
+QueryLabel 3 fields fully defined. SearchQuery projection shows id, labels, is_question, is_time_sensitive, eliding
+unchanged query context and preserving all explicit overrides on both merges. Checked both source transforms and
+label/search schemas. No new QA exception needed.
+
+### Training
+
+Added Intent and a developed Problem about judged examples and consistent feature meaning. Retained the feature
+example and standardized linear formula, adding the nonzero-scale assumption without claiming a validation guard.
+Two concise public Form explanations preserve exclusion of unjudged pairs and the exact score_rank/experiment_id
+assignments. The composed Training root retains its external Features stage and Result; the independent ranker retains
+its step shape and fresh counter. Its private scoring helper remains Code-only, so Code has an extra group.
+Seven formula/text blocks, three Implementation items, and both public methods remain. DocumentTrainingData first
+defines all eight fields; the first candidate projection retains identity, lexical score, score_rank and experiment_id
+while eliding unchanged retrieval context. Checked BuildTrainingData, RankDocumentCandidates and schemas. Exact Code,
+preamble, and opening parity pass.
+
+### Experiments
+
+Added Intent and a developed Problem separating variant effects from population differences. Retained the BM25
+parameter explanation, explicit 90/10 feedback calculation/example, production/null identity, and causal limitations.
+Five concise public Form items retain active/null selection and observed-request versus expanded-query populations;
+the external BM25 item remains circled/plain with its Scoring reference. Five independent roots keep local counters;
+the exact-base-plus-replacements formulas retain both composed Results and three specialized/ordinary step shapes
+plus the internal reranker shape. All eight local public methods, six items, and twelve mapped formula/text blocks
+remain. Code and preamble are unchanged.
+
+First-return ledger: DocumentScore 6, SectionScore 7, ParagraphScore 8, SentenceScore 9, EvaluationQuery 5, and
+BehaviorRequest 7 fields fully defined. Candidate projection retains all five overrides plus query/user-band/candidate
+identity; EvaluationResult retains four overrides and rank/grade while eliding inherited window/params. Source checks
+cover experiment selectors and both evaluation specializations; later inherited metrics are not claimed to gain new
+isolation guarantees merely from the local result join. Parity checks pass.
+
+### Evaluation
+
+Added Intent and a developed Problem distinguishing quality, engagement, incomplete judgments, and empty served lists.
+Retained the precision/recall/DCG/nDCG example and model; added exact success/reciprocal-rank eligibility and defined
+the inverse-propensity long-click and dwell rates with their denominators and null behavior. Fourteen concise Form
+items derive from their owning Code groups, not coincident item numbers. Eight independent roots retain separate
+counters, both base inventories, six exact-base selector specializations, and no invented Result.
+All 24 public methods (8 judged-base, 10 behavior-base, 6 selector replacements), 14 items, 8 shapes, and 24 formula/text
+blocks remain. The private eligibility helper group remains Code-only. Code and preamble are unchanged; parity passes.
+
+First-return ledger checked against judged_quality.py/behavior.py and returned constructions: EvaluationQuery 5;
+EvaluationResult projects context/query/document/rank/grade; EvaluationJudgment projects query/band/grade/ideal_rank;
+EvaluationJudgmentTotals 6; EvaluationIdealDcg 8; EvaluationResultTotals 18; DocumentQueryEvaluation 25;
+DocumentEvaluationSummary 23; BehaviorRequest 7; BehaviorImpression 15; BehaviorRequestTotals 17;
+BehaviorRequestMetrics projects request/model/context/first-long-click/reciprocal-rank and raw counts;
+DocumentSearchRequestBehavior 15; BehaviorExposure 8; BehaviorDailyCounts 18; DailyDocumentSearchBehavior projects
+daily context, request/empty/clicked/long-clicked request counts, and both explicit IPS rates. Unchanged context or
+activity details are elided only on the listed projections. Added the daily request counts to preserve the published
+population alongside its rates. Existing F6 covers this correction. Formula checks are structural, not visual renders.
+
+## Third reading-prose batch — September 10
+
+Sequential scope: SearchDocuments, SearchFields, SearchSimilarity, Offline, Online.
+
+### SearchDocuments
+
+Added Intent and a two-paragraph Problem informed by `2/`'s recognizable, bounded result-page framing. Solution keeps
+its account-recovery example, RRF model and lexical-only fallback, feedback role, and presentation coverage, with a
+plainer description of the retrieval sequence. Eleven internal Form explanation groups now derive concisely from Code;
+three external descriptions remain plain and circled. Preamble, method coverage, and Code are preserved.
+
+Return ledger: DocumentSearchCandidate (21 fields), DocumentFeedbackOption (explicit fallback fields plus candidate
+identity and query; other candidate context elided), QueryDocumentFeedback (6), PopularityFeedback (6), and
+DocumentSearchResult (rank, identity, title/URL, and ranking score on first projection; full 19-field definition on
+publication). Added title/URL to the first result projection so the defining presentation payload is not hidden.
+Checked against search.py and rerank return constructions, retaining every explicit projection field. The 10,000,
+1,000, and 100 bounds remain in their existing roles. Final prose names score versus retrieval_score to avoid
+misdescribing the normalization numerator. Existing F6/F12 cover these cases without an additional exception.
+
+### SearchFields
+
+Added Intent and a two-paragraph Problem using `2/`'s contrast between the reader's clues and differing matching rules.
+The developed Solution already explains all four query examples, phrase offsets, candidate restrictions, and result
+scopes accessibly, so it is retained. Eight internal Form explanations now use concise matching Code prose; the
+external SearchDocuments item stays plain and circled. The preamble retains the 10,000-target bound and explicitly
+distinguishes the desired field-qualified ranking from the current unrestricted-rank limitation.
+
+Return ledger checked against field_search.py, delegate.py, publish.py and schemas: term match (7), clause match (4),
+document match (4), field query (12), delegation (2), document target (3), and field result (4) are fully defined.
+SearchQuery projects id/content/labels, omitting unchanged request context; SearchRequest projects id/query_id/query,
+omitting user/experiment/version/time context. Explicit overrides and defining payload remain visible. All 13 public
+methods, 9 items, 14 notation/formula blocks, three step shapes and the four-call Result are present. Result dependencies
+use resolved/delegation/delegated producers correctly. Code and preamble equal Extend; opening sections agree across
+all three phases. Existing acceptance rules suffice; no prompt change was needed.
+
+### SearchSimilarity
+
+Added Intent and developed the Problem from `2/`'s complementary-neighbor/noisy-ordering framing, retaining the current
+document-grain scope. The accessible Solution retains its discovery example, two-lane explanation, interpreted RRF
+model, defined adapter, missing-lane behavior, and presentation tradeoffs. Seven Form explanations now use concise
+Code-grounded prose; the detailed Extend items, complete preamble, and Code remain unchanged.
+
+Return ledger: DocumentFusedSimilarityCandidate is fully defined with 16 fields; SimilarityFusionPolicy with 5.
+IndexedSimilarDocument first exposes all explicit ranking/provenance fields plus id/title/url, eliding inherited
+document context; its later pass-through supplies the full 30-field definition. The repeated score projection retains
+rrf_score and the pair/rank context. Checked constructions in adopt.py, fusion.py, rerank.py against current schemas.
+All 11 public methods, 7 items, 13 formula/text blocks, four step shapes, and the four-call Result remain. Fusion reads
+distinct lexical/vector producer outputs; reranking reads fused.document_candidates. Code, preamble, and opening
+parity pass. No additional prompt rule was needed.
+
+### Offline
+
+Added Intent and a developed Problem about selecting changing demand and interpreting aged, scoped artifacts, informed
+by `2/` without its synthetic sequential workflow. Retained the developed Solution and component-level preamble;
+shortened six internal Form groups from their Code explanations. External descriptions now identify their defining
+chapters. Three independent composed roots retain their own Results and independent Implementation/Code sequences:
+OfflineFiltering 2 items, OfflineVectorization 5, OfflineScoring 5. No package Result or imported external methods.
+
+Return ledger: DocumentSearchTarget first defines all 3 fields; QueryPopularity all 2; PopularQueryCandidate shows
+id/content/impression_count/popularity_rank with unchanged query context elided; SearchQuery first defines all 8
+fields at the pure projection from PopularQueryCandidate. Subsequent returns reuse those definitions. Source checks
+cover the seven public methods, explicit scope/rank assignments, implicit AllDocumentTargets method, and current
+popular/recent selection. The 10,000 target bound, 1,000 popular-query default, and inclusive 0–7-day recent window
+remain distinct. Formula/text mapping and exact Code/preamble/opening checks pass; the three Results preserve their
+actual assigned producers. Detailed Extend and collected Code are retained.
+
+### Online
+
+Added Intent and a two-paragraph Problem informed by `2/`'s request-budget and incompatible-artifact framing, without
+claiming a mandatory parent workflow. Retained the developed Solution, its interpreted freshness formula and example,
+and the complete preamble. Twenty-one public Form explanations now derive concisely from Code; four external items
+remain plain/circled with chapter references. Three roots retain 5/7/13 Implementation items and 5/7/14 Code groups;
+the private freshness helper accounts for the final stream difference. No numbering was synchronized.
+
+First-return ledger checked against filtering.py, search.py, text.py, indexing/vector.py, and scoring/intermediate.py:
+FilterQueryAvailability (1), SearchQuery (8), DocumentFilterScore (5), DocumentSearchTarget (3), Document (19),
+SearchQueryVectorEmbedding (6), DocumentVectorIndex (6), ScoreQueryAvailability (1), DocumentScore (6),
+DocumentVectorScore (11), ParagraphVectorScore (15). All are fully defined at first return, including pass-throughs;
+the target projection keeps its explicit scope_id. Source predicates confirm query identity checks versus document
+numeric validation, unordered deduplication, query-wide invalidation, and paragraph keys. All 23 public methods,
+39 notation/formula blocks, ten step shapes, and three assigned-call Results remain. Code, preamble, and opening
+parity pass. No visual renderer was used; formula verification is structural and source-based.
+
+### Mid-batch feedback regression
+
+Scoring now defines weighted overlap, BM25, and cosine as well as IDF, with symbols, parameters, examples, and source-backed
+missing/zero behavior. QueryToken deduplicates before normalization: collisions after normalization can contribute
+multiple matching rows, so the overlap definition includes that multiplicity and does not promise a unit bound.
+Checked ScoreOverlap, ScoreBm25, ScoreBase, QueryToken and Vectors. Scoring now has 26 mapped formula/text blocks,
+with 17 Implementation groups and unchanged Code/preamble. Similarities external stages explicitly refer to Scoring;
+SearchDocuments explains the common-language rationale for Reciprocal Rank Fusion; SearchFields preserves all three
+match_scope values in concise publication explanations. Generic search actors are named as users in the touched prose.
+Added shared calculation/actor/chapter QA and a discriminator-retention check to the owning style contracts and QA.
+
+## Second reading-prose batch — September 10
+
+Sequential scope: Inference, Vectorization, Filtering, Scoring, Similarities. Each family is checked before the next.
+
+### Inference
+
+Added Intent and a two-paragraph Problem using `2/`'s lifecycle/failure framing without its obsolete guarantees.
+Solution retains its example, geometric model, adapter explanation, compatibility, reuse, and fallback coverage;
+the compatibility paragraph now uses concrete language. Seven Form explanations derive from their Code groups.
+Verified seven first-return definitions against inference.py and indexing/vector.py: policy (7 fields), query and
+document adapter results (5 each), query and document embeddings (6 each including inherited fields), and statuses
+(8 each). No return expansion was needed. All fourteen formula blocks, seven items, five step shapes, and Result
+remain present; producer-qualified publisher inputs remain distinct. Code and preamble equal Extend. Detailed Extend
+items are retained. The strengthened F6/F12 checks cover this case without another prompt exception.
+
+### Vectorization
+
+Added Intent and a developed Problem contrasting reusable representations and request/source identity. Solution keeps
+its model, lifecycle, and responsibility coverage while defining embeddings plainly and adding ordinary-versus-source
+request examples. Used by now names Online and Offline chapters rather than their component classes. The two Form
+method explanations retain the concrete query_document_id distinction. First DocumentVectorQuery return now exposes
+all seven fields, including inherited compatibility metadata; the later projection retains vector and both explicit
+identity assignments, eliding already-defined compatibility fields. Verified against both binder implementations and
+indexing/vector.py. Three independent numbering roots remain: one external Inference call and two step binders.
+Seven formula blocks, nested Result, two step shapes, exact Code, and unchanged preamble pass review. Existing F6/F12
+and principal-topic rules address the defects; no new special case was introduced.
+
+### Filtering
+
+The first batch already applied Intent/Problem and concise Form prose. Rechecked current FilterOverlap and filtering
+schemas rather than rewriting accepted prose. QueryTerm has both fields; DocumentFilterMatch exposes all four on
+first return and on rank projection; DocumentFilterScore exposes all five, including scored_at. Four method items,
+seven formula blocks, step shape, and composed Result remain correct, with exact Extend/Form Code. The 10,000 bound
+and timestamp-versus-freshness distinction are retained. No document or prompt change was needed for this family.
+
+### Scoring
+
+Added Intent and a developed Problem using the `2/` framing of distinct relevance clues. Solution keeps the current
+source-backed IDF formula (not the different older formula), defines grain before use, and adds a concrete two-term
+example distinguishing coverage from repetition and length. Seventeen Form explanations are concise Code-derived
+accounts. Inherited query preparation resolves to ScoreBase's Code groups, not the similarly numbered private overlap
+or BM25 helper; clarified that ownership rule in Implementation.style and F12 without altering Code numbering.
+
+Return ledger covers QueryTerm, QueryTermCount, four posting schemas, QueryTermIdf, QueryIdfTotal, four overlap-match
+schemas, four overlap-score schemas, four BM25-score schemas, four selected-score schemas, VectorIndexPolicy, and
+document/paragraph vector scores. All 27 first schema returns already expose their full fields, including inherited
+grain keys, scope, and contributed values. Repeated full definitions may remain named references. Verified schemas
+against lexical index, scoring, search, and vector declarations; no field expansion was required. All 23 formula
+blocks, 17 items, four step shapes, composed Result, exact Code, and unchanged preamble remain present. Private Code
+helpers remain outside Implementation, and every lexical/vector grain path remains in its signature and shape.
+
+### Similarities
+
+Added Intent and a developed Problem about same-grain neighbors and directional evidence. The `2/` chapter's broad
+lexical/vector discussion is not current implementation scope, so its accessibility informed the writing without
+reintroducing hybrid retrieval duties. Solution retains the aurora example, both symmetric-summary formulas, direction,
+pair identity, and local neighbor limits; a plain A/B explanation now introduces canonical pair identity.
+Shortened the longer Form public groups from their Code explanations, retaining already-concise groups unchanged.
+External calls remain plain circled descriptions, while Code preserves its independent intent-led numbering.
+
+Return ledger: SimilarityPolicy; four grain query-text schemas; SearchQuery; four typed source-query schemas; and
+candidate, pair, and ranked similarity schemas for each of four grains (22 distinct first schema returns). All have
+field definitions, including complete source/target identities and directional scores. Reversed pairs retain every
+explicit identity/score assignment and elide only the already-defined unchanged overlap value. Checked against
+similarity.py, similarities/intermediate.py, SearchQuery, and query/reducer return constructions. No formula expansion
+was required. Sixteen formula blocks, twelve Implementation items, thirteen independent Code items, two step shapes,
+three external boundaries, and Result remain present. Code and preamble equal Extend.
+
+Corrected the misleading phrase "inclusive (0, 1]" to "greater than zero and at most one" in annotation, collected,
+Extend, and Form. Source allows null or that numeric range. This is the sole Code-prose correction in the batch;
+listings and group boundaries are unchanged. Existing predicate-based S9 applies; no topic-specific QA exception is needed.
+
+### Batch completion
+
+All five families pass opening-section parity, Draft/Extend Solution equality, Form Solution equality after model
+typography conversion, exact Extend/Form Code equality, and preamble preservation. Solution prose remains developed:
+approximately 383, 353, 377, 355, and 320 words respectively, excluding models and headings. Return ledgers above were
+checked separately from formula counts; preservation alone was not treated as correctness. Prompt whitespace checks
+pass. No application code, historical variants, generation scripts, or parallel agents were used; verification was
+source-based and structural, not a visual math render or runtime test.
+
+## Return-definition and concrete-reference correction — September 10
+
+The reading-prose pilot preserved existing formulas rather than validating their return fields. That preservation
+check could not detect preexisting defects. Notation's project/base branch also permitted a bare schema name when
+explicit and selected fields were empty, even on the first return occurrence. Removed that loophole and reinforced
+Format/F6 with a first-return ledger, per-method checks within groups, and source-backed essential-field review.
+
+Chunking's ledger, in method order: MarkedDocumentLine (11 fields), ParagraphLine (7), SectionHeading (5),
+ParagraphLineGroup (7), ParagraphContent (7), ParagraphDraft (7), Paragraph (6), SectionKey (6), Section (7),
+MaterializedParagraph (content visible; six unchanged Paragraph fields elided), Sentence (8). All first schema returns
+now have definitions. The grouped-paragraph record includes document_id, section_ordinal, and paragraph_group as well
+as every explicit assignment. These small records retain all essential fields without unnecessary ellipses.
+The materialized-text projection still illustrates legitimate elision of already-established, unchanged context.
+The non-step helper retains its complete list/dict return type; it is not a schema-class return.
+
+Implementation.style and F12 now require selective concrete references where generic nouns obscure the value being
+discussed, without requiring field names in most items. Fields' two Form items identify Document.fields; flattening
+produces "a DocumentField row per non-empty key." Code and detailed Extend prose are not rewritten by this correction.
+
+Verified Chunking against current intermediate/text schemas and method return expressions: twelve formula blocks,
+eight items, unchanged method inventory and Code. Fields retains both items and its original formulas and Code.
+This is source/structural verification; no visual render or runtime-test claim is made. The unchanged-formula statements
+in the earlier pilot record describe that earlier pass, not this intentional notation correction.
+
+## Intent and reading-prose pilot — September 10
+
+Scope: Chunking, then Fields, Indexing, and Filtering, each reviewed before starting the next family. The accepted
+change adds Intent before a developed Problem and allows Format alone to shorten public Implementation explanations
+from matching Code groups. Detailed Extend explanations and collected/Code content remain knowledge references.
+Older `close/2/` chapters supply problem framing and accessible style, not implementation authority. No generation
+scripts or parallel family work are used. Formula rendering is unchanged; checks below are structural, not visual.
+
+### Chunking
+
+Reviewed `2/` Problem, Solution, and all eight Implementation items. Restored the passage-versus-context problem in two
+paragraphs, while retaining the former one-sentence Problem as Intent in Draft/Extend/Form. Solution still explains
+the hierarchy, span model and numerical example, replaceable segmentation, and downstream value; simpler language
+introduces grain and ordinal where used. Solution volume is maintained (approximately 364 to 374 words including
+the unchanged model). All eight Form explanations now use concise versions of their matching Code groups.
+
+Verified all three opening sections, eight unchanged markers/intents, twelve unchanged formula blocks, and the complete
+Extend/Form diff. Preamble and Code remain identical between Extend and Form; baseline hashes also confirm unchanged
+Form Code, formulas, and collected file. The two internal stages, twelve public methods, two shapes, and composed
+Result remain covered. Detailed Extend explanation paragraphs were not changed. Shared S3/S8a and Format F12 enforce
+the new distinctions; the operator, model, and templates agree on the narrow prose exception.
+
+### Fields
+
+Reviewed `2/` for the typed-versus-mapped metadata problem and its two short explanations. The new Problem also makes
+cross-field phrase ambiguity concrete. Solution keeps all five paragraphs, the title-precedence example, text/keyword
+distinction, analyzer rules, and aggregate metadata behavior; it explains the terminology with familiar words rather
+than reducing coverage (approximately 310 to 329 words). Both Form explanations derive from their Code groups.
+
+Verified the complete Extend/Form diff, three unchanged formula blocks, both unchanged markers/intents, unchanged
+Code and collected-file hashes, opening-section parity, and exact preamble preservation. Fields remains a step main
+with two methods and one shape, without Workflow or Result. The current preamble retains the important distinction
+that both methods read the supplied documents; the obsolete `2/` account of a sequential completion/flattening path
+was not restored. Detailed Extend items remain intact. No additional exception beyond S3/S8a/F12 was needed.
+
+### Indexing
+
+Reviewed `2/` Problem and all 23 explanation items. The new Problem develops repeated preparation cost and the need
+for consistent term interpretation and statistical scope. Solution retains all five paragraphs, rarity/repetition/
+length theory, the aurora example, all four grains, positional metadata, and ranking independence (approximately
+352 to 379 words). It now introduces normalization, posting, and grain directly in the explanation.
+
+All 23 Form items map to the corresponding LexIndex or FieldIndex Code group. The 22 lexical explanations use one
+sentence each; FieldIndex uses two to retain both text/keyword behavior and the reason for preserving positions.
+Verified unchanged markers/intents, all 26 formula blocks by baseline hash, both shapes, the composed Result, and
+all Code and collected content by hash. After accounting for the declared presentation and explanation substitutions,
+the complete Extend/Form text and tree match. Draft/Extend Solution and all opening sections match; preamble is
+unchanged. No per-grain method, return field, or notation layout was removed to shorten prose. S8a/F12 suffice.
+
+### Filtering
+
+Reviewed `2/` Problem and four explanation items. The restored Problem explains the cost/coverage tension without
+prescribing overlap counting. Solution retains its five paragraphs, worked query example and intersection model,
+limitations of shared-word selection, and separation of production from reuse (approximately 368 to 381 words,
+including the model). The language now explains candidates and selection directly rather than using abstract
+admission terminology throughout. All four Form explanations use their matching Code groups.
+
+Verified the complete Extend/Form diff, seven unchanged formula blocks and four unchanged intents/markers, unchanged
+Code and collected-file hashes, opening-section parity, and exact preamble preservation. The 10,000 publication bound
+remains in both preamble and the shortened publication item. The old `2/` claims that Filtering owns freshness checks
+and target publication were not revived: current Filtering produces DocumentFilterScore, while Online owns reuse.
+Detailed Extend explanations remain intact; existing S9 plus the new S3/S8a/F12 cover these distinctions.
+
+### Shared language cleanup and final checks
+
+Capitalized definition sentences in the eight affected current families across Draft/Extend/Form: Inference,
+Vectorization, Scoring, Similarities, SearchDocuments, SearchFields, SearchSimilarity, and Offline. Updated prose
+references to explicitly say chapter, using the Online chapter for its OnlineFiltering/OnlineVectorization/OnlineScoring
+subsections. Where the reference occurred in Code, corrected collected prose too; the experiment annotation also
+carries the same wording. This was mechanical language maintenance, not a narrative regeneration of those families.
+
+The final scoped Definitions scan found no lowercase sentence starts. All twenty current Form Code sections still
+equal their Extend Code sections. No bare "See Topic" chapter references remain in current Draft/Collect/Extend/Form.
+Prompt diff whitespace checks pass. Intent/Problem and concise Implementation changes remain limited to the four
+pilot families; historical `2/` and `3/` files are untouched. Their old structure is not the acceptance oracle for the
+new Intent section or the intentional Extend/Form explanation difference. No application code or formula layout was
+changed, and no visual rendering or runtime test claim is made.
+
 ## Filtering family — September 10
 
 The family had annotations and `close/3/` collected references but no current Draft/Collect/Extend/Form files. Created

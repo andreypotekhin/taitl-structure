@@ -4,7 +4,7 @@
 
 Expand the draft using collected source and relevant background. Write the extended chapter under `close/extended/`,
 preserving the topic's relative path. This manually invoked process produces the complete implementation account
-and Code section that Format will preserve.
+and Code section. Format preserves Code and presents a concise version of public Implementation explanations.
 
 ~~~text
 Extend(topic, draft, collected, background, plan?) -> close/extended/<topic-path>/<Topic>.ext.md
@@ -19,7 +19,7 @@ Develop the narrative and explain every owned stage and public method group. Rea
 1. Resolve the inventory against collected and source contracts. Require complete class, method-group, stage, binding,
    and return-schema coverage before writing. Use background and relevant plans for explanations, not as claims that
    proposed behavior is already implemented.
-2. Retain the Draft's H1 and sections through Stages. Preserve conceptual coverage while enriching Problem/Solution under
+2. Retain the Draft's H1 and sections through Stages. Preserve Intent and conceptual coverage while enriching Problem/Solution under
    their shared contract. Carry Design's relevant implementation constraints into Implementation; omit top-level Design
    and Notation. Do not shrink useful examples or important limits.
 3. Write the substantive Implementation preamble, then evaluate the rendering algebra in Definitions:

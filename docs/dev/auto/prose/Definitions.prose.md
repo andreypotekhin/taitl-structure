@@ -76,7 +76,8 @@ body(internal composed) =
 body(external call) =
     circled_plain_description + boundary_notation                    # stop recursion at this boundary
 
-Format.Implementation = preserve(Extend.Implementation) + formula_notation
+Format.Implementation = preserve_tree_intents_and_other_prose(Extend.Implementation)
+    + concise_public_explanations_from_matching_Code_groups + formula_notation
 
 Collect.containers = transform headings                            # Workflow names a sole composed main
 Collect.transform_body = plain_intro + class_listing + groups

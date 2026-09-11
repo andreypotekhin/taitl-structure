@@ -1,13 +1,13 @@
 # {{Topic}}
 
-<!-- Format.prose.md preserves the full Extend template tree and prose.
+<!-- Format.prose.md preserves the full Extend template tree and prose except the declared public-group explanation projection.
 This template specifies substitutions, not a second independently authored chapter.
 Emit unchanged sections/paragraphs in their original positions, not these placeholder summaries. -->
 
 <!-- A specialization keeps Extend's exact base/replacement contract. Render it with Notation's normal-size replacement
 vector, preserving every effective input/output and local replacement. Never render inheritance as a called stage. -->
 
-{{Exact Problem, Solution, Builds on, and Used by sections; display math uses $$ delimiters.}}
+{{Exact Intent, Problem, Solution, Builds on, and Used by sections; display math uses $$ delimiters.}}
 
 ## Definitions
 
@@ -24,15 +24,18 @@ vector, preserving every effective input/output and local replacement. Never ren
 
 {{Exact complete preamble paragraphs, before any subsection heading; this slot is mandatory.}}
 
-{{Exact internal/external headings, introductions, numbered items, and Result prose, in their existing order.}}
+{{Exact internal/external headings, introductions, markers, intents, and Result prose, in their existing order.
+For each public method group only, use the matching Code explanation as the base for a concise explanation,
+preferably one sentence after the unchanged short italic intent. Match by transform and methods, not Code number.}}
 
 <!-- Substitute each notation block in place using Notation.md#chapter-profile.
 These fragments illustrate the distinct block types; do not insert extra blocks or headings.
 Every source notation block outside Code must be replaced by a formula. No text or LaTeX fences survive here. -->
 
 <!-- Keep the method and its return on one equation row by default; multiple arguments use a vertical pmatrix,
-not an automatic equation break. A projected return shows explicit additions/overrides and essential carried fields,
-with vdots only for actual omitted context. -->
+not an automatic equation break. Each first return has a field definition, including pure projections and every method
+in a group. A projected return shows explicit additions/overrides and essential carried fields (including grouping keys
+and defining payload), with vdots only for actual omitted context. Recheck unchanged formulas against source. -->
 $$
 \operatorname{method}(ArgumentSchema) \rightarrow ReturnSchema :
 \begin{pmatrix}

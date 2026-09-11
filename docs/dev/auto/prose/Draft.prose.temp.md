@@ -2,9 +2,13 @@
 
 <!-- Instantiate once. Braced placeholders are slots, not literal output. See Draft.prose.md. -->
 
+## Intent
+
+{{Use-case need and desired outcome in one or two sentences.}}
+
 ## Problem
 
-{{Use-case need and desired outcome.}}
+{{Familiar situation -> topic-specific difficulty -> practical consequences, without the solution or implementation.}}
 
 ## Solution
 

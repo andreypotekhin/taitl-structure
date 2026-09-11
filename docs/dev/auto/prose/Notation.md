@@ -63,6 +63,11 @@ ordinary step shapes or composed Results.
 Resolve fields from source, never from guesses. A projected return should explain the operation, not merely echo its
 last keyword arguments or reproduce an entire inherited record. Select its visible fields by this rule:
 
+Every schema's first appearance as a method return requires a field definition, including a pure projection into a
+different schema with no explicit assignments. A name in Inputs, a signature, or a transform shape is not a definition.
+Apply this check to each method in a multi-method group, not merely the group's first return. A first projected return
+may use the balanced field selection below; it may not be a bare schema name.
+
 ~~~text
 visible_fields = explicit_additions_and_overrides + essential_carried_fields
 ~~~
@@ -71,6 +76,9 @@ Always show every field explicitly supplied by the returned construction, includ
 `.base()`, even when a similar projection appeared earlier. Add inherited fields only when they establish the returned
 grain/key or carry the evidence this operation assembles. Ground that choice in the grouping/join/rekeying logic and
 the method-group explanation, not a fixed field-count quota or possible future uses. Preserve the schema's field order.
+Include the keys that define a newly grouped row and the payload needed to understand its result even when those fields
+are inherited rather than assigned. For ParagraphLineGroup, this includes document identity, section ordinal, paragraph
+group, and the new identities and span bounds. Showing only explicit overrides hides what the grouping means.
 
 For example, sentence materialization can show `vdots, content`: its coordinates and identity are unchanged context.
 A normalized occurrence needs its document/section/paragraph/sentence keys and term; a grouped count needs its complete
@@ -87,19 +95,25 @@ render_return(schema, construction, essential_carried_fields, seen):
         construction = pass_through
     if construction is project/base:
         visible = schema_order(ALL explicit_fields + essential_carried_fields)
-        if visible is empty: return schema.name
+        if visible is empty:
+            if schema in seen.full: return schema.name
+            visible = schema.fields  # first definition cannot disappear through an empty projection
         omitted = schema.fields - visible
+        record schema in seen.defined
         if omitted is empty: record schema in seen.full
         return schema.name : vector(vdots if omitted, visible)
     if schema in seen.full:
         return schema.name
-    return schema.name : vector(ALL schema.fields); record schema in seen.full
+    return schema.name : vector(ALL schema.fields); record schema in seen.defined and seen.full
 ~~~
 
 Full construction or pass-through of an unseen schema requires the full field vector even when input and return types
 match (including `InferencePolicy.project(policy)`). A partial projection does not count as a full definition.
 Omit field type annotations, not selected field names. Never emit a lone `\vdots` vector, hide an explicit override,
 or remove an essential key or contributed value solely to make a formula narrower.
+Keep a chapter-local ledger of first return occurrence, construction kind, visible fields, and omitted fields. Validate
+the selected fields against current source even when reusing an unchanged formula; equality to a previous output does
+not prove that the previous output satisfied this contract.
 
 ### Display
 
