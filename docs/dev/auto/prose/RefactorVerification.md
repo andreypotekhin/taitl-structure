@@ -1,5 +1,126 @@
 # Chapter operator refactor verification
 
+## Annotation prose rollout — September 11
+
+Completed the remaining eighteen established chapter families sequentially, with a family-level verification gate
+before starting the next. Indexing and Scoring were excluded; their pilot outputs and annotations remain unchanged.
+The inventory contains twenty families and eighty Draft/Collect/Extend/Form documents, so no additional established
+family was left outside this rollout.
+
+Revised code-adjacent explanation paragraphs at their annotation owner and carried them into Collect, Extend Code,
+and Form Code. External-call explanations were refreshed at Collect from the actual source call; no external
+implementation was imported. All 150 items were reviewed (130 method/helper groups and 20 external calls), with
+already-suitable prose retained where rewriting added no value.
+
+| Family | Code items | Python listings | Plain explanation words, before → after |
+|---|---:|---:|---:|
+| Chunking | 8 | 11 | 193 → 126 |
+| Fields | 2 | 3 | 60 → 37 |
+| Inference | 7 | 13 | 214 → 120 |
+| Vectorization | 3 | 6 | 103 → 60 |
+| Filtering | 4 | 6 | 109 → 61 |
+| Similarities | 13 | 16 | 258 → 210 |
+| SearchDocuments | 15 | 19 | 305 → 243 |
+| SearchFields | 9 | 13 | 143 → 138 |
+| SearchSimilarity | 7 | 12 | 101 → 106 |
+| Offline | 12 | 20 | 166 → 175 |
+| Online | 26 | 39 | 458 → 407 |
+| Cohorts | 8 | 9 | 139 → 112 |
+| Clicks | 2 | 4 | 52 → 46 |
+| Relevance | 4 | 5 | 86 → 74 |
+| Labeling | 5 | 8 | 118 → 95 |
+| Training | 4 | 7 | 83 → 61 |
+| Experiments | 6 | 12 | 109 → 79 |
+| Evaluation | 15 | 23 | 265 → 231 |
+| Total | 150 | 226 | 2962 → 2381 |
+
+The counts exclude italic intents. They are not shortening targets: SearchSimilarity and Offline grew slightly where
+clearer behavior or useful chapter references warranted it. Prose was authored family by family, without generation
+scripts, parallel agents, or copying older chapters. Mechanical comparisons and patch propagation did not generate prose.
+
+### Source and reading checks
+
+- Checked each revised method-group explanation beside its complete listing and current Python source, including
+  private helpers, inherited replacements, all grain paths, and method-local imports.
+- Corrected Fields annotation's stale claim that flattening reads the completed map: its declared input is the original
+  document map. Annotation A6 now requires tracing input lineage rather than inferring it from section order.
+- Preserved consequential details: source spans, field-map precedence, inference failures, source-document identity,
+  filter limits, request-relative freshness, and unordered deduplication rather than an invented newest-row guarantee.
+- Made SearchFields' `metadata`, `content`, and `metadata+content` result scopes explicit. SearchDocuments' feedback
+  item now states the actual fixed 80/20 blend, and its experiment counterpart retains the 90/10 change.
+- Preserved the distinction between repeat clicks and clicked impressions, reported CTR and its thresholded blend
+  contribution, generated-zero label precedence, judged metric eligibility, and batch association versus time filtering.
+- Checked external assignments against current source. Removed an incorrect helper chapter reference during review:
+  `AllScoringTargets` is not Offline's `AllDocumentTargets`. General style and S8c now require actual destination
+  coverage, not an assumption based on package membership or similar names.
+
+### Preservation and scope
+
+For every family, Python listing contents, container headings, group membership/order, italic intents, and existing
+independent Code numbering streams match the pre-edit snapshots. No internal class description became a numbered
+step. Revised prose is consistent across its annotation owner and collected/extended/formatted copies, allowing only
+Code prefixes and line wrapping. Form Code remains byte-identical to Extend Code.
+
+The entire pre-Code body of every extended and formatted chapter is byte-identical to its snapshot, including
+Implementation explanations, formula notation, return definitions, and preambles. Drafts and application sources
+were not edited. A final cross-family read compared 148 phase/annotation files with the verified snapshots, including
+the excluded Indexing and Scoring files; all matched.
+
+This is focused Code-prose QA, not certification of untouched chapter content. In particular, the pre-existing
+Similarities Implementation reference claiming that the Scoring chapter defines `AllScoringTargets` remains outside
+this pass; the current Scoring chapter does not expand that helper. No formula rendering or application build was run.
+Ignored `close/` outputs were checked directly, and Git whitespace checks passed.
+
+## Annotation prose pilot — September 11
+
+Scope: Indexing, verified before proceeding to Scoring. Revised the method-group explanatory paragraphs in their
+existing annotations, then propagated them into collected, extended Code, and formatted Code. This is a focused
+Code-prose revision, not chapter regeneration. Draft and all pre-Code content remain unchanged.
+
+### Diagnosis and rule change
+
+The reported long paragraphs are already present in `LexIndex.anno.md` and the lexical `ScoreOverlap.anno.md`;
+downstream Code faithfully carries them. The outputs are Git-ignored, so their regeneration history cannot be
+established from commits. Current filesystem modification dates for those annotations are September 6, not proof
+of a September 5 run. Reviewed prompt history and the changes in `7a4ab5d7` and `d9dd5006`; those changes do not
+establish a new instruction to lengthen explanations.
+
+The control gap was competing emphasis: repeated brevity advice alongside requests to describe workings, explain
+points, and mention grain differences, without a concrete test of explanatory value beside visible code. Replaced
+that scattered guidance with the Annotation operator's purpose-first, usually-one-sentence contract and A1–A8 checks.
+The contract explicitly separates code-adjacent prose from chapter narrative depth and retains consequential details.
+Removed the old permission to insert numbered callouts into Python, which conflicted with exact-source preservation.
+Updated Prose's operator reference and linked the Annotation checks from shared QA.
+
+### Results
+
+| Family | Method/helper groups | Python listings | Plain explanation words, before → after |
+|---|---:|---:|---:|
+| Indexing | 23 | 26 | 775 → 314 |
+| Scoring | 17 | 23 | 466 → 280 |
+
+Counts exclude short italic intents and are descriptive, not acceptance targets. Compared with `close/2/` Code prose
+for purpose-first phrasing and reading load, while checking every revised claim against current source. The pilot
+retains the distinction between document frequency and repetition, field positions before stop-word removal,
+the ten-minute watermark, missing-term weights, BM25 defaults, normalization populations, and vector validation failures.
+Removed repetitive key hierarchies and generic downstream-use explanations. Kept the already-concise overlap guard.
+Older Scoring group omissions and unseparated listings were not adopted with its narrative style.
+
+For each family, checked all selected annotation blocks against the current Python source and the complete ordered
+method inventory, including private helpers: 23 Indexing methods and 35 Scoring methods. All blocks match source.
+Compared against snapshots taken before editing: Python block contents, headings, group membership/order, short
+intents, and Code numbering are unchanged (Indexing 1–23; Scoring 1–17). Every revised paragraph agrees between
+annotation and Collect after whitespace normalization; Extend differs only by its Code prefix and wrapping;
+Form Code is byte-identical to Extend Code. Both chapters' entire pre-Code bodies are byte-identical to their snapshots,
+including Implementation explanations, formulas, return definitions, and preambles. One surplus trailing blank line
+was removed from the LexIndex annotation.
+
+Reviewed neighboring paragraphs for accessible language and repetition after the mechanical checks. No family was
+parallelized, no chapter was copied wholesale, and no prose-generation script was used. Read-only comparisons checked
+the hand-authored edits and their propagation. Git whitespace checks passed; ignored outputs were checked directly.
+This pilot does not certify untouched chapter content, other annotation modules, visual rendering, or runtime behavior.
+No application code changed and no application build was run.
+
 ## Fourth reading-prose batch — September 10
 
 Sequential scope: Cohorts, Clicks, Relevance, Labeling, Training, Experiments, Evaluation.

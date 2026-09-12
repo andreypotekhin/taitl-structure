@@ -23,7 +23,7 @@ A failed input check is repaired at its owning operator when authorized; otherwi
 | S8 Reader continuity | Define the central activity and unfamiliar integration roles before use; principal-topic references stay general. Read adjacent items for progression plus rationale, and reject parameter-validation detail that overshadows the work itself. |
 | S8a First-reading clarity | Read Solution without Code: explain unfamiliar terms on first use, use concrete examples, and reject stacked abstractions. Simplification retains theory, industry context, examples, and tradeoffs rather than shrinking to an abstract. Compare `2/` for accessibility when requested, not as authority for old behavior. |
 | S8b Calculation definitions | Every central algorithm has a formula or precise rule with defined symbols, populations, parameters, and missing/zero behavior, followed by its meaning. Scoring must define weighted overlap and BM25, not only IDF. Check multiplicity and the implemented variant against source. A glossary entry or name alone does not pass. |
-| S8c Actor and chapter references | Use search user/caller/application according to the actual actor; reserve reader for reading. External Implementation stages defined elsewhere explicitly name the owning chapter and transform, without expanding that implementation. |
+| S8c Actor and chapter references | Use search user/caller/application according to the actual actor; reserve reader for reading. External Implementation stages defined elsewhere explicitly name the owning chapter and transform, without expanding that implementation. Check every chapter reference against actual destination coverage, not package membership or a similar transform name. |
 | S9 Behavioral claims | Resolve behavior from predicates and returned expressions, not names or docstrings. In Online, distinguish filter-hit markers from score-gap markers, identity checks from numeric vector validation, and unordered deduplication from newest-row selection. |
 | S9a Measures and populations | Trace thresholds to individual returned fields and joins/unions to their actual cardinality behavior. In Relevance, minimum exposure gates normalized CTR, not reported CTR; context expansion is neither deduplication nor first-qualified fallback selection. Do not invent denominator guards. |
 | S9b Precedence and validation | Trace a colliding key through all overlays, including zero/null values; distinguish require-style validation from filtering. Labeling applies generated labels last, including generated zeros, and defaults only missing query language rather than retrying every unmatched locale. |
@@ -40,6 +40,14 @@ D4 Code == collected_reference(s); no Python listings
 ~~~
 
 Check Solution examples against supported behavior and Design requirements against their proposed/implemented status.
+
+## Annotation
+
+Run [Annotation.prose.md](Annotation.prose.md#quality-assurance)'s A1–A8 checks at the source-prose boundary.
+In particular, read each group beside its listing: purpose-first, accessible prose should add meaning, not narrate
+operators. Prefer one short sentence; justify any second sentence by a consequential distinction. A lower word count
+alone is not evidence of improvement. When refreshing Code downstream, verify exact prose propagation as well as
+unchanged listings, group membership, intents, and independent numbering.
 
 ## Collect
 

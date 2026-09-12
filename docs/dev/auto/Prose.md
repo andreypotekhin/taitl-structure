@@ -36,7 +36,7 @@ Text operator is a code-to-text or text-to-text transformation bearing certain a
 e.g. optimized for brevity, generality etc.
 
 Example:
-- Annotation.prose.md defines annotate() text operator in subsections 'Example', 'General tips' of 'Creating annotated code' section.
+- Annotation.prose.md defines annotate() in its 'Annotation operator' section, with a code-adjacent prose contract and QA checks.
 - It also describes how annotate() text operator applies to narrower contexts:
   - Annotated source for example code.
   - Annotated source for non-example code.

@@ -5,6 +5,8 @@ collects every essential reusable term, not a predetermined number of entries.
 Capitalize the first word of every definition sentence; preserve an exact identifier's spelling by introducing it
 with an ordinary capitalized word when needed. In prose references, name the destination as a chapter, for example
 "See the Filtering chapter for overlap matching." Bare topic names remain appropriate in Builds on/Used by inventories.
+Verify that the destination actually covers the referenced component; package membership alone does not establish
+chapter coverage. Do not invent a chapter reference for an otherwise undocumented helper.
 Assume no prior knowledge of the topic's integrations or abstractions. Introduce the central activity and fully name
 roles on first use (for example, "inference adapter" and what it translates), before using shortened references.
 Builds on/Used by name principal chapters such as Online and Offline, not their implementation-stage classes.
