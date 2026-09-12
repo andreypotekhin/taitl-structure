@@ -1,5 +1,105 @@
 # Chapter operator refactor verification
 
+## Accessible transform-description rollout — September 11
+
+Applied the approved Online/SearchDocuments revision to the remaining eighteen families, sequentially, with a
+preservation check before moving to the next family. This supersedes the initial pilot's one-sentence preference:
+internal introductions now use one or two connected, accessible sentences; external introductions describe the
+actual call and supplied inputs, not preparation performed by the caller. Extend owns these descriptions and Form
+preserves them. Draft has no stage subsections and was not changed.
+
+| Family | Internal descriptions | External descriptions |
+|---|---:|---:|
+| Chunking | 2 | 0 |
+| Fields | 1 | 0 |
+| Indexing | 2 | 0 |
+| Filtering | 1 | 0 |
+| Inference | 5 | 0 |
+| Vectorization | 3 | 1 |
+| Scoring | 4 | 0 |
+| Similarities | 2 | 3 |
+| SearchFields | 3 | 1 |
+| SearchSimilarity | 4 | 0 |
+| Offline | 8 | 6 |
+| Cohorts | 1 | 0 |
+| Clicks | 2 | 0 |
+| Relevance | 1 | 0 |
+| Labeling | 2 | 0 |
+| Training | 3 | 1 |
+| Experiments | 6 | 1 |
+| Evaluation | 8 | 0 |
+| This rollout | 58 | 13 |
+| Online, approved retry rechecked | 13 | 4 |
+| SearchDocuments, approved retry rechecked | 3 | 3 |
+| All twenty families | 74 | 20 |
+
+The 71 new descriptions were authored individually from their Code descriptions and actual call contracts, without
+generation scripts, parallel agents, or copying old chapters. Mechanical patch propagation and read-only comparisons
+did not generate prose. Internal introductions remain unnumbered; external descriptions retain their circled markers
+without italicized intents. Independent roots retain separate counters and their existing Result subtrees.
+
+### Corrections and prompt coverage
+
+- Updated the thirteen external-call explanations at Collect and propagated them through both Code sections, retaining
+  the original short intents and decimal numbers. Experiments' annotated BM25-call description was synchronized too.
+- Corrected Inference's two annotation paragraphs and corresponding collected/Code items to say that the inference
+  adapter produces embeddings for queries or documents. Its two concise Form method explanations now use that wording
+  too. The detailed Extend method explanations remain intact. Streaming still controls adapter execution; no source
+  parameter, signature, or result contract changed.
+- Preserved actual input selection: Offline passes its full supplied population to Vectorization, while Online passes
+  selected gaps. Offline Scoring receives selected lexical queries and separately supplied vector queries. SearchDocuments
+  passes document content and selected target IDs to OnlineVectorization, not an already-filtered document relation.
+- Removed the false Implementation references to a Scoring-chapter definition of AllScoringTargets and a nonexistent
+  Features chapter. The description algebra and template now make references conditional on actual chapter coverage;
+  General style and S8c already require that check.
+- Checked vector self-exclusion against ScoreVectors: document scoring excludes the source document, whereas paragraph
+  scoring excludes the source paragraph, not its entire document. S9 now includes that regression case.
+- S7/S7a cover accessible internal orientation, root-aware matching, caller/callee responsibility, external presentation,
+  and upstream prose propagation. S9d covers input/artifact/execution distinctions. The approved retry's rules remain
+  the common contract rather than being duplicated in family-specific instructions.
+
+### Verification and limits
+
+For each revised family, compared the full files with the intended paragraph edits and checked preservation outside
+those edits. The 217 Python listings per collected/Code copy and all 231 Form display formulas are unchanged. So are
+section trees, numbering, preambles, Results, short intents, and method-group explanations, except the two explicitly
+listed Inference Form explanations. All comparisons normalize CRLF/LF; they are content checks, not line-ending claims.
+
+Across all twenty families, Extend/Form descriptions agree exactly, Code sections agree, and collected intent-led
+explanations match downstream Code after removing decimal prefixes and normalizing prose wrapping. The accepted Online
+and SearchDocuments retry outputs were rechecked without rewriting them. The Git-ignored chapter outputs were read
+directly; Git whitespace checks passed.
+
+This is focused description and semantic QA, not full chapter regeneration or recertification of untouched formulas,
+return schemas, or calculations. No visual formula render, application build, or runtime tests were run.
+
+## Implementation transform-description pilot — September 11
+
+Applied sequentially to Online, then SearchDocuments, in Extend and Form. The earlier concise projection covered
+method-group explanations, not transform descriptions; the latter still encouraged a fuller input/operation/output
+account. Added a distinct Transform descriptions contract in Implementation.style, routed Extend and its template
+through it, and made Form's preservation explicit. S7/S7a now test concise orientation, correct Code-description
+matching, internal/external presentation, and preservation outside this focused change.
+
+Descriptions start from the corresponding Code class or call paragraph and explain the useful contribution in one
+short sentence, with a brief chapter reference for external operations. Read SearchDocuments' `close/2/` descriptions
+for clarity and reading load, not as behavioral authority. Kept current source distinctions, including the 10,000-target
+bound, caller constraints, streaming inference outcomes, and reranking existing candidates rather than adding documents.
+Matched Online's identically named SelectGapQueries classes within their separate filtering and scoring roots.
+
+| Family | Internal descriptions | External descriptions | Description words, before → after |
+|---|---:|---:|---:|
+| Online | 13 | 4 | 471 → 251 |
+| SearchDocuments | 3 | 3 | 244 → 95 |
+
+Counts exclude circled markers and include chapter references; they are observations, not length quotas. Every
+description was read without Code for a concrete, understandable role. External descriptions retain their existing
+circled numbers and have no italicized intents; internal descriptions remain plain and unnumbered. Extend and Form
+descriptions agree exactly. All other file content matches pre-edit snapshots, including method-group explanations,
+headings, preambles, Results, full notation/formulas, and Code. Explicit checks also compared Python listings, display
+formulas, and numbered method items; no changes were found. No Draft, annotation, collected source, or application code
+was edited. Git whitespace checks passed. This is a description-only review, not a new visual render or runtime test.
+
 ## Annotation prose rollout — September 11
 
 Completed the remaining eighteen established chapter families sequentially, with a family-level verification gate

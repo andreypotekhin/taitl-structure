@@ -25,6 +25,7 @@ vector, preserving every effective input/output and local replacement. Never ren
 {{Exact complete preamble paragraphs, before any subsection heading; this slot is mandatory.}}
 
 {{Exact internal/external headings, introductions, markers, intents, and Result prose, in their existing order.
+Transform descriptions already follow Implementation.style's concise contract in Extend; preserve them exactly.
 For each public method group only, use the matching Code explanation as the base for a concise explanation,
 preferably one sentence after the unchanged short italic intent. Match by transform and methods, not Code number.}}
 

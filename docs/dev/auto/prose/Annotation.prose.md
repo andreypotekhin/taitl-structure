@@ -114,6 +114,8 @@ coverage never depends on repeating that difference in words.
 **Keep the language approachable.** Define unfamiliar roles and terms when first needed. Prefer concrete verbs to
 stacked abstractions, avoid overqualified nouns and unexplained shorthand, and never assume that fewer words alone
 mean greater clarity. Do not merely translate each code operation into English.
+Apply General.style's input/artifact/execution distinction: describe producing an embedding for text, and keep the
+adapter's streaming execution setting separate from what the resulting embedding means.
 
 Necessary extended explanation, such as a non-obvious formula or boundary case, may follow the listing. It must add
 new understanding; do not move discarded paraphrases below the code to satisfy the one-sentence preference. Keep

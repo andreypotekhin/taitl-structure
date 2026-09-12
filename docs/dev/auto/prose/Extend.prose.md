@@ -22,7 +22,9 @@ Develop the narrative and explain every owned stage and public method group. Rea
 2. Retain the Draft's H1 and sections through Stages. Preserve Intent and conceptual coverage while enriching Problem/Solution under
    their shared contract. Carry Design's relevant implementation constraints into Implementation; omit top-level Design
    and Notation. Do not shrink useful examples or important limits.
-3. Write the substantive Implementation preamble, then evaluate the rendering algebra in Definitions:
+3. Write the substantive Implementation preamble, then evaluate the rendering algebra in Definitions. Derive short
+   transform descriptions from matching Code class/call prose under Implementation.style's Transform descriptions
+   contract; this does not shorten the preamble or the complete notation:
    - Step: plain introduction, every public group with circled intent/explanation and complete text signatures, then one
      Resulting transform shape. Include all public methods in the shape; never substitute "same pattern" for named paths.
    - Composed: recursively render every child, then a Result subsection with a source-grounded sentence and complete

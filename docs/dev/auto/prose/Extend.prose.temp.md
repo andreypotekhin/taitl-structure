@@ -51,13 +51,13 @@ responsibilities, and important source-backed limits. Develop the Draft account 
 sole main composed: child subsections + ### Result;
 step main: ### MainName + StepBody;
 multiple roots (even with a main), or no main: ### RootName + StepBody or ComposedBody, restarting counters per root.
-ComposedBody = plain intro + nested child subsections + nested Result.
+ComposedBody = concise plain intro from Code's class description + nested child subsections + nested Result.
 Choose subsection depths from ownership, not a fixed heading level. -->
 
 ### {{InternalStepName}}
 
-{{Plain active account of this stage's input evidence, substantive operation, and useful output. No placeholder
-"Implement/Run {{InternalStepName}}" sentence; this introduction does not replace any public method group.}}
+{{One or two connected, plain sentences explaining what this transform contributes and the context a first-time
+reader needs, based on Code's class description. Do not force compressed language or enumerate its methods.}}
 
 ① *{{Short intent.}}* {{Useful explanation in the same paragraph.}}
 
@@ -82,7 +82,9 @@ Resulting transform shape:
 
 ### {{ExternalStageName}}
 
-② {{Source-backed plain description; no italicized intent.}}
+② {{Pass/call the already-selected inputs to the named external transform for its useful result. Keep this short and
+plain, without an italicized intent; add a brief owning chapter reference when that chapter covers the transform.
+Do not attribute caller responsibilities to the callee or expand the complete input/output inventory.}}
 
 ~~~text
 {{ExternalStageName}}:

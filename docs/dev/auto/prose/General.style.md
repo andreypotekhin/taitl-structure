@@ -24,6 +24,10 @@ State which returned measure a threshold changes, and distinguish population exp
 deduplication, denominator protection, or fallback choice from the intended use of a relation.
 For sequential overlays, trace a shared key through every writer, including zero and null cases, before describing
 precedence. Distinguish validation failures from row filtering.
+Distinguish an input object, the artifact produced for it, and execution settings. In inference, say "produce an
+embedding for a query/document," not "embed the query/document." Streaming controls the adapter's execution strategy,
+not a property of the embedding; mention that setting only where the execution distinction matters. Likewise, describe
+external calls as passing inputs to another transform, without assigning the caller's preparation work to the callee.
 
 Use "search engine" at most once per document, and omit it when unnecessary. Do not position the system being described
 as its own downstream consumer.

@@ -25,25 +25,60 @@ Match the explanatory depth of an accepted chapter reference; do not condense it
 
 ## Subsections
 
-- Internal introduction: plain, unnumbered active prose that connects the stage's incoming evidence, substantive
-  operation, and useful output. A transform-name subject or an imperative is equally valid; use enough explanation
-  to distinguish the stage's responsibility. "Implement LexIndex" or "Apply the declared transformation" fails this
-  contract. For example: "`LexIndex` materializes source-faithful sentence text, produces one normalized occurrence
-  stream, and assembles public term and summary relations for every lexical grain."
+- Internal introduction: plain, unnumbered active prose under the Transform descriptions contract below.
+  This applies to step transforms, composed internal stages, and independent roots alike.
 - Method group: one short italic intent sentence followed by explanation in the same numbered item. Extend retains
   the detailed account as a knowledge reference; Format presents the concise reading version described below.
   Do not italicize the explanation. Typed signatures supply mechanics, not a replacement for explanation.
   Read consecutive items as a continuous explanation: carry established context forward, state the next useful
   transition plainly, and give its rationale. Do not bury that progression under repeated constraints or defensive
   caveats; put exceptional behavior with the operation that owns it or in the preamble.
-- External call: one source-backed plain description with its circled marker, followed by boundary notation. Do not add
+- External call: one concise description under the same contract, with its circled marker, followed by boundary notation. Do not add
   an italicized intent that repeats the external stage heading. This does not change Code's independent intent-led items.
-  When the operation is defined in another chapter, name that chapter and the transform, for example
-  "See the Scoring chapter for the definition of `ScoreOverlap`." Do not import its method groups to supply the definition.
+  When the operation is defined in another chapter, add a short reference such as "See the Scoring chapter."
+  The subsection heading already identifies the transform; do not retell its definition or import its method groups.
 - Result: one self-contained sentence explaining what the composed transform publishes from its inputs.
 
 Keep source group order. Avoid duplicated intent/explanation text, generic production commentary, and opaque terminology
 where a concrete data or domain name would be clearer.
+
+## Transform descriptions
+
+Use plain, purpose-first language for someone meeting the transform for the first time. Internal descriptions may
+use one or two connected sentences: explain what the transform contributes, then add the context needed to understand
+its inputs or result. Do not force a single sentence or trade familiar words for compressed terms such as
+"request-valid relation" or "admitted evidence population." This is orientation, not a second preamble or method inventory.
+
+Use the matching Code description as the starting point:
+
+~~~text
+internal description = accessible_orientation(Code's plain class description, one_or_two_sentences)
+external description = circled marker + call(supplied_inputs, external_transform, useful_result) + chapter_reference_if_documented
+Format description = exact(Extend description)
+~~~
+
+Match by the owning root and transform or actual call, not by heading alone or item number. Online's two
+`SelectGapQueries` classes have different responsibilities. Preserve a clear Code sentence when it already works;
+otherwise adapt it for reading without nearby Python. Do not assemble a description by concatenating method items.
+Check the actual call before reusing Code wording. If Code misstates responsibility, correct its owning prose when
+authorized; do not reproduce the mistake in Implementation.
+
+For an external stage, describe the delegation: which already-selected inputs the caller passes to the named transform
+and what it obtains. Prefer a short call-focused sentence plus a chapter reference. Do not attribute the caller's
+selection, gap detection, cache reconciliation, or publication to a callee that only processes supplied inputs.
+For example: "Pass the queries selected for recalculation to `Filtering` to produce lexical filter scores. See the
+Filtering chapter." "Fill lexical filter gaps" hides this division of responsibility.
+
+Retain a limit or distinction when it helps explain the stage, without listing every argument or defensive check.
+Complete inputs, outputs, and bindings remain in notation; internal methods explain their own details, and external
+chapters own theirs. A second internal sentence should help the newcomer, not merely repeat the first.
+
+Read descriptions together: each should move the story forward without repeating the preamble or its neighbors.
+An external description names the called transform even though it appears in the heading: here the name identifies
+the recipient of the inputs, rather than restating a title. Do not expand its implementation or enumerate score families.
+
+Author this reading version in Extend and preserve it in Format. It does not rewrite Code or annotation, shorten the
+Implementation preamble or Result, change method-group explanations, or alter any notation, ownership, or numbering.
 
 ## Format explanation projection
 

@@ -38,7 +38,8 @@ Source annotation remains governed by [Annotation.prose.md](Annotation.prose.md)
 5. Recurse into internal classes, once per root. For each external call, retain the complete assignment in the parent
    and a self-contained external section with short italic intent, source-backed explanation, and that exact
    parameterized assignment. Only the assignment is intentionally repeated; never collect the external implementation
-   or repeat the parent class. An external call is one item, not a fabricated method group.
+   or repeat the parent class. Describe the delegation of actual inputs, not caller preparation attributed to the callee.
+   An external call is one item, not a fabricated method group.
 6. Run [QA.prose.md](QA.prose.md)'s shared and Collect checks. Emit one H1, with all containers nested beneath it.
    Collect emits no item numbers; Extend assigns Code numbers to these collected method groups and external calls.
 
