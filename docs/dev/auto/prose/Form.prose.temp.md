@@ -2,7 +2,9 @@
 
 <!-- Format.prose.md preserves the full Extend template tree and prose except the declared public-group explanation projection.
 This template specifies substitutions, not a second independently authored chapter.
-Emit unchanged sections/paragraphs in their original positions, not these placeholder summaries. -->
+Emit unchanged sections/paragraphs in their original positions, not these placeholder summaries.
+Omit genuinely empty sections at any depth under Format's empty-section rule; keep containers with nonempty children.
+Missing required content or unresolved placeholders are defects, not permission to omit required sections. -->
 
 <!-- A specialization keeps Extend's exact base/replacement contract. Render it with Notation's normal-size replacement
 vector, preserving every effective input/output and local replacement. Never render inheritance as a called stage. -->

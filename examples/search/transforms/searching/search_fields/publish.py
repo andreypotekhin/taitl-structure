@@ -8,7 +8,7 @@ from examples.search.schemas.fields import (
 )
 from examples.search.schemas.search import DocumentSearchResult
 from structure import Transform, input, output, step
-from structure.plugin.pyspark import inner_join, literal, where
+from structure.plugin.pyspark import inner_join, where
 
 
 class PublishFieldSearchResults(Transform):
@@ -33,7 +33,7 @@ class PublishFieldSearchResults(Transform):
             query_id=document.query_id,
             document_id=document.document_id,
             match_scope="metadata",
-            document_result=literal(None),
+            document_result=None,
         )
 
     @step(input=[queries, delegations, document_results], output=results)

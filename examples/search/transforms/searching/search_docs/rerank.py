@@ -25,7 +25,6 @@ from structure.plugin.pyspark import (
     window,
     window_max,
 )
-from structure.plugin.pyspark.dsl.expressions import literal
 
 
 class RerankDocuments(Transform):
@@ -59,8 +58,8 @@ class RerankDocuments(Transform):
         policy = param_join(policy)
         is_global = candidate.user_band_id.is_null()
         return DocumentFeedbackOption.project(candidate)(
-            feedback_band_id=when(is_global, literal(None)).otherwise(fallback.user_band_fallback_id),
-            fallback_ordinal=coalesce(fallback.ordinal, literal(0)),
+            feedback_band_id=when(is_global, None).otherwise(fallback.user_band_fallback_id),
+            fallback_ordinal=coalesce(fallback.ordinal, 0),
             minimum_band_impressions=policy.minimum_band_impressions,
         )
 

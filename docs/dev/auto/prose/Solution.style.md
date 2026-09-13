@@ -37,6 +37,12 @@ general domain practice + user goal
 Preserve this order, not a rigid paragraph count. Usually three to five substantive paragraphs give the explanation room
 to develop. The opening is not a project component, algorithm, schema, or formula. Explain concepts before relying on
 them; a formula must have introduced symbols and an interpretation in prose.
+Balance three jobs in the opening paragraph: ground the topic in a relevant theory or familiar practice, connect that
+grounding to the chapter's purpose, and introduce the concepts needed for the proposed approach. Make these one
+connected explanation, not three checklist sentences. A concrete example can establish the connection. Do not replace
+grounding with an imperative slogan such as "Keep the evidence families distinct" or a restatement of Intent; explain
+why that choice helps. Equally, avoid a detached theory survey or unexplained terminology before the reader sees its
+purpose. Later paragraphs develop the approach rather than compensating for an abrupt opening.
 Follow General style for selective italicized inline definitions and glossary coverage. Write symbolic references
 in prose as inline mathematics under Notation; a literal L_d or the word alpha is not a formatted symbol reference.
 

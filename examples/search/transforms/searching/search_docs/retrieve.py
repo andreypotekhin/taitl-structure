@@ -103,7 +103,7 @@ class RetrieveDocuments(Transform):
         return DocumentSearchCandidate.project(document)(
             search_query_id=query.id,
             experiment_id=vector.experiment_id,
-            user_band_id=coalesce(band.user_band_id, literal(None)),
+            user_band_id=coalesce(band.user_band_id, None),
             band_id=band.band_id,
             query=lower(regexp_replace(trim(query.content), pattern=r"\s+", replacement=" ")),
             candidate_rank=literal(0).cast(types.long()),
@@ -144,7 +144,7 @@ class RetrieveDocuments(Transform):
         )
         return DocumentSearchCandidate.project(score, document)(
             search_query_id=query.id,
-            user_band_id=coalesce(band.user_band_id, literal(None)),
+            user_band_id=coalesce(band.user_band_id, None),
             band_id=band.band_id,
             query=lower(regexp_replace(trim(query.content), pattern=r"\s+", replacement=" ")),
             candidate_rank=literal(0).cast(types.long()),

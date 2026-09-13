@@ -7,7 +7,6 @@ from structure import Transform, input, lane, output, parameter, step
 from structure.plugin.pyspark import coalesce, group_by, left_join, lower, regexp_replace, row_number
 from structure.plugin.pyspark import sum as sum_
 from structure.plugin.pyspark import trim, where
-from structure.plugin.pyspark.dsl.expressions import literal
 
 
 class SelectPopularQueries(Transform):
@@ -30,11 +29,11 @@ class SelectPopularQueries(Transform):
     def rank_queries(self, query: SearchQuery, popularity: QueryPopularity) -> PopularQueryCandidate:
         query_key = lower(regexp_replace(trim(query.content), pattern=r"\s+", replacement=" "))
         left_join(popularity, on=popularity.query == query_key)
-        impression_count = coalesce(popularity.impression_count, literal(0))
+        impression_count = coalesce(popularity.impression_count, 0)
         return PopularQueryCandidate.project(query)(
             impression_count=impression_count,
             popularity_rank=row_number(
-                partition_by=literal(1),
+                partition_by=1,
                 order_by=(
                     impression_count.desc_nulls_last(),
                     query_key.asc_nulls_first(),

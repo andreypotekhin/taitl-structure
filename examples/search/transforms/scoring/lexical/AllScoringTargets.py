@@ -4,7 +4,7 @@ from examples.search.schemas.indexing.lexical.index import DocumentTerm
 from examples.search.schemas.scoring.intermediate import ScoringTargetGroup
 from examples.search.schemas.search import DocumentSearchTarget, SearchQuery
 from structure import Transform, input, lane, output, step
-from structure.plugin.pyspark import count, cross_join, group_by, literal
+from structure.plugin.pyspark import count, cross_join, group_by
 
 
 class AllScoringTargets(Transform):
@@ -18,7 +18,7 @@ class AllScoringTargets(Transform):
     @step(input=[queries, document_terms], output=grouped_targets)
     def expand(self, query: SearchQuery, term: DocumentTerm) -> ScoringTargetGroup:
         cross_join(term, allow_cartesian=True)
-        scope_id = literal("all-scoring-targets-v1")
+        scope_id = "all-scoring-targets-v1"
         group_by(query_id=query.id, document_id=term.document_id, scope_id=scope_id)
         return ScoringTargetGroup.project(query, term)(
             query_id=query.id,

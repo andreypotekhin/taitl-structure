@@ -1,5 +1,115 @@
 # Chapter operator refactor verification
 
+## Grounded Solution openings: remaining families — September 13
+
+Applied the accepted Solution-opening contract sequentially to the remaining fifteen families. Reviewed each current
+opening with the next paragraph and its glossary, and compared the fourteen available `close/5/draft/` references for
+grounding and progression rather than copying their prose. Features has no `5/` counterpart.
+
+Revised Filtering, Similarities, SearchDocuments, SearchFields, SearchSimilarity, Offline, Online, Clicks, Relevance,
+Labeling, Training, Experiments, and Evaluation across Draft, Extend, and Form. Retained Cohorts, whose shared-experience
+example already connects practice, purpose, and concepts, and Features, which was authored under the new contract.
+The earlier six-family trial is unchanged. No additional prompt changes were needed; Solution.style.md and QA S3c
+already govern this behavior.
+
+| Family | Opening words: before / 5 / after | Outcome |
+|---|---|---|
+| Filtering | 53 / 75 / 77 | Revised |
+| Similarities | 52 / 66 / 71 | Revised |
+| SearchDocuments | 48 / 61 / 72 | Revised |
+| SearchFields | 48 / 77 / 80 | Revised |
+| SearchSimilarity | 54 / 56 / 71 | Revised |
+| Offline | 59 / 61 / 68 | Revised |
+| Online | 52 / 75 / 82 | Revised |
+| Cohorts | 55 / 82 / 55 | Retained |
+| Clicks | 61 / 74 / 78 | Revised |
+| Relevance | 69 / 71 / 84 | Revised |
+| Labeling | 62 / 66 / 75 | Revised |
+| Features | 76 / — / 76 | Retained |
+| Training | 56 / 74 / 80 | Revised |
+| Experiments | 51 / 71 / 79 | Revised |
+| Evaluation | 46 / 65 / 74 | Revised |
+
+Read each opening into its unchanged second paragraph. The revisions explain why the approach helps before describing
+its choices: candidate filtering before detailed ranking; lexical similarity at a consistent grain; complementary
+retrieval evidence; combined metadata/body requests; reuse across preparation and request-time work; exposure as the
+basis for behavioral interpretation; query groups for evaluation; and judged examples for learning. Preserve the
+distinctions that feedback reranks existing candidates, observations are not relevance judgments, and training-data
+preparation does not fit the model later used for scoring. Existing glossary entries cover the introduced terms;
+inline defining occurrences retain selective italics.
+
+Verification covered all twenty-one families and sixty-three narrative-phase files. Thirteen families changed
+(thirty-nine files); the remaining eight families' files match their pre-edit snapshots in full. In changed files,
+SHA-256 comparisons after excluding only the Solution opening match the pre-edit content, with CRLF/LF normalized.
+All non-opening content is therefore preserved: Intent, Problem, the rest of Solution, definitions, formulas,
+Implementation, numbering, and Code. Each revised family's three opening paragraphs agree exactly, and each family
+passed its readback/preservation gate before the next family was edited.
+
+The existing ownership and empty-section rules remain intact. No application code, annotation, collected source, or
+numbered reference was edited. Documentation diff checks passed. This is focused narrative review and preservation
+verification, not a full source audit, visual rendering, or runtime/build test.
+
+
+## Empty sections, Features, and grounded Solution openings — September 13
+
+Format now omits genuinely empty optional sections at every depth, rather than special-casing Stages. The owning
+Format rule, Form template, and QA F1/F2/F14 distinguish a nonempty child container from an empty subtree, and missing
+required content from an optional omission. Removed empty Builds on sections from Labeling, Cohorts, and Clicks Form
+documents; their upstream inventories remain unchanged. A fence-aware scan of all twenty-one current Form chapters
+found no remaining empty section subtrees.
+
+### Features chapter
+
+Added Features to Prose.md's current chapter set and authored its complete family from the current features package:
+three annotation documents plus Draft, Collect, Extend, and Form. Features is a composed main with internal
+BuildDocumentFeatures and BuildQueryFeatures stages, not an expanded part of Training. Training's Draft/Extend/Form
+preamble and its external-stage description now refer to the Features chapter; its Code and boundary formulas remain
+unchanged.
+
+Verified three class declarations and five public methods against current source: eight Python listings, unchanged
+through annotation, collection, and downstream Code. Collect prose matches Extend Code after heading rebasing and
+removing independent decimal prefixes; Form Code matches Extend verbatim. Implementation has five circled items, two
+step shapes, and one composed Result. Its two real stage assignments retain their aliases and complete bindings.
+
+Nine text-notation blocks in Extend map to nine Form display formulas: one conceptual model, five method signatures,
+two step shapes, and one Result. Each of the five returned schemas has one full first-return definition, including
+pure projections and inherited query-token fields. The field ledger is DocumentFeatures (9),
+ExpandedQueryFeatureToken (3), QueryFeatureToken (2), QueryTokenSummary (3), and QueryFeatures (8), in source order.
+All explicit projection fields and carried identities/attributes are present; no field ellipses are needed for these
+small records. Pandoc converted all nine display formulas to MathML without residual LaTeX outside source annotations.
+This is a notation-parser check, not a visual rendering claim.
+
+Reviewed the repeated-token example (three total, two distinct), tokenless-query zero counts, original rather than
+normalized text lengths, nullable URL prefix checks, copied query flags, and query-identity grouping against source.
+The chapter does not claim model fitting, label generation, key validation, or snapshot/provider guarantees that the
+background proposes but these methods do not implement. Ten alphabetized glossary entries cover the opening concepts.
+
+### Solution opening trial
+
+Compared current and `close/5/draft/` openings for the six requested families. The previous style pass often replaced
+an explanatory opening with an imperative instruction. Solution.style.md now requires one connected opening that
+grounds the topic in theory/practice, establishes its purpose, and introduces the approach's concepts gently; the
+Draft template and QA S3c reinforce that contract without a fixed paragraph or sentence quota.
+
+| Family | Opening words: before / 5 / after | Restored connection |
+|---|---|---|
+| Chunking | 58 / 58 / 79 | Passage retrieval connects precise evidence to surrounding argument and context. |
+| Fields | 49 / 53 / 70 | Familiar metadata clues motivate a common field model without a fixed application vocabulary. |
+| Indexing | 65 / 77 / 81 | Shared preparation supplies reusable term evidence for retrieval and later ranking. |
+| Scoring | 54 / 66 / 68 | Ranking draws on distinct kinds of evidence whose raw scales need not agree. |
+| Inference | 52 / 64 / 73 | Different wording motivates a shared representation while preserving exact-word matching. |
+| Vectorization | 57 / 87 / 83 | Repeated comparisons motivate reusable embeddings with text and model identity. |
+
+Applied the openings sequentially to Draft, Extend, and Form, checking each family before the next. SHA-256 comparisons
+after excluding only the opening paragraph confirm that all other content in these eighteen files is unchanged,
+including Intent, the remainder of Solution, formulas, definitions, Implementation, and Code. No numbered variant
+was edited or copied wholesale. This is focused narrative QA, not a new full-source certification of those chapters.
+
+Final checks: twenty-one complete Draft/Collect/Extend/Form families; no empty Form sections; source/listing/prose
+parity for Features; Training references and Code parity; eighteen-file narrative preservation; git diff --check.
+No application source was edited by this documentation task. Other source changes appearing during the pass were
+left untouched; no runtime/build tests or visual chapter rendering were performed.
+
 ## Intent clarity rollout — September 13
 
 Applied the approved Intent style sequentially across all twenty current families, preserving useful terminology and

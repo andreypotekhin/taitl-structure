@@ -29,7 +29,6 @@ from structure.plugin.pyspark import (
     window,
     window_max,
 )
-from structure.plugin.pyspark.dsl.expressions import literal
 
 
 class BuildRelevanceSignals(Transform):
@@ -56,7 +55,7 @@ class BuildRelevanceSignals(Transform):
 
     @step(input=daily_impressions, output=global_context_impressions)
     def global_impressions(self, impression: DailyImpressions) -> ContextDailyImpressions:
-        return ContextDailyImpressions.project(impression)(band_id=literal(None))
+        return ContextDailyImpressions.project(impression)(band_id=None)
 
     @step(
         input=[daily_impressions, user_band_memberships, band_fallbacks],
@@ -89,7 +88,7 @@ class BuildRelevanceSignals(Transform):
 
     @step(input=daily_clicks, output=global_context_clicks)
     def global_clicks(self, click: DailyClicks) -> ContextDailyClicks:
-        return ContextDailyClicks.project(click)(band_id=literal(None))
+        return ContextDailyClicks.project(click)(band_id=None)
 
     @step(
         input=[daily_clicks, user_band_memberships, band_fallbacks],

@@ -13,7 +13,8 @@ Use clear, concrete, connected prose; keep the proposed answer and implementatio
 
 ## Solution
 
-{{General context -> conceptual bridge -> explained concrete model/examples -> tradeoffs and value.
+{{Opening paragraph connects relevant theory/practice, chapter purpose, and gently introduced concepts.
+General context -> conceptual bridge -> explained concrete model/examples -> tradeoffs and value.
 Use accessible, purpose-first language without shortening the conceptual development to an abstract.}}
 
 ## Builds on

@@ -18,6 +18,7 @@ A failed input check is repaired at its owning operator when authorized; otherwi
 | S3 Narrative | Intent states need/outcome in one or two sentences. Problem first introduces the activity and basic concepts through familiar practice, then develops the difficulty and consequences; no abrupt failure-first opening or proposed solution. Solution follows context -> bridge -> concrete example/model -> value. Both use the accessible, purpose-first language of good explanation items without inheriting their brevity limits. Preamble explains actual data flow and important limits. |
 | S3a First-reading trial | Read Problem then Solution without Definitions or Code: can a newcomer explain the setting, the need, and why the approach helps? Compare a concept/example/formula ledger before and after; clearer wording must not erase theory, rationale, or tradeoffs. A word-count reduction is an alarm, not proof of simplification. |
 | S3b Intent clarity | Read Intent alone: its purpose and benefit are clear in one or two sentences, without implementation mechanics or a challenge inventory. Prefer concrete wording without losing useful terminology, expressiveness, or distinctions; reject forced compression and conversational synonym replacement. Check that it does not promise responsibilities outside the chapter's scope. Retain already-successful wording. Extend and Form preserve the accepted Draft Intent. In an Intent-only pass, all other chapter content remains unchanged. |
+| S3c Solution opening | Read the first paragraph alone: identify its relevant theory or familiar practice, why that matters to the chapter's purpose, and how it introduces the approach's concepts. These form a connected explanation, not an imperative slogan, an Intent repeat, or a detached theory survey. Compare a requested reference such as `5/` for grounding and explanatory progression, retaining current clarity, scope, examples, and mathematical typography. |
 | S4a Glossary | Inventory domain concepts in Intent, Problem, and Solution before reviewing the rest of the chapter; each essential reusable concept has a glossary entry even if defined inline. Cohorts includes Feedback. Entries are alphabetized. Compare reference coverage when requested; SearchDocuments retains Band, User band, Candidate lane, Feedback option, and Fallback alongside useful newer terms. No fixed entry count. |
 | S4b Inline definitions | Italicize only the domain term at the sentence that defines it, not the whole sentence or repeated mentions. Distinguish a real definition from an incidental mention; ordinary vocabulary such as profile need not be marked. Exact program names remain inline code and glossary names remain bold. |
 | S1b Optional Stages | Stages is absent when the chapter has no actual child-stage calls, including a single step main or several independent step roots. Public methods remain in Notation and Implementation; Cohorts' method inventory is not a Stages section. |
@@ -110,8 +111,8 @@ expose unqualified output names, not types or qualified paths; final outputs are
 ## Format
 
 ~~~text
-F1 headings/tree/item order == Extend
-F2 all prose == Extend, except public-group explanation projection and Definitions/Stages/math presentation changes
+F1 headings/tree/item order == Extend minus genuinely empty optional sections
+F2 all prose == Extend, except public-group explanation projection, empty-section omission, and Definitions/Stages/math presentation changes
 F3 Code == Extend.Code verbatim
 F4 every notation block outside Code -> one corresponding display-math block
    residual text/LaTeX fences and plain signature/shape blocks outside Code == none
@@ -141,6 +142,11 @@ F12 for each public_group: explanation derives from Code group with the same tra
 F13 prose symbol references use inline math, including introductions and interpretations
     L_d, M_P, and alpha render as subscripted/Greek symbols, not bare text, escaped prose, or inline code
     keep inline delimiters intact and complete calculations in display blocks
+F14 every emitted section subtree has meaningful content, at every heading depth
+    omit genuinely empty optional sections, including Builds on in Labeling; whitespace/comments/empty bullets do not count
+    retain containers with nonempty descendants; inspect headings outside fenced code, not Python comments
+    missing required narrative, stages, methods, notation, Code, or unresolved placeholders fail upstream validation
+    repair empty Code containers upstream, then preserve Code verbatim under F3
 ~~~
 
 Check F2 paragraph by paragraph, including preamble, external descriptions, and Result; a prose-count match is insufficient.

@@ -83,6 +83,14 @@ Preserve the topic's relative path between phase directories. Collect can also p
 Extend accepts that set when no aggregate collected document exists. All four chapter processes are manually invoked.
 Ignore numbered prompt/output variants unless explicitly requested.
 
+### Current chapter set
+
+The current set contains Chunking, Fields, Indexing, Filtering, Inference, Vectorization, Scoring, Similarities,
+SearchDocuments, SearchFields, SearchSimilarity, Offline, Online, Cohorts, Clicks, Relevance, Labeling,
+[Features](../../../close/form/search/transforms/features/Features.form.md), Training, Experiments, and Evaluation.
+Each chapter has Draft, Collect, Extend, and Form outputs at its topic path. A referenced external transform is not
+covered merely by appearing as a call in another chapter; its chapter must actually describe its owned implementation.
+
 ## Rule ownership
 
 Read the selected operator and its linked contracts/template before applying it. The following division is normative;

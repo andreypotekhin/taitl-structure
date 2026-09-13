@@ -24,11 +24,16 @@ Check upstream narrative against [Solution.style.md](Solution.style.md) and
    retaining stale groups or sections. Inventory and convert notation across the entire pre-Code body, not only Solution.
    Before conversion, account for each stage's actual methods, explanation groups, and notation blocks in the QA record;
    unresolved placeholders or a generic class-level item fail this gate even when Solution and the preamble are complete.
-2. Preserve paragraph order, headings, group boundaries, circled Implementation markers, and decimal Code numbers.
+2. Preserve paragraph order, nonempty headings, group boundaries, circled Implementation markers, and decimal Code numbers.
    Apply Implementation.style's Format explanation projection to public method-group explanations only, matching Code
    by transform and method membership. Preserve all other prose, including Intent, Problem, Solution, and preamble.
    Preserve the entire Code section verbatim, including Python whitespace. Never use Implementation to edit Code.
 3. Apply these presentation changes outside Code:
+   - Empty sections: omit the heading and body of any genuinely empty section, at any depth, not only Stages.
+     A section includes its descendants: retain a container with meaningful child content even without direct prose.
+     Whitespace, comments, and empty list markers are not content. Placeholders and missing required narrative,
+     stages, method groups, notation, or Code are upstream defects, not optional sections to hide. Resolve an empty
+     Code container upstream so the resulting Code can still be preserved verbatim.
    - Definitions: bold concept name without colon, with its exact definition sentence in one indented sub-bullet.
    - Stages: bold the stage name only; Builds on, Used by, Inputs, and Outputs remain unbolded.
    - Text notation: replace every notation block outside Code, including Solution models and all Implementation
@@ -50,5 +55,5 @@ Check upstream narrative against [Solution.style.md](Solution.style.md) and
    and a visual math check when a renderer is available. Report verification limits; do not claim a visual render
    from delimiter checks alone.
 
-The output tree is the extended tree: every internal composed transform retains its own Result. Formatting neither
+The output tree is the extended tree minus genuinely empty optional sections: every internal composed transform retains its own Result. Formatting neither
 creates a workflow nor suppresses independent transforms.

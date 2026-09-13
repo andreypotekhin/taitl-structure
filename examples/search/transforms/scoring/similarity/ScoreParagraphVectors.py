@@ -5,7 +5,6 @@ from examples.search.schemas.search import *
 from examples.search.transforms.lib.Vectors import *
 from structure import *
 from structure.plugin.pyspark import *
-from structure.plugin.pyspark import literal
 
 
 class ScoreParagraphVectors(Transform):
@@ -49,7 +48,7 @@ class ScoreParagraphVectors(Transform):
             document_id=index.document_id,
             section_id=index.section_id,
             paragraph_id=index.paragraph_id,
-            scope_id=literal("similarity-v1"),
+            scope_id="similarity-v1",
             cosine_similarity=coalesce(cosine, 0.0),
             model_id=policy.model_id,
             dimension=policy.dimension,

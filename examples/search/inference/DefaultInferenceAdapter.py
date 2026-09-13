@@ -2,18 +2,7 @@
 
 from examples.search.inference.InferenceAdapter import InferenceAdapter
 from examples.search.schemas.inference import DocumentInferenceResult, InferencePolicy, QueryInferenceResult
-from structure.plugin.pyspark import (
-    arr_aggregate,
-    arr_transform,
-    literal,
-    lower,
-    sequence,
-    split,
-    sqrt,
-    trim,
-    when,
-    xxhash64,
-)
+from structure.plugin.pyspark import arr_aggregate, arr_transform, lower, sequence, split, sqrt, trim, when, xxhash64
 
 
 class DefaultInferenceAdapter(InferenceAdapter):
@@ -43,16 +32,16 @@ class DefaultInferenceAdapter(InferenceAdapter):
         return QueryInferenceResult(
             query_id=query.id,
             vector=self._vector(query.content, policy),
-            status=literal("success"),
-            error_code=literal(None),
-            diagnostic=literal(None),
+            status="success",
+            error_code=None,
+            diagnostic=None,
         )
 
     def infer_document(self, document, policy: InferencePolicy, streaming: bool) -> DocumentInferenceResult:
         return DocumentInferenceResult(
             document_id=document.id,
             vector=self._vector(document.content, policy),
-            status=literal("success"),
-            error_code=literal(None),
-            diagnostic=literal(None),
+            status="success",
+            error_code=None,
+            diagnostic=None,
         )

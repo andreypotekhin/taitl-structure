@@ -3,7 +3,7 @@
 from examples.search.schemas.indexing.vector import DocumentVectorQuery, SearchQueryVectorEmbedding
 from examples.search.schemas.search import SearchQuery
 from structure import Transform, input, output, step
-from structure.plugin.pyspark import inner_join, literal
+from structure.plugin.pyspark import inner_join
 
 
 class VectorizeSearchQueries(Transform):
@@ -16,4 +16,4 @@ class VectorizeSearchQueries(Transform):
     @step(input=[queries, embeddings], output=vector_queries)
     def bind_query(self, query: SearchQuery, embedding: SearchQueryVectorEmbedding) -> DocumentVectorQuery:
         inner_join(on=query.id == embedding.query_id)
-        return DocumentVectorQuery.project(embedding)(query_document_id=literal(None))
+        return DocumentVectorQuery.project(embedding)(query_document_id=None)
