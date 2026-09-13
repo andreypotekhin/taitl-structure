@@ -21,7 +21,8 @@ Author the chapter from general explanation to design and implementation. Read [
 2. Author Intent, Problem, and Solution under the shared narrative contracts. Existing chapter outputs are shape references, not
    prose to copy; ignore numbered variants unless explicitly requested.
 3. Fill the concise inventories: canonical principal topics in Builds on/Used by (empty when none), essential domain
-   concepts in Definitions, schemas/relations in Inputs/Outputs, and the model's Stages inventory.
+   concepts in alphabetized Definitions, schemas/relations in Inputs/Outputs, and Stages only when the chapter has
+   actual child-stage calls. A step-only chapter has no Stages section.
 4. Write lossless text Notation covering every root, internal public method, stage call, input, and output. Include every
    named parallel path and concrete return schema; retain external boundary calls without importing external methods.
 5. Write Design as requirements, invariants, decisions, and proposed behavior; write Implementation as a substantive

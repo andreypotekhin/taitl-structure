@@ -8,11 +8,13 @@
 
 ## Problem
 
-{{Familiar situation -> topic-specific difficulty -> practical consequences, without the solution or implementation.}}
+{{Gentle domain introduction and basic concepts -> familiar situation -> difficulty -> practical consequences.
+Use clear, concrete, connected prose; keep the proposed answer and implementation out.}}
 
 ## Solution
 
-{{General context -> conceptual bridge -> explained concrete model/examples -> tradeoffs and value.}}
+{{General context -> conceptual bridge -> explained concrete model/examples -> tradeoffs and value.
+Use accessible, purpose-first language without shortening the conceptual development to an abstract.}}
 
 ## Builds on
 
@@ -24,6 +26,8 @@
 
 ## Definitions
 
+<!-- Include all essential concepts in alphabetical order. -->
+
 - **{{Concept}}**
   - {{Definition sentence.}}
 
@@ -34,6 +38,8 @@
 ## Outputs
 
 - {{Schema or relation}}
+
+<!-- Include Stages only when the chapter contains actual child-stage calls; omit it for step-only chapters. -->
 
 ## Stages
 

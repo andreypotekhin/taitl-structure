@@ -1,7 +1,18 @@
 # General narrative style
 
 Write for a technically confident reader who may be new to the domain. Introduce concepts before use; Definitions
-collects every essential reusable term, not a predetermined number of entries.
+collects every essential reusable term, not a predetermined number of entries. Sort entries alphabetically by displayed
+concept name, ignoring case. Check coverage against the chapter's narrative and operations, including supporting concepts
+needed to understand its main ideas. When comparing a reference glossary, retain still-relevant concepts rather than
+trading them for newly added terms; explain omissions by changed scope, not a target list length.
+Build that inventory from Intent, Problem, and Solution first, then check the remaining chapter. Include supporting
+domain concepts on which the explanation relies: Cohorts needs Feedback as well as Band and Fallback. An inline
+definition does not replace the glossary entry for an essential reusable concept.
+
+When a sentence introduces the meaning of a domain-specific concept, italicize the term being defined, not the
+definition sentence: "A *band* describes a cohort through matching rules." Mark its defining occurrence, not every
+mention. Do not mechanically italicize familiar general vocabulary such as profile, user, or document. Exact program
+identifiers remain inline code, and glossary headings retain their own bold format.
 Capitalize the first word of every definition sentence; preserve an exact identifier's spelling by introducing it
 with an ordinary capitalized word when needed. In prose references, name the destination as a chapter, for example
 "See the Filtering chapter for overlap matching." Bare topic names remain appropriate in Builds on/Used by inventories.
@@ -15,7 +26,7 @@ Name the actor accurately: use "search user," "caller," or "application" for ret
 when discussing someone reading a document or this chapter, not as a blanket synonym for a search user.
 
 Use concrete subjects and active verbs. Format exact class, schema, method, and relation names as inline code in prose,
-not in headings or inside math. Keep domain terms in ordinary text. Avoid operator-production language such as
+not in headings or inside math. Keep domain terms in ordinary text except their inline defining occurrence. Avoid operator-production language such as
 "collected source," "boundary-only subsection," or "this document records"; a direct chapter reference is clearer.
 
 Ground behavioral claims in the actual operations rather than class names or docstrings. Distinguish compatibility

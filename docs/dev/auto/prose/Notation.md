@@ -72,8 +72,10 @@ may use the balanced field selection below; it may not be a bare schema name.
 visible_fields = explicit_additions_and_overrides + essential_carried_fields
 ~~~
 
-Always show every field explicitly supplied by the returned construction, including fields after `.project()` or
-`.base()`, even when a similar projection appeared earlier. Add inherited fields only when they establish the returned
+Until the schema has a full definition, show every field explicitly supplied by the returned construction, including
+fields after `.project()` or `.base()`, even when a similar partial projection appeared earlier. Once fully defined,
+use the schema name alone for later returns, including projections; do not repeat its field vector. Add inherited fields
+to a needed definition only when they establish the returned
 grain/key or carry the evidence this operation assembles. Ground that choice in the grouping/join/rekeying logic and
 the method-group explanation, not a fixed field-count quota or possible future uses. Preserve the schema's field order.
 Include the keys that define a newly grouped row and the payload needed to understand its result even when those fields
@@ -91,31 +93,39 @@ across the whole document, independently of numbering roots; a partial projectio
 
 ~~~text
 render_return(schema, construction, essential_carried_fields, seen):
+    if schema in seen.full: return schema.name
     if construction is identity project/base (same input schema, no explicit fields):
         construction = pass_through
     if construction is project/base:
         visible = schema_order(ALL explicit_fields + essential_carried_fields)
         if visible is empty:
-            if schema in seen.full: return schema.name
             visible = schema.fields  # first definition cannot disappear through an empty projection
         omitted = schema.fields - visible
         record schema in seen.defined
         if omitted is empty: record schema in seen.full
         return schema.name : vector(vdots if omitted, visible)
-    if schema in seen.full:
-        return schema.name
     return schema.name : vector(ALL schema.fields); record schema in seen.defined and seen.full
 ~~~
 
 Full construction or pass-through of an unseen schema requires the full field vector even when input and return types
 match (including `InferencePolicy.project(policy)`). A partial projection does not count as a full definition.
-Omit field type annotations, not selected field names. Never emit a lone `\vdots` vector, hide an explicit override,
-or remove an essential key or contributed value solely to make a formula narrower.
+When rendering a needed definition, omit field type annotations, not selected field names. Never emit a lone `\vdots`
+vector, hide an explicit override, or remove an essential key or contributed value solely to make a formula narrower.
+Definition state advances after each return, including consecutive methods in the same formula block. For example,
+after canonical_document_pairs fully defines DocumentSimilarityPair, reverse_document_pairs returns its name only;
+changing field values does not introduce a new schema. Preserve the reversal explanation and complete signature.
 Keep a chapter-local ledger of first return occurrence, construction kind, visible fields, and omitted fields. Validate
 the selected fields against current source even when reusing an unchanged formula; equality to a previous output does
 not prove that the previous output satisfied this contract.
 
 ### Display
+
+In explanatory prose, enclose mathematical symbol references in inline math delimiters, for example `$L_d$`, `$M_P$`,
+and `$\alpha$`. This applies to symbol introductions as well as later references. Subscript underscores belong inside
+math, not escaped as prose; reserve inline code for actual program identifiers. Ordinary words such as "rank" need
+no mathematical styling when not naming a formula symbol. Keep complete calculations and signatures in their existing
+text blocks for Draft/Extend and display formulas for Form; inline symbol references do not replace those blocks.
+Preserve inline mathematics through the narrative phases. Do not turn an entire explanatory sentence into math.
 
 Use balanced `$$` blocks. Escape identifier underscores as `\_`; no backticks inside formulas. Use `\operatorname` for
 method/transform names. Left-align multiline formulas with `aligned`. Separate standalone method formulas and composed

@@ -7,7 +7,8 @@ Emit unchanged sections/paragraphs in their original positions, not these placeh
 <!-- A specialization keeps Extend's exact base/replacement contract. Render it with Notation's normal-size replacement
 vector, preserving every effective input/output and local replacement. Never render inheritance as a called stage. -->
 
-{{Exact Intent, Problem, Solution, Builds on, and Used by sections; display math uses $$ delimiters.}}
+{{Exact Intent, Problem, Solution, Builds on, and Used by sections; preserve selective italicized inline definitions.
+Display formulas use $$ delimiters; mathematical symbol references in prose retain their inline math delimiters.}}
 
 ## Definitions
 
@@ -15,6 +16,8 @@ vector, preserving every effective input/output and local replacement. Never ren
   - {{Exact definition sentence.}}
 
 {{Exact Inputs and Outputs sections.}}
+
+<!-- Preserve the absence of Stages in step-only chapters; do not invent an inventory of methods. -->
 
 ## Stages
 
@@ -35,8 +38,9 @@ Every source notation block outside Code must be replaced by a formula. No text 
 
 <!-- Keep the method and its return on one equation row by default; multiple arguments use a vertical pmatrix,
 not an automatic equation break. Each first return has a field definition, including pure projections and every method
-in a group. A projected return shows explicit additions/overrides and essential carried fields (including grouping keys
-and defining payload), with vdots only for actual omitted context. Recheck unchanged formulas against source. -->
+in a group. Until fully defined, a projected return shows explicit additions/overrides and essential carried fields,
+with vdots only for omitted context. After a full definition, use the schema name alone even for later projections.
+Recheck unchanged formulas against source. -->
 $$
 \operatorname{method}(ArgumentSchema) \rightarrow ReturnSchema :
 \begin{pmatrix}

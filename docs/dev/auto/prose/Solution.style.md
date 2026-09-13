@@ -4,18 +4,22 @@ Apply when authoring Draft or Extend. Format checks this contract but preserves 
 
 ## Intent
 
-Open the chapter with the motivating use case and desired outcome in one or two active, concrete sentences.
+Open the chapter with the motivating purpose and desired outcome in one or two clear, expressive sentences.
+Prefer active, concrete language over vague abstractions, while retaining useful domain terminology and meaningful
+distinctions. Simplify wording to improve understanding, not merely to shorten it or make it more conversational.
+Retain an existing Intent when it already meets this contract; a style pass does not require different wording.
 Keep mechanisms, limits, risks, and challenge inventories out of Intent. Develop the use-case difficulty in Problem;
 place the answer in Solution and implementation-specific constraints in Design or Implementation.
 Do not require an explicit reference to building a search engine.
 
 ## Problem
 
-Develop the need stated in Intent: familiar situation -> topic-specific difficulty -> consequence for the search user or
-application. Usually one or two connected paragraphs suffice. Explain what makes the need nontrivial, without answering
-it yet. Concrete contrasts help: a passage without context, the same metadata in two storage forms, repeated corpus
-analysis, or expensive ranking applied too broadly. Do not duplicate Intent, enumerate implementation defects, prescribe
-components, or turn the section into Design's requirements checklist.
+Develop the need stated in Intent: gentle domain introduction -> familiar situation -> topic-specific difficulty ->
+practical consequence. First explain the activity and any basic concepts a newcomer needs, using ordinary practice or
+a small example. Do not open with a failure, dense technical contrast, or assumed domain knowledge. Give the setup room
+to develop before explaining what makes the need nontrivial; two or three connected paragraphs often suffice.
+Keep the proposed answer in Solution. Do not duplicate Intent, enumerate implementation defects, prescribe components,
+or turn the section into Design's requirements checklist.
 
 When using an older chapter, borrow its problem framing and accessible explanation, not obsolete behavior or scope.
 The `close/2/` Chunking, Fields, Indexing, and Filtering Problems illustrate this progression; their references to
@@ -33,6 +37,8 @@ general domain practice + user goal
 Preserve this order, not a rigid paragraph count. Usually three to five substantive paragraphs give the explanation room
 to develop. The opening is not a project component, algorithm, schema, or formula. Explain concepts before relying on
 them; a formula must have introduced symbols and an interpretation in prose.
+Follow General style for selective italicized inline definitions and glossary coverage. Write symbolic references
+in prose as inline mathematics under Notation; a literal L_d or the word alpha is not a formatted symbol reference.
 
 For query/request structures, show representative supported examples early in the concrete explanation and explain their
 meaning. SearchFields, for example, needs readers to understand field-only, body-only, mixed, and aggregate requests,
@@ -49,6 +55,9 @@ depth and prose volume. A substantial reduction requires restoring the missing d
 redundant; word counts flag regression but do not substitute for editorial review.
 
 Make that depth accessible on a first reading: use familiar words, concrete examples, and sentences with one main idea.
+Use the same purpose-first, concrete language as good Implementation and Code explanations, but not their item-level
+length limits or italic intents. Build connected paragraphs: say what an idea means, why it helps, and how it applies.
+Replace compressed abstractions with direct explanations rather than merely splitting a dense sentence into shorter ones.
 Prefer an explanation of why an idea helps over a compressed technical contrast. Explain that rank gives retrieval
 methods a common language and that Reciprocal Rank Fusion rewards high positions across methods; "uses lane positions"
 alone does not explain the benefit. Preserve conventional algorithm names and capitalization.

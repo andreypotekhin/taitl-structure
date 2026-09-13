@@ -97,9 +97,11 @@ Nested headings are permitted only for actual child transforms or external calls
 The stage introduction cannot stand in for public groups: an internal step with N collected public groups has N
 Implementation items, not one synthetic "Run transform" item followed only by its shape.
 
-The top-level **Stages section** is a concise inventory, not the Implementation subsection tree. With multiple roots,
-list those independent transforms, whether a main is designated or not. Otherwise list a step main's public steps or
-a composed main's direct calls. Multiple roots each own their container and counter; none is a child of its neighbor.
+The top-level **Stages section** is present only when the chapter includes actual child-stage calls. Omit the heading
+and body for a step-only chapter, even when it contains several independent step transforms; methods are not stages.
+When present, this section is a concise inventory, not the Implementation subsection tree: list the independent roots
+for a multi-root chapter, or the composed main's direct calls otherwise. Multiple roots each own their container and
+counter; none is a child of its neighbor. Omitting Stages never removes method notation or Implementation groups.
 
 ## Numbering
 

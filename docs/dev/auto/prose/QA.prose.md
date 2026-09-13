@@ -15,7 +15,12 @@ A failed input check is repaired at its owning operator when authorized; otherwi
 | S2c Raw data contracts | Include untyped raw methods whose data inputs/outputs are declared by `inout`; trace each type to its lane and retain runtime parameters and method-local imports in exact Code. Labeling's pattern matcher is not optional because it lacks Python annotations. |
 | S2a Inheritance | Reconstruct the complete effective contract from source. Expand an owned base once; a specialization may reference that exact documented base plus every local replacement/addition, with complete effective inputs/outputs. Compare the reconstructed method/call inventory, not merely local declarations. Never fabricate an inheritance stage, import external base implementations, or use this rule to omit ordinary internal groups. |
 | S2b External contracts | Compare each external boundary with the actual call and effective class inputs, including inheritance. Similarities' scoring boundaries must retain queries, all four term relations, and targets, not only locally declared summaries. |
-| S3 Narrative | Intent states need/outcome in one or two sentences. Problem develops a familiar situation, topic-specific difficulty, and practical consequences without repeating Intent, prescribing the solution, or listing implementation defects. Solution follows context -> bridge -> concrete example/model -> value. Preamble explains actual data flow and important limits. |
+| S3 Narrative | Intent states need/outcome in one or two sentences. Problem first introduces the activity and basic concepts through familiar practice, then develops the difficulty and consequences; no abrupt failure-first opening or proposed solution. Solution follows context -> bridge -> concrete example/model -> value. Both use the accessible, purpose-first language of good explanation items without inheriting their brevity limits. Preamble explains actual data flow and important limits. |
+| S3a First-reading trial | Read Problem then Solution without Definitions or Code: can a newcomer explain the setting, the need, and why the approach helps? Compare a concept/example/formula ledger before and after; clearer wording must not erase theory, rationale, or tradeoffs. A word-count reduction is an alarm, not proof of simplification. |
+| S3b Intent clarity | Read Intent alone: its purpose and benefit are clear in one or two sentences, without implementation mechanics or a challenge inventory. Prefer concrete wording without losing useful terminology, expressiveness, or distinctions; reject forced compression and conversational synonym replacement. Check that it does not promise responsibilities outside the chapter's scope. Retain already-successful wording. Extend and Form preserve the accepted Draft Intent. In an Intent-only pass, all other chapter content remains unchanged. |
+| S4a Glossary | Inventory domain concepts in Intent, Problem, and Solution before reviewing the rest of the chapter; each essential reusable concept has a glossary entry even if defined inline. Cohorts includes Feedback. Entries are alphabetized. Compare reference coverage when requested; SearchDocuments retains Band, User band, Candidate lane, Feedback option, and Fallback alongside useful newer terms. No fixed entry count. |
+| S4b Inline definitions | Italicize only the domain term at the sentence that defines it, not the whole sentence or repeated mentions. Distinguish a real definition from an incidental mention; ordinary vocabulary such as profile need not be marked. Exact program names remain inline code and glossary names remain bold. |
+| S1b Optional Stages | Stages is absent when the chapter has no actual child-stage calls, including a single step main or several independent step roots. Public methods remain in Notation and Implementation; Cohorts' method inventory is not a Stages section. |
 | S4 Language | Essential terms are defined; definition sentences start with a capital letter. Exact identifiers use inline code in prose; prose references identify other chapters as chapters. No production terminology. "Search engine" occurs at most once. |
 | S5 Layout | One H1; correct section tree; blank lines around blocks. Every code fence has preceding descriptive prose; no adjacent listings separated only by whitespace/headings. |
 | S6 Narrative depth | Compare Solution and preamble with the supplied or accepted reference: retain explanatory progression, examples, reasoning, and tradeoffs, not just keywords. Record before/after prose counts and investigate substantial shrinkage. A structural excerpt cannot establish full-chapter quality. |
@@ -36,6 +41,7 @@ A failed input check is repaired at its owning operator when authorized; otherwi
 ~~~text
 D1 top_level_sections == [Intent, Problem, Solution, Builds on, Used by, Definitions, Inputs, Outputs,
                 Stages, Notation, Design, Implementation, Code]
+   remove Stages when the chapter has no child-stage calls
 D2 Implementation == continuous_prose; no stage subsections, numbered items, Workflow, or Result
 D3 Notation covers all roots + public signatures + calls + concrete inputs/returns/outputs
 D4 Code == collected_reference(s); no Python listings
@@ -114,6 +120,8 @@ F5 resolved formula contracts == Extend contracts == inventory public methods
 F6 return definitions == Notation.chapter_profile.return_definition_state
    first return of EACH schema -> nonempty field definition, including no-override projections and grouped methods
    visible fields include explicit overrides + essential grouping/identity keys + defining payload
+   after a full definition -> schema name only, including later projections in the same method-group formula
+   after a partial definition -> continue resolving essential and explicit fields; it is not a full definition
 F7 step shapes, external boundaries, and composed Results each use their distinct notation profile
 F8 preamble is nonempty; preamble paragraphs == Extend.preamble paragraphs
 F9 Result formula has no parent transform name; every call retains its source assignment alias
@@ -130,6 +138,9 @@ F12 for each public_group: explanation derives from Code group with the same tra
     generic nouns are grounded in schema/field names where ambiguous; no mandatory field-name quota
     expansion prose describes rows per input element, not an apparent singleton output
     observable discriminator values survive shortening: SearchFields match_scope is metadata/content/metadata+content
+F13 prose symbol references use inline math, including introductions and interpretations
+    L_d, M_P, and alpha render as subscripted/Greek symbols, not bare text, escaped prose, or inline code
+    keep inline delimiters intact and complete calculations in display blocks
 ~~~
 
 Check F2 paragraph by paragraph, including preamble, external descriptions, and Result; a prose-count match is insufficient.
@@ -157,9 +168,11 @@ For F12, read Fields' two items alongside their formulas: the referenced map mus
 and flattening must read as producing a row per non-empty key. Prefer "a row per ..." unless emphasizing exact
 cardinality is necessary; do not remedy ambiguity by adding schema and field names to every explanation.
 
-For every projected return, check `visible_fields` against the source's explicit return keywords plus the keys and
+For every projected return still needing a definition, check `visible_fields` against the source's explicit return keywords plus the keys and
 contributed payload needed to explain that operation. Reject missing explicit overrides even on repeated projections,
-loss of grain identity, and a joined public posting that hides its defining statistics. Also reject unexplained
+loss of grain identity, and a joined public posting that hides its defining statistics. Reject a repeated field vector
+after a full definition: Similarities' canonical/reverse pair methods must define each grain's pair schema only once.
+Also reject unexplained
 inherited-field dumps and ellipses when no fields are omitted. Use Indexing's materialization, occurrence, count, and
 assembled-posting returns as the contrasting cases; one projection rule must not flatten them into the same shape.
 

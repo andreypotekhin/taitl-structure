@@ -28,6 +28,8 @@ composition with Result. Unchanged inherited behavior is supplied by the exact n
 
 ## Definitions
 
+<!-- Preserve complete conceptual coverage and alphabetical order. -->
+
 - **{{Concept}}**: {{Definition sentence.}}
 
 ## Inputs
@@ -37,6 +39,8 @@ composition with Result. Unchanged inherited behavior is supplied by the exact n
 ## Outputs
 
 - {{Schema or relation}}
+
+<!-- Preserve Stages only when present under Definitions.prose.md; step-only chapters omit this section. -->
 
 ## Stages
 

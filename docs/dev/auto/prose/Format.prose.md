@@ -35,9 +35,12 @@ Check upstream narrative against [Solution.style.md](Solution.style.md) and
      signatures, step shapes, external boundaries, and composed Results, with display formulas under Notation's chapter
      profile. The only notation in Form is formula notation: no residual text/LaTeX fences or plain signature blocks.
      Keep every method and concrete return; types replace method argument names, not methods.
-   - Display mathematics: balanced $$ blocks, including Solution formulas. Do not expose inline-dollar LaTeX as prose.
-4. Resolve return-field definitions from source contracts using Notation's document-wide definition state. For a
-   projection, keep every explicit addition/override plus the source-backed keys and payload needed to explain this
+   - Mathematics: complete calculations use balanced $$ blocks; symbol references in prose use inline math such as
+     `$L_d$` and `$\alpha$`. No bare/escaped subscript names or literal Greek-name substitutes outside math. Preserve
+     correctly authored inline references rather than escaping their delimiters as ordinary text.
+4. Resolve return-field definitions from source contracts using Notation's document-wide definition state. Reuse the
+   name alone once a schema is fully defined, including later projections. For a still-needed projection definition,
+   keep every explicit addition/override plus the source-backed keys and payload needed to explain this
    operation; elide only the remaining context. Never infer fields from a schema name or omit an unseen full definition
    because input and return types match.
    Check every first return against the definition ledger, including each return in a grouped formula and projections

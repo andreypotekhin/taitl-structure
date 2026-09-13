@@ -1,5 +1,150 @@
 # Chapter operator refactor verification
 
+## Intent clarity rollout — September 13
+
+Applied the approved Intent style sequentially across all twenty current families, preserving useful terminology and
+expressiveness rather than requiring a rewrite. The shared Intent contract in Solution.style.md owns the rule;
+QA.prose.md S3b checks first-reading clarity, scope, preservation of distinctions, and downstream consistency.
+
+- Updated: Chunking, Filtering, Inference, Similarities, SearchDocuments, SearchFields, SearchSimilarity, Offline,
+  Cohorts, Clicks, Relevance, Labeling, Training, Experiments, and Evaluation.
+- Retained: Indexing, Scoring, and Vectorization, as preferred in the comparison; Fields and Online also already met
+  the contract. The eight approved trial rewrites were applied without wording changes, apart from line wrapping.
+- Coverage: twenty families and sixty Draft/Extend/Form files checked; fifteen families and forty-five files changed.
+  Each family was read back and verified before proceeding to the next. Draft, Extend, and Form Intents agree within
+  every family after whitespace normalization.
+- Preservation: SHA-256 comparisons of each file with only its Intent body removed match the pre-edit snapshot in all
+  sixty files, after CRLF/LF normalization. Problem, Solution, Definitions, Implementation, formulas, and Code remain
+  unchanged. Annotated/collected source and numbered variants were not edited.
+- Review: each Intent remains one or two sentences. Inference supports semantic retrieval rather than performing it;
+  Training prepares examples and makes a supplied model usable rather than claiming model fitting. Similarities keeps
+  lexical evidence and same-level comparisons distinct from SearchSimilarity's combined retrieval sources. Offline
+  describes advance preparation without inventing a common parent workflow.
+- Validation: focused content checks and git diff --check passed. No chapter-generation scripts, parallel agents,
+  renderer, or build tests were used; this pass changes only prose and prompt guidance.
+
+## Accessible narrative rollout, definitions, and inline mathematics — September 12
+
+Applied the approved Problem/Solution style sequentially to the remaining fourteen families. Each family was checked
+after its narrative edits and glossary review before moving on. Draft and Extend carry the same conceptual account;
+Form preserves that prose and the existing display formulas. Existing Implementation and Code were not regenerated.
+
+| Family | Problem words, before → after | Solution words, before → after | Retained conceptual distinctions |
+|---|---:|---:|---|
+| Experiments | 85 → 149 | 426 → 383 | Production/active identities, independent variants, BM25 parameters, 90/10 example versus final score, judged/served evidence and limits on causal claims. |
+| Evaluation | 92 → 146 | 684 → 626 | Fixed-cutoff precision, judged recall example, graded gain, eligibility/nulls, request population, long clicks, exposure weighting and independent slices. |
+| Offline | 84 → 151 | 328 → 350 | Separate artifact lifecycles, popular/recent union, scope and compatibility, caller-selected inference population, scheduling/storage ownership. |
+| Online | 102 → 145 | 435 → 373 | Independent gaps, request-relative time formula, vector compatibility, admitted scope, full invalidated-group replacement and caller ownership. |
+| Chunking | 109 → 142 | 361 → 348 | Focus/context, hierarchy and ordinals, half-open span example/formula, source positions, replaceable segmentation and relevance separation. |
+| Fields | 105 → 143 | 331 → 315 | Typed/map precedence example, custom fields, profiles/analyzers, keyword/text behavior, aggregate metadata gaps and separate body content. |
+| Filtering | 103 → 148 | 377 → 309 | Candidate tradeoff, normalization example, distinct-term formula, ties, lexical blind spots and timestamp versus reuse eligibility. |
+| Inference | 100 → 156 | 383 → 338 | Different-word example, model/provider/adapter roles, embedding comparison formula, compatibility, query/document lifecycles, statuses and lexical fallback. |
+| Vectorization | 101 → 152 | 353 → 339 | Reusable vector identity, cosine model, caller-owned work selection, binding versus inference, text/similarity examples and source identity. |
+| Scoring | 102 → 142 | 589 → 515 | All four calculations, grain populations, query multiplicity and uncapped overlap, absent rows, BM25 parameters, cosine compatibility and evidence separation. |
+| Similarities | 115 → 152 | 320 → 324 | Same-grain self-query, term retention, reciprocal summaries, canonical pair versus presentation direction, per-source limit and lexical limitations. |
+| SearchDocuments | 101 → 155 | 357 → 347 | Multiple evidence roles, duplicate-discovery example, RRF model, lexical-only baseline, feedback context and reranking only existing candidates. |
+| SearchFields | 110 → 166 | 443 → 393 | Four request forms, supported boolean rules, positional phrase formula, parent/child delegation, qualification versus rank bound, all three match scopes. |
+| SearchSimilarity | 93 → 151 | 368 → 324 | Known-source discovery, missing-lane behavior, RRF model, vector provider versus adapter, document grain, per-source limit and presentation ownership. |
+
+Counts exclude headings and model blocks. Shorter Solutions remove repetition and dense wording, not the distinctions
+in the final column; all fifteen existing conceptual model blocks in these families remain unchanged. Problem adds
+context before difficulty rather than becoming an implementation checklist. No numbered-variant prose was copied.
+
+### Feedback fixes and shared rules
+
+- Cohorts now defines Feedback in its opening narrative and glossary, alongside the supporting Context key and Priority
+  concepts. The glossary review begins with Intent, Problem, and Solution rather than only the implementation inventory.
+  S4a requires that review and an entry for each essential reusable concept even when it is also defined inline.
+- General style and S4b distinguish a term's defining occurrence from ordinary mentions. Cohorts uses `*band*` where
+  the meaning is introduced, but leaves profile and later mentions plain. Definition sentences are not italicized as
+  a whole, and exact program names retain inline code. Glossary names remain bold and alphabetized.
+- Relevance now uses inline mathematics throughout its symbol introductions and interpretation: `$L_d$`, `$M_P$`,
+  `$D_d$`, `$\alpha$`, and the other references no longer appear as literal subscript names or Greek-name substitutes.
+  Notation, Format, its template, and F13 distinguish inline symbol references from complete display calculations.
+  Removed the conflicting blanket prohibition on inline-dollar mathematics.
+- Rechecked the four other earlier pilot chapters for the same rules without rewriting their accepted narratives:
+  Clicks, Labeling, Training, and Indexing received selective definition emphasis and glossary additions; Clicks and
+  Training also received inline symbol markup. The six earlier families retain their approved narrative development.
+- Reviewed the opening concepts and glossary for all twenty families. Added still-needed supporting concepts, retained
+  existing coverage, and consolidated Scoring's Overlap/Weighted overlap synonyms under the more precise latter name.
+  Counts were not used as glossary targets. Fields and Evaluation now omit their step-only Stages inventories, leaving
+  method groups, shapes, and independent roots intact under the previously established rule.
+
+### Verification and limits
+
+All sixty Draft/Extend/Form files were read back after their edits and compared with exact intended changes, normalizing
+line endings. Across all twenty families, narrative prose agrees between phases after the existing text-model/math
+presentation difference. The twenty conceptual models and all 289 Form display-math blocks are unchanged. The entire
+Implementation body and Code match their pre-edit content, preserving stage descriptions, methods, numbering, Results,
+return definitions, and Python listings. Intent is unchanged.
+
+Checked glossary order and reviewed opening-concept coverage. Checked 101 inline symbol references in Form Problem and
+Solution for balanced delimiters; scans found no remaining bare underscored mathematical names or literal alpha/beta
+references outside math/code in those sections. Read their meaning against the adjacent formulas rather than relying
+on delimiter counts alone. Inspected Cohorts' defining occurrences and Relevance's corrected interpretation directly.
+
+This is focused narrative/typography QA, not a new certification of untouched implementation contracts or calculations.
+No Typora or visual formula rendering, application build, or runtime tests were run. The Git-ignored chapter outputs
+were checked directly and Git whitespace checks passed. Prose was authored manually and work remained sequential;
+mechanical patch propagation and read-only comparisons did not generate prose.
+
+## First-reading narrative trial and structural corrections — September 12
+
+Revised Problem and Solution sequentially for Cohorts, Clicks, Relevance, Labeling, Training, and Indexing, checking each
+family before proceeding. Authored the same narrative in Draft and Extend and preserved it in Form, including the
+existing text-model/display-formula distinction. The trial changes eighteen phase documents, not collected source.
+
+Problem now starts with the activity and basic concepts, then develops a familiar situation, the difficulty, and its
+consequences. Solution uses the clear, purpose-first language of the accepted explanation items without importing their
+sentence limits or italic intents. It remains a developed account of the approach rather than a shortened abstract.
+
+| Family | Problem words, before → after | Solution words, before → after | Retained conceptual coverage |
+|---|---:|---:|---|
+| Cohorts | 92 → 156 | 439 → 402 | Overlapping bands, priorities, matching examples, context-key formula, catalog identity, broader/global fallback and consumer choice. |
+| Clicks | 96 → 152 | 421 → 386 | Exposure versus response, display-day attribution, repeat actions versus replay, dwell-credit formula, propensity, watermark and caller responsibilities. |
+| Relevance | 84 → 160 | 547 → 521 | Query feedback versus popularity, context, decay/propensity formula, dwell normalization and blend formula, CTR threshold scope, valid-input assumptions. |
+| Labeling | 95 → 152 | 374 → 342 | Multiple labels, caller and pattern sources, worked question example, locale behavior, generated zeros, overlay precedence and downstream selection. |
+| Training | 108 → 167 | 368 → 393 | Explicit judgments, candidate coverage, five features and repetition example, standardized linear formula, defaults, artifact application versus learning/promotion. |
+| Indexing | 112 → 157 | 379 → 392 | Inverted lookup, normalization, postings, repetition/length/rarity, all four grains, positional metadata, keyword/text distinction and stop-word gaps. |
+
+Counts exclude headings and model blocks and are observations, not targets. The modest Solution reductions remove
+repetition and compressed phrasing without dropping the listed ideas. All five existing conceptual models and their
+interpretations remain; no new ranking or statistical behavior was introduced. Reviewed time/count semantics against
+Clicks source, feature/default semantics against RankDocumentCandidates, and band matching against ResolveCohortBands.
+
+### Specific feedback
+
+- Similarities Form repeated each pair-schema field vector on reversal after already showing its complete definition
+  on canonicalization. The projection branch ran before the full-definition check. Moved that check first in Notation,
+  updated Format and its template, and added the same-group regression to F6. Removed the four redundant vectors for
+  DocumentSimilarityPair, SectionSimilarityPair, ParagraphSimilarityPair, and SentenceSimilarityPair; retained their
+  first complete definitions and every method signature. Verified those definitions against inherited source fields.
+  Partial projections still require explicit and essential fields until the schema has a full definition.
+- Compared SearchDocuments Definitions directly with `close/2/form/.../SearchDocuments.form.md`. Restored the still-useful
+  Band, User band, Candidate lane, Feedback option, and Fallback concepts, retained the newer concepts, and clarified
+  basic query/request and retrieval terms. Its seventeen entries are alphabetized across Draft/Extend/Form. No other
+  SearchDocuments content changed.
+- Removed Stages from Cohorts, Clicks, and Relevance in all three narrative phases: these trial chapters have only step
+  transforms, not child-stage calls. Kept every method in notation and Implementation. Labeling, Training, and Indexing
+  retain their actual composition inventories. The shared model, templates, Draft operator, and D1/S1b now make Stages
+  conditional; methods and independent step roots alone do not create stages.
+- Alphabetized the existing definitions in all six trial families without dropping entries. General style and S4a now
+  require alphabetical order and coverage review rather than a fixed glossary size. S3/S3a test the gentler opening and
+  first-reading accessibility, with a conceptual coverage check separate from word counts.
+
+### Verification and limits
+
+Read the resulting files back and compared each with its intended edits. Across the six families, Draft/Extend/Form
+narrative prose agrees after accounting for existing mathematical presentation. All 63 Form math blocks and 59 Python
+listings per Code copy are unchanged. Implementation preambles, stage descriptions, method items, numbering, Results,
+and complete Code sections match their pre-edit content. Definition changes are alphabetical reordering only in these
+six families. The separate SearchDocuments and Similarities edits were checked against their own exact allowed changes.
+
+This verifies twenty-two chapter files directly, including ignored `close/` outputs. Checks normalize line endings;
+they do not claim byte-level line-ending preservation. Git whitespace checks passed. Prose was authored manually;
+patch propagation and read-only comparisons did not generate it. No parallel agents, generation scripts, application
+build, or visual formula render were used. Untouched chapters have not been reapplied to the new rules by this trial.
+
 ## Accessible transform-description rollout — September 11
 
 Applied the approved Online/SearchDocuments revision to the remaining eighteen families, sequentially, with a
