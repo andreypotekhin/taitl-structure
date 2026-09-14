@@ -1,7 +1,9 @@
 # General narrative style
 
-Write for a technically confident reader who may be new to the domain. Introduce concepts before use; Definitions
-collects every essential reusable term, not a predetermined number of entries. Sort entries alphabetically by displayed
+Write for a reader who has not yet been introduced to search or information retrieval. Technical confidence does not
+imply familiarity with retrieval, ranking, tokens, indexes, or evaluation; explain each when the narrative needs it.
+Introduce concepts before use; Definitions collects every essential reusable term, not a predetermined number of
+entries. Sort entries alphabetically by displayed
 concept name, ignoring case. Check coverage against the chapter's narrative and operations, including supporting concepts
 needed to understand its main ideas. When comparing a reference glossary, retain still-relevant concepts rather than
 trading them for newly added terms; explain omissions by changed scope, not a target list length.

@@ -17,7 +17,8 @@ Do not require an explicit reference to building a search engine.
 Develop the need stated in Intent: gentle domain introduction -> familiar situation -> topic-specific difficulty ->
 practical consequence. First explain the activity and any basic concepts a newcomer needs, using ordinary practice or
 a small example. Do not open with a failure, dense technical contrast, or assumed domain knowledge. Give the setup room
-to develop before explaining what makes the need nontrivial; two or three connected paragraphs often suffice.
+to develop before explaining what makes the need nontrivial. Use a recognizable search-user situation to make the need
+concrete, then develop the distinctions that matter; do not constrain the explanation to a paragraph quota.
 Keep the proposed answer in Solution. Do not duplicate Intent, enumerate implementation defects, prescribe components,
 or turn the section into Design's requirements checklist.
 
@@ -34,9 +35,10 @@ general domain practice + user goal
     -> enabled behavior + semantic tradeoffs + practical value
 ~~~
 
-Preserve this order, not a rigid paragraph count. Usually three to five substantive paragraphs give the explanation room
-to develop. The opening is not a project component, algorithm, schema, or formula. Explain concepts before relying on
-them; a formula must have introduced symbols and an interpretation in prose.
+Preserve this order, not a rigid paragraph count. Give each new idea the space its explanation needs, even when this
+requires substantially more paragraphs than a concise overview. The opening is not a project component, algorithm,
+schema, or formula. Explain concepts before relying on them; a formula must have introduced symbols and an interpretation
+in prose.
 Balance three jobs in the opening paragraph: ground the topic in a relevant theory or familiar practice, connect that
 grounding to the chapter's purpose, and introduce the concepts needed for the proposed approach. Make these one
 connected explanation, not three checklist sentences. A concrete example can establish the connection. Do not replace
@@ -71,12 +73,26 @@ Explain a technical term when it first becomes necessary instead of stacking abs
 to rescue the paragraph. Simplify language, not coverage: keep the theory, examples, reasoning, and practical tradeoffs.
 Read the section without Code nearby; understanding the proposal must not require reconstructing its implementation.
 
+Unwind a difficult paragraph into a sequence: introduce the idea in familiar terms, explain its purpose, then show its
+consequence or example. Separate distinct concepts before relating them; adding line breaks to dense prose is not
+enough. Prefer a small recurring search-user example, such as finding password-reset instructions in a help collection,
+so readers can follow the same query, document, or result through the explanation. Adapt the example to the topic;
+do not force one domain on every chapter. Show supported query examples where useful and identify illustrative
+numbers as examples, not measured outcomes or fixed system settings. Expansion adds understanding, not code mechanics.
+
 Define the chapter's central calculations, not merely their names. Give a conceptual formula or equally precise rule,
 introduce every symbol, population, weight, and parameter, and explain its effect with an example. Definitions lists
 summarize these meanings; they do not replace the calculation. For Scoring, IDF alone does not define weighted overlap
 or BM25. State numerator/denominator, repetition and length effects, and applicable zero/missing-evidence behavior.
 Check the implemented variant, including multiplicities, against source; distinguish a conceptual ideal from behavior
 that differs. Use text models in Draft/Extend and corresponding display formulas in Form.
+Give every conceptual formula at least one dedicated explanatory paragraph, normally immediately after it. Introduce
+its symbols before it; afterwards explain what the operation or result means, using a worked example where useful.
+When one block contains several calculations, explain each separately or split the block to interleave explanations.
+A symbol list, a one-line caption, or a paragraph discussing several unrelated formulas does not satisfy this rule.
+Do not add a formula merely to meet a quota. This rule concerns conceptual Problem/Solution exposition, not the concise
+Implementation items or their signature/return-schema notation. Format preserves this expanded development and maps
+each revised text-model block to its corresponding formula without losing calculations.
 
 Extend retains the Draft's conceptual coverage and improves it using current background and source. Format preserves
 that narrative and paragraph order, converting mathematical typography only.

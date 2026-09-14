@@ -1,5 +1,139 @@
 # Chapter operator refactor verification
 
+## Beginner-accessible development: remaining families — September 14
+
+Applied the restored accessibility contract to the twelve remaining families: Filtering, SearchDocuments,
+SearchFields, SearchSimilarity, Offline, Online, Cohorts, Clicks, Relevance, Labeling, Features, and Training.
+This continues the nine-family pass below, not the subsequently reverted restoration of 7/ Problems.
+All twelve families now have updated Draft, Extend, and Form outputs (36 files). The earlier nine families were not
+edited in this pass. The combined checklist covers all twenty-one chapters named in Prose.md, including Features
+as its own chapter.
+
+Worked sequentially: authored each family's Problem/Solution revision, preserved its glossary, propagated the accepted
+narrative through Extend and Form, and checked readback and protected content before starting the next family.
+Final editorial review improved paragraph separation and wrapping. No numbered-reference prose was copied.
+Existing General/Solution style, template slots, and QA S3a/S3d/S8d/S0 cover this continuation; no new prompt rule was
+needed.
+
+### Development and calculation coverage
+
+| Family | Problem prose words: before / after | Solution prose words: before / after | Solution formulas |
+|---|---|---|---|
+| Filtering | 148 / 203 | 333 / 539 | 1 |
+| SearchDocuments | 155 / 199 | 371 / 618 | 1 |
+| SearchFields | 166 / 210 | 425 / 616 | 1 |
+| SearchSimilarity | 151 / 196 | 341 / 539 | 1 |
+| Offline | 151 / 192 | 359 / 577 | 0 |
+| Online | 145 / 203 | 403 / 618 | 1 |
+| Cohorts | 164 / 218 | 404 / 637 | 1 |
+| Clicks | 152 / 210 | 403 / 615 | 1 |
+| Relevance | 160 / 200 | 535 / 881 | 7 |
+| Labeling | 152 / 192 | 355 / 570 | 0 |
+| Features | 147 / 200 | 401 / 611 | 2 |
+| Training | 167 / 213 | 417 / 685 | 1 |
+
+Counts exclude display-model contents and document development rather than impose length targets. Problems retain
+gentle introductions and add recognizable situations. Solutions preserve their general openings while developing
+examples, explanations, and limitations. Filtering explains distinct-term counting; SearchDocuments and
+SearchSimilarity interpret rank fusion with explicitly illustrative constants rather than configured defaults.
+SearchFields develops supported query forms and phrase offsets, retaining its admission-bound limitation and published
+evidence scopes.
+
+Offline explains independently reusable artifacts and popular/recent query populations without inventing a common
+workflow. Online separates temporal suitability, model/scope compatibility, gap selection, external processing, and
+replacement of invalidated score groups. Cohorts explains overlapping dimensions, ordered context identity, and
+declared fallback; it does not promise access control or automatic feedback selection. Clicks distinguishes event
+counts, responding impressions, attributed display days, credited dwell, and streaming state.
+
+Relevance now interleaves seven calculations with their explanations: combined age/propensity weight, weighted CTR,
+log-transformed dwell, group maximum, relative dwell, exposure-gated CTR contribution, and the final blend.
+All calculations from the earlier combined blocks remain present. Examples retain distinct clicked impressions as the
+response numerator and distinguish suppression of the CTR blend contribution from the still-reported rates.
+The maximum and normalized dwell examples remain group-relative, not absolute relevance judgments.
+
+Labeling explains rule outcomes and overlay precedence, including generated zeros overriding caller ones and locale
+selection without an invented English retry. Features separates total and distinct token counts into two formulas with
+their own examples; it preserves original versus normalized lengths and supplied rather than inferred query flags.
+Training explains judged candidate inclusion and the contributions of a supplied linear model, without claiming model
+fitting, automatic reranking, or promotion. Its arithmetic example uses all five-feature semantics while isolating one
+illustrative contribution.
+
+### Verification
+
+Final readback passed for all 36 files. Draft/Extend/Form Problem text agrees, and Solution prose agrees after
+normalizing only its notation blocks. Original glossary entries remain intact; added Cache, Weighted click-through
+rate, and Regular expression definitions follow alphabetical ordering and each phase's prescribed shape.
+SHA-256 comparisons with CRLF/LF normalized, excluding only Problem, Solution, and Definitions bodies, match every
+pre-edit file. Intent, inventories, Design, Implementation preambles/items, return-schema notation, Results,
+numbering, and Code are therefore unchanged.
+
+Each of the 17 Solution formula blocks has a dedicated following explanation; no text/LaTeX notation fence remains in
+Form Solution. Pandoc converted all 17 to MathML without residual LaTeX outside source annotations. Reviewed the
+illustrative arithmetic and source-backed distinctions, including relevance weighting/gating and feature counts.
+Offline and Labeling remain formula-free rather than adding a calculation merely for a quota.
+
+Documentation whitespace checks passed. This is a focused narrative, preservation, and notation-parser verification,
+not a full source audit, visual layout inspection, or runtime/build test. Annotation, collected source, application
+code, and numbered references were not edited.
+
+
+## Beginner-accessible Problem and Solution development — September 13
+
+Applied the approved Fields/Indexing accessibility trial sequentially to Chunking, Fields, Indexing, Scoring,
+Similarities, Inference, Vectorization, Experiments, and Evaluation across Draft, Extend, and Form (27 files).
+Each family passed a readback and preservation check before the next family was edited. No numbered reference
+was copied and no prose-generation script or parallel family agent was used.
+
+General.style.md now assumes no prior introduction to search or information retrieval. Solution.style.md and the
+Draft template replace paragraph quotas with connected development: introduce the idea, explain its purpose, then
+show its consequence or example. A small recurring search-user situation provides continuity where useful.
+QA S3d checks beginner development; S8d inventories conceptual calculations, introduced symbols, dedicated explanation
+paragraphs, worked arithmetic, and source-grounded boundaries. These rules do not expand Implementation items.
+
+The revisions use a help-collection example while preserving each chapter's scope. Fields distinguishes body text,
+dedicated attributes, maps, and field matching. Indexing develops book-index practice into occurrences, frequencies,
+positions, and structural grains. Scoring separates the calculations behind weighted overlap, BM25, and cosine
+similarity. Similarities explains directional evidence before reciprocal reduction. Inference introduces vectors,
+providers, and inference adapters; Vectorization distinguishes producing vectors, reusing them, and comparing them.
+Experiments explains controlled alternatives and the illustrative feedback blend. Evaluation separates each judged
+and behavior calculation, including its denominator, interpretation, and evidence limitations.
+
+### Coverage and preservation
+
+Counts below describe prose words in the Draft bodies, excluding display text-model blocks. They document development,
+not a length target. Formula counts describe Solution blocks in Form, not Implementation signatures.
+
+| Family | Problem words: before / after | Solution words: before / after | Solution formulas |
+|---|---|---|---|
+| Chunking | 142 / 187 | 369 / 550 | 1 |
+| Fields | 143 / 190 | 336 / 552 | 0 |
+| Indexing | 157 / 204 | 408 / 767 | 2 |
+| Scoring | 142 / 197 | 529 / 821 | 6 |
+| Similarities | 152 / 179 | 343 / 604 | 2 |
+| Inference | 156 / 192 | 359 / 608 | 1 |
+| Vectorization | 152 / 191 | 365 / 597 | 3 |
+| Experiments | 149 / 200 | 411 / 630 | 1 |
+| Evaluation | 146 / 237 | 654 / 1171 | 6 |
+
+Retained the existing conceptual calculations, splitting multi-calculation blocks to interleave explanations.
+Made Indexing's term/target-frequency definitions and Experiments' existing feedback blend explicit as formulas.
+Fields remains formula-free because its explanation does not need an artificial calculation. Each of the 22 Form
+Solution formulas has a dedicated explanatory paragraph. Examples distinguish illustrative values from configured
+defaults, preserve Scoring's repetition behavior, and explain Evaluation's fixed cutoffs, judgment eligibility,
+propensity weighting, and non-probabilistic dwell credit.
+
+Preserved existing glossary definitions, added essential concepts introduced by the expanded prose, and alphabetized
+entries using the appropriate Draft/Extend/Form shape. SHA-256 comparisons with line endings normalized pass for all
+27 files after excluding only Problem, Solution, and Definitions bodies. Intent, remaining inventories, Design,
+Implementation preambles and items, signature/return schemas, stage formulas, Results, numbering, and Code therefore
+remain unchanged. Readback matches each manually authored target; Form uses formulas rather than text-model fences.
+
+Pandoc converted all 22 revised Solution display formulas to MathML with no residual LaTeX outside source annotations.
+This verifies parser compatibility, not visual layout in Typora. Current-source checks support the explanatory
+examples and boundaries; this pass is not a full source audit or runtime/build test. Annotation, collected source,
+application code, and numbered reference documents were not edited.
+
+
 ## Grounded Solution openings: remaining families — September 13
 
 Applied the accepted Solution-opening contract sequentially to the remaining fifteen families. Reviewed each current

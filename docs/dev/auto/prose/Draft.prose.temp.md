@@ -9,13 +9,15 @@
 ## Problem
 
 {{Gentle domain introduction and basic concepts -> familiar situation -> difficulty -> practical consequences.
-Use clear, concrete, connected prose; keep the proposed answer and implementation out.}}
+Use a recognizable search-user situation and explain unfamiliar terms for a reader new to search.
+Unwind distinct ideas into connected paragraphs; keep the proposed answer and implementation out.}}
 
 ## Solution
 
 {{Opening paragraph connects relevant theory/practice, chapter purpose, and gently introduced concepts.
 General context -> conceptual bridge -> explained concrete model/examples -> tradeoffs and value.
-Use accessible, purpose-first language without shortening the conceptual development to an abstract.}}
+Develop a small recurring example where useful; give each conceptual formula its own explanatory paragraph.
+Use accessible, purpose-first language without imposing a paragraph quota or shrinking development to an abstract.}}
 
 ## Builds on
 
