@@ -1,5 +1,76 @@
 # Chapter operator refactor verification
 
+## Example-led teaching applied across Solutions — September 15
+
+Recorded the accepted Rust Programming Language-inspired teaching approach in Solution style: establish a familiar
+need, follow a concrete situation, explain its outcome, then extend it to motivate the next concept. The guidance is
+self-contained and links to the book only as an illustrative reference. It calls for original chapter prose, not copied
+wording, Rust-specific examples, or a code-tutorial format. General grounding, conceptual precision, expressive prose,
+and room for difficult connections remain requirements.
+
+The Draft template invokes this progression. QA tests whether examples explain the approach rather than decorate a
+definition inventory, whether each variation advances understanding, and whether concepts and symbols arrive before
+the explanation depends on them. Optional questions and conversational transitions are not mandatory sentence patterns.
+Draft and Extend reference the shared style; Format checks it while preserving the extended Solution narrative.
+
+Applied the accepted trial to Chunking, Fields, and Indexing, then revised the remaining families sequentially.
+Successful worked calculations were retained and connected to the surrounding explanation. All changes were manually
+authored and propagated through apply_patch; no prose-generation script, parallel family work, or numbered-variant
+copying was used. Every family passed its three-phase preservation checks before the next began.
+
+### Family acceptance record
+
+Counts are comparative whitespace-token counts with each notation block represented by one placeholder. They flag
+unexpected compression; they do not measure readability. The notation column counts corresponding blocks per phase.
+
+| Family | Before -> after prose count | Notation blocks | Draft / Extend / Form checks |
+|---|---:|---:|---|
+| Chunking | 430 -> 485 | 1 | Pass |
+| Fields | 614 -> 656 | 0 | Pass |
+| Indexing | 841 -> 880 | 2 | Pass |
+| Filtering | 552 -> 556 | 1 | Pass |
+| Inference | 610 -> 637 | 1 | Pass |
+| Vectorization | 646 -> 692 | 3 | Pass |
+| Scoring | 931 -> 980 | 6 | Pass |
+| Similarities | 632 -> 656 | 2 | Pass |
+| SearchDocuments | 632 -> 674 | 1 | Pass |
+| SearchFields | 681 -> 706 | 1 | Pass |
+| SearchSimilarity | 561 -> 588 | 1 | Pass |
+| Offline | 629 -> 675 | 0 | Pass |
+| Online | 593 -> 600 | 1 | Pass |
+| Cohorts | 684 -> 676 | 1 | Pass |
+| Clicks | 639 -> 656 | 1 | Pass |
+| Relevance | 1002 -> 1057 | 7 | Pass |
+| Labeling | 579 -> 583 | 0 | Pass |
+| Features | 606 -> 629 | 2 | Pass |
+| Training | 695 -> 746 | 1 | Pass |
+| Experiments | 657 -> 705 | 1 | Pass |
+| Evaluation | 1222 -> 1350 | 6 | Pass |
+
+All 21 families / 63 documents have revised Solution prose. Fresh file reads confirm:
+
+- The authored Solution text is present in every file.
+- Draft, Extend, and Form contain the same Solution prose after accounting for notation presentation.
+- All 39 corresponding notation blocks retain their exact pre-edit contents and order in each phase.
+- The SHA-256 hash of every complete document outside its Solution body matches the pre-edit baseline.
+- No unresolved numbered placeholders, unbalanced inline-math delimiter counts, or text fences occur in Form Solutions.
+
+Editorial review checked the paragraph-opening progression and the explanations around the examples. Particular
+attention went to model compatibility, duplicate-term scoring, one-sided retrieval evidence, SearchFields selection
+limits, independent Offline entry points, cached score-group replacement, feedback calculations, labeling precedence,
+training eligibility/defaults, and evaluation denominators and missing judgments. The overall comparison count rises
+from 14,436 to 15,187; the small Cohorts reduction retains its matching, identity, and fallback distinctions.
+
+Only Solution changed in the chapter files. Intent, Problem, Definitions, stage inventories, Design, Notation,
+Implementation, and Code are unchanged. Annotated source and collected code were not regenerated. The close/ tree is
+ignored by Git, so direct file comparisons provide chapter evidence. Scoped documentation diff checks pass. A separate
+concurrent Diagrams.style.md edit has trailing whitespace; it was left untouched and is outside this pass.
+
+Verification is a focused editorial and preservation review, not a reader study, full source-contract audit, or new
+visual rendering check. Existing formulas and Implementation/Code were preserved rather than regenerated or newly
+certified. No runtime code changed, so no application build was required.
+
+
 ## Graspability applied to all Solution sections — September 14
 
 Recorded graspability in Solution style as understanding on a skim, supported by explanation on a close reading.

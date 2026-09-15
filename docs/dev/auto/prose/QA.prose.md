@@ -42,6 +42,13 @@ A failed input check is repaired at its owning operator when authorized; otherwi
 
 ### Narrative regression cases
 
+For example-led development, trace a concrete situation through the explanation: what need does it establish, what
+happens, why does it happen, and what does the next variation teach? Reject a definition inventory with decorative
+examples, abrupt changes of scenario, or repeated "suppose" introductions that do not advance understanding.
+Names arrive in context, and measures/symbols are defined before numerical use. The example supports a general
+principle rather than narrowing the chapter to its scenario. Keep the established coverage, distinctions, and formulas;
+do not imitate a source book's wording or require code exercises, extra headings, rhetorical questions, or "we".
+
 For Solution graspability, first skim paragraph openings and nearby key sentences: can a newcomer follow the approach
 and its benefit without decoding a chain of technical names? Then read closely: harder connections have enough
 development, terminology is introduced before it carries the explanation, and examples/formulas retain their meaning.

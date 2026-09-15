@@ -19,7 +19,8 @@ General context -> conceptual bridge -> explained concrete model/examples -> tra
 Explain what concepts mean, why they help, and how they connect for someone new to search or information retrieval.
 Use familiar language, concrete subjects, and direct sentences; keep each conceptual thread together.
 Make the main progression graspable on a skim; develop harder connections for a close reading under Solution style.
-Develop a small recurring example where useful; give each conceptual formula its own explanatory paragraph.
+Develop a small example from need through outcome to concept; extend it to motivate the next idea under Solution style.
+Give each conceptual formula its own explanatory paragraph, with defined measures and symbols before calculation.
 Give the explanation the space it needs, preserving theory, expressiveness, and flow without a paragraph or length quota.}}
 
 ## Builds on

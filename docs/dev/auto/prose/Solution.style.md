@@ -99,12 +99,28 @@ Explain a technical term when it first becomes necessary instead of stacking abs
 to rescue the paragraph. Simplify language, not coverage: keep the theory, examples, reasoning, and practical tradeoffs.
 Read the section without Code nearby; understanding the proposal must not require reconstructing its implementation.
 
-Unwind a difficult paragraph into a sequence: introduce the idea in familiar terms, explain its purpose, then show its
-consequence or example. Separate distinct concepts before relating them; adding line breaks to dense prose is not
-enough. Prefer a small recurring search-user example, such as finding password-reset instructions in a help collection,
-so readers can follow the same query, document, or result through the explanation. Adapt the example to the topic;
-do not force one domain on every chapter. Show supported query examples where useful and identify illustrative
-numbers as examples, not measured outcomes or fixed system settings. Expansion adds understanding, not code mechanics.
+Develop the explanation through a small example, following this teaching progression within the general framing:
+
+~~~text
+familiar need -> concrete situation -> explain what happens and why
+    -> name/generalize the concept -> extend the situation to reveal the next need
+~~~
+
+Let the example do explanatory work, rather than adding it after a sequence of abstract definitions. Keep the same
+query, document, or result where useful, changing one relevant condition at a time: add a second source for a field,
+repeat a term, remove one kind of evidence, or change a document revision. Explain the consequence before moving on.
+Introduce terminology when it helps describe that consequence, and define measures/symbols before calculating with
+them. A concrete setup can precede the name; an unexplained technical dependency cannot.
+Use natural transitions and occasional questions or "we" where they guide the reasoning; these are options, not
+required phrases. Preserve successful direct prose. Do not turn every paragraph into a lesson template, invent code
+exercises, or move implementation inventories into Solution. The general principle and its limits must remain clear
+beyond the example. Retain supported query syntax, and identify illustrative numbers rather than implying measured
+results or fixed settings. Adapt examples to each topic without forcing one domain across all chapters.
+
+This teaching approach draws on The Rust Programming Language's
+[ownership](https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html) and
+[hash map](https://doc.rust-lang.org/book/ch08-03-hash-maps.html) explanations. Use the progression described here,
+not copied wording, Rust-specific content, or its code-tutorial format; those links are illustrative references.
 
 Define the chapter's central calculations, not merely their names. Give a conceptual formula or equally precise rule,
 introduce every symbol, population, weight, and parameter, and explain its effect with an example. Definitions lists
