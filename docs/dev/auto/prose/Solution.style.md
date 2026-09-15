@@ -28,6 +28,15 @@ particular components and implementation guarantees still require checking again
 
 ## Solution
 
+Aim for *graspability*: how readily a reader understands the explanation, including when skim-reading it.
+Let paragraph openings carry the main progression in familiar language, with terminology and detail developed in
+context. This is a reading test, not a requirement for slogans, extra headings, or a summary sentence in every paragraph.
+Introduce what an idea does or why it matters before relying on its technical name; retain names and distinctions
+needed for precision, but avoid stacking specialized terms where a direct explanation works better.
+Smooth changes in difficulty by giving harder connections more explanation, examples, or separate paragraphs.
+Preserve generality, theory, expressiveness, and narrative pace: improve the path through the content rather than
+turning it into a shorter overview. A skim should convey the approach; a close reading should explain why it works.
+
 ~~~text
 general domain practice + user goal
     -> conceptual bridge: why this model answers that goal
@@ -35,10 +44,10 @@ general domain practice + user goal
     -> enabled behavior + semantic tradeoffs + practical value
 ~~~
 
-Preserve this order, not a rigid paragraph count. Give each new idea the space its explanation needs, even when this
-requires substantially more paragraphs than a concise overview. The opening is not a project component, algorithm,
-schema, or formula. Explain concepts before relying on them; a formula must have introduced symbols and an interpretation
-in prose.
+Preserve this order, not a rigid paragraph count. Give each idea the space its explanation needs, even when this
+requires substantially more paragraphs than a concise overview. Explain concepts before relying on them and show
+how they connect; a definition alone may not explain how an idea helps. The opening is not a project component,
+algorithm, schema, or formula. A formula must have introduced symbols and an interpretation in prose.
 Balance three jobs in the opening paragraph: ground the topic in a relevant theory or familiar practice, connect that
 grounding to the chapter's purpose, and introduce the concepts needed for the proposed approach. Make these one
 connected explanation, not three checklist sentences. A concrete example can establish the connection. Do not replace
@@ -56,16 +65,33 @@ Keep the conceptual explanation distinct from architecture and method inventorie
 they make possible; put limits, component responsibilities, validation, and implementation mechanics in Implementation
 (or Draft Design). Do not replace a developed explanation with a short component summary, and do not pad it to a quota.
 
-Develop the explanation as a book chapter: each paragraph introduces an idea, explains its meaning through the topic,
-and prepares the next idea. Preserve the reasoning, examples, and tradeoffs in a successful reference; a compressed
-abstract with the same keywords is not equivalent coverage. When a reference is supplied, compare both explanatory
-depth and prose volume. A substantial reduction requires restoring the missing development or explaining why it was
+Develop the explanation as a book chapter: introduce ideas, explain their meaning and purpose, and connect them through
+examples and consequences. Let this account unfold across paragraphs without requiring a fixed pattern in each one.
+Preserve the reasoning, examples, and tradeoffs in a successful reference; a compressed abstract with the same keywords
+is not equivalent coverage. When a reference is supplied, compare both explanatory depth and prose volume.
+A substantial reduction requires restoring the missing development or explaining why it was
 redundant; word counts flag regression but do not substitute for editorial review.
 
 Make that depth accessible on a first reading: use familiar words, concrete examples, and sentences with one main idea.
-Use the same purpose-first, concrete language as good Implementation and Code explanations, but not their item-level
-length limits or italic intents. Build connected paragraphs: say what an idea means, why it helps, and how it applies.
-Replace compressed abstractions with direct explanations rather than merely splitting a dense sentence into shorter ones.
+Use the same purpose-first language as good Implementation and Code explanations, but not their item-level length
+limits or italic intents. Explain the connections a newcomer needs instead of expecting the reader to supply them.
+An example, consequence, or explanation of a relationship can develop an established concept without introducing a
+new one. Preserve these connections when editing; improve flow through clear wording and transitions, not by assuming
+that a definition makes its applications obvious.
+
+Keep each conceptual thread together: introduce the idea, develop its important effects or limits, then connect it to
+the next idea. For example, finish normalization before moving to compatible document/query analysis; do not interrupt
+normalization with compatibility and then restart it. Introduce a measure before its worked example, and preserve the
+general-to-concrete progression within the section.
+
+Prefer concrete subjects and direct verbs to layered explanations about abstractions. Name the referent when a generic
+subject such as "the application" or "the aggregate" requires the reader to guess; for example, "the combined meta
+field." Shorten or split a sentence that nests several choices and consequences. Retain clear, expressive wording that
+already works, such as "Choosing boundaries is a separate task" and "A field's meaning does not have to depend on its
+storage location." Do not turn a statement of flexibility into an unexplained requirement.
+
+Use contrasts where they help explain a distinction, with enough context to understand it. Phrases such as ", not",
+"rather than", and "a separate task" are not by themselves evidence of excessive explanation.
 Prefer an explanation of why an idea helps over a compressed technical contrast. Explain that rank gives retrieval
 methods a common language and that Reciprocal Rank Fusion rewards high positions across methods; "uses lane positions"
 alone does not explain the benefit. Preserve conventional algorithm names and capitalization.

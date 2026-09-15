@@ -16,8 +16,11 @@ Unwind distinct ideas into connected paragraphs; keep the proposed answer and im
 
 {{Opening paragraph connects relevant theory/practice, chapter purpose, and gently introduced concepts.
 General context -> conceptual bridge -> explained concrete model/examples -> tradeoffs and value.
+Explain what concepts mean, why they help, and how they connect for someone new to search or information retrieval.
+Use familiar language, concrete subjects, and direct sentences; keep each conceptual thread together.
+Make the main progression graspable on a skim; develop harder connections for a close reading under Solution style.
 Develop a small recurring example where useful; give each conceptual formula its own explanatory paragraph.
-Use accessible, purpose-first language without imposing a paragraph quota or shrinking development to an abstract.}}
+Give the explanation the space it needs, preserving theory, expressiveness, and flow without a paragraph or length quota.}}
 
 ## Builds on
 

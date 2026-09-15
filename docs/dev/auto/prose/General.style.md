@@ -2,6 +2,8 @@
 
 Write for a reader who has not yet been introduced to search or information retrieval. Technical confidence does not
 imply familiarity with retrieval, ranking, tokens, indexes, or evaluation; explain each when the narrative needs it.
+Explain what a concept means, why it helps, and how it connects to the next idea. Use familiar language, concrete
+examples, and direct sentences, giving the explanation the space it needs.
 Introduce concepts before use; Definitions collects every essential reusable term, not a predetermined number of
 entries. Sort entries alphabetically by displayed
 concept name, ignoring case. Check coverage against the chapter's narrative and operations, including supporting concepts

@@ -1,5 +1,114 @@
 # Chapter operator refactor verification
 
+## Graspability applied to all Solution sections — September 14
+
+Recorded graspability in Solution style as understanding on a skim, supported by explanation on a close reading.
+The Draft template invokes that contract; QA checks both the readable progression and retained conceptual precision.
+Paragraph openings carry useful ideas without becoming compulsory slogans. Technical terms are introduced in context;
+harder connections receive more development. Generality, theory, expressiveness, and pace remain requirements.
+
+Applied the accepted Chunking, Fields, and Indexing trial to their existing Solution sections, preserving their original
+phase-specific notation. Revised the other eighteen families sequentially, retaining successful prose and developing
+dense introductions, relationships, or qualifications. The work was manually authored; tool orchestration propagated
+the same edits through apply_patch and checked preservation. No prose-generation script or numbered-variant copying
+was used. This pass changes Solution only: Intent, Problem, Definitions, inventories, Design, Notation, Implementation,
+Code, and all text outside the Solution body remain unchanged in each chapter.
+
+### Family acceptance record
+
+Each family passed before the next began. Counts below are comparative whitespace-token counts with each notation
+block represented by one placeholder, not reading-quality scores. The notation column counts corresponding Solution
+blocks in each phase; Form retains the existing display formulas.
+
+| Family | Before -> after prose count | Notation blocks | Draft / Extend / Form checks |
+|---|---:|---:|---|
+| Chunking | 551 -> 430 | 1 | Pass |
+| Fields | 552 -> 614 | 0 | Pass |
+| Indexing | 769 -> 841 | 2 | Pass |
+| Filtering | 540 -> 552 | 1 | Pass |
+| Inference | 609 -> 610 | 1 | Pass |
+| Vectorization | 600 -> 646 | 3 | Pass |
+| Scoring | 827 -> 931 | 6 | Pass |
+| Similarities | 606 -> 632 | 2 | Pass |
+| SearchDocuments | 619 -> 632 | 1 | Pass |
+| SearchFields | 617 -> 681 | 1 | Pass |
+| SearchSimilarity | 540 -> 561 | 1 | Pass |
+| Offline | 577 -> 629 | 0 | Pass |
+| Online | 619 -> 593 | 1 | Pass |
+| Cohorts | 638 -> 684 | 1 | Pass |
+| Clicks | 616 -> 639 | 1 | Pass |
+| Relevance | 888 -> 1002 | 7 | Pass |
+| Labeling | 570 -> 579 | 0 | Pass |
+| Features | 613 -> 606 | 2 | Pass |
+| Training | 686 -> 695 | 1 | Pass |
+| Experiments | 631 -> 657 | 1 | Pass |
+| Evaluation | 1177 -> 1222 | 6 | Pass |
+
+All 21 families / 63 documents have changed Solution prose. Exact comparisons confirm matching Solution prose across
+Draft/Extend/Form after accounting for notation presentation. All 39 text-model/display-formula pairs are unchanged,
+including block contents and order. SHA-256 comparisons of the complete document outside Solution match the saved
+pre-edit baseline for every file. Checks also found no unresolved placeholders, unbalanced inline-math delimiter
+counts, or text fences in Form Solutions. Documentation diff checks pass; close/ is ignored by Git, so chapter checks
+used direct file reads rather than relying on git status.
+
+Editorial review covered the paragraph-opening progression and the complete explanation, with particular attention
+to duplicate-term scoring, one-sided fusion and lexical fallback, SearchFields scope limits, independent Offline
+entry points, query-score group replacement, feedback thresholds, labeling precedence, model defaults, and metric
+eligibility. A review caught the loss of the word "natural" before logarithm in Relevance; it was restored in all
+three phases, and QA now explicitly preserves calculation qualifiers during readability edits.
+
+Chunking's reduction from 551 to 430 follows the accepted trial: parentage/ordinal navigation is explained together
+rather than repeated after the span example. Its hierarchy, grains, source spans, formula interpretation, boundary
+choices, segmenter role, and later retrieval responsibilities remain. Overall comparison counts rise from 13,845 to
+14,436; neither that increase nor any individual reduction establishes graspability on its own.
+
+Verification is a focused narrative/preservation review, not a new reader study, full source-contract audit, or rendered
+math check. Existing formulas and all Implementation/Code content were preserved, not regenerated or newly certified.
+No runtime code changed, and no application build was required.
+
+## Accessible explanation restored after the Solution retry — September 14
+
+The user accepted the second chat-only Chunking, Fields, and Indexing Solution trial and requested its guidance in
+the prompts and QA. This supersedes the audience assumption and explanation-trimming guidance in the entry below.
+General style again assumes no prior search/IR introduction. Solution style and the Draft template ask for concept
+meaning, purpose, and connections, with familiar language, concrete examples, and room for developed explanation.
+Clear referents, direct sentences, coherent topic order, and successful expressive wording remain requirements.
+
+Revised S3d/S3e/S6 and the narrative regression cases to assess first-reading understanding without Definitions or
+Code. Removed pressure to keep presumed easy material brief, move on after a definition, or require a new idea in
+each paragraph. Examples and consequences may develop existing concepts; contrasts alone do not indicate excessive
+explanation. Existing grounding, conceptual coverage, formula teaching, and source-fidelity requirements still apply.
+
+Verified the rules remain connected to Draft/Extend/Format and Prose.md. Searched the active guidance and template
+for the superseded audience and trimming instructions; none remain. Documentation diff checks pass. Before/after
+SHA-256 comparisons confirm all 63 current Draft/Extend/Form chapter files are unchanged. The accepted trial was
+shown in chat; this update changes prompts, template, and QA only, with no chapter regeneration or runtime-code change.
+
+## Selective Solution depth and forward movement — September 14
+
+Historical entry: its audience assumption and explanation-trimming guidance are superseded by the retry above.
+
+Updated prompting and QA after review of the chat-only Chunking, Fields, and Indexing Solution trial. The reader is
+sharp but unfamiliar with search/IR; accessibility should supply missing concepts and non-obvious connections, not
+repeated explanations of established ideas. Solution.style.md now allocates expansion by difficulty, keeps conceptual
+threads together, favors concrete referents and direct sentences, and preserves successful expressive wording.
+Contrast phrases are editorial review signals, not prohibited syntax or count-based failures.
+
+Revised the Draft Solution slot and shared QA S3d/S6, and added S3e with four editorial regression cases: repeated
+Chunking relationship walkthroughs, layered boundary/representation explanations, vague Fields subjects and storage
+obligations, and Indexing's normalization/compatibility detour. Positive and negative cases preserve necessary semantic
+contrasts and the dedicated explanation for each conceptual formula. The existing general opening, coverage, and
+formula contracts still apply; selective depth neither imposes brevity nor requires a fixed volume increase.
+
+Verified the owning rules are already referenced by Draft/Extend/Format and Prose.md. Compared the Solution style's
+Intent/Problem sections and calculation contract with HEAD; they are unchanged. Example-selection guidance is also
+unchanged apart from line wrapping, as the example exercise remains deferred. Documentation diff checks pass.
+SHA-256 comparisons confirm all 63 current Draft/Extend/Form chapter files are byte-for-byte unchanged.
+
+This is a prompt/template/QA revision with editorial regression cases, not a chapter regeneration or a measured
+generation-quality result. Application code and the implementation/notation contracts were not changed; no runtime
+build or visual-rendering test was needed for these instruction-only edits.
+
 ## Beginner-accessible development: remaining families — September 14
 
 Applied the restored accessibility contract to the twelve remaining families: Filtering, SearchDocuments,
