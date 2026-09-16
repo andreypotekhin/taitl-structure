@@ -14,13 +14,22 @@ Do not require an explicit reference to building a search engine.
 
 ## Problem
 
-Develop the need stated in Intent: gentle domain introduction -> familiar situation -> topic-specific difficulty ->
-practical consequence. First explain the activity and any basic concepts a newcomer needs, using ordinary practice or
-a small example. Do not open with a failure, dense technical contrast, or assumed domain knowledge. Give the setup room
-to develop before explaining what makes the need nontrivial. Use a recognizable search-user situation to make the need
-concrete, then develop the distinctions that matter; do not constrain the explanation to a paragraph quota.
+Develop the need stated in Intent through general context -> concrete situation -> meaningful variation -> explained
+difficulty -> broader need. Begin with the activity and its purpose in familiar practice, before focusing on an example.
+Let a change in that situation reveal why the need is not straightforward: show what the change means for the search
+user or caller, then connect the example back to the wider use case. Do not open with a failure, dense technical
+contrast, or assumed domain knowledge. Preserve useful general framing rather than narrowing the chapter to its example.
+
+Apply Solution's graspability principles with a different destination: a skim conveys the setting and need; a close
+reading explains why it matters. Use familiar language, concrete subjects, and connected paragraphs. Introduce domain
+terms when they become useful, explaining them before relying on them. Give harder connections more room without a
+length or paragraph quota. Preserve successful wording, substantive coverage, and meaningful distinctions. Examples
+must do explanatory work, but do not force every chapter into the same scenario or require questions, "we", or a
+fixed sequence of sentence patterns. Keep examples appropriate to the chapter's scope.
+
 Keep the proposed answer in Solution. Do not duplicate Intent, enumerate implementation defects, prescribe components,
-or turn the section into Design's requirements checklist.
+algorithms, or turn the section into Design's requirements checklist. Read Problem followed by Solution: the first
+establishes the need and the second develops the answer, without repeating the same explanatory passage.
 
 When using an older chapter, borrow its problem framing and accessible explanation, not obsolete behavior or scope.
 The `close/2/` Chunking, Fields, Indexing, and Filtering Problems illustrate this progression; their references to

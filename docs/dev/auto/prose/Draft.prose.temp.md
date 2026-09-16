@@ -8,9 +8,10 @@
 
 ## Problem
 
-{{Gentle domain introduction and basic concepts -> familiar situation -> difficulty -> practical consequences.
-Use a recognizable search-user situation and explain unfamiliar terms for a reader new to search.
-Unwind distinct ideas into connected paragraphs; keep the proposed answer and implementation out.}}
+{{General context -> concrete situation -> meaningful variation -> explained difficulty -> broader need.
+Apply the Problem contract in Solution style: make the setting and need graspable on a skim, with connected explanation
+for a reader new to search. Let the example develop the need without replacing its generality; introduce terms in context.
+Give difficult connections room without a paragraph quota. Keep the proposed answer and implementation in later sections.}}
 
 ## Solution
 

@@ -1,5 +1,69 @@
 # Chapter operator refactor verification
 
+## Example-led Problem style applied across all families — September 15
+
+Applied the approved Problem trial for Chunking, Fields, and Indexing, preserving the accepted wording with file line
+wrapping. Revised the other eighteen families sequentially using current chapters, without numbered-variant copying
+or parallel family work. Prose was manually authored; apply_patch propagated it across Draft, Extend, and Format.
+No prose-generation script, full chapter regeneration, annotation refresh, or collected-code changes were used.
+
+The Problem contract now develops general context -> concrete situation -> meaningful variation -> explained difficulty
+-> broader need. It applies Solution's graspability principles while reserving the proposed answer for Solution.
+The Draft template and existing narrative QA checks use the same distinction. General framing precedes examples;
+terminology arrives in context; connected explanation has room to develop without a paragraph quota or required
+rhetorical pattern. QA also records concurrent-edit exceptions rather than overwriting unrelated work to pass a hash check.
+
+### Family acceptance record
+
+Every family passed its three-phase text and outside-Problem preservation checks immediately after its edit, before
+the next family began. Counts are whitespace-token comparisons, not readability scores.
+
+| Family | Before -> after words | Draft / Extend / Form |
+|---|---:|---|
+| Chunking | 187 -> 234 | Pass |
+| Fields | 190 -> 243 | Pass |
+| Indexing | 204 -> 290 | Pass |
+| Filtering | 203 -> 258 | Pass; final preservation exception below |
+| Inference | 192 -> 257 | Pass |
+| Vectorization | 191 -> 246 | Pass |
+| Scoring | 197 -> 251 | Pass |
+| Similarities | 179 -> 235 | Pass |
+| SearchDocuments | 199 -> 248 | Pass |
+| SearchFields | 210 -> 249 | Pass |
+| SearchSimilarity | 196 -> 238 | Pass |
+| Offline | 192 -> 246 | Pass |
+| Online | 203 -> 241 | Pass |
+| Cohorts | 218 -> 253 | Pass |
+| Clicks | 210 -> 252 | Pass |
+| Relevance | 200 -> 253 | Pass |
+| Labeling | 192 -> 235 | Pass |
+| Features | 200 -> 251 | Pass |
+| Training | 213 -> 249 | Pass |
+| Experiments | 200 -> 234 | Pass |
+| Evaluation | 237 -> 262 | Pass |
+
+All 21 families / 63 files contain their authored Problem revisions, with identical Problem text across each family's
+three phases. Counts rise from 4,213 to 5,225 words across the 21 distinct chapters. Editorial review checked general
+openings, connected examples, retained distinctions, and the transition into each unchanged Solution. All newly used
+inline definitions have existing glossary entries, allowing ordinary singular/plural variation. An unnecessary
+unintroduced use of "vector" in Online was replaced with "representation" and verified again.
+
+The final fresh-read comparison confirms exact outside-Problem SHA-256 matches for 62 files. Filtering.form.md passed
+that comparison when its Problem was edited, but later changed outside Problem during concurrent diagram work.
+Its saved and final Solutions show removal of the diagram embed, explanatory paragraph, and PNG-preview link; its
+Problem still matches both other phases. The full outside-Problem hash remains different after accounting for that
+Solution block, so this file is not claimed as a final exact-preservation pass. No attempt was made to restore or
+alter unrelated content. The existing Diagrams.style.md edit was also left untouched.
+
+This pass's chapter patches modify Problem only. The retained Solutions, formulas, Implementation, and Code were
+not regenerated. Direct file reads were used because close/ is ignored by Git. Scoped checks for the changed prompt,
+template, QA, and verification files pass. No runtime code changed and no application build was required.
+
+Verification is a focused editorial and preservation review, not a reader study, new visual rendering check, or full
+source-contract audit. The concurrent Filtering exception remains explicit rather than being hidden in a blanket
+claim that every complete file stayed unchanged outside Problem.
+
+
 ## Example-led teaching applied across Solutions — September 15
 
 Recorded the accepted Rust Programming Language-inspired teaching approach in Solution style: establish a familiar
