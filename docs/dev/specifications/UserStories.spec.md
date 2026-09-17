@@ -180,6 +180,8 @@ narrower use cases and roadmap features.
 - + As a developer, I can write compiled step methods using schema objects so that the compiler can symbolically execute transformation logic.
 - + As a developer, I can have field access produce symbolic expressions so that field references compile to Spark columns.
 - + As a developer, I can have DSL functions produce symbolic expressions so that transforms compile to Spark expressions.
+- + As a developer, I can concatenate String expressions and string literals with `+` in either order so that simple
+  labels read naturally while preserving strict typing, Spark null propagation, and numeric addition.
 - + As a developer, I can use inclusive range predicates so that common filters stay compiler-visible.
 - + As a developer, I can use membership predicates so that common set filters stay compiler-visible.
 - + As a developer, I can have unsupported Python operations rejected so that hidden UDF-like behavior is avoided.

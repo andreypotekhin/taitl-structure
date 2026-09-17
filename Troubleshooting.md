@@ -1,5 +1,15 @@
 # Troubleshooting
 
+## String Addition Rejects Mixed Types
+
+String `+` requires two String operands. Convert a numeric expression explicitly, for example
+`"count=" + row.count.cast(types.string())`. Arrays and binary values use `concat(...)` instead.
+
+A nullable String is accepted, but a null value makes the concatenation null. Use `coalesce(row.name, "") + "!"`
+when missing names should behave as empty strings. Bare `None` has no String type; use
+`literal(None).cast(types.string())` if you deliberately need a null string expression.
+See [Expressions API](docs/api/Expressions.api.md#general-column-transformations).
+
 ## Disk-less Source Transform Is Unavailable or Ambiguous
 
 When calling `session.run(transform="package.module:Transform", ...)`, Structure reports that no source transform is

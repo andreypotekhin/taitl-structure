@@ -1303,8 +1303,8 @@ def _decimal_shape(expression: Expression) -> tuple[int, int]:
     return expression.type.precision, expression.type.scale
 
 
-def test_arithmetic_rejects_non_numeric_operands() -> None:
-    with pytest.raises(TypeError, match="Arithmetic requires numeric Structure expressions"):
+def test_addition_rejects_mixed_string_and_numeric_operands() -> None:
+    with pytest.raises(TypeError, match="String addition requires two String operands"):
         _expression(types.integer(), nullable=False) + "one"
 
 

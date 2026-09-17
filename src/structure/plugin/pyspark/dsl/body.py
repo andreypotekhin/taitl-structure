@@ -17,7 +17,8 @@ from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.expressions import literal
 from structure.plugin.pyspark.dsl.joins import JoinPlan
 from structure.plugin.pyspark.dsl.model.Projection import Projection
-from structure.plugin.pyspark.dsl.operations import OperationPlan, WatermarkPlan
+from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
+from structure.plugin.pyspark.dsl.operations.WatermarkPlan import WatermarkPlan
 from structure.plugin.pyspark.dsl.types import BooleanType, TimestampType
 
 Projected = TypeVar("Projected", bound=Schema)

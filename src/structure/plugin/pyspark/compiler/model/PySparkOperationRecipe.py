@@ -34,7 +34,7 @@ from structure.plugin.pyspark.compiler.model.PySparkRelationSetRecipe import PyS
 from structure.plugin.pyspark.compiler.model.PySparkScalarGeneratorRecipe import PySparkScalarGeneratorRecipe
 from structure.plugin.pyspark.compiler.model.PySparkSelectedRowsRecipe import PySparkSelectedRowsRecipe
 from structure.plugin.pyspark.compiler.model.PySparkWatermarkRecipe import PySparkWatermarkRecipe
-from structure.plugin.pyspark.dsl.operations import StreamingOutputMode
+from structure.plugin.pyspark.dsl.operations.StreamingOutputMode import StreamingOutputMode
 
 
 @dataclass(frozen=True)

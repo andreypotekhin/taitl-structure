@@ -56,6 +56,7 @@ PySpark `Column` surface; functions such as `trim` and `lower` remain function-f
 | Structure API | PySpark parity | Example |
 | --- | --- | --- |
 | `+` and reverse `+` | Column addition | `(o.total + 1, 1 + o.total)` |
+| String `+` and reverse `+` | `functions.concat` | `(o.name + "!", "order:" + o.id)` |
 | `-` and reverse `-` | Column subtraction | `(o.total - 1, 1 - o.total)` |
 | `*` and reverse `*` | Column multiplication | `(o.total * 2, 2 * o.total)` |
 | `/` and reverse `/` | Column division | `(o.total / 2, 2 / o.total)` |
@@ -99,6 +100,16 @@ PySpark `Column` surface; functions such as `trim` and `lower` remain function-f
   Spark's bounded Decimal precision rules. Raw `Column.over(...)` remains unsupported.
 - Bitwise methods accept only `integer` and `long` expressions. A mixed pair returns `long`; nullability propagates
   from either operand.
+
+String `+` accepts two String expressions or a String expression and a Python string literal, in either order.
+Chains such as `o.first_name + " " + o.last_name` concatenate in authored order. Numeric addition is unchanged.
+As in Python, strings do not implicitly convert numbers: write `"n=" + o.count.cast(types.string())` explicitly.
+Arrays and binary values continue to use `concat(...)`.
+
+This is Structure syntax: raw PySpark Column `+` is arithmetic; Structure translates string `+` to `F.concat(...)`.
+Unlike Python's rejection of `str + None`, nullable String expressions are valid and follow Spark null semantics:
+if either value is null, the result is null. Use `coalesce(o.name, "") + "!"` to replace missing strings explicitly.
+Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a valid typed null string.
 
 ## SQL Function Helpers
 

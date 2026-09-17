@@ -11,7 +11,7 @@ from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySp
 from structure.plugin.pyspark.compiler.model.PySparkHookRecipe import PySparkHookRecipe
 from structure.plugin.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoinRecipe
 from structure.plugin.pyspark.dsl.joins import Join, JoinMethod
-from structure.plugin.pyspark.dsl.operations import StreamingSupport
+from structure.plugin.pyspark.dsl.operations.StreamingSupport import StreamingSupport
 
 
 @dataclass(frozen=True)

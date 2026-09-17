@@ -23,7 +23,8 @@ from structure.plugin.pyspark.dsl.joins import (
     OverlapPolicy,
     TiePolicy,
 )
-from structure.plugin.pyspark.dsl.operations import ExactlyOnePlan, OperationPlan
+from structure.plugin.pyspark.dsl.operations.ExactlyOnePlan import ExactlyOnePlan
+from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
 from structure.plugin.pyspark.dsl.RowScope import RowScope
 from structure.plugin.pyspark.dsl.types import BooleanType
 

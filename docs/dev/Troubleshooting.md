@@ -1,5 +1,14 @@
 # Troubleshooting
 
+### Problem (mypy): Package-exported classes resolve as modules after adding an import
+
+When: An expression helper gains a dependency on a module that already depends on expressions.
+Error: Mypy reports that a class is a module, is not valid as a type, or has no expected methods.
+Cause: The circular dependency can make same-named package re-exports ambiguous during type checking.
+Fix: Confirm with a clean mypy run and, when necessary, `--shadow-file` against the previous source. At affected
+internal import sites, import the class from its defining module, such as
+`from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan`, while retaining public exports.
+
 For the end-user reproducer and materialization guidance, see the
 [PySpark driver-heap memory gotcha](../troubleshooting/memory/spark_driver_heap_oom.gotcha.md). For the engineering
 root-cause, measurements, and implementation contract, see the developer [Memory specification](specifications/Memory.spec.md).

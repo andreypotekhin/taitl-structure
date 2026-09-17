@@ -359,10 +359,12 @@ class Expression:
         return self._comparison("ne", other)
 
     def __add__(self, other: object) -> "Expression":
-        return self._arithmetic("add", other)
+        """Add numeric values or concatenate two strings, propagating nulls."""
+        return self._addition(other)
 
     def __radd__(self, other: object) -> "Expression":
-        return self._arithmetic("add", other, reverse=True)
+        """Add or concatenate with a literal on the left, preserving its position."""
+        return self._addition(other, reverse=True)
 
     def __sub__(self, other: object) -> "Expression":
         return self._arithmetic("sub", other)
@@ -508,6 +510,21 @@ class Expression:
     def _require_boolean(self, call: str) -> None:
         if not isinstance(self.type, BooleanType):
             raise TypeError(f"{call}(...) requires a Boolean Structure expression")
+
+    def _addition(self, other: object, *, reverse: bool = False) -> "Expression":
+        from structure.plugin.pyspark.dsl.expressions import literal
+        from structure.plugin.pyspark.dsl.operations_api import concat
+
+        other_expression = literal(other)
+        if isinstance(self.type, StringType) or isinstance(other_expression.type, StringType):
+            if not isinstance(self.type, StringType) or not isinstance(other_expression.type, StringType):
+                raise TypeError(
+                    "String addition requires two String operands. Use .cast(types.string()) for explicit conversion; "
+                    "use coalesce(value, '') to replace null strings. "
+                    "See Troubleshooting.md#string-addition-rejects-mixed-types."
+                )
+            return concat(other_expression, self) if reverse else concat(self, other_expression)
+        return self._arithmetic("add", other_expression, reverse=reverse)
 
     def _arithmetic(self, kind: str, other: object, *, reverse: bool = False) -> "Expression":
         from structure.plugin.pyspark.dsl.expressions import literal
