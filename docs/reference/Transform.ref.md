@@ -113,6 +113,17 @@ def add_status(self, order: OrderNormalized) -> OrderPublished:
     )
 ```
 
+An existing symbolic row may be returned directly when its schema is the declared output schema or a subclass of it:
+
+```python
+def publish(self, order: OrderPublishedChild) -> OrderPublished:
+    return order
+```
+
+This is shorthand for an explicit output-schema projection. It does not permit a parent row to be returned as a child
+schema or an unrelated same-field schema to be returned by assignment; use `TargetSchema.project(source)` for structural
+projection.
+
 | Operation | Use |
 | --- | --- |
 | `where(predicate)` | Keep rows satisfying a symbolic Boolean expression |
@@ -300,6 +311,9 @@ class SplitOrders(Transform):
 
 The result tuple order is the declaration order in `output=[...]`. Filters and projections belong to the branch that
 receives them. A rejected branch reading an unfiltered lane does not see filters applied to another output branch.
+
+Each result may also be a direct assignable row or an explicit projection. Every result is checked independently against
+the schema declared at its tuple position.
 
 `output(schema).alias(...)` adds a lookup or composition name; it does not create another output key. Canonical output
 names remain stable for iteration, generated schemas, and traceability.

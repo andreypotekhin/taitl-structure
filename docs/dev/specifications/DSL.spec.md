@@ -373,6 +373,17 @@ When the output copies same-name fields from a source row, prefer schema-method 
 return OrderPublished.project(order)
 ```
 
+When the source row is the declared output schema or a subclass of it, the row may be returned directly. Structure
+interprets the direct return as an explicit projection into the declared output schema:
+
+```python
+def publish(self, order: OrderPublishedChild) -> OrderPublished:
+    return order
+```
+
+A parent-schema row cannot be returned as a more specific child schema, and an unrelated schema with matching field names
+is not assignable. Use `TargetSchema.project(source)` when structural same-name projection is intended.
+
 `project(source, TargetSchema)` and source-less `project(TargetSchema)` remain supported compatibility forms inside
 compiled step methods. Prefer `TargetSchema.project(source)` in public examples because the source row remains visible.
 

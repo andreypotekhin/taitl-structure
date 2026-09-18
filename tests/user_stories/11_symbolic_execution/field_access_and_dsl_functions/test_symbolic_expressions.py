@@ -177,7 +177,7 @@ def test_schema_project_requires_override_for_duplicate_source_field() -> None:
 
 
 def test_schema_base_requires_matching_direct_parent_rows() -> None:
-    """I can use base only with one source for each direct schema parent."""
+    """I can use base with exact same-class sources or matching direct parent rows."""
 
     class Parent(Schema):
         id = string(nullable=False)
@@ -188,12 +188,35 @@ def test_schema_base_requires_matching_direct_parent_rows() -> None:
     class Unrelated(Schema):
         code = string(nullable=False)
 
+    class Other(Schema):
+        code = string(nullable=False)
+
+    same_class = Unrelated(code="same")
+    assert Unrelated.base(same_class)._structure_values == {"code": "same"}
+    assert Unrelated.base(same_class)(code="overridden")._structure_values == {"code": "overridden"}
+
     with pytest.raises(TypeError, match="directly inherits"):
-        Unrelated.base(Unrelated(code="code"))
+        Other.base(Unrelated(code="code"))
     with pytest.raises(TypeError, match="requires 1 source row"):
         Child.base()
     with pytest.raises(TypeError, match="must provide every Parent field"):
         Child.base(Unrelated(code="code"))
+
+
+def test_schema_base_same_class_copies_derived_fields_and_applies_overrides() -> None:
+    class Parent(Schema):
+        id = string(nullable=False)
+
+    class Child(Parent):
+        name = string(nullable=False)
+
+    source = Child(id="id", name="before")
+
+    copied = Child.base(source)
+    overridden = Child.base(Child(id="id"))(name="after")
+
+    assert copied._structure_values == {"id": "id", "name": "before"}
+    assert overridden._structure_values == {"id": "id", "name": "after"}
 
 
 def test_dsl_functions_produce_nested_symbolic_expressions(orders_plan) -> None:

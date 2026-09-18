@@ -3,6 +3,7 @@ from typing import Callable, cast
 from structure.dsl import Schema
 from structure.plugin.api.v1.model.StepAuthoringRequest import StepAuthoringRequest
 from structure.plugin.pyspark.dsl.model.Projection import Projection
+from structure.plugin.pyspark.dsl.RowScope import RowScope
 
 
 class ValidatePySparkResultReturn:
@@ -12,10 +13,10 @@ class ValidatePySparkResultReturn:
         self._request = request
         self._raise = raise_error
 
-    def __call__(self, value: object) -> tuple[Schema | Projection, ...]:
+    def __call__(self, value: object) -> tuple[Schema | Projection | RowScope, ...]:
         results = self._request.results
         if len(results) == 1:
-            return (cast(Schema | Projection, value),)
+            return (cast(Schema | Projection | RowScope, value),)
         if not isinstance(value, tuple) or len(value) != len(results):
             actual = len(value) if isinstance(value, tuple) else type(value).__name__
             self._raise(
@@ -24,10 +25,4 @@ class ValidatePySparkResultReturn:
                 "Return a tuple whose values match the fixed tuple annotation in order.",
             )
         values = cast(tuple[object, ...], value)
-        if any(isinstance(item, Projection) for item in values):
-            self._raise(
-                "DSL-E0402",
-                f"{self._request.name} uses project(...) in a multi-output return.",
-                "Return explicit schema instances for tuple-returning step methods.",
-            )
-        return cast(tuple[Schema | Projection, ...], values)
+        return cast(tuple[Schema | Projection | RowScope, ...], values)

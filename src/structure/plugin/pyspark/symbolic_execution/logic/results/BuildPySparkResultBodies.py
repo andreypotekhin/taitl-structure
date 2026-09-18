@@ -32,11 +32,13 @@ class BuildPySparkResultBodies:
         member = getattr(origin, "member_name", self._request.name)
         bodies: list[PySparkResultBody] = []
         for result, result_value in zip(self._request.results, values, strict=True):
-            aggregate = (
-                self._aggregate_plan(
+            output_schema = cast(type[Schema], result.schema)
+            projection: tuple[ProjectAssignment, ...]
+            if context.aggregate_requested:
+                aggregate = self._aggregate_plan(
                     transform_class,
                     member,
-                    cast(type[Schema], result.schema),
+                    output_schema,
                     result_value,
                     keys=() if context.aggregate_keys is None else context.aggregate_keys,
                     grouping=context.aggregate_grouping,
@@ -44,24 +46,57 @@ class BuildPySparkResultBodies:
                     having=context.aggregate_having,
                     filters=context.filters,
                 )
-                if context.aggregate_requested
-                else None
-            )
-            projection = (
-                ()
-                if aggregate is not None
-                else tuple(
+                projection = ()
+            else:
+                aggregate = None
+                normalized = self._normalize_result(
+                    transform_class,
+                    member,
+                    output_schema,
+                    result_value,
+                )
+                projection = tuple(
                     self._assignments(
                         transform_class,
                         member,
-                        cast(type[Schema], result.schema),
-                        result_value,
+                        output_schema,
+                        normalized,
                         filters=context.filters,
                     )
                 )
-            )
             bodies.append(PySparkResultBody(projection=projection, aggregate=aggregate))
         return tuple(bodies)
+
+    def _normalize_result(
+        self,
+        transform_class: type[Transform],
+        member: str,
+        output_schema: type[Schema],
+        result: object,
+    ) -> Schema | Projection:
+        if not isinstance(result, RowScope):
+            return cast(Schema | Projection, result)
+
+        source_schema = output_schema._source_schema(result)
+        if source_schema is None or not (
+            source_schema is output_schema or issubclass(source_schema, output_schema)
+        ):
+            actual = "unknown" if source_schema is None else source_schema.__name__
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=member,
+                problem=(
+                    f"{transform_class.__name__}.{member} returns {actual}, "
+                    f"which is not assignable to {output_schema.__name__}."
+                ),
+                use=(
+                    "Return a row whose schema is the declared output schema or one of its subclasses, "
+                    "or use TargetSchema.project(source) for structural projection."
+                ),
+                context={"expected": output_schema.__name__, "actual": actual},
+            )
+        return Projection(sources=(result,), target=output_schema)
 
     def _raise(self, code: str, problem: str, use: str) -> None:
         raise self._error(code, transform_class=None, problem=problem, use=use)

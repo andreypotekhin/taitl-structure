@@ -291,16 +291,21 @@ expands it to the same explicit projection IR as the full constructor form. Gene
 Base overlay rules:
 
 - `SchemaClass.base(source)(...)` copies inherited target fields from `source` and applies explicit keyword overrides.
+- When `source` has exactly the target schema, `SchemaClass.base(source)` copies all effective target fields, including
+  inherited and local fields.
 - Explicit keyword overrides always win over copied fields.
 - Extra fields on a source row are ignored.
 - Unknown override keywords are errors.
 - Missing target fields are errors.
 - Copied fields must be type- and nullability-compatible with the target field unless explicitly overridden.
-- `SchemaClass.base(source)` without the second call is valid only when every target field can be copied safely.
+- `SchemaClass.base(source)` without the second call is valid only when every target field can be copied safely. A
+  complete result remains callable, so `SchemaClass.base(source)(...)` can still apply overrides when the source already
+  supplies every target field.
 - For a target schema with one direct schema base, `base(...)` takes one source row compatible with that base.
 - For a target schema with multiple direct schema bases, `base(...)` takes one source row per direct schema base, in the
   same left-to-right order as the class declaration.
-- A schema with no direct schema base cannot use `base(...)`; use `project(...)` to copy unrelated rows.
+- A schema with no direct schema base may use `base(...)` with an exact same-class source. Unrelated sources still require
+  `project(...)` and are not made valid by matching field names.
 - Fields introduced locally by the target schema must be supplied as explicit overrides unless they can be copied by a
   later spec-defined default.
 - Fields locally overriding inherited fields must be supplied explicitly; this keeps changed type, nullability,

@@ -319,9 +319,12 @@ return OrderWithCustomer.base(order)(
 )
 ```
 
-`base(...)` is valid only for a schema with direct schema bases. One base takes one compatible source row; multiple
-bases take one source row per direct base, in declaration order. Extra source fields are ignored. Explicit overrides
-win over copied fields. Unknown overrides, missing target fields, and incompatible copied fields are errors.
+`base(...)` copies inherited fields when the source supplies a direct schema base. For an exact same-class source,
+`SchemaClass.base(source)` copies all effective target fields, including inherited and local fields. One direct base takes
+one compatible source row; multiple direct bases take one source row per direct base, in declaration order. Extra source
+fields are ignored. Explicit overrides win over copied fields. A complete `base(source)` value remains callable so the
+same `base(source)(...)` form works when the source already supplies every field. Unknown overrides, missing target
+fields, and incompatible copied fields are errors. Unrelated sources with matching field names still require `project(...)`.
 
 Use `project(...)` after `base(...)` when another source supplies still-unassigned compatible fields:
 

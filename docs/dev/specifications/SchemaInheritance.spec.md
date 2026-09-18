@@ -209,6 +209,11 @@ schema with multiple direct schema bases, `base(...)` takes one symbolic source 
 left-to-right order as the class declaration. The compiler maps fields by inherited field origin, not by searching all
 sources for a matching field name.
 
+An exact same-class source is a separate supported form. `Target.base(source)` copies every effective field of `Target`,
+including inherited and local fields, and explicit overrides may replace copied fields. This form requires exact schema
+identity; an unrelated schema with the same fields is not a valid base source and must use `Target.project(source)` when
+structural projection is intended.
+
 ```python
 class OrderPublished(OrderPublication, PublicationFlags):
     pass

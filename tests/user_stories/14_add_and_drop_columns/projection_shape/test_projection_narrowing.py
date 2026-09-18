@@ -47,6 +47,15 @@ class Customer(Schema):
     name = string(nullable=True)
 
 
+class ReadyPublished(Published):
+    ready_at = string(nullable=False)
+
+
+class UnrelatedPublished(Schema):
+    id = string(nullable=False)
+    status = string(nullable=True)
+
+
 def test_return_project_to_schema_copies_same_name_fields() -> None:
     """I can narrow a row to a target schema without repeating field names."""
 
@@ -217,6 +226,59 @@ def test_schema_project_without_overrides_copies_fields() -> None:
 
     assert cast(Any, projection["id"].data)["field"] == "id"
     assert cast(Any, projection["status"].data)["field"] == "status"
+
+
+def test_returning_assignable_row_projects_to_output_schema() -> None:
+    @transform
+    class Publish(Transform):
+        rows = input(ReadyPublished)
+        published = output(Published)
+
+        def publish(self, row: ReadyPublished) -> Published:
+            return row
+
+    projection = {assignment.field.name: assignment.expression for assignment in _body(Publish).projection}
+
+    assert list(projection) == ["id", "status"]
+    assert cast(Any, projection["id"].data)["scope"] == "rows"
+    assert cast(Any, projection["status"].data)["scope"] == "rows"
+
+
+def test_returning_parent_row_to_child_schema_is_rejected() -> None:
+    @transform
+    class Publish(Transform):
+        rows = input(Published)
+        ready = output(ReadyPublished)
+
+        def publish(self, row: Published) -> ReadyPublished:
+            return cast(ReadyPublished, row)
+
+    with pytest.raises(StructureCompileError) as raised:
+        _compile(Publish)
+
+    diagnostic = raised.value.diagnostic
+    assert diagnostic.code == "DSL-E0402"
+    assert diagnostic.context == {"expected": "ReadyPublished", "actual": "Published"}
+    assert "not assignable" in diagnostic.problem_text()
+    assert "project(source)" in diagnostic.use_text()
+
+
+def test_returning_unrelated_same_fields_requires_explicit_projection() -> None:
+    @transform
+    class Publish(Transform):
+        rows = input(UnrelatedPublished)
+        published = output(Published)
+
+        def publish(self, row: UnrelatedPublished) -> Published:
+            return cast(Published, row)
+
+    with pytest.raises(StructureCompileError) as raised:
+        _compile(Publish)
+
+    diagnostic = raised.value.diagnostic
+    assert diagnostic.code == "DSL-E0402"
+    assert diagnostic.context == {"expected": "Published", "actual": "UnrelatedPublished"}
+    assert "project(source)" in diagnostic.use_text()
 
 
 def test_projection_accepts_type_widening() -> None:

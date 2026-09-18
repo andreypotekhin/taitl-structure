@@ -84,6 +84,73 @@ def test_v1_multi_output_methods_write_source_order_lanes() -> None:
     assert cast(PySparkStepBody, plan.steps[3].plugin_body).filters[0].kind == "is_null"
 
 
+def test_v1_multi_output_methods_accept_assignable_rows_per_result() -> None:
+    class PassThrough(Schema):
+        id = string(nullable=False)
+
+    @transform
+    class FanOut(Transform):
+        rows = input(PassThrough)
+        left = output(PassThrough)
+        right = output(PassThrough)
+
+        @step(input=rows, output=[left, right])
+        def fan_out(self, row: PassThrough) -> tuple[PassThrough, PassThrough]:
+            return row, row
+
+    plan = _analysis(FanOut)
+    body = cast(PySparkStepBody, plan.steps[0].plugin_body)
+
+    assert len(body.results) == 2
+    assert [[assignment.field.name for assignment in result.projection] for result in body.results] == [["id"], ["id"]]
+    assert [
+        cast(dict[str, object], result.projection[0].expression.data)["scope"] for result in body.results
+    ] == ["rows", "rows"]
+
+
+def test_v1_multi_output_methods_accept_explicit_projections_per_result() -> None:
+    class PassThrough(Schema):
+        id = string(nullable=False)
+
+    @transform
+    class FanOut(Transform):
+        rows = input(PassThrough)
+        left = output(PassThrough)
+        right = output(PassThrough)
+
+        @step(input=rows, output=[left, right])
+        def fan_out(self, row: PassThrough) -> tuple[PassThrough, PassThrough]:
+            return PassThrough.project(row), PassThrough.project(row)
+
+    plan = _analysis(FanOut)
+    body = cast(PySparkStepBody, plan.steps[0].plugin_body)
+
+    assert len(body.results) == 2
+    assert [[assignment.field.name for assignment in result.projection] for result in body.results] == [["id"], ["id"]]
+
+
+def test_v1_multi_output_methods_accept_mixed_direct_and_constructed_rows() -> None:
+    class ReadyPublished(Published):
+        status = string(nullable=False)
+
+    @transform
+    class FanOut(Transform):
+        rows = input(ReadyPublished)
+        published = output(Published)
+        accepted = output(Accepted)
+
+        @step(input=rows, output=[published, accepted])
+        def fan_out(self, row: ReadyPublished) -> tuple[Published, Accepted]:
+            return row, Accepted(id=row.id, status="accepted")
+
+    plan = _analysis(FanOut)
+    body = cast(PySparkStepBody, plan.steps[0].plugin_body)
+
+    assert len(body.results) == 2
+    assert [assignment.field.name for assignment in body.results[0].projection] == ["id"]
+    assert [assignment.field.name for assignment in body.results[1].projection] == ["id", "status"]
+
+
 def test_v1_single_field_output_does_not_need_terminal_binding() -> None:
     @transform
     class PublishOrders(Transform):

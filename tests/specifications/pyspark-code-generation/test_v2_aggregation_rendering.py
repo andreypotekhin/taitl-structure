@@ -603,6 +603,28 @@ def test_having_rejects_incompatible_comparison_operands() -> None:
     assert "compatible Structure expression types" in raised.value.diagnostic.problem
 
 
+def test_aggregate_rejects_direct_row_returns() -> None:
+    class Total(Schema):
+        customer_id = string(nullable=False)
+        order_count = long(nullable=False)
+
+    @transform
+    class BadAggregateRow(Transform):
+        rows = input(Total)
+        totals = output(Total)
+
+        def summarize(self, row: Total) -> Total:
+            group_by(customer_id=row.customer_id)
+            count()
+            return row
+
+    with pytest.raises(StructureCompileError) as raised:
+        _compile(BadAggregateRow)
+
+    assert raised.value.diagnostic.code == "DSL-E0402"
+    assert "uses group_by(...) but does not return Total" in raised.value.diagnostic.problem_text()
+
+
 def test_aggregate_filter_rejects_incompatible_comparison_operands() -> None:
     class Total(Schema):
         customer_id = string(nullable=False)

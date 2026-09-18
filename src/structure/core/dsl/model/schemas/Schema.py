@@ -80,9 +80,23 @@ class Schema:
             )
         self._structure_values = dict(values)
 
+    def __call__(self, **overrides: object) -> "Schema":
+        """Apply overrides to a completed ``base(...)`` value.
+
+        Completed ``base(...)`` calls materialize immediately for compatibility
+        with schema values, while retaining this callable form so
+        ``Schema.base(source)(...)`` remains valid even when the source already
+        supplies every target field.  Ordinary schema instances are not
+        callable.
+        """
+        builder = getattr(self, "_structure_base_builder", None)
+        if not isinstance(builder, _SchemaBaseBuilder):
+            raise TypeError(f"'{type(self).__name__}' object is not callable")
+        return builder(**overrides)
+
     @classmethod
     def base(cls, *sources: object):
-        """Build a schema instance by copying direct base-schema fields.
+        """Build a schema instance by copying base-schema or same-class fields.
 
         Args:
             *sources: One source row for each direct schema base.
@@ -99,6 +113,8 @@ class Schema:
                 published_at = pyspark.timestamp()
 
             row = PublishedOrder.base(order)(published_at=event_time)
+
+            copied = OrderCore.base(order_core)
         """
         builder = _SchemaBaseBuilder(cls, sources)
         return builder.materialize() if builder.complete else builder
@@ -134,6 +150,9 @@ class Schema:
 
     @classmethod
     def _base_values(cls, sources: tuple[object, ...]) -> dict[str, object]:
+        if len(sources) == 1 and cls._source_schema(sources[0]) is cls:
+            return cls._project_values(sources)
+
         bases = cls._structure_schema_bases
         if not bases:
             raise TypeError(f"{cls.__name__}.base(...) requires a schema that directly inherits from another Schema")
@@ -248,7 +267,9 @@ class _SchemaBaseBuilder:
         return self._target(**values)
 
     def materialize(self) -> Schema:
-        return self()
+        result = self()
+        setattr(result, "_structure_base_builder", self)
+        return result
 
     def _values(self) -> dict[str, object]:
         values = self._target._base_values(self._base_sources)
