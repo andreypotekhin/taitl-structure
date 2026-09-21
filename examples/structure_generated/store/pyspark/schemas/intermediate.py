@@ -2,6 +2,7 @@
 # Source: examples.store.schemas.merchandising.intermediate
 
 from pyspark.sql import types as T
+from examples.structure_generated.store.pyspark.schemas.TimeWindow import TIME_WINDOW_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.common import TENANT_KEY_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.evaluation import DAILY_RECOMMENDATION_BEHAVIOR_SCHEMA, RECOMMENDATION_REQUEST_BEHAVIOR_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.feedback import PRODUCT_RECOMMENDATION_SIGNAL_SCHEMA

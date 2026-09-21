@@ -26,6 +26,7 @@ from structure.plugin.pyspark.compiler.model.PySparkRelationHierarchyFallbackRec
     PySparkRelationHierarchyFallbackRecipe,
 )
 from structure.plugin.pyspark.compiler.model.PySparkRelationOrderRecipe import PySparkRelationOrderRecipe
+from structure.plugin.pyspark.compiler.model.PySparkRelationPartitionRecipe import PySparkRelationPartitionRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationPrioritySelectionRecipe import (
     PySparkRelationPrioritySelectionRecipe,
 )
@@ -55,6 +56,7 @@ class PySparkOperationRecipe:
     relation_hierarchy_closure: PySparkRelationHierarchyClosureRecipe | None = None
     relation_hierarchy_fallback: PySparkRelationHierarchyFallbackRecipe | None = None
     relation_order: PySparkRelationOrderRecipe | None = None
+    relation_partition: PySparkRelationPartitionRecipe | None = None
     relation_priority_selection: PySparkRelationPrioritySelectionRecipe | None = None
     relation_bound: PySparkRelationBoundRecipe | None = None
     relation_sample: PySparkRelationSampleRecipe | None = None
@@ -182,6 +184,10 @@ class PySparkOperationRecipe:
     @staticmethod
     def relation_order_operation(relation_order: PySparkRelationOrderRecipe) -> "PySparkOperationRecipe":
         return PySparkOperationRecipe(kind="order_by", relation_order=relation_order)
+
+    @staticmethod
+    def relation_partition_operation(partition: PySparkRelationPartitionRecipe) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="repartition_by_range", relation_partition=partition)
 
     @staticmethod
     def relation_bound_operation(kind: str, relation_bound: PySparkRelationBoundRecipe) -> "PySparkOperationRecipe":

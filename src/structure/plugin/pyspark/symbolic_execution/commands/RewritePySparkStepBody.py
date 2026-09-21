@@ -68,6 +68,9 @@ class RewritePySparkStepBody:
             relation_order=(
                 None if operation.relation_order is None else self._relation_order(operation.relation_order)
             ),
+            relation_partition=(
+                None if operation.relation_partition is None else self._relation_partition(operation.relation_partition)
+            ),
             relation_set=(
                 None if operation.relation_set is None else self._relation_set(operation.relation_set, frames=frames)
             ),
@@ -188,6 +191,12 @@ class RewritePySparkStepBody:
         return replace(
             relation_order,
             order_by=tuple(self._expression(expression) for expression in relation_order.order_by),
+        )
+
+    def _relation_partition(self, relation_partition):
+        return replace(
+            relation_partition,
+            order_by=tuple(self._expression(expression) for expression in relation_partition.order_by),
         )
 
     def _relation_set(self, relation_set, *, frames: Mapping[str, str]):

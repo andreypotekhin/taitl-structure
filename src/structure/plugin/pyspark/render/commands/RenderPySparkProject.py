@@ -9,6 +9,7 @@ from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySpark
 from structure.plugin.pyspark.GeneratedPySparkTransformModule import generated_pyspark_transform_module
 from structure.plugin.pyspark.render.commands.RenderPySparkRuntimeModule import render_pyspark_runtime_module
 from structure.plugin.pyspark.render.commands.RenderPySparkTransformModule import RenderPySparkTransformModule
+from structure.plugin.pyspark.render.logic.CompletePySparkSchemaModules import CompletePySparkSchemaModules
 from structure.plugin.pyspark.render.logic.PySparkTraceabilityReport import PySparkTraceabilityReport
 
 
@@ -25,6 +26,7 @@ class RenderPySparkProject:
         generated_code_hard_wrap: int = 120,
         traceability: str = "none",
     ) -> dict[str, str]:
+        source_schema_modules = CompletePySparkSchemaModules()(plan, source_schema_modules)
         schema_source_modules = self._schema_source_modules(
             source_schema_modules, generated_package=generated_package
         )
@@ -87,6 +89,7 @@ class RenderPySparkProject:
         generated_code_hard_wrap: int = 120,
         traceability: str = "none",
     ) -> dict[str, str]:
+        source_schema_modules = CompletePySparkSchemaModules()(plans, source_schema_modules)
         schema_source_modules = self._schema_source_modules(
             source_schema_modules, generated_package=generated_package
         )

@@ -135,6 +135,8 @@ class ClassifyStreamingCompatibility:
                     findings.extend(self._generators.map(step.name, operation.map_generator))
                 if streaming_step and operation.relation_order is not None:
                     findings.extend(self._relation_ordering(step.name, "order_by"))
+                if streaming_step and operation.relation_partition is not None:
+                    findings.extend(self._relation_ordering(step.name, "repartition_by_range"))
                 if streaming_step and operation.relation_bound is not None:
                     findings.extend(self._relation_ordering(step.name, operation.kind))
                 if streaming_step and operation.relation_sample is not None:

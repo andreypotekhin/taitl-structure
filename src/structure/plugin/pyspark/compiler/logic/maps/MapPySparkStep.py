@@ -35,6 +35,7 @@ from structure.plugin.pyspark.compiler.model.PySparkRelationHierarchyFallbackRec
     PySparkRelationHierarchyFallbackRecipe,
 )
 from structure.plugin.pyspark.compiler.model.PySparkRelationOrderRecipe import PySparkRelationOrderRecipe
+from structure.plugin.pyspark.compiler.model.PySparkRelationPartitionRecipe import PySparkRelationPartitionRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationPrioritySelectionRecipe import (
     PySparkRelationPrioritySelectionRecipe,
 )
@@ -501,6 +502,22 @@ class MapPySparkStep:
                                     self._expressions.map(expression, capabilities=capabilities)
                                     for expression in operation.relation_order.order_by
                                 )
+                            )
+                        ),
+                        operation,
+                    )
+                )
+            if operation.relation_partition is not None:
+                partition = operation.relation_partition
+                recipes.append(
+                    self._operation_modes(
+                        PySparkOperationRecipe.relation_partition_operation(
+                            PySparkRelationPartitionRecipe(
+                                count=partition.count,
+                                order_by=tuple(
+                                    self._expressions.map(expression, capabilities=capabilities)
+                                    for expression in partition.order_by
+                                ),
                             )
                         ),
                         operation,

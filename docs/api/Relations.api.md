@@ -12,6 +12,7 @@ streaming schema-evolution gate are called out below.
 | --- | --- | --- |
 | `relation_alias(...)` | DataFrame alias | `historical = relation_alias(customer, name="historical_customer")` |
 | `order_by(...)` | `orderBy` | `latest = order_by(order.created_at.desc())` |
+| `repartition_by_range(...)` | `repartitionByRange` | `partitioned = repartition_by_range(8, order.customer_id)` |
 | `limit(...)` | `limit` | `latest = order_by(order.created_at.desc()).limit(1)` |
 | `offset(...)` | `offset` | `page = order_by(order.created_at.asc()).offset(20)` |
 | `sample(...)` | `sample` | `sample(0.25, seed=17)` |
@@ -22,9 +23,12 @@ streaming schema-evolution gate are called out below.
   The name must be a unique, non-empty Python identifier within the step.
 - `order_by(...)` requires at least one orderable expression. `limit(...)` and `offset(...)` require a preceding
   `order_by(...)` and non-negative integer literals; later row-shaping operations cannot silently preserve that order.
+- `repartition_by_range(count, *orderings)` redistributes the current rowset into `count` range partitions using one
+  or more typed order expressions. `count` must be a positive integer literal. The operation preserves rows and
+  schema, but it does not promise the final materialized row order; use `order_by(...)` when output order matters.
 - `sample(...)` validates a literal fraction: `[0, 1]` without replacement and non-negative with replacement. A seed
   is required by default; `reproducible=False` explicitly opts into non-repeatable sampling.
-- Ordering, bounds, and sampling are batch-oriented and are streaming materialization boundaries.
+- Ordering, range repartitioning, bounds, and sampling are batch-oriented and are streaming materialization boundaries.
 
 ## Persistence And Lineage Boundaries
 

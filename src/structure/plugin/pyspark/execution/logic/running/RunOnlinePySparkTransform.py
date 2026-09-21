@@ -390,6 +390,15 @@ class RunOnlinePySparkTransform:
                 df = self._relation_order(step, df, operation.relation_order, functions=functions)
             if operation.relation_bound is not None:
                 df = getattr(df, operation.kind)(operation.relation_bound.count)
+            if operation.relation_partition is not None:
+                partition = operation.relation_partition
+                df = df.repartitionByRange(
+                    partition.count,
+                    *(
+                        self._expressions.evaluate(expression, functions=functions, aliases=self._scope_aliases(step))
+                        for expression in partition.order_by
+                    ),
+                )
             if operation.relation_sample is not None:
                 df = df.sample(
                     withReplacement=operation.relation_sample.with_replacement,

@@ -19,6 +19,7 @@ from structure.plugin.pyspark.dsl.operations.RelationBoundPlan import RelationBo
 from structure.plugin.pyspark.dsl.operations.RelationHierarchyClosurePlan import RelationHierarchyClosurePlan
 from structure.plugin.pyspark.dsl.operations.RelationHierarchyFallbackPlan import RelationHierarchyFallbackPlan
 from structure.plugin.pyspark.dsl.operations.RelationOrderPlan import RelationOrderPlan
+from structure.plugin.pyspark.dsl.operations.RelationPartitionPlan import RelationPartitionPlan
 from structure.plugin.pyspark.dsl.operations.RelationPrioritySelectionPlan import RelationPrioritySelectionPlan
 from structure.plugin.pyspark.dsl.operations.RelationSamplePlan import RelationSamplePlan
 from structure.plugin.pyspark.dsl.operations.RelationSetPlan import RelationSetPlan
@@ -47,6 +48,7 @@ class OperationPlan:
     relation_hierarchy_closure: RelationHierarchyClosurePlan | None = None
     relation_hierarchy_fallback: RelationHierarchyFallbackPlan | None = None
     relation_order: RelationOrderPlan | None = None
+    relation_partition: RelationPartitionPlan | None = None
     relation_priority_selection: RelationPrioritySelectionPlan | None = None
     relation_bound: RelationBoundPlan | None = None
     relation_sample: RelationSamplePlan | None = None
@@ -473,6 +475,17 @@ class OperationPlan:
             cache=cache,
             family="optimization",
             capability=OperationCapability("optimization", "cache"),
+            cardinality=OperationCardinality.ROW_PRESERVING,
+            streaming=StreamingSupport.BATCH_ONLY,
+        )
+
+    @staticmethod
+    def relation_partition_operation(partition: RelationPartitionPlan) -> OperationPlan:
+        return OperationPlan(
+            "repartition_by_range",
+            relation_partition=partition,
+            family="relation",
+            capability=OperationCapability("relation", "repartition_by_range"),
             cardinality=OperationCardinality.ROW_PRESERVING,
             streaming=StreamingSupport.BATCH_ONLY,
         )

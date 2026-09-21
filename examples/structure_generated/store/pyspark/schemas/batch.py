@@ -2,6 +2,7 @@
 # Source: examples.store.schemas.evaluation.batch
 
 from pyspark.sql import types as T
+from examples.structure_generated.store.pyspark.schemas.TimeWindow import TIME_WINDOW_SCHEMA
 
 
 EVALUATION_BATCH_SCHEMA = T.StructType([

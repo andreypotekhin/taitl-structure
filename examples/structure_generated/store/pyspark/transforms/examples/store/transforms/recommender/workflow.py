@@ -14,6 +14,7 @@ from examples.structure_generated.store.runtime.schema_assert import (
     apply_plan_boundary,
     close_plan_boundaries,
 )
+from examples.structure_generated.store.pyspark.schemas.TimeWindow import TIME_WINDOW_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.catalog import CATALOG_PRODUCT_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.common import TENANT_KEY_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.feedback import (

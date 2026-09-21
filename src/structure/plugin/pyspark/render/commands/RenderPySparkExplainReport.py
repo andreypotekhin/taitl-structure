@@ -261,6 +261,9 @@ class RenderPySparkExplainReport:
             return f"order_by(row_preserving keys={len(operation.relation_order.order_by)})"
         if operation.relation_bound is not None:
             return f"{operation.kind}(row_filtering count={operation.relation_bound.count})"
+        if operation.relation_partition is not None:
+            partition = operation.relation_partition
+            return f"repartition_by_range(row_preserving partitions={partition.count} keys={len(partition.order_by)})"
         if operation.relation_sample is not None:
             seed = "unseeded" if operation.relation_sample.seed is None else f"seed={operation.relation_sample.seed}"
             return (

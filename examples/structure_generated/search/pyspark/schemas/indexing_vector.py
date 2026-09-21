@@ -96,3 +96,11 @@ VECTOR_INDEX_POLICY_SCHEMA = T.StructType([
     T.StructField("maximum_candidates", T.LongType(), False),
     T.StructField("rrf_k", T.LongType(), False),
 ])
+
+VECTOR_EMBEDDING_SCHEMA = T.StructType([
+    T.StructField("vector", T.ArrayType(T.DoubleType(), containsNull=False), False),
+    T.StructField("model_id", T.StringType(), False),
+    T.StructField("dimension", T.LongType(), False),
+    T.StructField("content_revision", T.StringType(), False),
+    T.StructField("experiment_id", T.StringType(), False),
+])

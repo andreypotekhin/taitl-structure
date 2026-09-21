@@ -2,6 +2,7 @@
 # Source: examples.store.schemas.merchandising.session
 
 from pyspark.sql import types as T
+from examples.structure_generated.store.pyspark.schemas.TimeWindow import TIME_WINDOW_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.common import TENANT_KEY_SCHEMA
 
 

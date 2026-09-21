@@ -28,6 +28,7 @@ class MapRelationOrderingTraceability:
             )
             for index, operation in enumerate(step.operations)
             if operation.relation_order is not None
+            or operation.relation_partition is not None
             or operation.relation_bound is not None
             or operation.relation_sample is not None
         )
@@ -37,6 +38,7 @@ class MapRelationOrderingTraceability:
             self._dependency(step, operation, index)
             for index, operation in enumerate(step.operations)
             if operation.relation_order is not None
+            or operation.relation_partition is not None
             or operation.relation_bound is not None
             or operation.relation_sample is not None
         )
@@ -47,6 +49,10 @@ class MapRelationOrderingTraceability:
         if operation.relation_order is not None:
             sources = self._reads(*operation.relation_order.order_by)
             detail["order_by"] = len(operation.relation_order.order_by)
+        if operation.relation_partition is not None:
+            sources = self._reads(*operation.relation_partition.order_by)
+            detail["count"] = operation.relation_partition.count
+            detail["order_by"] = len(operation.relation_partition.order_by)
         if operation.relation_bound is not None:
             detail["count"] = operation.relation_bound.count
         if operation.relation_sample is not None:

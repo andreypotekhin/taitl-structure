@@ -1,0 +1,30 @@
+Python 3.11.16, PySpark 4.0.0
+WARNING: Using incubator modules: jdk.incubator.vector
+Using Spark's default log4j profile: org/apache/spark/log4j2-defaults.properties
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+26/09/20 18:19:52 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+26/09/20 18:19:54 WARN MacAddressUtil: Failed to find a usable hardware address from the network interfaces; using random bytes: 2d:74:06:ff:17:f2:00:49
+Traceback (most recent call last):
+  File "/workspace/res/testing/support/generated_schemas.py", line 40, in <module>
+    main()
+  File "/workspace/res/testing/support/generated_schemas.py", line 33, in main
+    print(CopyRows(rows=rows).run(session).copied.collect())
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/src/structure/core/dsl/model/transforms/Transform.py", line 206, in run
+    return session.run(self)
+           ^^^^^^^^^^^^^^^^^
+  File "/workspace/src/structure/core/runtime/session/model/StructureSession.py", line 103, in run
+    result = plugin.api.executor.execute(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/src/structure/plugin/pyspark/api/ExecutionAPI.py", line 17, in execute
+    return PySpark.execution.generated()(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/src/structure/plugin/pyspark/execution/commands/RunGeneratedPySparkTransform.py", line 51, in __call__
+    result = self._run(generated_class, invocation, session=session)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/src/structure/plugin/pyspark/execution/commands/RunGeneratedPySparkTransform.py", line 85, in _run
+    return generated_class(spark=session.spark, ctx=session.ctx).run(**inputs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<structure-memory:support_generated/pyspark/transforms/__main__.py>", line 38, in run
+NameError: name 'ROW_SCHEMA' is not defined

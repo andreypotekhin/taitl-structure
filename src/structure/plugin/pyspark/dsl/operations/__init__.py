@@ -14,6 +14,7 @@ from structure.plugin.pyspark.dsl.operations.RelationBoundPlan import RelationBo
 from structure.plugin.pyspark.dsl.operations.RelationHierarchyClosurePlan import RelationHierarchyClosurePlan
 from structure.plugin.pyspark.dsl.operations.RelationHierarchyFallbackPlan import RelationHierarchyFallbackPlan
 from structure.plugin.pyspark.dsl.operations.RelationOrderPlan import RelationOrderPlan
+from structure.plugin.pyspark.dsl.operations.RelationPartitionPlan import RelationPartitionPlan
 from structure.plugin.pyspark.dsl.operations.RelationPrioritySelectionPlan import RelationPrioritySelectionPlan
 from structure.plugin.pyspark.dsl.operations.RelationSamplePlan import RelationSamplePlan
 from structure.plugin.pyspark.dsl.operations.RelationSetPlan import RelationSetPlan
@@ -42,6 +43,7 @@ __all__ = [
     "RelationHierarchyClosurePlan",
     "RelationHierarchyFallbackPlan",
     "RelationOrderPlan",
+    "RelationPartitionPlan",
     "RelationPrioritySelectionPlan",
     "RelationSamplePlan",
     "RelationSetPlan",

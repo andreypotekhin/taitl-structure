@@ -68,6 +68,9 @@ class ValidatePySparkRelationReads:
             if operation.relation_order is not None:
                 reads = set().union(*(self._scopes(expression) for expression in operation.relation_order.order_by))
                 self._validate(relations, joined, reads, request)
+            if operation.relation_partition is not None:
+                reads = set().union(*(self._scopes(expression) for expression in operation.relation_partition.order_by))
+                self._validate(relations, joined, reads, request)
             if operation.relation_assertion is not None:
                 assertion = operation.relation_assertion
                 references = self._scopes(assertion.reference_key) if assertion.reference_key is not None else set()

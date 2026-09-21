@@ -23,6 +23,7 @@ For PySpark APIs, see [APICatalog.md](APICatalog.md). For detailed whole-rowset 
 | Parent hierarchy closure | implemented | Iterative relation expansion pattern | `hierarchy_closure` emits typed `(node, ancestor, depth)` closure rows | [Relations API](api/Relations.api.md) |
 | Bounded parent hierarchy fallbacks | implemented | Iterative relation expansion pattern | `hierarchy_fallbacks` emits deterministic fallback rows from a bounded path | [Relations API](api/Relations.api.md) |
 | Relation sampling | implemented | Spark `DataFrame.sample` | `sample(fraction, seed=...)` records reproducible batch sampling | [Relations API](api/Relations.api.md) |
+| Range repartitioning | implemented | Spark `DataFrame.repartitionByRange` | `repartition_by_range(count, *orderings)` records typed, batch-only range partitioning without promising output order | [Relations API](api/Relations.api.md) |
 | Missing-column union | implemented/design-gated | Spark `DataFrame.unionByName` | Batch nullable/defaulted and nested-struct evolution is supported; array/map and streaming evolution remain gated | [Relations API](api/Relations.api.md) |
 | Bounded ordered `scan(...)` | implemented | Ordered recurrence pattern | Batch-only typed state progression over a bounded ordered timeline | [Relations API](api/Relations.api.md) |
 

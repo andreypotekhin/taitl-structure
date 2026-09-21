@@ -213,6 +213,7 @@ COMMON_CAPABILITIES = frozenset(
         ("relation", "limit"),
         ("relation", "offset"),
         ("relation", "order_by"),
+        ("relation", "repartition_by_range"),
         ("relation", "relation_alias"),
         ("relation", "require_all"),
         ("relation", "require_parent_hierarchy"),

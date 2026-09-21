@@ -77,7 +77,9 @@ from examples.structure_generated.search.pyspark.schemas.relevance import (
 from examples.structure_generated.search.pyspark.schemas.scoring_intermediate import (
     DOCUMENT_OVERLAP_MATCH_SCHEMA,
     PARAGRAPH_OVERLAP_MATCH_SCHEMA,
+    QUERY_IDF_TOTAL_SCHEMA,
     QUERY_TERM_COUNT_SCHEMA,
+    QUERY_TERM_IDF_SCHEMA,
     QUERY_TERM_SCHEMA,
     SCORE_QUERY_AVAILABILITY_SCHEMA,
     SECTION_OVERLAP_MATCH_SCHEMA,

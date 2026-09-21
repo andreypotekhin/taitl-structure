@@ -86,6 +86,10 @@ Alias collision, self-join predicate ambiguity, and reading alias fields before 
 ascending order descriptors. It establishes the current relation presentation order and is visible at the materialized
 output boundary. A later operator may not claim to preserve that order unless its own contract says so.
 
+`repartition_by_range(count, *orderings)` accepts a positive integer literal and one or more typed order expressions.
+It records a batch-only, row-preserving range repartitioning boundary. Repartitioning invalidates the current ordered
+state: it controls partition placement, not the order of rows at a materialized output boundary.
+
 `limit(n)` and `offset(n)` require non-negative integer literals. Both require the current relation state to have a
 preceding explicit `order_by(...)`; if a row-shaping or set operation has run after the latest ordering, the bound is
 rejected as nondeterministic.

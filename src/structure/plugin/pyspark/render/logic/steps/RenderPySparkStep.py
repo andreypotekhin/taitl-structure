@@ -419,6 +419,13 @@ class RenderPySparkStep:
                 ordered_lines.extend(self._relation_order(operation.relation_order, step=step, target=target))
             if operation.relation_bound is not None:
                 ordered_lines.extend(self._relation_bound(operation.kind, operation.relation_bound, target=target))
+            if operation.relation_partition is not None:
+                partition = operation.relation_partition
+                keys = ", ".join(
+                    render_pyspark_expression(expression, scope_aliases=self._scope_aliases(step))
+                    for expression in partition.order_by
+                )
+                ordered_lines.append(f"{target} = {target}.repartitionByRange({partition.count}, {keys})")
             if operation.relation_sample is not None:
                 ordered_lines.extend(self._relation_sample(operation.relation_sample, target=target))
             if operation.relation_priority_selection is not None:

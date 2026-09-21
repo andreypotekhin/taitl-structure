@@ -30,6 +30,7 @@ from structure.plugin.pyspark.dsl.operations import (
     RelationSamplePlan,
     RelationSetPlan,
 )
+from structure.plugin.pyspark.dsl.operations.RelationPartitionPlan import RelationPartitionPlan
 from structure.plugin.pyspark.dsl.RowScope import RowScope
 from structure.plugin.pyspark.dsl.types import ArrayType, DecimalType, LongType, MapType, StringType, StructType
 
@@ -92,6 +93,39 @@ def order_by(*orderings: object) -> RowScope:
         raise TypeError("order_by(...) requires at least one order expression")
     _validate_prior_operations(context.operations, function="order_by")
     context.operations.append(OperationPlan.relation_order_operation(RelationOrderPlan(order_by=order)))
+    return RowScope(name=_current_scope(context.default_project_source), schema=source_schema)
+
+
+def repartition_by_range(count: int, *orderings: object) -> RowScope:
+    """Distribute the current batch relation into ranges without ordering its rows.
+
+    Args:
+        count: Positive integer number of partitions, known during compilation.
+        *orderings: Typed orderable expressions, optionally with direction and null placement.
+
+    Returns:
+        The current row scope with unchanged fields and rows.
+
+    Raises:
+        TypeError: If count is invalid, keys are absent, or a key is not orderable.
+
+    Example:
+        repartition_by_range(4, order.customer_id.asc_nulls_last())
+
+    Spark samples keys to choose range boundaries; partition membership is not a stable
+    identifier. Use order_by(...) separately when the result needs an explicit row order.
+    """
+    context = _context("repartition_by_range(...)")
+    if isinstance(count, bool) or not isinstance(count, int) or count < 1:
+        raise TypeError("repartition_by_range(count, ...) requires a positive integer count")
+    source_schema = _current_schema(context.default_project_source, function="repartition_by_range")
+    order = tuple(_orderable(value, call="repartition_by_range(...)") for value in orderings)
+    if not order:
+        raise TypeError("repartition_by_range(...) requires at least one order expression")
+    _validate_prior_operations(context.operations, function="repartition_by_range")
+    context.operations.append(
+        OperationPlan.relation_partition_operation(RelationPartitionPlan(count=count, order_by=order))
+    )
     return RowScope(name=_current_scope(context.default_project_source), schema=source_schema)
 
 
@@ -676,6 +710,7 @@ def _validate_ordered_state(operations, *, function: str) -> None:
             "posexplode_array",
             "posexplode_outer_array",
             "sample",
+            "repartition_by_range",
             "selected_rows",
             "select_first_qualified",
             "hierarchy_closure",
