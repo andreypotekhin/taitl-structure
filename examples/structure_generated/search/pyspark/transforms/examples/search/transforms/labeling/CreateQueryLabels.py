@@ -65,8 +65,10 @@ class CreateQueryLabelsGenerated:
                 'REL-E0702: require_unique(...) found duplicate keys; see docs/Diagnostics.md#rel-e0702',
             ).alias("__structure_require_unique")
         )
-        valid_intents = valid_intents_require_unique_0_assertion.crossJoin(valid_intents).drop(
-            "__structure_require_unique"
+        valid_intents = (
+            valid_intents.crossJoin(valid_intents_require_unique_0_assertion)
+            .where(F.col("__structure_require_unique").isNull())
+            .drop("__structure_require_unique")
         )
         valid_intents_require_unique_1_duplicates = valid_intents.groupBy(F.col("intent.name")).agg(
             F.count(F.lit(1)).alias("__structure_count")
@@ -83,8 +85,10 @@ class CreateQueryLabelsGenerated:
                 'REL-E0702: require_unique(...) found duplicate keys; see docs/Diagnostics.md#rel-e0702',
             ).alias("__structure_require_unique")
         )
-        valid_intents = valid_intents_require_unique_1_assertion.crossJoin(valid_intents).drop(
-            "__structure_require_unique"
+        valid_intents = (
+            valid_intents.crossJoin(valid_intents_require_unique_1_assertion)
+            .where(F.col("__structure_require_unique").isNull())
+            .drop("__structure_require_unique")
         )
         valid_intents_require_all_2_violations = valid_intents.where(
             ~F.coalesce((F.trim(F.col("intent.name")) != F.lit('')), F.lit(False))
@@ -98,7 +102,11 @@ class CreateQueryLabelsGenerated:
                 ),
             ).alias("__structure_require_all")
         )
-        valid_intents = valid_intents_require_all_2_assertion.crossJoin(valid_intents).drop("__structure_require_all")
+        valid_intents = (
+            valid_intents.crossJoin(valid_intents_require_all_2_assertion)
+            .where(F.col("__structure_require_all").isNull())
+            .drop("__structure_require_all")
+        )
         valid_intents = valid_intents.select(
             F.col("intent.id"),
             F.col("intent.name"),
@@ -122,8 +130,10 @@ class CreateQueryLabelsGenerated:
                 'REL-E0702: require_unique(...) found duplicate keys; see docs/Diagnostics.md#rel-e0702',
             ).alias("__structure_require_unique")
         )
-        valid_patterns = valid_patterns_require_unique_0_assertion.crossJoin(valid_patterns).drop(
-            "__structure_require_unique"
+        valid_patterns = (
+            valid_patterns.crossJoin(valid_patterns_require_unique_0_assertion)
+            .where(F.col("__structure_require_unique").isNull())
+            .drop("__structure_require_unique")
         )
         valid_patterns_require_all_1_violations = valid_patterns.where(
             ~F.coalesce(
@@ -143,8 +153,10 @@ class CreateQueryLabelsGenerated:
                 ),
             ).alias("__structure_require_all")
         )
-        valid_patterns = valid_patterns_require_all_1_assertion.crossJoin(valid_patterns).drop(
-            "__structure_require_all"
+        valid_patterns = (
+            valid_patterns.crossJoin(valid_patterns_require_all_1_assertion)
+            .where(F.col("__structure_require_all").isNull())
+            .drop("__structure_require_all")
         )
         valid_patterns_require_reference_2_left = valid_patterns.withColumn(
             "__structure_reference_value_2", F.col("intent_pattern.intent_id")
@@ -173,8 +185,10 @@ class CreateQueryLabelsGenerated:
                 ),
             ).alias("__structure_require_reference")
         )
-        valid_patterns = valid_patterns_require_reference_2_assertion.crossJoin(valid_patterns).drop(
-            "__structure_require_reference"
+        valid_patterns = (
+            valid_patterns.crossJoin(valid_patterns_require_reference_2_assertion)
+            .where(F.col("__structure_require_reference").isNull())
+            .drop("__structure_require_reference")
         )
         valid_patterns = valid_patterns.select(
             F.col("intent_pattern.intent_id"),
@@ -198,7 +212,16 @@ class CreateQueryLabelsGenerated:
         query_intents = self._impl.match_patterns(
             query_intents=query_intents, valid_patterns=valid_patterns, spark=self.spark, ctx=self.ctx
         )
-        assert_schema(query_intents, QUERY_INTENT_LABEL_SCHEMA, name="QueryIntentLabel", mode="strict")
+        if not hasattr(query_intents, 'schema'):
+            raise TypeError(
+                'Hook match_patterns, relation query_intents' + ': expected a DataFrame; return the declared relation'
+            )
+        try:
+            assert_schema(query_intents, QUERY_INTENT_LABEL_SCHEMA, name="QueryIntentLabel", mode="strict")
+        except ValueError as error:
+            raise ValueError(
+                'Hook match_patterns, relation query_intents' + ': ' + str(error) + '; return the declared schema'
+            ) from error
         assert_schema(query_intents, QUERY_INTENT_LABEL_SCHEMA, name="QueryIntentLabel", mode="strict")
 
         # Step method: collect_labels

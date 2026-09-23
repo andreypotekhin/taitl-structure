@@ -103,7 +103,11 @@ class CreateSimilarityQueriesGenerated:
                 ),
             ).alias("__structure_require_all")
         )
-        valid_policy = valid_policy_require_all_0_assertion.crossJoin(valid_policy).drop("__structure_require_all")
+        valid_policy = (
+            valid_policy.crossJoin(valid_policy_require_all_0_assertion)
+            .where(F.col("__structure_require_all").isNull())
+            .drop("__structure_require_all")
+        )
         valid_policy = valid_policy.select(
             F.col("similarity_policy.max_document_frequency_ratio"),
         )
@@ -123,8 +127,10 @@ class CreateSimilarityQueriesGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            valid_policy_param_joined = valid_policy_param_joined_count.crossJoin(valid_policy).drop(
-                "__structure_exactly_one"
+            valid_policy_param_joined = (
+                valid_policy.crossJoin(valid_policy_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         valid_policy_joined = valid_policy_param_joined.alias("valid_policy")
         document_query_text = document_query_text.crossJoin(valid_policy_joined)
@@ -190,8 +196,10 @@ class CreateSimilarityQueriesGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            valid_policy_param_joined = valid_policy_param_joined_count.crossJoin(valid_policy).drop(
-                "__structure_exactly_one"
+            valid_policy_param_joined = (
+                valid_policy.crossJoin(valid_policy_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         valid_policy_joined = valid_policy_param_joined.alias("valid_policy")
         section_query_text = section_query_text.crossJoin(valid_policy_joined)
@@ -256,8 +264,10 @@ class CreateSimilarityQueriesGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            valid_policy_param_joined = valid_policy_param_joined_count.crossJoin(valid_policy).drop(
-                "__structure_exactly_one"
+            valid_policy_param_joined = (
+                valid_policy.crossJoin(valid_policy_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         valid_policy_joined = valid_policy_param_joined.alias("valid_policy")
         paragraph_query_text = paragraph_query_text.crossJoin(valid_policy_joined)
@@ -327,8 +337,10 @@ class CreateSimilarityQueriesGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            valid_policy_param_joined = valid_policy_param_joined_count.crossJoin(valid_policy).drop(
-                "__structure_exactly_one"
+            valid_policy_param_joined = (
+                valid_policy.crossJoin(valid_policy_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         valid_policy_joined = valid_policy_param_joined.alias("valid_policy")
         sentence_query_text = sentence_query_text.crossJoin(valid_policy_joined)

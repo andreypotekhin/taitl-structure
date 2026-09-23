@@ -438,7 +438,7 @@ def test_generated_plural_lane_hook_replaces_outputs_in_order() -> None:
     )
 
     assert (
-        "        accepted, audited = self._impl.polish("
+        "        __structure_hook_result = self._impl.polish("
         "accepted=accepted, audited=audited, spark=self.spark, ctx=self.ctx)"
     ) in text
 

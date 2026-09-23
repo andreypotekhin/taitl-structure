@@ -104,8 +104,10 @@ class CreateSimilarityQueriesGenerated:
                 ),
             ).alias("__structure_require_all")
         )
-        queries__valid_policy = queries__valid_policy_require_all_0_assertion.crossJoin(queries__valid_policy).drop(
-            "__structure_require_all"
+        queries__valid_policy = (
+            queries__valid_policy.crossJoin(queries__valid_policy_require_all_0_assertion)
+            .where(F.col("__structure_require_all").isNull())
+            .drop("__structure_require_all")
         )
         queries__valid_policy = queries__valid_policy.select(
             F.col("similarity_policy.max_document_frequency_ratio"),
@@ -134,9 +136,12 @@ class CreateSimilarityQueriesGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            queries__valid_policy_param_joined = queries__valid_policy_param_joined_count.crossJoin(
+            queries__valid_policy_param_joined = (
                 frames["queries__valid_policy"]
-            ).drop("__structure_exactly_one")
+                .crossJoin(queries__valid_policy_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
+            )
         queries__valid_policy_joined = queries__valid_policy_param_joined.alias("queries__valid_policy")
         queries__document_query_text = queries__document_query_text.crossJoin(queries__valid_policy_joined)
         document_summary_2_joined = frames["document_summary"].alias("document_summary_2")
@@ -209,9 +214,12 @@ class CreateSimilarityQueriesGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            queries__valid_policy_param_joined = queries__valid_policy_param_joined_count.crossJoin(
+            queries__valid_policy_param_joined = (
                 frames["queries__valid_policy"]
-            ).drop("__structure_exactly_one")
+                .crossJoin(queries__valid_policy_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
+            )
         queries__valid_policy_joined = queries__valid_policy_param_joined.alias("queries__valid_policy")
         queries__section_query_text = queries__section_query_text.crossJoin(queries__valid_policy_joined)
         section_summary_2_joined = frames["section_summary"].alias("section_summary_2")
@@ -286,9 +294,12 @@ class CreateSimilarityQueriesGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            queries__valid_policy_param_joined = queries__valid_policy_param_joined_count.crossJoin(
+            queries__valid_policy_param_joined = (
                 frames["queries__valid_policy"]
-            ).drop("__structure_exactly_one")
+                .crossJoin(queries__valid_policy_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
+            )
         queries__valid_policy_joined = queries__valid_policy_param_joined.alias("queries__valid_policy")
         queries__paragraph_query_text = queries__paragraph_query_text.crossJoin(queries__valid_policy_joined)
         paragraph_summary_2_joined = frames["paragraph_summary"].alias("paragraph_summary_2")
@@ -365,9 +376,12 @@ class CreateSimilarityQueriesGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            queries__valid_policy_param_joined = queries__valid_policy_param_joined_count.crossJoin(
+            queries__valid_policy_param_joined = (
                 frames["queries__valid_policy"]
-            ).drop("__structure_exactly_one")
+                .crossJoin(queries__valid_policy_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
+            )
         queries__valid_policy_joined = queries__valid_policy_param_joined.alias("queries__valid_policy")
         queries__sentence_query_text = queries__sentence_query_text.crossJoin(queries__valid_policy_joined)
         sentence_summary_2_joined = frames["sentence_summary"].alias("sentence_summary_2")
@@ -1420,8 +1434,11 @@ class ScoreOverlapGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            score_policy_2_param_joined = score_policy_2_param_joined_count.crossJoin(frames["score_policy"]).drop(
-                "__structure_exactly_one"
+            score_policy_2_param_joined = (
+                frames["score_policy"]
+                .crossJoin(score_policy_2_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
         overlap__document_overlap_scores = overlap__document_overlap_scores.crossJoin(score_policy_2_joined)
@@ -1470,8 +1487,11 @@ class ScoreOverlapGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            score_policy_2_param_joined = score_policy_2_param_joined_count.crossJoin(frames["score_policy"]).drop(
-                "__structure_exactly_one"
+            score_policy_2_param_joined = (
+                frames["score_policy"]
+                .crossJoin(score_policy_2_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
         overlap__section_overlap_scores = overlap__section_overlap_scores.crossJoin(score_policy_2_joined)
@@ -1523,8 +1543,11 @@ class ScoreOverlapGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            score_policy_2_param_joined = score_policy_2_param_joined_count.crossJoin(frames["score_policy"]).drop(
-                "__structure_exactly_one"
+            score_policy_2_param_joined = (
+                frames["score_policy"]
+                .crossJoin(score_policy_2_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
         overlap__paragraph_overlap_scores = overlap__paragraph_overlap_scores.crossJoin(score_policy_2_joined)
@@ -1578,8 +1601,11 @@ class ScoreOverlapGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            score_policy_2_param_joined = score_policy_2_param_joined_count.crossJoin(frames["score_policy"]).drop(
-                "__structure_exactly_one"
+            score_policy_2_param_joined = (
+                frames["score_policy"]
+                .crossJoin(score_policy_2_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
         overlap__sentence_overlap_scores = overlap__sentence_overlap_scores.crossJoin(score_policy_2_joined)

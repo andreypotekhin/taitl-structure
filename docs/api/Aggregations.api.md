@@ -66,6 +66,12 @@ the current `order` row scope as `o`.
 - `grouping_sets(...)` renders explicit grouped branches and `unionByName`; `grouping_sets(())` is a single global
   aggregate branch.
 - `grouping_id()` and `is_grouped(...)` describe subtotal rows, whose grouping fields can be null.
+  `is_grouped(key)` is true when the level omits that key; an actual null detail key has a false flag.
+
+- Ordered first/last aggregates and latest/earliest row selection check winning ties lazily in both execution modes.
+  Construction launches no validation jobs. Evaluated guards reject identical winning duplicates and conflicting
+  records; lower-ranked ties do not fail. Null order values and rows excluded by `where=` do not compete in aggregate
+  first/last. Spark can prune guarded work, so partial output does not certify the entire input.
 - `having(...)` reads aggregate-output scope rather than the input row. It can be a bare statement after grouping or
   chained from `group_by(...)`, `rollup(...)`, `cube(...)`, or `grouping_sets(...)`.
 

@@ -46,9 +46,11 @@ class CreateQueryLabelsGenerated:
                 'REL-E0702: require_unique(...) found duplicate keys; see docs/Diagnostics.md#rel-e0702',
             ).alias("__structure_require_unique")
         )
-        created__valid_intents = created__valid_intents_require_unique_0_assertion.crossJoin(
-            created__valid_intents
-        ).drop("__structure_require_unique")
+        created__valid_intents = (
+            created__valid_intents.crossJoin(created__valid_intents_require_unique_0_assertion)
+            .where(F.col("__structure_require_unique").isNull())
+            .drop("__structure_require_unique")
+        )
         created__valid_intents_require_unique_1_duplicates = created__valid_intents.groupBy(F.col("intent.name")).agg(
             F.count(F.lit(1)).alias("__structure_count")
         )
@@ -64,9 +66,11 @@ class CreateQueryLabelsGenerated:
                 'REL-E0702: require_unique(...) found duplicate keys; see docs/Diagnostics.md#rel-e0702',
             ).alias("__structure_require_unique")
         )
-        created__valid_intents = created__valid_intents_require_unique_1_assertion.crossJoin(
-            created__valid_intents
-        ).drop("__structure_require_unique")
+        created__valid_intents = (
+            created__valid_intents.crossJoin(created__valid_intents_require_unique_1_assertion)
+            .where(F.col("__structure_require_unique").isNull())
+            .drop("__structure_require_unique")
+        )
         created__valid_intents_require_all_2_violations = created__valid_intents.where(
             ~F.coalesce((F.trim(F.col("intent.name")) != F.lit('')), F.lit(False))
         ).agg(F.count(F.lit(1)).alias("__structure_violations"))
@@ -79,8 +83,10 @@ class CreateQueryLabelsGenerated:
                 ),
             ).alias("__structure_require_all")
         )
-        created__valid_intents = created__valid_intents_require_all_2_assertion.crossJoin(created__valid_intents).drop(
-            "__structure_require_all"
+        created__valid_intents = (
+            created__valid_intents.crossJoin(created__valid_intents_require_all_2_assertion)
+            .where(F.col("__structure_require_all").isNull())
+            .drop("__structure_require_all")
         )
         created__valid_intents = created__valid_intents.select(
             F.col("intent.id"),
@@ -109,9 +115,11 @@ class CreateQueryLabelsGenerated:
                 'REL-E0702: require_unique(...) found duplicate keys; see docs/Diagnostics.md#rel-e0702',
             ).alias("__structure_require_unique")
         )
-        created__valid_patterns = created__valid_patterns_require_unique_0_assertion.crossJoin(
-            created__valid_patterns
-        ).drop("__structure_require_unique")
+        created__valid_patterns = (
+            created__valid_patterns.crossJoin(created__valid_patterns_require_unique_0_assertion)
+            .where(F.col("__structure_require_unique").isNull())
+            .drop("__structure_require_unique")
+        )
         created__valid_patterns_require_all_1_violations = created__valid_patterns.where(
             ~F.coalesce(
                 (
@@ -130,9 +138,11 @@ class CreateQueryLabelsGenerated:
                 ),
             ).alias("__structure_require_all")
         )
-        created__valid_patterns = created__valid_patterns_require_all_1_assertion.crossJoin(
-            created__valid_patterns
-        ).drop("__structure_require_all")
+        created__valid_patterns = (
+            created__valid_patterns.crossJoin(created__valid_patterns_require_all_1_assertion)
+            .where(F.col("__structure_require_all").isNull())
+            .drop("__structure_require_all")
+        )
         created__valid_patterns_require_reference_2_left = created__valid_patterns.withColumn(
             "__structure_reference_value_2", F.col("intent_pattern.intent_id")
         )
@@ -173,9 +183,11 @@ class CreateQueryLabelsGenerated:
                 )
             )
         )
-        created__valid_patterns = created__valid_patterns_require_reference_2_assertion.crossJoin(
-            created__valid_patterns
-        ).drop("__structure_require_reference")
+        created__valid_patterns = (
+            created__valid_patterns.crossJoin(created__valid_patterns_require_reference_2_assertion)
+            .where(F.col("__structure_require_reference").isNull())
+            .drop("__structure_require_reference")
+        )
         created__valid_patterns = created__valid_patterns.select(
             F.col("intent_pattern.intent_id"),
             F.col("intent_pattern.language"),
@@ -205,7 +217,20 @@ class CreateQueryLabelsGenerated:
             spark=self.spark,
             ctx=self.ctx,
         )
-        assert_schema(created__query_intents, QUERY_INTENT_LABEL_SCHEMA, name="QueryIntentLabel", mode="strict")
+        if not hasattr(created__query_intents, 'schema'):
+            raise TypeError(
+                'Hook match_patterns, relation created__query_intents'
+                + ': expected a DataFrame; return the declared relation'
+            )
+        try:
+            assert_schema(created__query_intents, QUERY_INTENT_LABEL_SCHEMA, name="QueryIntentLabel", mode="strict")
+        except ValueError as error:
+            raise ValueError(
+                'Hook match_patterns, relation created__query_intents'
+                + ': '
+                + str(error)
+                + '; return the declared schema'
+            ) from error
         assert_schema(created__query_intents, QUERY_INTENT_LABEL_SCHEMA, name="QueryIntentLabel", mode="strict")
         return {
             "created__query_intents": created__query_intents,
@@ -262,7 +287,7 @@ class MergeQueryLabelsGenerated:
             merged__latest_labels = merged__latest_labels.dropDuplicates()
         merged__latest_labels = merged__latest_labels.withColumn(
             "__structure_merged.select_latest_latest_rank",
-            F.row_number().over(
+            F.dense_rank().over(
                 Window.partitionBy(F.col("query_label.query_id"), F.col("query_label.label.name")).orderBy(
                     F.col("query_label.assigned_at").desc()
                 )
@@ -272,6 +297,24 @@ class MergeQueryLabelsGenerated:
             F.col("__structure_merged.select_latest_latest_rank") == F.lit(1)
         )
         merged__latest_labels = merged__latest_labels.drop("__structure_merged.select_latest_latest_rank")
+        merged__latest_labels = (
+            merged__latest_labels.withColumn(
+                "__structure_match_count",
+                F.count(F.lit(1)).over(
+                    Window.partitionBy(F.col("query_label.query_id"), F.col("query_label.label.name"))
+                ),
+            )
+            .where(
+                F.assert_true(
+                    F.col("__structure_match_count") <= F.lit(1),
+                    (
+                        "latest_by(ties='error') found tied selected rows; make the ordering value unique within each"
+                        "partition; see docs/reference/Aggregations.ref.md"
+                    ),
+                ).isNull()
+            )
+            .drop("__structure_match_count")
+        )
         merged__latest_labels = merged__latest_labels.select(
             F.col("query_label.query_id"),
             F.col("query_label.label"),

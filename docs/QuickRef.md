@@ -650,9 +650,10 @@ Use `param_join(relation)` for a policy/configuration relation that must contain
 param_join(policy)
 ```
 
-The assertion preserves the relation on success. Zero or multiple rows fail during Spark evaluation with `REL-E0701`;
+The assertion preserves the relation on success. When Spark evaluates its guard, zero or multiple rows fail with `REL-E0701`;
 Structure does not collect the relation on the driver or choose an arbitrary first row. The assertion is skipped for
-streaming steps so the same helper remains usable in stream-static transformations.
+streaming steps so the same helper remains usable in stream-static transformations. Spark may eliminate a guard
+with unused work; an empty or partial result does not certify the whole relation.
 
 If the relation is intentionally allowed to contribute multiple rows, use `cross_join(..., allow_cartesian=True)`.
 

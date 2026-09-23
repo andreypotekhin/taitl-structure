@@ -150,6 +150,8 @@ class RenderPySparkTransformModule:
         )
 
         helpers = ["TransformResult", "assert_schema", "project_schema", "apply_plan_boundary", "close_plan_boundaries"]
+        if self._has_ordered_aggregate(plan):
+            helpers.append("ordered_aggregate_guard")
         lines.append(f"from {runtime_module} import {', '.join(helpers)}")
 
         for module, constants in self._schema_imports(plan, schema_modules).items():
@@ -1219,6 +1221,19 @@ class RenderPySparkTransformModule:
             )
         )
 
+    def _has_ordered_aggregate(self, plan: PySparkExecutionPlan) -> bool:
+        owners: tuple[PySparkStepRecipe | PySparkOutputRecipe, ...] = (
+            *plan.steps, *plan.outputs, *(item.output for item in plan.stage_outputs)
+        )
+        aggregates = [getattr(owner, "aggregate", None) for owner in owners]
+        aggregates.extend(operation.aggregate for owner in owners for operation in owner.operations)
+        aggregates.extend(result.aggregate for step in plan.steps for result in step.results)
+        return any(
+            assignment.function in {"first_value", "last_value"}
+            for aggregate in aggregates if aggregate is not None
+            for assignment in aggregate.assignments
+        )
+
     def _has_window(self, plan: PySparkExecutionPlan) -> bool:
         all_outputs = (*plan.outputs, *(item.output for item in plan.stage_outputs))
         joins = [join for step in plan.steps for join in step.joins]
@@ -1252,7 +1267,7 @@ class RenderPySparkTransformModule:
         return (
             bool(selected_rows)
             or bool(priority_selections)
-            or any(join.dedupe is not None or join.as_of is not None for join in joins)
+            or any(join.dedupe is not None or join.as_of is not None or join.temporal is not None for join in joins)
             or any(
                 self._has_window_projection(assignment.expression)
                 for step in plan.steps

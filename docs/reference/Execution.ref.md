@@ -445,3 +445,15 @@ Compile or construct first when you need a Spark-free diagnostic; call `run(...)
 - [Configuration reference](ConfigSchema.ref.md)
 - [Generated PySpark Source](../GeneratedSource.md)
 - [Execution background](../background/Execution.back.md)
+
+## Explicit data checks
+
+Relation assertions and ordered-selection ambiguity checks construct lazy Spark plans during `run()`. Relation
+assertions retain a separate aggregate guard over their declaration input; selected-row checks use their ranking
+partitions. Caller actions evaluate the guards that remain in Spark's plan. Optimized-away work may skip validation,
+so a successful partial or empty result does not certify the entire input. Schema-only validation reads metadata.
+
+Cache ownership follows the DataFrame on which `cache()` or `persist()` was called. When the caller owns reuse,
+cache the returned DataFrame and unpersist that same handle in `finally`. A returned projection may not release an
+internal cache. Session closure releases Structure plan-boundary views, not every cached relation in Spark. Use an
+explicit `unpersist()` while the intended cached relation is still current; never clear unrelated caller caches.

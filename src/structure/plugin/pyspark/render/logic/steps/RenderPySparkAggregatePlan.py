@@ -29,8 +29,10 @@ class RenderPySparkAggregatePlan:
             lines.append(f"        {target} = {target}.agg(")
             for assignment in aggregate.assignments:
                 if assignment.function != "key":
-                    lines.append(f"            {self._step._aggregate_assignment(assignment, step=step, aggregate=aggregate, key_columns=key_columns, backend_target=backend_target)},")
-            lines.append("        ).select(")
+                    lines.append(
+                        f"            {self._step._aggregate_assignment(assignment, step=step, aggregate=aggregate, key_columns=key_columns, backend_target=backend_target)},"
+                    )
+            lines.extend(self._guarded_select(step, aggregate))
             for assignment in aggregate.assignments:
                 lines.append(f"            {self._step._aggregate_select(assignment, key_columns=key_columns)},")
             lines.append("        )")
@@ -50,12 +52,38 @@ class RenderPySparkAggregatePlan:
         lines.append("        ).agg(")
         for assignment in aggregate.assignments:
             if assignment.function != "key":
-                lines.append(f"            {self._step._aggregate_assignment(assignment, step=step, aggregate=aggregate, key_columns=key_columns, backend_target=backend_target)},")
-        lines.append("        ).select(")
+                lines.append(
+                    f"            {self._step._aggregate_assignment(assignment, step=step, aggregate=aggregate, key_columns=key_columns, backend_target=backend_target)},"
+                )
+        lines.extend(self._guarded_select(step, aggregate))
         for assignment in aggregate.assignments:
             lines.append(f"            {self._step._aggregate_select(assignment, key_columns=key_columns)},")
         lines.append("        )")
         lines.extend(self._step._aggregate_having(step, aggregate, target=target))
+        return lines
+
+    def _guarded_select(self, step, aggregate) -> list[str]:
+        lines: list[str] = []
+        names = []
+        aliases = self._step._scope_aliases(step)
+        for index, assignment in enumerate(aggregate.assignments):
+            if assignment.function not in {"first_value", "last_value"}:
+                continue
+            order = render_pyspark_expression(assignment.order_by, scope_aliases=aliases)
+            if assignment.filter is not None:
+                predicate = render_pyspark_expression(assignment.filter, scope_aliases=aliases)
+                order = f"F.when({predicate}, {order})"
+            name = f"__structure_aggregate_guard_{index}"
+            names.append(name)
+            lines.append(
+                f"            ordered_aggregate_guard({order}, latest={assignment.function == 'last_value'}, "
+                f"name={assignment.function!r}, functions=F).alias({name!r}),"
+            )
+        if names:
+            predicate = " & ".join(f"F.col({name!r}).isNull()" for name in names)
+            lines.append(f"        ).where({predicate}).select(")
+        else:
+            lines.append("        ).select(")
         return lines
 
     def _grouping_sets(
@@ -79,14 +107,20 @@ class RenderPySparkAggregatePlan:
             lines.append(f"        {branch} = {target}.groupBy(")
             for key in aggregate.keys:
                 if key.name in level_keys:
-                    lines.append(f"            {self._step._literal(self._step._aggregate_key_column(key, key_columns))},")
+                    lines.append(
+                        f"            {self._step._literal(self._step._aggregate_key_column(key, key_columns))},"
+                    )
             lines.append("        ).agg(")
             for assignment in aggregate.assignments:
                 if assignment.function not in {"key", "grouping_id", "is_grouped"}:
-                    lines.append(f"            {self._step._aggregate_assignment(assignment, step=step, aggregate=aggregate, key_columns=key_columns, backend_target=backend_target)},")
-            lines.append("        ).select(")
+                    lines.append(
+                        f"            {self._step._aggregate_assignment(assignment, step=step, aggregate=aggregate, key_columns=key_columns, backend_target=backend_target)},"
+                    )
+            lines.extend(self._guarded_select(step, aggregate))
             for assignment in aggregate.assignments:
-                lines.append(f"            {self._step._grouping_set_select(assignment, aggregate=aggregate, level=level_keys, key_columns=key_columns)},")
+                lines.append(
+                    f"            {self._step._grouping_set_select(assignment, aggregate=aggregate, level=level_keys, key_columns=key_columns)},"
+                )
             lines.append("        )")
         if not branches:
             raise TypeError("grouping_sets(...) requires at least one grouping level")

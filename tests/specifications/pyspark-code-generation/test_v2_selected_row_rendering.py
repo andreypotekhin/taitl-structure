@@ -284,14 +284,14 @@ class MixedScopeDropDuplicatesTransform(Transform):
         return AccountEvent(account_id=event.account_id, event_id=event.event_id, tier=account.tier)
 
 
-def test_latest_by_renders_spark_visible_row_number_window() -> None:
+def test_latest_by_renders_winning_tie_window() -> None:
     plan = _recipe(LatestEventTransform)
 
     text = render_pyspark_step(plan.steps[0], current="events", sources={"events": "events"})
 
     assert (
         'events = events.withColumn("__structure_latest_events_latest_rank", '
-        'F.row_number().over(Window.partitionBy(F.col("raw_event.account_id")).'
+        'F.dense_rank().over(Window.partitionBy(F.col("raw_event.account_id")).'
         'orderBy(F.col("raw_event.sequence").desc())))'
     ) in text
     assert 'events = events.where(F.col("__structure_latest_events_latest_rank") == F.lit(1))' in text
@@ -305,7 +305,7 @@ def test_dedupe_latest_by_renders_deterministic_selected_row_window() -> None:
 
     assert (
         'events = events.withColumn("__structure_latest_events_latest_rank", '
-        'F.row_number().over(Window.partitionBy(F.col("raw_event.account_id")).'
+        'F.dense_rank().over(Window.partitionBy(F.col("raw_event.account_id")).'
         'orderBy(F.col("raw_event.sequence").desc())))'
     ) in text
     assert 'events = events.where(F.col("__structure_latest_events_latest_rank") == F.lit(1))' in text

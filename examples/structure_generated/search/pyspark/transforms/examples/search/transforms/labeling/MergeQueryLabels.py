@@ -53,7 +53,7 @@ class MergeQueryLabelsGenerated:
             latest_labels = latest_labels.dropDuplicates()
         latest_labels = latest_labels.withColumn(
             "__structure_select_latest_latest_rank",
-            F.row_number().over(
+            F.dense_rank().over(
                 Window.partitionBy(F.col("query_label.query_id"), F.col("query_label.label.name")).orderBy(
                     F.col("query_label.assigned_at").desc()
                 )
@@ -61,6 +61,24 @@ class MergeQueryLabelsGenerated:
         )
         latest_labels = latest_labels.where(F.col("__structure_select_latest_latest_rank") == F.lit(1))
         latest_labels = latest_labels.drop("__structure_select_latest_latest_rank")
+        latest_labels = (
+            latest_labels.withColumn(
+                "__structure_match_count",
+                F.count(F.lit(1)).over(
+                    Window.partitionBy(F.col("query_label.query_id"), F.col("query_label.label.name"))
+                ),
+            )
+            .where(
+                F.assert_true(
+                    F.col("__structure_match_count") <= F.lit(1),
+                    (
+                        "latest_by(ties='error') found tied selected rows; make the ordering value unique within each"
+                        "partition; see docs/reference/Aggregations.ref.md"
+                    ),
+                ).isNull()
+            )
+            .drop("__structure_match_count")
+        )
         latest_labels = latest_labels.select(
             F.col("query_label.query_id"),
             F.col("query_label.label"),

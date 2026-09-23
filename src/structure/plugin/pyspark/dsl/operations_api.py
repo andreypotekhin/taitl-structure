@@ -157,7 +157,7 @@ def grouping_id() -> Expression:
 
 
 def is_grouped(value: object) -> Expression:
-    """Return whether a grouping-set key is present in the current aggregate row."""
+    """Return whether a grouping-set key is omitted from the current aggregate row."""
     return _aggregate("is_grouped", literal(value), type=BooleanType(), nullable=False)
 
 

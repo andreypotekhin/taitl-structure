@@ -12,6 +12,7 @@ from examples.structure_generated.store.runtime.schema_assert import (
     project_schema,
     apply_plan_boundary,
     close_plan_boundaries,
+    ordered_aggregate_guard,
 )
 from examples.structure_generated.store.pyspark.schemas.adv_analytics import (
     ORDER_COLLECTION_PROFILE_SCHEMA,
@@ -99,7 +100,14 @@ class AdvancedOrderAnalyticsGenerated:
                 F.collect_list(F.col("order_fulfillment.id"))
                 .cast(T.ArrayType(T.StringType(), containsNull=False))
                 .alias("order_ids"),
+                ordered_aggregate_guard(
+                    F.col("order_fulfillment.quantity"), latest=False, name='first_value', functions=F
+                ).alias('__structure_aggregate_guard_17'),
+                ordered_aggregate_guard(
+                    F.col("order_fulfillment.quantity"), latest=True, name='last_value', functions=F
+                ).alias('__structure_aggregate_guard_18'),
             )
+            .where(F.col('__structure_aggregate_guard_17').isNull() & F.col('__structure_aggregate_guard_18').isNull())
             .select(
                 F.col("__structure_group_0_tenant_id").alias("tenant_id"),
                 F.col("__structure_group_1_product_category").alias("product_category"),

@@ -3,6 +3,7 @@ from typing import Any, cast
 from structure.dsl import Transform
 from structure.plugin.pyspark.compiler.model.PySparkHookRecipe import PySparkHookRecipe
 from structure.plugin.pyspark.execution.logic.SparkConnectRuntimeDiagnostics import spark_connect_runtime_error
+from structure.plugin.pyspark.execution.logic.ValidatePySparkFrame import ValidatePySparkFrame
 
 
 class InvokePySparkHooks:
@@ -32,14 +33,34 @@ class InvokePySparkHooks:
                 raise
             if len(hook.outputs) == 1:
                 frames[hook.outputs[0]] = result
-                continue
-            if not isinstance(result, tuple) or len(result) != len(hook.outputs):
+            elif not isinstance(result, tuple) or len(result) != len(hook.outputs):
                 raise TypeError(
                     f"Hook {hook.name} must return {len(hook.outputs)} DataFrames for outputs: "
                     f"{', '.join(hook.outputs)}"
                 )
-            for name, frame in zip(hook.outputs, result, strict=True):
-                frames[name] = frame
+            else:
+                for name, frame in zip(hook.outputs, result, strict=True):
+                    frames[name] = frame
+            self._validate(hook, frames)
+
+    def _validate(self, hook, frames):
+        if not hook.validations:
+            return
+        from pyspark.sql import functions as F
+        from pyspark.sql import types as T
+
+        validator = ValidatePySparkFrame()
+        for validation in hook.validations:
+            frame = frames[validation.target]
+            context = f"Hook {hook.name}, relation {validation.target}"
+            if not hasattr(frame, "schema"):
+                raise TypeError(f"{context}: expected a DataFrame; return the declared relation")
+            try:
+                validator.validate(frame, validation, types=T)
+                if validation.project:
+                    frames[validation.target] = validator.project(frame, validation, types=T, functions=F)
+            except ValueError as error:
+                raise ValueError(f"{context}: {error}; return the declared schema") from error
 
     def _call(self, hook: PySparkHookRecipe, invocation: Any, kwargs: dict[str, object]):
         origin = hook.origin

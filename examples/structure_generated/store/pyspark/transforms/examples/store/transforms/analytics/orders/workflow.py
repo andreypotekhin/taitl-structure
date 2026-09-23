@@ -98,7 +98,7 @@ class CustomerEventRanksGenerated:
         ranks__customer_event_rank = frames["fulfilled"].alias("order_fulfillment")
         ranks__customer_event_rank = ranks__customer_event_rank.withColumn(
             "__structure_ranks.customer_event_ranks_latest_rank",
-            F.row_number().over(
+            F.dense_rank().over(
                 Window.partitionBy(F.col("order_fulfillment.customer_id")).orderBy(
                     F.col("order_fulfillment.quantity").desc()
                 )
@@ -109,6 +109,22 @@ class CustomerEventRanksGenerated:
         )
         ranks__customer_event_rank = ranks__customer_event_rank.drop(
             "__structure_ranks.customer_event_ranks_latest_rank"
+        )
+        ranks__customer_event_rank = (
+            ranks__customer_event_rank.withColumn(
+                "__structure_match_count",
+                F.count(F.lit(1)).over(Window.partitionBy(F.col("order_fulfillment.customer_id"))),
+            )
+            .where(
+                F.assert_true(
+                    F.col("__structure_match_count") <= F.lit(1),
+                    (
+                        "latest_by(ties='error') found tied selected rows; make the ordering value unique within each"
+                        "partition; see docs/reference/Aggregations.ref.md"
+                    ),
+                ).isNull()
+            )
+            .drop("__structure_match_count")
         )
         ranks__customer_event_rank = ranks__customer_event_rank.select(
             F.col("order_fulfillment.tenant"),

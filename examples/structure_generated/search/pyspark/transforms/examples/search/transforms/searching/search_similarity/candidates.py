@@ -88,8 +88,10 @@ class ScoreDocumentVectorsGenerated:
                 ),
             ).alias("__structure_require_all")
         )
-        scored__valid_policy = scored__valid_policy_require_all_0_assertion.crossJoin(scored__valid_policy).drop(
-            "__structure_require_all"
+        scored__valid_policy = (
+            scored__valid_policy.crossJoin(scored__valid_policy_require_all_0_assertion)
+            .where(F.col("__structure_require_all").isNull())
+            .drop("__structure_require_all")
         )
         scored__valid_policy = scored__valid_policy.select(
             F.col("vector_index_policy.model_id"),
@@ -124,9 +126,12 @@ class ScoreDocumentVectorsGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            scored__valid_policy_param_joined = scored__valid_policy_param_joined_count.crossJoin(
+            scored__valid_policy_param_joined = (
                 frames["scored__valid_policy"]
-            ).drop("__structure_exactly_one")
+                .crossJoin(scored__valid_policy_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
+            )
         scored__valid_policy_joined = scored__valid_policy_param_joined.alias("scored__valid_policy")
         scored__document_scores = scored__document_scores.crossJoin(scored__valid_policy_joined)
         score_policy_2_param_joined = frames["score_policy"]
@@ -138,8 +143,11 @@ class ScoreDocumentVectorsGenerated:
                     'REL-E0701: exactly_one(score_policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            score_policy_2_param_joined = score_policy_2_param_joined_count.crossJoin(frames["score_policy"]).drop(
-                "__structure_exactly_one"
+            score_policy_2_param_joined = (
+                frames["score_policy"]
+                .crossJoin(score_policy_2_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
         scored__document_scores = scored__document_scores.crossJoin(score_policy_2_joined)
@@ -275,9 +283,11 @@ class ScoreDocumentVectorsGenerated:
                 ),
             ).alias("__structure_require_all")
         )
-        scored__document_scores = scored__document_scores_require_all_3_assertion.crossJoin(
-            scored__document_scores
-        ).drop("__structure_require_all")
+        scored__document_scores = (
+            scored__document_scores.crossJoin(scored__document_scores_require_all_3_assertion)
+            .where(F.col("__structure_require_all").isNull())
+            .drop("__structure_require_all")
+        )
         scored__document_scores = scored__document_scores.where(
             (
                 (
@@ -368,8 +378,10 @@ class RankVectorsGenerated:
                 ),
             ).alias("__structure_require_all")
         )
-        ranked__valid_policy = ranked__valid_policy_require_all_0_assertion.crossJoin(ranked__valid_policy).drop(
-            "__structure_require_all"
+        ranked__valid_policy = (
+            ranked__valid_policy.crossJoin(ranked__valid_policy_require_all_0_assertion)
+            .where(F.col("__structure_require_all").isNull())
+            .drop("__structure_require_all")
         )
         ranked__valid_policy = ranked__valid_policy.select(
             F.col("vector_index_policy.model_id"),
@@ -401,9 +413,12 @@ class RankVectorsGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            ranked__valid_policy_param_joined = ranked__valid_policy_param_joined_count.crossJoin(
+            ranked__valid_policy_param_joined = (
                 frames["ranked__valid_policy"]
-            ).drop("__structure_exactly_one")
+                .crossJoin(ranked__valid_policy_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
+            )
         ranked__valid_policy_joined = ranked__valid_policy_param_joined.alias("ranked__valid_policy")
         ranked__ranked_document_candidates = ranked__ranked_document_candidates.crossJoin(ranked__valid_policy_joined)
         ranked__ranked_document_candidates = ranked__ranked_document_candidates.select(
@@ -455,9 +470,12 @@ class RankVectorsGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            ranked__valid_policy_param_joined = ranked__valid_policy_param_joined_count.crossJoin(
+            ranked__valid_policy_param_joined = (
                 frames["ranked__valid_policy"]
-            ).drop("__structure_exactly_one")
+                .crossJoin(ranked__valid_policy_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
+            )
         ranked__valid_policy_joined = ranked__valid_policy_param_joined.alias("ranked__valid_policy")
         ranked__document_candidates = ranked__document_candidates.crossJoin(ranked__valid_policy_joined)
         ranked__document_candidates = ranked__document_candidates.where(
@@ -503,9 +521,12 @@ class RankVectorsGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            ranked__valid_policy_param_joined = ranked__valid_policy_param_joined_count.crossJoin(
+            ranked__valid_policy_param_joined = (
                 frames["ranked__valid_policy"]
-            ).drop("__structure_exactly_one")
+                .crossJoin(ranked__valid_policy_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
+            )
         ranked__valid_policy_joined = ranked__valid_policy_param_joined.alias("ranked__valid_policy")
         ranked__ranked_paragraph_candidates = ranked__ranked_paragraph_candidates.crossJoin(ranked__valid_policy_joined)
         ranked__ranked_paragraph_candidates = ranked__ranked_paragraph_candidates.select(
@@ -563,9 +584,12 @@ class RankVectorsGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            ranked__valid_policy_param_joined = ranked__valid_policy_param_joined_count.crossJoin(
+            ranked__valid_policy_param_joined = (
                 frames["ranked__valid_policy"]
-            ).drop("__structure_exactly_one")
+                .crossJoin(ranked__valid_policy_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
+            )
         ranked__valid_policy_joined = ranked__valid_policy_param_joined.alias("ranked__valid_policy")
         ranked__paragraph_candidates = ranked__paragraph_candidates.crossJoin(ranked__valid_policy_joined)
         ranked__paragraph_candidates = ranked__paragraph_candidates.where(

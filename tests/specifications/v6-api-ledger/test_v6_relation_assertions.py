@@ -96,6 +96,9 @@ def test_relation_assertions_render_spark_visible_assertions() -> None:
     assert "bands_require_all_1_violations = bands.where(" in text
     assert 'F.coalesce((F.col("cohort_band.priority") >= F.lit(0)), F.lit(False))' in text
     assert "REL-E0703: require_all" in text
+    assert '.where(F.col("__structure_require_unique").isNull())' in text
+    assert '.where(F.col("__structure_require_all").isNull())' in text
+    assert '.first()' not in text and '.collect()' not in text
 
 
 def test_relation_reference_assertion_renders_spark_visible_anti_join_assertion() -> None:
@@ -111,6 +114,8 @@ def test_relation_reference_assertion_renders_spark_visible_anti_join_assertion(
     assert 'F.col("band_id").alias("__structure_reference_key_0")' in text
     assert '"left_anti"' in text
     assert "REL-E0704: require_reference" in text
+    assert '.where(F.col("__structure_require_reference").isNull())' in text
+    assert '.first()' not in text and '.collect()' not in text
 
 
 def test_parent_hierarchy_assertion_renders_spark_visible_bounded_checks() -> None:
@@ -126,6 +131,8 @@ def test_parent_hierarchy_assertion_renders_spark_visible_bounded_checks() -> No
     assert "array_contains" in text
     assert "array_append" in text
     assert "REL-E0706: require_parent_hierarchy" in text
+    assert '.where(F.col("__structure_require_parent_hierarchy").isNull())' in text
+    assert '.first()' not in text and '.collect()' not in text
 
 
 def test_relation_assertion_explain_names_cardinality_and_streaming_status() -> None:

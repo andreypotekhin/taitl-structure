@@ -65,7 +65,11 @@ class ResolveCohortBandsGenerated:
                 'REL-E0702: require_unique(...) found duplicate keys; see docs/Diagnostics.md#rel-e0702',
             ).alias("__structure_require_unique")
         )
-        valid_bands = valid_bands_require_unique_0_assertion.crossJoin(valid_bands).drop("__structure_require_unique")
+        valid_bands = (
+            valid_bands.crossJoin(valid_bands_require_unique_0_assertion)
+            .where(F.col("__structure_require_unique").isNull())
+            .drop("__structure_require_unique")
+        )
         valid_bands_require_all_1_violations = valid_bands.where(
             ~F.coalesce(
                 (
@@ -84,7 +88,11 @@ class ResolveCohortBandsGenerated:
                 ),
             ).alias("__structure_require_all")
         )
-        valid_bands = valid_bands_require_all_1_assertion.crossJoin(valid_bands).drop("__structure_require_all")
+        valid_bands = (
+            valid_bands.crossJoin(valid_bands_require_all_1_assertion)
+            .where(F.col("__structure_require_all").isNull())
+            .drop("__structure_require_all")
+        )
         valid_bands_require_parent_hierarchy_2_nodes = valid_bands.select(
             F.col("band.id").alias("__structure_hierarchy_node_2"),
             F.col("band.parent_band_id").alias("__structure_hierarchy_parent_2"),
@@ -385,8 +393,10 @@ class ResolveCohortBandsGenerated:
                 ),
             ).alias("__structure_require_parent_hierarchy")
         )
-        valid_bands = valid_bands_require_parent_hierarchy_2_assertion.crossJoin(valid_bands).drop(
-            "__structure_require_parent_hierarchy"
+        valid_bands = (
+            valid_bands.crossJoin(valid_bands_require_parent_hierarchy_2_assertion)
+            .where(F.col("__structure_require_parent_hierarchy").isNull())
+            .drop("__structure_require_parent_hierarchy")
         )
         valid_bands = valid_bands.select(
             F.col("band.id"),

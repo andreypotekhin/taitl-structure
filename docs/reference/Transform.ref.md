@@ -166,11 +166,14 @@ class WithAudit(Transform):
     orders = input(OrderNormalized)
     published = output(OrderPublished)
 
-    @raw(inout=orders | published, schema_mode=SchemaMode.STRICT)
-    def audit(self, *, orders, spark, ctx):
+    def prepare(self, order: OrderNormalized) -> OrderPublished:
+        return OrderPublished.base(order)(audited=False)
+
+    @raw(inout=lane(published) | output(published), target="pyspark")
+    def audit(self, *, published, spark, ctx):
         from pyspark.sql import functions as F
 
-        return orders.withColumn("audited", F.lit(True))
+        return published.withColumn("audited", F.lit(True))
 ```
 
 | Hook option | Meaning |
@@ -178,8 +181,13 @@ class WithAudit(Transform):
 | `inout=` | Select the exact input and output boundaries |
 | `schema_mode=SchemaMode.STRICT` | Require the hook result to match the declared schema |
 | `schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS` | Permit additional hook columns |
-| `target_backend=` | Restrict the hook to a target |
+| `target="pyspark"` | Restrict the hook to a target |
 | `streaming=True` | Declare that the hook is streaming-safe |
+
+Each hook return is checked immediately at its declared source-order boundary, including leading hooks. A failure
+names the hook, output relation, and expected field or type. Hook-local shape contracts remain active when ordinary
+intermediate validation is disabled. `project_output=True` restores declared field order and removes allowed extras.
+These checks inspect schema metadata without running a Spark action.
 
 Hooks run at their declared source-order boundary. Their selected DataFrames, target, schema mode, and validation
 policy are visible in explain output and diagnostics. Raw SQL, RDDs, local row loops, and lifecycle calls are not
@@ -208,7 +216,12 @@ def summarize(self, order: Order, customer: Customer) -> CustomerTotal:
     left_join(customer, on=(order.tenant_id == customer.tenant_id) & (order.customer_id == customer.id))
     where(customer.is_active)
     group_by(tenant_id=order.tenant_id, customer_id=order.customer_id)
-    return CustomerTotal(order_count=count(), gross_total=sum(order.total))
+    return CustomerTotal(
+        tenant_id=order.tenant_id,
+        customer_id=order.customer_id,
+        order_count=count(),
+        gross_total=sum(order.total),
+    )
 ```
 
 The same source-order rules apply when the step uses a window, collection callback, or relation-shape operation; choose

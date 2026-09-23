@@ -770,7 +770,7 @@ class PrepareOrders(Transform):
     def normalize(self, order: OrderRaw) -> OrderPrepared:
         return OrderPrepared.project(order)
 
-    @raw(lane=prepared, target_backend="pyspark")
+    @raw(inout=lane(prepared) | output(prepared), target="pyspark")
     def remove_negative_totals(self, *, prepared, spark, ctx):
         from pyspark.sql import functions as F
 
@@ -783,7 +783,7 @@ logic. Generated and online execution call the same hook on the transform implem
 
 ### Hook Access To Original Inputs
 
-`pass_inputs=True` supplies a read-only namespace of original declared inputs in addition to the selected lane:
+Explicit bindings can supply an original input alongside the current relation:
 
 ```python
 class CompareOrders(Transform):
@@ -793,10 +793,10 @@ class CompareOrders(Transform):
     def normalize(self, order: OrderRaw) -> OrderNormalized:
         return OrderNormalized.project(order)
 
-    @raw(lane=normalized, pass_inputs=True)
-    def retain_source_ids(self, *, normalized, inputs, spark, ctx):
+    @raw(inout=[lane(normalized), input(orders)] | output(normalized), target="pyspark")
+    def retain_source_ids(self, *, normalized, orders, spark, ctx):
         return normalized.join(
-            inputs.orders.select("id"),
+            orders.select("id"),
             on="id",
             how="left_semi",
         )
@@ -812,7 +812,7 @@ Use schema policy when a hook intentionally adds or removes columns:
 
 ```python
 @raw(
-    lane=prepared,
+    inout=lane(prepared) | output(prepared),
     schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS,
     project_output=True,
 )
@@ -834,7 +834,8 @@ compatibility policy.
 ## Runtime And Generated Parity
 
 Direct execution and generated PySpark consume the same checked plan and schema model. Generated code is deterministic,
-reviewable, and free of hidden actions, RDD conversion, or lifecycle ownership. Structure does not load data, write
+reviewable, and free of implicit RDD conversion or lifecycle ownership. Explicit relation assertions and ambiguity
+policies can launch validation jobs during `run()`; ordinary transformations remain lazy. Structure does not load data, write
 storage, create Spark sessions, start streaming queries, set checkpoints, or stop caller-owned queries.
 
 Streaming compatibility is a separate analysis of concrete input lineage and operation support. A transform marker such

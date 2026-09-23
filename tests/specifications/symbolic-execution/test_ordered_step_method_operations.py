@@ -633,11 +633,11 @@ def test_deduped_lookup_join_records_policy_and_renders_deterministic_lookup() -
     assert compiled_step.joins[0].dedupe.ties is TiePolicy.ERROR
     assert recipe.joins[0].dedupe is not None
     assert (
-        "F.row_number().over(Window.partitionBy(F.col(\"products.id\")).orderBy(F.col(\"products.name\").desc()))"
+        "F.dense_rank().over(Window.partitionBy(F.col(\"products.id\")).orderBy(F.col(\"products.name\").desc()))"
         in text
     )
     assert '.where(F.col("__structure_products_rank") == F.lit(1))' in text
-    assert '.drop("__structure_products_rank").alias("products")' in text
+    assert 'products_deduplicated = products_deduplicated.alias("products")' in text
 
 
 def test_deduped_lookup_join_rejects_left_side_ordering() -> None:

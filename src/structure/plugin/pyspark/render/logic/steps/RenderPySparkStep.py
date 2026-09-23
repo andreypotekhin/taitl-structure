@@ -155,7 +155,33 @@ class RenderPySparkStep:
                 generated_hooks=generated_hooks,
             )
             arguments = f"{prefix}{arguments}" if prefix else arguments
-            lines.append(f"        {outputs} = {callee}({arguments}, spark=self.spark, ctx=self.ctx)")
+            if len(hook.outputs) > 1:
+                lines.extend(
+                    [
+                        f"        __structure_hook_result = {callee}({arguments}, spark=self.spark, ctx=self.ctx)",
+                        f"        if not isinstance(__structure_hook_result, tuple) or len(__structure_hook_result) != {len(hook.outputs)}:",
+                        f"            raise TypeError('Hook {hook.name} must return {len(hook.outputs)} DataFrames for outputs: {outputs}')",
+                    ]
+                )
+                lines.append(f"        {outputs} = __structure_hook_result")
+            else:
+                lines.append(f"        {outputs} = {callee}({arguments}, spark=self.spark, ctx=self.ctx)")
+            for validation in hook.validations:
+                target = validation.target
+                context = f"Hook {hook.name}, relation {target}"
+                lines.extend(
+                    [
+                        f"        if not hasattr({target}, 'schema'):",
+                        f"            raise TypeError({context!r} + ': expected a DataFrame; return the declared relation')",
+                        "        try:",
+                        *[
+                            f"    {line}"
+                            for line in self._validations((validation,), target=target, hook_boundary=True)
+                        ],
+                        "        except ValueError as error:",
+                        f"            raise ValueError({context!r} + ': ' + str(error) + '; return the declared schema') from error",
+                    ]
+                )
         return lines
 
     def _hook_call(
@@ -425,7 +451,9 @@ class RenderPySparkStep:
                     render_pyspark_expression(expression, scope_aliases=self._scope_aliases(step))
                     for expression in partition.order_by
                 )
-                ordered_lines.append(f"{target} = {target}.repartitionByRange({partition.count}, {keys})")
+                ordered_lines.append(
+                    f"        {target} = {target}.repartitionByRange({partition.count}, {keys})"
+                )
             if operation.relation_sample is not None:
                 ordered_lines.extend(self._relation_sample(operation.relation_sample, target=target))
             if operation.relation_priority_selection is not None:
@@ -548,7 +576,9 @@ class RenderPySparkStep:
             f'            F.assert_true(F.col("__structure_count") == F.lit(1), {assertion!r})',
             '            .alias("__structure_exactly_one")',
             "        )",
-            f'        {target} = {count}.crossJoin({source}).drop("__structure_exactly_one")',
+            f'        {target} = {source}.crossJoin({count}).where(',
+            '            F.col("__structure_exactly_one").isNull()',
+            '        ).drop("__structure_exactly_one")',
         ]
 
     def _relation_assertion(self, assertion, *, step, sources: dict[str, str], target: str, index: int) -> list[str]:
@@ -581,7 +611,7 @@ class RenderPySparkStep:
             f'            F.assert_true(F.col("__structure_violations") == F.lit(0), {message!r})',
             '            .alias("__structure_require_unique")',
             "        )",
-            f'        {target} = {prefix}_assertion.crossJoin({target}).drop("__structure_require_unique")',
+            f'        {target} = {target}.crossJoin({prefix}_assertion).where(F.col("__structure_require_unique").isNull()).drop("__structure_require_unique")',
         ]
 
     def _require_all(self, assertion, *, step, target: str, index: int) -> list[str]:
@@ -600,7 +630,7 @@ class RenderPySparkStep:
             f'            F.assert_true(F.col("__structure_violations") == F.lit(0), {message!r})',
             '            .alias("__structure_require_all")',
             "        )",
-            f'        {target} = {prefix}_assertion.crossJoin({target}).drop("__structure_require_all")',
+            f'        {target} = {target}.crossJoin({prefix}_assertion).where(F.col("__structure_require_all").isNull()).drop("__structure_require_all")',
         ]
 
     def _require_reference(self, assertion, *, step, sources: dict[str, str], target: str, index: int) -> list[str]:
@@ -649,7 +679,7 @@ class RenderPySparkStep:
             f'            F.assert_true(F.col("__structure_violations") == F.lit(0), {message!r})',
             '            .alias("__structure_require_reference")',
             "        )",
-            f'        {target} = {prefix}_assertion.crossJoin({target}).drop("__structure_require_reference")',
+            f'        {target} = {target}.crossJoin({prefix}_assertion).where(F.col("__structure_require_reference").isNull()).drop("__structure_require_reference")',
         ]
 
     def _require_parent_hierarchy(self, assertion, *, step, target: str, index: int) -> list[str]:
@@ -754,7 +784,7 @@ class RenderPySparkStep:
                 f'            F.assert_true(F.col("__structure_violations") == F.lit(0), {message!r})',
                 '            .alias("__structure_require_parent_hierarchy")',
                 "        )",
-                f'        {target} = {prefix}_assertion.crossJoin({target}).drop("__structure_require_parent_hierarchy")',
+                f'        {target} = {target}.crossJoin({prefix}_assertion).where(F.col("__structure_require_parent_hierarchy").isNull()).drop("__structure_require_parent_hierarchy")',
             ]
         )
         return lines
@@ -1117,14 +1147,7 @@ class RenderPySparkStep:
                 f'            "__structure_priority_tie_count_{index}",',
                 f"            F.count(F.lit(1)).over(Window.partitionBy({', '.join((*rendered_keys, f'F.col({self._literal(priority)})'))})),",
                 "        )",
-                f"        {prefix}_eligible = {prefix}_eligible.where(",
-                "            F.coalesce(",
-                f"                F.when(F.col({self._literal(f'__structure_priority_tie_count_{index}')}) > F.lit(1),",
-                f"                    F.assert_true(F.lit(False), {message!r})",
-                "                ),",
-                "                F.lit(True),",
-                "            )",
-                "        )",
+                f"        {prefix}_eligible = {prefix}_eligible.where(F.assert_true(F.col({self._literal(f'__structure_priority_tie_count_{index}')}) <= F.lit(1), {message!r}).isNull())",
                 f"        {prefix}_ranked = {prefix}_eligible.withColumn(",
                 f"            {self._literal(rank)},",
                 f"            F.row_number().over(Window.partitionBy({', '.join(rendered_keys)}).orderBy({ordering})),",
@@ -1132,13 +1155,11 @@ class RenderPySparkStep:
                 f"        {prefix}_ranked = {prefix}_ranked.where(F.col({self._literal(rank)}) == F.lit(1))",
             ]
         )
-        if guards:
-            lines.append(f"        {target} = {guards[0]}")
-            for guard in guards[1:]:
-                lines.append(f"        {target} = {target}.crossJoin({guard})")
-            lines.append(f"        {target} = {target}.crossJoin({prefix}_ranked)")
-        else:
-            lines.append(f"        {target} = {prefix}_ranked")
+        for guard in guards:
+            lines.append(
+                f'        {prefix}_ranked = {prefix}_ranked.crossJoin({guard}).where(F.col("__structure_select_first_missing").isNull())'
+            )
+        lines.append(f"        {target} = {prefix}_ranked")
         lines.extend(
             [
                 f"        {target} = {target}.drop(",
@@ -1353,9 +1374,26 @@ class RenderPySparkStep:
         ordering = f"{order_by}.desc()" if selected_rows.direction == "latest" else f"{order_by}.asc()"
         window = f"Window.partitionBy({partition}).orderBy({ordering})"
         return [
-            f'        {target} = {target}.withColumn("{rank}", F.row_number().over({window}))',
+            f'        {target} = {target}.withColumn("{rank}", F.dense_rank().over({window}))',
             f'        {target} = {target}.where(F.col("{rank}") == F.lit(1))',
             f'        {target} = {target}.drop("{rank}")',
+            *self._reject_multiple(
+                target,
+                partition,
+                message=(
+                    f"{selected_rows.direction}_by(ties='error') found tied selected rows; "
+                    "make the ordering value unique within each partition; see docs/reference/Aggregations.ref.md"
+                ),
+            ),
+        ]
+
+    def _reject_multiple(self, target: str, partition: str, *, message: str) -> list[str]:
+        return [
+            f'        {target} = {target}.withColumn("__structure_match_count",',
+            f'            F.count(F.lit(1)).over(Window.partitionBy({partition}))',
+            '        ).where(',
+            f'            F.assert_true(F.col("__structure_match_count") <= F.lit(1), {message!r}).isNull()',
+            '        ).drop("__structure_match_count")',
         ]
 
     def _aggregate_having(
@@ -1725,13 +1763,16 @@ class RenderPySparkStep:
             lines = []
         right = f'{right}.alias("{join.right_alias}")'
         if join.dedupe is not None:
-            right = self._dedupe(join, right=right)
+            prepared = f"{join.right_alias}_deduplicated"
+            lines.append(f"        {prepared} = {right}")
+            lines.extend(self._dedupe(join, right=prepared))
+            right = prepared
         if join.hint is not None and join.hint.value == "broadcast":
             right = f"F.broadcast({right})"
         predicate = self._predicate(step, join)
         right_name = f"{join.right_alias}_joined"
         row_id = None
-        if join.as_of is not None:
+        if join.as_of is not None or join.temporal is not None:
             row_id = f"__structure_{join.left_alias}_{join.right_alias}_row"
             lines.append(f'        {target} = {target}.withColumn("{row_id}", F.monotonically_increasing_id())')
         lines.append(f"        {right_name} = {right}")
@@ -1749,6 +1790,18 @@ class RenderPySparkStep:
             )
         if join.as_of is not None:
             lines.extend(self._as_of(join, step=step, target=target, row_id=cast(str, row_id)))
+        if join.temporal is not None:
+            lines.extend(
+                self._reject_multiple(
+                    target,
+                    f'F.col("{row_id}")',
+                    message=(
+                        "JOIN-E0601: temporal_one(overlaps='error') found overlapping matches; "
+                        "use nonoverlapping validity intervals; see docs/Diagnostics.md#join-e0601"
+                    ),
+                )
+            )
+            lines.append(f'        {target} = {target}.drop("{row_id}")')
         return lines
 
     def _streaming_guard(self, step: PySparkStepRecipe | PySparkOutputRecipe, *, sources: dict[str, str]) -> list[str]:
@@ -1805,8 +1858,16 @@ class RenderPySparkStep:
         order = "desc" if as_of.direction.value == "backward" else "asc"
         window = f'Window.partitionBy(F.col("{row_id}")).orderBy({right_time}.{order}())'
         return [
-            f'        {target} = {target}.withColumn("{rank}", F.row_number().over({window}))',
+            f'        {target} = {target}.withColumn("{rank}", F.dense_rank().over({window}))',
             f'        {target} = {target}.where(F.col("{rank}") == F.lit(1))',
+            *self._reject_multiple(
+                target,
+                f'F.col("{row_id}")',
+                message=(
+                    "JOIN-E0601: as_of_one(ties='error') found tied matches; "
+                    "make the right-side time unique; see docs/Diagnostics.md#join-e0601"
+                ),
+            ),
             f'        {target} = {target}.drop("{rank}").drop("{row_id}")',
         ]
 
@@ -1842,10 +1903,7 @@ class RenderPySparkStep:
             f'                F.when(F.col("{distance}") == F.col("{minimum}"), F.lit(1)).otherwise(F.lit(0))',
             f"            ).over({partition}),",
             f"        )",
-            f"        {target} = {target}.where(",
-            f'            F.assert_true((F.col("{ties}") <= F.lit(1)) | F.col("{minimum}").isNull(), {message!r})',
-            f"            .isNull()",
-            f"        )",
+            f'        {target} = {target}.where(F.assert_true(F.col("{ties}") <= F.lit(1), {message!r}).isNull())',
             f'        {target} = {target}.withColumn(',
             f'            "{rank}",',
             f'            F.row_number().over({partition}.orderBy(F.col("{distance}").asc(), {right_time}.asc())),',
@@ -1854,7 +1912,7 @@ class RenderPySparkStep:
             f'        {target} = {target}.drop("{rank}", "{distance}", "{minimum}", "{ties}").drop("{row_id}")',
         ]
 
-    def _dedupe(self, join: PySparkJoinRecipe, *, right: str) -> str:
+    def _dedupe(self, join: PySparkJoinRecipe, *, right: str) -> list[str]:
         dedupe = join.dedupe
         if dedupe is None:
             raise TypeError("Cannot render lookup dedupe without a dedupe recipe")
@@ -1866,12 +1924,19 @@ class RenderPySparkStep:
         order_by = render_pyspark_expression(dedupe.order_by, scope_aliases={join.input_name: join.right_alias})
         ordering = f"{order_by}.desc()" if dedupe.direction == "latest" else f"{order_by}.asc()"
         window = f"Window.partitionBy({partition}).orderBy({ordering})"
-        return (
-            f'{right}.withColumn("{rank}", F.row_number().over({window}))'
-            f'.where(F.col("{rank}") == F.lit(1))'
-            f'.drop("{rank}")'
-            f'.alias("{join.right_alias}")'
-        )
+        return [
+            f'        {right} = {right}.withColumn("{rank}", F.dense_rank().over({window}))',
+            f'        {right} = {right}.where(F.col("{rank}") == F.lit(1)).drop("{rank}")',
+            *self._reject_multiple(
+                right,
+                partition,
+                message=(
+                    "JOIN-E0601: lookup deduplication found tied selected rows; "
+                    "make the ordering value unique; see docs/Diagnostics.md#join-e0601"
+                ),
+            ),
+            f'        {right} = {right}.alias("{join.right_alias}")',
+        ]
 
     def _right_keys(self, join: PySparkJoinRecipe) -> tuple[PySparkExpressionRecipe, ...]:
         return tuple(self._right_key(join, condition) for condition in self._join_conditions(join.predicate))
@@ -1950,9 +2015,12 @@ class RenderPySparkStep:
         validations: tuple[PySparkValidationRecipe, ...],
         *,
         target: str = "df",
+        hook_boundary: bool = False,
     ) -> list[str]:
         lines: list[str] = []
         for validation in validations:
+            if validation.reason in {"hook", "hook_projected"} and not hook_boundary:
+                continue
             schema = self._schema.constant_name(validation.schema)
             if validation.check:
                 lines.append(

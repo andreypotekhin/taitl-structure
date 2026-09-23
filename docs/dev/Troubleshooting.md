@@ -1,5 +1,25 @@
 # Troubleshooting
 
+### Problem (runtime): An assertion disappears from Spark's optimized plan
+
+Reproduction: declare `require_all(order.amount >= 0)`, pass a negative amount, and collect the result.
+The historical implementation cross-joined a scalar `assert_true` projection and immediately dropped its column.
+Spark removed the unused expression, so invalid rows succeeded. The lazy repair makes the assertion column a
+filter dependency before dropping it. Relation guards use their declaration input; selected-row ties use windows
+over winning candidates. Spark 3.5.0/4.0.0 tests cover collect, count, unrelated projection, and writes in both modes.
+
+A constant-false filter or `limit(0)` can still eliminate the guarded work. This follows the author's chosen lazy
+contract; do not restore the provisional first/count actions to force validation during construction. Tests under
+`tests/integration/pyspark/book_contracts/` distinguish required evaluated failures from permitted pruning.
+
+### Problem (runtime): A leading raw hook produces a later unresolved-column error
+
+Reproduction: return `orders.drop("amount")` from a leading hook bound to a schema requiring `amount`.
+The historical runner waited until a later projection to expose the missing field. Hook recipes now carry their
+own output schemas, and each runner validates returned metadata immediately after each hook. The error identifies
+the hook, relation, expected field, and remedy. Tests cover missing fields, wrong types, non-DataFrame returns,
+tuple arity, extra columns, and projection; no metadata check launches a data action.
+
 ### Problem (mypy): Package-exported classes resolve as modules after adding an import
 
 When: An expression helper gains a dependency on a module that already depends on expressions.

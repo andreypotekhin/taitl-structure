@@ -106,8 +106,11 @@ class SelectGapQueriesGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            score_policy_3_param_joined = score_policy_3_param_joined_count.crossJoin(frames["score_policy"]).drop(
-                "__structure_exactly_one"
+            score_policy_3_param_joined = (
+                frames["score_policy"]
+                .crossJoin(score_policy_3_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         score_policy_3_joined = score_policy_3_param_joined.alias("score_policy_3")
         gap__document_availability = gap__document_availability.crossJoin(score_policy_3_joined)
@@ -120,8 +123,11 @@ class SelectGapQueriesGenerated:
                     'REL-E0701: exactly_one(gaps) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            gap_policy_4_param_joined = gap_policy_4_param_joined_count.crossJoin(frames["gap_policy"]).drop(
-                "__structure_exactly_one"
+            gap_policy_4_param_joined = (
+                frames["gap_policy"]
+                .crossJoin(gap_policy_4_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         gap_policy_4_joined = gap_policy_4_param_joined.alias("gap_policy_4")
         gap__document_availability = gap__document_availability.crossJoin(gap_policy_4_joined)
@@ -216,8 +222,11 @@ class SelectGapQueriesGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            score_policy_3_param_joined = score_policy_3_param_joined_count.crossJoin(frames["score_policy"]).drop(
-                "__structure_exactly_one"
+            score_policy_3_param_joined = (
+                frames["score_policy"]
+                .crossJoin(score_policy_3_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         score_policy_3_joined = score_policy_3_param_joined.alias("score_policy_3")
         gap__overlap_availability = gap__overlap_availability.crossJoin(score_policy_3_joined)
@@ -230,8 +239,11 @@ class SelectGapQueriesGenerated:
                     'REL-E0701: exactly_one(gaps) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            gap_policy_4_param_joined = gap_policy_4_param_joined_count.crossJoin(frames["gap_policy"]).drop(
-                "__structure_exactly_one"
+            gap_policy_4_param_joined = (
+                frames["gap_policy"]
+                .crossJoin(gap_policy_4_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         gap_policy_4_joined = gap_policy_4_param_joined.alias("gap_policy_4")
         gap__overlap_availability = gap__overlap_availability.crossJoin(gap_policy_4_joined)
@@ -332,8 +344,11 @@ class SelectGapQueriesGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            score_policy_3_param_joined = score_policy_3_param_joined_count.crossJoin(frames["score_policy"]).drop(
-                "__structure_exactly_one"
+            score_policy_3_param_joined = (
+                frames["score_policy"]
+                .crossJoin(score_policy_3_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         score_policy_3_joined = score_policy_3_param_joined.alias("score_policy_3")
         gap__vector_availability = gap__vector_availability.crossJoin(score_policy_3_joined)
@@ -348,8 +363,11 @@ class SelectGapQueriesGenerated:
                     'REL-E0701: exactly_one(vector_policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            vector_policy_4_param_joined = vector_policy_4_param_joined_count.crossJoin(frames["vector_policy"]).drop(
-                "__structure_exactly_one"
+            vector_policy_4_param_joined = (
+                frames["vector_policy"]
+                .crossJoin(vector_policy_4_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         vector_policy_4_joined = vector_policy_4_param_joined.alias("vector_policy_4")
         gap__vector_availability = gap__vector_availability.crossJoin(vector_policy_4_joined)
@@ -362,8 +380,11 @@ class SelectGapQueriesGenerated:
                     'REL-E0701: exactly_one(gaps) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            gap_policy_5_param_joined = gap_policy_5_param_joined_count.crossJoin(frames["gap_policy"]).drop(
-                "__structure_exactly_one"
+            gap_policy_5_param_joined = (
+                frames["gap_policy"]
+                .crossJoin(gap_policy_5_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         gap_policy_5_joined = gap_policy_5_param_joined.alias("gap_policy_5")
         gap__vector_availability = gap__vector_availability.crossJoin(gap_policy_5_joined)
@@ -493,8 +514,11 @@ class SelectGapQueriesGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            score_policy_3_param_joined = score_policy_3_param_joined_count.crossJoin(frames["score_policy"]).drop(
-                "__structure_exactly_one"
+            score_policy_3_param_joined = (
+                frames["score_policy"]
+                .crossJoin(score_policy_3_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         score_policy_3_joined = score_policy_3_param_joined.alias("score_policy_3")
         gap__paragraph_vector_availability = gap__paragraph_vector_availability.crossJoin(score_policy_3_joined)
@@ -509,8 +533,11 @@ class SelectGapQueriesGenerated:
                     'REL-E0701: exactly_one(vector_policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            vector_policy_4_param_joined = vector_policy_4_param_joined_count.crossJoin(frames["vector_policy"]).drop(
-                "__structure_exactly_one"
+            vector_policy_4_param_joined = (
+                frames["vector_policy"]
+                .crossJoin(vector_policy_4_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         vector_policy_4_joined = vector_policy_4_param_joined.alias("vector_policy_4")
         gap__paragraph_vector_availability = gap__paragraph_vector_availability.crossJoin(vector_policy_4_joined)
@@ -523,8 +550,11 @@ class SelectGapQueriesGenerated:
                     'REL-E0701: exactly_one(gaps) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            gap_policy_5_param_joined = gap_policy_5_param_joined_count.crossJoin(frames["gap_policy"]).drop(
-                "__structure_exactly_one"
+            gap_policy_5_param_joined = (
+                frames["gap_policy"]
+                .crossJoin(gap_policy_5_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         gap_policy_5_joined = gap_policy_5_param_joined.alias("gap_policy_5")
         gap__paragraph_vector_availability = gap__paragraph_vector_availability.crossJoin(gap_policy_5_joined)
@@ -1462,8 +1492,11 @@ class ScoreOverlapGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            score_policy_2_param_joined = score_policy_2_param_joined_count.crossJoin(frames["score_policy"]).drop(
-                "__structure_exactly_one"
+            score_policy_2_param_joined = (
+                frames["score_policy"]
+                .crossJoin(score_policy_2_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
         scoring__overlap__document_overlap_scores = scoring__overlap__document_overlap_scores.crossJoin(
@@ -1519,8 +1552,11 @@ class ScoreOverlapGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            score_policy_2_param_joined = score_policy_2_param_joined_count.crossJoin(frames["score_policy"]).drop(
-                "__structure_exactly_one"
+            score_policy_2_param_joined = (
+                frames["score_policy"]
+                .crossJoin(score_policy_2_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
         scoring__overlap__section_overlap_scores = scoring__overlap__section_overlap_scores.crossJoin(
@@ -1577,8 +1613,11 @@ class ScoreOverlapGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            score_policy_2_param_joined = score_policy_2_param_joined_count.crossJoin(frames["score_policy"]).drop(
-                "__structure_exactly_one"
+            score_policy_2_param_joined = (
+                frames["score_policy"]
+                .crossJoin(score_policy_2_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
         scoring__overlap__paragraph_overlap_scores = scoring__overlap__paragraph_overlap_scores.crossJoin(
@@ -1636,8 +1675,11 @@ class ScoreOverlapGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            score_policy_2_param_joined = score_policy_2_param_joined_count.crossJoin(frames["score_policy"]).drop(
-                "__structure_exactly_one"
+            score_policy_2_param_joined = (
+                frames["score_policy"]
+                .crossJoin(score_policy_2_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
         scoring__overlap__sentence_overlap_scores = scoring__overlap__sentence_overlap_scores.crossJoin(
@@ -2057,8 +2099,11 @@ class SelectScoresGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            score_policy_3_param_joined = score_policy_3_param_joined_count.crossJoin(frames["score_policy"]).drop(
-                "__structure_exactly_one"
+            score_policy_3_param_joined = (
+                frames["score_policy"]
+                .crossJoin(score_policy_3_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         score_policy_3_joined = score_policy_3_param_joined.alias("score_policy_3")
         scoring__selected__document_scores = scoring__selected__document_scores.crossJoin(score_policy_3_joined)
@@ -2138,8 +2183,11 @@ class SelectScoresGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            score_policy_3_param_joined = score_policy_3_param_joined_count.crossJoin(frames["score_policy"]).drop(
-                "__structure_exactly_one"
+            score_policy_3_param_joined = (
+                frames["score_policy"]
+                .crossJoin(score_policy_3_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         score_policy_3_joined = score_policy_3_param_joined.alias("score_policy_3")
         scoring__selected__section_scores = scoring__selected__section_scores.crossJoin(score_policy_3_joined)
@@ -2229,8 +2277,11 @@ class SelectScoresGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            score_policy_3_param_joined = score_policy_3_param_joined_count.crossJoin(frames["score_policy"]).drop(
-                "__structure_exactly_one"
+            score_policy_3_param_joined = (
+                frames["score_policy"]
+                .crossJoin(score_policy_3_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         score_policy_3_joined = score_policy_3_param_joined.alias("score_policy_3")
         scoring__selected__paragraph_scores = scoring__selected__paragraph_scores.crossJoin(score_policy_3_joined)
@@ -2323,8 +2374,11 @@ class SelectScoresGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            score_policy_3_param_joined = score_policy_3_param_joined_count.crossJoin(frames["score_policy"]).drop(
-                "__structure_exactly_one"
+            score_policy_3_param_joined = (
+                frames["score_policy"]
+                .crossJoin(score_policy_3_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         score_policy_3_joined = score_policy_3_param_joined.alias("score_policy_3")
         scoring__selected__sentence_scores = scoring__selected__sentence_scores.crossJoin(score_policy_3_joined)
@@ -2421,9 +2475,11 @@ class ScoreVectorsGenerated:
                 )
             )
         )
-        scoring__vector__valid_policy = scoring__vector__valid_policy_require_all_0_assertion.crossJoin(
-            scoring__vector__valid_policy
-        ).drop("__structure_require_all")
+        scoring__vector__valid_policy = (
+            scoring__vector__valid_policy.crossJoin(scoring__vector__valid_policy_require_all_0_assertion)
+            .where(F.col("__structure_require_all").isNull())
+            .drop("__structure_require_all")
+        )
         scoring__vector__valid_policy = scoring__vector__valid_policy.select(
             F.col("vector_index_policy.model_id"),
             F.col("vector_index_policy.dimension"),
@@ -2460,9 +2516,12 @@ class ScoreVectorsGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            scoring__vector__valid_policy_param_joined = scoring__vector__valid_policy_param_joined_count.crossJoin(
+            scoring__vector__valid_policy_param_joined = (
                 frames["scoring__vector__valid_policy"]
-            ).drop("__structure_exactly_one")
+                .crossJoin(scoring__vector__valid_policy_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
+            )
         scoring__vector__valid_policy_joined = scoring__vector__valid_policy_param_joined.alias(
             "scoring__vector__valid_policy"
         )
@@ -2478,8 +2537,11 @@ class ScoreVectorsGenerated:
                     'REL-E0701: exactly_one(score_policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            score_policy_2_param_joined = score_policy_2_param_joined_count.crossJoin(frames["score_policy"]).drop(
-                "__structure_exactly_one"
+            score_policy_2_param_joined = (
+                frames["score_policy"]
+                .crossJoin(score_policy_2_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
         scoring__vector__document_scores = scoring__vector__document_scores.crossJoin(score_policy_2_joined)
@@ -2633,9 +2695,11 @@ class ScoreVectorsGenerated:
                 )
             )
         )
-        scoring__vector__document_scores = scoring__vector__document_scores_require_all_4_assertion.crossJoin(
-            scoring__vector__document_scores
-        ).drop("__structure_require_all")
+        scoring__vector__document_scores = (
+            scoring__vector__document_scores.crossJoin(scoring__vector__document_scores_require_all_4_assertion)
+            .where(F.col("__structure_require_all").isNull())
+            .drop("__structure_require_all")
+        )
         scoring__vector__document_scores = scoring__vector__document_scores.where(
             (
                 (
@@ -2714,9 +2778,12 @@ class ScoreVectorsGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            scoring__vector__valid_policy_param_joined = scoring__vector__valid_policy_param_joined_count.crossJoin(
+            scoring__vector__valid_policy_param_joined = (
                 frames["scoring__vector__valid_policy"]
-            ).drop("__structure_exactly_one")
+                .crossJoin(scoring__vector__valid_policy_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
+            )
         scoring__vector__valid_policy_joined = scoring__vector__valid_policy_param_joined.alias(
             "scoring__vector__valid_policy"
         )
@@ -2732,8 +2799,11 @@ class ScoreVectorsGenerated:
                     'REL-E0701: exactly_one(score_policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            score_policy_2_param_joined = score_policy_2_param_joined_count.crossJoin(frames["score_policy"]).drop(
-                "__structure_exactly_one"
+            score_policy_2_param_joined = (
+                frames["score_policy"]
+                .crossJoin(score_policy_2_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
         scoring__vector__paragraph_scores = scoring__vector__paragraph_scores.crossJoin(score_policy_2_joined)
@@ -2887,9 +2957,11 @@ class ScoreVectorsGenerated:
                 )
             )
         )
-        scoring__vector__paragraph_scores = scoring__vector__paragraph_scores_require_all_4_assertion.crossJoin(
-            scoring__vector__paragraph_scores
-        ).drop("__structure_require_all")
+        scoring__vector__paragraph_scores = (
+            scoring__vector__paragraph_scores.crossJoin(scoring__vector__paragraph_scores_require_all_4_assertion)
+            .where(F.col("__structure_require_all").isNull())
+            .drop("__structure_require_all")
+        )
         scoring__vector__paragraph_scores = scoring__vector__paragraph_scores.where(
             (
                 (
@@ -3000,8 +3072,11 @@ class MergeDocumentScoresGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            score_policy_3_param_joined = score_policy_3_param_joined_count.crossJoin(frames["score_policy"]).drop(
-                "__structure_exactly_one"
+            score_policy_3_param_joined = (
+                frames["score_policy"]
+                .crossJoin(score_policy_3_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         score_policy_3_joined = score_policy_3_param_joined.alias("score_policy_3")
         merged__scores = merged__scores.crossJoin(score_policy_3_joined)
@@ -3104,8 +3179,11 @@ class MergeDocumentVectorScoresGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            score_policy_4_param_joined = score_policy_4_param_joined_count.crossJoin(frames["score_policy"]).drop(
-                "__structure_exactly_one"
+            score_policy_4_param_joined = (
+                frames["score_policy"]
+                .crossJoin(score_policy_4_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         score_policy_4_joined = score_policy_4_param_joined.alias("score_policy_4")
         merged_vectors__cached_scores = merged_vectors__cached_scores.crossJoin(score_policy_4_joined)
@@ -3120,8 +3198,11 @@ class MergeDocumentVectorScoresGenerated:
                     'REL-E0701: exactly_one(vector_policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            vector_policy_5_param_joined = vector_policy_5_param_joined_count.crossJoin(frames["vector_policy"]).drop(
-                "__structure_exactly_one"
+            vector_policy_5_param_joined = (
+                frames["vector_policy"]
+                .crossJoin(vector_policy_5_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         vector_policy_5_joined = vector_policy_5_param_joined.alias("vector_policy_5")
         merged_vectors__cached_scores = merged_vectors__cached_scores.crossJoin(vector_policy_5_joined)
@@ -3243,8 +3324,11 @@ class MergeDocumentVectorScoresGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            score_policy_3_param_joined = score_policy_3_param_joined_count.crossJoin(frames["score_policy"]).drop(
-                "__structure_exactly_one"
+            score_policy_3_param_joined = (
+                frames["score_policy"]
+                .crossJoin(score_policy_3_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         score_policy_3_joined = score_policy_3_param_joined.alias("score_policy_3")
         merged_vectors__valid_online_scores = merged_vectors__valid_online_scores.crossJoin(score_policy_3_joined)
@@ -3259,8 +3343,11 @@ class MergeDocumentVectorScoresGenerated:
                     'REL-E0701: exactly_one(vector_policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            vector_policy_4_param_joined = vector_policy_4_param_joined_count.crossJoin(frames["vector_policy"]).drop(
-                "__structure_exactly_one"
+            vector_policy_4_param_joined = (
+                frames["vector_policy"]
+                .crossJoin(vector_policy_4_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         vector_policy_4_joined = vector_policy_4_param_joined.alias("vector_policy_4")
         merged_vectors__valid_online_scores = merged_vectors__valid_online_scores.crossJoin(vector_policy_4_joined)
@@ -3436,8 +3523,11 @@ class MergeParagraphVectorScoresGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            score_policy_4_param_joined = score_policy_4_param_joined_count.crossJoin(frames["score_policy"]).drop(
-                "__structure_exactly_one"
+            score_policy_4_param_joined = (
+                frames["score_policy"]
+                .crossJoin(score_policy_4_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         score_policy_4_joined = score_policy_4_param_joined.alias("score_policy_4")
         merged_paragraph_vectors__cached_scores = merged_paragraph_vectors__cached_scores.crossJoin(
@@ -3454,8 +3544,11 @@ class MergeParagraphVectorScoresGenerated:
                     'REL-E0701: exactly_one(vector_policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            vector_policy_5_param_joined = vector_policy_5_param_joined_count.crossJoin(frames["vector_policy"]).drop(
-                "__structure_exactly_one"
+            vector_policy_5_param_joined = (
+                frames["vector_policy"]
+                .crossJoin(vector_policy_5_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         vector_policy_5_joined = vector_policy_5_param_joined.alias("vector_policy_5")
         merged_paragraph_vectors__cached_scores = merged_paragraph_vectors__cached_scores.crossJoin(
@@ -3590,8 +3683,11 @@ class MergeParagraphVectorScoresGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            score_policy_3_param_joined = score_policy_3_param_joined_count.crossJoin(frames["score_policy"]).drop(
-                "__structure_exactly_one"
+            score_policy_3_param_joined = (
+                frames["score_policy"]
+                .crossJoin(score_policy_3_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         score_policy_3_joined = score_policy_3_param_joined.alias("score_policy_3")
         merged_paragraph_vectors__valid_online_scores = merged_paragraph_vectors__valid_online_scores.crossJoin(
@@ -3608,8 +3704,11 @@ class MergeParagraphVectorScoresGenerated:
                     'REL-E0701: exactly_one(vector_policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            vector_policy_4_param_joined = vector_policy_4_param_joined_count.crossJoin(frames["vector_policy"]).drop(
-                "__structure_exactly_one"
+            vector_policy_4_param_joined = (
+                frames["vector_policy"]
+                .crossJoin(vector_policy_4_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         vector_policy_4_joined = vector_policy_4_param_joined.alias("vector_policy_4")
         merged_paragraph_vectors__valid_online_scores = merged_paragraph_vectors__valid_online_scores.crossJoin(

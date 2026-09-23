@@ -109,30 +109,32 @@ retains source provenance; union preserves duplicates and makes no ordering clai
 
 `exactly_one(relation)` is the narrow P0 relation-cardinality assertion. It requires that the declared input relation
 contain exactly one row and returns the same typed relation on success, so later normal typed joins may read its
-fields. Zero rows and more than one row fail at Spark evaluation with one registered cardinality diagnostic; neither
-case is converted to a null row, silently filtered result, driver `collect()`, or nondeterministic `first` value.
+fields. When Spark evaluates the guard, zero rows and more than one row fail with `REL-E0701`;
+neither case is converted to a null row, silently filtered result, or arbitrarily selected input row.
 
 The implementation is batch-only and supported on ordinary PySpark and Spark Connect. It records the asserted relation
 and its source provenance in the immutable operation recipe and traceability. Generated and online paths use a public aggregate
-count plus assertion expression and no Python action. It is forbidden in scalar lambdas, aggregate assignments,
+count plus assertion expression retained by a filter, without a Python action. It is forbidden in scalar lambdas, aggregate assignments,
 windows, and streaming steps. `CreateSimilarityQueries` is intended to replace its driver cardinality check with this
 primitive before reading `SimilarityPolicy.max_document_frequency_ratio`.
 
-`require_unique(keys...)` fails at Spark evaluation when two rows share the declared key. `require_all(predicate)`
+`require_unique(keys...)` fails when Spark evaluates the guard and two rows share the declared key. `require_all(predicate)`
 fails when any row does not satisfy the symbolic predicate; null predicate results are failures.
 `require_reference(value, reference, reference_key=..., nulls="allow")` fails when a checked value has no declared
 reference row. Null checked values pass by default; `nulls="reject"` treats them as violations.
 
 All three assertions preserve the current rowset on success, record their source relation and constraint in
-explain/traceability, and are batch-only until a streaming validation contract is defined.
+explain/traceability, and are batch-only until a streaming validation contract is defined. Each authored assertion captures its declaration input in a separate scalar aggregate guard. A filter consumes
+assert_true before its internal column is dropped. Construction launches no validation jobs. Spark may eliminate
+guarded work (including constant-false filters and limit(0)); partial or empty output is not whole-input certification. Schema validation settings and warning suppression do not disable these explicit data checks. Ordinary
+transforms remain lazy; metadata-only schema validation never scans rows.
 
 ## Bounded Parent Hierarchy
 
 `require_parent_hierarchy(id, parent=..., order_by=..., max_depth=...)` validates a bounded parent catalog while
 preserving the current rowset on success. It requires declared id/parent fields, an explicit order expression, and a
 positive literal depth. Missing parent, cycle, depth-overrun, and non-increasing child order failures report
-`REL-E0706`. Implementation uses a finite chain of self joins; it must not use a driver action, Python UDF, or
-recursive Spark extension.
+`REL-E0706`. Implementation uses a finite chain of self joins and a lazy scalar aggregate guard retained in a filter. It does not collect the input relation, use a Python UDF, or require a recursive Spark extension.
 
 `hierarchy_closure(id, parent=..., as_=ClosureSchema, node="node_id", ancestor="ancestor_id", depth="depth",
 max_depth=..., scope=...)` accepts declared id and parent fields plus a positive literal depth. It replaces the active

@@ -53,9 +53,10 @@ def test_exactly_one_prepares_join_source_with_spark_visible_assertion() -> None
     assert 'events_policy_exactly_one_1_count = policy.agg(F.count(F.lit(1)).alias("__structure_count"))' in text
     assert "F.assert_true(F.col(\"__structure_count\") == F.lit(1), 'REL-E0701:" in text
     assert (
-        'events_policy_exactly_one_1 = events_policy_exactly_one_1_count.crossJoin(policy).drop("__structure_exactly_one")'
+        'events_policy_exactly_one_1 = policy.crossJoin(events_policy_exactly_one_1_count).where('
         in text
     )
+    assert 'F.col("__structure_exactly_one").isNull()' in text
     assert 'policy_joined = events_policy_exactly_one_1.alias("policy")' in text
     assert text.index("events_policy_exactly_one_1_count =") < text.index("events = events.crossJoin(policy_joined)")
 

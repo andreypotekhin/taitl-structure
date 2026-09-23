@@ -27,7 +27,7 @@ from structure.plugin.pyspark import *
 
 # One row per customer.
 group_by(customer_id=order.customer_id)
-summary = CustomerTotal(total=sum(order.total))
+summary = CustomerTotal(customer_id=order.customer_id, total=sum(order.total))
 
 # Every order row, plus the customer's running total.
 running = window_sum(
@@ -55,6 +55,8 @@ class CustomerTotals(Transform):
             customer_id=order.customer_id,
         )
         return CustomerTotal(
+            tenant_id=order.tenant_id,
+            customer_id=order.customer_id,
             order_count=count(),
             gross_total=sum(order.total),
             last_order_at=max(order.created_at),
@@ -68,7 +70,7 @@ class CustomerTotals(Transform):
 | `cube(*keys, **named_keys)` | All grouping-key combinations |
 | `grouping_sets(*levels)` | Explicit grouping levels, including `()` for a global branch |
 | `grouping_id()` | Spark grouping bit mask |
-| `is_grouped(value)` | Whether a dimension participates in the current subtotal |
+| `is_grouped(value)` | True when a dimension is omitted from the subtotal level |
 | `having(predicate)` | Filter aggregate output rather than input rows |
 
 Named grouping keys determine output names. `having(...)` reads the aggregate-output scope:
@@ -78,7 +80,8 @@ group_by(region=order.region).having(lambda result: result.order_count > 10)
 ```
 
 Subtotal rows can contain null grouping fields even when the source field is non-null. Use `grouping_id()` or
-`is_grouped(...)` before treating such a null as a missing source value.
+`is_grouped(...)` before treating such a null as a missing source value. A genuine null key in a detail row has
+`is_grouped(key) == False`; an omitted subtotal dimension has `True`.
 
 ### Grouping contracts
 
@@ -91,6 +94,8 @@ group_by(
     business_date=to_date(order.created_at),
 )
 return DailyTotal(
+    tenant_id=order.tenant_id,
+    business_date=to_date(order.created_at),
     order_count=count(),
     total=sum(order.total),
 )
@@ -110,6 +115,8 @@ Use metric helpers to name the values calculated for each grouped result.
 ```python
 group_by(tenant_id=order.tenant_id, customer_id=order.customer_id)
 return CustomerMetrics(
+    tenant_id=order.tenant_id,
+    customer_id=order.customer_id,
     order_count=count(),
     paid_count=count(where=order.status == "paid"),
     gross_total=sum(order.total),
@@ -122,7 +129,7 @@ Metric helpers describe aggregate output fields; they do not return a Python dic
 
 | Operation | Signature |
 | --- | --- |
-| `count` | `count(value=None, where=None)` |
+| `count` | `count(*, where=None)` |
 | `count_distinct` | `count_distinct(value, where=None)` |
 | `sum`, `min`, `max`, `avg` | `(value, where=None)` |
 | `first_value`, `last_value` | `(value, order_by=..., where=None, ties="error")` |
@@ -172,7 +179,7 @@ The ordered list has a reproducible order; the set deliberately has no ordering 
 | Input/condition | Result behavior |
 | --- | --- |
 | `count()` | Non-null Long row count |
-| `count(value)` | Counts non-null values |
+| `count(where=value.is_not_null())` | Counts non-null values |
 | `count_distinct(value)` | Distinct non-null count with Spark null semantics |
 | Empty `sum`, `min`, `max`, `avg` | Nullable result when no qualifying value exists |
 | `collect_list` / `collect_set` with no values | Empty non-null typed array |
@@ -196,6 +203,15 @@ Decimal aggregate widening follows Spark's bounded precision rules. Do not rely 
 the result type; the compiler uses the declared input type, explicit conversions, and target profile.
 
 ### Determinism and ties
+
+Ordered first/last aggregates and selected-row helpers check winning ties lazily when Spark evaluates their guards.
+Constructing the DataFrame launches no validation jobs. Duplicate winning records also count as ties; lower-ranked ties
+do not fail. For first/last aggregates, excluded rows and null ordering values do not compete. A group without a
+non-null eligible order value returns null. Each requested subtotal level is checked independently.
+
+Selected-row checks use partitioned windows; Spark can prune partitions removed by later key filters. Grouped
+first/last checks retain ordering values within each aggregate group to count winning ties, so memory grows with
+group size. Spark may eliminate either guard with unused work. Partial or empty output is not full-input validation.
 
 `first_value` and `last_value` aggregate forms require a scalar `order_by=` and use `ties="error"` by default. Their
 `ignore_nulls=` option belongs to the reusable-window form, not the grouped aggregate form. A filtered first/last

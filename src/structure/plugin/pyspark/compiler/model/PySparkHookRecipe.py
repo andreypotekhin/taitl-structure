@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 from structure.dsl import SchemaMode
 from structure.plugin.api.v1 import TransformMemberOrigin
+from structure.plugin.pyspark.compiler.model.PySparkValidationRecipe import PySparkValidationRecipe
 
 
 @dataclass(frozen=True)
@@ -21,6 +22,7 @@ class PySparkHookRecipe:
     target_defaulted: bool = True
     target_platform: str | None = None
     origin: TransformMemberOrigin | None = None
+    validations: tuple[PySparkValidationRecipe, ...] = ()
 
     @property
     def lane(self) -> str:

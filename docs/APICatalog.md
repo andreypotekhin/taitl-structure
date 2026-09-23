@@ -11,6 +11,13 @@ Companion streaming state, side-effect, and evidence plans are linked from the
 [streaming project plan](dev/project-management/V10.md). An open or gated row is not a support claim;
 each entry must name its owner boundary, evidence, and caller remedy.
 
+## Validation and selection timing
+
+Relation assertions and ambiguity checks are lazy in online and generated execution. Constructing a result
+launches no validation jobs. Caller actions evaluate guards retained by Spark; eliminated work may skip checks.
+Schema-only validation remains metadata-only. See the [Relations API](api/Relations.api.md) and
+[Aggregation reference](reference/Aggregations.ref.md) for scope and pruning limits.
+
 ## PySpark 4.1 adoption
 
 The adoption work adds a separate ledger for the PySpark `>=4.1,<4.2` profile. These rows are admission classifications,

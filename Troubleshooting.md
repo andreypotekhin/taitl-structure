@@ -1,5 +1,24 @@
 # Troubleshooting
 
+## A Data Assertion Did Not Run
+
+`require_unique`, `require_all`, `require_reference`, and `require_parent_hierarchy` build lazy Spark guards.
+Calling `run()` constructs the result without a validation job. A consuming action evaluates guards retained in
+the plan; Spark can remove unused work, including checks behind a constant-false filter or `limit(0)`.
+A successful partial or empty result is not certification of the whole input.
+
+To check a complete declared relation, consume that relation with an action such as `count()` before deriving a
+partial result. This is an explicit application action and incurs Spark work. It does not create a durable audit
+of a changing source. See [relation assertion semantics](docs/api/Relations.api.md#relation-assertions).
+
+## A Raw Hook Returned the Wrong Schema
+
+A message naming `Hook`, a relation, and a missing or incompatible column identifies the hook return boundary.
+For example, dropping `content` while returning a relation whose schema requires it fails before the next step.
+Restore the column or update the declared schema and downstream use together. Metadata validation does not run
+the hook during compilation or scan its returned rows. Use `SchemaMode.ALLOW_EXTRA_COLUMNS` when extra columns
+are intentional, and `project_output=True` when the output should retain only its declared fields.
+
 ## String Addition Rejects Mixed Types
 
 String `+` requires two String operands. Convert a numeric expression explicitly, for example

@@ -27,6 +27,7 @@ def _join():
         left_alias="event",
         how=Join.CROSS,
         as_of=None,
+        temporal=None,
         strategy=None,
         dedupe=None,
         hint=None,

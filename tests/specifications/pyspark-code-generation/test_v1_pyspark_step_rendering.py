@@ -50,4 +50,5 @@ def test_v1_step_renderer_renders_hooks_and_project_output_validation() -> None:
         in text
     )
     assert "        published = project_schema(published, ORDER_PUBLISHED_SCHEMA)" in text
-    assert text.count('assert_schema(published, ORDER_PUBLISHED_SCHEMA, name="OrderPublished", mode="strict")') == 1
+    assert text.count('assert_schema(published, ORDER_PUBLISHED_SCHEMA, name="OrderPublished", mode="strict")') == 0
+    assert "Hook add_quality_columns, relation published" in text

@@ -60,7 +60,11 @@ class RankDocumentCandidatesGenerated:
                     'REL-E0701: exactly_one(artifact) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            artifacts_param_joined = artifacts_param_joined_count.crossJoin(artifacts).drop("__structure_exactly_one")
+            artifacts_param_joined = (
+                artifacts.crossJoin(artifacts_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
+            )
         artifacts_joined = artifacts_param_joined.alias("artifacts")
         ranked_candidates = ranked_candidates.crossJoin(artifacts_joined)
         document_features_2_joined = document_features.alias("document_features_2")
@@ -102,8 +106,10 @@ class RankDocumentCandidatesGenerated:
                 ),
             ).alias("__structure_require_all")
         )
-        ranked_candidates = ranked_candidates_require_all_3_assertion.crossJoin(ranked_candidates).drop(
-            "__structure_require_all"
+        ranked_candidates = (
+            ranked_candidates.crossJoin(ranked_candidates_require_all_3_assertion)
+            .where(F.col("__structure_require_all").isNull())
+            .drop("__structure_require_all")
         )
         ranked_candidates = ranked_candidates.select(
             F.col("document_search_candidate.search_query_id"),

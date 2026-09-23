@@ -77,7 +77,11 @@ Validation policy is resolved from broadest to narrowest:
 6. `@validate_output(...)` method-level override.
 7. Hook-local `schema_mode` and `project_output` options for hook output shape.
 
-Method-level overrides apply only to the decorated step-method output. Hook-local options apply only after that hook.
+Method-level overrides apply only to the decorated step-method output. Hook-local options apply only after that hook,
+including a leading hook, and retain their existing precedence over ordinary intermediate-phase disabling. Validate
+each hook before invoking the next hook or step, not after the entire hook sequence. Return-type and tuple-arity
+checks identify the hook and destinations; shape diagnostics identify the missing or incompatible field. Preserve
+exceptions raised inside hook bodies and their original causes.
 
 ## Schema-Only Checks
 

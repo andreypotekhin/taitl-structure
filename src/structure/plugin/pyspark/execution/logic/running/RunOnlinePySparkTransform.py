@@ -21,6 +21,7 @@ from structure.plugin.pyspark.execution.logic.running.RunOnlinePySparkStructGene
     RunOnlinePySparkStructGenerator,
 )
 from structure.plugin.pyspark.execution.logic.ValidatePySparkFrame import ValidatePySparkFrame
+from structure.plugin.pyspark.execution.logic.ValidatePySparkOrderedAggregate import ordered_aggregate_guard
 
 
 class RunOnlinePySparkTransform:
@@ -197,6 +198,8 @@ class RunOnlinePySparkTransform:
                     produced.update({name: hook_frames[name] for hook in result.after_hooks for name in hook.outputs})
                 projected = produced[result.frame]
                 for validation in result.validations:
+                    if validation.reason in {"hook", "hook_projected"}:
+                        continue
                     if validation.check:
                         self._validator.validate(projected, validation, types=types)
                     if validation.project:
@@ -225,6 +228,8 @@ class RunOnlinePySparkTransform:
             )
             df = step_frames[step.results[0].frame]
         for validation in step.validations:
+            if validation.reason in {"hook", "hook_projected"}:
+                continue
             if validation.check:
                 self._validator.validate(df, validation, types=types)
             if validation.project:
@@ -528,7 +533,11 @@ class RunOnlinePySparkTransform:
                 message,
             ).alias("__structure_exactly_one")
         )
-        return assertion.crossJoin(frame).drop("__structure_exactly_one")
+        return (
+            frame.crossJoin(assertion)
+            .where(functions.col("__structure_exactly_one").isNull())
+            .drop("__structure_exactly_one")
+        )
 
     def _relation_assertion(self, step, frame, assertion, *, frames, functions):
         if assertion.operation == "require_unique":
@@ -557,7 +566,11 @@ class RunOnlinePySparkTransform:
                 message,
             ).alias("__structure_require_unique")
         )
-        return guard.crossJoin(frame).drop("__structure_require_unique")
+        return (
+            frame.crossJoin(guard)
+            .where(functions.col("__structure_require_unique").isNull())
+            .drop("__structure_require_unique")
+        )
 
     def _require_all(self, step, frame, assertion, *, functions):
         assert assertion.predicate is not None
@@ -577,7 +590,11 @@ class RunOnlinePySparkTransform:
                 message,
             ).alias("__structure_require_all")
         )
-        return guard.crossJoin(frame).drop("__structure_require_all")
+        return (
+            frame.crossJoin(guard)
+            .where(functions.col("__structure_require_all").isNull())
+            .drop("__structure_require_all")
+        )
 
     def _require_reference(self, step, frame, assertion, *, frames, functions):
         assert assertion.value is not None
@@ -615,7 +632,11 @@ class RunOnlinePySparkTransform:
                 message,
             ).alias("__structure_require_reference")
         )
-        return guard.crossJoin(frame).drop("__structure_require_reference")
+        return (
+            frame.crossJoin(guard)
+            .where(functions.col("__structure_require_reference").isNull())
+            .drop("__structure_require_reference")
+        )
 
     def _require_parent_hierarchy(self, step, frame, assertion, *, functions):
         assert assertion.parent is not None
@@ -706,7 +727,11 @@ class RunOnlinePySparkTransform:
                 message,
             ).alias("__structure_require_parent_hierarchy")
         )
-        return guard.crossJoin(frame).drop("__structure_require_parent_hierarchy")
+        return (
+            frame.crossJoin(guard)
+            .where(functions.col("__structure_require_parent_hierarchy").isNull())
+            .drop("__structure_require_parent_hierarchy")
+        )
 
     def _posexplode_struct(self, step, frame, generator, *, functions, types):
         aliases = self._scope_aliases(step)
@@ -1014,26 +1039,15 @@ class RunOnlinePySparkTransform:
             tie_count,
             functions.count(functions.lit(1)).over(window.partitionBy(*keys, functions.col(priority))),
         )
-        eligible = eligible.where(
-            functions.coalesce(
-                functions.when(
-                    functions.col(tie_count) > functions.lit(1),
-                    functions.assert_true(functions.lit(False), message),
-                ),
-                functions.lit(True),
-            )
-        )
+        eligible = eligible.where(functions.assert_true(functions.col(tie_count) <= functions.lit(1), message).isNull())
 
         ranked = eligible.withColumn(
             rank,
             functions.row_number().over(window.partitionBy(*keys).orderBy(ordering)),
         )
         ranked = ranked.where(functions.col(rank) == functions.lit(1))
-        if guards:
-            guarded = guards[0]
-            for guard in guards[1:]:
-                guarded = guarded.crossJoin(guard)
-            ranked = guarded.crossJoin(ranked)
+        for guard in guards:
+            ranked = ranked.crossJoin(guard).where(functions.col("__structure_select_first_missing").isNull())
         return ranked.drop(
             rank,
             priority,
@@ -1161,8 +1175,26 @@ class RunOnlinePySparkTransform:
         )
         order_by = self._expressions.evaluate(selected_rows.order_by, functions=functions, aliases=aliases)
         ordering = order_by.desc() if selected_rows.direction == "latest" else order_by.asc()
-        ranked = df.withColumn(rank, functions.row_number().over(window.partitionBy(*partition).orderBy(ordering)))
-        return ranked.where(functions.col(rank) == functions.lit(1)).drop(rank)
+        ranked = df.withColumn(rank, functions.dense_rank().over(window.partitionBy(*partition).orderBy(ordering)))
+        selected = ranked.where(functions.col(rank) == functions.lit(1)).drop(rank)
+        selected = self._reject_multiple(
+            selected,
+            partition,
+            functions=functions,
+            window=window,
+            message=(
+                f"{selected_rows.direction}_by(ties='error') found tied selected rows; "
+                "make the ordering value unique within each partition; see docs/reference/Aggregations.ref.md"
+            ),
+        )
+        return selected
+
+    def _reject_multiple(self, frame, partition, *, functions, window, message):
+        count = "__structure_match_count"
+        counted = frame.withColumn(count, functions.count(functions.lit(1)).over(window.partitionBy(*partition)))
+        return counted.where(functions.assert_true(functions.col(count) <= functions.lit(1), message).isNull()).drop(
+            count
+        )
 
     def _aggregate(self, step, df, aggregate, *, functions, types):
         if aggregate.grouping == "grouping_sets":
@@ -1205,6 +1237,7 @@ class RunOnlinePySparkTransform:
                 )
             )
         )
+        guards = self._aggregate_guards(step, aggregate, functions=functions)
         aggregated = grouped.agg(
             *(
                 self._aggregate_assignment(
@@ -1217,8 +1250,11 @@ class RunOnlinePySparkTransform:
                 )
                 for assignment in aggregate.assignments
                 if assignment.function != "key"
-            )
+            ),
+            *(guard for _, guard in guards),
         )
+        for name, _ in guards:
+            aggregated = aggregated.where(functions.col(name).isNull()).drop(name)
         selected = aggregated.select(
             *(
                 self._aggregate_select(
@@ -1230,6 +1266,23 @@ class RunOnlinePySparkTransform:
             )
         )
         return self._aggregate_having(step, selected, aggregate, functions=functions)
+
+    def _aggregate_guards(self, step, aggregate, *, functions):
+        guards = []
+        aliases = self._scope_aliases(step)
+        for index, assignment in enumerate(aggregate.assignments):
+            if assignment.function not in {"first_value", "last_value"}:
+                continue
+            order = self._expressions.evaluate(assignment.order_by, functions=functions, aliases=aliases)
+            if assignment.filter is not None:
+                predicate = self._expressions.evaluate(assignment.filter, functions=functions, aliases=aliases)
+                order = functions.when(predicate, order)
+            name = f"__structure_aggregate_guard_{index}"
+            guard = ordered_aggregate_guard(
+                order, latest=assignment.function == "last_value", name=assignment.function, functions=functions
+            )
+            guards.append((name, guard.alias(name)))
+        return guards
 
     def _grouping_sets(self, step, df, aggregate, *, functions, types):
         key_columns = self._aggregate_key_columns(aggregate)
@@ -1252,6 +1305,7 @@ class RunOnlinePySparkTransform:
                     if key.name in level_keys
                 )
             )
+            guards = self._aggregate_guards(step, aggregate, functions=functions)
             aggregated = grouped.agg(
                 *(
                     self._aggregate_assignment(
@@ -1264,8 +1318,11 @@ class RunOnlinePySparkTransform:
                     )
                     for assignment in aggregate.assignments
                     if assignment.function not in {"key", "grouping_id", "is_grouped"}
-                )
+                ),
+                *(guard for _, guard in guards),
             )
+            for name, _ in guards:
+                aggregated = aggregated.where(functions.col(name).isNull()).drop(name)
             branches.append(
                 aggregated.select(
                     *(
@@ -1659,7 +1716,7 @@ class RunOnlinePySparkTransform:
         streaming_step: bool,
     ):
         row_id = None
-        if join.as_of is not None:
+        if join.as_of is not None or join.temporal is not None:
             row_id = f"__structure_{join.left_alias}_{join.right_alias}_row"
             df = df.withColumn(row_id, functions.monotonically_increasing_id())
         right = frames[join.source]
@@ -1681,6 +1738,18 @@ class RunOnlinePySparkTransform:
             joined = df.join(right, predicate, self._join_mode(join))
         if join.as_of is not None:
             return self._as_of(join, joined, step=step, row_id=row_id, functions=functions, window=window)
+        if join.temporal is not None:
+            joined = self._reject_multiple(
+                joined,
+                (functions.col(row_id),),
+                functions=functions,
+                window=window,
+                message=(
+                    "JOIN-E0601: temporal_one(overlaps='error') found overlapping matches; "
+                    "use nonoverlapping validity intervals; see docs/Diagnostics.md#join-e0601"
+                ),
+            )
+            return joined.drop(row_id)
         return joined
 
     def _predicate(self, step, join, *, functions):
@@ -1721,13 +1790,24 @@ class RunOnlinePySparkTransform:
         )
         ranked = df.withColumn(
             rank,
-            functions.row_number().over(
+            functions.dense_rank().over(
                 window.partitionBy(functions.col(row_id)).orderBy(
                     right_time.desc() if join.as_of.direction.value == "backward" else right_time.asc()
                 )
             ),
         )
-        return ranked.where(functions.col(rank) == functions.lit(1)).drop(rank).drop(row_id)
+        selected = ranked.where(functions.col(rank) == functions.lit(1)).drop(rank)
+        selected = self._reject_multiple(
+            selected,
+            (functions.col(row_id),),
+            functions=functions,
+            window=window,
+            message=(
+                "JOIN-E0601: as_of_one(ties='error') found tied matches; "
+                "make the right-side time unique; see docs/Diagnostics.md#join-e0601"
+            ),
+        )
+        return selected.drop(row_id)
 
     def _nearest_as_of(self, join, df, *, step, row_id, functions, window):
         aliases = self._scope_aliases(step, join)
@@ -1752,11 +1832,7 @@ class RunOnlinePySparkTransform:
                 )
             ).over(partition),
         )
-        ranked = ranked.where(
-            functions.assert_true(
-                (functions.col(ties) <= functions.lit(1)) | functions.col(minimum).isNull(), message
-            ).isNull()
-        )
+        ranked = ranked.where(functions.assert_true(functions.col(ties) <= functions.lit(1), message).isNull())
         ranked = ranked.withColumn(
             rank,
             functions.row_number().over(partition.orderBy(functions.col(distance).asc(), right_time.asc())),
@@ -1775,8 +1851,19 @@ class RunOnlinePySparkTransform:
             aliases={join.input_name: join.right_alias},
         )
         ordering = order_by.desc() if join.dedupe.direction == "latest" else order_by.asc()
-        ranked = right.withColumn(rank, functions.row_number().over(window.partitionBy(*partition).orderBy(ordering)))
-        return ranked.where(functions.col(rank) == functions.lit(1)).drop(rank).alias(join.right_alias)
+        ranked = right.withColumn(rank, functions.dense_rank().over(window.partitionBy(*partition).orderBy(ordering)))
+        selected = ranked.where(functions.col(rank) == functions.lit(1)).drop(rank)
+        selected = self._reject_multiple(
+            selected,
+            partition,
+            functions=functions,
+            window=window,
+            message=(
+                "JOIN-E0601: lookup deduplication found tied selected rows; "
+                "make the ordering value unique; see docs/Diagnostics.md#join-e0601"
+            ),
+        )
+        return selected.alias(join.right_alias)
 
     def _right_keys(self, join: PySparkJoinRecipe):
         return tuple(self._right_key(join, condition) for condition in self._join_conditions(join.predicate))

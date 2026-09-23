@@ -13,8 +13,8 @@ streaming schema-evolution gate are called out below.
 | `relation_alias(...)` | DataFrame alias | `historical = relation_alias(customer, name="historical_customer")` |
 | `order_by(...)` | `orderBy` | `latest = order_by(order.created_at.desc())` |
 | `repartition_by_range(...)` | `repartitionByRange` | `partitioned = repartition_by_range(8, order.customer_id)` |
-| `limit(...)` | `limit` | `latest = order_by(order.created_at.desc()).limit(1)` |
-| `offset(...)` | `offset` | `page = order_by(order.created_at.asc()).offset(20)` |
+| `limit(...)` | `limit` | `order_by(order.created_at.desc()); limit(1)` |
+| `offset(...)` | `offset` | `order_by(order.created_at.asc()); offset(20)` |
 | `sample(...)` | `sample` | `sample(0.25, seed=17)` |
 
 **Details And Differences**
@@ -85,13 +85,16 @@ aliases, temporary views, `cache()`, and `persist()` do not bound logical lineag
 | `exactly_one(...)` | Fail unless a relation has exactly one row | `exactly_one(customer)` |
 | `require_unique(...)` | Fail on duplicate key tuples | `require_unique(order.customer_id)` |
 | `require_all(...)` | Fail when any row violates a predicate | `require_all(order.total >= 0)` |
-| `require_reference(...)` | Missing reference row | `require_reference(order.customer_id, customers)` |
-| `require_parent_hierarchy(...)` | Validate parent links | `require_parent_hierarchy(id, parent_id, max_depth=20)` |
+| `require_reference(...)` | Missing reference row | `require_reference(order.customer_id, customers, reference_key=customers.id)` |
+| `require_parent_hierarchy(...)` | Validate parent links | `require_parent_hierarchy(id, parent=parent_id, order_by=priority, max_depth=20)` |
 
 **Details And Differences**
 
-- Assertions preserve the current typed rowset on success and fail at Spark evaluation without driver collection or
-  implicit filtering.
+- Assertions preserve valid rows and their multiplicities. They build lazy aggregate guards over the relation at
+  the declaration; constructing the result launches no validation job. A caller's Spark action evaluates retained
+  guards, raising the documented diagnostic for invalid data. Schema-validation and warning settings do not disable them.
+- Spark can eliminate guards together with unused work, including a constant-false filter or `limit(0)`. A successful
+  partial or empty result does not certify the entire input. Do not use these assertions as an unconditional audit.
 - `require_reference(...)` allows null values by default; use `nulls="reject"` to treat them as violations.
 - Parent validation reports missing parents, cycles, depth overruns, and invalid child ordering through `REL-E0706`.
 - These assertions are batch-only until a streaming validation contract exists.

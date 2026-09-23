@@ -53,9 +53,11 @@ class AdoptLexicalSimilarityGenerated:
                 ).alias("__structure_require_unique")
             )
         )
-        lexical__paragraph_candidates = lexical__paragraph_candidates_require_unique_0_assertion.crossJoin(
-            lexical__paragraph_candidates
-        ).drop("__structure_require_unique")
+        lexical__paragraph_candidates = (
+            lexical__paragraph_candidates.crossJoin(lexical__paragraph_candidates_require_unique_0_assertion)
+            .where(F.col("__structure_require_unique").isNull())
+            .drop("__structure_require_unique")
+        )
         lexical__paragraph_candidates = lexical__paragraph_candidates.select(
             F.col("paragraph_similarity.left_document_id"),
             F.col("paragraph_similarity.left_section_id"),
@@ -144,9 +146,11 @@ class AdoptVectorSimilarityGenerated:
             )
         )
         vector__adopted_paragraph_candidates = (
-            vector__adopted_paragraph_candidates_require_unique_2_assertion.crossJoin(
-                vector__adopted_paragraph_candidates
-            ).drop("__structure_require_unique")
+            vector__adopted_paragraph_candidates.crossJoin(
+                vector__adopted_paragraph_candidates_require_unique_2_assertion
+            )
+            .where(F.col("__structure_require_unique").isNull())
+            .drop("__structure_require_unique")
         )
         vector__adopted_paragraph_candidates = vector__adopted_paragraph_candidates.select(
             F.col("query.document_id").alias("left_document_id"),
@@ -209,8 +213,10 @@ class FuseSimilarityGenerated:
                 ),
             ).alias("__structure_require_all")
         )
-        fused__valid_policy = fused__valid_policy_require_all_0_assertion.crossJoin(fused__valid_policy).drop(
-            "__structure_require_all"
+        fused__valid_policy = (
+            fused__valid_policy.crossJoin(fused__valid_policy_require_all_0_assertion)
+            .where(F.col("__structure_require_all").isNull())
+            .drop("__structure_require_all")
         )
         fused__valid_policy = fused__valid_policy.select(
             F.col("similarity_fusion_policy.rrf_k"),
@@ -255,9 +261,13 @@ class FuseSimilarityGenerated:
                 ).alias("__structure_require_unique")
             )
         )
-        fused__validated_lexical_candidates = fused__validated_lexical_candidates_require_unique_0_assertion.crossJoin(
-            fused__validated_lexical_candidates
-        ).drop("__structure_require_unique")
+        fused__validated_lexical_candidates = (
+            fused__validated_lexical_candidates.crossJoin(
+                fused__validated_lexical_candidates_require_unique_0_assertion
+            )
+            .where(F.col("__structure_require_unique").isNull())
+            .drop("__structure_require_unique")
+        )
         fused__validated_lexical_candidates = fused__validated_lexical_candidates.select(
             F.col("paragraph_fused_similarity_candidate.left_document_id"),
             F.col("paragraph_fused_similarity_candidate.left_section_id"),
@@ -319,9 +329,11 @@ class FuseSimilarityGenerated:
                 ).alias("__structure_require_unique")
             )
         )
-        fused__validated_vector_candidates = fused__validated_vector_candidates_require_unique_0_assertion.crossJoin(
-            fused__validated_vector_candidates
-        ).drop("__structure_require_unique")
+        fused__validated_vector_candidates = (
+            fused__validated_vector_candidates.crossJoin(fused__validated_vector_candidates_require_unique_0_assertion)
+            .where(F.col("__structure_require_unique").isNull())
+            .drop("__structure_require_unique")
+        )
         fused__validated_vector_candidates = fused__validated_vector_candidates.select(
             F.col("paragraph_fused_similarity_candidate.left_document_id"),
             F.col("paragraph_fused_similarity_candidate.left_section_id"),
@@ -410,9 +422,12 @@ class FuseSimilarityGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            fused__valid_policy_param_joined = fused__valid_policy_param_joined_count.crossJoin(
+            fused__valid_policy_param_joined = (
                 frames["fused__valid_policy"]
-            ).drop("__structure_exactly_one")
+                .crossJoin(fused__valid_policy_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
+            )
         fused__valid_policy_joined = fused__valid_policy_param_joined.alias("fused__valid_policy")
         fused__fused_candidates = fused__fused_candidates.crossJoin(fused__valid_policy_joined)
         fused__fused_candidates = (
@@ -510,9 +525,12 @@ class FuseSimilarityGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            fused__valid_policy_param_joined = fused__valid_policy_param_joined_count.crossJoin(
+            fused__valid_policy_param_joined = (
                 frames["fused__valid_policy"]
-            ).drop("__structure_exactly_one")
+                .crossJoin(fused__valid_policy_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
+            )
         fused__valid_policy_joined = fused__valid_policy_param_joined.alias("fused__valid_policy")
         fused__scored_candidates = fused__scored_candidates.crossJoin(fused__valid_policy_joined)
         fused__scored_candidates = fused__scored_candidates.select(
@@ -591,9 +609,12 @@ class FuseSimilarityGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            fused__valid_policy_param_joined = fused__valid_policy_param_joined_count.crossJoin(
+            fused__valid_policy_param_joined = (
                 frames["fused__valid_policy"]
-            ).drop("__structure_exactly_one")
+                .crossJoin(fused__valid_policy_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
+            )
         fused__valid_policy_joined = fused__valid_policy_param_joined.alias("fused__valid_policy")
         fused__paragraph_candidates = fused__paragraph_candidates.crossJoin(fused__valid_policy_joined)
         fused__paragraph_candidates = fused__paragraph_candidates.where(
@@ -739,7 +760,12 @@ class RerankSimilarityGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            policy_param_joined = policy_param_joined_count.crossJoin(frames["policy"]).drop("__structure_exactly_one")
+            policy_param_joined = (
+                frames["policy"]
+                .crossJoin(policy_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
+            )
         policy_joined = policy_param_joined.alias("policy")
         reranked__similar_paragraphs = reranked__similar_paragraphs.crossJoin(policy_joined)
         reranked__similar_paragraphs = reranked__similar_paragraphs.where(

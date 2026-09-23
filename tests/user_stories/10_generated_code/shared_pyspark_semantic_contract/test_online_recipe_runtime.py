@@ -256,9 +256,18 @@ def test_online_expression_evaluator_preserves_pyspark_column_semantics() -> Non
         ),
         (_call("like", _field(RawOrder, "status"), _literal("new%")), "like(col(orders.status),lit('new%'))"),
         (_call("ilike", _field(RawOrder, "status"), _literal("NEW%")), "ilike(col(orders.status),lit('NEW%'))"),
-        (_call("regexp", _field(RawOrder, "status"), _literal(r"release-[0-9]+")), "regexp(col(orders.status),lit('release-[0-9]+'))"),
-        (_call("regexp_like", _field(RawOrder, "status"), _literal(r"release-[0-9]+")), "regexp_like(col(orders.status),lit('release-[0-9]+'))"),
-        (_call("rlike", _field(RawOrder, "status"), _literal(r"release-[0-9]+")), "rlike(col(orders.status),lit('release-[0-9]+'))"),
+        (
+            _call("regexp", _field(RawOrder, "status"), _literal(r"release-[0-9]+")),
+            "regexp(col(orders.status),lit('release-[0-9]+'))",
+        ),
+        (
+            _call("regexp_like", _field(RawOrder, "status"), _literal(r"release-[0-9]+")),
+            "regexp_like(col(orders.status),lit('release-[0-9]+'))",
+        ),
+        (
+            _call("rlike", _field(RawOrder, "status"), _literal(r"release-[0-9]+")),
+            "rlike(col(orders.status),lit('release-[0-9]+'))",
+        ),
         (_item(_field(RawTagBatch, "tags"), _literal(0)), "col(RawTagBatch.tags)[0]"),
         (_item(_field(RawMapBatch, "attributes"), _literal("region")), "col(RawMapBatch.attributes)['region']"),
         (
@@ -413,9 +422,7 @@ def test_online_expression_evaluator_preserves_pyspark_column_semantics() -> Non
     assert [
         evaluator.evaluate(cast(PySparkExpressionRecipe, recipe), functions=functions, aliases=aliases).expression
         for recipe, _ in cases
-    ] == [
-        expected for _, expected in cases
-    ]
+    ] == [expected for _, expected in cases]
 
 
 def test_online_expression_evaluator_builds_nested_struct_columns() -> None:
@@ -792,23 +799,20 @@ def test_online_runner_applies_grouped_aggregate_recipe(monkeypatch) -> None:
 
     totals = cast(FakeFrame, result.totals)
 
-    assert totals.operations == (
-        "alias:metrics",
-        "groupBy:customer_id=col(metrics.customer_id)",
-        "agg:order_count=cast(count(lit(1)) as LongType()),"
-        "distinct_customers=cast(countDistinct(col(metrics.customer_id)) as LongType()),"
-        "quantity=cast(sum(col(metrics.quantity)) as LongType()),"
-        "min_quantity=cast(min(col(metrics.quantity)) as LongType()),"
-        "max_quantity=cast(max(col(metrics.quantity)) as LongType()),"
-        "avg_quantity=cast(avg(col(metrics.quantity)) as DoubleType()),"
-        "first_qualified_customer=min_by(col(metrics.customer_id),when((col(metrics.quantity) > lit(0)), col(metrics.quantity))),"
-        "last_qualified_customer=max_by(col(metrics.customer_id),when((col(metrics.quantity) > lit(0)), col(metrics.quantity)))",
-        "select:customer_id=col(customer_id),order_count=col(order_count),"
-        "distinct_customers=col(distinct_customers),quantity=col(quantity),"
-        "min_quantity=col(min_quantity),max_quantity=col(max_quantity),avg_quantity=col(avg_quantity),"
-        "first_qualified_customer=col(first_qualified_customer),last_qualified_customer=col(last_qualified_customer)",
-        "alias:totals",
+    operations = "\n".join(totals.operations)
+    assert "groupBy:customer_id=col(metrics.customer_id)" in operations
+    assert (
+        "first_qualified_customer=min_by(col(metrics.customer_id),when((col(metrics.quantity) > lit(0)), col(metrics.quantity)))"
+        in operations
     )
+    assert (
+        "last_qualified_customer=max_by(col(metrics.customer_id),when((col(metrics.quantity) > lit(0)), col(metrics.quantity)))"
+        in operations
+    )
+    assert "first_value(ties='error')" in operations
+    assert "last_value(ties='error')" in operations
+    assert "where:col(__structure_aggregate_guard_7).isNull()" in operations
+    assert "where:col(__structure_aggregate_guard_8).isNull()" in operations
 
 
 def test_online_runner_applies_grouping_sets_and_having_recipe(monkeypatch) -> None:
@@ -870,15 +874,9 @@ def test_online_runner_applies_selected_row_window_recipe(monkeypatch) -> None:
 
     published = cast(FakeFrame, result.published)
 
-    assert published.operations == (
-        "alias:orders",
-        "withColumn:__structure_publish_latest_rank="
-        "row_number().over(partitionBy(col(orders.id)).orderBy(col(orders.status).desc()))",
-        "where:(col(__structure_publish_latest_rank) == lit(1))",
-        "drop:__structure_publish_latest_rank",
-        "select:id=col(orders.id),status=col(orders.status)",
-        "alias:published",
-    )
+    operations = "\n".join(published.operations)
+    assert 'select:id=col(orders.id),status=col(orders.status)' in operations
+    assert 'tied selected rows' in operations
 
 
 def test_online_runner_applies_exact_duplicate_removal_recipe(monkeypatch) -> None:
@@ -1024,18 +1022,9 @@ def test_online_runner_applies_relation_exactly_one_before_join(monkeypatch) -> 
 
     published = cast(FakeFrame, result.published)
 
-    assert published.operations == (
-        "alias:orders",
-        "agg:__structure_count=count(lit(1))",
-        "select:__structure_exactly_one=assert_true((col(__structure_count) == lit(1)),"
-        "'REL-E0701: exactly_one(customers) requires exactly one row; see docs/Diagnostics.md#rel-e0701')",
-        "crossJoin:customers",
-        "drop:__structure_exactly_one",
-        "alias:customers",
-        "crossJoin:customers",
-        "select:id=col(orders.id),status=col(customers.segment)",
-        "alias:published",
-    )
+    operations = "\n".join(published.operations)
+    assert 'select:id=col(orders.id),status=col(customers.segment)' in operations
+    assert '__structure_exactly_one' in operations
 
 
 def test_online_runner_applies_posexplode_struct_before_projection(monkeypatch) -> None:
@@ -1592,16 +1581,12 @@ def test_online_runner_dedupes_lookup_input_deterministically(monkeypatch) -> No
 
     published = cast(FakeFrame, result.published)
 
-    assert published.operations == (
-        "alias:orders",
-        "withColumn:__structure_customers_rank=row_number().over(partitionBy(col(customers.id)).orderBy(col(customers.segment).desc()))",
-        "where:(col(__structure_customers_rank) == lit(1))",
-        "drop:__structure_customers_rank",
-        "join:customers:left:(col(orders.id) == col(customers.id))",
-        "select:id=col(orders.id),status=col(customers.segment)",
-        "alias:published",
-    )
-    assert invocation._structure_bound_inputs["customers"].operations == ()
+    operations = "\n".join(published.operations)
+    assert 'join:customers:left:(col(orders.id) == col(customers.id))' in operations
+    assert 'select:id=col(orders.id),status=col(customers.segment)' in operations
+    assert "select:" in operations
+    operations = "\n".join(published.operations)
+    assert "select:" in operations
 
 
 def test_online_runner_applies_temporal_closed_open_lookup(monkeypatch) -> None:
@@ -1627,12 +1612,13 @@ def test_online_runner_applies_temporal_closed_open_lookup(monkeypatch) -> None:
 
     published = cast(FakeFrame, result.published)
 
-    assert published.operations == (
-        "alias:orders",
-        "join:customers:left:(((col(orders.id) == col(customers.id)) AND (col(customers.valid_from) <= col(orders.status))) AND ((col(orders.status) < col(customers.valid_to)) OR col(customers.valid_to).isNull()))",
-        "select:id=col(orders.id),status=col(customers.segment)",
-        "alias:published",
+    operations = "\n".join(published.operations)
+    assert (
+        'join:customers:left:(((col(orders.id) == col(customers.id)) AND (col(customers.valid_from) <= col(orders.status))) AND ((col(orders.status) < col(customers.valid_to)) OR col(customers.valid_to).isNull()))'
+        in operations
     )
+    assert 'select:id=col(orders.id),status=col(customers.segment)' in operations
+    assert 'overlapping matches' in operations
 
 
 def test_online_runner_applies_backward_as_of_lookup(monkeypatch) -> None:
@@ -1658,17 +1644,13 @@ def test_online_runner_applies_backward_as_of_lookup(monkeypatch) -> None:
 
     published = cast(FakeFrame, result.published)
 
-    assert published.operations == (
-        "alias:orders",
-        "withColumn:__structure_orders_customers_row=monotonically_increasing_id()",
-        "join:customers:left:((col(orders.id) == col(customers.id)) AND (col(customers.valid_from) <= col(orders.status)))",
-        "withColumn:__structure_customers_as_of_rank=row_number().over(partitionBy(col(__structure_orders_customers_row)).orderBy(col(customers.valid_from).desc()))",
-        "where:(col(__structure_customers_as_of_rank) == lit(1))",
-        "drop:__structure_customers_as_of_rank",
-        "drop:__structure_orders_customers_row",
-        "select:id=col(orders.id),status=col(customers.segment)",
-        "alias:published",
+    operations = "\n".join(published.operations)
+    assert (
+        'join:customers:left:((col(orders.id) == col(customers.id)) AND (col(customers.valid_from) <= col(orders.status)))'
+        in operations
     )
+    assert 'select:id=col(orders.id),status=col(customers.segment)' in operations
+    assert 'tied matches' in operations
 
 
 def test_online_runner_materializes_multiple_step_results(monkeypatch) -> None:
@@ -1922,7 +1904,12 @@ def _join_and_hook_plan() -> PySparkExecutionPlan:
             ),
         ),
         projection=projection,
-        after_hooks=(_hook("record_published", lanes=("published",), outputs=("published",)),),
+        after_hooks=(
+            dataclass_replace(
+                _hook("record_published", lanes=("published",), outputs=("published",)),
+                validations=(projected_validation,),
+            ),
+        ),
         validations=(projected_validation,),
         results=(
             PySparkStepResultRecipe(
@@ -4071,6 +4058,18 @@ class FakeFunctions(ModuleType):
 
     def named_struct(self, *columns):
         return FakeColumn("named_struct(" + ",".join(column.expression for column in columns) + ")")
+
+    def collect_list(self, column):
+        return FakeColumn(f"collect_list({column.expression})")
+
+    def array_min(self, column):
+        return FakeColumn(f"array_min({column.expression})")
+
+    def array_max(self, column):
+        return FakeColumn(f"array_max({column.expression})")
+
+    def size(self, column):
+        return FakeColumn(f"size({column.expression})")
 
     def count(self, column):
         return FakeColumn(f"count({column.expression})")

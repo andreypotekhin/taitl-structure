@@ -1,5 +1,6 @@
 from structure.plugin.api.v1.model import HookPlan
 from structure.plugin.pyspark.compiler.model.PySparkHookRecipe import PySparkHookRecipe
+from structure.plugin.pyspark.compiler.model.PySparkValidationRecipe import PySparkValidationRecipe
 
 
 class MapPySparkHook:
@@ -19,4 +20,14 @@ class MapPySparkHook:
             target_defaulted=hook.target_defaulted,
             target_platform=hook.target_platform,
             origin=hook.origin,
+            validations=tuple(
+                PySparkValidationRecipe(
+                    target=output.name,
+                    schema=output.schema,
+                    mode=hook.schema_mode,
+                    project=hook.project_output,
+                    reason="hook",
+                )
+                for output in hook.outputs
+            ),
         )

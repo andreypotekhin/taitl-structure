@@ -6,6 +6,7 @@ from types import MappingProxyType
 
 from pyspark.sql import functions as F
 from structure.plugin.pyspark.execution.logic.PlanBoundary import apply_plan_boundary, close_plan_boundaries
+from structure.plugin.pyspark.execution.logic.ValidatePySparkOrderedAggregate import ordered_aggregate_guard
 
 
 def assert_schema(df, schema, *, name: str, mode: str) -> None:

@@ -89,7 +89,11 @@ class EvaluateDocSearchBehaviorGenerated:
                     'REL-E0701: exactly_one(params) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            params_2_param_joined = params_2_param_joined_count.crossJoin(params).drop("__structure_exactly_one")
+            params_2_param_joined = (
+                params.crossJoin(params_2_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
+            )
         params_2_joined = params_2_param_joined.alias("params_2")
         selected_requests = selected_requests.crossJoin(params_2_joined)
         requests_3_joined = requests.alias("requests_3")

@@ -16,8 +16,8 @@ For PySpark APIs, see [APICatalog.md](APICatalog.md). For detailed whole-rowset 
 
 | Capability | Status | Built on | Addition | Reference |
 | --- | --- | --- | --- | --- |
-| Relation cardinality assertion | implemented | Spark-plan validation | `exactly_one` fails zero or multiple matches with stable `REL-E0701` diagnostics without driver collection | [Relations API](api/Relations.api.md) |
-| Relation integrity assertion | implemented | Spark-plan validation | `require_unique`, `require_all`, and `require_reference` express typed integrity checks | [Relations API](api/Relations.api.md) |
+| Relation cardinality assertion | implemented | Lazy aggregate guard | `exactly_one` checks cardinality with `REL-E0701` when Spark evaluates its guard; optimized-away work can skip it | [Relations API](api/Relations.api.md) |
+| Relation integrity assertion | implemented | Lazy aggregate guard | `require_unique`, `require_all`, and `require_reference` express typed integrity checks | [Relations API](api/Relations.api.md) |
 | Parent hierarchy validation | implemented | Finite self-join validation pattern | `require_parent_hierarchy` checks bounded catalogs and reports `REL-E0706` | [Relations API](api/Relations.api.md) |
 | Priority row selection | implemented | Ordered grouping/window pattern | `select_first_qualified` selects one eligible row per declared business key and reports `REL-E0705` | [Relations API](api/Relations.api.md) |
 | Parent hierarchy closure | implemented | Iterative relation expansion pattern | `hierarchy_closure` emits typed `(node, ancestor, depth)` closure rows | [Relations API](api/Relations.api.md) |

@@ -169,20 +169,38 @@ class PrepareOrderDemandGenerated:
             ),
             "left_anti",
         )
-        products_3_joined = (
-            products.alias("products_3")
-            .withColumn(
-                "__structure_products_3_rank",
-                F.row_number().over(
-                    Window.partitionBy(F.col("products_3.tenant.tenant_id"), F.col("products_3.id")).orderBy(
-                        F.col("products_3.audit.ingested_at").desc()
-                    )
+        products_3_deduplicated = products.alias("products_3")
+        products_3_deduplicated = products_3_deduplicated.withColumn(
+            "__structure_products_3_rank",
+            F.dense_rank().over(
+                Window.partitionBy(F.col("products_3.tenant.tenant_id"), F.col("products_3.id")).orderBy(
+                    F.col("products_3.audit.ingested_at").desc()
+                )
+            ),
+        )
+        products_3_deduplicated = products_3_deduplicated.where(F.col("__structure_products_3_rank") == F.lit(1)).drop(
+            "__structure_products_3_rank"
+        )
+        products_3_deduplicated = (
+            products_3_deduplicated.withColumn(
+                "__structure_match_count",
+                F.count(F.lit(1)).over(
+                    Window.partitionBy(F.col("products_3.tenant.tenant_id"), F.col("products_3.id"))
                 ),
             )
-            .where(F.col("__structure_products_3_rank") == F.lit(1))
-            .drop("__structure_products_3_rank")
-            .alias("products_3")
+            .where(
+                F.assert_true(
+                    F.col("__structure_match_count") <= F.lit(1),
+                    (
+                        'JOIN-E0601: lookup deduplication found tied selected rows; make the ordering value unique;'
+                        'see docs/Diagnostics.md#join-e0601'
+                    ),
+                ).isNull()
+            )
+            .drop("__structure_match_count")
         )
+        products_3_deduplicated = products_3_deduplicated.alias("products_3")
+        products_3_joined = products_3_deduplicated
         orders = orders.join(
             products_3_joined,
             (
@@ -221,6 +239,7 @@ class PrepareOrderDemandGenerated:
 
         # Step method: add_promotion
         orders = orders.alias("order_with_product")
+        orders = orders.withColumn("__structure_order_with_product_promotions_row", F.monotonically_increasing_id())
         promotions_joined = promotions.alias("promotions")
         orders = orders.join(
             promotions_joined,
@@ -239,6 +258,23 @@ class PrepareOrderDemandGenerated:
             ),
             "left",
         )
+        orders = (
+            orders.withColumn(
+                "__structure_match_count",
+                F.count(F.lit(1)).over(Window.partitionBy(F.col("__structure_order_with_product_promotions_row"))),
+            )
+            .where(
+                F.assert_true(
+                    F.col("__structure_match_count") <= F.lit(1),
+                    (
+                        "JOIN-E0601: temporal_one(overlaps='error') found overlapping matches; use nonoverlapping"
+                        "validity intervals; see docs/Diagnostics.md#join-e0601"
+                    ),
+                ).isNull()
+            )
+            .drop("__structure_match_count")
+        )
+        orders = orders.drop("__structure_order_with_product_promotions_row")
         orders = orders.select(
             F.col("order_with_product.tenant"),
             F.col("order_with_product.audit"),

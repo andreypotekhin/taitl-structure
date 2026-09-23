@@ -60,8 +60,10 @@ class SelectRecentQueriesGenerated:
                     'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
                 ).alias("__structure_exactly_one")
             )
-            score_policy_2_param_joined = score_policy_2_param_joined_count.crossJoin(score_policy).drop(
-                "__structure_exactly_one"
+            score_policy_2_param_joined = (
+                score_policy.crossJoin(score_policy_2_param_joined_count)
+                .where(F.col("__structure_exactly_one").isNull())
+                .drop("__structure_exactly_one")
             )
         score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
         recent_queries = recent_queries.crossJoin(score_policy_2_joined)
