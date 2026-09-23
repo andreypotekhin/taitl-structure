@@ -141,7 +141,7 @@ if TYPE_CHECKING:
 
 
 _DSL_EXPORTS = """
-AsOf BinaryType CsvOptions DecimalType Join JoinDedupe JoinHint JoinStrategy JsonOptions OverlapPolicy StreamingOutputMode TiePolicy abs acos acosh asin ascii asinh atan atan2 atanh add_months base64 bround cache checkpoint local_checkpoint persist unpersist
+AsOf BinaryType CsvOptions DecimalType Join JoinDedupe JoinHint JoinStrategy JsonOptions OverlapPolicy StreamingOutputMode TiePolicy abs acos acosh asin ascii asinh assert_true atan atan2 atanh add_months base64 bround cache checkpoint local_checkpoint persist unpersist
 approx_count_distinct approx_percentile any_value array_agg arr_aggregate arr_append arr_compact arr_distinct arr_exists arr_filter
 arr_flatten arr_forall arr_position arr_prepend arr_reverse arr_insert arr_remove arr_sort arr_sort_by arr_transform
 arr_zip_with array array_contains array_except array_intersect array_join array_max array_min array_repeat array_size array_union arrays_overlap avg as_of_one bit_and bit_or bit_xor bool_and bool_or
@@ -152,7 +152,7 @@ initcap ifnull instr intersect intersect_all first first_value following full_jo
 isnotnull isnull is_grouped kurtosis lag last last_value left_join latest_by lead lookup_join length levenshtein lower lpad find_in_set format_number mask overlay
 ltrim ln locate log log10 log1p log2 least limit md5 create_map map_from_arrays str_to_map named_struct map_entries map_concat map_contains_key map_filter map_from_entries map_keys map_transform_keys max_by median min_by
 map_transform_values map_values map_zip_with max min minute mode month nanvl nvl nvl2 nullif pow not_exists nth_value product
-ntile offset order_by param_join percent_rank percentile pi posexplode_array posexplode_outer_array posexplode_struct posexplode_outer_struct posexplode_map posexplode_outer_map explode_array explode_outer_array explode_struct explode_outer_struct explode_map explode_outer_map inline_struct inline_outer_struct variant_explode variant_explode_outer preceding pmod project quarter rank range_between relation_alias regexp_extract regexp_replace regexp regexp_like rlike like ilike require_all require_parent_hierarchy require_reference require_unique hierarchy_closure hierarchy_fallbacks reverse rtrim round
+ntile offset order_by param_join percent_rank percentile pi posexplode_array posexplode_outer_array posexplode_struct posexplode_outer_struct posexplode_map posexplode_outer_map explode_array explode_outer_array explode_struct explode_outer_struct explode_map explode_outer_map inline_struct inline_outer_struct variant_explode variant_explode_outer preceding pmod project quarter raise_error rank range_between relation_alias regexp_extract regexp_replace regexp regexp_like rlike like ilike require_all require_parent_hierarchy require_reference require_unique hierarchy_closure hierarchy_fallbacks reverse rtrim round
 sample sec select_first_qualified signum sin sinh slice sha1 sha2 second rand randn radians rint right_join rollup row_number rowset_join rows_between rolling_avg rolling_max position sort_array split_part elt format_string printf substr
 rolling_min rolling_sum scan subtract sum sum_distinct stddev sqrt size sequence session_window skewness split translate substring temporal_one next_day
 to_csv to_decimal to_date to_json to_timestamp TimeWindow trim trunc try_element_at unbase64 union_all union_by_name upper unbounded_following unbounded_preceding hex unhex cardinality weekofyear
@@ -202,6 +202,7 @@ __all__ = [  # noqa: F405
     "acos",
     "acosh",
     "asin",
+    "assert_true",
     "ascii",
     "asinh",
     "atan",
@@ -424,6 +425,7 @@ __all__ = [  # noqa: F405
     "quarter",
     "rand",
     "randn",
+    "raise_error",
     "radians",
     "reduce",
     "rint",

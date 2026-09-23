@@ -24,6 +24,7 @@
     {"id": "column.alias", "family": "Column", "pyspark": ["alias", "name"]},
     {"id": "column.window", "family": "Column", "pyspark": ["over"]},
     {"id": "functions.conditional", "family": "SQL functions", "pyspark": ["when", "coalesce", "nullif", "nvl", "nvl2", "ifnull", "zeroifnull"]},
+    {"id": "functions.assertion", "family": "SQL functions", "pyspark": ["assert_true", "raise_error"]},
     {"id": "functions.predicate", "family": "SQL functions", "pyspark": ["equal_null", "like", "ilike", "regexp", "regexp_like", "rlike"]},
     {"id": "functions.null", "family": "SQL functions", "pyspark": ["isnull", "isnotnull", "isnan", "nanvl"]},
     {"id": "functions.string", "family": "SQL functions", "pyspark": ["ascii", "btrim", "char", "char_length", "contains", "elt", "find_in_set", "format_number", "format_string", "left", "lower", "upper", "trim", "ltrim", "rtrim", "lpad", "rpad", "length", "locate", "mask", "octet_length", "overlay", "position", "printf", "regexp_count", "regexp_extract", "regexp_extract_all", "regexp_instr", "regexp_replace", "regexp_substr", "repeat", "replace", "right", "soundex", "split_part", "substr", "substring", "substring_index", "split", "concat_ws", "initcap", "reverse", "translate", "instr", "levenshtein"]},

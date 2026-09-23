@@ -629,10 +629,34 @@ def test_randn_uses_the_same_explicit_seed_policy_as_rand() -> None:
     assert dict(seeded.data or {})["function"] == "randn"
     assert dict(seeded.data or {})["seed"] == 17
     assert dict(unseeded.data or {})["seed"] is None
+    assert dict(unseeded.data or {})["reproducible"] is False
 
     with pytest.raises(TypeError, match=r"randn\(\.\.\.\) seed is required"):
         randn()
-    assert dict(unseeded.data or {})["reproducible"] is False
+
+
+def test_scalar_assertions_are_non_null_boolean_guards_with_literal_messages() -> None:
+    asserted = assert_true(_expression(types.boolean(), nullable=True), message="expected enabled")
+    defaulted = assert_true(True)
+    failed = raise_error("stop")
+
+    assert asserted.kind == "assertion"
+    assert asserted.type is not None and asserted.type.name == "boolean"
+    assert asserted.nullable is False
+    assert dict(asserted.data or {}) == {"function": "assert_true", "message": "expected enabled"}
+    assert dict(defaulted.data or {}) == {"function": "assert_true", "message": None}
+    assert failed.type is not None and failed.type.name == "boolean"
+    assert failed.nullable is False
+    assert dict(failed.data or {}) == {"function": "raise_error", "message": "stop"}
+
+
+def test_scalar_assertions_reject_non_boolean_conditions_and_nonliteral_messages() -> None:
+    with pytest.raises(TypeError, match=r"assert_true\(condition\) requires a Boolean"):
+        assert_true("enabled")
+    with pytest.raises(TypeError, match=r"assert_true\(message=\.\.\.\) must be a string literal or None"):
+        assert_true(True, message=1)  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match=r"raise_error\(message\) requires a string literal"):
+        raise_error(None)  # type: ignore[arg-type]
 
 
 @pytest.mark.parametrize(

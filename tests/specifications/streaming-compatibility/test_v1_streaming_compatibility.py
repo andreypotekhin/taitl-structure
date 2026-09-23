@@ -500,6 +500,16 @@ class StreamingRandomProjection(Transform):
 
 
 @transform(streaming=True)
+class StreamingScalarAssertion(Transform):
+    rows = input(StreamRaw)
+    clean = output(StreamClean)
+
+    def normalize(self, row: StreamRaw) -> StreamClean:
+        where(assert_true(row.id.is_not_null(), message="id is required"))
+        return StreamClean(id=row.id)
+
+
+@transform(streaming=True)
 class StreamingUnknownHook(Transform):
     rows = input(StreamRaw, streaming=True)
     clean = output(StreamClean)
@@ -1304,6 +1314,14 @@ def test_v4_scalar_udf_is_a_compatible_row_local_streaming_expression() -> None:
 
 def test_rand_is_a_compatible_row_local_nondeterministic_streaming_expression() -> None:
     plan = _analysis(StreamingRandomProjection)
+    report = Compiler.compileability.streaming()(PySpark.compiler.lower()(plan), required=True)
+
+    assert report.support is StreamingSupport.COMPATIBLE
+    assert report.findings == ()
+
+
+def test_scalar_assertion_is_a_compatible_row_local_streaming_expression() -> None:
+    plan = _analysis(StreamingScalarAssertion)
     report = Compiler.compileability.streaming()(PySpark.compiler.lower()(plan), required=True)
 
     assert report.support is StreamingSupport.COMPATIBLE

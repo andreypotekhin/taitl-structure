@@ -57,6 +57,8 @@ class EvaluatePySparkExpression:
             return expression.data["column"]
         if expression.kind == "call":
             return self._call(expression, functions=functions, aliases=aliases, window=window)
+        if expression.kind == "assertion":
+            return self._assertion(expression, functions=functions, aliases=aliases, window=window)
         if expression.kind == "python_udf":
             return self._python_udf(expression, functions=functions, aliases=aliases, window=window)
         if expression.kind == "time_window":
@@ -1075,6 +1077,17 @@ class EvaluatePySparkExpression:
                 functions.log(expression.data["base"], args[0]) if "base" in expression.data else functions.log(args[0])
             )
         raise TypeError(f"Unsupported PySpark helper call: {function}")
+
+    def _assertion(self, expression: PySparkExpressionRecipe, *, functions, aliases, window):
+        function = expression.data["function"]
+        message = expression.data["message"]
+        if function == "assert_true":
+            condition = self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window)
+            asserted = functions.assert_true(condition) if message is None else functions.assert_true(condition, message)
+            return asserted.isNull()
+        if function == "raise_error":
+            return functions.raise_error(message).isNull()
+        raise TypeError(f"Unsupported PySpark assertion: {function}")
 
     def _python_udf(self, expression: PySparkExpressionRecipe, *, functions, aliases, window):
         args = [

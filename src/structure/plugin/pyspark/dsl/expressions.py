@@ -37,7 +37,7 @@ from structure.plugin.pyspark.dsl.types import (
 )
 
 __all__ = [
-    "abs", "base64", "bin", "bround", "ceil", "coalesce", "concat_ws", "conv", "date_add", "date_sub", "date_trunc", "datediff",
+    "abs", "assert_true", "base64", "bin", "bround", "ceil", "coalesce", "concat_ws", "conv", "date_add", "date_sub", "date_trunc", "datediff",
     "dayofmonth", "dayofweek", "dayofyear", "event_time_between", "exp", "floor", "from_csv", "from_json", "hash", "hour", "ifnull", "initcap",
     "instr", "isnan", "isnotnull", "isnull", "CsvOptions", "JsonOptions", "length", "levenshtein", "literal", "log",
     "get_json_object", "json_array_length", "json_object_keys", "schema_of_csv", "schema_of_json",
@@ -49,6 +49,7 @@ __all__ = [
     "schema_of_variant", "to_variant_object", "try_parse_json", "try_variant_get", "variant_get", "variant_literal",
     "variant_array_append", "try_variant_array_append", "variant_insert", "try_variant_insert", "variant_set",
     "try_variant_set", "variant_delete",
+    "raise_error",
 ]
 
 
@@ -882,6 +883,38 @@ def find_in_set(value: object, values: object) -> Expression:
 def equal_null(left: object, right: object) -> Expression:
     """Compare two values with Spark's null-safe equality semantics."""
     return literal(left).null_safe_eq(right)
+
+
+def assert_true(condition: object, *, message: str | None = None) -> Expression:
+    """Fail Spark evaluation unless ``condition`` is true.
+
+    The returned Boolean guard is true after the native PySpark assertion has
+    succeeded, which lets it be used directly in ``where(...)``.
+    """
+    expression = literal(condition)
+    if not isinstance(expression.type, BooleanType):
+        raise TypeError("assert_true(condition) requires a Boolean Structure expression")
+    if message is not None and not isinstance(message, str):
+        raise TypeError("assert_true(message=...) must be a string literal or None")
+    return Expression(
+        kind="assertion",
+        type=BooleanType(),
+        nullable=False,
+        data={"function": "assert_true", "message": message},
+        args=(expression,),
+    )
+
+
+def raise_error(message: str) -> Expression:
+    """Return a Boolean expression that raises the supplied Spark error when evaluated."""
+    if not isinstance(message, str):
+        raise TypeError("raise_error(message) requires a string literal")
+    return Expression(
+        kind="assertion",
+        type=BooleanType(),
+        nullable=False,
+        data={"function": "raise_error", "message": message},
+    )
 
 
 def like(value: object, pattern: object) -> Expression:

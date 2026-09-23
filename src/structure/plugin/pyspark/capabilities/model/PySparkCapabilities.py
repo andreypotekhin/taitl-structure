@@ -55,6 +55,7 @@ COMMON_CAPABILITIES = frozenset(
         ("expression", "equality"),
         ("expression", "null_safe_equality"),
         ("expression", "cast"),
+        ("expression", "assertion"),
         ("expression", "python_udf"),
         ("expression", "rand"),
         ("relation", "exactly_one"),

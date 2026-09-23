@@ -209,6 +209,42 @@ def test_v4_expression_renderer_renders_remaining_null_control_helpers() -> None
     assert render(projection["amount"], scope_aliases={"rows": "orders"}) == 'F.zeroifnull(F.col("orders.amount"))'
 
 
+def test_expression_renderer_renders_typed_scalar_assertion_guards() -> None:
+    class Raw(Schema):
+        id = string(nullable=False)
+        enabled = boolean(nullable=True)
+
+    class Published(Schema):
+        id = string(nullable=False)
+
+    @transform
+    class Asserted(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            where(assert_true(row.enabled, message="expected enabled"))
+            return Published(id=row.id)
+
+    @transform
+    class Failed(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            where(raise_error("stop"))
+            return Published(id=row.id)
+
+    asserted = _recipe(Asserted).steps[0].filters[0]
+    failed = _recipe(Failed).steps[0].filters[0]
+    render = PySpark.render.expression()
+
+    assert render(asserted, scope_aliases={"rows": "orders"}) == (
+        'F.assert_true(F.col("orders.enabled"), \'expected enabled\').isNull()'
+    )
+    assert render(failed, scope_aliases={"rows": "orders"}) == "F.raise_error('stop').isNull()"
+
+
 def test_v7_expression_renderer_renders_binary_encoding_helpers() -> None:
     class Raw(Schema):
         payload = binary(nullable=True)

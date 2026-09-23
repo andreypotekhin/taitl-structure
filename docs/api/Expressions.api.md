@@ -219,6 +219,8 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
 | `nullif(...)` | `functions.nullif` | `nullif(o.status, "unknown")` |
 | `nanvl(...)` | `functions.nanvl` | `nanvl(o.score, 0.0)` |
 | `when(...).otherwise(...)` | `when`, `otherwise` | `when(o.total > 0, "paid").otherwise("free")` |
+| `assert_true(...)` | `functions.assert_true` | `where(assert_true(o.total > 0, message="total must be positive"))` |
+| `raise_error(...)` | `functions.raise_error` | `where(raise_error("unexpected row"))` |
 | `base64(...)`, `unbase64(...)` | `base64`, `unbase64` | `base64(o.payload)` |
 | `encode(...)`, `decode(...)` | `encode`, `decode` | `decode(encode(o.name, charset="UTF-8"), charset="UTF-8")` |
 | `from_json(...)`, `to_json(...)` | `from_json`, `to_json` | `from_json(o.payload_json, as_=Payload)` |
@@ -243,6 +245,11 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
 **Details And Differences**
 
 - Pattern, replacement, separator, and search arguments are explicit compiler-visible values.
+- `assert_true(...)` and `raise_error(...)` are typed Boolean guards. They lower to the matching native PySpark
+  assertion followed by `.isNull()`, so a successful `assert_true(...)` can be used directly in `where(...)` without
+  adding an output field. A false or null condition, or any evaluated `raise_error(...)`, raises Spark's error lazily.
+  Messages are optional string literals for `assert_true(...)` and required string literals for `raise_error(...)`.
+  Compose `~`, `==`, and other ordinary predicates instead of expecting `assert_false` or `assert_equal` aliases.
 - Null and NaN predicates remain distinct. `when(...)` must finish with `.otherwise(...)` before use.
 - `nullif(value, other)` returns `value`'s type and is always nullable because a matching value becomes null.
 - `nanvl(value, fallback)` accepts Float/Double inputs, returns Double, and replaces only NaN—not null—values.

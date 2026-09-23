@@ -72,6 +72,8 @@ class RenderPySparkExpression:
             return str(expression.data["name"])
         if expression.kind == "call":
             return self._call(expression, aliases)
+        if expression.kind == "assertion":
+            return self._assertion(expression, aliases)
         if expression.kind == "python_udf":
             args = [self._render(argument, aliases) for argument in expression.args]
             return f"self.{expression.data['udf_name']}({', '.join(args)})"
@@ -846,6 +848,17 @@ class RenderPySparkExpression:
                 f"F.log({expression.data['base']!r}, {args[0]})" if "base" in expression.data else f"F.log({args[0]})"
             )
         raise TypeError(f"Unsupported PySpark helper call: {function}")
+
+    def _assertion(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:
+        function = expression.data["function"]
+        message = expression.data["message"]
+        if function == "assert_true":
+            condition = self._render(expression.args[0], aliases)
+            arguments = condition if message is None else f"{condition}, {message!r}"
+            return f"F.assert_true({arguments}).isNull()"
+        if function == "raise_error":
+            return f"F.raise_error({message!r}).isNull()"
+        raise TypeError(f"Unsupported PySpark assertion: {function}")
 
     def _struct(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:
         fields = cast(tuple[Any, ...], expression.data["fields"])

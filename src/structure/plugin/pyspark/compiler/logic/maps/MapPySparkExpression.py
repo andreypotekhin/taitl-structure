@@ -48,6 +48,8 @@ class MapPySparkExpression:
             return "expression", "cast"
         if expression.kind == "try_cast":
             return "expression", "try_cast"
+        if expression.kind == "assertion":
+            return "expression", "assertion"
         if expression.kind in {"add", "sub", "mul", "div", "mod", "neg", "when"}:
             return "expression", "standard_helper_call"
         if expression.kind in {"bitwise_and", "bitwise_or", "bitwise_xor", "bitwise_not"}:
