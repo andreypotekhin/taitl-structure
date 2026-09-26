@@ -149,7 +149,7 @@ See 'Documenting the design decisions' section in /docs/dev/Style.md
 
 #### Documenting progress
 Keep project-management documents - e.g. milestones, sprints, etc. - up to date as we progress with design/development.
-Move completed plans to close/archive/planning/.
+Move completed plans to docs/dev/planning/past/.
 Move completed sprints to close/archive/sprints/.
 Mark completed milestones (docs/dev/project-management/Milestones.md) with + (e.g. M0: Groundwork Ready).
 

@@ -75,7 +75,7 @@ Automation instructions
 - Switch to Plan Mode (as in /plan-mode)
 - Discuss and refine the plan with human user
 - Upon approval from human user, implement the plan
-- Move implemented plan to /close/archive/planning/
+- Move implemented plan to /docs/dev/planning/past/
 
 Notes
 
