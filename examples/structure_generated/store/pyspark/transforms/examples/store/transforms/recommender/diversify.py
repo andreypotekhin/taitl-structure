@@ -115,6 +115,8 @@ class DiversifyRecommendationsGenerated:
             .alias("exclusion_reason"),
         )
         assert_schema(decisions, DIVERSIFICATION_DECISION_SCHEMA, name="DiversificationDecision", mode="strict")
+        if not decisions.isStreaming:
+            decisions = apply_plan_boundary(decisions, self.spark)
 
         # Step method: publish
         diversified = ranked.alias("ranked_recommendation_candidate")

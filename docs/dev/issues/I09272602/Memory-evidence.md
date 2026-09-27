@@ -3,24 +3,24 @@
 ## Purpose
 
 This specification records the reproducible PySpark driver-heap exhaustion case that motivated Structure's explicit
-materialization helpers, projection-union optimization, and `PYSPARK-W2701` diagnostic. It is the developer-facing
+materialization helpers, projection-union optimization, and the `PYSPARK-W2701`–`PYSPARK-W2704` diagnostics. It is the developer-facing
 source of truth for the measurements, root-cause model, implementation decisions, and acceptance evidence.
 
-End-user symptoms and remedies belong in the [memory gotcha](../../troubleshooting/memory/spark_driver_heap_oom.gotcha.md).
-The implementation work is tracked in the [lineage materialization and diagnostics plan](../planning/P08232601.PySpark-lineage-materialization-and-diagnostics.plan.md).
+End-user symptoms and remedies belong in the [memory gotcha](../../../troubleshooting/memory/spark_driver_heap_oom.gotcha.md).
+The implementation work is tracked in the [lineage materialization and diagnostics plan](../../planning/P08232601.PySpark-lineage-materialization-and-diagnostics.plan.md).
 
 ## Scope
 
 This specification covers driver-side memory consumed while Spark analyzes a growing lazy DataFrame logical plan. It
 does not describe executor memory, shuffle spill, RDD storage hygiene, or application-wide heap tuning. It also does
-not change Search reciprocal semantics or prescribe an automatic checkpoint policy.
+not prescribe an automatic checkpoint policy.
 
 The committed feature scope is:
 
 - compiler-visible `persist()`, `cache()`, `unpersist()`, `checkpoint()`, and `local_checkpoint()` operations;
 - generated and online execution parity for supported ordinary PySpark profiles;
 - deterministic same-source projection-union fusion;
-- default-on structural warning `PYSPARK-W2701` with project and transform-level configuration;
+- default-on structural query plan growth warnings `PYSPARK-W2701`–`PYSPARK-W2704` with project and transform-level suppression;
 - explain output that distinguishes a reduced multiplier from a true lineage boundary.
 
 ## Terminology
@@ -105,34 +105,12 @@ creating round eight; the nested Catalyst lineage remained behind the relation n
 
 PySpark 4.0 reproduced the fused shape from writable `/tmp` with plan sizes `754`, `2,600`, `7,132`, and `17,992` for
 four rounds and completed with `rows=0`. Running from the read-only `/workspace` first exposed Spark 4.0's artifact
-directory requirement. Spark Connect 3.5 smoke coverage passed independently, but materialization helpers remain
-unsupported for Connect because no helper-method capability claim has been accepted.
-
-## Search Proving-Case Follow-up
-
-The Search proving failures are a separate instance of the same driver-side lazy-lineage class, but the original attribution
-to `ReduceSimilarityScores` was incorrect: `SearchDocuments` does not include that transform. Its compiled plan contains 91
-steps and 77 published stage outputs after the feedback-option branch rewrite, with several joins and unions over expanded
-indexed relations. The current per-step `PYSPARK-W2701` analysis does not report this cross-step common-ancestor fan-out.
-
-On the PySpark 3.5 Compose image with `-Xmx1g`, the document-reranking proving case first failed after 629.32 seconds at
-`reranked.merge_feedback_options`, while Catalyst analyzed a generated `DataFrame.union`; the stack reached
-`DeduplicateRelations` and reported `OutOfMemoryError: Java heap space`. The semantics-preserving rewrite in
-[`rerank.py`](../../../examples/search/transforms/searching/search_docs/rerank.py) combines global and fallback options in one
-left join, preserving the original global-row and fallback-row rules. Focused local tests passed, and the subsequent live run
-no longer failed at that union. It still failed at the final online/generated parity `collectToPython` after 495.11 seconds,
-with `OutOfMemoryError: Java heap space` (`failed reallocation of scalar replaced objects`).
-
-An experiment that called `persist()` on the offline index inputs without forcing an action did not complete within a
-576-second bounded run. This is consistent with the boundary contract: persistence may improve physical reuse, but it does not
-truncate the logical plan. Increasing the driver heap is likewise only a diagnostic or postponement; the 3 GiB bounded run
-did not produce a proving result.
-
-Decision: retain the feedback-option branch rewrite as a safe **Diminish** optimization, but do not claim that Search proving
-is fixed and do not insert an automatic checkpoint. A reliable end-user restructuring must introduce a true materialization
-boundary before expanded offline artifacts are reused, or redesign the graph around a small stable base relation. A future
-cross-step fan-out diagnostic may improve the warning, but it requires a separate false-positive-controlled design and is not
-part of the completed materialization feature.
+directory requirement. Spark Connect 3.5 smoke coverage passed independently; its materialization helpers remain
+unsupported. A later live Spark Connect 4.0 probe (2026-09-25) proved reliable `checkpoint(eager=True)` with
+server-startup `spark.checkpoint.dir`: values and schema were preserved, the resulting plan contained `LogicalRDD`
+rather than its original `Range`, and the result remained readable after dropping the source view. Only reliable
+checkpointing is admitted for the explicit Connect `>=4.0,<4.1` profile. This does not admit persist, unpersist,
+local checkpointing, streaming checkpoints, or the mixed-version Connect profile.
 
 ## Design Decisions
 
@@ -171,7 +149,9 @@ When the user runs `structure explain`, risky paths show:
 - the nearest actual `checkpoint()` or `local_checkpoint()` operation, or an explicit “none” recommendation.
 
 The warning and explain output must never call cache, persist, alias, Python assignment, or temporary-view reuse a
-lineage boundary. `PYSPARK-W2702`, cache-before-checkpoint tracking, and RDD-specific hygiene are out of scope.
+lineage boundary. Cache-before-checkpoint tracking and RDD-specific hygiene remain out of scope. Query-growth thresholds
+are configured with `PYSPARK_W2701_plan_growth_repeat_cost` through `PYSPARK_W2704_plan_growth_output_cost` in the
+PySpark plugin table.
 
 ## Acceptance Evidence
 
@@ -192,8 +172,7 @@ The bounded Docker evidence is:
 
 ## Related Documents
 
-- End-user troubleshooting: [Spark driver heap exhaustion](../../troubleshooting/memory/spark_driver_heap_oom.gotcha.md)
-- Reproducer: [spark_driver_heap_oom.py](../../troubleshooting/memory/spark_driver_heap_oom.py)
-- Implementation plan: [P08232601](../planning/P08232601.PySpark-lineage-materialization-and-diagnostics.plan.md)
-- Diagnostics catalog: [Diagnostics.md](../../Diagnostics.md)
-- Search proving test: [`test_search.py`](../../../tests/integration/pyspark/search/test_search.py)
+- End-user troubleshooting: [Spark driver heap exhaustion](../../../troubleshooting/memory/spark_driver_heap_oom.gotcha.md)
+- Reproducer: [spark_driver_heap_oom.py](../../../troubleshooting/memory/spark_driver_heap_oom.py)
+- Implementation plan: [P08232601](../../planning/P08232601.PySpark-lineage-materialization-and-diagnostics.plan.md)
+- Diagnostics catalog: [Diagnostics.md](../../../Diagnostics.md)

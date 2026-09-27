@@ -5,6 +5,7 @@ from typing import cast
 from structure.core.configuration.model.ConfigDiagnostic import ConfigDiagnostic
 from structure.core.configuration.model.ConfigError import ConfigError
 from structure.core.plugins.model.PluginConfiguration import PluginConfiguration
+from structure.lib.cross.errors import diagnostic_registry
 
 
 class StructureConfigValidator:
@@ -51,6 +52,7 @@ class StructureConfigValidator:
         self._validate_generated_code_options(values["generated_code_options"])
         self._validate_generated_code_hard_wrap(values["generated_code_hard_wrap"])
         self._validate_hook_target_default(values["hook_target_default"])
+        self._validate_disabled_warnings(values["disable"])
         self._validate_plugin_options(values["plugin"])
         for key in self._bools:
             self._validate_type(values[key], key, bool)
@@ -176,6 +178,35 @@ class StructureConfigValidator:
                 "generated_code_hard_wrap must be at least 80",
                 "Use generated_code_hard_wrap = 120.",
             )
+
+    def _validate_disabled_warnings(self, value: object) -> None:
+        self._validate_string_list(
+            value,
+            "disable",
+            'Use disable = ["PYSPARK-W2701"].',
+        )
+        codes = cast(list[str], value)
+        if len(codes) != len(set(codes)):
+            self._fail_invalid(
+                "disable",
+                "disable must not contain duplicate warning codes",
+                'Use each warning code once, for example disable = ["PYSPARK-W2701"].',
+            )
+        for code in codes:
+            entry = diagnostic_registry.get(code) if code in {item.code for item in diagnostic_registry.entries()} else None
+            if entry is None:
+                self._fail_invalid(
+                    "disable",
+                    f"Unknown diagnostic code: {code}",
+                    "Use an active warning code listed in docs/Diagnostics.md.",
+                )
+                continue
+            if entry.severity != "warning":
+                self._fail_invalid(
+                    "disable",
+                    f"Only warning diagnostics can be disabled: {code}",
+                    "Remove error, info, or internal diagnostic codes from disable.",
+                )
 
     def _validate_plugin_options(self, value: object) -> None:
         if not isinstance(value, Mapping):

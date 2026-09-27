@@ -16,3 +16,4 @@ class PySparkUnpersistRecipe:
 @dataclass(frozen=True)
 class PySparkCheckpointRecipe:
     eager: bool = True
+    stage_input: bool = False

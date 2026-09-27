@@ -46,9 +46,15 @@ persisted data and also leaves lineage unchanged. `checkpoint()` writes through 
 directory and truncates the logical plan. `local_checkpoint()` uses executor-local cached storage, so it is a
 lineage boundary but not a reliable recovery boundary. Both checkpoint helpers are batch-only.
 
+Reliable `checkpoint()` is supported on ordinary PySpark 3.5/4.0 and the explicit Spark Connect 4.0 profile
+(`>=4.0,<4.1`). For Connect, configure `spark.checkpoint.dir` when starting the server, not through session settings.
+Connect 3.5 and the mixed-version Connect profile remain gated; Connect local checkpointing is not admitted by this
+support claim. The caller owns checkpoint storage and cleanup. No checkpoint is inserted implicitly.
+
 When a relation is repeatedly reused through self-joins or unions after its lineage has expanded, Structure emits
 `PYSPARK-W2701`. Add `checkpoint()` or `local_checkpoint()` at the intended boundary; caching alone does not resolve
-driver-side logical-plan analysis growth. See the [memory gotcha](../troubleshooting/memory/spark_driver_heap_oom.gotcha.md) and the developer [Memory specification](../dev/specifications/Memory.spec.md).
+driver-side logical-plan analysis growth. See the [memory gotcha](../troubleshooting/memory/spark_driver_heap_oom.gotcha.md),
+[Memory troubleshooting summary](../troubleshooting/memory/Memory.trbl.md), and [resolved OOM issue](../dev/issues/I09272602.Spark-driver-heap-exhaustion.issue.md).
 
 Interpret the remedy in three steps: **diminish** a multiplier with Structure's eligible projection-union fusion;
 **bound** unchanged recursive reuse with `checkpoint()` or `local_checkpoint()`; or **remove** the recurrence by

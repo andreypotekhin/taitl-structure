@@ -150,6 +150,8 @@ class FibonacciGenerated:
             F.col("index"),
             F.col("previous").alias("value"),
         )
+        if not ticks.isStreaming:
+            ticks = apply_plan_boundary(ticks, self.spark)
 
         # Step method: result
         result = ticks.alias("fibonacci_number")
@@ -329,6 +331,8 @@ class PrimeNumbersGenerated:
             F.col("index"),
             F.col("current").alias("prime"),
         )
+        if not ticks.isStreaming:
+            ticks = apply_plan_boundary(ticks, self.spark)
 
         # Step method: result
         result = ticks.alias("prime_number")

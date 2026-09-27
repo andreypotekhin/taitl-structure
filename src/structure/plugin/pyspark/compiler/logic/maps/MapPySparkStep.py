@@ -103,7 +103,6 @@ class MapPySparkStep:
                     check_intermediate=check_intermediate,
                     boundary=self._boundary(
                         result.frame,
-                        ordinal=step.ordinal,
                         last=last,
                         policy=boundary_policy,
                         boundary_frames=boundary_frames,
@@ -137,7 +136,6 @@ class MapPySparkStep:
                 check_intermediate=check_intermediate,
                 boundary=self._boundary(
                     step.results[0].frame,
-                    ordinal=step.ordinal,
                     last=last,
                     policy=boundary_policy,
                     boundary_frames=boundary_frames,
@@ -154,16 +152,15 @@ class MapPySparkStep:
     def _boundary(
         frame: str,
         *,
-        ordinal: int,
         last: bool,
         policy: str,
         boundary_frames: frozenset[str],
     ) -> bool:
-        if last or policy == "off":
+        if policy == "off":
             return False
         if policy == "strict":
-            return True
-        return frame in boundary_frames or (ordinal + 1) % 8 == 0
+            return not last
+        return frame in boundary_frames
 
     def _operations(
         self,
@@ -634,7 +631,10 @@ class MapPySparkStep:
                 recipes.append(
                     self._operation_modes(
                         PySparkOperationRecipe.checkpoint_operation(
-                            PySparkCheckpointRecipe(eager=operation.checkpoint.eager)
+                            PySparkCheckpointRecipe(
+                                eager=operation.checkpoint.eager,
+                                stage_input=capabilities.id.variant == "spark-connect",
+                            )
                         ),
                         operation,
                     )

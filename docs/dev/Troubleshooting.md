@@ -31,7 +31,10 @@ internal import sites, import the class from its defining module, such as
 
 For the end-user reproducer and materialization guidance, see the
 [PySpark driver-heap memory gotcha](../troubleshooting/memory/spark_driver_heap_oom.gotcha.md). For the engineering
-root-cause, measurements, and implementation contract, see the developer [Memory specification](specifications/Memory.spec.md).
+root-cause, measurements, and implementation contract, see the
+[resolved OOM issue](issues/I09272602.Spark-driver-heap-exhaustion.issue.md) and its
+[Memory evidence](issues/I09272602/Memory-evidence.md). The repeatable investigation method is in
+[Memory optimization](optimization/Memory.opt.md).
 
 ### Problem (pytest): `PermissionError: [WinError 5] Access is denied: 'C:\Temp\pytest-of-Admin'`
 
@@ -140,13 +143,45 @@ it for that run, for example:
 `STRUCTURE_SPARK_CONNECT_DRIVER_MEMORY=3g make integration BACKEND=spark-connect35`.
 
 If the failure occurs after a long chain of intermediate schema checks, verify that Connect is using the default
-`validate_intermediate = false` and `connect_plan_boundaries = "auto"`. Setting `validate_intermediate = true` is a
+`validate_intermediate = false` and `plan_boundaries = "auto"`. Setting `validate_intermediate = true` is a
 diagnostic opt-in and can recreate the expensive remote-analysis behavior.
 
-For the ordinary-PySpark SearchDocuments reproducer and the measured driver-memory experiment, see
-[Gotchas](../Gotchas.md#problem-integration-search-proving-plan-exhausts-the-ordinary-pyspark-driver-heap).
+For the ordinary-PySpark SearchDocuments reproducer and the measured driver-memory experiment, see the
+[Search proving heap evidence](issues/I09272601/Search-proving-heap.evidence.md).
 
-For the self-sufficient PySpark reproducer and end-user restructuring guidance, see [the driver-heap memory gotcha](../troubleshooting/memory/spark_driver_heap_oom.gotcha.md). For root-cause analysis, compile-time detection, warning design, measures, and decisions, see the developer [Memory specification](specifications/Memory.spec.md).
+For the self-sufficient PySpark reproducer and end-user restructuring guidance, see [the driver-heap memory gotcha](../troubleshooting/memory/spark_driver_heap_oom.gotcha.md). For root-cause analysis, compile-time detection, warning design, measures, and decisions, see the [resolved OOM issue](issues/I09272602.Spark-driver-heap-exhaustion.issue.md).
+
+### Problem (integration): tiny Search fixtures still exhaust the driver
+
+When: `test_search.py` takes minutes constructing a plan or fails before collecting a handful of rows.
+Cause: repeated joins and feedback branches copy upstream logical plans; the fixture's row count is not the relevant
+size. Exposing every intermediate stage also analyzes schemas the test does not use. Spark diagnostic plan strings
+can amplify memory pressure further.
+Fix: shared `snapshots` truncate offline preparation lineage through Parquet, while Search's explicit
+`FuseDocuments(materialize=True)` checkpoints selected candidates before feedback branching. Search parity tests
+disable stage-output exposure consistently in both modes and reuse generated sources. Keep the sentence UDFs and
+expected-value assertions. See [shared integration helpers](Testing.md#reusing-preparation-without-retaining-growing-plans).
+For phase timing, controlled repetitions, and benchmark interpretation, see
+[Performance troubleshooting](../troubleshooting/performance/Performance.trbl.md).
+
+The runner caps `spark.sql.maxPlanStringLength` at 8192 and uses simple UI explain output. This prevents oversized
+diagnostic strings; it does not fix an oversized execution plan. A capped 1 GiB run still exhausted the driver in
+closure serialization before the fusion checkpoint was added. Cache, persist, temporary views, and increasing heap
+alone are not reliable lineage remedies. Compare individually bounded runs, not concurrent drivers competing within
+a small Docker VM.
+
+Spark Connect 4.0 needs `spark.checkpoint.dir` at server startup; setting it through `session.conf.set` fails with
+`CANNOT_MODIFY_CONFIG`. The checked-in runner configures and cleans up its own shared-volume directory. Connect 3.5
+does not support this boundary; only the full document-search case is excluded there, not the rest of Search.
+If an older cached image reports `ModuleNotFoundError: examples` inside a UDF, rebuild it or invoke the checked-in
+runner, which explicitly includes `/workspace` in `PYTHONPATH`.
+For ordinary Spark, the executor worker needs the same path. Compose sets it explicitly on both worker services;
+after updating the Compose file, recreate the affected idle worker with `docker compose ... up -d spark40-worker`
+(or `spark35-worker`). Restarting only the test runner does not update an existing worker's environment.
+
+If reranking returns fewer documents after an upgrade, check cached score `scope_id` values against the supplied
+document targets. Scores from a different target universe must not be reused. The reranking fixture supplies its
+named targets explicitly; this keeps the original three-document and top-result expectations intact.
 
 ### Problem (integration): Spark Connect logs `INVALID_HANDLE.SESSION_CLOSED` during `releaseExecute`
 

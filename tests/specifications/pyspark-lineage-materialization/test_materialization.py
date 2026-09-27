@@ -1,6 +1,7 @@
 from dataclasses import replace
 from types import SimpleNamespace
 from typing import cast
+from unittest.mock import Mock
 
 import pytest
 
@@ -16,6 +17,8 @@ from structure.plugin.pyspark.compiler.commands.BuildPySparkLineageDiagnostics i
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.plugin.pyspark.dsl.operations.MaterializationPlan import CheckpointPlan
 from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
+from structure.plugin.pyspark.execution.logic.expressions.EvaluatePySparkExpression import EvaluatePySparkExpression
+from structure.plugin.pyspark.execution.logic.running.RunOnlinePySparkTransform import RunOnlinePySparkTransform
 from structure.plugin.pyspark.render.commands.RenderPySparkExplainReport import RenderPySparkExplainReport
 from structure.plugin.pyspark.render.logic.steps.RenderPySparkStep import render_pyspark_step
 from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
@@ -117,6 +120,24 @@ def test_lineage_warning_is_deduplicated_and_checkpoint_resets_risk() -> None:
     assert BuildPySparkLineageDiagnostics()(plan, enabled=True) == ()
 
 
+def test_lineage_warning_repeat_cost_threshold_can_be_tuned() -> None:
+    join = SimpleNamespace(source="rows", input_name="rows", method=SimpleNamespace(value="rowset_join"))
+    operation = OperationPlan.join_operation(join)
+    step = SimpleNamespace(
+        name="publish",
+        source="rows",
+        source_scope="rows",
+        origin=SimpleNamespace(owner=Materialize),
+        plugin_body=PySparkStepBody(value=None, operations=(operation, operation)),
+    )
+    plan = cast(TransformPlan, SimpleNamespace(name="Materialize", steps=(step,)))
+
+    assert BuildPySparkLineageDiagnostics()(plan, enabled=True, repeat_cost=9) == ()
+    assert [diagnostic.code for diagnostic in BuildPySparkLineageDiagnostics()(plan, enabled=True, repeat_cost=1)] == [
+        "PYSPARK-W2701"
+    ]
+
+
 def test_lineage_warning_separates_diminishing_from_residual_risk() -> None:
     join = SimpleNamespace(source="rows", input_name="rows", method=SimpleNamespace(value="rowset_join"))
     operation = OperationPlan.join_operation(join)
@@ -184,7 +205,7 @@ def test_lineage_warning_can_be_disabled_at_project_and_transform_scope() -> Non
     assert Disabled.effective_transform_options()["warn_on_lineage_growth"] is False
 
 
-def test_materialization_capabilities_are_ordinary_only() -> None:
+def test_mixed_version_connect_profile_does_not_claim_materialization() -> None:
     ordinary = PySparkCapabilities(target_variant="ordinary")
     connect = PySparkCapabilities(target_variant="spark-connect")
     for name in ("persist", "unpersist", "checkpoint", "local_checkpoint"):
@@ -193,12 +214,52 @@ def test_materialization_capabilities_are_ordinary_only() -> None:
         assert not connect.supports(requirement).supported
 
 
+def test_connect40_claims_only_the_proven_reliable_checkpoint() -> None:
+    connect = PySparkCapabilities(target_profile=">=4.0,<4.1", target_variant="spark-connect")
+    assert connect.supports(CapabilityRequirement(group="optimization", name="checkpoint")).supported
+    for name in ("persist", "unpersist", "local_checkpoint"):
+        assert not connect.supports(CapabilityRequirement(group="optimization", name=name)).supported
+
+
 def test_projection_union_optimizer_fuses_private_branch() -> None:
     lowered = cast(PySparkExecutionPlan, _compile(FusedProjectionUnion).lowered)
 
     assert [step.name for step in lowered.steps] == ["merge"]
     assert lowered.steps[0].operations[0].kind == "explode_struct"
     assert lowered.optimizations[0].detail == "projection-union fusion: project + merge"
+
+
+def test_fused_projection_union_renders_and_evaluates_current_array_recipe() -> None:
+    lowered = cast(PySparkExecutionPlan, _compile(FusedProjectionUnion).lowered)
+    source = render_pyspark_step(lowered.steps[0], current="df")
+    assert "F.array(F.struct(" in source
+    generator = lowered.steps[0].operations[0].posexplode_struct
+    assert generator is not None
+    assert generator.expression.kind == "transform_expression"
+    functions = Mock()
+    result = EvaluatePySparkExpression().evaluate(generator.expression, functions=functions, aliases={})
+    assert result is functions.array.return_value
+    functions.array.assert_called_once()
+
+
+def test_fused_union_projects_generated_fields_without_old_input_qualifiers() -> None:
+    plan = cast(PySparkExecutionPlan, _compile(FusedProjectionUnion).lowered)
+    step = plan.steps[0]
+    generator = step.operations[0].posexplode_struct
+    assert generator is not None
+    assert step.projection == step.results[0].projection
+    assert all(assignment.expression.data["scope"] == generator.scope for assignment in step.projection)
+    functions = Mock()
+    EvaluatePySparkExpression().evaluate(
+        step.projection[0].expression,
+        functions=functions,
+        aliases=RunOnlinePySparkTransform()._scope_aliases(step),
+    )
+    functions.col.assert_called_once_with("id")
+    source = render_pyspark_step(step, current="df")
+    final_projection = source.rsplit(".select(", 1)[1]
+    assert 'F.col("id")' in final_projection
+    assert "materialization_input.id" not in final_projection
 
 
 def test_explain_lineage_state_reports_diminish_residual_risk_and_boundary() -> None:

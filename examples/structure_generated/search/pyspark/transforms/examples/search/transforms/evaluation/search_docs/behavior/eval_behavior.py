@@ -80,6 +80,8 @@ class EvaluateDocSearchBehaviorGenerated:
             F.col("search_request.query"),
         )
         assert_schema(selected_requests, BEHAVIOR_REQUEST_SCHEMA, name="BehaviorRequest", mode="strict")
+        if not selected_requests.isStreaming:
+            selected_requests = apply_plan_boundary(selected_requests, self.spark)
 
         # Step method: select_impressions
         displayed = selected_requests.alias("behavior_request")
@@ -107,6 +109,8 @@ class EvaluateDocSearchBehaviorGenerated:
             F.lit(0.0).alias("dwell_credit"),
         )
         assert_schema(displayed, BEHAVIOR_IMPRESSION_SCHEMA, name="BehaviorImpression", mode="strict")
+        if not displayed.isStreaming:
+            displayed = apply_plan_boundary(displayed, self.spark)
 
         # Step method: count_clicks
         clicked = displayed.alias("behavior_impression")
@@ -223,6 +227,8 @@ class EvaluateDocSearchBehaviorGenerated:
             F.coalesce(F.col("clicked.dwell_credit"), F.lit(0.0)).alias("dwell_credit"),
         )
         assert_schema(measured, BEHAVIOR_IMPRESSION_SCHEMA, name="BehaviorImpression", mode="strict")
+        if not measured.isStreaming:
+            measured = apply_plan_boundary(measured, self.spark)
 
         # Step method: measure_requests
         request_totals = selected_requests.alias("behavior_request")
@@ -318,6 +324,8 @@ class EvaluateDocSearchBehaviorGenerated:
             F.col("behavior_request_totals.raw_long_click_count"),
         )
         assert_schema(request_metrics, BEHAVIOR_REQUEST_METRICS_SCHEMA, name="BehaviorRequestMetrics", mode="strict")
+        if not request_metrics.isStreaming:
+            request_metrics = apply_plan_boundary(request_metrics, self.spark)
 
         # Step method: publish_requests
         request_behaviors = request_metrics.alias("behavior_request_metrics")

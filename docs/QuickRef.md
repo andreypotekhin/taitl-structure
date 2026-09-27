@@ -1174,8 +1174,9 @@ validate_intermediate = false
 ```
 
 Spark Connect uses the reduced intermediate-validation default when the setting is omitted. Input and final-output
-checks remain strict. Use `connect_plan_boundaries = "auto"` under `[tool.structure.plugin.pyspark]` to contain long
-remote plans, or `"strict"` for diagnostic boundaries.
+checks remain strict. The default `plan_boundaries = "auto"` under `[tool.structure.plugin.pyspark]` uses temporary
+views for shared batch frames on all PySpark backends. Use `"off"` for comparison or `"strict"` for diagnostic
+boundaries after every non-final step. Streaming frames bypass them; views do not replace explicit checkpoints.
 
 Choose fuller validation only when the added Spark work is intentional:
 

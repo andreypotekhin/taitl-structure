@@ -170,6 +170,8 @@ class PiAsSeriesGenerated:
             F.col("term"),
             F.col("total").alias("value"),
         )
+        if not ticks.isStreaming:
+            ticks = apply_plan_boundary(ticks, self.spark)
 
         # Step method: result
         result = ticks.alias("series_approximation")
@@ -323,6 +325,8 @@ class EAsSeriesGenerated:
             F.col("term"),
             F.col("total").alias("value"),
         )
+        if not ticks.isStreaming:
+            ticks = apply_plan_boundary(ticks, self.spark)
 
         # Step method: result
         result = ticks.alias("series_approximation")
@@ -485,6 +489,8 @@ class Ln2AsSeriesGenerated:
             F.col("term"),
             F.col("total").alias("value"),
         )
+        if not ticks.isStreaming:
+            ticks = apply_plan_boundary(ticks, self.spark)
 
         # Step method: result
         result = ticks.alias("series_approximation")

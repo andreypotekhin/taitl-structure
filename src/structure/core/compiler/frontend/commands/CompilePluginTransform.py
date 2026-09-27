@@ -7,6 +7,7 @@ from typing import Mapping, cast
 from structure.core.compiler.artifacts.model.CompilerOptions import CompilerOptions
 from structure.core.compiler.frontend.commands.AnalyzeTransform import AnalyzeTransform
 from structure.core.compiler.frontend.commands.AuthorTransform import AuthorTransform
+from structure.core.compiler.frontend.logic.FilterDiagnostics import FilterDiagnostics
 from structure.core.configuration.model.StructureConfig import StructureConfig
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline
@@ -27,10 +28,11 @@ class CompilePluginTransform:
         self._analyze = AnalyzeTransform()
         self._author = AuthorTransform()
         self._registry = registry
+        self._filter_diagnostics = FilterDiagnostics()
 
     def __call__(
         self,
-        transform: type[Transform] | TransformPipeline,
+        transform: type[Transform] | Transform | TransformPipeline,
         *,
         options: CompilerOptions | None = None,
         config: StructureConfig | None = None,
@@ -58,6 +60,7 @@ class CompilePluginTransform:
         configuration = {
             "warn_on_udfs": resolved.warn_on_udfs,
             "warn_on_lineage_growth": resolved.warn_on_lineage_growth,
+            "disable": resolved.disable,
             "validate_intermediate": resolved.validate_intermediate,
             "stream_to_batch_policy": resolved.stream_to_batch_policy,
             "allow_output_to_input": resolved.allow_output_to_input,
@@ -71,7 +74,7 @@ class CompilePluginTransform:
         plugin = (registry or self._registry or Plugin.registry()).select(target)
         self._validate_declared_schemas(transform, plugin, configuration, plugin_options)
         analysis = self._analyze(
-            transform,
+            type(transform) if isinstance(transform, Transform) else transform,
             config=resolved,
         )
         plan = self._author(
@@ -96,7 +99,7 @@ class CompilePluginTransform:
 
     def _compile_options(
         self,
-        transform: type[Transform] | TransformPipeline,
+        transform: type[Transform] | Transform | TransformPipeline,
         *,
         options: CompilerOptions,
         schema_types,
@@ -108,6 +111,7 @@ class CompilePluginTransform:
         configuration = {
             "warn_on_udfs": options.warn_on_udfs,
             "warn_on_lineage_growth": options.warn_on_lineage_growth,
+            "disable": options.disable,
             "allow_stream_to_batch": options.allow_stream_to_batch,
             "stream_to_batch_policy": options.stream_to_batch_policy,
             "allow_output_to_input": options.allow_output_to_input,
@@ -126,6 +130,7 @@ class CompilePluginTransform:
             overrides={
                 "warn_on_udfs": options.warn_on_udfs,
                 "warn_on_lineage_growth": options.warn_on_lineage_growth,
+                "disable": list(options.disable),
                 "allow_stream_to_batch": options.allow_stream_to_batch,
                 "stream_to_batch_policy": options.stream_to_batch_policy,
                 "allow_output_to_input": options.allow_output_to_input,
@@ -135,7 +140,7 @@ class CompilePluginTransform:
             },
         )
         analysis = self._analyze(
-            transform,
+            type(transform) if isinstance(transform, Transform) else transform,
             config=authoring_config,
         )
         plan = self._author(
@@ -160,7 +165,7 @@ class CompilePluginTransform:
 
     def _compile(
         self,
-        transform: type[Transform] | TransformPipeline,
+        transform: type[Transform] | Transform | TransformPipeline,
         plan,
         *,
         target: str,
@@ -184,14 +189,28 @@ class CompilePluginTransform:
         if not isinstance(compilation, PluginCompilation):
             raise ValueError(f"PLUGIN-E2708: Plugin {target!r} returned an invalid compilation result.")
         streaming_diagnostics = self._streaming_diagnostics(plugin, compilation.lowered, plan)
-        diagnostics = (*compilation.diagnostics, *streaming_diagnostics)
-        analysis = (
-            plan
-            if not diagnostics
-            else replace(
-                plan,
-                diagnostics=(*plan.diagnostics, *diagnostics),
-            )
+        transform_options = getattr(plan, "options", None) or {}
+        disabled = (*cast(tuple[str, ...], configuration.get("disable", ())), *cast(tuple[str, ...], transform_options.get("disable", ())))
+        warn_on_udfs = bool(transform_options.get("warn_on_udfs", configuration.get("warn_on_udfs", True)))
+        warn_on_lineage_growth = bool(
+            transform_options.get("warn_on_lineage_growth", configuration.get("warn_on_lineage_growth", True))
+        )
+        diagnostics = self._filter_diagnostics(
+            (*compilation.diagnostics, *streaming_diagnostics),
+            disable=disabled,
+            warn_on_udfs=warn_on_udfs,
+            warn_on_lineage_growth=warn_on_lineage_growth,
+        )
+        core_diagnostics = self._filter_diagnostics(
+            plan.diagnostics,
+            disable=disabled,
+            warn_on_udfs=warn_on_udfs,
+            warn_on_lineage_growth=warn_on_lineage_growth,
+        )
+        analysis_diagnostics = (*core_diagnostics, *diagnostics)
+        analysis = plan if analysis_diagnostics == plan.diagnostics and not diagnostics else replace(
+            plan,
+            diagnostics=analysis_diagnostics,
         )
         return replace(compilation, analysis=analysis, diagnostics=diagnostics)
 
@@ -243,7 +262,7 @@ class CompilePluginTransform:
 
     @staticmethod
     def _validate_declared_schemas(
-        transform: type[Transform] | TransformPipeline,
+        transform: type[Transform] | Transform | TransformPipeline,
         plugin,
         configuration: Mapping[str, object],
         plugin_options: Mapping[str, object],
@@ -265,7 +284,9 @@ class CompilePluginTransform:
         )
 
     @staticmethod
-    def _transform_classes(transform: type[Transform] | TransformPipeline) -> tuple[type[Transform], ...]:
+    def _transform_classes(transform: type[Transform] | Transform | TransformPipeline) -> tuple[type[Transform], ...]:
+        if isinstance(transform, Transform):
+            transform = type(transform)
         pipeline = transform if isinstance(transform, TransformPipeline) else transform._structure_pipeline
         if pipeline is None:
             return (transform,)  # type: ignore[return-value]
@@ -291,6 +312,6 @@ class CompilePluginTransform:
         merged.update(settings)
         return config or StructureConfig.resolve(project_root=project_root, overrides=merged)
 
-    def _target(self, transform: type[Transform] | TransformPipeline, *, default: str) -> str:
+    def _target(self, transform: type[Transform] | Transform | TransformPipeline, *, default: str) -> str:
         configuration = PluginConfiguration.resolve({"plugin": {"default": default}})
         return Plugin.resolve_target()(transform, configuration=configuration)

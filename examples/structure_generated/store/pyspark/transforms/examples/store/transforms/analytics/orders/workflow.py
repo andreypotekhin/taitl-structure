@@ -48,6 +48,8 @@ class CustomerDailyTotalsGenerated:
             )
         )
         assert_schema(customer__customer_totals, CUSTOMER_DAILY_TOTAL_SCHEMA, name="CustomerDailyTotal", mode="strict")
+        if not customer__customer_totals.isStreaming:
+            customer__customer_totals = apply_plan_boundary(customer__customer_totals, self.spark)
         return {
             "customer__customer_totals": customer__customer_totals,
         }
@@ -87,6 +89,8 @@ class ProductDailySummariesGenerated:
             )
         )
         assert_schema(product__product_summary, PRODUCT_DAILY_SUMMARY_SCHEMA, name="ProductDailySummary", mode="strict")
+        if not product__product_summary.isStreaming:
+            product__product_summary = apply_plan_boundary(product__product_summary, self.spark)
         return {
             "product__product_summary": product__product_summary,
         }
@@ -198,6 +202,8 @@ class CustomerEventRanksGenerated:
             )
             .alias("rolling_max_units"),
         )
+        if not ranks__customer_event_rank.isStreaming:
+            ranks__customer_event_rank = apply_plan_boundary(ranks__customer_event_rank, self.spark)
         return {
             "ranks__customer_event_rank": ranks__customer_event_rank,
         }

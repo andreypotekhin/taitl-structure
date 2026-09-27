@@ -25,7 +25,7 @@ class AuthorTransform:
 
     def __call__(
         self,
-        transform: type[Transform] | TransformPipeline,
+        transform: type[Transform] | Transform | TransformPipeline,
         plan: TransformPlan,
         *,
         config: StructureConfig,

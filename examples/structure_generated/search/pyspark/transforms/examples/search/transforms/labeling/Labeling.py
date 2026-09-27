@@ -93,6 +93,8 @@ class CreateQueryLabelsGenerated:
             F.col("intent.name"),
         )
         assert_schema(created__valid_intents, INTENT_SCHEMA, name="Intent", mode="strict")
+        if not created__valid_intents.isStreaming:
+            created__valid_intents = apply_plan_boundary(created__valid_intents, self.spark)
         return {
             "created__valid_intents": created__valid_intents,
         }
@@ -272,6 +274,8 @@ class CreateQueryLabelsGenerated:
             F.map_from_entries(F.col("query_label_assignment_entries.entries")).alias("labels"),
         )
         assert_schema(created__labels, QUERY_LABEL_ASSIGNMENTS_SCHEMA, name="QueryLabelAssignments", mode="strict")
+        if not created__labels.isStreaming:
+            created__labels = apply_plan_boundary(created__labels, self.spark)
         return {
             "created__labels": created__labels,
         }
@@ -526,6 +530,8 @@ class MergeQueryLabelsGenerated:
             ).alias("is_time_sensitive"),
             F.col("search_query.language"),
         )
+        if not merged__labeled_queries.isStreaming:
+            merged__labeled_queries = apply_plan_boundary(merged__labeled_queries, self.spark)
         return {
             "merged__labeled_queries": merged__labeled_queries,
         }

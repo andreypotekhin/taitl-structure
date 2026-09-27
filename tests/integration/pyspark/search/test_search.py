@@ -1,11 +1,15 @@
 import csv
 from datetime import datetime
+from functools import partial
 from pathlib import Path
 from typing import Mapping, Sequence, cast
 
 import pytest
-from integration.pyspark.support.backend_matrix import generated_project, render_generated_project, session
+from integration.pyspark.support import backend_matrix
+from integration.pyspark.support.backend_matrix import generated_project
 from integration.pyspark.support.rows import rows, single
+from integration.pyspark.support.search_options import stage_outputs_enabled
+from integration.pyspark.support.timing import phase
 
 from examples.search.schemas.analytics import (
     CorpusStatistics,
@@ -118,6 +122,7 @@ from examples.search.schemas.indexing.vector import (
     DocumentVectorIndexSummary,
     DocumentVectorQuery,
     DocumentVectorScore,
+    ParagraphVectorCandidate,
     ParagraphVectorEmbedding,
     ParagraphVectorIndex,
     ParagraphVectorIndexSummary,
@@ -283,10 +288,15 @@ from examples.search.transforms.stats.AnalyzeText import AnalyzeText
 from examples.search.transforms.stats.CorpusText import CorpusText
 from examples.search.transforms.stats.ProfileDocuments import ProfileDocuments
 from examples.search.transforms.training import BuildTrainingData, RankDocumentCandidates
-from structure import Schema
+from structure import Schema, Transform
 from structure.plugin.pyspark import TimeWindow
 
 pytestmark = pytest.mark.integration
+
+# These tests assert public results; dedicated runtime tests cover stage access.
+_ALLOW_STAGE_OUTPUTS = stage_outputs_enabled()
+session = partial(backend_matrix.session, allow_stage_outputs=_ALLOW_STAGE_OUTPUTS)
+render_generated_project = partial(backend_matrix.render_generated_project, allow_stage_outputs=_ALLOW_STAGE_OUTPUTS)
 
 PACKAGE = "integration_search_generated"
 FIXTURES = Path(__file__).resolve().parents[4] / "examples" / "fixtures" / "search"
@@ -374,6 +384,7 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         DocumentVectorScore,
         DocumentVectorCandidate,
         ParagraphVectorScore,
+        ParagraphVectorCandidate,
         VectorIndexPolicy,
     ],
     "examples.search.schemas.fields": [
@@ -671,6 +682,22 @@ TRANSFORMS = (
 )
 
 
+@pytest.fixture(scope="module")
+def search_sources(generated_sources):
+    transforms: Sequence[tuple[type[Transform], str]] = TRANSFORMS
+    if backend_matrix.backend_name() == "spark-connect35":
+        # Only the full document-search graph needs reliable checkpoints.
+        transforms = tuple(
+            item for item in transforms if not issubclass(item[0], SearchDocuments) and item[0] is not SearchFields
+        )
+    return generated_sources(
+        transforms,
+        generated_package=PACKAGE,
+        source_schema_modules=SCHEMA_MODULES,
+        allow_stage_outputs=_ALLOW_STAGE_OUTPUTS,
+    )
+
+
 def test_query_labeling_pipeline_renders_with_stage_owned_raw_hook() -> None:
     files = render_generated_project(
         Labeling,
@@ -792,19 +819,8 @@ def test_query_intents_create_multilingual_english_labels_online_and_generated(s
         assert rows(generated.labeled_queries, "id") == expected
 
 
-def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -> None:
-    files = {}
-    for transform, source in TRANSFORMS:
-        files.update(
-            render_generated_project(
-                transform,
-                source_transform=source,
-                generated_package=PACKAGE,
-                source_schema_modules=SCHEMA_MODULES,
-            )
-        )
-
-    with generated_project(tmp_path, PACKAGE, files):
+def test_text_fixture_runs_online_and_generated(spark, tmp_path, search_sources, snapshots) -> None:
+    with generated_project(tmp_path, PACKAGE, search_sources):
         schemas = __import__(f"{PACKAGE}.pyspark.schemas.text", fromlist=["DOCUMENT_SCHEMA"])
         documents = spark.createDataFrame(
             [
@@ -906,6 +922,7 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
         generated_segments = Chunking(documents=documents).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
+        generated_segments = snapshots.outputs(generated_segments, label="chunking")
         assert generated_segments.sections.columns == [
             "id",
             "document_id",
@@ -946,12 +963,7 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             .run(session(spark, execution_mode="generated", generated_package=PACKAGE))
             .features
         )
-        cache_frames(
-            generated_segments.sentences,
-            generated_segments.paragraphs,
-            generated_segments.sections,
-            generated_features,
-        )
+        generated_features = snapshots(generated_features, label="features")
         assert rows(online_features, "document_id") == rows(generated_features, "document_id")
         guide = single(generated_features, lambda row: row["document_id"] == "d-1")
         assert guide["url_is_https"] is True
@@ -962,6 +974,7 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
         generated_index = _run_indexing(
             spark, documents, generated_segments.sentences, execution_mode="generated", generated_package=PACKAGE
         )
+        generated_index = snapshots.outputs(generated_index, label="indexing")
         inputs = dict(
             documents=documents,
             sentences=generated_segments.sentences,
@@ -978,6 +991,7 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
         generated_analytics = AnalyzeText(**inputs).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
+        generated_analytics = snapshots.outputs(generated_analytics, label="analytics")
         assert rows(online_analytics.document_statistics, "document_id") == rows(
             generated_analytics.document_statistics, "document_id"
         )
@@ -1035,16 +1049,6 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             ],
             __import__(f"{PACKAGE}.pyspark.schemas.search", fromlist=["SEARCH_QUERY_SCHEMA"]).SEARCH_QUERY_SCHEMA,
         )
-        cache_frames(
-            generated_index.document_terms,
-            generated_index.document_summary,
-            generated_index.section_terms,
-            generated_index.section_summary,
-            generated_index.paragraph_terms,
-            generated_index.paragraph_summary,
-            generated_index.sentence_terms,
-            generated_index.sentence_summary,
-        )
         assert rows(online_index.document_terms, "document_id", "term") == rows(
             generated_index.document_terms, "document_id", "term"
         )
@@ -1085,6 +1089,8 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
         generated_similarity_queries = CreateSimilarityQueries(**similarity_index_inputs).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
+        generated_similarity_queries = snapshots.outputs(generated_similarity_queries, label="similarity queries")
+        online_similarity_queries = snapshots.outputs(online_similarity_queries, label="online similarity queries")
         assert rows(online_similarity_queries.queries, "id") == rows(generated_similarity_queries.queries, "id")
         assert len(rows(generated_similarity_queries.document_queries, "query_id")) == 3
         assert (
@@ -1110,7 +1116,9 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             targets=AllScoringTargets(
                 queries=generated_similarity_queries.queries,
                 document_terms=generated_index.document_terms,
-            ).run(session(spark, execution_mode="generated", generated_package=PACKAGE)).targets,
+            )
+            .run(session(spark, execution_mode="generated", generated_package=PACKAGE))
+            .targets,
             **{name: value for name, value in similarity_index_inputs.items() if name != "policy"},
         )
         score_policy = spark.createDataFrame(
@@ -1131,6 +1139,10 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
         generated_similarity_bm25_scores = ScoreBm25(**similarity_score_inputs).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
+        online_similarity_overlap_scores = snapshots.outputs(online_similarity_overlap_scores, label="online overlap")
+        online_similarity_bm25_scores = snapshots.outputs(online_similarity_bm25_scores, label="online BM25")
+        generated_similarity_overlap_scores = snapshots.outputs(generated_similarity_overlap_scores, label="overlap")
+        generated_similarity_bm25_scores = snapshots.outputs(generated_similarity_bm25_scores, label="BM25")
         similarity_reducer_inputs = dict(
             document_queries=generated_similarity_queries.document_queries,
             section_queries=generated_similarity_queries.section_queries,
@@ -1182,6 +1194,7 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
         generated_similarities = ReduceSimilarityScores(**similarity_reducer_inputs).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
+        generated_similarities = snapshots.outputs(generated_similarities, label="similarities")
         assert rows(online_similarities.document_similarities, "left_document_id", "right_document_id") == rows(
             generated_similarities.document_similarities, "left_document_id", "right_document_id"
         )
@@ -1306,7 +1319,9 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             targets=AllScoringTargets(
                 queries=queries,
                 document_terms=generated_index.document_terms,
-            ).run(session(spark, execution_mode="generated", generated_package=PACKAGE)).targets,
+            )
+            .run(session(spark, execution_mode="generated", generated_package=PACKAGE))
+            .targets,
             document_terms=generated_index.document_terms,
             document_summary=generated_index.document_summary,
             section_terms=generated_index.section_terms,
@@ -1318,16 +1333,20 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             score_policy=score_policy,
             **_empty_vector_scoring_inputs(spark),
         )
-        online_scores = Scoring(**search_inputs).run(session(spark, execution_mode="online"))
-        generated_scores = Scoring(**search_inputs).run(
-            session(spark, execution_mode="generated", generated_package=PACKAGE)
-        )
-        assert rows(online_scores.document_scores, "query_id", "document_id") == rows(
-            generated_scores.document_scores, "query_id", "document_id"
-        )
-        assert rows(online_scores.section_scores, "query_id", "section_id") == rows(
-            generated_scores.section_scores, "query_id", "section_id"
-        )
+        with phase("text fixture Scoring online construction"):
+            online_scores = Scoring(**search_inputs).run(session(spark, execution_mode="online"))
+        with phase("text fixture Scoring generated construction"):
+            generated_scores = Scoring(**search_inputs).run(
+                session(spark, execution_mode="generated", generated_package=PACKAGE)
+            )
+        with phase("text fixture Scoring online collection"):
+            online_documents = rows(online_scores.document_scores, "query_id", "document_id")
+            online_sections = rows(online_scores.section_scores, "query_id", "section_id")
+        with phase("text fixture Scoring generated collection"):
+            generated_documents = rows(generated_scores.document_scores, "query_id", "document_id")
+            generated_sections = rows(generated_scores.section_scores, "query_id", "section_id")
+        assert online_documents == generated_documents
+        assert online_sections == generated_sections
         structure_document = single(
             generated_scores.document_scores,
             lambda row: row["query_id"] == "q-structure" and row["document_id"] == "d-1",
@@ -1336,19 +1355,8 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
         assert cast(float, structure_document["score"]) > 0
 
 
-def test_search_ranks_fixture_sentences_online_and_generated(spark, tmp_path) -> None:
-    files = {}
-    for transform, source in TRANSFORMS:
-        files.update(
-            render_generated_project(
-                transform,
-                source_transform=source,
-                generated_package=PACKAGE,
-                source_schema_modules=SCHEMA_MODULES,
-            )
-        )
-
-    with generated_project(tmp_path, PACKAGE, files):
+def test_search_ranks_fixture_sentences_online_and_generated(spark, tmp_path, search_sources, snapshots) -> None:
+    with generated_project(tmp_path, PACKAGE, search_sources):
         text_schemas = __import__(f"{PACKAGE}.pyspark.schemas.text", fromlist=["DOCUMENT_SCHEMA"])
         search_schemas = __import__(
             f"{PACKAGE}.pyspark.schemas.search",
@@ -1383,12 +1391,16 @@ def test_search_ranks_fixture_sentences_online_and_generated(spark, tmp_path) ->
         segments = Chunking(documents=documents).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
-        index = _run_indexing(spark, documents, segments.sentences, execution_mode="generated", generated_package=PACKAGE)
+        segments = snapshots.outputs(segments, label="chunking")
+        index = _run_indexing(
+            spark, documents, segments.sentences, execution_mode="generated", generated_package=PACKAGE
+        )
+        index = snapshots.outputs(index, label="indexing")
         scores = Scoring(
             queries=queries,
-            targets=AllScoringTargets(queries=queries, document_terms=index.document_terms).run(
-                session(spark, execution_mode="generated", generated_package=PACKAGE)
-            ).targets,
+            targets=AllScoringTargets(queries=queries, document_terms=index.document_terms)
+            .run(session(spark, execution_mode="generated", generated_package=PACKAGE))
+            .targets,
             document_terms=index.document_terms,
             document_summary=index.document_summary,
             section_terms=index.section_terms,
@@ -1440,19 +1452,8 @@ def test_search_ranks_fixture_sentences_online_and_generated(spark, tmp_path) ->
         assert cast(float, exact[0]["score"]) > cast(float, exact[1]["score"]) > cast(float, exact[2]["score"])
 
 
-def test_passage_search_ranks_paragraphs_with_same_section_context(spark, tmp_path) -> None:
-    files = {}
-    for transform, source in TRANSFORMS:
-        files.update(
-            render_generated_project(
-                transform,
-                source_transform=source,
-                generated_package=PACKAGE,
-                source_schema_modules=SCHEMA_MODULES,
-            )
-        )
-
-    with generated_project(tmp_path, PACKAGE, files):
+def test_passage_search_ranks_paragraphs_with_same_section_context(spark, tmp_path, search_sources, snapshots) -> None:
+    with generated_project(tmp_path, PACKAGE, search_sources):
         text_schemas = __import__(f"{PACKAGE}.pyspark.schemas.text", fromlist=["DOCUMENT_SCHEMA"])
         search_schemas = __import__(
             f"{PACKAGE}.pyspark.schemas.search", fromlist=["SEARCH_QUERY_SCHEMA", "DOCUMENT_SCORE_SCHEMA"]
@@ -1522,12 +1523,16 @@ def test_passage_search_ranks_paragraphs_with_same_section_context(spark, tmp_pa
         segments = Chunking(documents=documents).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
-        index = _run_indexing(spark, documents, segments.sentences, execution_mode="generated", generated_package=PACKAGE)
+        segments = snapshots.outputs(segments, label="chunking")
+        index = _run_indexing(
+            spark, documents, segments.sentences, execution_mode="generated", generated_package=PACKAGE
+        )
+        index = snapshots.outputs(index, label="indexing")
         scores = Scoring(
             queries=queries,
-            targets=AllScoringTargets(queries=queries, document_terms=index.document_terms).run(
-                session(spark, execution_mode="generated", generated_package=PACKAGE)
-            ).targets,
+            targets=AllScoringTargets(queries=queries, document_terms=index.document_terms)
+            .run(session(spark, execution_mode="generated", generated_package=PACKAGE))
+            .targets,
             document_terms=index.document_terms,
             document_summary=index.document_summary,
             section_terms=index.section_terms,
@@ -1591,19 +1596,8 @@ def test_passage_search_ranks_paragraphs_with_same_section_context(spark, tmp_pa
         assert boundary["section_heading"] == "Boundary"
 
 
-def test_relevance_signals_keep_binary_ctr_separate_from_engagement(spark, tmp_path) -> None:
-    files = {}
-    for transform, source in TRANSFORMS:
-        files.update(
-            render_generated_project(
-                transform,
-                source_transform=source,
-                generated_package=PACKAGE,
-                source_schema_modules=SCHEMA_MODULES,
-            )
-        )
-
-    with generated_project(tmp_path, PACKAGE, files):
+def test_relevance_signals_keep_binary_ctr_separate_from_engagement(spark, tmp_path, search_sources) -> None:
+    with generated_project(tmp_path, PACKAGE, search_sources):
         click_schemas = __import__(f"{PACKAGE}.pyspark.schemas.clicks", fromlist=["DAILY_IMPRESSIONS_SCHEMA"])
         relevance_schemas = __import__(f"{PACKAGE}.pyspark.schemas.relevance", fromlist=["RELEVANCE_POLICY_SCHEMA"])
         user_schemas = __import__(
@@ -1660,19 +1654,14 @@ def test_relevance_signals_keep_binary_ctr_separate_from_engagement(spark, tmp_p
         assert low["normalized_ctr_score"] == 0.0
 
 
-def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp_path) -> None:
-    files = {}
-    for transform, source in TRANSFORMS:
-        files.update(
-            render_generated_project(
-                transform,
-                source_transform=source,
-                generated_package=PACKAGE,
-                source_schema_modules=SCHEMA_MODULES,
-            )
-        )
-
-    with generated_project(tmp_path, PACKAGE, files):
+@pytest.mark.skipif(
+    backend_matrix.backend_name() == "spark-connect35",
+    reason="Batch SearchDocuments requires reliable checkpointing (Spark Connect 4.0 profile)",
+)
+def test_document_search_reranks_bm25_candidates_for_multiple_queries(
+    spark, tmp_path, search_sources, snapshots
+) -> None:
+    with generated_project(tmp_path, PACKAGE, search_sources):
         text_schemas = __import__(f"{PACKAGE}.pyspark.schemas.text", fromlist=["DOCUMENT_SCHEMA"])
         search_schemas = __import__(
             f"{PACKAGE}.pyspark.schemas.search", fromlist=["SEARCH_QUERY_SCHEMA", "DOCUMENT_SCORE_SCHEMA"]
@@ -1727,7 +1716,11 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
         segments = Chunking(documents=documents).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
-        index = _run_indexing(spark, documents, segments.sentences, execution_mode="generated", generated_package=PACKAGE)
+        segments = snapshots.outputs(segments, label="chunking")
+        index = _run_indexing(
+            spark, documents, segments.sentences, execution_mode="generated", generated_package=PACKAGE
+        )
+        index = snapshots.outputs(index, label="indexing")
         scored_at = datetime(2026, 7, 21)
         document_score_rows = [
             (query_id, cast(str, row[0]), "all-scoring-targets-v1", None, scored_at, scores[cast(str, row[0])])
@@ -1770,6 +1763,15 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
             queries=queries,
             documents=documents,
             document_scores=document_scores,
+            # Cached scores are valid only for the same caller-supplied target scope.
+            document_filter_targets=spark.createDataFrame(
+                [
+                    (query_id, row[0], "all-scoring-targets-v1")
+                    for query_id in ("q-free-form", "q-navigation")
+                    for row in _search_documents()
+                ],
+                search_schemas.DOCUMENT_SEARCH_TARGET_SCHEMA,
+            ),
             document_vector_scores=spark.createDataFrame([], vector_schemas.DOCUMENT_VECTOR_SCORE_SCHEMA),
             streamed_documents=spark.createDataFrame([], text_schemas.DOCUMENT_SCHEMA),
             streamed_document_scores=spark.createDataFrame([], search_schemas.DOCUMENT_SCORE_SCHEMA),
@@ -1785,9 +1787,7 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
                 [(True, True, True, False)],
                 search_schemas.GAP_POLICY_SCHEMA,
             ),
-            document_vector_embeddings=spark.createDataFrame(
-                [], vector_schemas.SEARCH_QUERY_VECTOR_EMBEDDING_SCHEMA
-            ),
+            document_vector_embeddings=spark.createDataFrame([], vector_schemas.SEARCH_QUERY_VECTOR_EMBEDDING_SCHEMA),
             document_vector_index=spark.createDataFrame([], vector_schemas.DOCUMENT_VECTOR_INDEX_SCHEMA),
             vector_policy=spark.createDataFrame(
                 [("fixture-embed", 3, "rev-1", "search-v1", 1000, 60)],
@@ -1812,12 +1812,19 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
             document_popularity=popularity,
             policy=policy,
         )
-        online = SearchDocuments(**inputs).run(session(spark, execution_mode="online")).results
-        generated = (
-            SearchDocuments(**inputs).run(session(spark, execution_mode="generated", generated_package=PACKAGE)).results
-        )
-
-        assert rows(online, "search_query_id", "rank") == rows(generated, "search_query_id", "rank")
+        with phase("SearchDocuments online construction"):
+            online = SearchDocuments(**inputs).run(session(spark, execution_mode="online")).results
+        with phase("SearchDocuments generated construction"):
+            generated = (
+                SearchDocuments(**inputs)
+                .run(session(spark, execution_mode="generated", generated_package=PACKAGE))
+                .results
+            )
+        with phase("SearchDocuments online collection"):
+            online_rows = rows(online, "search_query_id", "rank")
+        with phase("SearchDocuments generated collection"):
+            generated_rows = rows(generated, "search_query_id", "rank")
+        assert online_rows == generated_rows
         assert [
             row["rank"] for row in rows(generated, "search_query_id", "rank") if row["search_query_id"] == "q-free-form"
         ] == [

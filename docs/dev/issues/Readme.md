@@ -11,6 +11,10 @@ For example, `I07152601.Generated-source-omits-nested-alias.md` is the first iss
 file contains one H3 heading with the identifier and title, followed by the fields below. Keep lines within 120
 characters and remove or anonymize sensitive data.
 
+Supporting evidence, benchmarks, and issue-specific design records belong in a sibling directory named with the same
+issue identifier, such as `I09272602/`. Keep the issue record itself directly in `docs/dev/issues/` so open issues
+remain easy to discover.
+
 ~~~md
 ### I07152601 Generated Source Omits Nested Alias
 

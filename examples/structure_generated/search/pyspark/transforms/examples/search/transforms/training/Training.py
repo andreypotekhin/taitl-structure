@@ -45,6 +45,10 @@ class BuildDocumentFeaturesGenerated:
             name="DocumentFeatures",
             mode="strict",
         )
+        if not features__documents_built__document_features.isStreaming:
+            features__documents_built__document_features = apply_plan_boundary(
+                features__documents_built__document_features, self.spark
+            )
         return {
             "features__documents_built__document_features": features__documents_built__document_features,
         }
@@ -172,6 +176,10 @@ class BuildQueryFeaturesGenerated:
         assert_schema(
             features__queries_built__query_features, QUERY_FEATURES_SCHEMA, name="QueryFeatures", mode="strict"
         )
+        if not features__queries_built__query_features.isStreaming:
+            features__queries_built__query_features = apply_plan_boundary(
+                features__queries_built__query_features, self.spark
+            )
         return {
             "features__queries_built__query_features": features__queries_built__query_features,
         }
@@ -219,6 +227,8 @@ class BuildTrainingDataGenerated:
             F.col("features__documents_built__document_features_2.content_length").alias("document_content_length"),
             F.col("features__documents_built__document_features_2.url_is_https").alias("document_url_is_https"),
         )
+        if not data__training_data.isStreaming:
+            data__training_data = apply_plan_boundary(data__training_data, self.spark)
         return {
             "data__training_data": data__training_data,
         }

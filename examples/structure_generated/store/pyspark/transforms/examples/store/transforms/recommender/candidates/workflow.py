@@ -74,6 +74,8 @@ class SelectRecommendationCandidatesGenerated:
         assert_schema(
             admitted__requests, RECOMMENDATION_CANDIDATE_SCHEMA, name="RecommendationCandidate", mode="strict"
         )
+        if not admitted__requests.isStreaming:
+            admitted__requests = apply_plan_boundary(admitted__requests, self.spark)
         return {
             "admitted__requests": admitted__requests,
         }
@@ -161,6 +163,8 @@ class GenerateRecommendationCandidatesGenerated:
         assert_schema(
             retrieved__admitted, RECOMMENDATION_CANDIDATE_SCHEMA, name="RecommendationCandidate", mode="strict"
         )
+        if not retrieved__admitted.isStreaming:
+            retrieved__admitted = apply_plan_boundary(retrieved__admitted, self.spark)
         return {
             "retrieved__admitted": retrieved__admitted,
         }
@@ -236,6 +240,8 @@ class FilterRecommendationCandidatesGenerated:
             name="RecommendationCandidateDecision",
             mode="strict",
         )
+        if not filtered__evaluated.isStreaming:
+            filtered__evaluated = apply_plan_boundary(filtered__evaluated, self.spark)
         return {
             "filtered__evaluated": filtered__evaluated,
         }
@@ -287,6 +293,8 @@ class FilterRecommendationCandidatesGenerated:
             F.col("recommendation_candidate.purchase_signal"),
             F.lit('eligible').alias("eligibility_status"),
         )
+        if not filtered__filtered.isStreaming:
+            filtered__filtered = apply_plan_boundary(filtered__filtered, self.spark)
         return {
             "filtered__filtered": filtered__filtered,
         }

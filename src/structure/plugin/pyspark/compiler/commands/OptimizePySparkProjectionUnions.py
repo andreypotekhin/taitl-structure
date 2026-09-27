@@ -141,7 +141,7 @@ class OptimizePySparkProjectionUnions:
             ),
         )
         array = PySparkExpressionRecipe(
-            kind="call",
+            kind="transform_expression",
             type=ArrayType(StructType(merge.output_schema), contains_null=False),
             nullable=False,
             data={"function": "array", "capability_group": "higher_order", "capability_name": "array"},
@@ -158,6 +158,21 @@ class OptimizePySparkProjectionUnions:
             merge,
             operations=(PySparkOperationRecipe.explode_struct_operation(generator),),
             input_sources=(merge.source,),
+            projection=self._generated_projection(merge.projection, generator.scope),
+            results=tuple(
+                replace(result, projection=self._generated_projection(result.projection, generator.scope))
+                for result in merge.results
+            ),
+        )
+
+    def _generated_projection(self, assignments, scope: str):
+        # Exploding replaces the input fields, so their old relation qualifier is no longer valid.
+        return tuple(
+            replace(
+                assignment,
+                expression=replace(assignment.expression, data={**assignment.expression.data, "scope": scope}),
+            )
+            for assignment in assignments
         )
 
     def _field(self, scope: str, field) -> PySparkExpressionRecipe:

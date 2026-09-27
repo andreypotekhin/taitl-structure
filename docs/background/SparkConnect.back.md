@@ -30,7 +30,7 @@ target_variant = "spark-connect"
 
 [tool.structure.plugin.pyspark]
 variant = "spark-connect"
-connect_plan_boundaries = "auto"
+plan_boundaries = "auto"
 ```
 
 Ordinary PySpark remains the default:
@@ -122,8 +122,10 @@ This ownership is the same as ordinary execution except that the Connect variant
 
 For Connect, input and final-output schema checks remain strict. Intermediate checks are disabled by default because
 `DataFrame.schema` is a remote analysis request; set `validate_intermediate = true` for exhaustive diagnostics. The
-`connect_plan_boundaries` option independently limits serialized logical-plan growth with session-scoped temporary
+`plan_boundaries` option independently limits serialized logical-plan growth with session-scoped temporary
 views. `StructureSession.close()` drops only Structure-created views and never stops the caller's Spark session.
+The option applies to ordinary PySpark too, defaults to `auto` for batch transforms, and always bypasses streaming
+DataFrames. Views do not truncate Catalyst lineage; retain explicit checkpoints where a true lineage cut is needed.
 
 For a migration, keep the transform invocation unchanged and isolate target-specific code at the hook or session edge:
 

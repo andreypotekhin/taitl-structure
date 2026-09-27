@@ -172,6 +172,8 @@ class PrepareReturnsGenerated:
             )
             .alias("signed_volume"),
         )
+        if not bars.isStreaming:
+            bars = apply_plan_boundary(bars, self.spark)
 
         # Step method: returns
         returns = bars.alias("daily_return")

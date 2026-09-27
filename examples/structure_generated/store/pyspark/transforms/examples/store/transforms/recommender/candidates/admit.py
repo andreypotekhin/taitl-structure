@@ -84,6 +84,8 @@ class SelectRecommendationCandidatesGenerated:
             F.lit(0.0).alias("purchase_signal"),
             F.lit('eligible').alias("eligibility_status"),
         )
+        if not requests.isStreaming:
+            requests = apply_plan_boundary(requests, self.spark)
 
         # Step method: candidates
         candidates = requests.alias("recommendation_candidate")

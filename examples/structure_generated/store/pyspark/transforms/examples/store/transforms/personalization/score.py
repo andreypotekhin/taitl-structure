@@ -190,6 +190,8 @@ class ScorePersonalizedRecommendationsGenerated:
             F.lit('hashed-latent').alias("algorithm_id"),
             F.lit('v1').alias("algorithm_version"),
         )
+        if not requests.isStreaming:
+            requests = apply_plan_boundary(requests, self.spark)
 
         # Step method: recommendations
         recommendations = requests.alias("personalized_recommendation")

@@ -4,6 +4,10 @@ set -euo pipefail
 backend="${1:?integration backend is required}"
 connect_pid=""
 connect_log=""
+connect_checkpoints=""
+
+# Include source modules used by pickled UDFs, including with older cached images.
+export PYTHONPATH="/workspace:/workspace/src:/workspace/res${PYTHONPATH:+:${PYTHONPATH}}"
 
 if [[ "${backend}" != spark-connect* && -n "${STRUCTURE_SPARK_DRIVER_MEMORY:-}" ]]; then
     export PYSPARK_SUBMIT_ARGS="--driver-memory ${STRUCTURE_SPARK_DRIVER_MEMORY} pyspark-shell"
@@ -27,8 +31,16 @@ if [[ "${backend}" == spark-connect* ]]; then
         --conf "spark.connect.grpc.binding.address=127.0.0.1"
         --conf "spark.sql.shuffle.partitions=1"
         --conf "spark.sql.session.timeZone=UTC"
+        --conf "spark.sql.maxPlanStringLength=8192"
+        --conf "spark.sql.ui.explainMode=simple"
         --conf "spark.sql.artifact.dir=/tmp/spark-artifacts"
     )
+
+    if [[ "${backend}" == "spark-connect40" ]]; then
+        mkdir -p /workspace/.pytest-workspace-tmp/integration
+        connect_checkpoints=$(mktemp -d /workspace/.pytest-workspace-tmp/integration/connect-checkpoints.XXXXXX)
+        connect_args+=(--conf "spark.checkpoint.dir=${connect_checkpoints}")
+    fi
 
     connect_jars=("${SPARK_HOME}"/jars/spark-connect_*.jar)
     connect_packages=()
@@ -66,12 +78,17 @@ fi
 cleanup() {
     if [[ -n "${connect_pid}" ]]; then
         kill "${connect_pid}" >/dev/null 2>&1 || true
+        wait "${connect_pid}" 2>/dev/null || true
+    fi
+    if [[ -n "${connect_checkpoints}" ]]; then
+        rm -rf -- "${connect_checkpoints}"
     fi
 }
 trap cleanup EXIT
 
 pytest_status=0
-python -m pytest /workspace/tests/integration /workspace/tests/concepts/live_pyspark \
+timeout --signal=TERM --kill-after=15s "${STRUCTURE_INTEGRATION_TIMEOUT:-3600}" \
+    python -m pytest /workspace/tests/integration /workspace/tests/concepts/live_pyspark \
     --rootdir=/workspace \
     -p no:cacheprovider \
     --run-integration \
@@ -80,6 +97,10 @@ python -m pytest /workspace/tests/integration /workspace/tests/concepts/live_pys
     -W 'ignore:The copy keyword is deprecated:Warning' \
     -W 'ignore:ReleaseExecute failed with exception:UserWarning' \
     ${INTEGRATION_PYTEST_ARGS:-} || pytest_status=$?
+
+if (( pytest_status == 124 || pytest_status == 137 )); then
+    echo "Integration deadline reached (${STRUCTURE_INTEGRATION_TIMEOUT:-3600}s); backend=${backend}." >&2
+fi
 
 if (( pytest_status != 0 )) && [[ -n "${connect_log}" && -f "${connect_log}" ]]; then
     echo "Spark Connect server output (last 200 lines):" >&2

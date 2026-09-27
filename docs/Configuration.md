@@ -22,6 +22,7 @@ generated_docs = false
 generated_docs_dir = "docs"
 generated_docs_formats = ["markdown", "json"]
 execution_mode = "online"
+disable = ["PYSPARK-W2701"]
 ```
 
 ## structure.toml
@@ -182,22 +183,32 @@ boundaries.
 Spark Connect applies a variant-specific default: when `plugin.pyspark.variant = "spark-connect"` and
 `validate_intermediate` is not explicitly set, intermediate schema assertions are disabled to avoid a remote
 analysis request for every step. Input and final-output validation remain strict. Set `validate_intermediate = true`
-to restore exhaustive intermediate checks. The separate `connect_plan_boundaries` option controls logical-plan
-containment only:
+to restore exhaustive intermediate checks. The separate `plan_boundaries` option controls temporary-view references
+on both ordinary PySpark and Spark Connect:
 
 ```toml
 [tool.structure.plugin.pyspark]
 variant = "spark-connect"
-connect_plan_boundaries = "auto"  # off, auto, or strict
+plan_boundaries = "auto"  # off, auto, or strict
 
 # Optional exhaustive diagnostic mode.
 validate_intermediate = true
 ```
 
-`auto` inserts bounded temporary-view boundaries at branch points and at a conservative step cadence. `strict`
-inserts one after every non-final step and is intended for diagnostics. Structure drops only the temporary views it
-created; call `StructureSession.close()` (or `GeneratedTransform.close()`) when lazy results no longer need them.
-Closing Structure resources never stops the caller-owned Spark session.
+`auto` is the default and references shared frames through temporary views when multiple steps or exposed outputs
+consume them. Linear steps do not receive periodic boundaries. `strict` inserts one after every non-final step for
+diagnostics; `off` disables compiler boundaries. An explicit `@transform(streaming=True)` defaults to `off`.
+Streaming-capable input declarations alone do not change the default, and actual streaming DataFrames always bypass
+boundaries, even with an explicit `auto` or `strict` policy.
+
+These references can reduce repeated Connect plan transmission and analysis. They perform no eager row
+materialization and do not sever Spark's logical lineage or guarantee shared physical computation. Use explicit
+checkpointing where lineage must be truncated. Small inputs can still produce large plans when many branches reuse
+the same upstream graph. Compare construction and execution costs with `off` before attributing a speedup to views.
+
+Structure drops only its own temporary views; call `StructureSession.close()` (or `GeneratedTransform.close()`)
+when lazy results no longer need them. Closing Structure resources never stops the caller-owned Spark session.
+The former `connect_plan_boundaries` option is rejected; replace it with `plan_boundaries`.
 
 `input_validation_mode`, `intermediate_validation_mode`, and `output_validation_mode` control the cost and
 depth of enabled validation at each phase:
@@ -323,6 +334,7 @@ trees and source locations for troubleshooting.
 strict_performance = true
 warn_on_udfs = true
 warn_on_lineage_growth = true
+disable = ["PYSPARK-W2701", "DSL-W0403"]
 allow_pandas_udf = false
 allow_rdd = false
 allow_collect = false
@@ -331,6 +343,23 @@ allow_to_pandas = false
 
 Compiled step methods never silently fall back to UDFs. These settings are primarily for hook linting and
 future advanced features.
+
+`disable` is a general warning-suppression list. Entries must be exact warning codes from
+[Diagnostics](Diagnostics.md); errors and unknown codes are rejected. A transform may add to the project list with
+`@transform(disable=["PYSPARK-W2701"])`, but cannot turn a project-disabled warning back on. The convenience switches
+`warn_on_lineage_growth = false` and `warn_on_udfs = false` remain supported. To tune the query plan growth warnings, set
+the PySpark plugin thresholds:
+
+```toml
+[tool.structure.plugin.pyspark]
+PYSPARK_W2701_plan_growth_repeat_cost = 8
+PYSPARK_W2702_plan_growth_fanout_cost = 8
+PYSPARK_W2703_plan_growth_validation_cost = 8
+PYSPARK_W2704_plan_growth_output_cost = 32
+```
+
+These thresholds describe query plan structure, not row counts. A small fixture can still create a large Spark query plan when
+branches are reused or strict checks are repeated. See [driver-heap troubleshooting](troubleshooting/memory/spark_driver_heap_oom.gotcha.md).
 
 ## Streaming Composition
 

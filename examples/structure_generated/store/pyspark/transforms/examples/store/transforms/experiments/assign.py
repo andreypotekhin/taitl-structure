@@ -83,6 +83,8 @@ class AssignRecommendationVariantsGenerated:
             .alias("variant_id"),
             F.col("recommendation_request.requested_at").alias("assigned_at"),
         )
+        if not requests.isStreaming:
+            requests = apply_plan_boundary(requests, self.spark)
 
         # Step method: assignments
         assignments = requests.alias("recommendation_assignment")

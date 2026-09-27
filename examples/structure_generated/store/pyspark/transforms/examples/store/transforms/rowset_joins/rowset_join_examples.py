@@ -49,6 +49,8 @@ class ReconcileOrdersAndCustomersGenerated:
             name="OrderCustomerReconciliation",
             mode="strict",
         )
+        if not reconciled__reconciliation.isStreaming:
+            reconciled__reconciliation = apply_plan_boundary(reconciled__reconciliation, self.spark)
         return {
             "reconciled__reconciliation": reconciled__reconciliation,
         }
@@ -80,6 +82,8 @@ class BackfillCustomersGenerated:
         assert_schema(
             backfilled__backfills, CUSTOMER_ORDER_BACKFILL_SCHEMA, name="CustomerOrderBackfill", mode="strict"
         )
+        if not backfilled__backfills.isStreaming:
+            backfilled__backfills = apply_plan_boundary(backfilled__backfills, self.spark)
         return {
             "backfilled__backfills": backfilled__backfills,
         }
@@ -99,6 +103,8 @@ class ExpandCustomerProductsGenerated:
             F.col("products.id").alias("product_id"),
             F.col("products.name").alias("product_name"),
         )
+        if not expanded__candidates.isStreaming:
+            expanded__candidates = apply_plan_boundary(expanded__candidates, self.spark)
         return {
             "expanded__candidates": expanded__candidates,
         }

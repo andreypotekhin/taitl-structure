@@ -142,6 +142,8 @@ class DocumentChunkingGenerated:
         assert_schema(
             documents_chunked__marked_lines, MARKED_DOCUMENT_LINE_SCHEMA, name="MarkedDocumentLine", mode="strict"
         )
+        if not documents_chunked__marked_lines.isStreaming:
+            documents_chunked__marked_lines = apply_plan_boundary(documents_chunked__marked_lines, self.spark)
         return {
             "documents_chunked__marked_lines": documents_chunked__marked_lines,
         }
@@ -265,6 +267,8 @@ class DocumentChunkingGenerated:
             F.col("paragraph_content.span_end"),
         )
         assert_schema(documents_chunked__paragraph_drafts, PARAGRAPH_DRAFT_SCHEMA, name="ParagraphDraft", mode="strict")
+        if not documents_chunked__paragraph_drafts.isStreaming:
+            documents_chunked__paragraph_drafts = apply_plan_boundary(documents_chunked__paragraph_drafts, self.spark)
         return {
             "documents_chunked__paragraph_drafts": documents_chunked__paragraph_drafts,
         }
@@ -281,6 +285,8 @@ class DocumentChunkingGenerated:
             F.col("paragraph_draft.span_end"),
         )
         assert_schema(documents_chunked__paragraphs, PARAGRAPH_SCHEMA, name="Paragraph", mode="strict")
+        if not documents_chunked__paragraphs.isStreaming:
+            documents_chunked__paragraphs = apply_plan_boundary(documents_chunked__paragraphs, self.spark)
         return {
             "documents_chunked__paragraphs": documents_chunked__paragraphs,
         }
@@ -337,6 +343,8 @@ class DocumentChunkingGenerated:
             F.col("documents_chunked__section_headings.heading_span_end"),
         )
         assert_schema(documents_chunked__sections, SECTION_SCHEMA, name="Section", mode="strict")
+        if not documents_chunked__sections.isStreaming:
+            documents_chunked__sections = apply_plan_boundary(documents_chunked__sections, self.spark)
         return {
             "documents_chunked__sections": documents_chunked__sections,
         }
@@ -429,6 +437,8 @@ class SentenceChunkingGenerated:
             (F.col("materialized_paragraph.span_start") + F.col("local_start")).alias("span_start"),
             (F.col("materialized_paragraph.span_start") + F.col("local_end")).alias("span_end"),
         )
+        if not sentences_chunked__sentences.isStreaming:
+            sentences_chunked__sentences = apply_plan_boundary(sentences_chunked__sentences, self.spark)
         return {
             "sentences_chunked__sentences": sentences_chunked__sentences,
         }

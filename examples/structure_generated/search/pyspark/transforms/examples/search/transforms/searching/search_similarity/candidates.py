@@ -12,6 +12,8 @@ from examples.structure_generated.search.runtime.schema_assert import (
     project_schema,
     apply_plan_boundary,
     close_plan_boundaries,
+    reuse_policy_checks,
+    singleton_policy,
 )
 from examples.structure_generated.search.pyspark.schemas.indexing_vector import (
     DOCUMENT_VECTOR_CANDIDATE_SCHEMA,
@@ -49,6 +51,8 @@ class VectorizeSimilarityQueriesGenerated:
         assert_schema(
             vectorized__vector_queries, DOCUMENT_VECTOR_QUERY_SCHEMA, name="DocumentVectorQuery", mode="strict"
         )
+        if not vectorized__vector_queries.isStreaming:
+            vectorized__vector_queries = apply_plan_boundary(vectorized__vector_queries, self.spark)
         return {
             "vectorized__vector_queries": vectorized__vector_queries,
         }
@@ -117,38 +121,12 @@ class ScoreDocumentVectorsGenerated:
         )
         scored__valid_policy_param_joined = frames["scored__valid_policy"]
         if not __structure_streaming_step:
-            scored__valid_policy_param_joined_count = frames["scored__valid_policy"].agg(
-                F.count(F.lit(1)).alias("__structure_count")
-            )
-            scored__valid_policy_param_joined_count = scored__valid_policy_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            scored__valid_policy_param_joined = (
-                frames["scored__valid_policy"]
-                .crossJoin(scored__valid_policy_param_joined_count)
-                .where(F.col("__structure_exactly_one").isNull())
-                .drop("__structure_exactly_one")
-            )
+            scored__valid_policy_param_joined = singleton_policy(frames["scored__valid_policy"], 'policy')
         scored__valid_policy_joined = scored__valid_policy_param_joined.alias("scored__valid_policy")
         scored__document_scores = scored__document_scores.crossJoin(scored__valid_policy_joined)
         score_policy_2_param_joined = frames["score_policy"]
         if not __structure_streaming_step:
-            score_policy_2_param_joined_count = frames["score_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
-            score_policy_2_param_joined_count = score_policy_2_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(score_policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            score_policy_2_param_joined = (
-                frames["score_policy"]
-                .crossJoin(score_policy_2_param_joined_count)
-                .where(F.col("__structure_exactly_one").isNull())
-                .drop("__structure_exactly_one")
-            )
+            score_policy_2_param_joined = singleton_policy(frames["score_policy"], 'score_policy')
         score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
         scored__document_scores = scored__document_scores.crossJoin(score_policy_2_joined)
         document_vector_index_3_joined = frames["document_vector_index"].alias("document_vector_index_3")
@@ -339,6 +317,8 @@ class ScoreDocumentVectorsGenerated:
             F.col("score_policy_2.scored_at"),
         )
         assert_schema(scored__document_scores, DOCUMENT_VECTOR_SCORE_SCHEMA, name="DocumentVectorScore", mode="strict")
+        if not scored__document_scores.isStreaming:
+            scored__document_scores = apply_plan_boundary(scored__document_scores, self.spark)
         return {
             "scored__document_scores": scored__document_scores,
         }
@@ -392,6 +372,8 @@ class RankVectorsGenerated:
             F.col("vector_index_policy.rrf_k"),
         )
         assert_schema(ranked__valid_policy, VECTOR_INDEX_POLICY_SCHEMA, name="VectorIndexPolicy", mode="strict")
+        if not ranked__valid_policy.isStreaming:
+            ranked__valid_policy = apply_plan_boundary(ranked__valid_policy, self.spark)
         return {
             "ranked__valid_policy": ranked__valid_policy,
         }
@@ -404,21 +386,7 @@ class RankVectorsGenerated:
         )
         ranked__valid_policy_param_joined = frames["ranked__valid_policy"]
         if not __structure_streaming_step:
-            ranked__valid_policy_param_joined_count = frames["ranked__valid_policy"].agg(
-                F.count(F.lit(1)).alias("__structure_count")
-            )
-            ranked__valid_policy_param_joined_count = ranked__valid_policy_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            ranked__valid_policy_param_joined = (
-                frames["ranked__valid_policy"]
-                .crossJoin(ranked__valid_policy_param_joined_count)
-                .where(F.col("__structure_exactly_one").isNull())
-                .drop("__structure_exactly_one")
-            )
+            ranked__valid_policy_param_joined = singleton_policy(frames["ranked__valid_policy"], 'policy')
         ranked__valid_policy_joined = ranked__valid_policy_param_joined.alias("ranked__valid_policy")
         ranked__ranked_document_candidates = ranked__ranked_document_candidates.crossJoin(ranked__valid_policy_joined)
         ranked__ranked_document_candidates = ranked__ranked_document_candidates.select(
@@ -461,21 +429,7 @@ class RankVectorsGenerated:
         )
         ranked__valid_policy_param_joined = frames["ranked__valid_policy"]
         if not __structure_streaming_step:
-            ranked__valid_policy_param_joined_count = frames["ranked__valid_policy"].agg(
-                F.count(F.lit(1)).alias("__structure_count")
-            )
-            ranked__valid_policy_param_joined_count = ranked__valid_policy_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            ranked__valid_policy_param_joined = (
-                frames["ranked__valid_policy"]
-                .crossJoin(ranked__valid_policy_param_joined_count)
-                .where(F.col("__structure_exactly_one").isNull())
-                .drop("__structure_exactly_one")
-            )
+            ranked__valid_policy_param_joined = singleton_policy(frames["ranked__valid_policy"], 'policy')
         ranked__valid_policy_joined = ranked__valid_policy_param_joined.alias("ranked__valid_policy")
         ranked__document_candidates = ranked__document_candidates.crossJoin(ranked__valid_policy_joined)
         ranked__document_candidates = ranked__document_candidates.where(
@@ -498,6 +452,8 @@ class RankVectorsGenerated:
         assert_schema(
             ranked__document_candidates, DOCUMENT_VECTOR_CANDIDATE_SCHEMA, name="DocumentVectorCandidate", mode="strict"
         )
+        if not ranked__document_candidates.isStreaming:
+            ranked__document_candidates = apply_plan_boundary(ranked__document_candidates, self.spark)
         return {
             "ranked__document_candidates": ranked__document_candidates,
         }
@@ -512,21 +468,7 @@ class RankVectorsGenerated:
         )
         ranked__valid_policy_param_joined = frames["ranked__valid_policy"]
         if not __structure_streaming_step:
-            ranked__valid_policy_param_joined_count = frames["ranked__valid_policy"].agg(
-                F.count(F.lit(1)).alias("__structure_count")
-            )
-            ranked__valid_policy_param_joined_count = ranked__valid_policy_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            ranked__valid_policy_param_joined = (
-                frames["ranked__valid_policy"]
-                .crossJoin(ranked__valid_policy_param_joined_count)
-                .where(F.col("__structure_exactly_one").isNull())
-                .drop("__structure_exactly_one")
-            )
+            ranked__valid_policy_param_joined = singleton_policy(frames["ranked__valid_policy"], 'policy')
         ranked__valid_policy_joined = ranked__valid_policy_param_joined.alias("ranked__valid_policy")
         ranked__ranked_paragraph_candidates = ranked__ranked_paragraph_candidates.crossJoin(ranked__valid_policy_joined)
         ranked__ranked_paragraph_candidates = ranked__ranked_paragraph_candidates.select(
@@ -575,21 +517,7 @@ class RankVectorsGenerated:
         )
         ranked__valid_policy_param_joined = frames["ranked__valid_policy"]
         if not __structure_streaming_step:
-            ranked__valid_policy_param_joined_count = frames["ranked__valid_policy"].agg(
-                F.count(F.lit(1)).alias("__structure_count")
-            )
-            ranked__valid_policy_param_joined_count = ranked__valid_policy_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            ranked__valid_policy_param_joined = (
-                frames["ranked__valid_policy"]
-                .crossJoin(ranked__valid_policy_param_joined_count)
-                .where(F.col("__structure_exactly_one").isNull())
-                .drop("__structure_exactly_one")
-            )
+            ranked__valid_policy_param_joined = singleton_policy(frames["ranked__valid_policy"], 'policy')
         ranked__valid_policy_joined = ranked__valid_policy_param_joined.alias("ranked__valid_policy")
         ranked__paragraph_candidates = ranked__paragraph_candidates.crossJoin(ranked__valid_policy_joined)
         ranked__paragraph_candidates = ranked__paragraph_candidates.where(
@@ -629,6 +557,7 @@ class ExactSimilarityCandidatesGenerated(
     def close(self) -> None:
         close_plan_boundaries(self.spark)
 
+    @reuse_policy_checks
     def run(
         self,
         *,

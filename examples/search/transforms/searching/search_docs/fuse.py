@@ -3,8 +3,9 @@
 from examples.search.schemas.indexing.vector import VectorIndexPolicy
 from examples.search.schemas.search import DocumentSearchCandidate
 from examples.search.transforms.lib.Rrf import Rrf
-from structure import Transform, input, lane, output, step
+from structure import Transform, input, lane, output, parameter, step
 from structure.plugin.pyspark import (
+    checkpoint,
     group_by,
     max,
     param_join,
@@ -21,6 +22,8 @@ from structure.plugin.pyspark.dsl.expressions import literal
 class FuseDocuments(Transform):
     """Rank, merge, and bound lexical and vector document candidates."""
 
+    materialize = parameter(False)
+
     lexical_candidates = input(DocumentSearchCandidate)
     vector_candidates = input(DocumentSearchCandidate)
     policy = input(VectorIndexPolicy)
@@ -33,6 +36,7 @@ class FuseDocuments(Transform):
     fused_candidates = lane(DocumentSearchCandidate)
     scored_candidates = lane(DocumentSearchCandidate)
     ranked_candidates = lane(DocumentSearchCandidate)
+    selected_candidates = lane(DocumentSearchCandidate)
     candidates = output(DocumentSearchCandidate)
 
     @step(input=lexical_candidates, output=ranked_lexical_candidates)
@@ -69,6 +73,8 @@ class FuseDocuments(Transform):
 
     @step(input=ranked_lexical_candidates, output=validated_lexical_candidates)
     def validate_lexical_candidates(self, candidate: DocumentSearchCandidate) -> DocumentSearchCandidate:
+        if self.materialize:
+            checkpoint(eager=True)
         require_unique(
             candidate.search_query_id,
             candidate.user_band_id,
@@ -79,6 +85,8 @@ class FuseDocuments(Transform):
 
     @step(input=selected_vector_candidates, output=validated_vector_candidates)
     def validate_vector_candidates(self, candidate: DocumentSearchCandidate) -> DocumentSearchCandidate:
+        if self.materialize:
+            checkpoint(eager=True)
         require_unique(
             candidate.search_query_id,
             candidate.user_band_id,
@@ -156,10 +164,19 @@ class FuseDocuments(Transform):
             )
         )
 
-    @step(input=[ranked_candidates, policy], output=candidates)
+    @step(input=[ranked_candidates, policy], output=selected_candidates)
     def select_candidates(
         self, candidate: DocumentSearchCandidate, policy: VectorIndexPolicy
     ) -> DocumentSearchCandidate:
         param_join(policy)
         where(candidate.candidate_rank <= policy.maximum_candidates)
-        return DocumentSearchCandidate.project(candidate)
+        return candidate
+
+    @step(input=selected_candidates, output=candidates)
+    def materialize_candidates(self, candidate: DocumentSearchCandidate) -> DocumentSearchCandidate:
+        """Shorten the batch query plan before candidates feed several feedback branches."""
+        if not isinstance(self.materialize, bool):
+            raise TypeError("FuseDocuments materialize parameter must be Boolean")
+        if self.materialize:
+            checkpoint(eager=True)
+        return candidate

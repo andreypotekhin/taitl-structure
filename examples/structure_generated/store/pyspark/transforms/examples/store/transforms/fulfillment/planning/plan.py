@@ -248,6 +248,8 @@ class PlanFulfillmentGenerated:
         assert_schema(
             preferred_options, FULFILLMENT_PREFERRED_OPTION_SCHEMA, name="FulfillmentPreferredOption", mode="strict"
         )
+        if not preferred_options.isStreaming:
+            preferred_options = apply_plan_boundary(preferred_options, self.spark)
 
         # Step method: allocate
         allocations = preferred_options.alias("fulfillment_preferred_option")

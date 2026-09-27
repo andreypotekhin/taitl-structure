@@ -9,7 +9,9 @@ import pytest
 
 from structure import *
 from structure.core.compiler.artifacts.model.CompilerOptions import CompilerOptions as CompilerArtifactOptions
+from structure.core.compiler.frontend.logic.FilterDiagnostics import FilterDiagnostics
 from structure.core.configuration.api import ConfigError, Configuration
+from structure.lib.cross.errors import Diagnostic, diagnostic_registry
 from structure.plugin.pyspark import *
 
 
@@ -38,6 +40,7 @@ def test_v1_config_uses_defaults_and_tracks_sources() -> None:
         assert config.generated_code_options == ()
         assert config.generated_code_hard_wrap == 120
         assert config.warn_on_udfs is True
+        assert config.disable == ()
         assert config.allow_stream_to_batch is False
         assert config.stream_to_batch_policy == "default"
         assert config.allow_output_to_input is True
@@ -69,6 +72,51 @@ def test_v1_output_policies_accept_independent_overrides_and_fingerprint_them() 
         StructureConfig.create(allow_output_to_input=True, allow_to_reassign_output=True)
     )
     assert options.fingerprint() != changed.fingerprint()
+
+
+def test_v1_disable_warning_codes_are_fingerprinted_and_filtered() -> None:
+    config = StructureConfig.create(disable=["PYSPARK-W2701"])
+    options = CompilerArtifactOptions.from_config(config)
+    warning = Diagnostic(entry=diagnostic_registry["PYSPARK-W2701"])
+    udf_warning = Diagnostic(entry=diagnostic_registry["DSL-W0403"])
+
+    assert options.disable == ("PYSPARK-W2701",)
+    assert FilterDiagnostics()((warning, udf_warning), disable=options.disable) == (udf_warning,)
+    assert options.fingerprint() != CompilerArtifactOptions.from_config(StructureConfig.create()).fingerprint()
+
+
+@pytest.mark.parametrize("value", (["DSL-E0402"], ["NOT-A-CODE"], ["DSL-W0403", "DSL-W0403"]))
+def test_v1_disable_rejects_non_warning_unknown_and_duplicate_codes(value) -> None:
+    with pytest.raises(ConfigError) as error:
+        StructureConfig.create(disable=value)
+
+    assert error.value.diagnostic.code == "CONF-E0102"
+    assert error.value.diagnostic.setting == "disable"
+
+
+def test_v1_disable_combines_with_convenience_switches() -> None:
+    warning = Diagnostic(entry=diagnostic_registry["PYSPARK-W2701"])
+    udf_warning = Diagnostic(entry=diagnostic_registry["DSL-W0403"])
+
+    assert FilterDiagnostics()(
+        (warning, udf_warning),
+        disable=("PYSPARK-W2701",),
+        warn_on_udfs=False,
+    ) == ()
+
+
+@pytest.mark.parametrize("code", ["PYSPARK-W2701", "PYSPARK-W2702", "PYSPARK-W2703", "PYSPARK-W2704"])
+def test_v1_disable_suppresses_each_query_growth_warning_independently(code: str) -> None:
+    warnings = tuple(Diagnostic(entry=diagnostic_registry[item]) for item in (
+        "PYSPARK-W2701",
+        "PYSPARK-W2702",
+        "PYSPARK-W2703",
+        "PYSPARK-W2704",
+    ))
+
+    remaining = FilterDiagnostics()(warnings, disable=(code,))
+
+    assert remaining == tuple(warning for warning in warnings if warning.code != code)
 
 
 def test_v1_stage_output_policy_defaults_to_allow_and_is_fingerprinted() -> None:

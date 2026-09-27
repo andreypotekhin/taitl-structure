@@ -11,6 +11,8 @@ from examples.structure_generated.search.runtime.schema_assert import (
     project_schema,
     apply_plan_boundary,
     close_plan_boundaries,
+    reuse_policy_checks,
+    singleton_policy,
 )
 from examples.structure_generated.search.pyspark.schemas.TimeWindow import TIME_WINDOW_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.batch import EVALUATION_BATCH_SCHEMA
@@ -43,6 +45,7 @@ class EvaluateDocSearchBehaviorGenerated:
     def close(self) -> None:
         close_plan_boundaries(self.spark)
 
+    @reuse_policy_checks
     def run(
         self,
         *,
@@ -82,18 +85,7 @@ class EvaluateDocSearchBehaviorGenerated:
         selected_requests = selected_requests.crossJoin(batch_joined)
         params_2_param_joined = params
         if not __structure_streaming_step:
-            params_2_param_joined_count = params.agg(F.count(F.lit(1)).alias("__structure_count"))
-            params_2_param_joined_count = params_2_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(params) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            params_2_param_joined = (
-                params.crossJoin(params_2_param_joined_count)
-                .where(F.col("__structure_exactly_one").isNull())
-                .drop("__structure_exactly_one")
-            )
+            params_2_param_joined = singleton_policy(params, 'params')
         params_2_joined = params_2_param_joined.alias("params_2")
         selected_requests = selected_requests.crossJoin(params_2_joined)
         requests_3_joined = requests.alias("requests_3")
@@ -152,6 +144,8 @@ class EvaluateDocSearchBehaviorGenerated:
             F.col("requests_3.query"),
         )
         assert_schema(selected_requests, BEHAVIOR_REQUEST_SCHEMA, name="BehaviorRequest", mode="strict")
+        if not selected_requests.isStreaming:
+            selected_requests = apply_plan_boundary(selected_requests, self.spark)
 
         # Step method: select_impressions
         displayed = selected_requests.alias("behavior_request")
@@ -179,6 +173,8 @@ class EvaluateDocSearchBehaviorGenerated:
             F.lit(0.0).alias("dwell_credit"),
         )
         assert_schema(displayed, BEHAVIOR_IMPRESSION_SCHEMA, name="BehaviorImpression", mode="strict")
+        if not displayed.isStreaming:
+            displayed = apply_plan_boundary(displayed, self.spark)
 
         # Step method: count_clicks
         clicked = displayed.alias("behavior_impression")
@@ -295,6 +291,8 @@ class EvaluateDocSearchBehaviorGenerated:
             F.coalesce(F.col("clicked.dwell_credit"), F.lit(0.0)).alias("dwell_credit"),
         )
         assert_schema(measured, BEHAVIOR_IMPRESSION_SCHEMA, name="BehaviorImpression", mode="strict")
+        if not measured.isStreaming:
+            measured = apply_plan_boundary(measured, self.spark)
 
         # Step method: measure_requests
         request_totals = selected_requests.alias("behavior_request")
@@ -390,6 +388,8 @@ class EvaluateDocSearchBehaviorGenerated:
             F.col("behavior_request_totals.raw_long_click_count"),
         )
         assert_schema(request_metrics, BEHAVIOR_REQUEST_METRICS_SCHEMA, name="BehaviorRequestMetrics", mode="strict")
+        if not request_metrics.isStreaming:
+            request_metrics = apply_plan_boundary(request_metrics, self.spark)
 
         # Step method: publish_requests
         request_behaviors = request_metrics.alias("behavior_request_metrics")

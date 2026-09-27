@@ -23,3 +23,23 @@ class ParameterDeclaration:
         if instance is None:
             return self
         return instance._structure_bound_parameters.get(self.name, self.default)
+
+    def __invert__(self) -> NegatedParameter:
+        """Defer Boolean negation until a composed invocation is compiled."""
+        if not isinstance(self.default, bool):
+            raise TypeError("Only Boolean transform parameters support ~parameter")
+        return NegatedParameter(self)
+
+    def __bool__(self) -> bool:
+        raise TypeError("A parameter declaration is not a value; use ~parameter for deferred Boolean negation")
+
+
+@dataclass(frozen=True)
+class NegatedParameter:
+    parameter: ParameterDeclaration
+
+    def __invert__(self) -> ParameterDeclaration:
+        return self.parameter
+
+    def __bool__(self) -> bool:
+        raise TypeError("A parameter expression is not a value; it is resolved when the transform is compiled")

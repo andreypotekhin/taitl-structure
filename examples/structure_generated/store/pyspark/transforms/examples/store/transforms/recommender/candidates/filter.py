@@ -108,6 +108,8 @@ class FilterRecommendationCandidatesGenerated:
         assert_schema(
             evaluated, RECOMMENDATION_CANDIDATE_DECISION_SCHEMA, name="RecommendationCandidateDecision", mode="strict"
         )
+        if not evaluated.isStreaming:
+            evaluated = apply_plan_boundary(evaluated, self.spark)
 
         # Step method: publish
         filtered = candidates.alias("recommendation_candidate")

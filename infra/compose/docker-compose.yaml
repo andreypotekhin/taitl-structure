@@ -17,6 +17,8 @@ services:
         target: /workspace/.pytest-workspace-tmp/integration
   spark35-worker:
     image: structure-integration-pyspark35
+    environment:
+      PYTHONPATH: /workspace:/workspace/src:/workspace/res
     build:
       context: ${STRUCTURE_ROOT:-../..}
       dockerfile: infra/compose/images/pyspark/Dockerfile
@@ -54,6 +56,8 @@ services:
         target: /workspace/.pytest-workspace-tmp/integration
   spark40-worker:
     image: structure-integration-pyspark40
+    environment:
+      PYTHONPATH: /workspace:/workspace/src:/workspace/res
     build:
       context: ${STRUCTURE_ROOT:-../..}
       dockerfile: infra/compose/images/pyspark/Dockerfile

@@ -11,6 +11,8 @@ from examples.structure_generated.search.runtime.schema_assert import (
     project_schema,
     apply_plan_boundary,
     close_plan_boundaries,
+    reuse_policy_checks,
+    singleton_policy,
 )
 from examples.structure_generated.search.pyspark.schemas.index import (
     DOCUMENT_INDEX_SUMMARY_SCHEMA,
@@ -78,6 +80,8 @@ class ScoreBaseGenerated:
             F.col("token"),
         )
         assert_schema(expanded_query_terms, QUERY_TERM_SCHEMA, name="QueryTerm", mode="strict")
+        if not expanded_query_terms.isStreaming:
+            expanded_query_terms = apply_plan_boundary(expanded_query_terms, self.spark)
         return {
             "expanded_query_terms": expanded_query_terms,
         }
@@ -225,6 +229,8 @@ class ScoreOverlapGenerated(ScoreBaseGenerated):
             ).alias("idf"),
         )
         assert_schema(document_query_idfs, QUERY_TERM_IDF_SCHEMA, name="QueryTermIdf", mode="strict")
+        if not document_query_idfs.isStreaming:
+            document_query_idfs = apply_plan_boundary(document_query_idfs, self.spark)
         return {
             "document_query_idfs": document_query_idfs,
         }
@@ -260,6 +266,8 @@ class ScoreOverlapGenerated(ScoreBaseGenerated):
             ).alias("idf"),
         )
         assert_schema(section_query_idfs, QUERY_TERM_IDF_SCHEMA, name="QueryTermIdf", mode="strict")
+        if not section_query_idfs.isStreaming:
+            section_query_idfs = apply_plan_boundary(section_query_idfs, self.spark)
         return {
             "section_query_idfs": section_query_idfs,
         }
@@ -295,6 +303,8 @@ class ScoreOverlapGenerated(ScoreBaseGenerated):
             ).alias("idf"),
         )
         assert_schema(paragraph_query_idfs, QUERY_TERM_IDF_SCHEMA, name="QueryTermIdf", mode="strict")
+        if not paragraph_query_idfs.isStreaming:
+            paragraph_query_idfs = apply_plan_boundary(paragraph_query_idfs, self.spark)
         return {
             "paragraph_query_idfs": paragraph_query_idfs,
         }
@@ -330,6 +340,8 @@ class ScoreOverlapGenerated(ScoreBaseGenerated):
             ).alias("idf"),
         )
         assert_schema(sentence_query_idfs, QUERY_TERM_IDF_SCHEMA, name="QueryTermIdf", mode="strict")
+        if not sentence_query_idfs.isStreaming:
+            sentence_query_idfs = apply_plan_boundary(sentence_query_idfs, self.spark)
         return {
             "sentence_query_idfs": sentence_query_idfs,
         }
@@ -675,19 +687,7 @@ class ScoreOverlapGenerated(ScoreBaseGenerated):
         )
         score_policy_2_param_joined = frames["score_policy"]
         if not __structure_streaming_step:
-            score_policy_2_param_joined_count = frames["score_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
-            score_policy_2_param_joined_count = score_policy_2_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            score_policy_2_param_joined = (
-                frames["score_policy"]
-                .crossJoin(score_policy_2_param_joined_count)
-                .where(F.col("__structure_exactly_one").isNull())
-                .drop("__structure_exactly_one")
-            )
+            score_policy_2_param_joined = singleton_policy(frames["score_policy"], 'policy')
         score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
         document_overlap_scores = document_overlap_scores.crossJoin(score_policy_2_joined)
         document_overlap_scores = document_overlap_scores.select(
@@ -728,19 +728,7 @@ class ScoreOverlapGenerated(ScoreBaseGenerated):
         )
         score_policy_2_param_joined = frames["score_policy"]
         if not __structure_streaming_step:
-            score_policy_2_param_joined_count = frames["score_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
-            score_policy_2_param_joined_count = score_policy_2_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            score_policy_2_param_joined = (
-                frames["score_policy"]
-                .crossJoin(score_policy_2_param_joined_count)
-                .where(F.col("__structure_exactly_one").isNull())
-                .drop("__structure_exactly_one")
-            )
+            score_policy_2_param_joined = singleton_policy(frames["score_policy"], 'policy')
         score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
         section_overlap_scores = section_overlap_scores.crossJoin(score_policy_2_joined)
         section_overlap_scores = section_overlap_scores.select(
@@ -780,19 +768,7 @@ class ScoreOverlapGenerated(ScoreBaseGenerated):
         )
         score_policy_2_param_joined = frames["score_policy"]
         if not __structure_streaming_step:
-            score_policy_2_param_joined_count = frames["score_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
-            score_policy_2_param_joined_count = score_policy_2_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            score_policy_2_param_joined = (
-                frames["score_policy"]
-                .crossJoin(score_policy_2_param_joined_count)
-                .where(F.col("__structure_exactly_one").isNull())
-                .drop("__structure_exactly_one")
-            )
+            score_policy_2_param_joined = singleton_policy(frames["score_policy"], 'policy')
         score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
         paragraph_overlap_scores = paragraph_overlap_scores.crossJoin(score_policy_2_joined)
         paragraph_overlap_scores = paragraph_overlap_scores.select(
@@ -835,19 +811,7 @@ class ScoreOverlapGenerated(ScoreBaseGenerated):
         )
         score_policy_2_param_joined = frames["score_policy"]
         if not __structure_streaming_step:
-            score_policy_2_param_joined_count = frames["score_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
-            score_policy_2_param_joined_count = score_policy_2_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            score_policy_2_param_joined = (
-                frames["score_policy"]
-                .crossJoin(score_policy_2_param_joined_count)
-                .where(F.col("__structure_exactly_one").isNull())
-                .drop("__structure_exactly_one")
-            )
+            score_policy_2_param_joined = singleton_policy(frames["score_policy"], 'policy')
         score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
         sentence_overlap_scores = sentence_overlap_scores.crossJoin(score_policy_2_joined)
         sentence_overlap_scores = sentence_overlap_scores.select(
@@ -876,6 +840,7 @@ class ScoreOverlapGenerated(ScoreBaseGenerated):
     def close(self) -> None:
         close_plan_boundaries(self.spark)
 
+    @reuse_policy_checks
     def run(
         self,
         *,

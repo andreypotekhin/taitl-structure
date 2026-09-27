@@ -117,6 +117,8 @@ class VolumeGenerated:
             .otherwise(F.lit(None))
             .alias("typical_price_vwap_20"),
         )
+        if not returns.isStreaming:
+            returns = apply_plan_boundary(returns, self.spark)
 
         # Step method: indicators
         indicators = returns.alias("volume_indicator")

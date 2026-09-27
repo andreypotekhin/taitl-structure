@@ -111,6 +111,8 @@ class PrepareOrderDemandGenerated:
             (F.coalesce(F.col("order_raw.total").cast("decimal(12,2)"), F.lit(0)) > F.lit(1000)).alias("is_large"),
         )
         assert_schema(prepared__orders, ORDER_NORMALIZED_SCHEMA, name="OrderNormalized", mode="strict")
+        if not prepared__orders.isStreaming:
+            prepared__orders = apply_plan_boundary(prepared__orders, self.spark)
         return {
             "prepared__orders": prepared__orders,
         }
@@ -138,6 +140,8 @@ class PrepareOrderDemandGenerated:
             F.col("order_normalized.is_large"),
         )
         assert_schema(prepared__orders, ORDER_NORMALIZED_SCHEMA, name="OrderNormalized", mode="strict")
+        if not prepared__orders.isStreaming:
+            prepared__orders = apply_plan_boundary(prepared__orders, self.spark)
         return {
             "prepared__orders": prepared__orders,
         }
@@ -176,6 +180,8 @@ class PrepareOrderDemandGenerated:
             F.col("customers.region").alias("customer_region"),
         )
         assert_schema(prepared__orders, ORDER_WITH_CUSTOMER_SCHEMA, name="OrderWithCustomer", mode="strict")
+        if not prepared__orders.isStreaming:
+            prepared__orders = apply_plan_boundary(prepared__orders, self.spark)
         return {
             "prepared__orders": prepared__orders,
         }
@@ -268,6 +274,8 @@ class PrepareOrderDemandGenerated:
             F.col("products_3.list_price").alias("product_list_price"),
         )
         assert_schema(prepared__orders, ORDER_WITH_PRODUCT_SCHEMA, name="OrderWithProduct", mode="strict")
+        if not prepared__orders.isStreaming:
+            prepared__orders = apply_plan_boundary(prepared__orders, self.spark)
         return {
             "prepared__orders": prepared__orders,
         }
@@ -341,6 +349,8 @@ class PrepareOrderDemandGenerated:
             F.col("promotions.discount").alias("promotion_discount"),
         )
         assert_schema(prepared__orders, ORDER_WITH_PROMOTION_SCHEMA, name="OrderWithPromotion", mode="strict")
+        if not prepared__orders.isStreaming:
+            prepared__orders = apply_plan_boundary(prepared__orders, self.spark)
         return {
             "prepared__orders": prepared__orders,
         }
@@ -370,6 +380,8 @@ class PrepareOrderDemandGenerated:
             F.col("order_with_promotion.is_large"),
         )
         assert_schema(prepared__demand, ORDER_SCHEMA, name="Order", mode="strict")
+        if not prepared__demand.isStreaming:
+            prepared__demand = apply_plan_boundary(prepared__demand, self.spark)
         return {
             "prepared__demand": prepared__demand,
         }
@@ -588,6 +600,8 @@ class PlanFulfillmentGenerated:
             name="FulfillmentPreferredOption",
             mode="strict",
         )
+        if not planned__preferred_options.isStreaming:
+            planned__preferred_options = apply_plan_boundary(planned__preferred_options, self.spark)
         return {
             "planned__preferred_options": planned__preferred_options,
         }
@@ -619,6 +633,8 @@ class PlanFulfillmentGenerated:
             F.col("fulfillment_preferred_option.business.order_date").alias("planned_ship_date"),
         )
         assert_schema(planned__allocations, FULFILLMENT_ALLOCATION_SCHEMA, name="FulfillmentAllocation", mode="strict")
+        if not planned__allocations.isStreaming:
+            planned__allocations = apply_plan_boundary(planned__allocations, self.spark)
         return {
             "planned__allocations": planned__allocations,
         }
@@ -675,6 +691,8 @@ class PlanFulfillmentGenerated:
             .alias("reason"),
         )
         assert_schema(planned__backorders, FULFILLMENT_BACKORDER_SCHEMA, name="FulfillmentBackorder", mode="strict")
+        if not planned__backorders.isStreaming:
+            planned__backorders = apply_plan_boundary(planned__backorders, self.spark)
         return {
             "planned__backorders": planned__backorders,
         }
@@ -824,6 +842,8 @@ class PlanFulfillmentGenerated:
             .alias("plan_status"),
         )
         assert_schema(planned__plans, FULFILLMENT_PLAN_SCHEMA, name="FulfillmentPlan", mode="strict")
+        if not planned__plans.isStreaming:
+            planned__plans = apply_plan_boundary(planned__plans, self.spark)
         return {
             "planned__plans": planned__plans,
         }
@@ -895,6 +915,8 @@ class PlanFulfillmentGenerated:
             name="ReplenishmentSuggestion",
             mode="strict",
         )
+        if not planned__replenishment_suggestions.isStreaming:
+            planned__replenishment_suggestions = apply_plan_boundary(planned__replenishment_suggestions, self.spark)
         return {
             "planned__replenishment_suggestions": planned__replenishment_suggestions,
         }
@@ -927,6 +949,8 @@ class BuildDemandWindowsGenerated:
             )
         )
         assert_schema(windows__windows, DEMAND_WINDOW_SCHEMA, name="DemandWindow", mode="strict")
+        if not windows__windows.isStreaming:
+            windows__windows = apply_plan_boundary(windows__windows, self.spark)
         return {
             "windows__windows": windows__windows,
         }
@@ -1061,6 +1085,8 @@ class ProjectInventoryGenerated:
         assert_schema(
             inventory_projection__projections, INVENTORY_PROJECTION_SCHEMA, name="InventoryProjection", mode="strict"
         )
+        if not inventory_projection__projections.isStreaming:
+            inventory_projection__projections = apply_plan_boundary(inventory_projection__projections, self.spark)
         return {
             "inventory_projection__projections": inventory_projection__projections,
         }
@@ -1125,6 +1151,8 @@ class DetectShortagesGenerated:
             F.col("fulfillment_shortage_ranked.reason"),
         )
         assert_schema(shortage_stage__shortages, FULFILLMENT_SHORTAGE_SCHEMA, name="FulfillmentShortage", mode="strict")
+        if not shortage_stage__shortages.isStreaming:
+            shortage_stage__shortages = apply_plan_boundary(shortage_stage__shortages, self.spark)
         return {
             "shortage_stage__shortages": shortage_stage__shortages,
         }
@@ -1247,6 +1275,8 @@ class FindSubstitutionsGenerated:
             name="FulfillmentSubstitutionOption",
             mode="strict",
         )
+        if not substitution_stage__options.isStreaming:
+            substitution_stage__options = apply_plan_boundary(substitution_stage__options, self.spark)
         return {
             "substitution_stage__options": substitution_stage__options,
         }
@@ -1513,6 +1543,8 @@ class PrioritizeExceptionsGenerated:
         assert_schema(
             exception_stage__exceptions, FULFILLMENT_EXCEPTION_SCHEMA, name="FulfillmentException", mode="strict"
         )
+        if not exception_stage__exceptions.isStreaming:
+            exception_stage__exceptions = apply_plan_boundary(exception_stage__exceptions, self.spark)
         return {
             "exception_stage__exceptions": exception_stage__exceptions,
         }
@@ -1577,6 +1609,8 @@ class ReconcileFulfillmentPlanGenerated:
             name="FulfillmentReconciliation",
             mode="strict",
         )
+        if not reconciled__reconciliation.isStreaming:
+            reconciled__reconciliation = apply_plan_boundary(reconciled__reconciliation, self.spark)
         return {
             "reconciled__reconciliation": reconciled__reconciliation,
         }
@@ -1675,6 +1709,8 @@ class FulfillmentAnalyticsGenerated:
         assert_schema(
             summarized__daily_summary, DAILY_FULFILLMENT_SUMMARY_SCHEMA, name="DailyFulfillmentSummary", mode="strict"
         )
+        if not summarized__daily_summary.isStreaming:
+            summarized__daily_summary = apply_plan_boundary(summarized__daily_summary, self.spark)
         return {
             "summarized__daily_summary": summarized__daily_summary,
         }
@@ -1713,6 +1749,8 @@ class FulfillmentAnalyticsGenerated:
             name="WarehouseLoadSummary",
             mode="strict",
         )
+        if not summarized__warehouse_load_summary.isStreaming:
+            summarized__warehouse_load_summary = apply_plan_boundary(summarized__warehouse_load_summary, self.spark)
         return {
             "summarized__warehouse_load_summary": summarized__warehouse_load_summary,
         }
@@ -1944,6 +1982,8 @@ class EvaluateFulfillmentGenerated:
             name="FulfillmentServiceEvaluation",
             mode="strict",
         )
+        if not evaluated__evaluations.isStreaming:
+            evaluated__evaluations = apply_plan_boundary(evaluated__evaluations, self.spark)
         return {
             "evaluated__evaluations": evaluated__evaluations,
         }
@@ -2050,6 +2090,8 @@ class EvaluateFulfillmentGenerated:
             .otherwise(F.lit(None))
             .alias("target_attained"),
         )
+        if not evaluated__daily_summary.isStreaming:
+            evaluated__daily_summary = apply_plan_boundary(evaluated__daily_summary, self.spark)
         return {
             "evaluated__daily_summary": evaluated__daily_summary,
         }

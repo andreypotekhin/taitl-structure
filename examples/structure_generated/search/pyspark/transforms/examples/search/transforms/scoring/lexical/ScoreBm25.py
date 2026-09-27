@@ -71,6 +71,8 @@ class ScoreBaseGenerated:
             F.col("token"),
         )
         assert_schema(expanded_query_terms, QUERY_TERM_SCHEMA, name="QueryTerm", mode="strict")
+        if not expanded_query_terms.isStreaming:
+            expanded_query_terms = apply_plan_boundary(expanded_query_terms, self.spark)
         return {
             "expanded_query_terms": expanded_query_terms,
         }

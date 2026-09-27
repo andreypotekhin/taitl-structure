@@ -216,6 +216,22 @@ def test_special_udf_warning_can_be_disabled_by_transform_option() -> None:
     assert plan.diagnostics == ()
 
 
+def test_transform_disable_suppresses_registered_warning() -> None:
+    @transform(disable=["DSL-W0403"])
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        @special(type="udf", return_type=types.string(), nullable=False)
+        def clean(value: Any):
+            return value.strip()
+
+        def publish(self, row: Raw) -> Published:
+            return Published(id=self.clean(row.id))
+
+    assert _compile(Publish).analysis.diagnostics == ()
+
+
 def test_special_udf_requires_return_type_or_supported_annotation() -> None:
     class Publish(Transform):
         rows = input(Raw)

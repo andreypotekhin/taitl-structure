@@ -12,6 +12,8 @@ from examples.structure_generated.search.runtime.schema_assert import (
     project_schema,
     apply_plan_boundary,
     close_plan_boundaries,
+    reuse_policy_checks,
+    singleton_policy,
 )
 from examples.structure_generated.search.pyspark.schemas.indexing_vector import PARAGRAPH_VECTOR_CANDIDATE_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.similarities_vector import (
@@ -86,6 +88,8 @@ class AdoptLexicalSimilarityGenerated:
             name="ParagraphFusedSimilarityCandidate",
             mode="strict",
         )
+        if not lexical__paragraph_candidates.isStreaming:
+            lexical__paragraph_candidates = apply_plan_boundary(lexical__paragraph_candidates, self.spark)
         return {
             "lexical__paragraph_candidates": lexical__paragraph_candidates,
         }
@@ -180,6 +184,8 @@ class AdoptVectorSimilarityGenerated:
             name="ParagraphFusedSimilarityCandidate",
             mode="strict",
         )
+        if not vector__adopted_paragraph_candidates.isStreaming:
+            vector__adopted_paragraph_candidates = apply_plan_boundary(vector__adopted_paragraph_candidates, self.spark)
         return {
             "vector__adopted_paragraph_candidates": vector__adopted_paragraph_candidates,
         }
@@ -228,6 +234,8 @@ class FuseSimilarityGenerated:
         assert_schema(
             fused__valid_policy, SIMILARITY_FUSION_POLICY_SCHEMA, name="SimilarityFusionPolicy", mode="strict"
         )
+        if not fused__valid_policy.isStreaming:
+            fused__valid_policy = apply_plan_boundary(fused__valid_policy, self.spark)
         return {
             "fused__valid_policy": fused__valid_policy,
         }
@@ -413,21 +421,7 @@ class FuseSimilarityGenerated:
         )
         fused__valid_policy_param_joined = frames["fused__valid_policy"]
         if not __structure_streaming_step:
-            fused__valid_policy_param_joined_count = frames["fused__valid_policy"].agg(
-                F.count(F.lit(1)).alias("__structure_count")
-            )
-            fused__valid_policy_param_joined_count = fused__valid_policy_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            fused__valid_policy_param_joined = (
-                frames["fused__valid_policy"]
-                .crossJoin(fused__valid_policy_param_joined_count)
-                .where(F.col("__structure_exactly_one").isNull())
-                .drop("__structure_exactly_one")
-            )
+            fused__valid_policy_param_joined = singleton_policy(frames["fused__valid_policy"], 'policy')
         fused__valid_policy_joined = fused__valid_policy_param_joined.alias("fused__valid_policy")
         fused__fused_candidates = fused__fused_candidates.crossJoin(fused__valid_policy_joined)
         fused__fused_candidates = (
@@ -516,21 +510,7 @@ class FuseSimilarityGenerated:
         )
         fused__valid_policy_param_joined = frames["fused__valid_policy"]
         if not __structure_streaming_step:
-            fused__valid_policy_param_joined_count = frames["fused__valid_policy"].agg(
-                F.count(F.lit(1)).alias("__structure_count")
-            )
-            fused__valid_policy_param_joined_count = fused__valid_policy_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            fused__valid_policy_param_joined = (
-                frames["fused__valid_policy"]
-                .crossJoin(fused__valid_policy_param_joined_count)
-                .where(F.col("__structure_exactly_one").isNull())
-                .drop("__structure_exactly_one")
-            )
+            fused__valid_policy_param_joined = singleton_policy(frames["fused__valid_policy"], 'policy')
         fused__valid_policy_joined = fused__valid_policy_param_joined.alias("fused__valid_policy")
         fused__scored_candidates = fused__scored_candidates.crossJoin(fused__valid_policy_joined)
         fused__scored_candidates = fused__scored_candidates.select(
@@ -600,21 +580,7 @@ class FuseSimilarityGenerated:
         )
         fused__valid_policy_param_joined = frames["fused__valid_policy"]
         if not __structure_streaming_step:
-            fused__valid_policy_param_joined_count = frames["fused__valid_policy"].agg(
-                F.count(F.lit(1)).alias("__structure_count")
-            )
-            fused__valid_policy_param_joined_count = fused__valid_policy_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            fused__valid_policy_param_joined = (
-                frames["fused__valid_policy"]
-                .crossJoin(fused__valid_policy_param_joined_count)
-                .where(F.col("__structure_exactly_one").isNull())
-                .drop("__structure_exactly_one")
-            )
+            fused__valid_policy_param_joined = singleton_policy(frames["fused__valid_policy"], 'policy')
         fused__valid_policy_joined = fused__valid_policy_param_joined.alias("fused__valid_policy")
         fused__paragraph_candidates = fused__paragraph_candidates.crossJoin(fused__valid_policy_joined)
         fused__paragraph_candidates = fused__paragraph_candidates.where(
@@ -665,6 +631,8 @@ class FuseSimilarityGenerated:
             name="ParagraphFusedSimilarityCandidate",
             mode="strict",
         )
+        if not fused__paragraph_candidates.isStreaming:
+            fused__paragraph_candidates = apply_plan_boundary(fused__paragraph_candidates, self.spark)
         return {
             "fused__paragraph_candidates": fused__paragraph_candidates,
         }
@@ -753,19 +721,7 @@ class RerankSimilarityGenerated:
         __structure_streaming_step = frames["reranked__ranked_paragraphs"].isStreaming or frames["policy"].isStreaming
         policy_param_joined = frames["policy"]
         if not __structure_streaming_step:
-            policy_param_joined_count = frames["policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
-            policy_param_joined_count = policy_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            policy_param_joined = (
-                frames["policy"]
-                .crossJoin(policy_param_joined_count)
-                .where(F.col("__structure_exactly_one").isNull())
-                .drop("__structure_exactly_one")
-            )
+            policy_param_joined = singleton_policy(frames["policy"], 'policy')
         policy_joined = policy_param_joined.alias("policy")
         reranked__similar_paragraphs = reranked__similar_paragraphs.crossJoin(policy_joined)
         reranked__similar_paragraphs = reranked__similar_paragraphs.where(
@@ -792,6 +748,8 @@ class RerankSimilarityGenerated:
             F.col("indexed_similar_paragraph.experiment_id"),
             F.col("indexed_similar_paragraph.rank"),
         )
+        if not reranked__similar_paragraphs.isStreaming:
+            reranked__similar_paragraphs = apply_plan_boundary(reranked__similar_paragraphs, self.spark)
         return {
             "reranked__similar_paragraphs": reranked__similar_paragraphs,
         }
@@ -808,6 +766,7 @@ class SearchSimilarityGenerated(
     def close(self) -> None:
         close_plan_boundaries(self.spark)
 
+    @reuse_policy_checks
     def run(
         self,
         *,

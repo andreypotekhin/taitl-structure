@@ -46,6 +46,8 @@ class SelectActiveRecommendationExperimentsGenerated:
             F.col("recommendation_experiment.active"),
             F.col("recommendation_experiment.maximum_zero_result_rate"),
         )
+        if not experiments.isStreaming:
+            experiments = apply_plan_boundary(experiments, self.spark)
 
         # Step method: active_experiments
         active_experiments = experiments.alias("recommendation_experiment")

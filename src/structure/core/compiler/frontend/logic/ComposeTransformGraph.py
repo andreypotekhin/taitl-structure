@@ -15,7 +15,7 @@ from structure.core.compiler.ir.model.StepResultPlan import StepResultPlan
 from structure.core.compiler.ir.model.TransformPlan import TransformPlan
 from structure.core.dsl.model.transforms.InputDeclaration import InputDeclaration
 from structure.core.dsl.model.transforms.OutputDeclaration import OutputDeclaration
-from structure.core.dsl.model.transforms.ParameterDeclaration import ParameterDeclaration
+from structure.core.dsl.model.transforms.ParameterDeclaration import NegatedParameter, ParameterDeclaration
 from structure.core.dsl.model.transforms.StageDeclaration import StageDeclaration, StageOutputReference
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
@@ -35,9 +35,10 @@ class ComposeTransformGraph:
         allow_stream_to_batch: bool = False,
         stream_to_batch_policy: str = "default",
         allow_stage_outputs: bool = True,
+        parameters: Mapping[str, object] | None = None,
     ) -> TransformPlan:
         rewrite = rewrite_body or (lambda body, _: body)
-        stages = tuple(self._stage(wrapper_class, stage) for stage in wrapper_class._structure_stages.values())
+        stages = tuple(self._stage(wrapper_class, stage, parameters or {}) for stage in wrapper_class._structure_stages.values())
         if not stages:
             raise self._error(
                 wrapper_class.__name__, "Transform graph has no stages.", "Declare at least one transform assignment."
@@ -86,9 +87,9 @@ class ComposeTransformGraph:
             ) + tuple(streaming_boundaries),
         )
 
-    def _stage(self, wrapper_class: type[Transform], stage: StageDeclaration) -> StageDeclaration:
+    def _stage(self, wrapper_class: type[Transform], stage: StageDeclaration, bound: Mapping[str, object]) -> StageDeclaration:
         parameters = {
-            name: self._parameter(wrapper_class, value)
+            name: self._parameter(wrapper_class, value, bound)
             for name, value in stage.invocation._structure_bound_parameters.items()
         }
         if parameters == stage.invocation._structure_bound_parameters:
@@ -97,10 +98,15 @@ class ComposeTransformGraph:
         invocation._structure_output_renames = dict(stage.invocation._structure_output_renames)
         return replace(stage, invocation=invocation)
 
-    def _parameter(self, wrapper_class: type[Transform], value: object) -> object:
+    def _parameter(self, wrapper_class: type[Transform], value: object, bound: Mapping[str, object]) -> object:
+        if isinstance(value, NegatedParameter):
+            resolved = self._parameter(wrapper_class, value.parameter, bound)
+            if not isinstance(resolved, bool):
+                raise TypeError(f"Parameter {value.parameter.name!r} must be Boolean for ~parameter")
+            return not resolved
         if not isinstance(value, ParameterDeclaration):
             return value
-        resolved = getattr(wrapper_class, value.name, value)
+        resolved = bound.get(value.name, getattr(wrapper_class, value.name, value))
         return value.default if isinstance(resolved, ParameterDeclaration) else resolved
 
     def _inputs(

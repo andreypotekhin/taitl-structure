@@ -12,6 +12,8 @@ from examples.structure_generated.search.runtime.schema_assert import (
     project_schema,
     apply_plan_boundary,
     close_plan_boundaries,
+    reuse_policy_checks,
+    singleton_policy,
 )
 from examples.structure_generated.search.pyspark.schemas.TimeWindow import TIME_WINDOW_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.batch import EVALUATION_BATCH_SCHEMA
@@ -42,6 +44,7 @@ class EvaluateDocumentRankingGenerated:
     def close(self) -> None:
         close_plan_boundaries(self.spark)
 
+    @reuse_policy_checks
     def run(
         self,
         *,
@@ -71,18 +74,7 @@ class EvaluateDocumentRankingGenerated:
         evaluated_queries = evaluated_queries.crossJoin(batch_joined)
         params_2_param_joined = params
         if not __structure_streaming_step:
-            params_2_param_joined_count = params.agg(F.count(F.lit(1)).alias("__structure_count"))
-            params_2_param_joined_count = params_2_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(params) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            params_2_param_joined = (
-                params.crossJoin(params_2_param_joined_count)
-                .where(F.col("__structure_exactly_one").isNull())
-                .drop("__structure_exactly_one")
-            )
+            params_2_param_joined = singleton_policy(params, 'params')
         params_2_joined = params_2_param_joined.alias("params_2")
         evaluated_queries = evaluated_queries.crossJoin(params_2_joined)
         results_3_joined = results.alias("results_3")
@@ -107,6 +99,8 @@ class EvaluateDocumentRankingGenerated:
             F.col("search_query.id").alias("search_query_id"),
         )
         assert_schema(evaluated_queries, EVALUATION_QUERY_SCHEMA, name="EvaluationQuery", mode="strict")
+        if not evaluated_queries.isStreaming:
+            evaluated_queries = apply_plan_boundary(evaluated_queries, self.spark)
 
         # Step method: select_results
         evaluated_results = evaluated_queries.alias("evaluation_query")
@@ -170,6 +164,8 @@ class EvaluateDocumentRankingGenerated:
             .alias("ideal_rank"),
         )
         assert_schema(ranked_judgments, EVALUATION_JUDGMENT_SCHEMA, name="EvaluationJudgment", mode="strict")
+        if not ranked_judgments.isStreaming:
+            ranked_judgments = apply_plan_boundary(ranked_judgments, self.spark)
 
         # Step method: count_judgments
         judgment_totals = ranked_judgments.alias("evaluation_judgment")
@@ -617,6 +613,8 @@ class EvaluateDocumentRankingGenerated:
         assert_schema(
             query_evaluations, DOCUMENT_QUERY_EVALUATION_SCHEMA, name="DocumentQueryEvaluation", mode="strict"
         )
+        if not query_evaluations.isStreaming:
+            query_evaluations = apply_plan_boundary(query_evaluations, self.spark)
 
         # Step method: summarize
         summary = query_evaluations.alias("document_query_evaluation")

@@ -211,7 +211,7 @@ Expanded explain should show field lineage:
 The following stay out until later designs:
 
 - streaming windows, streaming aggregations, watermarks, triggers, and state policies;
-- automatic optimization or query-plan rewriting;
+- automatic optimization or query plan rewriting;
 - arbitrary Python callbacks or UDF fallback;
 - ordered collection aggregation guarantees beyond explicitly ordered helper forms;
 - target-specific helpers that have no backend-neutral meaning.

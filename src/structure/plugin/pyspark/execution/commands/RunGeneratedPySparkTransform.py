@@ -63,6 +63,11 @@ class RunGeneratedPySparkTransform:
             return result
         if hasattr(result, "as_dict"):
             stages = getattr(result, "stages", None)
+            if stages is None:
+                # Generated artifacts can carry the core result protocol from
+                # a different runtime package.  Preserve its structural stage
+                # metadata even when that package predates the public property.
+                stages = getattr(result, "_structure_stages", None)
             if plan.allow_stage_outputs and plan.stage_outputs and stages is None:
                 raise TypeError(
                     "Generated transform executor must return a stage-aware TransformResult "

@@ -284,6 +284,43 @@ similarities = ReduceSimilarityScores(
 document_pairs = similarities.document_similarities
 ```
 
+## Batch document-search lineage
+
+`SearchDocuments` keeps fusion and its execution policy inside `FuseDocuments`. Its `streaming` parameter defaults
+to `False`, and the composed stage passes `materialize=~streaming`. `FuseDocuments` itself defaults to
+`materialize=False`; when enabled, it eagerly checkpoints each ranked candidate branch before its uniqueness check,
+then checkpoints the selected fused candidates before feedback reranking branches reuse them. The early checkpoints
+prevent uniqueness checks from copying the full retrieval query plan. It returns the same candidate schema and values.
+There is no parallel batch class
+or extra public Search output.
+
+Enabling materialization therefore performs three checkpoint writes rather than one. This trades additional
+caller-owned storage and early Spark work for much smaller query plans at validation and reranking boundaries.
+
+These boundaries prevent repeated copies of the full retrieval query plan from reaching reranking. Cache/persist and
+named views are not substitutes: Spark still retains the earlier query plan. Eager checkpointing performs work during
+`.run(...)` and writes to caller-owned checkpoint storage. Configure `spark.sparkContext.setCheckpointDir(path)`
+for ordinary PySpark, or `spark.checkpoint.dir` when starting a Spark Connect 4.0 server. The storage must be
+accessible to the driver and executors; the application owns its lifetime and cleanup.
+
+Reliable checkpointing is supported here on ordinary PySpark 3.5/4.0 and the explicit Spark Connect 4.0 profile
+(`>=4.0,<4.1`). Connect 3.5 and the mixed-version Connect profile remain capability-gated. No silent fallback to
+unreliable local checkpointing is used.
+
+`SearchDocuments(streaming=True, ...)` omits these checkpoints at compilation. This switch alone does **not** make the
+full graph stream-compatible: existing input declarations and streaming capability checks still apply, and the full
+Search graph remains batch-delivered. Actual streaming DataFrames cannot pass through the checkpoint step.
+
+The PySpark plugin also defaults to `plan_boundaries="auto"`, using temporary-view references for shared batch
+frames. These references can reduce Connect plan transmission, but do not replace the fusion checkpoint or truncate
+Catalyst lineage. Actual streaming frames bypass them. Use `plan_boundaries="off"` for a controlled comparison;
+close the Structure session or generated transform after consuming lazy results to release its temporary views.
+
+Batch `param_join` checks also reuse the same policy check within a transform run. They inspect at most two policy
+rows: exactly one is required, including when policy values are null. Zero or multiple rows still fail when evaluated.
+This removes a duplicated branch from the query plan without collecting policy data into Python or disabling checks.
+The reuse cache ends with the run, including on failure; it does not persist Spark data or create temporary views.
+
 ## Sentence Search
 
 The shared `Scoring` output supplies the sentence candidates. `SearchSentences`

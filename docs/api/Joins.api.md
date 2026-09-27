@@ -39,6 +39,11 @@ and `e` denote a temporal predicate, event time, valid-from, and valid-to expres
 - Cross joins require `allow_cartesian=True` and do not accept `on=`. `param_join(relation)` is the parameter-style
   shortcut for `cross_join(relation, allow_cartesian=True)`; it asserts singleton cardinality for batch steps and
   skips that assertion for streaming steps. Use `cross_join(...)` when multiple right-side rows are intentional.
+- Batch parameter checks inspect at most two rows and reuse the same check for an identical policy DataFrame and
+  diagnostic scope within one run. Zero or multiple rows still raise `REL-E0701` when evaluated; one row with null
+  field values is still one row. This is lazy query plan reuse, not data caching or an additional Spark action.
+  Separate runs do not share checks. This optimization is independent of `plan_boundaries`, which controls temporary
+  views. See [slow query plan troubleshooting](../../Troubleshooting.md#large-batch-plans-with-small-inputs).
 - Same-name key shorthand is supported: `left_join(on="customer_id")` and
   `inner_join(on=["tenant_id", "order_id"])`.
 - `relation_alias(...)` creates a named typed occurrence of the current rowset or an unjoined relation for a self join.

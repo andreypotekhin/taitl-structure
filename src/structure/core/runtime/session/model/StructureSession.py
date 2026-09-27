@@ -156,9 +156,9 @@ class StructureSession:
         return inputs
 
     def _compiled(self, invocation: Transform) -> CompiledTransform:
-        return self.compile(invocation if isinstance(invocation, TransformPipeline) else type(invocation))
+        return self.compile(invocation)
 
-    def compile(self, transform_or_pipeline: type[Transform] | TransformPipeline | StructureSources):
+    def compile(self, transform_or_pipeline: type[Transform] | Transform | TransformPipeline | StructureSources):
         if isinstance(transform_or_pipeline, StructureSources):
             compiled = Artifacts().sources()(
                 transform_or_pipeline,

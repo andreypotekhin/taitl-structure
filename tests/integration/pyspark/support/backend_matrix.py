@@ -6,9 +6,12 @@ import sys
 import time
 from collections.abc import Iterator, Mapping, Sequence
 from contextlib import contextmanager
+from functools import wraps
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import pytest
+from integration.pyspark.support.timing import phase
 
 from structure import *
 from structure.core.dsl.model.schemas.Schema import Schema
@@ -16,6 +19,7 @@ from structure.core.dsl.model.transforms.Transform import Transform
 from structure.plugin.pyspark import *
 from structure.plugin.pyspark import PySpark
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
+from structure.plugin.pyspark.execution.logic.PlanBoundary import close_plan_boundaries
 
 BACKENDS = ("pyspark35", "pyspark40", "spark-connect35", "spark-connect40")
 CLASSIC_ONLY_TOKENS = (
@@ -34,7 +38,7 @@ CLASSIC_ONLY_TOKENS = (
 
 
 @pytest.fixture
-def spark():
+def spark(pytestconfig, monkeypatch):
     pyspark = pytest.importorskip("pyspark")
     sql = pytest.importorskip("pyspark.sql")
     backend = backend_name()
@@ -51,13 +55,20 @@ def spark():
         .config("spark.sql.session.timeZone", "UTC")
         .config("spark.sql.adaptive.enabled", "false")
         .config("spark.sql.autoBroadcastJoinThreshold", "-1")
+        # Spark's default allows ~2 GiB of diagnostic plan text per query.
+        .config("spark.sql.maxPlanStringLength", "8192")
+        .config("spark.sql.ui.explainMode", "simple")
     )
     packages = os.environ.get("STRUCTURE_SPARK_JARS_PACKAGES")
     if packages and not remote:
         builder = builder.config("spark.jars.packages", packages)
         builder = builder.config("spark.sql.extensions", "org.apache.sedona.sql.SedonaSqlExtensions")
     if not remote:
-        builder = builder.config("spark.sql.artifact.dir", "/tmp/spark-artifacts").config("spark.ui.enabled", "false")
+        builder = (
+            builder.config("spark.sql.artifact.dir", "/tmp/spark-artifacts")
+            .config("spark.ui.enabled", "false")
+            .config("spark.default.parallelism", "2")
+        )
 
     session = None
     last_error = None
@@ -76,12 +87,29 @@ def spark():
         endpoint = remote or master
         raise AssertionError(f"Spark did not become ready at {endpoint}: {last_error}")
 
-    try:
-        yield session
-    finally:
-        session.stop()
-        if hasattr(pyspark, "SparkContext"):
-            pyspark.SparkContext._active_spark_context = None
+    shared = Path(pytestconfig.rootpath) / ".pytest-workspace-tmp" / "integration"
+    shared.mkdir(parents=True, exist_ok=True)
+    with TemporaryDirectory(prefix="checkpoints-", dir=shared) as checkpoints:
+        if not remote:
+            session.sparkContext.setCheckpointDir(checkpoints)
+        if os.environ.get("STRUCTURE_INTEGRATION_CHECKPOINT_TIMING") == "1":
+            frame_type = type(session.range(0))
+            checkpoint = frame_type.checkpoint
+
+            @wraps(checkpoint)
+            def timed_checkpoint(frame, *args, **kwargs):
+                with phase("DataFrame checkpoint (nested in construction)"):
+                    return checkpoint(frame, *args, **kwargs)
+
+            monkeypatch.setattr(frame_type, "checkpoint", timed_checkpoint)
+        try:
+            yield session
+        finally:
+            with phase("plan boundary cleanup"):
+                close_plan_boundaries(session)
+            session.stop()
+            if hasattr(pyspark, "SparkContext"):
+                pyspark.SparkContext._active_spark_context = None
 
 
 def backend_name() -> str:
@@ -102,22 +130,27 @@ def _target_profile() -> str:
 
 
 def _plugin() -> dict[str, dict[str, object]]:
+    if "STRUCTURE_CONNECT_PLAN_BOUNDARIES" in os.environ:
+        raise ValueError("STRUCTURE_CONNECT_PLAN_BOUNDARIES was removed; use STRUCTURE_PLAN_BOUNDARIES instead.")
     options: dict[str, object] = {"profile": _target_profile(), "variant": target_variant()}
-    boundary_policy = os.environ.get("STRUCTURE_CONNECT_PLAN_BOUNDARIES")
-    if boundary_policy:
-        options["connect_plan_boundaries"] = boundary_policy
+    boundary_policy = os.environ.get("STRUCTURE_PLAN_BOUNDARIES")
+    if boundary_policy is not None:
+        options["plan_boundaries"] = boundary_policy
     validate_intermediate = os.environ.get("STRUCTURE_VALIDATE_INTERMEDIATE")
     if validate_intermediate is not None:
         options["validate_intermediate"] = validate_intermediate.lower() == "true"
     return {"pyspark": options}
 
 
-def session(spark, *, execution_mode: str, generated_package: str | None = None) -> StructureSession:
+def session(
+    spark, *, execution_mode: str, generated_package: str | None = None, allow_stage_outputs: bool = True
+) -> StructureSession:
     return StructureSession(
         spark=spark,
         config=StructureConfig.create(
             execution_mode=execution_mode,
             generated_package=generated_package or "structure_generated",
+            allow_stage_outputs=allow_stage_outputs,
             plugin=_plugin(),
         ),
     )
@@ -130,10 +163,12 @@ def render_generated_project(
     generated_package: str,
     source_schema_modules: Mapping[str, Sequence[type[Schema]]],
     generated_code_options: tuple[str, ...] = (),
+    allow_stage_outputs: bool = True,
 ) -> dict[str, str]:
     artifact = transform_type.compile(
         generated_package=generated_package,
         generated_code_options=generated_code_options,
+        allow_stage_outputs=allow_stage_outputs,
         plugin=_plugin(),
     )
     return PySpark.render.project()(
@@ -182,14 +217,16 @@ def render_generated_projects(
 
 @contextmanager
 def generated_project(tmp_path: Path, package: str, files: dict[str, str]) -> Iterator[None]:
-    write_files(tmp_path, files)
+    with phase(f"generated source setup ({package})"):
+        write_files(tmp_path, files)
     sys.path.insert(0, str(tmp_path))
     try:
         importlib.invalidate_caches()
         yield
     finally:
-        sys.path.remove(str(tmp_path))
-        drop_generated_modules(package)
+        with phase(f"generated source cleanup ({package})"):
+            sys.path.remove(str(tmp_path))
+            drop_generated_modules(package)
 
 
 def write_files(root: Path, files: dict[str, str]) -> None:

@@ -51,7 +51,7 @@ gaps. PySpark 4.1 adoption has a separate ledger in [APICatalog.md](../APICatalo
 
 ## Current Baseline
 
-This register is current as of 2026-08-31. The default target remains PySpark `>=3.5,<4.1`, ordinary PySpark, with
+This register is current as of 2026-09-25. The default target remains PySpark `>=3.5,<4.1`, ordinary PySpark, with
 Spark Connect claims only for completed compiler-visible batch features. The authoritative inventory is the intersection
 of the PySpark 3.5.x and 4.0.x public APIs, not the newest Spark documentation.
 
@@ -95,21 +95,23 @@ non-nullable String inputs, literal and symbolic integral bounds, online executi
 
 ## Docker Live Evidence Checkpoint
 
-The repository Compose stack under `infra/compose/` was rerun on 2026-08-27. These results are runtime evidence for the
-listed slices only; a passing infrastructure lane does not promote an unrelated family or clear a design gate.
+The repository Compose stack under `infra/compose/` was rerun on 2026-09-25 for the full 178-test selection on the
+PySpark 3.5, PySpark 4.0, Spark Connect 3.5, and Spark Connect 4.0 lanes. The PySpark 4.0 run was interrupted after
+approximately one hour without a final summary; its bounded Security test passed separately. These results are runtime
+evidence for the listed slices only; a passing infrastructure lane does not promote an unrelated family or clear a
+design gate.
 
 | Backend | Collected | Passed | Skipped | Failed | Evidence boundary |
 | --- | ---: | ---: | ---: | ---: | --- |
-| `pyspark35` | 65 | 53 | 6 | 6 | Full integration/concept selection; foreachBatch restart, stream/static restart, stateless streaming, and Sedona geometry passed. |
-| `pyspark40` | 65 | 56 | 3 | 6 | Full integration/concept selection; the same admitted ordinary-runtime slices passed. |
-| `spark-connect35` | 24 | 15 | 9 | 0 | Focused Connect boundary/UDF, v7 generator/parsing, v9 geometry, and selected concept parity tests. Search and classic-only restart/state tests were excluded or skipped. |
-| `spark-connect40` | 24 | 18 | 6 | 0 | The same focused Connect slice on the 4.0 target. |
+| `pyspark35` | 178 | 164 | 6 | 8 | Current full integration/concept selection; generated stage-result failures are cleared. Two Search cases hit driver-heap exhaustion; six unrelated live-contract/import failures remain. |
+| `pyspark40` | 178 collected; incomplete | — | — | — | Current full lane timed out/interrupted during the heavy Search/Spark workload. A bounded Security test passed (`1 passed, 177 deselected`). Historical 56/3/6 counts are retained only as a prior focused checkpoint. |
+| `spark-connect35` | 178 | 148 | 19 | 11 | Current full integration/concept selection. Five Search cases fail during generated rendering; order-contract and V11 import-path failures remain. |
+| `spark-connect40` | 178 | 151 | 16 | 11 | Current full integration/concept selection. Five Search cases fail during generated rendering with an unsupported `array` helper call; order-contract and V11 import-path failures remain. |
 
-The six ordinary failures are shared generated-result contract failures in four Search cases, the generated security
-fixture, and the generated chained event-time window. They raise `TypeError: Generated transform executor must return a
-stage-aware TransformResult when composed stage outputs are enabled`; therefore they are recorded as current open
-implementation evidence, not as support. Exact Search vector retrieval, Search generated/online comparison, full Connect
-Search proving, and broader streaming state/lifecycle claims remain gated or deferred.
+The current ordinary PySpark 3.5 Search failures are Java heap exhaustion during repeated logical-plan union/reverse
+expansion, not generated-result contract failures. Connect Search failures occur during generated rendering; Connect 4.0
+identifies the unsupported helper as `array`. Exact Search vector retrieval, Search generated/online comparison, full
+Connect Search proving, and broader streaming state/lifecycle claims remain gated or deferred.
 
 ## SQL Function Family Register
 

@@ -166,6 +166,8 @@ class SecurityPostureGenerated:
         assert_schema(
             vulnerabilities, VULNERABILITY_POSTURE_CANDIDATE_SCHEMA, name="VulnerabilityPostureCandidate", mode="strict"
         )
+        if not vulnerabilities.isStreaming:
+            vulnerabilities = apply_plan_boundary(vulnerabilities, self.spark)
 
         # Step method: expose
         vulnerabilities = vulnerabilities.alias("vulnerability_posture_candidate")
@@ -220,6 +222,8 @@ class SecurityPostureGenerated:
             F.col("vulnerability_posture_candidate.org_id"),
             F.col("vulnerability_posture_candidate.org_name"),
         )
+        if not vulnerabilities.isStreaming:
+            vulnerabilities = apply_plan_boundary(vulnerabilities, self.spark)
 
         # Step method: exposures
         exposures = vulnerabilities.alias("vulnerability_exposure")

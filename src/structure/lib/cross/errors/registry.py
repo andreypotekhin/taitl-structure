@@ -72,16 +72,49 @@ diagnostic_registry = DiagnosticRegistry(
         DiagnosticEntry(
             code="PYSPARK-W2701",
             severity="warning",
-            title="PySpark lazy lineage is growing through repeated reuse",
+            title="PySpark query plan is growing through repeated reuse",
             owner="pyspark",
             status="active",
             docs="docs/Diagnostics.md#pyspark-w2701",
             introduced="1.0.0",
-            problem_template="A relation is reused after a self-join or multi-branch operation has expanded its lazy lineage.",
+            problem_template="A relation is reused after joins or branches have made the Spark query plan expensive to build.",
             use_template=(
                 "Add checkpoint() or local_checkpoint() before reusing the expanded relation. "
-                "cache() and persist() alone do not truncate logical lineage."
+                "cache() and persist() alone do not shorten the query plan."
             ),
+        ),
+        DiagnosticEntry(
+            code="PYSPARK-W2702",
+            severity="warning",
+            title="PySpark query plan branch is reused many times",
+            owner="pyspark",
+            status="active",
+            docs="docs/Diagnostics.md#pyspark-w2702",
+            introduced="1.0.0",
+            problem_template="A query plan branch is sent to several downstream operations after it has become structurally expensive.",
+            use_template="Add checkpoint() or local_checkpoint() at the shared branch, or reduce the number of consumers. See docs/troubleshooting/memory/spark_driver_heap_oom.gotcha.md.",
+        ),
+        DiagnosticEntry(
+            code="PYSPARK-W2703",
+            severity="warning",
+            title="Repeated query plan validation is expensive",
+            owner="pyspark",
+            status="active",
+            docs="docs/Diagnostics.md#pyspark-w2703",
+            introduced="1.0.0",
+            problem_template="Several strict checks are attached to a large query plan and may make planning or driver memory use slow.",
+            use_template="Keep checks at input and output boundaries, or checkpoint before validating a reused branch. See docs/dev/Troubleshooting.md.",
+        ),
+        DiagnosticEntry(
+            code="PYSPARK-W2704",
+            severity="warning",
+            title="Output query plan is unusually large",
+            owner="pyspark",
+            status="active",
+            docs="docs/Diagnostics.md#pyspark-w2704",
+            introduced="1.0.0",
+            problem_template="The query plan used to produce an output contains many dependent operations without a planning boundary.",
+            use_template="Split the computation with checkpoint() or local_checkpoint(), or simplify the output path. See docs/troubleshooting/memory/spark_driver_heap_oom.gotcha.md.",
         ),
         DiagnosticEntry(
             code="SCHEMA-E0301",

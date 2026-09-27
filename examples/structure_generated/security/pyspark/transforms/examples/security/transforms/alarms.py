@@ -93,6 +93,8 @@ class VulnerabilityAlarmsGenerated:
             F.col("vulnerability_workflow_exposure.target_date"),
             F.col("vulnerability_workflow_exposure.instructions"),
         )
+        if not exposures.isStreaming:
+            exposures = apply_plan_boundary(exposures, self.spark)
 
         # Step method: overdue_alarms
         overdue_alarms = exposures.alias("team_vulnerability_alarm")

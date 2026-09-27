@@ -208,6 +208,8 @@ class SecurityInventoryQualityGenerated:
         assert_schema(
             reference_checks, VULNERABILITY_QUALITY_CHECK_SCHEMA, name="VulnerabilityQualityCheck", mode="strict"
         )
+        if not reference_checks.isStreaming:
+            reference_checks = apply_plan_boundary(reference_checks, self.spark)
 
         # Step method: publish_reference_issues
         reference_issues = reference_checks.alias("vulnerability_quality_check")
@@ -275,6 +277,8 @@ class SecurityInventoryQualityGenerated:
             name="VulnerabilityInventoryCheck",
             mode="strict",
         )
+        if not reconciliation_checks.isStreaming:
+            reconciliation_checks = apply_plan_boundary(reconciliation_checks, self.spark)
 
         # Step method: publish_reconciliation_issues
         reconciliation_issues = reconciliation_checks.alias("vulnerability_inventory_check")

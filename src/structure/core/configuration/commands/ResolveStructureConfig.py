@@ -34,6 +34,7 @@ class ResolveStructureConfig:
         "strict_performance",
         "warn_on_udfs",
         "warn_on_lineage_growth",
+        "disable",
         "allow_stream_to_batch",
         "stream_to_batch_policy",
         "allow_output_to_input",

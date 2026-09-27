@@ -39,7 +39,7 @@ def test_param_join_asserts_only_for_batch_step() -> None:
     executor = RunOnlinePySparkTransform()
     assertions: list[str] = []
 
-    def record(frame, scope, *, functions):
+    def record(frame, scope):
         assertions.append(scope)
         return frame
 
@@ -47,7 +47,9 @@ def test_param_join_asserts_only_for_batch_step() -> None:
     right = _Frame(streaming=False)
     step = cast(PySparkStepRecipe, SimpleNamespace(source="events", input_sources=("policy",)))
 
-    with patch.object(executor, "_exactly_one", side_effect=record):
+    with patch(
+        "structure.plugin.pyspark.execution.logic.running.RunOnlinePySparkTransform.singleton_policy", side_effect=record
+    ):
         executor._join(
             step,
             left,
@@ -66,7 +68,7 @@ def test_param_join_skips_assertion_for_streaming_step() -> None:
     executor = RunOnlinePySparkTransform()
     assertions: list[str] = []
 
-    def record(frame, scope, *, functions):
+    def record(frame, scope):
         assertions.append(scope)
         return frame
 
@@ -74,7 +76,9 @@ def test_param_join_skips_assertion_for_streaming_step() -> None:
     right = _Frame(streaming=False)
     step = cast(PySparkStepRecipe, SimpleNamespace(source="events", input_sources=("policy",)))
 
-    with patch.object(executor, "_exactly_one", side_effect=record):
+    with patch(
+        "structure.plugin.pyspark.execution.logic.running.RunOnlinePySparkTransform.singleton_policy", side_effect=record
+    ):
         executor._join(
             step,
             left,

@@ -420,12 +420,12 @@ class BatchJoinFeatures(Transform):
 
 def test_completed_batch_feature_rendering_preserves_strict_mode_for_spark_connect_variant() -> None:
     for transform_class in _completed_batch_transforms():
-        ordinary = _lower(transform_class, target_variant="ordinary")
+        ordinary = _lower(transform_class, target_variant="ordinary", plan_boundaries="off")
         spark_connect = _lower(
             transform_class,
             target_variant="spark-connect",
             validate_intermediate=True,
-            connect_plan_boundaries="off",
+            plan_boundaries="off",
         )
 
         assert spark_connect.backend.variant == "spark-connect"
@@ -445,7 +445,7 @@ def test_spark_connect_default_skips_intermediate_checks_and_emits_boundaries() 
         BatchJoinFeatures,
         target_variant="spark-connect",
         validate_intermediate=True,
-        connect_plan_boundaries="strict",
+        plan_boundaries="strict",
     )
     strict_intermediate = [validation for step in strict.steps for validation in step.validations]
     assert all(validation.check for validation in strict_intermediate)
@@ -520,11 +520,11 @@ def _lower(
     *,
     target_variant: str,
     validate_intermediate: bool | None = None,
-    connect_plan_boundaries: str | None = None,
+    plan_boundaries: str | None = None,
 ) -> Any:
     plugin_options: dict[str, object] = {"variant": target_variant}
-    if connect_plan_boundaries is not None:
-        plugin_options["connect_plan_boundaries"] = connect_plan_boundaries
+    if plan_boundaries is not None:
+        plugin_options["plan_boundaries"] = plan_boundaries
     settings: dict[str, object] = {"plugin": {"pyspark": plugin_options}}
     if validate_intermediate is not None:
         settings["validate_intermediate"] = validate_intermediate

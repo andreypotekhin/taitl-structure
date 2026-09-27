@@ -1,22 +1,38 @@
 # V10 Release Evidence and Deferred Follow-Up
 
-Date: 2026-08-27
+Date: 2026-09-25
 
 This report is the V10 evidence matrix and deferred-follow-up register. It separates implementation closure from
 runtime support claims: a skipped or unavailable live lane is recorded as missing evidence, never as a pass.
 
+## Focused Search follow-up: 2026-09-27
+
+All seven tests in `test_search.py` now pass on ordinary PySpark 3.5, ordinary 4.0, and Spark Connect 4.0, without
+driver heap exhaustion in the final runs. Bounded, run-scoped singleton-policy checks and earlier checkpoints inside
+`FuseDocuments` preserve online/generated results and candidate validation. Additional live tests cover zero/multiple
+policy rows, nullable values, actual schema parity, duplicate candidate keys, and streaming-frame bypass. Connect
+assertion failures also retain their original diagnostic instead of being mislabeled from server stack-trace text.
+
+The isolated, profiled 3.5 reranking comparison reduced combined construction from 140.63s to 56.79s; it is one
+comparison, not a median or a universal speedup claim. See [Search performance evidence](../issues/I09272601/SearchIntegrationPerformance.bench.md)
+for exact commands, intermediate failures, corrected safety tests, timings, and storage tradeoffs. This supersedes
+the Search-specific failure observations in the historical full-lane matrix below, not the entire V10 release
+decision. Connect 3.5 and unrelated full-lane failures were not revalidated. Search streaming remains design-gated.
+
 ## Release decision
 
 V10 is conditionally closed, not cleared for an unconditional runtime-support claim. The compiler, generated-code,
-online symbolic, diagnostic, documentation, and package gates are green for the current closeout baseline. Docker is now
-available and has produced live evidence for the ordinary PySpark 3.5/4.0 lanes plus focused Spark Connect 3.5/4.0
-boundary and parity slices. The full ordinary lanes still expose six shared generated-result failures (four Search cases,
-the generated security fixture, and the chained event-time window); the SearchDocuments streaming proving lane remains
-design-gated rather than supported.
+online symbolic, diagnostic, documentation, and package gates are green for the current closeout baseline. Docker is
+available. The current PySpark 3.5 rerun shows that the generated stage-result contract failure is fixed: Search and
+Security now reach their runtime assertions. Two Search cases still fail while Spark constructs the large logical plan
+with `java.lang.OutOfMemoryError: Java heap space`; exact vector retrieval therefore remains unproven. The
+SearchDocuments streaming proving lane remains design-gated rather than supported.
 
-The current live baseline is the shared worktree at the time of the run. The generated-result failures are recorded as
-implementation evidence, not converted into support claims. Earlier controlled plan-size and driver-memory experiments
-remain historical evidence below; they do not override the current failing generated contract.
+The current live baseline is the shared worktree at the time of the run. The 2026-09-25 full-lane results for PySpark
+3.5, Spark Connect 3.5, and Spark Connect 4.0 are recorded below. The PySpark 4.0 full lane was started but did not
+reach a final summary within the bounded run window; its bounded Security check passed separately. The controlled
+plan-size and driver-memory experiments remain relevant because the current ordinary-PySpark Search failures reproduce
+that same lineage-growth mechanism.
 
 ## Evidence summary
 
@@ -33,13 +49,11 @@ remain historical evidence below; they do not override the current failing gener
 
 ## Validation run
 
-The final workspace-local build completed on 2026-08-27:
+The final workspace-local build completed on 2026-09-25:
 
-- `make build`: 1,714 passed, 66 skipped.
-- Secondary rigidity/compatibility gate: 73 passed, 6 skipped.
+- `make build`: 1,856 passed, 179 skipped.
+- Secondary rigidity/compatibility gate: 73 passed, 7 skipped.
 - Package sdist and wheel built successfully.
-- The default Windows pytest temp directory was inaccessible; redirecting `TEMP`/`TMP` to a workspace-local directory
-  made all four affected fixture tests pass (`12 passed`).
 
 The first live-lane attempt on 2026-08-22 was:
 
@@ -50,21 +64,24 @@ poetry run python scripts/run_integration.py --backend pyspark35
 It stopped before test execution because Docker reported permission denied while connecting to
 `npipe:////./pipe/docker_engine`.
 
-The Docker retry on 2026-08-27 used the Compose definitions under `infra/compose/`. It rebuilt the pinned PySpark 3.5
-image and ran the full 65-test selection on both ordinary targets:
+The current Docker rerun on 2026-09-25 used the Compose definitions under `infra/compose/` and ran the full 178-test
+selection for each lane:
 
 | Lane | Result | Live scope |
 | --- | --- | --- |
-| `pyspark35` | 53 passed, 6 skipped, 6 failed | Full integration and live concept selection; foreachBatch restart and Sedona geometry passed. |
-| `pyspark40` | 56 passed, 3 skipped, 6 failed | Full integration and live concept selection; foreachBatch restart and Sedona geometry passed. |
-| `spark-connect35` | 15 passed, 9 skipped | Focused Connect boundary, UDF, generator, parsing, geometry, and concept parity slice; Search was excluded. |
-| `spark-connect40` | 18 passed, 6 skipped | Same focused Connect slice; Search was excluded. |
+| `pyspark35` | 164 passed, 6 skipped, 8 failed | Current full integration and live concept selection; generated stage-result failures no longer occur. Two Search cases hit Java heap exhaustion; six unrelated live-contract/import failures remain. |
+| `pyspark40` | Incomplete; no final count | Current full lane did not reach a final summary after approximately one hour and was interrupted while processing the heavy Search/Spark workload. A bounded Security test passed (`1 passed, 177 deselected`). The old 56/3/6 result remains a historical focused checkpoint only. |
+| `spark-connect35` | 148 passed, 19 skipped, 11 failed | Current full integration and live concept selection. Five Search cases fail during rendering, one v1 order contract fails, four v11 generated-import tests fail, and one v2 order contract fails. |
+| `spark-connect40` | 151 passed, 16 skipped, 11 failed | Current full integration and live concept selection. Five Search cases fail during rendering with an unsupported `array` helper call, one v1 order contract fails, four v11 generated-import tests fail, and one v2 order contract fails. |
 
-The six ordinary failures are the same shared generated-result contract failure in four Search cases, the generated
-security fixture, and the generated chained event-time window. The failing path raises
-`TypeError: Generated transform executor must return a stage-aware TransformResult when composed stage outputs are
-enabled`. This is positive evidence that the Docker/runtime lane is executing the current code, but it is not positive
-feature evidence for those failing cases.
+The current ordinary-PySpark 3.5 failures are no longer the historical generated-result contract failure. The two
+V10-relevant Search failures occur in `test_text_fixture_runs_online_and_generated` and
+`test_document_search_reranks_bm25_candidates_for_multiple_queries`; both exhaust the Spark driver heap while building
+repeated union/reverse logical plans. The ordinary 4.0 lane did not reach a final summary, but its bounded Security
+check passed. On Connect 3.5 and 4.0, the five Search failures occur during generated rendering; Connect 4.0 exposes
+the concrete unsupported helper call as `array`. The remaining current-lane failures are the v1/v2 order hook schema
+contract and v11 scalar-assertion generated-module import-path tests; they are tracked outside the V10 stage-result
+scope.
 
 The ordinary lanes also passed `tests/integration/pyspark/v10/test_foreach_batch_restart.py`, the v7 stream/static
 restart tests, the v8 stateless streaming gate tests, and the v9 Sedona geometry test. The focused Connect lanes passed
@@ -72,7 +89,8 @@ the Connect boundary/UDF tests, v7 binary/collection/deterministic/schema/struct
 V3 concept parity tests; Connect correctly skipped classic-PySpark-only restart and stateful streaming tests.
 
 Exact vector retrieval and the Search generated/online comparison remain unproven because the Search proving cases fail
-before the generated result can be compared. The full Connect Search proving lane was not claimed from the focused run.
+during logical-plan construction before the generated result can be compared. The full Connect Search proving lane was
+not claimed from the focused run.
 
 On 2026-08-23, a self-sufficient PySpark-only reproducer was added at
 `docs/troubleshooting/memory/spark_driver_heap_oom.py`. With two
@@ -80,17 +98,18 @@ input rows and a 1 GiB driver, seven rounds of reused self-join/reverse/union li
 text from 1,211 to 16,680,913 characters and failed during `count()` with `java.lang.OutOfMemoryError: Java heap space`.
 Six rounds completed. Adding `localCheckpoint()` after each round kept the plan at 46-48 characters through eight rounds and
 completed successfully, confirming lineage duplication—not input cardinality or executor memory—as the primary mechanism.
-The detailed RCA, measurements, and decisions are recorded in `docs/dev/specifications/Memory.spec.md`; end-user
+The detailed RCA, measurements, and decisions are recorded in `docs/dev/issues/I09272602/Memory-evidence.md`; end-user
 commands are in `docs/troubleshooting/memory/spark_driver_heap_oom.gotcha.md`.
 
-An earlier bounded Connect attempt did not progress through the full Search proving suite, so it remains unavailable as
-full Search evidence. The focused 2026-08-27 Connect runs now provide positive evidence for the selected boundary, UDF,
-generator, parsing, geometry, and concept-parity cases. This does not clear the full Search or streaming-state gates.
+The current Connect runs do not provide positive full-Search evidence: both Connect lanes fail all five selected Search
+proving cases during generated rendering. They do provide broad positive evidence for the remaining selected boundary,
+UDF, generator, parsing, geometry, and concept-parity cases. Connect also correctly skips classic-PySpark-only restart
+and stateful streaming tests. This does not clear the full Search or streaming-state gates.
 
-The workspace-local build used a writable pytest temp root and passed after the generated golden outputs were reconciled.
-The current Docker retry additionally records the shared generated-result contract failure described above. Historical
-plan-size and driver-memory experiments remain in the memory reproducer and are not used to convert the current failing
-Search cases into positive evidence.
+The workspace-local build passed after the generated stage-result compatibility regression test was added. The current
+Docker rerun additionally confirms that the remaining Search blocker is the previously documented logical-plan memory
+growth, not the generated result boundary. Historical plan-size and driver-memory experiments therefore remain direct
+evidence for the current Search blocker and are not used to convert the failing Search cases into positive evidence.
 
 ## SearchDocuments readiness matrix
 
@@ -111,7 +130,7 @@ path is not a V10 streaming support claim.
 
 | Follow-up | Owner boundary | Acceptance command/evidence |
 | --- | --- | --- |
-| Re-run ordinary PySpark 3.5/4.0 Search evidence after a plan-level fix | Development environment | Run the exact tests from `docs/Gotchas.md`, then `make integration BACKEND=pyspark35` and `make integration BACKEND=pyspark40` |
+| Reduce Search logical-plan growth, then re-run ordinary PySpark 3.5/4.0 Search evidence | Search implementation owner | Apply the checkpoint/materialization decision from `docs/dev/issues/I09272602/Memory-evidence.md`, then run the exact Search tests and both ordinary lanes |
 | Obtain bounded Spark Connect 3.5/4.0 Search parity evidence | Development environment | Focused non-Search Connect slices pass; reduce the Search proving fixture or provide a larger Connect driver, then rerun `make integration BACKEND=spark-connect35` and `spark-connect40` |
 | Run exact vector retrieval live evidence | Search proving lane | Focused Search integration test plus generated/online output comparison |
 | Resume SearchDocuments streaming design | Structure/Search design owner | Bounded-state design, generated report, live restart fixture, and caller handoff recipe |

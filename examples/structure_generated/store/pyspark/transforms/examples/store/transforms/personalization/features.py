@@ -54,6 +54,8 @@ class BuildProductFeaturesGenerated:
             F.col("catalog_product.promotion_score"),
             F.col("catalog_product.eligible"),
         )
+        if not catalog.isStreaming:
+            catalog = apply_plan_boundary(catalog, self.spark)
 
         # Step method: featured
         featured = catalog.alias("catalog_product")

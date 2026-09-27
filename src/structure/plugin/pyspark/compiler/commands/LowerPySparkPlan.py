@@ -84,8 +84,10 @@ class LowerPySparkPlan:
 
     @staticmethod
     def _boundary_frames(plan: TransformPlan) -> frozenset[str]:
-        consumers = Counter(input.source for step in plan.steps for input in step.inputs)
+        consumers = Counter(source for step in plan.steps for source in {input.source for input in step.inputs})
         consumers.update(output.source for output in plan.outputs)
+        if plan.allow_stage_outputs:
+            consumers.update(stage.output.source for stage in plan.stage_outputs)
         return frozenset(frame for frame, count in consumers.items() if count >= 2)
 
 

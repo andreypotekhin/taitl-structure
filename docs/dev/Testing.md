@@ -381,3 +381,63 @@ smoke tests belong under `tests/integration/pyspark/backend`, shared live-backen
 Versioned integration fixture data belongs under `res/testing/data`. For example, the v1 orders integration scenario
 uses CSV files from `res/testing/data/v1/orders`.
 
+### Reusing preparation without retaining growing plans
+
+The shared `generated_sources` fixture caches source maps per module and complete explicit compilation request.
+Use it with `generated_project` so each test still isolates generated imports. The `snapshots` fixture performs an
+eager Parquet write/read at a test-chosen preparation boundary; `snapshots.outputs(result, label="indexing")` returns
+a new result containing canonical public outputs. It does not retain stage outputs or aliases. Values and column
+types are preserved, but Parquet can widen nullability; do not use it for nullability-contract assertions.
+
+Snapshots and classic checkpoint directories are unique per test under `.pytest-workspace-tmp/integration` on the
+Compose shared volume and are removed by their owning fixtures. Connect 4.0 uses a runner-owned checkpoint directory
+configured at server startup and removed after the server exits. Applications still own their production storage.
+
+Use `support.timing.phase` for construction/collection timings. An eager checkpoint is charged to construction,
+not to the later collection. `rows(frame, *order)` reuses an ordered collection for subsequent unordered assertions;
+a different explicit order still runs in Spark. Search tests disable unneeded stage-output exposure in both runtime
+and generated compilation; stage-access tests retain their own coverage.
+
+The Search integration comparison switch is `STRUCTURE_SEARCH_STAGE_OUTPUTS=0|1`. It defaults to `0` and is resolved
+once during test collection, so the same value must be used for online sessions, generated compilation, and the
+shared source cache. Use `1` only for a controlled benchmark; it does not change library defaults. Invalid values
+fail before a live Spark case starts. Phase messages include source setup/cleanup and snapshot cleanup, while
+snapshot writes and Search construction/collection retain their own labels. Do not add actions merely to measure a
+phase, and do not sum nested snapshot timings into their enclosing preparation phase.
+
+Use `STRUCTURE_PLAN_BOUNDARIES=off|auto|strict` to compare the compiler's temporary-view policy on any PySpark
+backend. The value configures both online execution and generated compilation and participates in source-cache keys.
+The default is `auto` for batch transforms. Keep stage exposure, driver heap, fixtures, and checkpoints fixed when
+comparing policies. Named views do not truncate Spark logical lineage; retain explicit checkpoints. Actual streaming
+frames bypass compiler boundaries. Replace the former `STRUCTURE_CONNECT_PLAN_BOUNDARIES` override with this name.
+
+For a separate diagnostic run, set `STRUCTURE_INTEGRATION_CHECKPOINT_TIMING=1` to time the existing DataFrame
+checkpoint calls. The timer wraps the actual runtime DataFrame class for online/generated parity and adds no Spark
+action. These times are nested within construction; do not add them again to the total. Keep this switch fixed
+within a comparison pair.
+
+For deeper diagnosis, set `STRUCTURE_PROFILE_QUERY_PLANS=1`. This prints guard-construction timings, cache misses,
+and estimated expanded input references around joins, assertions, and checkpoints. These are structural estimates,
+not row counts or exact Spark optimizer node counts; expression subqueries and other complex operations are not
+modeled. A view reference does not reset the estimate, while a reliable checkpoint does.
+
+This mode also calls public `explain(mode="simple")` immediately before each checkpoint, reporting explain time and
+the subsequent checkpoint duration separately. Explain requests planning, not row collection. The remaining time
+can still include additional planning, serialization, scheduling, and execution: do not label it pure executor time.
+The plan text is captured rather than printed and remains subject to Spark's diagnostic string limit. Spark's
+truncation warnings can report the full physical-plan string length. Profiling changes warm-up and timing; compare
+only equally profiled runs and keep unprofiled regression evidence separate. Monkeypatches are test-scoped.
+
+Shared sessions use two input partitions for tiny fixtures and cap diagnostic plan strings at 8192 characters.
+The runner bounds pytest with `STRUCTURE_INTEGRATION_TIMEOUT` (seconds, default 3600, then a 15-second kill grace).
+For a focused run against the checked-in runner without rebuilding the image:
+
+```sh
+docker compose --env-file infra/compose/.env -f infra/compose/docker-compose.yaml -p structure-integration run --rm \
+  -e 'INTEGRATION_PYTEST_ARGS=-k test_document_search_reranks_bm25_candidates_for_multiple_queries -vv -s --durations=20' \
+  -e STRUCTURE_INTEGRATION_TIMEOUT=600 structure-integration-pyspark35 \
+  bash /workspace/infra/compose/images/pyspark/run-integration.sh pyspark35
+```
+
+Replace both backend names to select another lane. Run memory-sensitive lanes sequentially when the Docker VM
+cannot accommodate their combined driver heaps. A timeout is a failure, not a skip or evidence of support.

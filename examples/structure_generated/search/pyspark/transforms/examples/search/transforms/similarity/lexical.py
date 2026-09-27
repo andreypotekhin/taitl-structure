@@ -13,6 +13,8 @@ from examples.structure_generated.search.runtime.schema_assert import (
     project_schema,
     apply_plan_boundary,
     close_plan_boundaries,
+    reuse_policy_checks,
+    singleton_policy,
 )
 from examples.structure_generated.search.pyspark.schemas.bm25 import (
     DOCUMENT_BM25_SCORE_SCHEMA,
@@ -113,6 +115,8 @@ class CreateSimilarityQueriesGenerated:
             F.col("similarity_policy.max_document_frequency_ratio"),
         )
         assert_schema(queries__valid_policy, SIMILARITY_POLICY_SCHEMA, name="SimilarityPolicy", mode="strict")
+        if not queries__valid_policy.isStreaming:
+            queries__valid_policy = apply_plan_boundary(queries__valid_policy, self.spark)
         return {
             "queries__valid_policy": queries__valid_policy,
         }
@@ -127,21 +131,7 @@ class CreateSimilarityQueriesGenerated:
         )
         queries__valid_policy_param_joined = frames["queries__valid_policy"]
         if not __structure_streaming_step:
-            queries__valid_policy_param_joined_count = frames["queries__valid_policy"].agg(
-                F.count(F.lit(1)).alias("__structure_count")
-            )
-            queries__valid_policy_param_joined_count = queries__valid_policy_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            queries__valid_policy_param_joined = (
-                frames["queries__valid_policy"]
-                .crossJoin(queries__valid_policy_param_joined_count)
-                .where(F.col("__structure_exactly_one").isNull())
-                .drop("__structure_exactly_one")
-            )
+            queries__valid_policy_param_joined = singleton_policy(frames["queries__valid_policy"], 'policy')
         queries__valid_policy_joined = queries__valid_policy_param_joined.alias("queries__valid_policy")
         queries__document_query_text = queries__document_query_text.crossJoin(queries__valid_policy_joined)
         document_summary_2_joined = frames["document_summary"].alias("document_summary_2")
@@ -191,6 +181,8 @@ class CreateSimilarityQueriesGenerated:
             name="DocumentSimilarityQueryText",
             mode="strict",
         )
+        if not queries__document_query_text.isStreaming:
+            queries__document_query_text = apply_plan_boundary(queries__document_query_text, self.spark)
         return {
             "queries__document_query_text": queries__document_query_text,
         }
@@ -205,21 +197,7 @@ class CreateSimilarityQueriesGenerated:
         )
         queries__valid_policy_param_joined = frames["queries__valid_policy"]
         if not __structure_streaming_step:
-            queries__valid_policy_param_joined_count = frames["queries__valid_policy"].agg(
-                F.count(F.lit(1)).alias("__structure_count")
-            )
-            queries__valid_policy_param_joined_count = queries__valid_policy_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            queries__valid_policy_param_joined = (
-                frames["queries__valid_policy"]
-                .crossJoin(queries__valid_policy_param_joined_count)
-                .where(F.col("__structure_exactly_one").isNull())
-                .drop("__structure_exactly_one")
-            )
+            queries__valid_policy_param_joined = singleton_policy(frames["queries__valid_policy"], 'policy')
         queries__valid_policy_joined = queries__valid_policy_param_joined.alias("queries__valid_policy")
         queries__section_query_text = queries__section_query_text.crossJoin(queries__valid_policy_joined)
         section_summary_2_joined = frames["section_summary"].alias("section_summary_2")
@@ -271,6 +249,8 @@ class CreateSimilarityQueriesGenerated:
             name="SectionSimilarityQueryText",
             mode="strict",
         )
+        if not queries__section_query_text.isStreaming:
+            queries__section_query_text = apply_plan_boundary(queries__section_query_text, self.spark)
         return {
             "queries__section_query_text": queries__section_query_text,
         }
@@ -285,21 +265,7 @@ class CreateSimilarityQueriesGenerated:
         )
         queries__valid_policy_param_joined = frames["queries__valid_policy"]
         if not __structure_streaming_step:
-            queries__valid_policy_param_joined_count = frames["queries__valid_policy"].agg(
-                F.count(F.lit(1)).alias("__structure_count")
-            )
-            queries__valid_policy_param_joined_count = queries__valid_policy_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            queries__valid_policy_param_joined = (
-                frames["queries__valid_policy"]
-                .crossJoin(queries__valid_policy_param_joined_count)
-                .where(F.col("__structure_exactly_one").isNull())
-                .drop("__structure_exactly_one")
-            )
+            queries__valid_policy_param_joined = singleton_policy(frames["queries__valid_policy"], 'policy')
         queries__valid_policy_joined = queries__valid_policy_param_joined.alias("queries__valid_policy")
         queries__paragraph_query_text = queries__paragraph_query_text.crossJoin(queries__valid_policy_joined)
         paragraph_summary_2_joined = frames["paragraph_summary"].alias("paragraph_summary_2")
@@ -353,6 +319,8 @@ class CreateSimilarityQueriesGenerated:
             name="ParagraphSimilarityQueryText",
             mode="strict",
         )
+        if not queries__paragraph_query_text.isStreaming:
+            queries__paragraph_query_text = apply_plan_boundary(queries__paragraph_query_text, self.spark)
         return {
             "queries__paragraph_query_text": queries__paragraph_query_text,
         }
@@ -367,21 +335,7 @@ class CreateSimilarityQueriesGenerated:
         )
         queries__valid_policy_param_joined = frames["queries__valid_policy"]
         if not __structure_streaming_step:
-            queries__valid_policy_param_joined_count = frames["queries__valid_policy"].agg(
-                F.count(F.lit(1)).alias("__structure_count")
-            )
-            queries__valid_policy_param_joined_count = queries__valid_policy_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            queries__valid_policy_param_joined = (
-                frames["queries__valid_policy"]
-                .crossJoin(queries__valid_policy_param_joined_count)
-                .where(F.col("__structure_exactly_one").isNull())
-                .drop("__structure_exactly_one")
-            )
+            queries__valid_policy_param_joined = singleton_policy(frames["queries__valid_policy"], 'policy')
         queries__valid_policy_joined = queries__valid_policy_param_joined.alias("queries__valid_policy")
         queries__sentence_query_text = queries__sentence_query_text.crossJoin(queries__valid_policy_joined)
         sentence_summary_2_joined = frames["sentence_summary"].alias("sentence_summary_2")
@@ -437,6 +391,8 @@ class CreateSimilarityQueriesGenerated:
             name="SentenceSimilarityQueryText",
             mode="strict",
         )
+        if not queries__sentence_query_text.isStreaming:
+            queries__sentence_query_text = apply_plan_boundary(queries__sentence_query_text, self.spark)
         return {
             "queries__sentence_query_text": queries__sentence_query_text,
         }
@@ -589,6 +545,8 @@ class CreateSimilarityQueriesGenerated:
         assert_schema(
             queries__document_queries, DOCUMENT_SIMILARITY_QUERY_SCHEMA, name="DocumentSimilarityQuery", mode="strict"
         )
+        if not queries__document_queries.isStreaming:
+            queries__document_queries = apply_plan_boundary(queries__document_queries, self.spark)
         return {
             "queries__document_queries": queries__document_queries,
         }
@@ -604,6 +562,8 @@ class CreateSimilarityQueriesGenerated:
         assert_schema(
             queries__section_queries, SECTION_SIMILARITY_QUERY_SCHEMA, name="SectionSimilarityQuery", mode="strict"
         )
+        if not queries__section_queries.isStreaming:
+            queries__section_queries = apply_plan_boundary(queries__section_queries, self.spark)
         return {
             "queries__section_queries": queries__section_queries,
         }
@@ -623,6 +583,8 @@ class CreateSimilarityQueriesGenerated:
             name="ParagraphSimilarityQuery",
             mode="strict",
         )
+        if not queries__paragraph_queries.isStreaming:
+            queries__paragraph_queries = apply_plan_boundary(queries__paragraph_queries, self.spark)
         return {
             "queries__paragraph_queries": queries__paragraph_queries,
         }
@@ -640,6 +602,8 @@ class CreateSimilarityQueriesGenerated:
         assert_schema(
             queries__sentence_queries, SENTENCE_SIMILARITY_QUERY_SCHEMA, name="SentenceSimilarityQuery", mode="strict"
         )
+        if not queries__sentence_queries.isStreaming:
+            queries__sentence_queries = apply_plan_boundary(queries__sentence_queries, self.spark)
         return {
             "queries__sentence_queries": queries__sentence_queries,
         }
@@ -664,6 +628,8 @@ class CreateSimilarityQueriesGenerated:
             F.col("language"),
         )
         assert_schema(queries__queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
+        if not queries__queries.isStreaming:
+            queries__queries = apply_plan_boundary(queries__queries, self.spark)
         return {
             "queries__queries": queries__queries,
         }
@@ -709,6 +675,8 @@ class AllScoringTargetsGenerated:
         assert_schema(
             scoring_targets__targets, DOCUMENT_SEARCH_TARGET_SCHEMA, name="DocumentSearchTarget", mode="strict"
         )
+        if not scoring_targets__targets.isStreaming:
+            scoring_targets__targets = apply_plan_boundary(scoring_targets__targets, self.spark)
         return {
             "scoring_targets__targets": scoring_targets__targets,
         }
@@ -747,6 +715,8 @@ class ScoreBaseGenerated:
             F.col("token"),
         )
         assert_schema(overlap__expanded_query_terms, QUERY_TERM_SCHEMA, name="QueryTerm", mode="strict")
+        if not overlap__expanded_query_terms.isStreaming:
+            overlap__expanded_query_terms = apply_plan_boundary(overlap__expanded_query_terms, self.spark)
         return {
             "overlap__expanded_query_terms": overlap__expanded_query_terms,
         }
@@ -803,6 +773,8 @@ class ScoreBaseGenerated:
             F.col("token"),
         )
         assert_schema(bm25__expanded_query_terms, QUERY_TERM_SCHEMA, name="QueryTerm", mode="strict")
+        if not bm25__expanded_query_terms.isStreaming:
+            bm25__expanded_query_terms = apply_plan_boundary(bm25__expanded_query_terms, self.spark)
         return {
             "bm25__expanded_query_terms": bm25__expanded_query_terms,
         }
@@ -952,6 +924,8 @@ class ScoreOverlapGenerated:
             ).alias("idf"),
         )
         assert_schema(overlap__document_query_idfs, QUERY_TERM_IDF_SCHEMA, name="QueryTermIdf", mode="strict")
+        if not overlap__document_query_idfs.isStreaming:
+            overlap__document_query_idfs = apply_plan_boundary(overlap__document_query_idfs, self.spark)
         return {
             "overlap__document_query_idfs": overlap__document_query_idfs,
         }
@@ -987,6 +961,8 @@ class ScoreOverlapGenerated:
             ).alias("idf"),
         )
         assert_schema(overlap__section_query_idfs, QUERY_TERM_IDF_SCHEMA, name="QueryTermIdf", mode="strict")
+        if not overlap__section_query_idfs.isStreaming:
+            overlap__section_query_idfs = apply_plan_boundary(overlap__section_query_idfs, self.spark)
         return {
             "overlap__section_query_idfs": overlap__section_query_idfs,
         }
@@ -1024,6 +1000,8 @@ class ScoreOverlapGenerated:
             ).alias("idf"),
         )
         assert_schema(overlap__paragraph_query_idfs, QUERY_TERM_IDF_SCHEMA, name="QueryTermIdf", mode="strict")
+        if not overlap__paragraph_query_idfs.isStreaming:
+            overlap__paragraph_query_idfs = apply_plan_boundary(overlap__paragraph_query_idfs, self.spark)
         return {
             "overlap__paragraph_query_idfs": overlap__paragraph_query_idfs,
         }
@@ -1061,6 +1039,8 @@ class ScoreOverlapGenerated:
             ).alias("idf"),
         )
         assert_schema(overlap__sentence_query_idfs, QUERY_TERM_IDF_SCHEMA, name="QueryTermIdf", mode="strict")
+        if not overlap__sentence_query_idfs.isStreaming:
+            overlap__sentence_query_idfs = apply_plan_boundary(overlap__sentence_query_idfs, self.spark)
         return {
             "overlap__sentence_query_idfs": overlap__sentence_query_idfs,
         }
@@ -1427,19 +1407,7 @@ class ScoreOverlapGenerated:
         )
         score_policy_2_param_joined = frames["score_policy"]
         if not __structure_streaming_step:
-            score_policy_2_param_joined_count = frames["score_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
-            score_policy_2_param_joined_count = score_policy_2_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            score_policy_2_param_joined = (
-                frames["score_policy"]
-                .crossJoin(score_policy_2_param_joined_count)
-                .where(F.col("__structure_exactly_one").isNull())
-                .drop("__structure_exactly_one")
-            )
+            score_policy_2_param_joined = singleton_policy(frames["score_policy"], 'policy')
         score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
         overlap__document_overlap_scores = overlap__document_overlap_scores.crossJoin(score_policy_2_joined)
         overlap__document_overlap_scores = overlap__document_overlap_scores.select(
@@ -1457,6 +1425,8 @@ class ScoreOverlapGenerated:
         assert_schema(
             overlap__document_overlap_scores, DOCUMENT_OVERLAP_SCORE_SCHEMA, name="DocumentOverlapScore", mode="strict"
         )
+        if not overlap__document_overlap_scores.isStreaming:
+            overlap__document_overlap_scores = apply_plan_boundary(overlap__document_overlap_scores, self.spark)
         return {
             "overlap__document_overlap_scores": overlap__document_overlap_scores,
         }
@@ -1480,19 +1450,7 @@ class ScoreOverlapGenerated:
         )
         score_policy_2_param_joined = frames["score_policy"]
         if not __structure_streaming_step:
-            score_policy_2_param_joined_count = frames["score_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
-            score_policy_2_param_joined_count = score_policy_2_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            score_policy_2_param_joined = (
-                frames["score_policy"]
-                .crossJoin(score_policy_2_param_joined_count)
-                .where(F.col("__structure_exactly_one").isNull())
-                .drop("__structure_exactly_one")
-            )
+            score_policy_2_param_joined = singleton_policy(frames["score_policy"], 'policy')
         score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
         overlap__section_overlap_scores = overlap__section_overlap_scores.crossJoin(score_policy_2_joined)
         overlap__section_overlap_scores = overlap__section_overlap_scores.select(
@@ -1511,6 +1469,8 @@ class ScoreOverlapGenerated:
         assert_schema(
             overlap__section_overlap_scores, SECTION_OVERLAP_SCORE_SCHEMA, name="SectionOverlapScore", mode="strict"
         )
+        if not overlap__section_overlap_scores.isStreaming:
+            overlap__section_overlap_scores = apply_plan_boundary(overlap__section_overlap_scores, self.spark)
         return {
             "overlap__section_overlap_scores": overlap__section_overlap_scores,
         }
@@ -1536,19 +1496,7 @@ class ScoreOverlapGenerated:
         )
         score_policy_2_param_joined = frames["score_policy"]
         if not __structure_streaming_step:
-            score_policy_2_param_joined_count = frames["score_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
-            score_policy_2_param_joined_count = score_policy_2_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            score_policy_2_param_joined = (
-                frames["score_policy"]
-                .crossJoin(score_policy_2_param_joined_count)
-                .where(F.col("__structure_exactly_one").isNull())
-                .drop("__structure_exactly_one")
-            )
+            score_policy_2_param_joined = singleton_policy(frames["score_policy"], 'policy')
         score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
         overlap__paragraph_overlap_scores = overlap__paragraph_overlap_scores.crossJoin(score_policy_2_joined)
         overlap__paragraph_overlap_scores = overlap__paragraph_overlap_scores.select(
@@ -1571,6 +1519,8 @@ class ScoreOverlapGenerated:
             name="ParagraphOverlapScore",
             mode="strict",
         )
+        if not overlap__paragraph_overlap_scores.isStreaming:
+            overlap__paragraph_overlap_scores = apply_plan_boundary(overlap__paragraph_overlap_scores, self.spark)
         return {
             "overlap__paragraph_overlap_scores": overlap__paragraph_overlap_scores,
         }
@@ -1594,19 +1544,7 @@ class ScoreOverlapGenerated:
         )
         score_policy_2_param_joined = frames["score_policy"]
         if not __structure_streaming_step:
-            score_policy_2_param_joined_count = frames["score_policy"].agg(F.count(F.lit(1)).alias("__structure_count"))
-            score_policy_2_param_joined_count = score_policy_2_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            score_policy_2_param_joined = (
-                frames["score_policy"]
-                .crossJoin(score_policy_2_param_joined_count)
-                .where(F.col("__structure_exactly_one").isNull())
-                .drop("__structure_exactly_one")
-            )
+            score_policy_2_param_joined = singleton_policy(frames["score_policy"], 'policy')
         score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
         overlap__sentence_overlap_scores = overlap__sentence_overlap_scores.crossJoin(score_policy_2_joined)
         overlap__sentence_overlap_scores = overlap__sentence_overlap_scores.select(
@@ -1627,6 +1565,8 @@ class ScoreOverlapGenerated:
         assert_schema(
             overlap__sentence_overlap_scores, SENTENCE_OVERLAP_SCORE_SCHEMA, name="SentenceOverlapScore", mode="strict"
         )
+        if not overlap__sentence_overlap_scores.isStreaming:
+            overlap__sentence_overlap_scores = apply_plan_boundary(overlap__sentence_overlap_scores, self.spark)
         return {
             "overlap__sentence_overlap_scores": overlap__sentence_overlap_scores,
         }
@@ -1709,6 +1649,8 @@ class ScoreBm25Generated:
             )
         )
         assert_schema(bm25__document_bm25_scores, DOCUMENT_BM25_SCORE_SCHEMA, name="DocumentBm25Score", mode="strict")
+        if not bm25__document_bm25_scores.isStreaming:
+            bm25__document_bm25_scores = apply_plan_boundary(bm25__document_bm25_scores, self.spark)
         return {
             "bm25__document_bm25_scores": bm25__document_bm25_scores,
         }
@@ -1791,6 +1733,8 @@ class ScoreBm25Generated:
             )
         )
         assert_schema(bm25__section_bm25_scores, SECTION_BM25_SCORE_SCHEMA, name="SectionBm25Score", mode="strict")
+        if not bm25__section_bm25_scores.isStreaming:
+            bm25__section_bm25_scores = apply_plan_boundary(bm25__section_bm25_scores, self.spark)
         return {
             "bm25__section_bm25_scores": bm25__section_bm25_scores,
         }
@@ -1877,6 +1821,8 @@ class ScoreBm25Generated:
         assert_schema(
             bm25__paragraph_bm25_scores, PARAGRAPH_BM25_SCORE_SCHEMA, name="ParagraphBm25Score", mode="strict"
         )
+        if not bm25__paragraph_bm25_scores.isStreaming:
+            bm25__paragraph_bm25_scores = apply_plan_boundary(bm25__paragraph_bm25_scores, self.spark)
         return {
             "bm25__paragraph_bm25_scores": bm25__paragraph_bm25_scores,
         }
@@ -1963,6 +1909,8 @@ class ScoreBm25Generated:
             )
         )
         assert_schema(bm25__sentence_bm25_scores, SENTENCE_BM25_SCORE_SCHEMA, name="SentenceBm25Score", mode="strict")
+        if not bm25__sentence_bm25_scores.isStreaming:
+            bm25__sentence_bm25_scores = apply_plan_boundary(bm25__sentence_bm25_scores, self.spark)
         return {
             "bm25__sentence_bm25_scores": bm25__sentence_bm25_scores,
         }
@@ -2053,6 +2001,8 @@ class ReduceSimilarityScoresGenerated:
             name="DocumentSimilarityPair",
             mode="strict",
         )
+        if not reduced__document_canonical_pairs.isStreaming:
+            reduced__document_canonical_pairs = apply_plan_boundary(reduced__document_canonical_pairs, self.spark)
         return {
             "reduced__document_canonical_pairs": reduced__document_canonical_pairs,
         }
@@ -2144,6 +2094,8 @@ class ReduceSimilarityScoresGenerated:
         assert_schema(
             reduced__document_similarities, DOCUMENT_SIMILARITY_SCHEMA, name="DocumentSimilarity", mode="strict"
         )
+        if not reduced__document_similarities.isStreaming:
+            reduced__document_similarities = apply_plan_boundary(reduced__document_similarities, self.spark)
         return {
             "reduced__document_similarities": reduced__document_similarities,
         }
@@ -2246,6 +2198,8 @@ class ReduceSimilarityScoresGenerated:
             name="SectionSimilarityPair",
             mode="strict",
         )
+        if not reduced__section_canonical_pairs.isStreaming:
+            reduced__section_canonical_pairs = apply_plan_boundary(reduced__section_canonical_pairs, self.spark)
         return {
             "reduced__section_canonical_pairs": reduced__section_canonical_pairs,
         }
@@ -2341,6 +2295,8 @@ class ReduceSimilarityScoresGenerated:
             F.col("section_similarity.bm25_mean"),
         )
         assert_schema(reduced__section_similarities, SECTION_SIMILARITY_SCHEMA, name="SectionSimilarity", mode="strict")
+        if not reduced__section_similarities.isStreaming:
+            reduced__section_similarities = apply_plan_boundary(reduced__section_similarities, self.spark)
         return {
             "reduced__section_similarities": reduced__section_similarities,
         }
@@ -2473,6 +2429,8 @@ class ReduceSimilarityScoresGenerated:
             name="ParagraphSimilarityPair",
             mode="strict",
         )
+        if not reduced__paragraph_canonical_pairs.isStreaming:
+            reduced__paragraph_canonical_pairs = apply_plan_boundary(reduced__paragraph_canonical_pairs, self.spark)
         return {
             "reduced__paragraph_canonical_pairs": reduced__paragraph_canonical_pairs,
         }
@@ -2588,6 +2546,8 @@ class ReduceSimilarityScoresGenerated:
         assert_schema(
             reduced__paragraph_similarities, PARAGRAPH_SIMILARITY_SCHEMA, name="ParagraphSimilarity", mode="strict"
         )
+        if not reduced__paragraph_similarities.isStreaming:
+            reduced__paragraph_similarities = apply_plan_boundary(reduced__paragraph_similarities, self.spark)
         return {
             "reduced__paragraph_similarities": reduced__paragraph_similarities,
         }
@@ -2739,6 +2699,8 @@ class ReduceSimilarityScoresGenerated:
             name="SentenceSimilarityPair",
             mode="strict",
         )
+        if not reduced__sentence_canonical_pairs.isStreaming:
+            reduced__sentence_canonical_pairs = apply_plan_boundary(reduced__sentence_canonical_pairs, self.spark)
         return {
             "reduced__sentence_canonical_pairs": reduced__sentence_canonical_pairs,
         }
@@ -2859,6 +2821,8 @@ class ReduceSimilarityScoresGenerated:
             F.col("sentence_similarity.bm25_right_to_left"),
             F.col("sentence_similarity.bm25_mean"),
         )
+        if not reduced__sentence_similarities.isStreaming:
+            reduced__sentence_similarities = apply_plan_boundary(reduced__sentence_similarities, self.spark)
         return {
             "reduced__sentence_similarities": reduced__sentence_similarities,
         }
@@ -2880,6 +2844,7 @@ class SimilaritiesGenerated(
     def close(self) -> None:
         close_plan_boundaries(self.spark)
 
+    @reuse_policy_checks
     def run(
         self,
         *,

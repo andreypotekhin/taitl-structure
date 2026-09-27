@@ -331,6 +331,8 @@ class PySparkCapabilities:
             base_capabilities = base_capabilities | PYSPARK_4_CAPABILITIES | PYSPARK_4_2_CAPABILITIES
         if self.id.variant == "ordinary" and target_profile in MATERIALIZATION_PROFILES:
             base_capabilities |= MATERIALIZATION_CAPABILITIES
+        elif self.id.variant == "spark-connect" and target_profile == ">=4.0,<4.1":
+            base_capabilities |= frozenset({("optimization", "checkpoint")})
         return base_capabilities
 
     def supports(self, requirement: CapabilityRequirement) -> CapabilityDecision:

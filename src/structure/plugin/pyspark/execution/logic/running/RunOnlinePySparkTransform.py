@@ -13,6 +13,7 @@ from structure.plugin.pyspark.dsl.types import ArrayType, StructType
 from structure.plugin.pyspark.execution.logic.expressions.EvaluatePySparkExpression import EvaluatePySparkExpression
 from structure.plugin.pyspark.execution.logic.InvokePySparkHooks import InvokePySparkHooks
 from structure.plugin.pyspark.execution.logic.PlanBoundary import apply_plan_boundary
+from structure.plugin.pyspark.execution.logic.PolicyChecks import reuse_policy_checks, singleton_policy
 from structure.plugin.pyspark.execution.logic.running.RunOnlinePySparkMapGenerator import RunOnlinePySparkMapGenerator
 from structure.plugin.pyspark.execution.logic.running.RunOnlinePySparkScalarGenerator import (
     RunOnlinePySparkScalarGenerator,
@@ -74,6 +75,7 @@ class RunOnlinePySparkTransform:
 
         return self._run(invocation, plan, session=session)
 
+    @reuse_policy_checks
     def _run(self, invocation: Transform, plan: PySparkExecutionPlan, *, session):
         from pyspark.sql import Window  # type: ignore[import-not-found]
         from pyspark.sql import functions as F  # type: ignore[import-not-found]
@@ -204,7 +206,7 @@ class RunOnlinePySparkTransform:
                         self._validator.validate(projected, validation, types=types)
                     if validation.project:
                         projected = self._validator.project(projected, validation, types=types, functions=functions)
-                    if validation.boundary:
+                    if validation.boundary and not projected.isStreaming:
                         projected = apply_plan_boundary(projected, session.spark)
                 projected = self._post_operations(step, projected)
                 produced[result.frame] = projected
@@ -234,7 +236,7 @@ class RunOnlinePySparkTransform:
                 self._validator.validate(df, validation, types=types)
             if validation.project:
                 df = self._validator.project(df, validation, types=types, functions=functions)
-            if validation.boundary:
+            if validation.boundary and not df.isStreaming:
                 df = apply_plan_boundary(df, session.spark)
         df = self._post_operations(step, df)
         return {step.results[0].frame: df}
@@ -264,6 +266,10 @@ class RunOnlinePySparkTransform:
         return df
 
     def _operations(self, step: PySparkStepRecipe | PySparkOutputRecipe, df, *, frames, functions, window, types):
+        if any(operation.checkpoint and operation.checkpoint.stage_input for operation in step.operations):
+            if not df.isStreaming:
+                # Stage before joins introduce additional qualifiers; keep checkpoint submission shallow.
+                df = apply_plan_boundary(df, df.sparkSession).alias(step.input_alias)
         streaming_step = self._is_streaming_step(step, frames)
         if not step.operations:
             for join in step.joins:
@@ -467,6 +473,10 @@ class RunOnlinePySparkTransform:
             if operation.kind == "unpersist" and operation.unpersist is not None:
                 df = df.unpersist(blocking=operation.unpersist.blocking)
             if operation.kind == "checkpoint" and operation.checkpoint is not None:
+                if df.isStreaming:
+                    raise ValueError(
+                        "checkpoint() requires a batch DataFrame; move materialization to the batch caller"
+                    )
                 df = df.checkpoint(eager=operation.checkpoint.eager)
             if operation.kind == "local_checkpoint" and operation.local_checkpoint is not None:
                 df = df.localCheckpoint(eager=operation.local_checkpoint.eager)
@@ -1721,7 +1731,7 @@ class RunOnlinePySparkTransform:
             df = df.withColumn(row_id, functions.monotonically_increasing_id())
         right = frames[join.source]
         if join.assert_singleton_in_batch and not streaming_step:
-            right = self._exactly_one(right, join.input_name, functions=functions)
+            right = singleton_policy(right, join.input_name)
         for watermark in watermarks:
             right = self._watermark(watermark, right)
         if join.strategy is not None:

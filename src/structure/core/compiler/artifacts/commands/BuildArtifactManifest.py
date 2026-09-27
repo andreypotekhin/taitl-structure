@@ -17,7 +17,7 @@ class BuildArtifactManifest:
 
     def __call__(
         self,
-        subject: type[Transform] | TransformPipeline,
+        subject: type[Transform] | Transform | TransformPipeline,
         *,
         options: CompilerOptions,
         capability: str,
@@ -37,7 +37,7 @@ class BuildArtifactManifest:
 
     def _dependencies(
         self,
-        subject: type[Transform] | TransformPipeline,
+        subject: type[Transform] | Transform | TransformPipeline,
         *,
         project_root: Path,
     ) -> set[ArtifactDependency]:
@@ -62,10 +62,10 @@ class BuildArtifactManifest:
                 dependencies.update(self._schemas(owner, project_root=project_root))
         return dependencies
 
-    def _classes(self, subject: type[Transform] | TransformPipeline) -> tuple[type[Transform], ...]:
+    def _classes(self, subject: type[Transform] | Transform | TransformPipeline) -> tuple[type[Transform], ...]:
         if isinstance(subject, TransformPipeline):
             return tuple(stage.transform_class for stage in subject.stages)
-        return (subject,)
+        return (type(subject) if isinstance(subject, Transform) else subject,)
 
     def _schemas(self, transform: type[Transform], *, project_root: Path) -> set[ArtifactDependency]:
         declarations = (

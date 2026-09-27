@@ -23,7 +23,7 @@ class CompiledArtifactPool:
 
     def get_or_compile(
         self,
-        subject: type[Transform] | TransformPipeline,
+        subject: type[Transform] | Transform | TransformPipeline,
         *,
         options: CompilerOptions,
         schema_types=None,

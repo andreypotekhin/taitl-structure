@@ -73,6 +73,8 @@ class BuildSessionSignalsGenerated:
             )
         )
         assert_schema(session__events, SESSION_FEATURE_SCHEMA, name="SessionFeature", mode="strict")
+        if not session__events.isStreaming:
+            session__events = apply_plan_boundary(session__events, self.spark)
         return {
             "session__events": session__events,
         }
@@ -135,6 +137,8 @@ class BuildPurchaseSignalsGenerated:
         assert_schema(
             purchases__fulfilled_orders, RECOMMENDATION_PURCHASE_SCHEMA, name="RecommendationPurchase", mode="strict"
         )
+        if not purchases__fulfilled_orders.isStreaming:
+            purchases__fulfilled_orders = apply_plan_boundary(purchases__fulfilled_orders, self.spark)
         return {
             "purchases__fulfilled_orders": purchases__fulfilled_orders,
         }
@@ -180,6 +184,8 @@ class BuildProductSignalsGenerated:
             name="DailyRecommendationImpressions",
             mode="strict",
         )
+        if not recommendation__daily_impressions.isStreaming:
+            recommendation__daily_impressions = apply_plan_boundary(recommendation__daily_impressions, self.spark)
         return {
             "recommendation__daily_impressions": recommendation__daily_impressions,
         }
@@ -249,6 +255,8 @@ class BuildProductSignalsGenerated:
             name="DailyRecommendationClicks",
             mode="strict",
         )
+        if not recommendation__daily_clicks.isStreaming:
+            recommendation__daily_clicks = apply_plan_boundary(recommendation__daily_clicks, self.spark)
         return {
             "recommendation__daily_clicks": recommendation__daily_clicks,
         }
@@ -410,6 +418,8 @@ class BuildProductSignalsGenerated:
             .otherwise(F.lit(None))
             .alias("conversion_rate"),
         )
+        if not recommendation__signals.isStreaming:
+            recommendation__signals = apply_plan_boundary(recommendation__signals, self.spark)
         return {
             "recommendation__signals": recommendation__signals,
         }

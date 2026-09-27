@@ -11,6 +11,8 @@ from examples.structure_generated.search.runtime.schema_assert import (
     project_schema,
     apply_plan_boundary,
     close_plan_boundaries,
+    reuse_policy_checks,
+    singleton_policy,
 )
 from examples.structure_generated.search.pyspark.schemas.artifact import RANKING_ARTIFACT_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.features import DOCUMENT_FEATURES_SCHEMA, QUERY_FEATURES_SCHEMA
@@ -26,6 +28,7 @@ class RankDocumentCandidatesGenerated:
     def close(self) -> None:
         close_plan_boundaries(self.spark)
 
+    @reuse_policy_checks
     def run(
         self,
         *,
@@ -53,18 +56,7 @@ class RankDocumentCandidatesGenerated:
         )
         artifacts_param_joined = artifacts
         if not __structure_streaming_step:
-            artifacts_param_joined_count = artifacts.agg(F.count(F.lit(1)).alias("__structure_count"))
-            artifacts_param_joined_count = artifacts_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(artifact) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            artifacts_param_joined = (
-                artifacts.crossJoin(artifacts_param_joined_count)
-                .where(F.col("__structure_exactly_one").isNull())
-                .drop("__structure_exactly_one")
-            )
+            artifacts_param_joined = singleton_policy(artifacts, 'artifact')
         artifacts_joined = artifacts_param_joined.alias("artifacts")
         ranked_candidates = ranked_candidates.crossJoin(artifacts_joined)
         document_features_2_joined = document_features.alias("document_features_2")

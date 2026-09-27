@@ -14,7 +14,8 @@ view does not necessarily materialize the data or shorten the logical lineage. R
 both sides of a self-join duplicates that history again.
 
 The developer-facing root-cause analysis, measurements, and design decisions are in the
-[Memory specification](../../dev/specifications/Memory.spec.md). The implementation work is tracked in the
+[resolved OOM issue record](../../dev/issues/I09272602.Spark-driver-heap-exhaustion.issue.md) and its
+[Memory evidence](../../dev/issues/I09272602/Memory-evidence.md). The implementation work is tracked in the
 [lineage materialization plan](../../dev/planning/P08232601.PySpark-lineage-materialization-and-diagnostics.plan.md).
 
 ## Reproduce
@@ -60,5 +61,6 @@ and reverse rows in one typed expansion when that preserves the required row sem
 expanded candidate relation when the boundary is acceptable. Replace a reciprocal self-join with a keyed reduction only
 when its uniqueness and reciprocal-semantics assumptions are proven.
 
-Structure emits `PYSPARK-W2701` when its compiler sees the repeated-reuse shape. See the
-[diagnostics catalog](../../Diagnostics.md) for the warning and configuration option.
+Structure emits `PYSPARK-W2701` through `PYSPARK-W2704` when its compiler sees repeated reuse, costly fan-out,
+repeated strict checks, or an unusually large output path. See the [diagnostics catalog](../../Diagnostics.md) for
+plain-language remedies and use `[tool.structure].disable` for one exact warning when comparing a build.

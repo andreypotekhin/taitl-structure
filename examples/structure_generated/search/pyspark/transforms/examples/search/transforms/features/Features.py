@@ -40,6 +40,8 @@ class BuildDocumentFeaturesGenerated:
         assert_schema(
             documents_built__document_features, DOCUMENT_FEATURES_SCHEMA, name="DocumentFeatures", mode="strict"
         )
+        if not documents_built__document_features.isStreaming:
+            documents_built__document_features = apply_plan_boundary(documents_built__document_features, self.spark)
         return {
             "documents_built__document_features": documents_built__document_features,
         }
@@ -155,6 +157,8 @@ class BuildQueryFeaturesGenerated:
             F.col("search_query.is_question"),
             F.col("search_query.is_time_sensitive"),
         )
+        if not queries_built__query_features.isStreaming:
+            queries_built__query_features = apply_plan_boundary(queries_built__query_features, self.spark)
         return {
             "queries_built__query_features": queries_built__query_features,
         }

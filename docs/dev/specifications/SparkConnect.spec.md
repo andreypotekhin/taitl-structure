@@ -172,6 +172,13 @@ profile. `optimization.persist`, `optimization.repartition`, `optimization.coale
 join strategy hints are supported for Spark Connect only when the implementation uses public Connect-compatible
 DataFrame APIs and live tests prove that the directive does not change row or schema semantics.
 
+The explicit `>=4.0,<4.1` Connect profile admits reliable batch `optimization.checkpoint`. The 2026-09-25 live probe
+configured `spark.checkpoint.dir` at server startup, preserved rows and schema, and verified that the checkpointed
+plan no longer contained its parent relation. Full Search reranking also passed online/generated parity with this
+boundary. This does not admit other materialization helpers, streaming checkpoints, or the mixed-version profile;
+see the [resolved OOM issue](../issues/I09272602.Spark-driver-heap-exhaustion.issue.md) and its
+[Memory evidence](../issues/I09272602/Memory-evidence.md).
+
 ## Ordinary-Only Requirements
 
 The Spark Connect variant must reject these requirements before execution or generation:

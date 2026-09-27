@@ -107,6 +107,8 @@ class VulnerabilityDeadlineReportsGenerated:
         assert_schema(
             activities, VULNERABILITY_DEADLINE_ACTIVITY_SCHEMA, name="VulnerabilityDeadlineActivity", mode="strict"
         )
+        if not activities.isStreaming:
+            activities = apply_plan_boundary(activities, self.spark)
 
         # Step method: summarize_people
         person_summaries = people.alias("person")

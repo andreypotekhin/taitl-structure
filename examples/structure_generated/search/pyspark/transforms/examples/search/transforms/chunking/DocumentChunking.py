@@ -146,6 +146,8 @@ class DocumentChunkingGenerated:
             .alias("paragraph_group"),
         )
         assert_schema(marked_lines, MARKED_DOCUMENT_LINE_SCHEMA, name="MarkedDocumentLine", mode="strict")
+        if not marked_lines.isStreaming:
+            marked_lines = apply_plan_boundary(marked_lines, self.spark)
 
         # Step method: select_paragraph_lines
         paragraph_lines = marked_lines.alias("marked_document_line")
@@ -238,6 +240,8 @@ class DocumentChunkingGenerated:
             F.col("paragraph_content.span_end"),
         )
         assert_schema(paragraph_drafts, PARAGRAPH_DRAFT_SCHEMA, name="ParagraphDraft", mode="strict")
+        if not paragraph_drafts.isStreaming:
+            paragraph_drafts = apply_plan_boundary(paragraph_drafts, self.spark)
 
         # Step method: publish_paragraphs
         paragraphs = paragraph_drafts.alias("paragraph_draft")

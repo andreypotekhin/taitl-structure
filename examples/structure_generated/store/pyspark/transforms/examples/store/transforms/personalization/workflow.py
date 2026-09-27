@@ -49,6 +49,8 @@ class BuildProductFeaturesGenerated:
             F.col("catalog_product.eligible"),
         )
         assert_schema(featured__catalog, CATALOG_PRODUCT_SCHEMA, name="CatalogProduct", mode="strict")
+        if not featured__catalog.isStreaming:
+            featured__catalog = apply_plan_boundary(featured__catalog, self.spark)
         return {
             "featured__catalog": featured__catalog,
         }
@@ -153,6 +155,8 @@ class BuildPersonalizationHistoryGenerated:
             )
         )
         assert_schema(history__history, PERSONALIZATION_HISTORY_SCHEMA, name="PersonalizationHistory", mode="strict")
+        if not history__history.isStreaming:
+            history__history = apply_plan_boundary(history__history, self.spark)
         return {
             "history__history": history__history,
         }
@@ -309,6 +313,8 @@ class ScorePersonalizedRecommendationsGenerated:
             F.lit('hashed-latent').alias("algorithm_id"),
             F.lit('v1').alias("algorithm_version"),
         )
+        if not scored__requests.isStreaming:
+            scored__requests = apply_plan_boundary(scored__requests, self.spark)
         return {
             "scored__requests": scored__requests,
         }

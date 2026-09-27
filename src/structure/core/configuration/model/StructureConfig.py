@@ -29,6 +29,7 @@ class StructureConfig:
     strict_performance: bool
     warn_on_udfs: bool
     warn_on_lineage_growth: bool
+    disable: tuple[str, ...]
     allow_stream_to_batch: bool
     stream_to_batch_policy: str
     allow_output_to_input: bool

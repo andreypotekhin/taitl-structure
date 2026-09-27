@@ -238,6 +238,8 @@ class VulnerabilityRemediationPrepareGenerated:
             ).alias("is_valid"),
         )
         assert_schema(prepared__case_checks, REMEDIATION_CASE_CHECK_SCHEMA, name="RemediationCaseCheck", mode="strict")
+        if not prepared__case_checks.isStreaming:
+            prepared__case_checks = apply_plan_boundary(prepared__case_checks, self.spark)
         return {
             "prepared__case_checks": prepared__case_checks,
         }
@@ -260,6 +262,8 @@ class VulnerabilityRemediationPrepareGenerated:
             F.col("remediation_case_check.is_valid"),
         )
         assert_schema(prepared__case_issues, REMEDIATION_CASE_ISSUE_SCHEMA, name="RemediationCaseIssue", mode="strict")
+        if not prepared__case_issues.isStreaming:
+            prepared__case_issues = apply_plan_boundary(prepared__case_issues, self.spark)
         return {
             "prepared__case_issues": prepared__case_issues,
         }
@@ -328,6 +332,8 @@ class VulnerabilityRemediationAccessGenerated:
             name="VulnerabilityWorkflowExposure",
             mode="strict",
         )
+        if not accessed__exposures.isStreaming:
+            accessed__exposures = apply_plan_boundary(accessed__exposures, self.spark)
         return {
             "accessed__exposures": accessed__exposures,
         }
@@ -384,6 +390,8 @@ class VulnerabilityRemediationPublishGenerated:
             name="UnacknowledgedVulnerability",
             mode="strict",
         )
+        if not published__unacknowledged.isStreaming:
+            published__unacknowledged = apply_plan_boundary(published__unacknowledged, self.spark)
         return {
             "published__unacknowledged": published__unacknowledged,
         }
@@ -441,6 +449,8 @@ class VulnerabilityRemediationPublishGenerated:
             name="PendingExceptionVulnerability",
             mode="strict",
         )
+        if not published__pending_exceptions.isStreaming:
+            published__pending_exceptions = apply_plan_boundary(published__pending_exceptions, self.spark)
         return {
             "published__pending_exceptions": published__pending_exceptions,
         }
@@ -512,6 +522,8 @@ class VulnerabilityRemediationPublishGenerated:
             name="ExpiringExceptionVulnerability",
             mode="strict",
         )
+        if not published__expiring_exceptions.isStreaming:
+            published__expiring_exceptions = apply_plan_boundary(published__expiring_exceptions, self.spark)
         return {
             "published__expiring_exceptions": published__expiring_exceptions,
         }
@@ -574,6 +586,8 @@ class VulnerabilityRemediationPublishGenerated:
             name="ExpiredExceptionVulnerability",
             mode="strict",
         )
+        if not published__expired_exceptions.isStreaming:
+            published__expired_exceptions = apply_plan_boundary(published__expired_exceptions, self.spark)
         return {
             "published__expired_exceptions": published__expired_exceptions,
         }
@@ -658,6 +672,8 @@ class VulnerabilityRemediationSummariesGenerated:
             name="RemediationWorkflowActivity",
             mode="strict",
         )
+        if not summarized__activities.isStreaming:
+            summarized__activities = apply_plan_boundary(summarized__activities, self.spark)
         return {
             "summarized__activities": summarized__activities,
         }
@@ -712,6 +728,8 @@ class VulnerabilityRemediationSummariesGenerated:
             name="PersonRemediationWorkflowSummary",
             mode="strict",
         )
+        if not summarized__person_summaries.isStreaming:
+            summarized__person_summaries = apply_plan_boundary(summarized__person_summaries, self.spark)
         return {
             "summarized__person_summaries": summarized__person_summaries,
         }
@@ -766,6 +784,8 @@ class VulnerabilityRemediationSummariesGenerated:
             name="TeamRemediationWorkflowSummary",
             mode="strict",
         )
+        if not summarized__team_summaries.isStreaming:
+            summarized__team_summaries = apply_plan_boundary(summarized__team_summaries, self.spark)
         return {
             "summarized__team_summaries": summarized__team_summaries,
         }
@@ -820,6 +840,8 @@ class VulnerabilityRemediationSummariesGenerated:
             name="DepartmentRemediationWorkflowSummary",
             mode="strict",
         )
+        if not summarized__department_summaries.isStreaming:
+            summarized__department_summaries = apply_plan_boundary(summarized__department_summaries, self.spark)
         return {
             "summarized__department_summaries": summarized__department_summaries,
         }
@@ -868,6 +890,8 @@ class VulnerabilityRemediationSummariesGenerated:
                 F.col("org_name"),
             )
         )
+        if not summarized__org_summaries.isStreaming:
+            summarized__org_summaries = apply_plan_boundary(summarized__org_summaries, self.spark)
         return {
             "summarized__org_summaries": summarized__org_summaries,
         }

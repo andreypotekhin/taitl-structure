@@ -63,6 +63,8 @@ class SelectEvaluationRequestsGenerated:
             name="RecommendationRequestBehavior",
             mode="strict",
         )
+        if not selected__selected_requests.isStreaming:
+            selected__selected_requests = apply_plan_boundary(selected__selected_requests, self.spark)
         return {
             "selected__selected_requests": selected__selected_requests,
         }
@@ -100,6 +102,8 @@ class MeasureRecommendationImpressionsGenerated:
             name="RecommendationBehaviorImpression",
             mode="strict",
         )
+        if not impressions_measured__displayed.isStreaming:
+            impressions_measured__displayed = apply_plan_boundary(impressions_measured__displayed, self.spark)
         return {
             "impressions_measured__displayed": impressions_measured__displayed,
         }
@@ -203,6 +207,8 @@ class MeasureRecommendationImpressionsGenerated:
             name="RecommendationBehaviorImpression",
             mode="strict",
         )
+        if not impressions_measured__measured.isStreaming:
+            impressions_measured__measured = apply_plan_boundary(impressions_measured__measured, self.spark)
         return {
             "impressions_measured__measured": impressions_measured__measured,
         }
@@ -289,6 +295,8 @@ class MeasureRecommendationRequestsGenerated:
             name="RecommendationRequestBehavior",
             mode="strict",
         )
+        if not requests_measured__request_behaviors.isStreaming:
+            requests_measured__request_behaviors = apply_plan_boundary(requests_measured__request_behaviors, self.spark)
         return {
             "requests_measured__request_behaviors": requests_measured__request_behaviors,
         }
@@ -468,6 +476,8 @@ class SummarizeRecommendationBehaviorGenerated:
             .otherwise(F.lit(None))
             .alias("exposure_adjusted_click_rate"),
         )
+        if not summarized__daily_behavior.isStreaming:
+            summarized__daily_behavior = apply_plan_boundary(summarized__daily_behavior, self.spark)
         return {
             "summarized__daily_behavior": summarized__daily_behavior,
         }

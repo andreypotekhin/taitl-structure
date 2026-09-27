@@ -14,7 +14,7 @@ class MapPySparkValidation:
         boundary: bool = False,
     ) -> tuple[PySparkValidationRecipe, ...]:
         recipes = self._hooks(step.after_hooks, schema=step.output_schema)
-        if not last:
+        if not last or boundary:
             recipes.append(
                 PySparkValidationRecipe(
                     target=step.results[0].frame,
@@ -22,7 +22,7 @@ class MapPySparkValidation:
                     mode=self._intermediate_mode(step.after_hooks),
                     project=False,
                     reason="intermediate",
-                    check=check_intermediate,
+                    check=check_intermediate and not last,
                     boundary=boundary,
                 )
             )
@@ -37,7 +37,7 @@ class MapPySparkValidation:
         boundary: bool = False,
     ) -> tuple[PySparkValidationRecipe, ...]:
         recipes = self._hooks(result.after_hooks, schema=result.schema)
-        if not last:
+        if not last or boundary:
             recipes.append(
                 PySparkValidationRecipe(
                     target=result.frame,
@@ -45,7 +45,7 @@ class MapPySparkValidation:
                     mode=self._intermediate_mode(result.after_hooks),
                     project=False,
                     reason="intermediate",
-                    check=check_intermediate,
+                    check=check_intermediate and not last,
                     boundary=boundary,
                 )
             )

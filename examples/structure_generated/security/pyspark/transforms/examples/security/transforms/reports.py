@@ -162,6 +162,8 @@ class VulnerabilityStatisticsGenerated:
         assert_schema(
             activities, VULNERABILITY_PERIOD_ACTIVITY_SCHEMA, name="VulnerabilityPeriodActivity", mode="strict"
         )
+        if not activities.isStreaming:
+            activities = apply_plan_boundary(activities, self.spark)
 
         # Step method: person_periods
         person_statistics = people.alias("person")

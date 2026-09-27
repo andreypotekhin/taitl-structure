@@ -25,6 +25,7 @@ _CLASS_OPTIONS = {
     "streaming",
     "warn_on_udfs",
     "warn_on_lineage_growth",
+    "disable",
     "allow_stream_to_batch",
 }
 _STEP_METHOD_OPTIONS = {"target", "target_platform", "target_profile"}
@@ -234,7 +235,7 @@ def transform(target=None, **kwargs):
         target: Optional target name or class. Passing ``"pyspark"`` selects a
             default target for the class.
         **kwargs: Class-level options such as ``target``,
-            ``validate_intermediate``, ``streaming``, ``warn_on_udfs``, ``warn_on_lineage_growth``, and
+            ``validate_intermediate``, ``streaming``, ``warn_on_udfs``, ``warn_on_lineage_growth``, ``disable``, and
             ``allow_stream_to_batch``.
             Step defaults such as ``target_platform`` may also be supplied.
 
@@ -454,6 +455,17 @@ def _normalize_transform_options(kwargs: dict[str, object]) -> dict[str, object]
         if name == "target":
             if not isinstance(options[name], str) or not options[name]:
                 raise TypeError("target must be a non-empty string")
+            continue
+        if name == "disable":
+            value = options[name]
+            if not isinstance(value, (list, tuple)) or isinstance(value, (str, bytes)):
+                raise TypeError("disable must be a list of warning codes")
+            codes = tuple(value)
+            if not all(isinstance(code, str) and code for code in codes):
+                raise TypeError("disable must contain non-empty warning-code strings")
+            if len(codes) != len(set(codes)):
+                raise TypeError("disable must not contain duplicate warning codes")
+            options[name] = codes
             continue
         if not isinstance(options[name], bool):
             raise TypeError(f"{name} must be a Boolean")

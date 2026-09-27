@@ -104,6 +104,8 @@ class AdvancedGenerated:
             .otherwise(F.lit(None))
             .alias("daily_return_stddev_20"),
         )
+        if not returns.isStreaming:
+            returns = apply_plan_boundary(returns, self.spark)
 
         # Step method: indicators
         indicators = returns.alias("advanced_indicator")

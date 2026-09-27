@@ -34,6 +34,7 @@ class StructureConfigDefaults:
             "strict_performance": True,
             "warn_on_udfs": True,
             "warn_on_lineage_growth": True,
+            "disable": [],
             "allow_stream_to_batch": False,
             "stream_to_batch_policy": "default",
             "allow_output_to_input": False,

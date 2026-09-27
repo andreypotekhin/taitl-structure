@@ -35,7 +35,7 @@ class All(Transform):
         Offline creation of artifacts for corpus, query, similarity, labels, scores, cohorts, and relevance.
         These artifacts serve as inputs/pre-build caches for online retrieval, such as. SearchDocuments, SearchFields.
         This code is for demonstration purpose - in real system it is more justified to call the stages
-        independently (or by ochestration engine) and persists results between the stages.
+        independently (or by orchestration engine) and persists results between the stages.
     """
 
     documents = input(Document)

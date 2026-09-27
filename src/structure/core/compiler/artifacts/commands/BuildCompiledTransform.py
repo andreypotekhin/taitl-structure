@@ -27,7 +27,7 @@ class BuildCompiledTransform:
 
     def __call__(
         self,
-        subject: type[Transform] | TransformPipeline,
+        subject: type[Transform] | Transform | TransformPipeline,
         *,
         options: CompilerOptions,
         schema_types=None,
@@ -61,7 +61,7 @@ class BuildCompiledTransform:
 
     def key(
         self,
-        subject: type[Transform] | TransformPipeline,
+        subject: type[Transform] | Transform | TransformPipeline,
         *,
         options: CompilerOptions,
         manifest: str | None = None,
@@ -70,7 +70,7 @@ class BuildCompiledTransform:
         return CompileKey(
             subject=tuple(f"{cls.__module__}.{cls.__qualname__}" for cls in classes),
             structure_version=self._structure_version(),
-            options=options.fingerprint(),
+            options=(*options.fingerprint(), *self._parameters(subject)),
             sources=tuple(self._source(cls) for cls in classes),
             manifest=manifest
             or self._manifest(subject, options=options, capability=self._capability(options)).fingerprint,
@@ -86,10 +86,21 @@ class BuildCompiledTransform:
             raise ValueError("PLUGIN-E2708: Plugin compilation did not provide transform schemas.")
         return value
 
-    def _classes(self, subject: type[Transform] | TransformPipeline) -> tuple[type[Transform], ...]:
+    def _parameters(self, subject: type[Transform] | Transform | TransformPipeline) -> tuple[object, ...]:
+        if not isinstance(subject, Transform) or not subject._structure_bound_parameters:
+            return ()
+        values = {
+            name: value
+            for name, value in subject._structure_bound_parameters.items()
+            if type(value) is not type(subject._structure_parameters[name].default)
+            or value != subject._structure_parameters[name].default
+        }
+        return (("parameters", self._fingerprint(values)),) if values else ()
+
+    def _classes(self, subject: type[Transform] | Transform | TransformPipeline) -> tuple[type[Transform], ...]:
         if isinstance(subject, TransformPipeline):
             return tuple(stage.transform_class for stage in subject.stages)
-        return (subject,)
+        return (type(subject) if isinstance(subject, Transform) else subject,)
 
     def _source(self, transform: type[Transform]) -> tuple[str, int | None, int | None, str | None]:
         from structure.core.sources.model.StructureSources import source_origin

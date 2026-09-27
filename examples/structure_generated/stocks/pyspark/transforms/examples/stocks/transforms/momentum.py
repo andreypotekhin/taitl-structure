@@ -144,6 +144,8 @@ class MomentumGenerated:
             .otherwise(F.lit(None))
             .alias("stochastic_k_14"),
         )
+        if not returns.isStreaming:
+            returns = apply_plan_boundary(returns, self.spark)
 
         # Step method: indicators
         indicators = returns.alias("momentum_indicator")

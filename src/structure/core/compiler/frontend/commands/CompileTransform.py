@@ -77,7 +77,7 @@ class CompileTransform:
 
     def __call__(
         self,
-        transform_class: type[Transform] | TransformPipeline,
+        transform_class: type[Transform] | Transform | TransformPipeline,
         *,
         config: StructureConfig | None = None,
         project_root: Path | str | None = None,
@@ -147,7 +147,7 @@ class CompileTransform:
             )
         if transform_class._structure_stages:
             self._reject_mixed_stage_members(transform_class)
-            return self._compose_graph(transform_class, config=config)
+            return self._compose_graph(transform_class, config=config, invocation=invocation)
         if not transform_class._structure_outputs:
             raise self._error(
                 "DSL-E0402",
@@ -259,7 +259,9 @@ class CompileTransform:
             allow_stage_outputs=composition_config.allow_stage_outputs,
         )
 
-    def _compose_graph(self, transform_class: type[Transform], *, config: StructureConfig) -> TransformPlan:
+    def _compose_graph(
+        self, transform_class: type[Transform], *, config: StructureConfig, invocation: Transform | None = None
+    ) -> TransformPlan:
         authoring_api = cast(AuthoringAPI | None, _authoring.get()[0])
         if authoring_api is None:
             raise RuntimeError("Core authoring requires a selected platform authoring facet.")
@@ -267,6 +269,7 @@ class CompileTransform:
         return self._graph_composer(
             transform_class,
             compile_stage=lambda stage: self._compile(stage, config=composition_config),
+            parameters=invocation._structure_bound_parameters if invocation is not None else None,
             rewrite_body=lambda body, frames: authoring_api.rewrite_body(body, frames=frames),
             allow_stream_to_batch=composition_config.allow_stream_to_batch,
             stream_to_batch_policy=composition_config.stream_to_batch_policy,

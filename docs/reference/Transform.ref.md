@@ -155,6 +155,31 @@ Composition preserves the child transform's typed graph. A composed transform mu
 streaming policy for every participating plugin service. Reuse a stage for a pipeline boundary; use a helper
 expression for row-local logic.
 
+### Scalar parameters
+
+Declare compile-time choices with `parameter(default)` and pass overrides as constructor keywords. Bound values
+propagate through nested stages. Inside a step, `self.parameter_name` is the resolved Python value, so an ordinary
+`if` can include or omit an operation.
+
+In a class-level stage declaration, use `~flag` to forward the inverse of a Boolean parameter:
+
+```python
+class SearchDocuments(Transform):
+    streaming = parameter(False)
+    # Other inputs and stages omitted.
+    fused = FuseDocuments(..., materialize=~streaming)
+```
+
+This negation is resolved when the graph is compiled, not when Python defines the class. Python's `not flag` cannot
+be deferred and raises an error on parameter declarations. Only Boolean defaults and bound values support `~flag`.
+Inside a step, use ordinary `not self.flag` instead: the instance value is already resolved.
+
+Use `session.compile(MyTransform(flag=True))` to compile a specialization explicitly; `.run(session)` does this
+automatically. Non-default scalar bindings have distinct artifact cache keys and semantic fingerprints; runtime
+DataFrames do not enter those keys. Generated execution requires an artifact rendered from the same specialization.
+A parameter named `streaming` is still just scalar configuration: it does not override `input(..., streaming=True)`
+or grant streaming support to operations that lack it.
+
 ## Hooks
 
 `@raw(...)` is the explicit boundary for caller-supplied PySpark code. Structure checks the declaration and schema

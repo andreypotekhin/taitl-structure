@@ -13,6 +13,7 @@ class StructureConfigBuilder:
         generated_dir = root / str(values["generated_dir"])
         generated_docs_formats = cast(list[str], values["generated_docs_formats"])
         generated_code_options = cast(list[str], values["generated_code_options"])
+        disable = cast(list[str], values["disable"])
         generated_code_hard_wrap = cast(int, values["generated_code_hard_wrap"])
         hook_target_default = values["hook_target_default"]
         plugin_configuration = PluginConfiguration.resolve({"plugin": cast(Mapping[str, object], values["plugin"])})
@@ -63,6 +64,7 @@ class StructureConfigBuilder:
             strict_performance=bool(values["strict_performance"]),
             warn_on_udfs=bool(values["warn_on_udfs"]),
             warn_on_lineage_growth=bool(values["warn_on_lineage_growth"]),
+            disable=tuple(disable),
             allow_stream_to_batch=bool(values["allow_stream_to_batch"]),
             stream_to_batch_policy=str(values["stream_to_batch_policy"]),
             allow_output_to_input=semantic_bool("allow_output_to_input"),

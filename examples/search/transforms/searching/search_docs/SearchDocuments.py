@@ -23,6 +23,8 @@ from structure import *
 class SearchDocuments(Transform):
     """Full-text document search."""
 
+    streaming = parameter(False)
+
     queries = input(SearchQuery, streaming=True)
     documents = input(Document)
     document_scores = input(DocumentScore)
@@ -100,6 +102,7 @@ class SearchDocuments(Transform):
         lexical_candidates=retrieved.candidates,
         vector_candidates=retrieved.vector_candidates,
         policy=vector_policy,
+        materialize=~streaming,
     )
 
     reranked = RerankDocuments(

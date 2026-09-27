@@ -19,5 +19,7 @@ def is_spark_connect_session(*, session=None, spark=None) -> bool:
 
 
 def is_classic_only_spark_error(error: Exception) -> bool:
-    text = f"{type(error).__module__}.{type(error).__name__}: {error}".lower()
+    # Server stack traces naturally mention RDDs; that does not mean the caller used a classic-only API.
+    message = str(error).split("\nJVM stacktrace:", 1)[0]
+    text = f"{type(error).__module__}.{type(error).__name__}: {message}".lower()
     return bool(_CLASSIC_ONLY_ERROR.search(text)) or ("spark connect" in text and "not supported" in text)

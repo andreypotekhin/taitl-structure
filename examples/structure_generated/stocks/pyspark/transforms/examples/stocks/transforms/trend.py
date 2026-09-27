@@ -119,6 +119,8 @@ class TrendGenerated:
             .otherwise(F.lit(None))
             .alias("above_sma_50"),
         )
+        if not bars.isStreaming:
+            bars = apply_plan_boundary(bars, self.spark)
 
         # Step method: indicators
         indicators = bars.alias("trend_indicator")

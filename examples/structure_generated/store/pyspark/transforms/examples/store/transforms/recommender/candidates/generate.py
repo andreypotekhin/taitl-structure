@@ -121,6 +121,8 @@ class GenerateRecommendationCandidatesGenerated:
             F.coalesce(F.col("signals_3.conversion_rate"), F.lit(0.0)).alias("purchase_signal"),
             F.lit('retrieved').alias("eligibility_status"),
         )
+        if not admitted.isStreaming:
+            admitted = apply_plan_boundary(admitted, self.spark)
 
         # Step method: candidates
         candidates = admitted.alias("recommendation_candidate")

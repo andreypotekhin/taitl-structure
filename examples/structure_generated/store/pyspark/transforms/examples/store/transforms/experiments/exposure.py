@@ -80,6 +80,8 @@ class RecordRecommendationExposuresGenerated:
             F.col("assignments.variant_id"),
             F.col("recommendation_request.requested_at").alias("exposed_at"),
         )
+        if not requests.isStreaming:
+            requests = apply_plan_boundary(requests, self.spark)
 
         # Step method: exposures
         exposures = requests.alias("recommendation_exposure")

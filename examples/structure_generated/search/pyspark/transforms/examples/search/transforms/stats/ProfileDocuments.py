@@ -84,6 +84,8 @@ class ProfileDocumentsGenerated:
             .cast(T.LongType())
             .alias("source_recency_rank"),
         )
+        if not documents.isStreaming:
+            documents = apply_plan_boundary(documents, self.spark)
 
         # Step method: features
         features = documents.alias("document_profile")

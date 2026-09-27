@@ -145,6 +145,8 @@ class VolatilityGenerated:
             .otherwise(F.lit(None))
             .alias("bollinger_lower"),
         )
+        if not returns.isStreaming:
+            returns = apply_plan_boundary(returns, self.spark)
 
         # Step method: indicators
         indicators = returns.alias("volatility_indicator")

@@ -152,6 +152,8 @@ class RenderPySparkTransformModule:
         helpers = ["TransformResult", "assert_schema", "project_schema", "apply_plan_boundary", "close_plan_boundaries"]
         if self._has_ordered_aggregate(plan):
             helpers.append("ordered_aggregate_guard")
+        if self._has_policy_checks(plan):
+            helpers.extend(("reuse_policy_checks", "singleton_policy"))
         lines.append(f"from {runtime_module} import {', '.join(helpers)}")
 
         for module, constants in self._schema_imports(plan, schema_modules).items():
@@ -274,7 +276,8 @@ class RenderPySparkTransformModule:
         if methods:
             lines.extend(["", *methods])
 
-        lines.extend(["", "    def run(self) -> TransformResult:"])
+        lines.extend(self._policy_scope(plan))
+        lines.append("    def run(self) -> TransformResult:")
         lines.extend(
             [
                 "        if self._ran:",
@@ -468,7 +471,8 @@ class RenderPySparkTransformModule:
             )
         )
         lines.extend(["", "    def close(self) -> None:", "        close_plan_boundaries(self.spark)"])
-        lines.extend(["", "    def run(", "        self,", "        *,"])
+        lines.extend(self._policy_scope(plan))
+        lines.extend(["    def run(", "        self,", "        *,"])
         for input in self._public_inputs(plan):
             lines.append(
                 f"        {input.name}: DataFrame | None = None,"
@@ -520,9 +524,7 @@ class RenderPySparkTransformModule:
             )
             result_entries.append(f'"{output.name}": {output.name}')
             schema_entries.append(f'"{output.name}": {self._schema.constant_name(output.output_schema)}')
-        stage_lines, stage_argument = self._stage_result_lines(
-            plan, sources, backend_target=plan.backend.target
-        )
+        stage_lines, stage_argument = self._stage_result_lines(plan, sources, backend_target=plan.backend.target)
         lines.extend(stage_lines)
         single = "True" if len(plan.outputs) == 1 else "False"
         aliases = self._output_aliases(plan)
@@ -606,7 +608,8 @@ class RenderPySparkTransformModule:
             )
         )
         lines.extend(["", "    def close(self) -> None:", "        close_plan_boundaries(self.spark)"])
-        lines.extend(["", "    def run(", "        self,", "        *,"])
+        lines.extend(self._policy_scope(plan))
+        lines.extend(["    def run(", "        self,", "        *,"])
         for input in self._public_inputs(plan):
             lines.append(
                 f"        {input.name}: DataFrame | None = None,"
@@ -647,9 +650,7 @@ class RenderPySparkTransformModule:
             )
             result_entries.append(f'"{output.name}": {output.name}')
             schema_entries.append(f'"{output.name}": {self._schema.constant_name(output.output_schema)}')
-        stage_lines, stage_argument = self._stage_result_lines(
-            plan, sources, backend_target=plan.backend.target
-        )
+        stage_lines, stage_argument = self._stage_result_lines(plan, sources, backend_target=plan.backend.target)
         lines.extend(stage_lines)
         single = "True" if len(plan.outputs) == 1 else "False"
         aliases = self._output_aliases(plan)
@@ -1117,7 +1118,12 @@ class RenderPySparkTransformModule:
             if validation.project:
                 lines.append(f"        {frame} = project_schema({frame}, {schema})")
             if validation.boundary:
-                lines.append(f"        {frame} = apply_plan_boundary({frame}, self.spark)")
+                lines.extend(
+                    [
+                        f"        if not {frame}.isStreaming:",
+                        f"            {frame} = apply_plan_boundary({frame}, self.spark)",
+                    ]
+                )
         return lines
 
     def _schema_imports(
@@ -1221,16 +1227,30 @@ class RenderPySparkTransformModule:
             )
         )
 
-    def _has_ordered_aggregate(self, plan: PySparkExecutionPlan) -> bool:
+    def _has_policy_checks(self, plan: PySparkExecutionPlan) -> bool:
         owners: tuple[PySparkStepRecipe | PySparkOutputRecipe, ...] = (
             *plan.steps, *plan.outputs, *(item.output for item in plan.stage_outputs)
+        )
+        joins = [join for owner in owners for join in owner.joins]
+        joins.extend(operation.join for owner in owners for operation in owner.operations if operation.join)
+        return any(join.assert_singleton_in_batch for join in joins)
+
+    def _policy_scope(self, plan: PySparkExecutionPlan) -> list[str]:
+        return ["", "    @reuse_policy_checks"] if self._has_policy_checks(plan) else [""]
+
+    def _has_ordered_aggregate(self, plan: PySparkExecutionPlan) -> bool:
+        owners: tuple[PySparkStepRecipe | PySparkOutputRecipe, ...] = (
+            *plan.steps,
+            *plan.outputs,
+            *(item.output for item in plan.stage_outputs),
         )
         aggregates = [getattr(owner, "aggregate", None) for owner in owners]
         aggregates.extend(operation.aggregate for owner in owners for operation in owner.operations)
         aggregates.extend(result.aggregate for step in plan.steps for result in step.results)
         return any(
             assignment.function in {"first_value", "last_value"}
-            for aggregate in aggregates if aggregate is not None
+            for aggregate in aggregates
+            if aggregate is not None
             for assignment in aggregate.assignments
         )
 

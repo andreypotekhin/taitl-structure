@@ -602,7 +602,7 @@ def test_param_join_renders_runtime_batch_singleton_guard() -> None:
 
     assert "__structure_streaming_step = orders.isStreaming or products.isStreaming" in text
     assert "if not __structure_streaming_step:" in text
-    assert "F.assert_true(F.col(\"__structure_count\") == F.lit(1)" in text
+    assert "singleton_policy(products, 'product')" in text
     assert text.index("if not __structure_streaming_step:") < text.index("orders = orders.crossJoin")
 
 

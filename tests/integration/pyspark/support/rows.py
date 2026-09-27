@@ -19,6 +19,8 @@ def rows(frame, *order_by: str, recursive: bool = True) -> list[dict[str, object
     ordered = frame.orderBy(*order_by) if order_by else frame
     result = [row.asDict(recursive=recursive) for row in ordered.collect()]
     _rows_cache[key] = (ref(frame), deepcopy(result))
+    if order_by:
+        _rows_cache[(id(frame), (), recursive)] = (ref(frame), deepcopy(result))
     return result
 
 

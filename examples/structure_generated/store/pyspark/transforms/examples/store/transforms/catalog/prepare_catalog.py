@@ -85,6 +85,8 @@ class PrepareCatalogGenerated:
             F.lit(True).alias("eligible"),
         )
         assert_schema(products, CATALOG_PRODUCT_SCHEMA, name="CatalogProduct", mode="strict")
+        if not products.isStreaming:
+            products = apply_plan_boundary(products, self.spark)
 
         # Step method: normalize
         products = products.alias("catalog_product")
@@ -106,6 +108,8 @@ class PrepareCatalogGenerated:
             F.col("catalog_product.promotion_score"),
             F.col("catalog_product.eligible"),
         )
+        if not products.isStreaming:
+            products = apply_plan_boundary(products, self.spark)
 
         # Step method: catalog
         catalog = products.alias("catalog_product")

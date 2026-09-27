@@ -24,11 +24,13 @@ class CompilerAPI(CompilerAPIV1):
             plan,
             default=bool(options.get("warn_on_lineage_growth", True)),
         )
+        thresholds = self._lineage_thresholds(request.plugin_options)
         if request.purpose is CompilationPurpose.DOCUMENTATION:
             diagnostics = self._diagnostics(
                 plan,
                 warn_on_udfs=warn_on_udfs,
                 warn_on_lineage_growth=warn_on_lineage_growth,
+                **thresholds,
             )
             return PluginCompilation(
                 lowered=None,
@@ -39,7 +41,7 @@ class CompilerAPI(CompilerAPIV1):
         capabilities = PySpark.capabilities.resolve()(
             profile=str(plugin_options.get("profile", "")), variant=str(plugin_options.get("variant", ""))
         )
-        boundary_policy = self._boundary_policy(plugin_options, capabilities.id.variant)
+        boundary_policy = self._boundary_policy(plugin_options, streaming=bool((plan.options or {}).get("streaming")))
         check_intermediate = bool(
             (plan.options or {}).get("validate_intermediate", options.get("validate_intermediate", True))
         )
@@ -55,6 +57,7 @@ class CompilerAPI(CompilerAPIV1):
             warn_on_udfs=warn_on_udfs,
             warn_on_lineage_growth=warn_on_lineage_growth,
             execution_plan=lowered,
+            **thresholds,
         )
         schemas = (
             PySpark.schema.build()(lowered, types=options.get("schema_types"))
@@ -75,6 +78,10 @@ class CompilerAPI(CompilerAPIV1):
         warn_on_udfs: bool,
         warn_on_lineage_growth: bool,
         execution_plan=None,
+        repeat_cost: int = 8,
+        fanout_cost: int = 8,
+        validation_cost: int = 8,
+        output_cost: int = 32,
     ):
         return (
             *self._udf_diagnostics(plan, enabled=warn_on_udfs),
@@ -82,8 +89,34 @@ class CompilerAPI(CompilerAPIV1):
                 plan,
                 enabled=warn_on_lineage_growth,
                 execution_plan=execution_plan,
+                repeat_cost=repeat_cost,
+                fanout_cost=fanout_cost,
+                validation_cost=validation_cost,
+                output_cost=output_cost,
             ),
         )
+
+    @staticmethod
+    def _lineage_thresholds(options) -> dict[str, int]:
+        defaults = {
+            "repeat_cost": 8,
+            "fanout_cost": 8,
+            "validation_cost": 8,
+            "output_cost": 32,
+        }
+        keys = {
+            "repeat_cost": "PYSPARK_W2701_plan_growth_repeat_cost",
+            "fanout_cost": "PYSPARK_W2702_plan_growth_fanout_cost",
+            "validation_cost": "PYSPARK_W2703_plan_growth_validation_cost",
+            "output_cost": "PYSPARK_W2704_plan_growth_output_cost",
+        }
+        values = {}
+        for name, key in keys.items():
+            value = options.get(key, defaults[name])
+            if isinstance(value, bool) or not isinstance(value, int) or value < 1:
+                raise ValueError(f"PLUGIN-E2711: {key} must be a positive integer.")
+            values[name] = value
+        return values
 
     @staticmethod
     def _warn_on_udfs(plan: TransformPlan, *, default: bool) -> bool:
@@ -94,9 +127,13 @@ class CompilerAPI(CompilerAPIV1):
         return bool((plan.options or {}).get("warn_on_lineage_growth", default))
 
     @staticmethod
-    def _boundary_policy(options, variant: str) -> str:
-        default = "auto" if variant == "spark-connect" else "off"
-        policy = str(options.get("connect_plan_boundaries", default))
+    def _boundary_policy(options, *, streaming: bool = False) -> str:
+        if "connect_plan_boundaries" in options:
+            raise ValueError(
+                "PLUGIN-E2710: connect_plan_boundaries was removed; use plan_boundaries instead. "
+                "See docs/Configuration.md#validation-related-settings."
+            )
+        policy = str(options.get("plan_boundaries", "off" if streaming else "auto"))
         if policy not in {"off", "auto", "strict"}:
-            raise ValueError("PLUGIN-E2710: connect_plan_boundaries must be one of 'off', 'auto', or 'strict'.")
-        return policy if variant == "spark-connect" else "off"
+            raise ValueError("PLUGIN-E2710: plan_boundaries must be one of 'off', 'auto', or 'strict'.")
+        return policy

@@ -12,6 +12,8 @@ from examples.structure_generated.search.runtime.schema_assert import (
     project_schema,
     apply_plan_boundary,
     close_plan_boundaries,
+    reuse_policy_checks,
+    singleton_policy,
 )
 from examples.structure_generated.search.pyspark.schemas.index import (
     DOCUMENT_INDEX_SUMMARY_SCHEMA,
@@ -48,6 +50,7 @@ class CreateSimilarityQueriesGenerated:
     def close(self) -> None:
         close_plan_boundaries(self.spark)
 
+    @reuse_policy_checks
     def run(
         self,
         *,
@@ -112,6 +115,8 @@ class CreateSimilarityQueriesGenerated:
             F.col("similarity_policy.max_document_frequency_ratio"),
         )
         assert_schema(valid_policy, SIMILARITY_POLICY_SCHEMA, name="SimilarityPolicy", mode="strict")
+        if not valid_policy.isStreaming:
+            valid_policy = apply_plan_boundary(valid_policy, self.spark)
 
         # Step method: build_document_queries
         document_query_text = document_terms.alias("document_term")
@@ -120,18 +125,7 @@ class CreateSimilarityQueriesGenerated:
         )
         valid_policy_param_joined = valid_policy
         if not __structure_streaming_step:
-            valid_policy_param_joined_count = valid_policy.agg(F.count(F.lit(1)).alias("__structure_count"))
-            valid_policy_param_joined_count = valid_policy_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            valid_policy_param_joined = (
-                valid_policy.crossJoin(valid_policy_param_joined_count)
-                .where(F.col("__structure_exactly_one").isNull())
-                .drop("__structure_exactly_one")
-            )
+            valid_policy_param_joined = singleton_policy(valid_policy, 'policy')
         valid_policy_joined = valid_policy_param_joined.alias("valid_policy")
         document_query_text = document_query_text.crossJoin(valid_policy_joined)
         document_summary_2_joined = document_summary.alias("document_summary_2")
@@ -181,6 +175,8 @@ class CreateSimilarityQueriesGenerated:
             name="DocumentSimilarityQueryText",
             mode="strict",
         )
+        if not document_query_text.isStreaming:
+            document_query_text = apply_plan_boundary(document_query_text, self.spark)
 
         # Step method: build_section_queries
         section_query_text = section_terms.alias("section_term")
@@ -189,18 +185,7 @@ class CreateSimilarityQueriesGenerated:
         )
         valid_policy_param_joined = valid_policy
         if not __structure_streaming_step:
-            valid_policy_param_joined_count = valid_policy.agg(F.count(F.lit(1)).alias("__structure_count"))
-            valid_policy_param_joined_count = valid_policy_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            valid_policy_param_joined = (
-                valid_policy.crossJoin(valid_policy_param_joined_count)
-                .where(F.col("__structure_exactly_one").isNull())
-                .drop("__structure_exactly_one")
-            )
+            valid_policy_param_joined = singleton_policy(valid_policy, 'policy')
         valid_policy_joined = valid_policy_param_joined.alias("valid_policy")
         section_query_text = section_query_text.crossJoin(valid_policy_joined)
         section_summary_2_joined = section_summary.alias("section_summary_2")
@@ -249,6 +234,8 @@ class CreateSimilarityQueriesGenerated:
         assert_schema(
             section_query_text, SECTION_SIMILARITY_QUERY_TEXT_SCHEMA, name="SectionSimilarityQueryText", mode="strict"
         )
+        if not section_query_text.isStreaming:
+            section_query_text = apply_plan_boundary(section_query_text, self.spark)
 
         # Step method: build_paragraph_queries
         paragraph_query_text = paragraph_terms.alias("paragraph_term")
@@ -257,18 +244,7 @@ class CreateSimilarityQueriesGenerated:
         )
         valid_policy_param_joined = valid_policy
         if not __structure_streaming_step:
-            valid_policy_param_joined_count = valid_policy.agg(F.count(F.lit(1)).alias("__structure_count"))
-            valid_policy_param_joined_count = valid_policy_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            valid_policy_param_joined = (
-                valid_policy.crossJoin(valid_policy_param_joined_count)
-                .where(F.col("__structure_exactly_one").isNull())
-                .drop("__structure_exactly_one")
-            )
+            valid_policy_param_joined = singleton_policy(valid_policy, 'policy')
         valid_policy_joined = valid_policy_param_joined.alias("valid_policy")
         paragraph_query_text = paragraph_query_text.crossJoin(valid_policy_joined)
         paragraph_summary_2_joined = paragraph_summary.alias("paragraph_summary_2")
@@ -322,6 +298,8 @@ class CreateSimilarityQueriesGenerated:
             name="ParagraphSimilarityQueryText",
             mode="strict",
         )
+        if not paragraph_query_text.isStreaming:
+            paragraph_query_text = apply_plan_boundary(paragraph_query_text, self.spark)
 
         # Step method: build_sentence_queries
         sentence_query_text = sentence_terms.alias("sentence_term")
@@ -330,18 +308,7 @@ class CreateSimilarityQueriesGenerated:
         )
         valid_policy_param_joined = valid_policy
         if not __structure_streaming_step:
-            valid_policy_param_joined_count = valid_policy.agg(F.count(F.lit(1)).alias("__structure_count"))
-            valid_policy_param_joined_count = valid_policy_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            valid_policy_param_joined = (
-                valid_policy.crossJoin(valid_policy_param_joined_count)
-                .where(F.col("__structure_exactly_one").isNull())
-                .drop("__structure_exactly_one")
-            )
+            valid_policy_param_joined = singleton_policy(valid_policy, 'policy')
         valid_policy_joined = valid_policy_param_joined.alias("valid_policy")
         sentence_query_text = sentence_query_text.crossJoin(valid_policy_joined)
         sentence_summary_2_joined = sentence_summary.alias("sentence_summary_2")
@@ -397,6 +364,8 @@ class CreateSimilarityQueriesGenerated:
             name="SentenceSimilarityQueryText",
             mode="strict",
         )
+        if not sentence_query_text.isStreaming:
+            sentence_query_text = apply_plan_boundary(sentence_query_text, self.spark)
 
         # Step method: publish_document_search_queries
         document_search_queries = document_query_text.alias("document_similarity_query_text")

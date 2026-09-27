@@ -25,7 +25,7 @@ class AnalyzeTransform(CompileTransform):
 
     def __call__(
         self,
-        transform_class: type[Transform] | TransformPipeline,
+        transform_class: type[Transform] | Transform | TransformPipeline,
         *,
         config: StructureConfig | None = None,
         project_root: Path | str | None = None,
@@ -46,7 +46,7 @@ class AnalyzeTransform(CompileTransform):
         policy_token = _semantic_policies.set((resolved.allow_output_to_input, resolved.allow_to_reassign_output))
         assigned_token = _assigned_outputs.set(set())
         try:
-            return self._analyze(transform_class, config=resolved)
+            return self._analyze(type(transform_class) if isinstance(transform_class, Transform) else transform_class, config=resolved)
         finally:
             _assigned_outputs.reset(assigned_token)
             _semantic_policies.reset(policy_token)
@@ -122,7 +122,9 @@ class AnalyzeTransform(CompileTransform):
             allow_stage_outputs=composition_config.allow_stage_outputs,
         )
 
-    def _compose_graph(self, transform_class: type[Transform], *, config: StructureConfig) -> TransformPlan:
+    def _compose_graph(
+        self, transform_class: type[Transform], *, config: StructureConfig, invocation: Transform | None = None
+    ) -> TransformPlan:
         composition_config = self._composition_config(transform_class, config)
         return self._graph_composer(
             transform_class,

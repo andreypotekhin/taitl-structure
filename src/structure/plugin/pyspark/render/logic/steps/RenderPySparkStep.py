@@ -246,6 +246,13 @@ class RenderPySparkStep:
             return lines
 
         ordered_lines: list[str] = []
+        if any(operation.checkpoint and operation.checkpoint.stage_input for operation in step.operations):
+            ordered_lines.extend(
+                [
+                    f"        if not {target}.isStreaming:",
+                    f"            {target} = apply_plan_boundary({target}, self.spark).alias({step.input_alias!r})",
+                ]
+            )
         if any(
             operation.kind == "join" and operation.join is not None and operation.join.assert_singleton_in_batch
             for operation in step.operations
@@ -451,9 +458,7 @@ class RenderPySparkStep:
                     render_pyspark_expression(expression, scope_aliases=self._scope_aliases(step))
                     for expression in partition.order_by
                 )
-                ordered_lines.append(
-                    f"        {target} = {target}.repartitionByRange({partition.count}, {keys})"
-                )
+                ordered_lines.append(f"        {target} = {target}.repartitionByRange({partition.count}, {keys})")
             if operation.relation_sample is not None:
                 ordered_lines.extend(self._relation_sample(operation.relation_sample, target=target))
             if operation.relation_priority_selection is not None:
@@ -516,6 +521,12 @@ class RenderPySparkStep:
                     f"        {target} = {target}.unpersist(blocking={operation.unpersist.blocking!r})"
                 )
             if operation.kind == "checkpoint" and operation.checkpoint is not None:
+                ordered_lines.extend(
+                    [
+                        f"        if {target}.isStreaming:",
+                        '            raise ValueError("checkpoint() requires a batch DataFrame; move materialization to the batch caller")',
+                    ]
+                )
                 ordered_lines.append(f"        {target} = {target}.checkpoint(eager={operation.checkpoint.eager!r})")
             if operation.kind == "local_checkpoint" and operation.local_checkpoint is not None:
                 ordered_lines.append(
@@ -1748,19 +1759,19 @@ class RenderPySparkStep:
     ) -> list[str]:
         source = sources.get(join.source, join.source)
         right = source
+        lines = []
+        if join.assert_singleton_in_batch:
+            prepared = f"{join.right_alias}_param_joined"
+            lines = [
+                f"        {prepared} = {right}",
+                "        if not __structure_streaming_step:",
+                f"            {prepared} = singleton_policy({right}, {join.input_name!r})",
+            ]
+            right = prepared
         for watermark in self._right_watermarks(step, join):
             right = f"{right}.withWatermark({self._literal(watermark.column)}, {watermark.delay!r})"
         if join.strategy is not None:
             right = f'{right}.hint("{join.strategy.hint()}")'
-        if join.assert_singleton_in_batch:
-            prepared = f"{join.right_alias}_param_joined"
-            lines = [f"        {prepared} = {right}", "        if not __structure_streaming_step:"]
-            lines.extend(
-                f"    {line}" for line in self._exactly_one(right, prepared, join.input_name, index=join.occurrence)
-            )
-            right = prepared
-        else:
-            lines = []
         right = f'{right}.alias("{join.right_alias}")'
         if join.dedupe is not None:
             prepared = f"{join.right_alias}_deduplicated"
@@ -2030,7 +2041,12 @@ class RenderPySparkStep:
             if validation.project:
                 lines.append(f"        {target} = project_schema({target}, {schema})")
             if validation.boundary:
-                lines.append(f"        {target} = apply_plan_boundary({target}, self.spark)")
+                lines.extend(
+                    [
+                        f"        if not {target}.isStreaming:",
+                        f"            {target} = apply_plan_boundary({target}, self.spark)",
+                    ]
+                )
         return lines
 
     def _scope_aliases(

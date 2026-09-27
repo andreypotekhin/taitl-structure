@@ -11,6 +11,8 @@ from examples.structure_generated.search.runtime.schema_assert import (
     project_schema,
     apply_plan_boundary,
     close_plan_boundaries,
+    reuse_policy_checks,
+    singleton_policy,
 )
 from examples.structure_generated.search.pyspark.schemas.clicks import DAILY_IMPRESSIONS_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.search import SCORE_POLICY_SCHEMA, SEARCH_QUERY_SCHEMA
@@ -25,6 +27,7 @@ class SelectRecentQueriesGenerated:
     def close(self) -> None:
         close_plan_boundaries(self.spark)
 
+    @reuse_policy_checks
     def run(
         self,
         *,
@@ -53,18 +56,7 @@ class SelectRecentQueriesGenerated:
         )
         score_policy_2_param_joined = score_policy
         if not __structure_streaming_step:
-            score_policy_2_param_joined_count = score_policy.agg(F.count(F.lit(1)).alias("__structure_count"))
-            score_policy_2_param_joined_count = score_policy_2_param_joined_count.select(
-                F.assert_true(
-                    F.col("__structure_count") == F.lit(1),
-                    'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701',
-                ).alias("__structure_exactly_one")
-            )
-            score_policy_2_param_joined = (
-                score_policy.crossJoin(score_policy_2_param_joined_count)
-                .where(F.col("__structure_exactly_one").isNull())
-                .drop("__structure_exactly_one")
-            )
+            score_policy_2_param_joined = singleton_policy(score_policy, 'policy')
         score_policy_2_joined = score_policy_2_param_joined.alias("score_policy_2")
         recent_queries = recent_queries.crossJoin(score_policy_2_joined)
         recent_queries = recent_queries.where(

@@ -112,6 +112,8 @@ class CreateQueryLabelsGenerated:
             F.col("intent.name"),
         )
         assert_schema(valid_intents, INTENT_SCHEMA, name="Intent", mode="strict")
+        if not valid_intents.isStreaming:
+            valid_intents = apply_plan_boundary(valid_intents, self.spark)
 
         # Step method: validate_patterns
         valid_patterns = patterns.alias("intent_pattern")

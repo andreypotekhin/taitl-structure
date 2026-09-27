@@ -27,6 +27,7 @@ class CompilerOptions:
     strict_performance: bool
     warn_on_udfs: bool
     warn_on_lineage_growth: bool
+    disable: tuple[str, ...]
     allow_stream_to_batch: bool
     stream_to_batch_policy: str
     allow_output_to_input: bool
@@ -75,6 +76,7 @@ class CompilerOptions:
             strict_performance=config.strict_performance,
             warn_on_udfs=config.warn_on_udfs,
             warn_on_lineage_growth=config.warn_on_lineage_growth,
+            disable=config.disable,
             allow_stream_to_batch=config.allow_stream_to_batch,
             stream_to_batch_policy=config.stream_to_batch_policy,
             allow_output_to_input=config.allow_output_to_input,
@@ -100,6 +102,7 @@ class CompilerOptions:
             self.strict_performance,
             self.warn_on_udfs,
             self.warn_on_lineage_growth,
+            self.disable,
             self.allow_stream_to_batch,
             self.stream_to_batch_policy,
             self.allow_output_to_input,

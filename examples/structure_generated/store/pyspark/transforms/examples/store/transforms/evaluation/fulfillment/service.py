@@ -261,6 +261,8 @@ class EvaluateFulfillmentGenerated:
         assert_schema(
             evaluations, FULFILLMENT_SERVICE_EVALUATION_SCHEMA, name="FulfillmentServiceEvaluation", mode="strict"
         )
+        if not evaluations.isStreaming:
+            evaluations = apply_plan_boundary(evaluations, self.spark)
 
         # Step method: summarize
         summary_totals = evaluations.alias("fulfillment_service_evaluation")
