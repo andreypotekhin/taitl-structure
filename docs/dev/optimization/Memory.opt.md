@@ -29,7 +29,8 @@ evaluation behavior, so the application must choose the boundary deliberately.
 
 ### 1. Identify the memory owner and phase
 
-Record the backend, Spark version, driver heap, executor settings, elapsed time, and first meaningful failure. Separate:
+Start with the [PySpark memory investigation runbook](../../runbooks/Memory.runbook.md). It explains how to capture the
+backend, Spark version, driver heap, executor settings, elapsed time, and first meaningful failure, then separate:
 
 - preparation and compilation;
 - query-plan construction or explanation;
@@ -40,22 +41,17 @@ Record the backend, Spark version, driver heap, executor settings, elapsed time,
 A driver heap failure during analysis is not an executor-memory failure. Increasing executor memory or changing shuffle
 settings does not address that phase.
 
+The integration compiled-artifact pool is a separate concern. It retains compiler metadata, not Spark sessions,
+DataFrames, or query results. Use `STRUCTURE_COMPILED_ARTIFACT_REUSE=off` to test whether repeated compiler setup is
+contributing to Python-side preparation memory, and close the module owner at teardown. Do not treat a compilation hit
+as a query-plan boundary: it does not shorten Spark lineage or prevent driver-side Catalyst analysis. If the first
+failure is a Spark driver heap error, continue with the plan-growth and materialization checks below.
+
 ### 2. Minimize the reproducer
 
 Reduce the input to a few rows while preserving the operations that reuse an expanded DataFrame. A useful reproducer
 should keep the same join, projection, union, assertion, or fan-out shape as the failing graph. If the failure survives
 the reduction, input cardinality is not the controlling variable.
-
-The solved OOM reproducer starts with two rows and repeats:
-
-1. alias the current DataFrame twice;
-2. self-join the aliases;
-3. select a canonical pair;
-4. project the reverse pair; and
-5. union both directions.
-
-The checked-in [spark_driver_heap_oom.py](../../troubleshooting/memory/spark_driver_heap_oom.py) contains baseline,
-fused, checkpoint-every-round, and temporary-view controls.
 
 ### 3. Measure query-plan growth
 
@@ -89,13 +85,20 @@ Every optimization comparison must retain:
 
 A reduction that only makes a disconnected fixture pass is not evidence that the production graph is safe.
 
-## Solved use case: repeated lazy query-plan growth
+## Use cases
+
+### Repeated lazy query-plan growth
 
 The former Memory specification's two-row case grew the baseline query plan approximately as
 `L_(n+1) = 4.5 L_n + fixed operation text`. With a 1 GiB PySpark 3.5 driver, the baseline reached
 `OutOfMemoryError: Java heap space` at round seven. The same operation shape with a typed projection-union fusion
 reduced one multiplier to about 2.2x but still grew. Checkpointing every round kept plan text between 46 and 48
 characters through eight rounds.
+
+The reproducer starts with two rows and repeatedly aliases the current DataFrame, self-joins the aliases, selects a
+canonical pair, projects the reverse pair, and unions both directions. The checked-in
+[spark_driver_heap_oom.py](../../troubleshooting/memory/spark_driver_heap_oom.py) compares the baseline, fused,
+checkpoint-every-round, and temporary-view controls.
 
 The resolution therefore has three distinct levels:
 
@@ -140,6 +143,9 @@ For a new report, record:
 
 Link the report to the concrete issue record rather than copying all measurements into a general guide.
 
+Use the [PySpark memory investigation runbook](../../runbooks/Memory.runbook.md) for the copy-paste reproduction command
+and evidence template.
+
 ## References
 
 - Resolved issue: [I09272602 Spark Driver Heap Exhaustion](../issues/I09272602.Spark-driver-heap-exhaustion.issue.md)
@@ -149,3 +155,4 @@ Link the report to the concrete issue record rather than copying all measurement
 - Materialization and diagnostics plan:
   [P08232601](../planning/P08232601.PySpark-lineage-materialization-and-diagnostics.plan.md)
 - Performance methodology: [Performance.opt.md](Performance.opt.md)
+- Memory investigation runbook: [Memory.runbook.md](../../runbooks/Memory.runbook.md)

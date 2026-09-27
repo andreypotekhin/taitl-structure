@@ -1,5 +1,6 @@
 from typing import Any
 
+from integration.pyspark.support.compiled_artifacts import CompiledArtifacts
 from integration.pyspark.support.generated_sources import GeneratedSources
 
 from structure import Transform
@@ -13,7 +14,8 @@ def test_generated_source_cache_is_owned_and_configuration_sensitive(monkeypatch
         return {"generated.py": "source"}
 
     monkeypatch.setattr("integration.pyspark.support.generated_sources.render_generated_project", render)
-    sources = GeneratedSources()
+    owner = CompiledArtifacts("module")
+    sources = GeneratedSources(owner)
     request: dict[str, Any] = dict(generated_package="generated", source_schema_modules={})
     transforms = [(Transform, "example.Transform")]
 
@@ -37,3 +39,5 @@ def test_generated_source_cache_is_owned_and_configuration_sensitive(monkeypatch
     assert len(calls) == 7
     sources(transforms, **request)
     assert len(calls) == 7
+    assert sum(call["artifacts"] is not None for call in calls) == 6
+    owner.close()

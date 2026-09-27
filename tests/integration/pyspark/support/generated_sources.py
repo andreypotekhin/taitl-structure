@@ -4,6 +4,7 @@ import json
 from collections.abc import Mapping, Sequence
 
 from integration.pyspark.support.backend_matrix import _plugin, render_generated_project
+from integration.pyspark.support.compiled_artifacts import CompiledArtifacts
 
 from structure.core.dsl.model.schemas.Schema import Schema
 from structure.core.dsl.model.transforms.Transform import Transform
@@ -12,7 +13,8 @@ from structure.core.dsl.model.transforms.Transform import Transform
 class GeneratedSources:
     """Module-owned source cache; each caller receives its own mutable file map."""
 
-    def __init__(self) -> None:
+    def __init__(self, artifacts: CompiledArtifacts | None = None) -> None:
+        self.artifacts = artifacts
         self.cache: dict[tuple[object, ...], dict[str, str]] = {}
 
     def __call__(
@@ -43,6 +45,7 @@ class GeneratedSources:
                         source_schema_modules=source_schema_modules,
                         generated_code_options=generated_code_options,
                         allow_stage_outputs=allow_stage_outputs,
+                        artifacts=self.artifacts.pool("source preparation") if self.artifacts else None,
                     )
                 )
             self.cache[key] = files

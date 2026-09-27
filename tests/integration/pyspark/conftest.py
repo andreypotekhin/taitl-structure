@@ -6,7 +6,9 @@ from tempfile import mkdtemp
 from typing import Any
 
 import pytest
+from integration.pyspark.support import backend_matrix
 from integration.pyspark.support.backend_matrix import spark
+from integration.pyspark.support.compiled_artifacts import CompiledArtifacts
 from integration.pyspark.support.generated_sources import GeneratedSources
 from integration.pyspark.support.plan_profile import profile_checkpoints, profile_guards
 from integration.pyspark.support.rows import clear_rows
@@ -35,8 +37,29 @@ def cache_frames() -> Iterator[Callable[..., None]]:
 
 
 @pytest.fixture(scope="module")
-def generated_sources() -> GeneratedSources:
-    return GeneratedSources()
+def compiled_artifacts() -> Iterator[CompiledArtifacts]:
+    owner = CompiledArtifacts()
+    try:
+        yield owner
+    finally:
+        owner.close()
+
+
+@pytest.fixture(scope="module")
+def generated_sources(compiled_artifacts) -> GeneratedSources:
+    return GeneratedSources(compiled_artifacts)
+
+
+@pytest.fixture
+def runtime_sessions(compiled_artifacts):
+    def create(spark_session, **settings):
+        return backend_matrix.session(
+            spark_session,
+            artifacts=compiled_artifacts.pool("runtime"),
+            **settings,
+        )
+
+    return create
 
 
 @pytest.fixture
@@ -51,7 +74,14 @@ def snapshots(spark, pytestconfig) -> Iterator[Snapshots]:
             rmtree(root)
 
 
-__all__ = ["cache_frames", "generated_sources", "snapshots", "spark"]
+__all__ = [
+    "cache_frames",
+    "compiled_artifacts",
+    "generated_sources",
+    "runtime_sessions",
+    "snapshots",
+    "spark",
+]
 
 
 @pytest.fixture(autouse=True)

@@ -405,6 +405,14 @@ fail before a live Spark case starts. Phase messages include source setup/cleanu
 snapshot writes and Search construction/collection retain their own labels. Do not add actions merely to measure a
 phase, and do not sum nested snapshot timings into their enclosing preparation phase.
 
+PySpark integration modules can share compiler artifacts without sharing Spark sessions or DataFrame results. The
+module-scoped `compiled_artifacts` owner supplies the pool to `GeneratedSources` and the function-scoped
+`runtime_sessions` factory. Reuse is enabled by default; set `STRUCTURE_COMPILED_ARTIFACT_REUSE=off` to give every
+rendering compilation and runtime session a fresh pool while retaining the same compiler options. Set
+`STRUCTURE_PROFILE_COMPILATION=1` to print each complete cache request, including key construction, and a module total.
+These timings include cache lookup work and are not pure compiler-execution timings. The owner is integration-only and
+must not be used to retain Spark frames, results, or sessions.
+
 Use `STRUCTURE_PLAN_BOUNDARIES=off|auto|strict` to compare the compiler's temporary-view policy on any PySpark
 backend. The value configures both online execution and generated compilation and participates in source-cache keys.
 The default is `auto` for batch transforms. Keep stage exposure, driver heap, fixtures, and checkpoints fixed when

@@ -1,17 +1,17 @@
 # Spark driver heap exhaustion from reused lazy lineage
 
-### Problem (integration): Reused lazy lineage grows until driver analysis exhausts the heap
+## Symptoms
 
-When: A PySpark program repeatedly aliases, joins, projects, or unions DataFrames that still reference the complete
+**When:** A PySpark program repeatedly aliases, joins, projects, or unions DataFrames that still reference the complete
 lineage built by earlier iterations.
 
-Error: A small input can spend little time executing but a long time constructing or analyzing the logical plan. The
-driver may report `java.lang.OutOfMemoryError: Java heap space` during `count()` or another action. Secondary RPC,
-Netty, or scheduler errors can appear after the Spark JVM has already run out of memory.
+**What you see:** A small input can spend little time executing but a long time constructing or analyzing the logical
+plan. The driver may report `java.lang.OutOfMemoryError: Java heap space` during `count()` or another action. Secondary
+RPC, Netty, or scheduler errors can appear after the Spark JVM has already run out of memory.
 
-Cause: Spark DataFrames are lazy logical-plan handles. A Python variable, alias, cache, persist, or ordinary temporary
-view does not necessarily materialize the data or shorten the logical lineage. Reusing an already-expanded DataFrame on
-both sides of a self-join duplicates that history again.
+**Why it happens:** Spark DataFrames are lazy logical-plan handles. A Python variable, alias, cache, persist, or
+ordinary temporary view does not necessarily materialize the data or shorten the logical lineage. Reusing an
+already-expanded DataFrame on both sides of a self-join duplicates that history again.
 
 The developer-facing root-cause analysis, measurements, and design decisions are in the
 [resolved OOM issue record](../../dev/issues/I09272602.Spark-driver-heap-exhaustion.issue.md) and its
@@ -24,17 +24,26 @@ The self-contained example is [`spark_driver_heap_oom.py`](spark_driver_heap_oom
 rows, so the data volume is deliberately irrelevant. Run it from the repository root in the PySpark 3.5 integration
 image:
 
-    docker compose --env-file infra/compose/.env -f infra/compose/docker-compose.yaml run --rm --entrypoint bash -e STRUCTURE_SPARK_DRIVER_MEMORY=1g structure-integration-pyspark35 -lc "python /workspace/docs/troubleshooting/memory/spark_driver_heap_oom.py --rounds 7"
+    docker compose --env-file infra/compose/.env \
+      -f infra/compose/docker-compose.yaml run --rm --entrypoint bash \
+      -e STRUCTURE_SPARK_DRIVER_MEMORY=1g structure-integration-pyspark35 \
+      -lc "python /workspace/docs/troubleshooting/memory/spark_driver_heap_oom.py --rounds 7"
 
 The default `union` mode builds the problematic reverse DataFrame branch. The `explode` mode emits both directions in
 one projection and demonstrates a smaller, but still growing, plan:
 
-    docker compose --env-file infra/compose/.env -f infra/compose/docker-compose.yaml run --rm --entrypoint bash -e STRUCTURE_SPARK_DRIVER_MEMORY=1g structure-integration-pyspark35 -lc "python /workspace/docs/troubleshooting/memory/spark_driver_heap_oom.py --rounds 7 --directions explode"
+    docker compose --env-file infra/compose/.env \
+      -f infra/compose/docker-compose.yaml run --rm --entrypoint bash \
+      -e STRUCTURE_SPARK_DRIVER_MEMORY=1g structure-integration-pyspark35 \
+      -lc "python /workspace/docs/troubleshooting/memory/spark_driver_heap_oom.py --rounds 7 --directions explode"
 
 For Spark 4.0, run from writable `/tmp` because Spark's artifact manager cannot create its temporary directory under the
 read-only `/workspace` mount:
 
-    docker compose --env-file infra/compose/.env -f infra/compose/docker-compose.yaml run --rm --workdir /tmp --entrypoint bash structure-integration-pyspark40 -lc "python /workspace/docs/troubleshooting/memory/spark_driver_heap_oom.py --rounds 4 --directions explode"
+    docker compose --env-file infra/compose/.env \
+      -f infra/compose/docker-compose.yaml run --rm --workdir /tmp --entrypoint bash \
+      structure-integration-pyspark40 \
+      -lc "python /workspace/docs/troubleshooting/memory/spark_driver_heap_oom.py --rounds 4 --directions explode"
 
 ## Fix
 
@@ -54,7 +63,10 @@ the failure but does not change the plan shape.
 
 For the isolated example, checkpoint each round when the growing relation must be reused:
 
-    docker compose --env-file infra/compose/.env -f infra/compose/docker-compose.yaml run --rm --entrypoint bash -e STRUCTURE_SPARK_DRIVER_MEMORY=1g structure-integration-pyspark35 -lc "python /workspace/docs/troubleshooting/memory/spark_driver_heap_oom.py --rounds 8 --checkpoint-every 1"
+    docker compose --env-file infra/compose/.env \
+      -f infra/compose/docker-compose.yaml run --rm --entrypoint bash \
+      -e STRUCTURE_SPARK_DRIVER_MEMORY=1g structure-integration-pyspark35 \
+      -lc "python /workspace/docs/troubleshooting/memory/spark_driver_heap_oom.py --rounds 8 --checkpoint-every 1"
 
 For Search-like reciprocal processing, keep retrieval, scoring, and reranking relations at bounded grains; emit forward
 and reverse rows in one typed expansion when that preserves the required row semantics; and checkpoint before reusing an

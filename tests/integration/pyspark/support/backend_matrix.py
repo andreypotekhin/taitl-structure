@@ -9,11 +9,13 @@ from contextlib import contextmanager
 from functools import wraps
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import cast
 
 import pytest
 from integration.pyspark.support.timing import phase
 
 from structure import *
+from structure.core.compiler.artifacts.model import CompiledArtifactPool, CompiledTransform, CompilerOptions
 from structure.core.dsl.model.schemas.Schema import Schema
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.plugin.pyspark import *
@@ -143,7 +145,12 @@ def _plugin() -> dict[str, dict[str, object]]:
 
 
 def session(
-    spark, *, execution_mode: str, generated_package: str | None = None, allow_stage_outputs: bool = True
+    spark,
+    *,
+    execution_mode: str,
+    generated_package: str | None = None,
+    allow_stage_outputs: bool = True,
+    artifacts: CompiledArtifactPool | None = None,
 ) -> StructureSession:
     return StructureSession(
         spark=spark,
@@ -153,7 +160,21 @@ def session(
             allow_stage_outputs=allow_stage_outputs,
             plugin=_plugin(),
         ),
+        artifacts=artifacts,
     )
+
+
+def _compiler_options(
+    *, generated_package: str, generated_code_options: tuple[str, ...], allow_stage_outputs: bool
+) -> CompilerOptions:
+    config = StructureConfig.create(
+        execution_mode="generated",
+        generated_package=generated_package,
+        generated_code_options=generated_code_options,
+        allow_stage_outputs=allow_stage_outputs,
+        plugin=_plugin(),
+    )
+    return CompilerOptions.from_config(config)
 
 
 def render_generated_project(
@@ -164,15 +185,20 @@ def render_generated_project(
     source_schema_modules: Mapping[str, Sequence[type[Schema]]],
     generated_code_options: tuple[str, ...] = (),
     allow_stage_outputs: bool = True,
+    artifacts: CompiledArtifactPool | None = None,
 ) -> dict[str, str]:
-    artifact = transform_type.compile(
+    options = _compiler_options(
         generated_package=generated_package,
         generated_code_options=generated_code_options,
         allow_stage_outputs=allow_stage_outputs,
-        plugin=_plugin(),
     )
+    artifact = cast(
+        CompiledTransform,
+        (artifacts or CompiledArtifactPool()).get_or_compile(transform_type, options=options),
+    )
+    plan = cast(PySparkExecutionPlan, artifact.pyspark_plan)
     return PySpark.render.project()(
-        artifact.pyspark_plan,
+        plan,
         source_transform=source_transform,
         generated_package=generated_package,
         source_schema_modules=source_schema_modules,
@@ -187,17 +213,24 @@ def render_generated_projects(
     generated_package: str,
     source_schema_modules: Mapping[str, Sequence[type[Schema]]],
     generated_code_options: tuple[str, ...] = (),
+    allow_stage_outputs: bool = True,
+    artifacts: CompiledArtifactPool | None = None,
 ) -> dict[str, str]:
+    options = _compiler_options(
+        generated_package=generated_package,
+        generated_code_options=generated_code_options,
+        allow_stage_outputs=allow_stage_outputs,
+    )
     plans_by_module: dict[str, dict[str, PySparkExecutionPlan]] = {}
     fingerprints_by_module: dict[str, dict[str, str]] = {}
     for transform_type, source_transform in transforms:
-        artifact = transform_type.compile(
-            generated_package=generated_package,
-            generated_code_options=generated_code_options,
-            plugin=_plugin(),
+        artifact = cast(
+            CompiledTransform,
+            (artifacts or CompiledArtifactPool()).get_or_compile(transform_type, options=options),
         )
+        plan = cast(PySparkExecutionPlan, artifact.pyspark_plan)
         source_module = source_transform.rsplit(".", 1)[0]
-        plans_by_module.setdefault(source_module, {})[source_transform] = artifact.pyspark_plan
+        plans_by_module.setdefault(source_module, {})[source_transform] = plan
         fingerprints_by_module.setdefault(source_module, {})[source_transform] = artifact.semantic_fingerprint
 
     files: dict[str, str] = {}
