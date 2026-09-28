@@ -50,6 +50,7 @@ class BuildCompiledTransform:
             payload=compilation.lowered,
             schemas=schemas,
             semantic_fingerprint="",
+            optimization=compilation.optimization,
         )
         return CompiledTransform(
             key=artifact.key,
@@ -57,6 +58,7 @@ class BuildCompiledTransform:
             payload=artifact.payload,
             schemas=artifact.schemas,
             semantic_fingerprint=self._fingerprint(artifact),
+            optimization=artifact.optimization,
         )
 
     def key(

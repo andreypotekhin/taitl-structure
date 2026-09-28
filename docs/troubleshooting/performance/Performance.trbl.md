@@ -1,4 +1,4 @@
-# PySpark Integration Performance Troubleshooting
+# Performance Troubleshooting
 
 This page is for people using Structure to run PySpark transforms. It focuses on what you can check and change as the
 caller of a transform; detailed profiling and compiler-development guidance belongs in the runbooks.
@@ -29,6 +29,19 @@ you observe.
 
 ## Common remedies
 
+### Unused steps are still built
+
+Structure removes an unused step only when its plugin certifies that removal is safe. Check the explain report's
+"unused steps" section: it gives original/retained counts and the reason for each decision. A branch can remain
+because callers can inspect its declared stage output, or because it contains validation, a hook, a UDF, or explicit
+resource lifecycle work. Unknown operations remain conservatively.
+
+If you only need final outputs, set `allow_stage_outputs=False`; its default remains true for inspection convenience.
+Use `prune_unused_steps=False` to compare with pruning disabled. Keep all other settings identical. Do not disable
+validation merely to reduce the retained count: checks may be the reason an apparently unused branch is necessary.
+Plugins without optimization support are unchanged. See [configuration](../../Configuration.md#unused-step-optimization)
+and [the active compiler plan](../../dev/planning/P09272603.Unused-branch-optimization.plan.md).
+
 - Use only the final outputs you need. Avoid materializing or collecting intermediate relations unnecessarily.
 - Keep the default batch setting `plan_boundaries = "auto"`. It can reduce repeated plan analysis for shared batch
   subgraphs, but it does not materialize rows or truncate Spark lineage.
@@ -40,6 +53,27 @@ you observe.
 - If preparation repeats Structure compilation, compare the default module-owned artifact reuse with
   `STRUCTURE_COMPILED_ARTIFACT_REUSE=off` and `STRUCTURE_PROFILE_COMPILATION=1`. This changes compiler metadata reuse,
   not Spark execution.
+- For checkpoint elapsed time without extra query-plan work, use `STRUCTURE_PROFILE_QUERY_PLANS=timing`. Use
+  `STRUCTURE_PROFILE_QUERY_PLANS=explain` only for explicit query-plan diagnosis; explanation and checkpoint elapsed
+  time are nested in construction and are not pure file-writing or executor times.
+
+### Search repeats work while selecting lexical gaps
+
+Use the Search lexical gap-selection implementation that keeps the four gap-detection lanes, unions their already
+deduplicated `ScoreQueryAvailability` IDs, and matches `SearchQuery` with one existence join. This removes the four
+final outer joins without changing freshness, scope, model, dimension, policy, optional-input, or duplicate-query
+semantics. Verify the compiled plan has one existence join and compare rows and schemas in both online and generated
+batch execution before accepting a custom equivalent.
+
+Do not combine the stored and streamed retrieval enrichment branches as a follow-up remedy yet. That change requires a
+stage-alias capability and explicit mixed batch/stream validation; applying it unconditionally can change visible stage
+outputs or streaming support. Keep the existing retrieval path until those constraints are proven.
+
+#### References
+
+- [Search checkpoint-work evidence](../../dev/issues/I09272601/Search-checkpoint-work-reduction.evidence.md)
+- [Performance runbook](../../runbooks/Performance.runbook.md#search-checkpoint-work-remedy)
+- [Search integration performance issue](../../dev/issues/I09272601.Search-integration-performance.issue.md)
 
 ## Use cases
 
@@ -83,6 +117,23 @@ Include source preparation in the total and do not sum nested compiler timings t
 
 - [Compiled-artifact profiling](../../runbooks/Profiling.runbook.md#compiled-artifact-reuse)
 - [Performance runbook](../../runbooks/Performance.runbook.md#preparation-or-compilation-dominates)
+
+### Compilation fails before the test starts
+
+An error such as `union_all(relation) requires a Structure relation parameter or transform input` is a DSL binding
+failure during source preparation. It is not evidence that Spark execution, plan construction, or compiled-artifact
+reuse is slow. Check the failing transform helper first: relation-set operations must receive a declared Structure
+relation input, not a row-scoped value created inside another step. For internal `lane(...)` outputs, use the
+lane-compatible join/filter form or promote the relation to a declared transform input.
+
+Correct the transform signature or pass the declared input relation directly, then rerun the same focused selector.
+Keep the failed log and exit status, but exclude that run from timing medians. Only compare `off` and `module` after
+the unchanged case completes successfully; changing reuse policy cannot repair an invalid DSL binding.
+
+#### References
+
+- [Search integration compile-setup gotcha](search_integration_slow.gotcha.md#compile-setup-failure)
+- [Performance runbook](../../runbooks/Performance.runbook.md#compile-setup-fails)
 
 ### A streaming transform is slow or ignores plan boundaries
 

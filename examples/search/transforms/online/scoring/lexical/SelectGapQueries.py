@@ -6,7 +6,16 @@ from examples.search.schemas.scoring.intermediate import ScoreQueryAvailability
 from examples.search.schemas.scoring.overlap import DocumentOverlapScore
 from examples.search.schemas.search import DocumentScore, DocumentSearchTarget, GapPolicy, ScorePolicy, SearchQuery
 from structure import Transform, input, lane, output, step
-from structure.plugin.pyspark import datediff, drop_duplicates, inner_join, left_join, param_join, where
+from structure.plugin.pyspark import (
+    datediff,
+    drop_duplicates,
+    exists,
+    inner_join,
+    left_join,
+    param_join,
+    union_all,
+    where,
+)
 
 
 class SelectGapQueries(Transform):
@@ -27,6 +36,7 @@ class SelectGapQueries(Transform):
     overlap_availability = lane(ScoreQueryAvailability)
     vector_availability = lane(ScoreQueryAvailability)
     paragraph_vector_availability = lane(ScoreQueryAvailability)
+    merged_availability = lane(ScoreQueryAvailability)
     gap_queries = output(SearchQuery)
 
     @step(input=[prefilter_targets, document_scores, requests, score_policy, gap_policy], output=document_availability)
@@ -160,33 +170,28 @@ class SelectGapQueries(Transform):
         return ScoreQueryAvailability(query_id=target.query_id)
 
     @step(
-        input=[
-            queries,
-            document_availability,
-            overlap_availability,
-            vector_availability,
-            paragraph_vector_availability,
-        ],
-        output=gap_queries,
+        input=[document_availability, overlap_availability, vector_availability, paragraph_vector_availability],
+        output=merged_availability,
     )
-    def select_gap_queries(
+    def merge_availability(
         self,
-        query: SearchQuery,
         document: ScoreQueryAvailability,
         overlap: ScoreQueryAvailability,
         vector: ScoreQueryAvailability,
         paragraph_vector: ScoreQueryAvailability,
+    ) -> ScoreQueryAvailability:
+        gap: ScoreQueryAvailability = union_all(overlap)
+        gap = union_all(vector)
+        gap = union_all(paragraph_vector)
+        return ScoreQueryAvailability.project(gap)
+
+    @step(input=[queries, merged_availability], output=gap_queries)
+    def select_gap_queries(
+        self,
+        query: SearchQuery,
+        gap: ScoreQueryAvailability,
     ) -> SearchQuery:
-        left_join(document, on=query.id == document.query_id)
-        left_join(overlap, on=query.id == overlap.query_id)
-        left_join(vector, on=query.id == vector.query_id)
-        left_join(paragraph_vector, on=query.id == paragraph_vector.query_id)
-        where(
-            document.query_id.is_not_null()
-            | overlap.query_id.is_not_null()
-            | vector.query_id.is_not_null()
-            | paragraph_vector.query_id.is_not_null()
-        )
+        where(exists(on=gap.query_id == query.id))
         return SearchQuery.project(query)
 
     @staticmethod

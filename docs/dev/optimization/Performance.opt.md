@@ -26,7 +26,8 @@ Do not call a construction-time problem an executor slowdown until executor work
 ## Measurement protocol
 
 1. Fix the backend, Spark version, driver settings, test selector, fixture, and environment.
-2. Enable the query-plan profiler when phase detail is needed with `STRUCTURE_PROFILE_QUERY_PLANS=1`.
+2. Enable checkpoint timing with `STRUCTURE_PROFILE_QUERY_PLANS=timing`; use `explain` (or legacy `1`) only when
+   explicit query-plan explanation is needed.
 3. Alternate the baseline and candidate policy rather than running all baselines first.
 4. Run at least three repetitions per policy and report medians plus individual runtimes.
 5. Record preparation, online construction, generated construction, checkpoint/materialization, collection, cleanup,
@@ -66,13 +67,26 @@ the distinction between pytest time and full Compose wall-clock time.
 
 ### Query-plan profiler
 
-Set `STRUCTURE_PROFILE_QUERY_PLANS=1` for structural diagnosis. It reports guard timings, estimated expanded input
-references, checkpoint explanation time, checkpoint duration, and plan-character counts. These are planning diagnostics,
-not row counts or pure executor timings. Profiled runs must be compared with profiled runs; keep unprofiled regression
-evidence separate.
+Set `STRUCTURE_PROFILE_QUERY_PLANS=timing` for checkpoint timing without an extra Spark action. Set it to `explain`
+(or legacy `1`) for structural diagnosis with guard timings, estimated expanded input references, checkpoint
+explanation time, checkpoint duration, and plan-character counts. Both are planning diagnostics, not row counts or pure
+executor timings. Profiled runs must be compared with profiled runs; keep unprofiled regression evidence separate.
 
 Set `STRUCTURE_INTEGRATION_CHECKPOINT_TIMING=1` when checkpoint cost should be visible without enabling the complete
 profiler. It wraps existing checkpoint calls and adds no Spark action.
+
+### Search checkpoint-work remedy
+
+In Search lexical gap selection, preserve the four gap-detection lanes and their per-lane deduplication, then union
+the `ScoreQueryAvailability` IDs and match `SearchQuery` with one existence join. This is the approved algebraic
+reduction for the verified batch path: it removes four final outer joins while preserving freshness, scope, model,
+dimension, policy, optional-input, and duplicate-query semantics. Confirm the compiled final selection structurally
+and compare rows, schemas, rankings, null behavior, strict validation failures, and online/generated parity.
+
+Do not promote the corresponding retrieval-enrichment rewrite merely because both benchmark fixtures are batch. The
+stored and streamed document branches currently expose stage and execution contracts that cannot be shared safely
+without a stage-alias capability and mixed batch/stream validation. Keep that rewrite deferred, and do not treat the
+focused timing retry as a speedup claim; use alternating repetitions and medians for performance closure.
 
 ### Repeated comparisons
 
@@ -122,6 +136,12 @@ execution policy, schema types, generated code options, source/dependency finger
 parameters. If a test uses separate owners or creates a fresh pool per session, the miss is expected. Close the
 module-scoped owner at teardown; it retains compiler metadata only and must never be used as a Spark-frame or result
 cache.
+
+Compiler setup errors are a separate correctness issue. For example, `union_all(relation) requires a Structure
+relation parameter or transform input` means a relation-set operation received a row-scoped value, often an internal
+lane. Repair the transform input binding—or use the lane-compatible join/filter form—before measuring performance.
+Exclude the failed attempt from medians; artifact reuse cannot make an invalid DSL call valid. Preserve the failed log
+so the benchmark distinguishes compiler correctness from cache performance.
 
 ## Use cases
 

@@ -10,7 +10,7 @@ from integration.pyspark.support import backend_matrix
 from integration.pyspark.support.backend_matrix import spark
 from integration.pyspark.support.compiled_artifacts import CompiledArtifacts
 from integration.pyspark.support.generated_sources import GeneratedSources
-from integration.pyspark.support.plan_profile import profile_checkpoints, profile_guards
+from integration.pyspark.support.plan_profile import profile_checkpoints, profile_guards, profile_mode
 from integration.pyspark.support.rows import clear_rows
 from integration.pyspark.support.snapshots import Snapshots
 from integration.pyspark.support.timing import phase
@@ -86,8 +86,9 @@ __all__ = [
 
 @pytest.fixture(autouse=True)
 def query_plan_profile(monkeypatch, request):
-    if os.environ.get("STRUCTURE_PROFILE_QUERY_PLANS") != "1":
+    mode = profile_mode(os.environ.get("STRUCTURE_PROFILE_QUERY_PLANS"))
+    if mode == "off":
         return
     spark_session = request.getfixturevalue("spark")
-    profile_checkpoints(monkeypatch, type(spark_session.range(0)))
+    profile_checkpoints(monkeypatch, type(spark_session.range(0)), explain=mode == "explain")
     profile_guards(monkeypatch)

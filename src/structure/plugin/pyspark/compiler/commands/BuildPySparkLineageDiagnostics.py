@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
 from structure.plugin.api.v1.model.TransformPlan import TransformPlan
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
@@ -20,6 +22,9 @@ class BuildPySparkLineageDiagnostics:
     ) -> tuple[Diagnostic, ...]:
         if not enabled:
             return ()
+        if execution_plan is not None and getattr(execution_plan, "pruning", None) is not None:
+            retained = frozenset(step.name for step in execution_plan.steps)
+            plan = replace(plan, steps=tuple(step for step in plan.steps if step.name in retained))
         diagnostics: list[Diagnostic] = []
         fusion = next(
             (optimization.detail for optimization in (execution_plan.optimizations if execution_plan else ())

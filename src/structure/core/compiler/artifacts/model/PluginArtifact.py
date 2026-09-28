@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from structure.plugin.api.v1.model.OptimizationReport import OptimizationReport
+
 
 @dataclass(frozen=True)
 class PluginArtifact:
@@ -11,3 +13,4 @@ class PluginArtifact:
     fingerprint: str
     payload: object
     analysis: object | None = None
+    optimization: OptimizationReport | None = None

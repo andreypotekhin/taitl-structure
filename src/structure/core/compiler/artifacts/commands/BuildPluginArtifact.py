@@ -44,4 +44,5 @@ class BuildPluginArtifact:
             fingerprint=compilation.fingerprint,
             payload=compilation.lowered,
             analysis=compilation.analysis,
+            optimization=compilation.optimization,
         )

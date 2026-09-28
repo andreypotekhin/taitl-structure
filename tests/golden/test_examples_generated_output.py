@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import ast
 import difflib
-from typing import cast
+from typing import Any, cast
 
 import pytest
 from helpers.example_projects import (
@@ -116,6 +116,7 @@ def test_search_documents_filters_retrieves_fuses_then_reranks_and_returns() -> 
     """Document search exposes distinct filtering, retrieval, fusion, and reranking stages."""
 
     from examples.search.transforms.online.filtering import OnlineFiltering
+    from examples.search.transforms.online.scoring.lexical import SelectGapQueries
     from examples.search.transforms.searching.search_docs import RerankDocuments
     from examples.search.transforms.searching.search_docs.SearchDocuments import SearchDocuments
 
@@ -131,6 +132,13 @@ def test_search_documents_filters_retrieves_fuses_then_reranks_and_returns() -> 
     assert getattr(OnlineFiltering.maximum_candidates, "default") == 10000
     assert RerankDocuments.maximum_candidates == 1000
     assert RerankDocuments.maximum_results == 100
+
+    gap_plan = cast(TransformPlan, Compiler.frontend.compile()(SelectGapQueries, materialize_schemas=False).analysis)
+    gap_selection = next(step for step in gap_plan.steps if step.name.endswith("select_gap_queries"))
+    gap_body = cast(Any, gap_selection.plugin_body)
+    assert len(gap_body.joins) == 1
+    assert gap_body.joins[0].method.value == "exists"
+    assert not any(join.how.value == "left" for join in gap_body.joins)
 
 
 def test_search_query_declares_immutable_event_time() -> None:

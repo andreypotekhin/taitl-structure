@@ -239,3 +239,21 @@ Final repository verification: `make gold` regenerated the checked-in examples; 
 Both wheel and sdist built successfully. `git diff --check` passed. Build log: `/tmp/search-guards-build-final.log`.
 The completed three-point implementation plan is
 [archived here](../../planning/past/P09262602.Search-guard-reuse.plan.md).
+
+## Checkpoint work reduction (P09272602, 2026-09-27)
+
+The timing-only profiler and lexical gap-selection rewrite were tested separately from compiled-artifact reuse. The
+focused Spark 3.5 case used `STRUCTURE_COMPILED_ARTIFACT_REUSE=module`, `STRUCTURE_PLAN_BOUNDARIES=auto`, stage
+outputs off, and the existing driver/fixture settings. Timing mode wraps the original checkpoint only; it does not
+call `explain`, collect, count, inspect schema, or fetch a query plan.
+
+The first timing-only attempt lost the Spark JVM during the first checkpoint. A retry passed and reported online
+construction 27.80s, generated construction 25.60s, online/generated checkpoint timings 16.502/5.495/0.222s and
+14.734/5.044/0.219s, and collection 0.41/0.27s. The unprofiled control passed with construction 29.57/33.22s and
+collection 0.39/0.33s. These are single observations, not medians or a production speedup claim. Full details and
+commands are in [the supporting evidence](Search-checkpoint-work-reduction.evidence.md).
+
+The lexical gap candidate passed the focused batch parity assertions and the generated-plan guard confirms one
+existence join replaces the former four left joins. The stored/streamed retrieval-enrichment candidate was deferred:
+the current DSL cannot preserve both existing stage views while sharing the enrichment chain, and mixed batch/stream
+compatibility has not cleared its promotion gate. Upstream materialization and cross-backend repetition remain open.

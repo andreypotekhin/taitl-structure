@@ -1,8 +1,10 @@
 from structure.plugin.api.v1.api import (
+    OptimizationAPI,
     AnalysisAPI, AuthoringAPI, CapabilitiesAPI, CompilerAPI, ExecutionAPI, ExplainAPI, GenerationAPI, PluginAPI,
     SchemaAPI, SemanticDefaultsAPI, SerializationAPI,
 )
 from structure.plugin.api.v1.model import (
+    OptimizationGraph, OptimizationStep, OptimizationDecision, OptimizationReport, OptimizationRequest,
     CompilationPurpose, CompileRequest, ExecutionRequest, ExplainRequest, GenerationRequest, GenerationResult, InputPlan, PluginCompilation,
     SchemaInspectionRequest, SchemaValidationRequest, StepAuthoringCapture, StepAuthoringInput, StepAuthoringRequest, StepAuthoringResult,
     StepAuthoringSession, StepInputPlan, StreamingAnalysisRequest, SymbolicContext, TraceabilityRequest,
@@ -10,6 +12,7 @@ from structure.plugin.api.v1.model import (
 )
 
 __all__ = [
+    "OptimizationAPI", "OptimizationGraph", "OptimizationStep", "OptimizationDecision", "OptimizationReport", "OptimizationRequest",
     "CapabilitiesAPI",
     "AnalysisAPI",
     "AuthoringAPI",

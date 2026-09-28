@@ -9,6 +9,9 @@ from structure.plugin.api.v1.model.HookPlan import HookPlan
 from structure.plugin.api.v1.model.OutputPlan import OutputPlan
 from structure.plugin.api.v1.model.StageOutputPlan import StageOutputPlan
 from structure.plugin.api.v1.model.PluginCompilation import PluginCompilation
+from structure.plugin.api.v1.model.OptimizationGraph import OptimizationGraph, OptimizationStep
+from structure.plugin.api.v1.model.OptimizationReport import OptimizationDecision, OptimizationReport
+from structure.plugin.api.v1.model.OptimizationRequest import OptimizationRequest
 from structure.plugin.api.v1.model.SchemaInspectionRequest import SchemaInspectionRequest
 from structure.plugin.api.v1.model.SchemaValidationRequest import SchemaValidationRequest
 from structure.plugin.api.v1.model.StepAuthoringInput import StepAuthoringInput
@@ -59,6 +62,7 @@ _CORE_CONTRACTS = {
 }
 
 __all__ = [
+    "OptimizationGraph", "OptimizationStep", "OptimizationDecision", "OptimizationReport", "OptimizationRequest",
     "CompilationPurpose", "CompileRequest", "ExecutionRequest", "ExplainRequest", "GenerationRequest", "GenerationResult", "InputPlan", "PluginCompilation",
     "SchemaInspectionRequest", "SchemaValidationRequest", "StepAuthoringCapture", "StepAuthoringInput", "StepAuthoringRequest", "HookPlan",
     "StepAuthoringResult", "StageResult", "StepAuthoringSession", "StepInputPlan", "StepPlan", "StepResultPlan", "StreamingAnalysisRequest", "StreamingSupport",

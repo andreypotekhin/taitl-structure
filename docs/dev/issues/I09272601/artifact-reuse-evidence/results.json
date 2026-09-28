@@ -1,0 +1,50 @@
+[
+  {
+    "backend": "pyspark35",
+    "case": "rerank",
+    "policy": "off",
+    "repetition": 1,
+    "exit_code": 1,
+    "wall_seconds": 0.44,
+    "log": "docs/dev/issues/I09272601/artifact-reuse-evidence/artifact-reuse-pyspark35-rerank-off-1.log",
+    "phases": {},
+    "result": null,
+    "pytest_seconds": null,
+    "heap_exhaustion": false,
+    "snapshot_seconds": 0,
+    "compilation": {
+      "records": [],
+      "by_phase": {},
+      "module_total": null,
+      "requests": 0,
+      "elapsed": 0,
+      "hits": 0,
+      "misses": 0,
+      "failures": 0
+    }
+  },
+  {
+    "backend": "pyspark35",
+    "case": "rerank",
+    "policy": "module",
+    "repetition": 1,
+    "exit_code": 1,
+    "wall_seconds": 0.18,
+    "log": "docs/dev/issues/I09272601/artifact-reuse-evidence/artifact-reuse-pyspark35-rerank-module-1.log",
+    "phases": {},
+    "result": null,
+    "pytest_seconds": null,
+    "heap_exhaustion": false,
+    "snapshot_seconds": 0,
+    "compilation": {
+      "records": [],
+      "by_phase": {},
+      "module_total": null,
+      "requests": 0,
+      "elapsed": 0,
+      "hits": 0,
+      "misses": 0,
+      "failures": 0
+    }
+  }
+]

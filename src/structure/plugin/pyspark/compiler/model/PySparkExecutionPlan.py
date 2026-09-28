@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from structure.plugin.api.v1.model import BackendId
+from structure.plugin.api.v1.model.OptimizationReport import OptimizationReport
 from structure.plugin.pyspark.compiler.model.PySparkInputRecipe import PySparkInputRecipe
 from structure.plugin.pyspark.compiler.model.PySparkOptimizationTrace import PySparkOptimizationTrace
 from structure.plugin.pyspark.compiler.model.PySparkOutputRecipe import PySparkOutputRecipe
@@ -22,6 +23,7 @@ class PySparkExecutionPlan:
     stage_outputs: tuple[PySparkStageOutputRecipe, ...] = ()
     allow_stage_outputs: bool = True
     optimizations: tuple[PySparkOptimizationTrace, ...] = ()
+    pruning: OptimizationReport | None = None
 
     @property
     def final_validation(self) -> PySparkValidationRecipe:

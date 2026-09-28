@@ -41,7 +41,7 @@ set -o pipefail
 runner_args="-k your_test_selector -vv -s --durations=20"
 /usr/bin/time -p docker compose --env-file infra/compose/.env \
   -f infra/compose/docker-compose.yaml -p structure-integration run --rm \
-  -e STRUCTURE_PROFILE_QUERY_PLANS=1 \
+  -e STRUCTURE_PROFILE_QUERY_PLANS=timing \
   -e STRUCTURE_INTEGRATION_CHECKPOINT_TIMING=1 \
   -e STRUCTURE_PLAN_BOUNDARIES=auto \
   -e STRUCTURE_INTEGRATION_TIMEOUT=600 \
@@ -99,6 +99,20 @@ types, generated code options, validation and stage-output policies, source/depe
 transform parameters. A new owner or pool also makes a miss expected. A cache hit does not shorten Spark lineage or
 avoid Spark analysis, checkpoints, collection, or cleanup.
 
+### Compile setup fails
+
+If source preparation fails with `union_all(relation) requires a Structure relation parameter or transform input`,
+stop the timing comparison. This is a transform DSL binding error: a relation-set operation received a row-scoped
+value instead of a declared Structure relation or transform input.
+
+Inspect the failing helper and its transform signature. Declare the relation as an input before passing it to
+`union_all` (or the equivalent relation-set operation). If the values are internal `lane(...)` outputs, use the
+lane-compatible join/filter form or promote them to declared transform inputs; a lane-scoped `RowScope` is not a
+valid relation-set argument. Rerun the unchanged focused selector and preserve the failed log and exit status as
+diagnostic evidence. Exclude the failed attempt from medians; changing compiler artifact reuse, adding Spark actions,
+or increasing heap cannot fix this binding error. Resume the `off`/`module` comparison only after the unchanged case
+passes.
+
 ### Construction or plan analysis dominates
 
 Enable the query-plan profiler and inspect expanded input references, guard work, checkpoint explanation, and plan
@@ -110,6 +124,35 @@ If a relation is reused after joins, unions, projections, assertions, or fan-out
 preserving that operation shape. A smaller row count does not necessarily reduce the logical-plan expansion. For a
 driver heap failure, use the [Memory runbook](Memory.runbook.md) to compare an approved checkpoint or materialization
 boundary; do not call a cache, alias, or temporary view proof that the logical plan was shortened.
+
+### Search checkpoint-work remedy
+
+When the Search lexical gap-selection branch is the repeated-work hotspot, keep each of the four gap-detection lanes
+and their existing per-lane deduplication. Union the resulting `ScoreQueryAvailability` relations, project the gap key,
+and match `SearchQuery` with one existence join. The remedy reduces the final four outer joins to one existence match;
+it is not a license to remove freshness, scope, model, dimension, policy, optional-input, or duplicate-query logic.
+
+Validate the remedy with the focused Search test in both online and generated batch execution. Compare row multisets,
+schemas, rankings, null behavior, strict validation failures, and the compiled final selection. The expected structural
+check is one existence join rather than four outer joins. Use timing mode for checkpoint measurements so the
+investigation does not add an `explain` action:
+
+```text
+STRUCTURE_PROFILE_QUERY_PLANS=timing
+STRUCTURE_PLAN_BOUNDARIES=auto
+STRUCTURE_SEARCH_STAGE_OUTPUTS=0
+```
+
+This remedy is currently verified for the focused batch path. Keep the original retrieval branches until a compiler
+stage-alias capability and mixed batch/stream validation show that shared enrichment preserves stage outputs and
+streaming support. Do not claim a performance improvement from one timing retry; use alternating repetitions and
+medians for closure evidence.
+
+#### References
+
+- [Search checkpoint-work evidence](../dev/issues/I09272601/Search-checkpoint-work-reduction.evidence.md)
+- [Search source](../../examples/search/transforms/online/scoring/lexical/SelectGapQueries.py)
+- [Performance troubleshooting](../troubleshooting/performance/Performance.trbl.md#search-repeats-work-while-selecting-lexical-gaps)
 
 ### Materialization dominates
 

@@ -72,6 +72,12 @@ class PluginConformance:
             missing = tuple(
                 facet for facet in ("schema", "authoring", "compiler", "capabilities") if getattr(api, facet) is None
             )
+        optimizer = getattr(api, "optimizer", None)
+        if optimizer is not None:
+            missing += tuple(
+                f"optimizer.{method}" for method in ("describe", "apply")
+                if not callable(getattr(optimizer, method, None))
+            )
         if missing:
             raise ValueError(
                 f"PLUGIN-E2708: Plugin {name!r} did not supply a complete Plugin API v{version} façade; "

@@ -30,7 +30,7 @@ set -o pipefail
 runner_args="-k test_document_search_reranks_bm25_candidates_for_multiple_queries -vv -s --durations=20"
 /usr/bin/time -p docker compose --env-file infra/compose/.env \
   -f infra/compose/docker-compose.yaml -p structure-integration run --rm \
-  -e STRUCTURE_PROFILE_QUERY_PLANS=1 \
+  -e STRUCTURE_PROFILE_QUERY_PLANS=timing \
   -e STRUCTURE_INTEGRATION_CHECKPOINT_TIMING=1 \
   -e STRUCTURE_PLAN_BOUNDARIES=auto \
   -e STRUCTURE_SEARCH_STAGE_OUTPUTS=0 \
@@ -103,16 +103,19 @@ The phase timer prints a `starting` line followed by the completed duration; rec
 
 ## Query-plan profiling
 
-`STRUCTURE_PROFILE_QUERY_PLANS=1` adds:
+`STRUCTURE_PROFILE_QUERY_PLANS=timing` adds:
 
 - guard and singleton-policy timings;
 - estimated expanded input references around joins, assertions, and checkpoints;
-- checkpoint `explain(mode="simple")` time; and
-- the subsequent checkpoint duration and reported plan-character count.
+- checkpoint elapsed time; and
+- success or failure, checkpoint sequence, execution mode, and compiled-step attribution when available.
 
-These measurements describe planning and structural risk. They are not row counts, exact Catalyst node counts, or pure
-executor time. Profiling changes warm-up and timing, so compare profiled runs only with other profiled runs. Keep a
-separate unprofiled run for final regression evidence.
+Timing mode does not call `explain`, collect, count, inspect schema, or fetch a query plan. Set the switch to `explain`
+(with `1` retained as an alias) to add `explain(mode="simple")` time and plan-character count before each checkpoint.
+These measurements describe planning and structural risk. They are not row counts, exact Catalyst node counts, pure
+executor time, or file-writing time. Profiling changes warm-up and timing, so compare profiled runs only with other
+profiled runs. Keep a separate unprofiled run for final regression evidence. Unset, `0`, and `off` disable the
+profiler; other values fail before Spark is requested.
 
 `STRUCTURE_INTEGRATION_CHECKPOINT_TIMING=1` times the existing DataFrame checkpoint calls without adding a Spark action.
 Those times are nested within construction. Use it when checkpoint cost needs to be visible even without the full plan
@@ -144,6 +147,16 @@ poetry run python scripts/benchmark_search_boundaries.py --help
 
 The helper does not enable `STRUCTURE_PROFILE_QUERY_PLANS`. Use the single-run command when structural profiler output
 is required, and keep the profiling setting identical across any runs being compared.
+
+For the lexical gap-selection remedy, inspect the focused `[plan-profile]` records and the compiled final selection.
+The production batch path unions the four already-deduplicated `ScoreQueryAvailability` lanes before one existence
+join to `SearchQuery`. The expected structural result is one existence join instead of four final outer joins; the
+focused semantic check must still cover row multiplicity, schemas, rankings, nulls, validation failures, and
+online/generated parity.
+
+The remedy does not authorize sharing the stored and streamed retrieval enrichment branches. That optimization remains
+deferred until stage aliases and mixed batch/stream behavior are validated. Record streaming results separately from
+the batch evidence, and keep the original path if the streaming contract is not proven.
 
 ## Timing record
 

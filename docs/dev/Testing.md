@@ -424,14 +424,17 @@ checkpoint calls. The timer wraps the actual runtime DataFrame class for online/
 action. These times are nested within construction; do not add them again to the total. Keep this switch fixed
 within a comparison pair.
 
-For deeper diagnosis, set `STRUCTURE_PROFILE_QUERY_PLANS=1`. This prints guard-construction timings, cache misses,
-and estimated expanded input references around joins, assertions, and checkpoints. These are structural estimates,
-not row counts or exact Spark optimizer node counts; expression subqueries and other complex operations are not
-modeled. A view reference does not reset the estimate, while a reliable checkpoint does.
+For deeper diagnosis, set `STRUCTURE_PROFILE_QUERY_PLANS=timing` or `explain`. Unset, `0`, and `off` disable the
+profiler; `1` remains an alias for `explain`. Both active modes print guard-construction timings, cache misses, and
+estimated expanded input references around joins, assertions, and checkpoints. These are structural estimates, not
+row counts or exact Spark optimizer node counts; expression subqueries and other complex operations are not modeled.
+A view reference does not reset the estimate, while a reliable checkpoint does.
 
-This mode also calls public `explain(mode="simple")` immediately before each checkpoint, reporting explain time and
-the subsequent checkpoint duration separately. Explain requests planning, not row collection. The remaining time
-can still include additional planning, serialization, scheduling, and execution: do not label it pure executor time.
+`explain` mode calls public `explain(mode="simple")` immediately before each checkpoint, reporting explanation time
+and the subsequent checkpoint duration separately. `timing` mode wraps only the original checkpoint call with a timer;
+it does not call `explain`, collect rows, inspect schema, or fetch a query plan. Explain requests planning, not row
+collection, and checkpoint elapsed time can still include planning, serialization, scheduling, and execution: do not
+label it pure executor time or file-writing time.
 The plan text is captured rather than printed and remains subject to Spark's diagnostic string limit. Spark's
 truncation warnings can report the full physical-plan string length. Profiling changes warm-up and timing; compare
 only equally profiled runs and keep unprofiled regression evidence separate. Monkeypatches are test-scoped.

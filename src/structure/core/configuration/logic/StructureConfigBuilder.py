@@ -70,6 +70,7 @@ class StructureConfigBuilder:
             allow_output_to_input=semantic_bool("allow_output_to_input"),
             allow_to_reassign_output=semantic_bool("allow_to_reassign_output"),
             allow_stage_outputs=bool(values["allow_stage_outputs"]),
+            prune_unused_steps=bool(values["prune_unused_steps"]),
             fail_on_diff=bool(values["fail_on_diff"]),
             spark_sql={
                 "spark.sql.ansi.enabled": values["spark.sql.ansi.enabled"],

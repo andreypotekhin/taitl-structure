@@ -66,6 +66,7 @@ class CompilerAPI(CompilerAPIV1):
         )
         return PluginCompilation(
             lowered=lowered,
+            executable_steps=tuple(step.name for step in lowered.steps),
             fingerprint=plan.name,
             schemas=schemas,
             diagnostics=diagnostics,

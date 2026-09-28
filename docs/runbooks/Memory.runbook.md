@@ -32,7 +32,7 @@ set -o pipefail
 runner_args="-k your_test_selector -vv -s --durations=20"
 /usr/bin/time -p docker compose --env-file infra/compose/.env \
   -f infra/compose/docker-compose.yaml -p structure-integration run --rm \
-  -e STRUCTURE_PROFILE_QUERY_PLANS=1 \
+  -e STRUCTURE_PROFILE_QUERY_PLANS=explain \
   -e STRUCTURE_INTEGRATION_CHECKPOINT_TIMING=1 \
   -e STRUCTURE_INTEGRATION_TIMEOUT=600 \
   -e "INTEGRATION_PYTEST_ARGS=$runner_args" \

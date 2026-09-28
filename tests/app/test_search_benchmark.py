@@ -1,5 +1,6 @@
 import json
 
+from scripts.benchmark_search_artifact_reuse import read_artifact_measurements
 from scripts.benchmark_search_boundaries import read_measurements, save_summary
 
 
@@ -35,3 +36,46 @@ def test_summary_excludes_failed_runs_from_performance_medians(tmp_path):
     assert summary["runs"] == 3
     assert summary["passed"] == 2
     assert summary["median_pytest_seconds"] == 25
+
+
+def test_artifact_measurements_parse_compile_records(tmp_path):
+    log = tmp_path / "artifact-reuse.log"
+    log.write_text(
+        "[compile] source preparation examples.Transform: 1.25s hits=0 misses=1 outcome=success\n"
+        "[compile] runtime examples.Transform: 0.05s hits=1 misses=0 outcome=success\n"
+        "[compile] module total: 1.30s requests=2 hits=1 misses=1\n"
+        "======= 1 passed in 2.50s (0:00:02) =======\n"
+    )
+
+    measurements = read_artifact_measurements(log)
+
+    assert measurements["compilation"] == {
+        "records": [
+            {
+                "phase": "source preparation",
+                "transform": "examples.Transform",
+                "elapsed": 1.25,
+                "hits": 0,
+                "misses": 1,
+                "outcome": "success",
+            },
+            {
+                "phase": "runtime",
+                "transform": "examples.Transform",
+                "elapsed": 0.05,
+                "hits": 1,
+                "misses": 0,
+                "outcome": "success",
+            },
+        ],
+        "by_phase": {
+            "source preparation": {"requests": 1, "elapsed": 1.25, "hits": 0, "misses": 1},
+            "runtime": {"requests": 1, "elapsed": 0.05, "hits": 1, "misses": 0},
+        },
+        "module_total": {"elapsed": 1.30, "requests": 2, "hits": 1, "misses": 1},
+        "requests": 2,
+        "elapsed": 1.3,
+        "hits": 1,
+        "misses": 1,
+        "failures": 0,
+    }

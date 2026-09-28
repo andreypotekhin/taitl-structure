@@ -6,6 +6,7 @@ from structure.plugin.pyspark.api.CompilerAPI import CompilerAPI
 from structure.plugin.pyspark.api.ExecutionAPI import ExecutionAPI
 from structure.plugin.pyspark.api.ExplainAPI import ExplainAPI
 from structure.plugin.pyspark.api.GenerationAPI import GenerationAPI
+from structure.plugin.pyspark.api.OptimizationAPI import OptimizationAPI
 from structure.plugin.pyspark.api.SchemaAPI import SchemaAPI
 from structure.plugin.pyspark.api.SemanticDefaultsAPI import SemanticDefaultsAPI
 
@@ -22,4 +23,5 @@ class PluginAPI:
             explainer=ExplainAPI(),
             analysis=AnalysisAPI(),
             semantic_defaults=SemanticDefaultsAPI(),
+            optimizer=OptimizationAPI(),
         )

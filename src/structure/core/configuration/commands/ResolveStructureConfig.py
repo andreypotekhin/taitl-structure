@@ -40,6 +40,7 @@ class ResolveStructureConfig:
         "allow_output_to_input",
         "allow_to_reassign_output",
         "allow_stage_outputs",
+        "prune_unused_steps",
         "fail_on_diff",
         "spark.sql.ansi.enabled",
         "spark.sql.storeAssignmentPolicy",

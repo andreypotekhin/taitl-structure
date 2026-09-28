@@ -71,6 +71,7 @@ project root. Explicit `source_roots` always wins.
 | `generated_code_options` | list; `[]` | Opt into generated method, expression, hook, or UDF forms |
 | `generated_code_hard_wrap` | integer; `120` | Generated source line width |
 | `allow_stage_outputs` | Boolean; `true` | Return recursively composed stage outputs alongside final outputs |
+| `prune_unused_steps` | Boolean; `true` | Remove unused steps certified safe by the plugin; false disables this pass |
 
 ```toml
 [tool.structure]

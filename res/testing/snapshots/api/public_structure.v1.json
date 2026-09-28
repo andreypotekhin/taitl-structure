@@ -52,13 +52,14 @@
         "transform_plan",
         "payload",
         "schemas",
-        "semantic_fingerprint"
+        "semantic_fingerprint",
+        "optimization"
       ],
       "enum_members": [],
       "kind": "class",
       "module": "structure.core.compiler.artifacts.model.CompiledTransform",
       "qualname": "CompiledTransform",
-      "signature": "(key: 'CompileKey', transform_plan: 'TransformPlan', payload: 'object', schemas: 'TransformSchemas | None', semantic_fingerprint: 'str') -> None"
+      "signature": "(key: 'CompileKey', transform_plan: 'TransformPlan', payload: 'object', schemas: 'TransformSchemas | None', semantic_fingerprint: 'str', optimization: 'OptimizationReport | None' = None) -> None"
     },
     "CompilerOptions": {
       "dataclass_fields": [
@@ -85,6 +86,7 @@
         "allow_output_to_input",
         "allow_to_reassign_output",
         "allow_stage_outputs",
+        "prune_unused_steps",
         "schema_types_key",
         "plugin_options"
       ],
@@ -92,7 +94,7 @@
       "kind": "class",
       "module": "structure.core.compiler.artifacts.model.CompilerOptions",
       "qualname": "CompilerOptions",
-      "signature": "(project_root: 'Path', source_roots: 'tuple[Path, ...]', generated_dir: 'Path', generated_package: 'str', generated_code_options: 'tuple[str, ...]', generated_code_hard_wrap: 'int', target: 'str', traceability: 'str', validate_inputs: 'bool', input_validation_mode: 'str', validate_intermediate: 'bool', intermediate_validation_mode: 'str', validate_outputs: 'bool', output_validation_mode: 'str', strict_performance: 'bool', warn_on_udfs: 'bool', warn_on_lineage_growth: 'bool', disable: 'tuple[str, ...]', allow_stream_to_batch: 'bool', stream_to_batch_policy: 'str', allow_output_to_input: 'bool', allow_to_reassign_output: 'bool', allow_stage_outputs: 'bool', schema_types_key: 'str | None' = None, plugin_options: 'Mapping[str, Mapping[str, object]]' = <factory>) -> None"
+      "signature": "(project_root: 'Path', source_roots: 'tuple[Path, ...]', generated_dir: 'Path', generated_package: 'str', generated_code_options: 'tuple[str, ...]', generated_code_hard_wrap: 'int', target: 'str', traceability: 'str', validate_inputs: 'bool', input_validation_mode: 'str', validate_intermediate: 'bool', intermediate_validation_mode: 'str', validate_outputs: 'bool', output_validation_mode: 'str', strict_performance: 'bool', warn_on_udfs: 'bool', warn_on_lineage_growth: 'bool', disable: 'tuple[str, ...]', allow_stream_to_batch: 'bool', stream_to_batch_policy: 'str', allow_output_to_input: 'bool', allow_to_reassign_output: 'bool', allow_stage_outputs: 'bool', prune_unused_steps: 'bool', schema_types_key: 'str | None' = None, plugin_options: 'Mapping[str, Mapping[str, object]]' = <factory>) -> None"
     },
     "DiskStorage": {
       "dataclass_fields": [],
@@ -150,14 +152,6 @@
       "qualname": "Schema",
       "signature": "(**values: 'object') -> 'None'"
     },
-    "StageResult": {
-      "dataclass_fields": [],
-      "enum_members": [],
-      "kind": "class",
-      "module": "structure.core.runtime.session.model.StageResult",
-      "qualname": "StageResult",
-      "signature": "(outputs: 'Mapping[str, Any]', *, schema: 'Mapping[str, Any] | None' = None, aliases: 'Mapping[str, tuple[str, ...]] | None' = None, stages: \"Mapping[str, 'StageResult'] | None\" = None) -> 'None'"
-    },
     "SchemaMode": {
       "dataclass_fields": [],
       "enum_members": [
@@ -179,6 +173,14 @@
       "module": "structure.core.sources.model.SourceTransformAddress",
       "qualname": "SourceTransformAddress",
       "signature": "(module: 'str', qualname: 'str') -> None"
+    },
+    "StageResult": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "class",
+      "module": "structure.core.runtime.session.model.StageResult",
+      "qualname": "StageResult",
+      "signature": "(outputs: 'Mapping[str, Any]', *, schema: 'Mapping[str, Any] | None' = None, aliases: 'Mapping[str, tuple[str, ...]] | None' = None, stages: \"Mapping[str, 'StageResult'] | None\" = None) -> 'None'"
     },
     "StructureCompileError": {
       "dataclass_fields": [],
@@ -218,6 +220,7 @@
         "allow_output_to_input",
         "allow_to_reassign_output",
         "allow_stage_outputs",
+        "prune_unused_steps",
         "fail_on_diff",
         "spark_sql",
         "plugin_options",
@@ -227,7 +230,7 @@
       "kind": "class",
       "module": "structure.core.configuration.model.StructureConfig",
       "qualname": "StructureConfig",
-      "signature": "(project_root: 'Path', source_roots: 'tuple[Path, ...]', generated_dir: 'Path', generated_package: 'str', generated_docs: 'bool', generated_docs_dir: 'Path', generated_docs_formats: 'tuple[str, ...]', generated_code_options: 'tuple[str, ...]', generated_code_hard_wrap: 'int', execution_mode: 'str', target: 'str', hook_target_default: 'tuple[str, ...] | str', traceability: 'str', validate_inputs: 'bool', input_validation_mode: 'str', validate_intermediate: 'bool', intermediate_validation_mode: 'str', validate_outputs: 'bool', output_validation_mode: 'str', strict_performance: 'bool', warn_on_udfs: 'bool', warn_on_lineage_growth: 'bool', disable: 'tuple[str, ...]', allow_stream_to_batch: 'bool', stream_to_batch_policy: 'str', allow_output_to_input: 'bool', allow_to_reassign_output: 'bool', allow_stage_outputs: 'bool', fail_on_diff: 'bool', spark_sql: 'Mapping[str, object]', plugin_options: 'Mapping[str, Mapping[str, object]]', source_map: 'Mapping[str, str]') -> None"
+      "signature": "(project_root: 'Path', source_roots: 'tuple[Path, ...]', generated_dir: 'Path', generated_package: 'str', generated_docs: 'bool', generated_docs_dir: 'Path', generated_docs_formats: 'tuple[str, ...]', generated_code_options: 'tuple[str, ...]', generated_code_hard_wrap: 'int', execution_mode: 'str', target: 'str', hook_target_default: 'tuple[str, ...] | str', traceability: 'str', validate_inputs: 'bool', input_validation_mode: 'str', validate_intermediate: 'bool', intermediate_validation_mode: 'str', validate_outputs: 'bool', output_validation_mode: 'str', strict_performance: 'bool', warn_on_udfs: 'bool', warn_on_lineage_growth: 'bool', disable: 'tuple[str, ...]', allow_stream_to_batch: 'bool', stream_to_batch_policy: 'str', allow_output_to_input: 'bool', allow_to_reassign_output: 'bool', allow_stage_outputs: 'bool', prune_unused_steps: 'bool', fail_on_diff: 'bool', spark_sql: 'Mapping[str, object]', plugin_options: 'Mapping[str, Mapping[str, object]]', source_map: 'Mapping[str, str]') -> None"
     },
     "StructureRuntimeError": {
       "dataclass_fields": [],

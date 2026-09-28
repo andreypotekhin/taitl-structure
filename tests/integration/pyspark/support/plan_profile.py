@@ -1,28 +1,116 @@
 """Opt-in query plan profiling; explain time is not executor time."""
 
 from contextlib import redirect_stdout
+from contextvars import ContextVar
 from io import StringIO
 from time import perf_counter
+from typing import Any
+
+_EXECUTION_MODE: ContextVar[str] = ContextVar("plan_profile_execution_mode", default="unknown")
+_CHECKPOINT_STEPS: ContextVar[tuple[str, ...]] = ContextVar("plan_profile_checkpoint_steps", default=())
+_CHECKPOINT_CURSOR: ContextVar[int] = ContextVar("plan_profile_checkpoint_cursor", default=0)
 
 
-def profile_checkpoints(monkeypatch, frame_type) -> None:
+def _checkpoint_steps(plan: Any) -> tuple[str, ...]:
+    return tuple(
+        step.name
+        for step in plan.steps
+        for operation in step.operations
+        if operation.kind in {"checkpoint", "local_checkpoint"}
+    )
+
+
+def profile_mode(value: str | None) -> str:
+    """Normalize the integration-only profiler switch before Spark is requested."""
+
+    if value in (None, "", "0", "off"):
+        return "off"
+    if value in ("1", "explain"):
+        return "explain"
+    if value == "timing":
+        return "timing"
+    raise ValueError(
+        "STRUCTURE_PROFILE_QUERY_PLANS must be one of off, timing, explain, or 1; "
+        f"got {value!r}"
+    )
+
+
+def profile_checkpoints(monkeypatch, frame_type, *, explain: bool = True) -> None:
+    """Profile checkpoint calls without retaining frames or adding actions."""
+
     if not hasattr(frame_type, "checkpoint"):
         return
     original = frame_type.checkpoint
+    sequence = 0
 
     def checkpoint(frame, eager=True):
+        nonlocal sequence
+        sequence += 1
+        current = sequence
+        context = _EXECUTION_MODE.get()
+        steps = _CHECKPOINT_STEPS.get()
+        cursor = _CHECKPOINT_CURSOR.get()
+        step = steps[cursor] if cursor < len(steps) else "unmapped"
+        _CHECKPOINT_CURSOR.set(cursor + 1)
         started = perf_counter()
-        with redirect_stdout(StringIO()) as output:
-            frame.explain(mode="simple")
-        planning = perf_counter() - started
-        print(f"[plan-profile] checkpoint explain: {planning:.3f}s; plan characters={len(output.getvalue())}")
-        started = perf_counter()
+        if explain:
+            with redirect_stdout(StringIO()) as output:
+                frame.explain(mode="simple")
+            planning = perf_counter() - started
+            print(
+                f"[plan-profile] checkpoint #{current} (execution_mode={context}, step={step}) "
+                f"explain: {planning:.3f}s; plan characters={len(output.getvalue())}"
+            )
+            started = perf_counter()
+        succeeded = False
         try:
-            return original(frame, eager=eager)
+            result = original(frame, eager=eager)
+            succeeded = True
+            return result
         finally:
-            print(f"[plan-profile] checkpoint after explain (eager={eager}): {perf_counter() - started:.3f}s")
+            suffix = "after explain" if explain else "timing"
+            outcome = "success" if succeeded else "failure"
+            print(
+                f"[plan-profile] checkpoint #{current} (execution_mode={context}, step={step}) "
+                f"{suffix} (eager={eager}, outcome={outcome}): {perf_counter() - started:.3f}s"
+            )
 
     monkeypatch.setattr(frame_type, "checkpoint", checkpoint)
+
+    try:
+        from structure.core.runtime.session.model.StructureSession import StructureSession
+    except ImportError:  # pragma: no cover - the unit test uses a stand-in frame only.
+        return
+
+    original_run = StructureSession.run
+
+    def run(session, *args: Any, **kwargs: Any):
+        mode_token = _EXECUTION_MODE.set(getattr(session, "execution_mode", "unknown"))
+        steps_token = None
+        cursor_token = None
+        if args and not _CHECKPOINT_STEPS.get():
+            try:
+                artifact = session._compiled(args[0])
+                steps = _checkpoint_steps(artifact.pyspark_plan)
+            except Exception:
+                steps = ()
+            if steps:
+                print(
+                    "[plan-profile] checkpoint map: "
+                    + ", ".join(f"#{index}={name}" for index, name in enumerate(steps, start=1))
+                )
+                steps_token = _CHECKPOINT_STEPS.set(steps)
+                cursor_token = _CHECKPOINT_CURSOR.set(0)
+        try:
+            return original_run(session, *args, **kwargs)
+        finally:
+            if cursor_token is not None:
+                _CHECKPOINT_CURSOR.reset(cursor_token)
+            if steps_token is not None:
+                _CHECKPOINT_STEPS.reset(steps_token)
+            _EXECUTION_MODE.reset(mode_token)
+
+    monkeypatch.setattr(StructureSession, "run", run)
 
 
 def profile_guards(monkeypatch) -> None:
@@ -40,7 +128,18 @@ def profile_guards(monkeypatch) -> None:
     def run(executor, invocation, plan, *, session):
         for step, operation, before, after in guard_expansions(plan):
             print(f"[plan-profile] {step} {operation}: expanded input references {before} -> {after} (estimate)")
-        return original_run(executor, invocation, plan, session=session)
+        checkpoint_steps = _checkpoint_steps(plan)
+        print(
+            "[plan-profile] checkpoint map: "
+            + (", ".join(f"#{index}={name}" for index, name in enumerate(checkpoint_steps, start=1)) or "none")
+        )
+        steps_token = _CHECKPOINT_STEPS.set(checkpoint_steps)
+        cursor_token = _CHECKPOINT_CURSOR.set(0)
+        try:
+            return original_run(executor, invocation, plan, session=session)
+        finally:
+            _CHECKPOINT_CURSOR.reset(cursor_token)
+            _CHECKPOINT_STEPS.reset(steps_token)
 
     monkeypatch.setattr(RunOnlinePySparkTransform, "_run", run)
 

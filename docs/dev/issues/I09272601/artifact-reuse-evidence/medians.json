@@ -1,0 +1,34 @@
+[
+  {
+    "backend": "pyspark35",
+    "case": "rerank",
+    "policy": "off",
+    "runs": 1,
+    "passed": 0,
+    "heap_failures": 0,
+    "median_wall_seconds": null,
+    "median_pytest_seconds": null,
+    "median_construction_seconds": null,
+    "median_compilation_seconds": null,
+    "median_compile_requests": null,
+    "median_compile_hits": null,
+    "median_compile_misses": null,
+    "median_snapshot_seconds": null
+  },
+  {
+    "backend": "pyspark35",
+    "case": "rerank",
+    "policy": "module",
+    "runs": 1,
+    "passed": 0,
+    "heap_failures": 0,
+    "median_wall_seconds": null,
+    "median_pytest_seconds": null,
+    "median_construction_seconds": null,
+    "median_compilation_seconds": null,
+    "median_compile_requests": null,
+    "median_compile_hits": null,
+    "median_compile_misses": null,
+    "median_snapshot_seconds": null
+  }
+]

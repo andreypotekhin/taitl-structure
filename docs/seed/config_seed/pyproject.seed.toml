@@ -18,6 +18,7 @@ generated_code_options = []
 generated_code_hard_wrap = 120
 # Expose declared outputs of composed stages through TransformResult.stages.
 allow_stage_outputs = true
+prune_unused_steps = true
 
 # Backend target.
 execution_mode = "online"

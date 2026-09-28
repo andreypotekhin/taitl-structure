@@ -40,6 +40,7 @@ class StructureConfigDefaults:
             "allow_output_to_input": False,
             "allow_to_reassign_output": False,
             "allow_stage_outputs": True,
+            "prune_unused_steps": True,
             "fail_on_diff": False,
             "spark.sql.ansi.enabled": True,
             "spark.sql.storeAssignmentPolicy": "ANSI",

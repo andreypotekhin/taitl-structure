@@ -1,4 +1,4 @@
-# PySpark Driver Memory Troubleshooting
+# Memory Troubleshooting
 
 This page is the short troubleshooting entry for driver memory problems caused by oversized Spark query plans. Start
 with the common checks, then use the scenario that matches the failing workload.

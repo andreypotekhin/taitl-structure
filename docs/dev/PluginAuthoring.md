@@ -90,6 +90,35 @@ shows the recommended focused package layout: entry point, API façade, target D
 execution, schema, generation, capability, and serialization applications. It is a finite in-memory teaching target,
 not a supported production backend.
 
+## Unused-step optimization
+
+The optional `PluginAPI.optimizer` facet enables Core-owned whole-step pruning. Existing plugins need not implement
+it. Import `OptimizationAPI`, `OptimizationRequest`, `OptimizationGraph`, `OptimizationStep`, and `OptimizationReport`
+from `structure.plugin.api.v1`; never import Core's optimizer implementation.
+
+Return `PluginCompilation.executable_steps` as the complete ordered inventory of stable executable step identities.
+`describe(request)` returns one `OptimizationStep` per inventory entry in the same order. Dependencies identify
+earlier producers, not mutable frame names. Resolve hook replacements and reused frame names before describing the
+graph. Final outputs populate `output_roots`; visible stage outputs populate `stage_roots`. Input frames need no node,
+but their required binding and validation contracts must survive optimization.
+
+Set `removable=True` only with established removal-safety facts. The default false retains unknown behavior. Supply
+a plain-language reason for retained checks, hooks, nondeterminism, lifecycle operations, and other observable work.
+Core retains output roots, visible stage roots, unsafe steps, and their transitive dependencies in original order.
+Missing nodes, duplicate identities, cycles, and dangling dependencies fail with `PLUGIN-E2708` rather than silently
+producing a partial program. See the actionable diagnostic and verify the plugin's ordered producer mapping.
+
+`apply(request, selection)` filters whole steps using `selection.retained_steps`, returning a new `PluginCompilation`
+with a matching inventory. Core revalidates the resulting graph. Preserve validations already assigned during
+lowering, original analysis, diagnostics, public schemas, and resource ownership; do not force new runtime actions.
+Attach the selection to the executable payload when needed for explain/serialization. Core also exposes it as
+`PluginCompilation.optimization`, `CompiledTransform.optimization`, and `PluginArtifact.optimization`. The report includes decisions, retained and
+removed identities, and plain-language explanations. Documentation-only compilation does not call this facet.
+
+Pruning runs after plugin lowering and pre-optimization streaming diagnosis, before rendering or execution. Plugins
+must preserve source/safety errors and base subsequent executable-growth information on retained work. Configuration
+and transform options use `prune_unused_steps`; false leaves the compiled payload unchanged by this pass.
+
 ## Compatibility policy
 
 Plugin API versions are inclusive ranges. A newer Structure and an older plugin may use the plugin's highest supported

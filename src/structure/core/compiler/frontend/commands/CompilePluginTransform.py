@@ -7,6 +7,7 @@ from typing import Mapping, cast
 from structure.core.compiler.artifacts.model.CompilerOptions import CompilerOptions
 from structure.core.compiler.frontend.commands.AnalyzeTransform import AnalyzeTransform
 from structure.core.compiler.frontend.commands.AuthorTransform import AuthorTransform
+from structure.core.compiler.frontend.commands.PruneUnusedSteps import PruneUnusedSteps
 from structure.core.compiler.frontend.logic.FilterDiagnostics import FilterDiagnostics
 from structure.core.configuration.model.StructureConfig import StructureConfig
 from structure.core.dsl.model.transforms.Transform import Transform
@@ -66,6 +67,7 @@ class CompilePluginTransform:
             "allow_output_to_input": resolved.allow_output_to_input,
             "allow_to_reassign_output": resolved.allow_to_reassign_output,
             "allow_stage_outputs": resolved.allow_stage_outputs,
+            "prune_unused_steps": resolved.prune_unused_steps,
             "generated_code_options": resolved.generated_code_options,
             "schema_types": schema_types,
             "materialize_schemas": materialize_schemas,
@@ -117,6 +119,7 @@ class CompilePluginTransform:
             "allow_output_to_input": options.allow_output_to_input,
             "allow_to_reassign_output": options.allow_to_reassign_output,
             "allow_stage_outputs": options.allow_stage_outputs,
+            "prune_unused_steps": options.prune_unused_steps,
             "validate_intermediate": options.validate_intermediate,
             "generated_code_options": options.generated_code_options,
             "schema_types": schema_types,
@@ -136,6 +139,7 @@ class CompilePluginTransform:
                 "allow_output_to_input": options.allow_output_to_input,
                 "allow_to_reassign_output": options.allow_to_reassign_output,
                 "allow_stage_outputs": options.allow_stage_outputs,
+                "prune_unused_steps": options.prune_unused_steps,
                 "generated_code_options": options.generated_code_options,
             },
         )
@@ -176,20 +180,27 @@ class CompilePluginTransform:
         purpose: CompilationPurpose = CompilationPurpose.RUNTIME,
     ) -> PluginCompilation:
         plugin = plugin or (registry or self._registry or Plugin.registry()).select(target)
-        compilation = plugin.api.compiler.compile(
-            CompileRequest(
-                transform=transform,
-                target=target,
-                configuration=configuration,
-                plugin_options=plugin_options,
-                analysis=plan,
-                purpose=purpose,
-            )
+        request = CompileRequest(
+            transform=transform,
+            target=target,
+            configuration=configuration,
+            plugin_options=plugin_options,
+            analysis=plan,
+            purpose=purpose,
         )
+        compilation = plugin.api.compiler.compile(request)
         if not isinstance(compilation, PluginCompilation):
             raise ValueError(f"PLUGIN-E2708: Plugin {target!r} returned an invalid compilation result.")
         streaming_diagnostics = self._streaming_diagnostics(plugin, compilation.lowered, plan)
         transform_options = getattr(plan, "options", None) or {}
+        optimizer = getattr(plugin.api, "optimizer", None)
+        if (
+            purpose is not CompilationPurpose.DOCUMENTATION
+            and compilation.lowered is not None
+            and optimizer is not None
+            and transform_options.get("prune_unused_steps", configuration.get("prune_unused_steps", True))
+        ):
+            compilation = PruneUnusedSteps()(compilation, request=request, optimizer=optimizer)
         disabled = (*cast(tuple[str, ...], configuration.get("disable", ())), *cast(tuple[str, ...], transform_options.get("disable", ())))
         warn_on_udfs = bool(transform_options.get("warn_on_udfs", configuration.get("warn_on_udfs", True)))
         warn_on_lineage_growth = bool(

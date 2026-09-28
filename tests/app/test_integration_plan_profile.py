@@ -1,7 +1,7 @@
 from types import SimpleNamespace as Record
 
 import pytest
-from integration.pyspark.support.plan_profile import guard_expansions, profile_checkpoints
+from integration.pyspark.support.plan_profile import guard_expansions, profile_checkpoints, profile_mode
 
 
 class Frame:
@@ -26,8 +26,8 @@ def test_checkpoint_profile_separates_explain_and_remaining_work(monkeypatch, ca
     assert frame.checkpoint(eager=False) is frame
     assert frame.calls == [("explain", "simple"), ("checkpoint", False)]
     output = capsys.readouterr().out
-    assert "checkpoint explain:" in output
-    assert "checkpoint after explain (eager=False):" in output
+    assert "checkpoint #1 (execution_mode=unknown, step=unmapped) explain:" in output
+    assert "checkpoint #1 (execution_mode=unknown, step=unmapped) after explain (eager=False, outcome=success):" in output
     assert "Small physical query plan" not in output
 
 
@@ -38,7 +38,31 @@ def test_checkpoint_profile_reports_failed_attempt_and_restores_methods(monkeypa
         with pytest.raises(ValueError, match="checkpoint failed"):
             Frame(fail=True).checkpoint()
     assert Frame.checkpoint is original
-    assert "checkpoint after explain (eager=True):" in capsys.readouterr().out
+    assert "outcome=failure" in capsys.readouterr().out
+
+
+def test_checkpoint_timing_does_not_explain_and_preserves_result_and_eager(monkeypatch, capsys):
+    frame = Frame()
+    profile_checkpoints(monkeypatch, Frame, explain=False)
+
+    assert frame.checkpoint(eager=False) is frame
+
+    assert frame.calls == [("checkpoint", False)]
+    output = capsys.readouterr().out
+    assert "explain" not in output
+    assert "checkpoint #1 (execution_mode=unknown, step=unmapped) timing (eager=False, outcome=success):" in output
+
+
+def test_profile_mode_supports_aliases_and_rejects_unknown_values():
+    assert profile_mode(None) == "off"
+    assert profile_mode("") == "off"
+    assert profile_mode("0") == "off"
+    assert profile_mode("off") == "off"
+    assert profile_mode("timing") == "timing"
+    assert profile_mode("1") == "explain"
+    assert profile_mode("explain") == "explain"
+    with pytest.raises(ValueError, match="one of off, timing, explain, or 1"):
+        profile_mode("unexpected")
 
 
 def test_guard_expansion_estimate_tracks_joins_assertions_and_checkpoints():

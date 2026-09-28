@@ -377,6 +377,27 @@ suppresses a known streaming-incompatible operation. An explicit `input(..., str
 
 ## Compile-Time Performance
 
+### Unused-step optimization
+
+`prune_unused_steps = true` (the default) removes unused executable steps when the selected plugin certifies that
+removing them is safe. Use `prune_unused_steps = false` for comparison or diagnosis. The setting is available in
+`[tool.structure]`, compiler/session overrides, and `@transform(prune_unused_steps=False)`; transform declarations
+take precedence for that compiled transform. Different settings use different compilation artifacts.
+
+Declared final outputs remain available. `allow_stage_outputs = true` still defaults to exposing declared child-stage
+outputs and retains their dependencies. Set it to false when only final outputs are needed. Private lanes and
+arbitrary step return values are not exposed automatically; inferred binding to an explicit output still works.
+
+Pruning does not disable assertions, singleton-policy checks, enabled intermediate validation, hooks, UDFs, or
+explicit checkpoint/cache lifecycle work. Unknown plugin behavior is retained. Enabled intermediate validation may
+therefore leave every step in place. Explain reports show original/retained counts and why each step was kept or
+removed. This optimization reduces executable construction, not source analysis; authored errors remain visible.
+
+Plugins that do not supply optimization facts are unchanged. See
+[unused-step troubleshooting](troubleshooting/performance/Performance.trbl.md#unused-steps-are-still-built).
+
+### Other compile-time settings
+
 ```toml
 incremental_compile = false
 compiler_cache_dir = ".structure/cache"

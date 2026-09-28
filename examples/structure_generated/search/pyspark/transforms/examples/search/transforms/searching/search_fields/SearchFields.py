@@ -2490,54 +2490,52 @@ class SelectGapQueries__examples_search_transforms_online_scoring_lexical_Select
             "delegated__scored__gap__paragraph_vector_availability": delegated__scored__gap__paragraph_vector_availability,
         }
 
-    def _step_delegated_scored_gap_select_gap_queries_35(self, frames):
+    def _step_delegated_scored_gap_merge_availability_35(self, frames):
+        # Step method: delegated.scored.gap.merge_availability
+        delegated__scored__gap__merged_availability = frames["delegated__scored__gap__document_availability"].alias(
+            "score_query_availability"
+        )
+        delegated__scored__gap__merged_availability = delegated__scored__gap__merged_availability.union(
+            frames["delegated__scored__gap__overlap_availability"]
+        )
+        delegated__scored__gap__merged_availability = delegated__scored__gap__merged_availability.alias(
+            "score_query_availability"
+        )
+        delegated__scored__gap__merged_availability = delegated__scored__gap__merged_availability.union(
+            frames["delegated__scored__gap__vector_availability"]
+        )
+        delegated__scored__gap__merged_availability = delegated__scored__gap__merged_availability.alias(
+            "score_query_availability"
+        )
+        delegated__scored__gap__merged_availability = delegated__scored__gap__merged_availability.union(
+            frames["delegated__scored__gap__paragraph_vector_availability"]
+        )
+        delegated__scored__gap__merged_availability = delegated__scored__gap__merged_availability.alias(
+            "score_query_availability"
+        )
+        delegated__scored__gap__merged_availability = delegated__scored__gap__merged_availability.select(
+            F.col("query_id"),
+        )
+        assert_schema(
+            delegated__scored__gap__merged_availability,
+            SCORE_QUERY_AVAILABILITY_SCHEMA,
+            name="ScoreQueryAvailability",
+            mode="strict",
+        )
+        return {
+            "delegated__scored__gap__merged_availability": delegated__scored__gap__merged_availability,
+        }
+
+    def _step_delegated_scored_gap_select_gap_queries_36(self, frames):
         # Step method: delegated.scored.gap.select_gap_queries
         delegated__scored__gap__gap_queries = frames["delegation__body_queries"].alias("search_query")
-        delegated__scored__gap__document_availability_joined = frames[
-            "delegated__scored__gap__document_availability"
-        ].alias("delegated__scored__gap__document_availability")
+        delegated__scored__gap__merged_availability_joined = frames[
+            "delegated__scored__gap__merged_availability"
+        ].alias("delegated__scored__gap__merged_availability")
         delegated__scored__gap__gap_queries = delegated__scored__gap__gap_queries.join(
-            delegated__scored__gap__document_availability_joined,
-            (F.col("search_query.id") == F.col("delegated__scored__gap__document_availability.query_id")),
-            "left",
-        )
-        delegated__scored__gap__overlap_availability_2_joined = frames[
-            "delegated__scored__gap__overlap_availability"
-        ].alias("delegated__scored__gap__overlap_availability_2")
-        delegated__scored__gap__gap_queries = delegated__scored__gap__gap_queries.join(
-            delegated__scored__gap__overlap_availability_2_joined,
-            (F.col("search_query.id") == F.col("delegated__scored__gap__overlap_availability_2.query_id")),
-            "left",
-        )
-        delegated__scored__gap__vector_availability_3_joined = frames[
-            "delegated__scored__gap__vector_availability"
-        ].alias("delegated__scored__gap__vector_availability_3")
-        delegated__scored__gap__gap_queries = delegated__scored__gap__gap_queries.join(
-            delegated__scored__gap__vector_availability_3_joined,
-            (F.col("search_query.id") == F.col("delegated__scored__gap__vector_availability_3.query_id")),
-            "left",
-        )
-        delegated__scored__gap__paragraph_vector_availability_4_joined = frames[
-            "delegated__scored__gap__paragraph_vector_availability"
-        ].alias("delegated__scored__gap__paragraph_vector_availability_4")
-        delegated__scored__gap__gap_queries = delegated__scored__gap__gap_queries.join(
-            delegated__scored__gap__paragraph_vector_availability_4_joined,
-            (F.col("search_query.id") == F.col("delegated__scored__gap__paragraph_vector_availability_4.query_id")),
-            "left",
-        )
-        delegated__scored__gap__gap_queries = delegated__scored__gap__gap_queries.where(
-            (
-                (
-                    (
-                        (
-                            F.col("delegated__scored__gap__document_availability.query_id").isNotNull()
-                            | F.col("delegated__scored__gap__overlap_availability_2.query_id").isNotNull()
-                        )
-                        | F.col("delegated__scored__gap__vector_availability_3.query_id").isNotNull()
-                    )
-                    | F.col("delegated__scored__gap__paragraph_vector_availability_4.query_id").isNotNull()
-                )
-            )
+            delegated__scored__gap__merged_availability_joined,
+            (F.col("delegated__scored__gap__merged_availability.query_id") == F.col("search_query.id")),
+            "left_semi",
         )
         delegated__scored__gap__gap_queries = delegated__scored__gap__gap_queries.select(
             F.col("search_query.id"),
@@ -2558,7 +2556,7 @@ class SelectGapQueries__examples_search_transforms_online_scoring_lexical_Select
 
 
 class ScoreBaseGenerated:
-    def _step_delegated_scored_scoring_overlap_expand_query_terms_36(self, frames):
+    def _step_delegated_scored_scoring_overlap_expand_query_terms_37(self, frames):
         # Step method: delegated.scored.scoring.overlap.expand_query_terms
         delegated__scored__scoring__overlap__expanded_query_terms = frames["delegated__scored__gap__gap_queries"].alias(
             "search_query"
@@ -2619,7 +2617,7 @@ class ScoreBaseGenerated:
             "delegated__scored__scoring__overlap__expanded_query_terms": delegated__scored__scoring__overlap__expanded_query_terms,
         }
 
-    def _step_delegated_scored_scoring_overlap_count_query_terms_37(self, frames):
+    def _step_delegated_scored_scoring_overlap_count_query_terms_38(self, frames):
         # Step method: delegated.scored.scoring.overlap.count_query_terms
         delegated__scored__scoring__overlap__query_sizes = frames[
             "delegated__scored__scoring__overlap__expanded_query_terms"
@@ -2646,7 +2644,7 @@ class ScoreBaseGenerated:
             "delegated__scored__scoring__overlap__query_sizes": delegated__scored__scoring__overlap__query_sizes,
         }
 
-    def _step_delegated_scored_scoring_bm25_expand_query_terms_58(self, frames):
+    def _step_delegated_scored_scoring_bm25_expand_query_terms_59(self, frames):
         # Step method: delegated.scored.scoring.bm25.expand_query_terms
         delegated__scored__scoring__bm25__expanded_query_terms = frames["delegated__scored__gap__gap_queries"].alias(
             "search_query"
@@ -2704,7 +2702,7 @@ class ScoreBaseGenerated:
             "delegated__scored__scoring__bm25__expanded_query_terms": delegated__scored__scoring__bm25__expanded_query_terms,
         }
 
-    def _step_delegated_scored_scoring_bm25_count_query_terms_59(self, frames):
+    def _step_delegated_scored_scoring_bm25_count_query_terms_60(self, frames):
         # Step method: delegated.scored.scoring.bm25.count_query_terms
         delegated__scored__scoring__bm25__query_sizes = frames[
             "delegated__scored__scoring__bm25__expanded_query_terms"
@@ -2730,7 +2728,7 @@ class ScoreBaseGenerated:
 
 
 class ScoreOverlapGenerated:
-    def _step_delegated_scored_scoring_overlap_select_document_vocabulary_38(self, frames):
+    def _step_delegated_scored_scoring_overlap_select_document_vocabulary_39(self, frames):
         # Step method: delegated.scored.scoring.overlap.select_document_vocabulary
         delegated__scored__scoring__overlap__document_vocabulary = frames["document_terms"].alias("document_term")
         if delegated__scored__scoring__overlap__document_vocabulary.isStreaming:
@@ -2762,7 +2760,7 @@ class ScoreOverlapGenerated:
             "delegated__scored__scoring__overlap__document_vocabulary": delegated__scored__scoring__overlap__document_vocabulary,
         }
 
-    def _step_delegated_scored_scoring_overlap_select_section_vocabulary_39(self, frames):
+    def _step_delegated_scored_scoring_overlap_select_section_vocabulary_40(self, frames):
         # Step method: delegated.scored.scoring.overlap.select_section_vocabulary
         delegated__scored__scoring__overlap__section_vocabulary = frames["__optional_scored_section_terms"].alias(
             "section_term"
@@ -2797,7 +2795,7 @@ class ScoreOverlapGenerated:
             "delegated__scored__scoring__overlap__section_vocabulary": delegated__scored__scoring__overlap__section_vocabulary,
         }
 
-    def _step_delegated_scored_scoring_overlap_select_paragraph_vocabulary_40(self, frames):
+    def _step_delegated_scored_scoring_overlap_select_paragraph_vocabulary_41(self, frames):
         # Step method: delegated.scored.scoring.overlap.select_paragraph_vocabulary
         delegated__scored__scoring__overlap__paragraph_vocabulary = frames["__optional_scored_paragraph_terms"].alias(
             "paragraph_term"
@@ -2833,7 +2831,7 @@ class ScoreOverlapGenerated:
             "delegated__scored__scoring__overlap__paragraph_vocabulary": delegated__scored__scoring__overlap__paragraph_vocabulary,
         }
 
-    def _step_delegated_scored_scoring_overlap_select_sentence_vocabulary_41(self, frames):
+    def _step_delegated_scored_scoring_overlap_select_sentence_vocabulary_42(self, frames):
         # Step method: delegated.scored.scoring.overlap.select_sentence_vocabulary
         delegated__scored__scoring__overlap__sentence_vocabulary = frames["__optional_scored_sentence_terms"].alias(
             "sentence_term"
@@ -2870,7 +2868,7 @@ class ScoreOverlapGenerated:
             "delegated__scored__scoring__overlap__sentence_vocabulary": delegated__scored__scoring__overlap__sentence_vocabulary,
         }
 
-    def _step_delegated_scored_scoring_overlap_weight_document_query_terms_42(self, frames):
+    def _step_delegated_scored_scoring_overlap_weight_document_query_terms_43(self, frames):
         # Step method: delegated.scored.scoring.overlap.weight_document_query_terms
         delegated__scored__scoring__overlap__document_query_idfs = frames[
             "delegated__scored__scoring__overlap__expanded_query_terms"
@@ -2935,7 +2933,7 @@ class ScoreOverlapGenerated:
             "delegated__scored__scoring__overlap__document_query_idfs": delegated__scored__scoring__overlap__document_query_idfs,
         }
 
-    def _step_delegated_scored_scoring_overlap_weight_section_query_terms_43(self, frames):
+    def _step_delegated_scored_scoring_overlap_weight_section_query_terms_44(self, frames):
         # Step method: delegated.scored.scoring.overlap.weight_section_query_terms
         delegated__scored__scoring__overlap__section_query_idfs = frames[
             "delegated__scored__scoring__overlap__expanded_query_terms"
@@ -3004,7 +3002,7 @@ class ScoreOverlapGenerated:
             "delegated__scored__scoring__overlap__section_query_idfs": delegated__scored__scoring__overlap__section_query_idfs,
         }
 
-    def _step_delegated_scored_scoring_overlap_weight_paragraph_query_terms_44(self, frames):
+    def _step_delegated_scored_scoring_overlap_weight_paragraph_query_terms_45(self, frames):
         # Step method: delegated.scored.scoring.overlap.weight_paragraph_query_terms
         delegated__scored__scoring__overlap__paragraph_query_idfs = frames[
             "delegated__scored__scoring__overlap__expanded_query_terms"
@@ -3073,7 +3071,7 @@ class ScoreOverlapGenerated:
             "delegated__scored__scoring__overlap__paragraph_query_idfs": delegated__scored__scoring__overlap__paragraph_query_idfs,
         }
 
-    def _step_delegated_scored_scoring_overlap_weight_sentence_query_terms_45(self, frames):
+    def _step_delegated_scored_scoring_overlap_weight_sentence_query_terms_46(self, frames):
         # Step method: delegated.scored.scoring.overlap.weight_sentence_query_terms
         delegated__scored__scoring__overlap__sentence_query_idfs = frames[
             "delegated__scored__scoring__overlap__expanded_query_terms"
@@ -3142,7 +3140,7 @@ class ScoreOverlapGenerated:
             "delegated__scored__scoring__overlap__sentence_query_idfs": delegated__scored__scoring__overlap__sentence_query_idfs,
         }
 
-    def _step_delegated_scored_scoring_overlap_total_document_query_idf_46(self, frames):
+    def _step_delegated_scored_scoring_overlap_total_document_query_idf_47(self, frames):
         # Step method: delegated.scored.scoring.overlap.total_document_query_idf
         delegated__scored__scoring__overlap__document_query_totals = frames[
             "delegated__scored__scoring__overlap__document_query_idfs"
@@ -3169,7 +3167,7 @@ class ScoreOverlapGenerated:
             "delegated__scored__scoring__overlap__document_query_totals": delegated__scored__scoring__overlap__document_query_totals,
         }
 
-    def _step_delegated_scored_scoring_overlap_total_section_query_idf_47(self, frames):
+    def _step_delegated_scored_scoring_overlap_total_section_query_idf_48(self, frames):
         # Step method: delegated.scored.scoring.overlap.total_section_query_idf
         delegated__scored__scoring__overlap__section_query_totals = frames[
             "delegated__scored__scoring__overlap__section_query_idfs"
@@ -3196,7 +3194,7 @@ class ScoreOverlapGenerated:
             "delegated__scored__scoring__overlap__section_query_totals": delegated__scored__scoring__overlap__section_query_totals,
         }
 
-    def _step_delegated_scored_scoring_overlap_total_paragraph_query_idf_48(self, frames):
+    def _step_delegated_scored_scoring_overlap_total_paragraph_query_idf_49(self, frames):
         # Step method: delegated.scored.scoring.overlap.total_paragraph_query_idf
         delegated__scored__scoring__overlap__paragraph_query_totals = frames[
             "delegated__scored__scoring__overlap__paragraph_query_idfs"
@@ -3223,7 +3221,7 @@ class ScoreOverlapGenerated:
             "delegated__scored__scoring__overlap__paragraph_query_totals": delegated__scored__scoring__overlap__paragraph_query_totals,
         }
 
-    def _step_delegated_scored_scoring_overlap_total_sentence_query_idf_49(self, frames):
+    def _step_delegated_scored_scoring_overlap_total_sentence_query_idf_50(self, frames):
         # Step method: delegated.scored.scoring.overlap.total_sentence_query_idf
         delegated__scored__scoring__overlap__sentence_query_totals = frames[
             "delegated__scored__scoring__overlap__sentence_query_idfs"
@@ -3250,7 +3248,7 @@ class ScoreOverlapGenerated:
             "delegated__scored__scoring__overlap__sentence_query_totals": delegated__scored__scoring__overlap__sentence_query_totals,
         }
 
-    def _step_delegated_scored_scoring_overlap_match_documents_50(self, frames):
+    def _step_delegated_scored_scoring_overlap_match_documents_51(self, frames):
         # Step method: delegated.scored.scoring.overlap.match_documents
         delegated__scored__scoring__overlap__document_overlap_matches = frames[
             "delegated__scored__scoring__overlap__expanded_query_terms"
@@ -3341,7 +3339,7 @@ class ScoreOverlapGenerated:
             "delegated__scored__scoring__overlap__document_overlap_matches": delegated__scored__scoring__overlap__document_overlap_matches,
         }
 
-    def _step_delegated_scored_scoring_overlap_match_sections_51(self, frames):
+    def _step_delegated_scored_scoring_overlap_match_sections_52(self, frames):
         # Step method: delegated.scored.scoring.overlap.match_sections
         delegated__scored__scoring__overlap__section_overlap_matches = frames[
             "delegated__scored__scoring__overlap__expanded_query_terms"
@@ -3436,7 +3434,7 @@ class ScoreOverlapGenerated:
             "delegated__scored__scoring__overlap__section_overlap_matches": delegated__scored__scoring__overlap__section_overlap_matches,
         }
 
-    def _step_delegated_scored_scoring_overlap_match_paragraphs_52(self, frames):
+    def _step_delegated_scored_scoring_overlap_match_paragraphs_53(self, frames):
         # Step method: delegated.scored.scoring.overlap.match_paragraphs
         delegated__scored__scoring__overlap__paragraph_overlap_matches = frames[
             "delegated__scored__scoring__overlap__expanded_query_terms"
@@ -3533,7 +3531,7 @@ class ScoreOverlapGenerated:
             "delegated__scored__scoring__overlap__paragraph_overlap_matches": delegated__scored__scoring__overlap__paragraph_overlap_matches,
         }
 
-    def _step_delegated_scored_scoring_overlap_match_sentences_53(self, frames):
+    def _step_delegated_scored_scoring_overlap_match_sentences_54(self, frames):
         # Step method: delegated.scored.scoring.overlap.match_sentences
         delegated__scored__scoring__overlap__sentence_overlap_matches = frames[
             "delegated__scored__scoring__overlap__expanded_query_terms"
@@ -3632,7 +3630,7 @@ class ScoreOverlapGenerated:
             "delegated__scored__scoring__overlap__sentence_overlap_matches": delegated__scored__scoring__overlap__sentence_overlap_matches,
         }
 
-    def _step_delegated_scored_scoring_overlap_publish_document_overlap_scores_54(self, frames):
+    def _step_delegated_scored_scoring_overlap_publish_document_overlap_scores_55(self, frames):
         # Step method: delegated.scored.scoring.overlap.publish_document_overlap_scores
         delegated__scored__scoring__overlap__document_overlap_scores = frames[
             "delegated__scored__scoring__overlap__document_overlap_matches"
@@ -3696,7 +3694,7 @@ class ScoreOverlapGenerated:
             "delegated__scored__scoring__overlap__document_overlap_scores": delegated__scored__scoring__overlap__document_overlap_scores,
         }
 
-    def _step_delegated_scored_scoring_overlap_publish_section_overlap_scores_55(self, frames):
+    def _step_delegated_scored_scoring_overlap_publish_section_overlap_scores_56(self, frames):
         # Step method: delegated.scored.scoring.overlap.publish_section_overlap_scores
         delegated__scored__scoring__overlap__section_overlap_scores = frames[
             "delegated__scored__scoring__overlap__section_overlap_matches"
@@ -3761,7 +3759,7 @@ class ScoreOverlapGenerated:
             "delegated__scored__scoring__overlap__section_overlap_scores": delegated__scored__scoring__overlap__section_overlap_scores,
         }
 
-    def _step_delegated_scored_scoring_overlap_publish_paragraph_overlap_scores_56(self, frames):
+    def _step_delegated_scored_scoring_overlap_publish_paragraph_overlap_scores_57(self, frames):
         # Step method: delegated.scored.scoring.overlap.publish_paragraph_overlap_scores
         delegated__scored__scoring__overlap__paragraph_overlap_scores = frames[
             "delegated__scored__scoring__overlap__paragraph_overlap_matches"
@@ -3827,7 +3825,7 @@ class ScoreOverlapGenerated:
             "delegated__scored__scoring__overlap__paragraph_overlap_scores": delegated__scored__scoring__overlap__paragraph_overlap_scores,
         }
 
-    def _step_delegated_scored_scoring_overlap_publish_sentence_overlap_scores_57(self, frames):
+    def _step_delegated_scored_scoring_overlap_publish_sentence_overlap_scores_58(self, frames):
         # Step method: delegated.scored.scoring.overlap.publish_sentence_overlap_scores
         delegated__scored__scoring__overlap__sentence_overlap_scores = frames[
             "delegated__scored__scoring__overlap__sentence_overlap_matches"
@@ -3896,7 +3894,7 @@ class ScoreOverlapGenerated:
 
 
 class ScoreBm25Generated:
-    def _step_delegated_scored_scoring_bm25_score_document_bm25_60(self, frames):
+    def _step_delegated_scored_scoring_bm25_score_document_bm25_61(self, frames):
         # Step method: delegated.scored.scoring.bm25.score_document_bm25
         delegated__scored__scoring__bm25__document_bm25_scores = frames[
             "delegated__scored__scoring__bm25__expanded_query_terms"
@@ -3998,7 +3996,7 @@ class ScoreBm25Generated:
             "delegated__scored__scoring__bm25__document_bm25_scores": delegated__scored__scoring__bm25__document_bm25_scores,
         }
 
-    def _step_delegated_scored_scoring_bm25_score_section_bm25_61(self, frames):
+    def _step_delegated_scored_scoring_bm25_score_section_bm25_62(self, frames):
         # Step method: delegated.scored.scoring.bm25.score_section_bm25
         delegated__scored__scoring__bm25__section_bm25_scores = frames[
             "delegated__scored__scoring__bm25__expanded_query_terms"
@@ -4106,7 +4104,7 @@ class ScoreBm25Generated:
             "delegated__scored__scoring__bm25__section_bm25_scores": delegated__scored__scoring__bm25__section_bm25_scores,
         }
 
-    def _step_delegated_scored_scoring_bm25_score_paragraph_bm25_62(self, frames):
+    def _step_delegated_scored_scoring_bm25_score_paragraph_bm25_63(self, frames):
         # Step method: delegated.scored.scoring.bm25.score_paragraph_bm25
         delegated__scored__scoring__bm25__paragraph_bm25_scores = frames[
             "delegated__scored__scoring__bm25__expanded_query_terms"
@@ -4218,7 +4216,7 @@ class ScoreBm25Generated:
             "delegated__scored__scoring__bm25__paragraph_bm25_scores": delegated__scored__scoring__bm25__paragraph_bm25_scores,
         }
 
-    def _step_delegated_scored_scoring_bm25_score_sentence_bm25_63(self, frames):
+    def _step_delegated_scored_scoring_bm25_score_sentence_bm25_64(self, frames):
         # Step method: delegated.scored.scoring.bm25.score_sentence_bm25
         delegated__scored__scoring__bm25__sentence_bm25_scores = frames[
             "delegated__scored__scoring__bm25__expanded_query_terms"
@@ -4334,7 +4332,7 @@ class ScoreBm25Generated:
 
 
 class SelectScoresGenerated:
-    def _step_delegated_scored_scoring_selected_score_documents_64(self, frames):
+    def _step_delegated_scored_scoring_selected_score_documents_65(self, frames):
         # Step method: delegated.scored.scoring.selected.score_documents
         delegated__scored__scoring__selected__document_scores = frames[
             "delegated__scored__scoring__overlap__document_overlap_scores"
@@ -4451,7 +4449,7 @@ class SelectScoresGenerated:
             "delegated__scored__scoring__selected__document_scores": delegated__scored__scoring__selected__document_scores,
         }
 
-    def _step_delegated_scored_scoring_selected_score_sections_65(self, frames):
+    def _step_delegated_scored_scoring_selected_score_sections_66(self, frames):
         # Step method: delegated.scored.scoring.selected.score_sections
         delegated__scored__scoring__selected__section_scores = frames[
             "delegated__scored__scoring__overlap__section_overlap_scores"
@@ -4565,7 +4563,7 @@ class SelectScoresGenerated:
             "delegated__scored__scoring__selected__section_scores": delegated__scored__scoring__selected__section_scores,
         }
 
-    def _step_delegated_scored_scoring_selected_score_paragraphs_66(self, frames):
+    def _step_delegated_scored_scoring_selected_score_paragraphs_67(self, frames):
         # Step method: delegated.scored.scoring.selected.score_paragraphs
         delegated__scored__scoring__selected__paragraph_scores = frames[
             "delegated__scored__scoring__overlap__paragraph_overlap_scores"
@@ -4691,7 +4689,7 @@ class SelectScoresGenerated:
             "delegated__scored__scoring__selected__paragraph_scores": delegated__scored__scoring__selected__paragraph_scores,
         }
 
-    def _step_delegated_scored_scoring_selected_score_sentences_67(self, frames):
+    def _step_delegated_scored_scoring_selected_score_sentences_68(self, frames):
         # Step method: delegated.scored.scoring.selected.score_sentences
         delegated__scored__scoring__selected__sentence_scores = frames[
             "delegated__scored__scoring__overlap__sentence_overlap_scores"
@@ -4819,7 +4817,7 @@ class SelectScoresGenerated:
 
 
 class ScoreVectorsGenerated:
-    def _step_delegated_scored_scoring_vector_validate_policy_68(self, frames):
+    def _step_delegated_scored_scoring_vector_validate_policy_69(self, frames):
         # Step method: delegated.scored.scoring.vector.validate_policy
         delegated__scored__scoring__vector__valid_policy = frames["vector_policy"].alias("vector_index_policy")
         delegated__scored__scoring__vector__valid_policy_require_all_0_violations = (
@@ -4880,7 +4878,7 @@ class ScoreVectorsGenerated:
             "delegated__scored__scoring__vector__valid_policy": delegated__scored__scoring__vector__valid_policy,
         }
 
-    def _step_delegated_scored_scoring_vector_score_documents_69(self, frames):
+    def _step_delegated_scored_scoring_vector_score_documents_70(self, frames):
         # Step method: delegated.scored.scoring.vector.score_documents
         delegated__scored__scoring__vector__document_scores = frames[
             "delegated__vectorized__query_vectors__vector_queries"
@@ -5156,7 +5154,7 @@ class ScoreVectorsGenerated:
             "delegated__scored__scoring__vector__document_scores": delegated__scored__scoring__vector__document_scores,
         }
 
-    def _step_delegated_scored_scoring_vector_score_paragraphs_70(self, frames):
+    def _step_delegated_scored_scoring_vector_score_paragraphs_71(self, frames):
         # Step method: delegated.scored.scoring.vector.score_paragraphs
         delegated__scored__scoring__vector__paragraph_scores = frames[
             "__optional_scored_paragraph_vector_queries"
@@ -5449,7 +5447,7 @@ class ScoreVectorsGenerated:
 
 
 class MergeDocumentScoresGenerated:
-    def _step_delegated_scored_merged_merge_scores_71(self, frames):
+    def _step_delegated_scored_merged_merge_scores_72(self, frames):
         # Step method: delegated.scored.merged.merge_scores
         delegated__scored__merged__scores = frames["document_scores"].alias("document_score")
         __structure_streaming_step = (
@@ -5556,7 +5554,7 @@ class MergeDocumentScoresGenerated:
 
 
 class MergeDocumentVectorScoresGenerated:
-    def _step_delegated_scored_merged_vectors_identify_invalidated_queries_72(self, frames):
+    def _step_delegated_scored_merged_vectors_identify_invalidated_queries_73(self, frames):
         # Step method: delegated.scored.merged_vectors.identify_invalidated_queries
         delegated__scored__merged_vectors__invalidated = frames["delegated__scored__gap__gap_queries"].alias(
             "search_query"
@@ -5574,7 +5572,7 @@ class MergeDocumentVectorScoresGenerated:
             "delegated__scored__merged_vectors__invalidated": delegated__scored__merged_vectors__invalidated,
         }
 
-    def _step_delegated_scored_merged_vectors_select_cached_scores_73(self, frames):
+    def _step_delegated_scored_merged_vectors_select_cached_scores_74(self, frames):
         # Step method: delegated.scored.merged_vectors.select_cached_scores
         delegated__scored__merged_vectors__cached_scores = frames["document_vector_scores"].alias(
             "document_vector_score"
@@ -5735,7 +5733,7 @@ class MergeDocumentVectorScoresGenerated:
             "delegated__scored__merged_vectors__cached_scores": delegated__scored__merged_vectors__cached_scores,
         }
 
-    def _step_delegated_scored_merged_vectors_select_online_scores_74(self, frames):
+    def _step_delegated_scored_merged_vectors_select_online_scores_75(self, frames):
         # Step method: delegated.scored.merged_vectors.select_online_scores
         delegated__scored__merged_vectors__valid_online_scores = frames[
             "delegated__scored__scoring__vector__document_scores"
@@ -5887,7 +5885,7 @@ class MergeDocumentVectorScoresGenerated:
             "delegated__scored__merged_vectors__valid_online_scores": delegated__scored__merged_vectors__valid_online_scores,
         }
 
-    def _step_delegated_scored_merged_vectors_merge_scores_75(self, frames):
+    def _step_delegated_scored_merged_vectors_merge_scores_76(self, frames):
         # Step method: delegated.scored.merged_vectors.merge_scores
         delegated__scored__merged_vectors__scores = frames[
             "delegated__scored__merged_vectors__valid_online_scores"
@@ -5937,7 +5935,7 @@ class MergeDocumentVectorScoresGenerated:
 
 
 class MergeParagraphVectorScoresGenerated:
-    def _step_delegated_scored_merged_paragraph_vectors_identify_invalidated_queries_76(self, frames):
+    def _step_delegated_scored_merged_paragraph_vectors_identify_invalidated_queries_77(self, frames):
         # Step method: delegated.scored.merged_paragraph_vectors.identify_invalidated_queries
         delegated__scored__merged_paragraph_vectors__invalidated = frames["delegated__scored__gap__gap_queries"].alias(
             "search_query"
@@ -5957,7 +5955,7 @@ class MergeParagraphVectorScoresGenerated:
             "delegated__scored__merged_paragraph_vectors__invalidated": delegated__scored__merged_paragraph_vectors__invalidated,
         }
 
-    def _step_delegated_scored_merged_paragraph_vectors_select_cached_scores_77(self, frames):
+    def _step_delegated_scored_merged_paragraph_vectors_select_cached_scores_78(self, frames):
         # Step method: delegated.scored.merged_paragraph_vectors.select_cached_scores
         delegated__scored__merged_paragraph_vectors__cached_scores = frames[
             "__optional_scored_cached_paragraph_vector_scores"
@@ -6130,7 +6128,7 @@ class MergeParagraphVectorScoresGenerated:
             "delegated__scored__merged_paragraph_vectors__cached_scores": delegated__scored__merged_paragraph_vectors__cached_scores,
         }
 
-    def _step_delegated_scored_merged_paragraph_vectors_select_online_scores_78(self, frames):
+    def _step_delegated_scored_merged_paragraph_vectors_select_online_scores_79(self, frames):
         # Step method: delegated.scored.merged_paragraph_vectors.select_online_scores
         delegated__scored__merged_paragraph_vectors__valid_online_scores = frames[
             "delegated__scored__scoring__vector__paragraph_scores"
@@ -6289,7 +6287,7 @@ class MergeParagraphVectorScoresGenerated:
             "delegated__scored__merged_paragraph_vectors__valid_online_scores": delegated__scored__merged_paragraph_vectors__valid_online_scores,
         }
 
-    def _step_delegated_scored_merged_paragraph_vectors_merge_scores_79(self, frames):
+    def _step_delegated_scored_merged_paragraph_vectors_merge_scores_80(self, frames):
         # Step method: delegated.scored.merged_paragraph_vectors.merge_scores
         delegated__scored__merged_paragraph_vectors__scores = frames[
             "delegated__scored__merged_paragraph_vectors__valid_online_scores"
@@ -6347,7 +6345,7 @@ class MergeParagraphVectorScoresGenerated:
 
 
 class RetrieveDocumentsGenerated:
-    def _step_delegated_retrieved_select_stored_candidates_80(self, frames):
+    def _step_delegated_retrieved_select_stored_candidates_81(self, frames):
         # Step method: delegated.retrieved.select_stored_candidates
         delegated__retrieved__stored_candidates = frames["documents"].alias("document")
         delegated__scored__merged__scores_joined = frames["delegated__scored__merged__scores"].alias(
@@ -6456,7 +6454,7 @@ class RetrieveDocumentsGenerated:
             "delegated__retrieved__stored_candidates": delegated__retrieved__stored_candidates,
         }
 
-    def _step_delegated_retrieved_select_streamed_candidates_81(self, frames):
+    def _step_delegated_retrieved_select_streamed_candidates_82(self, frames):
         # Step method: delegated.retrieved.select_streamed_candidates
         delegated__retrieved__streamed_candidates = frames["streamed_documents"].alias("document")
         delegated__scored__merged__scores_joined = frames["delegated__scored__merged__scores"].alias(
@@ -6565,7 +6563,7 @@ class RetrieveDocumentsGenerated:
             "delegated__retrieved__streamed_candidates": delegated__retrieved__streamed_candidates,
         }
 
-    def _step_delegated_retrieved_merge_candidates_82(self, frames):
+    def _step_delegated_retrieved_merge_candidates_83(self, frames):
         # Step method: delegated.retrieved.merge_candidates
         delegated__retrieved__candidates = frames["delegated__retrieved__stored_candidates"].alias(
             "document_search_candidate"
@@ -6609,7 +6607,7 @@ class RetrieveDocumentsGenerated:
             "delegated__retrieved__candidates": delegated__retrieved__candidates,
         }
 
-    def _step_delegated_retrieved_select_vector_candidates_83(self, frames):
+    def _step_delegated_retrieved_select_vector_candidates_84(self, frames):
         # Step method: delegated.retrieved.select_vector_candidates
         delegated__retrieved__vector_candidates = frames["delegated__scored__merged_vectors__scores"].alias(
             "document_vector_score"
@@ -6734,7 +6732,7 @@ class RetrieveDocumentsGenerated:
 
 
 class FuseDocumentsGenerated:
-    def _step_delegated_fused_rank_lexical_candidates_84(self, frames):
+    def _step_delegated_fused_rank_lexical_candidates_85(self, frames):
         # Step method: delegated.fused.rank_lexical_candidates
         delegated__fused__ranked_lexical_candidates = frames["delegated__retrieved__candidates"].alias(
             "document_search_candidate"
@@ -6796,7 +6794,7 @@ class FuseDocumentsGenerated:
             "delegated__fused__ranked_lexical_candidates": delegated__fused__ranked_lexical_candidates,
         }
 
-    def _step_delegated_fused_rank_vector_candidates_85(self, frames):
+    def _step_delegated_fused_rank_vector_candidates_86(self, frames):
         # Step method: delegated.fused.rank_vector_candidates
         delegated__fused__ranked_vector_candidates = frames["delegated__retrieved__vector_candidates"].alias(
             "document_search_candidate"
@@ -6846,7 +6844,7 @@ class FuseDocumentsGenerated:
             "delegated__fused__ranked_vector_candidates": delegated__fused__ranked_vector_candidates,
         }
 
-    def _step_delegated_fused_select_vector_candidates_86(self, frames):
+    def _step_delegated_fused_select_vector_candidates_87(self, frames):
         # Step method: delegated.fused.select_vector_candidates
         delegated__fused__selected_vector_candidates = frames["delegated__fused__ranked_vector_candidates"].alias(
             "document_search_candidate"
@@ -6897,7 +6895,7 @@ class FuseDocumentsGenerated:
             "delegated__fused__selected_vector_candidates": delegated__fused__selected_vector_candidates,
         }
 
-    def _step_delegated_fused_validate_lexical_candidates_87(self, frames):
+    def _step_delegated_fused_validate_lexical_candidates_88(self, frames):
         # Step method: delegated.fused.validate_lexical_candidates
         delegated__fused__validated_lexical_candidates = frames["delegated__fused__ranked_lexical_candidates"].alias(
             "document_search_candidate"
@@ -6973,7 +6971,7 @@ class FuseDocumentsGenerated:
             "delegated__fused__validated_lexical_candidates": delegated__fused__validated_lexical_candidates,
         }
 
-    def _step_delegated_fused_validate_vector_candidates_88(self, frames):
+    def _step_delegated_fused_validate_vector_candidates_89(self, frames):
         # Step method: delegated.fused.validate_vector_candidates
         delegated__fused__validated_vector_candidates = frames["delegated__fused__selected_vector_candidates"].alias(
             "document_search_candidate"
@@ -7049,7 +7047,7 @@ class FuseDocumentsGenerated:
             "delegated__fused__validated_vector_candidates": delegated__fused__validated_vector_candidates,
         }
 
-    def _step_delegated_fused_merge_candidates_89(self, frames):
+    def _step_delegated_fused_merge_candidates_90(self, frames):
         # Step method: delegated.fused.merge_candidates
         delegated__fused__merged_candidates = frames["delegated__fused__validated_lexical_candidates"].alias(
             "document_search_candidate"
@@ -7091,7 +7089,7 @@ class FuseDocumentsGenerated:
             "delegated__fused__merged_candidates": delegated__fused__merged_candidates,
         }
 
-    def _step_delegated_fused_fuse_candidates_90(self, frames):
+    def _step_delegated_fused_fuse_candidates_91(self, frames):
         # Step method: delegated.fused.fuse_candidates
         delegated__fused__fused_candidates = frames["delegated__fused__merged_candidates"].alias(
             "document_search_candidate"
@@ -7166,7 +7164,7 @@ class FuseDocumentsGenerated:
             "delegated__fused__fused_candidates": delegated__fused__fused_candidates,
         }
 
-    def _step_delegated_fused_score_candidates_91(self, frames):
+    def _step_delegated_fused_score_candidates_92(self, frames):
         # Step method: delegated.fused.score_candidates
         delegated__fused__scored_candidates = frames["delegated__fused__fused_candidates"].alias(
             "document_search_candidate"
@@ -7253,7 +7251,7 @@ class FuseDocumentsGenerated:
             "delegated__fused__scored_candidates": delegated__fused__scored_candidates,
         }
 
-    def _step_delegated_fused_rank_candidates_92(self, frames):
+    def _step_delegated_fused_rank_candidates_93(self, frames):
         # Step method: delegated.fused.rank_candidates
         delegated__fused__ranked_candidates = frames["delegated__fused__scored_candidates"].alias(
             "document_search_candidate"
@@ -7316,7 +7314,7 @@ class FuseDocumentsGenerated:
             "delegated__fused__ranked_candidates": delegated__fused__ranked_candidates,
         }
 
-    def _step_delegated_fused_select_candidates_93(self, frames):
+    def _step_delegated_fused_select_candidates_94(self, frames):
         # Step method: delegated.fused.select_candidates
         delegated__fused__selected_candidates = frames["delegated__fused__ranked_candidates"].alias(
             "document_search_candidate"
@@ -7365,7 +7363,7 @@ class FuseDocumentsGenerated:
             "delegated__fused__selected_candidates": delegated__fused__selected_candidates,
         }
 
-    def _step_delegated_fused_materialize_candidates_94(self, frames):
+    def _step_delegated_fused_materialize_candidates_95(self, frames):
         # Step method: delegated.fused.materialize_candidates
         delegated__fused__candidates = frames["delegated__fused__selected_candidates"].alias(
             "document_search_candidate"
@@ -7410,7 +7408,7 @@ class FuseDocumentsGenerated:
 
 
 class RerankDocumentsGenerated:
-    def _step_delegated_reranked_select_feedback_options_95(self, frames):
+    def _step_delegated_reranked_select_feedback_options_96(self, frames):
         # Step method: delegated.reranked.select_feedback_options
         delegated__reranked__feedback_options = frames["delegated__fused__candidates"].alias(
             "document_search_candidate"
@@ -7482,7 +7480,7 @@ class RerankDocumentsGenerated:
             "delegated__reranked__feedback_options": delegated__reranked__feedback_options,
         }
 
-    def _step_delegated_reranked_select_query_feedback_96(self, frames):
+    def _step_delegated_reranked_select_query_feedback_97(self, frames):
         # Step method: delegated.reranked.select_query_feedback
         delegated__reranked__query_feedback = frames["delegated__reranked__feedback_options"].alias(
             "document_feedback_option"
@@ -7621,7 +7619,7 @@ class RerankDocumentsGenerated:
             "delegated__reranked__query_feedback": delegated__reranked__query_feedback,
         }
 
-    def _step_delegated_reranked_select_popularity_feedback_97(self, frames):
+    def _step_delegated_reranked_select_popularity_feedback_98(self, frames):
         # Step method: delegated.reranked.select_popularity_feedback
         delegated__reranked__popularity_feedback = frames["delegated__reranked__feedback_options"].alias(
             "document_feedback_option"
@@ -7761,7 +7759,7 @@ class RerankDocumentsGenerated:
             "delegated__reranked__popularity_feedback": delegated__reranked__popularity_feedback,
         }
 
-    def _step_delegated_reranked_score_candidates_98(self, frames):
+    def _step_delegated_reranked_score_candidates_99(self, frames):
         # Step method: delegated.reranked.score_candidates
         delegated__reranked__scored_candidates = frames["delegated__fused__candidates"].alias(
             "document_search_candidate"
@@ -7885,7 +7883,7 @@ class RerankDocumentsGenerated:
             "delegated__reranked__scored_candidates": delegated__reranked__scored_candidates,
         }
 
-    def _step_delegated_reranked_normalize_score_99(self, frames):
+    def _step_delegated_reranked_normalize_score_100(self, frames):
         # Step method: delegated.reranked.normalize_score
         delegated__reranked__normalized_candidates = frames["delegated__reranked__scored_candidates"].alias(
             "document_search_candidate"
@@ -7940,7 +7938,7 @@ class RerankDocumentsGenerated:
             "delegated__reranked__normalized_candidates": delegated__reranked__normalized_candidates,
         }
 
-    def _step_delegated_reranked_rank_results_100(self, frames):
+    def _step_delegated_reranked_rank_results_101(self, frames):
         # Step method: delegated.reranked.rank_results
         delegated__reranked__ranked_results = frames["delegated__reranked__normalized_candidates"].alias(
             "document_search_candidate"
@@ -7988,7 +7986,7 @@ class RerankDocumentsGenerated:
             "delegated__reranked__ranked_results": delegated__reranked__ranked_results,
         }
 
-    def _step_delegated_reranked_select_results_101(self, frames):
+    def _step_delegated_reranked_select_results_102(self, frames):
         # Step method: delegated.reranked.select_results
         delegated__reranked__results = frames["delegated__reranked__ranked_results"].alias("document_search_result")
         delegated__reranked__results = delegated__reranked__results.where(
@@ -8026,7 +8024,7 @@ class RerankDocumentsGenerated:
 
 
 class PublishFieldSearchResultsGenerated:
-    def _step_published_publish_metadata_102(self, frames):
+    def _step_published_publish_metadata_103(self, frames):
         # Step method: published.publish_metadata
         published__results = frames["resolved__document_matches"].alias("field_search_document_match")
         queries_joined = frames["queries"].alias("queries")
@@ -8060,7 +8058,7 @@ class PublishFieldSearchResultsGenerated:
             "published__results": published__results,
         }
 
-    def _step_published_publish_content_103(self, frames):
+    def _step_published_publish_content_104(self, frames):
         # Step method: published.publish_content
         published__results = frames["queries"].alias("field_search_query")
         delegation__delegations_joined = frames["delegation__delegations"].alias("delegation__delegations")
@@ -8114,7 +8112,7 @@ class PublishFieldSearchResultsGenerated:
             "published__results": published__results,
         }
 
-    def _step_published_publish_mixed_104(self, frames):
+    def _step_published_publish_mixed_105(self, frames):
         # Step method: published.publish_mixed
         published__results = frames["resolved__document_matches"].alias("field_search_document_match")
         queries_joined = frames["queries"].alias("queries")
@@ -8470,76 +8468,77 @@ class SearchFieldsGenerated(
         frames.update(self._step_delegated_scored_gap_find_available_overlaps_32(frames))
         frames.update(self._step_delegated_scored_gap_find_available_vectors_33(frames))
         frames.update(self._step_delegated_scored_gap_find_available_paragraph_vectors_34(frames))
-        frames.update(self._step_delegated_scored_gap_select_gap_queries_35(frames))
-        frames.update(self._step_delegated_scored_scoring_overlap_expand_query_terms_36(frames))
-        frames.update(self._step_delegated_scored_scoring_overlap_count_query_terms_37(frames))
-        frames.update(self._step_delegated_scored_scoring_overlap_select_document_vocabulary_38(frames))
-        frames.update(self._step_delegated_scored_scoring_overlap_select_section_vocabulary_39(frames))
-        frames.update(self._step_delegated_scored_scoring_overlap_select_paragraph_vocabulary_40(frames))
-        frames.update(self._step_delegated_scored_scoring_overlap_select_sentence_vocabulary_41(frames))
-        frames.update(self._step_delegated_scored_scoring_overlap_weight_document_query_terms_42(frames))
-        frames.update(self._step_delegated_scored_scoring_overlap_weight_section_query_terms_43(frames))
-        frames.update(self._step_delegated_scored_scoring_overlap_weight_paragraph_query_terms_44(frames))
-        frames.update(self._step_delegated_scored_scoring_overlap_weight_sentence_query_terms_45(frames))
-        frames.update(self._step_delegated_scored_scoring_overlap_total_document_query_idf_46(frames))
-        frames.update(self._step_delegated_scored_scoring_overlap_total_section_query_idf_47(frames))
-        frames.update(self._step_delegated_scored_scoring_overlap_total_paragraph_query_idf_48(frames))
-        frames.update(self._step_delegated_scored_scoring_overlap_total_sentence_query_idf_49(frames))
-        frames.update(self._step_delegated_scored_scoring_overlap_match_documents_50(frames))
-        frames.update(self._step_delegated_scored_scoring_overlap_match_sections_51(frames))
-        frames.update(self._step_delegated_scored_scoring_overlap_match_paragraphs_52(frames))
-        frames.update(self._step_delegated_scored_scoring_overlap_match_sentences_53(frames))
-        frames.update(self._step_delegated_scored_scoring_overlap_publish_document_overlap_scores_54(frames))
-        frames.update(self._step_delegated_scored_scoring_overlap_publish_section_overlap_scores_55(frames))
-        frames.update(self._step_delegated_scored_scoring_overlap_publish_paragraph_overlap_scores_56(frames))
-        frames.update(self._step_delegated_scored_scoring_overlap_publish_sentence_overlap_scores_57(frames))
-        frames.update(self._step_delegated_scored_scoring_bm25_expand_query_terms_58(frames))
-        frames.update(self._step_delegated_scored_scoring_bm25_count_query_terms_59(frames))
-        frames.update(self._step_delegated_scored_scoring_bm25_score_document_bm25_60(frames))
-        frames.update(self._step_delegated_scored_scoring_bm25_score_section_bm25_61(frames))
-        frames.update(self._step_delegated_scored_scoring_bm25_score_paragraph_bm25_62(frames))
-        frames.update(self._step_delegated_scored_scoring_bm25_score_sentence_bm25_63(frames))
-        frames.update(self._step_delegated_scored_scoring_selected_score_documents_64(frames))
-        frames.update(self._step_delegated_scored_scoring_selected_score_sections_65(frames))
-        frames.update(self._step_delegated_scored_scoring_selected_score_paragraphs_66(frames))
-        frames.update(self._step_delegated_scored_scoring_selected_score_sentences_67(frames))
-        frames.update(self._step_delegated_scored_scoring_vector_validate_policy_68(frames))
-        frames.update(self._step_delegated_scored_scoring_vector_score_documents_69(frames))
-        frames.update(self._step_delegated_scored_scoring_vector_score_paragraphs_70(frames))
-        frames.update(self._step_delegated_scored_merged_merge_scores_71(frames))
-        frames.update(self._step_delegated_scored_merged_vectors_identify_invalidated_queries_72(frames))
-        frames.update(self._step_delegated_scored_merged_vectors_select_cached_scores_73(frames))
-        frames.update(self._step_delegated_scored_merged_vectors_select_online_scores_74(frames))
-        frames.update(self._step_delegated_scored_merged_vectors_merge_scores_75(frames))
-        frames.update(self._step_delegated_scored_merged_paragraph_vectors_identify_invalidated_queries_76(frames))
-        frames.update(self._step_delegated_scored_merged_paragraph_vectors_select_cached_scores_77(frames))
-        frames.update(self._step_delegated_scored_merged_paragraph_vectors_select_online_scores_78(frames))
-        frames.update(self._step_delegated_scored_merged_paragraph_vectors_merge_scores_79(frames))
-        frames.update(self._step_delegated_retrieved_select_stored_candidates_80(frames))
-        frames.update(self._step_delegated_retrieved_select_streamed_candidates_81(frames))
-        frames.update(self._step_delegated_retrieved_merge_candidates_82(frames))
-        frames.update(self._step_delegated_retrieved_select_vector_candidates_83(frames))
-        frames.update(self._step_delegated_fused_rank_lexical_candidates_84(frames))
-        frames.update(self._step_delegated_fused_rank_vector_candidates_85(frames))
-        frames.update(self._step_delegated_fused_select_vector_candidates_86(frames))
-        frames.update(self._step_delegated_fused_validate_lexical_candidates_87(frames))
-        frames.update(self._step_delegated_fused_validate_vector_candidates_88(frames))
-        frames.update(self._step_delegated_fused_merge_candidates_89(frames))
-        frames.update(self._step_delegated_fused_fuse_candidates_90(frames))
-        frames.update(self._step_delegated_fused_score_candidates_91(frames))
-        frames.update(self._step_delegated_fused_rank_candidates_92(frames))
-        frames.update(self._step_delegated_fused_select_candidates_93(frames))
-        frames.update(self._step_delegated_fused_materialize_candidates_94(frames))
-        frames.update(self._step_delegated_reranked_select_feedback_options_95(frames))
-        frames.update(self._step_delegated_reranked_select_query_feedback_96(frames))
-        frames.update(self._step_delegated_reranked_select_popularity_feedback_97(frames))
-        frames.update(self._step_delegated_reranked_score_candidates_98(frames))
-        frames.update(self._step_delegated_reranked_normalize_score_99(frames))
-        frames.update(self._step_delegated_reranked_rank_results_100(frames))
-        frames.update(self._step_delegated_reranked_select_results_101(frames))
-        frames.update(self._step_published_publish_metadata_102(frames))
-        frames.update(self._step_published_publish_content_103(frames))
-        frames.update(self._step_published_publish_mixed_104(frames))
+        frames.update(self._step_delegated_scored_gap_merge_availability_35(frames))
+        frames.update(self._step_delegated_scored_gap_select_gap_queries_36(frames))
+        frames.update(self._step_delegated_scored_scoring_overlap_expand_query_terms_37(frames))
+        frames.update(self._step_delegated_scored_scoring_overlap_count_query_terms_38(frames))
+        frames.update(self._step_delegated_scored_scoring_overlap_select_document_vocabulary_39(frames))
+        frames.update(self._step_delegated_scored_scoring_overlap_select_section_vocabulary_40(frames))
+        frames.update(self._step_delegated_scored_scoring_overlap_select_paragraph_vocabulary_41(frames))
+        frames.update(self._step_delegated_scored_scoring_overlap_select_sentence_vocabulary_42(frames))
+        frames.update(self._step_delegated_scored_scoring_overlap_weight_document_query_terms_43(frames))
+        frames.update(self._step_delegated_scored_scoring_overlap_weight_section_query_terms_44(frames))
+        frames.update(self._step_delegated_scored_scoring_overlap_weight_paragraph_query_terms_45(frames))
+        frames.update(self._step_delegated_scored_scoring_overlap_weight_sentence_query_terms_46(frames))
+        frames.update(self._step_delegated_scored_scoring_overlap_total_document_query_idf_47(frames))
+        frames.update(self._step_delegated_scored_scoring_overlap_total_section_query_idf_48(frames))
+        frames.update(self._step_delegated_scored_scoring_overlap_total_paragraph_query_idf_49(frames))
+        frames.update(self._step_delegated_scored_scoring_overlap_total_sentence_query_idf_50(frames))
+        frames.update(self._step_delegated_scored_scoring_overlap_match_documents_51(frames))
+        frames.update(self._step_delegated_scored_scoring_overlap_match_sections_52(frames))
+        frames.update(self._step_delegated_scored_scoring_overlap_match_paragraphs_53(frames))
+        frames.update(self._step_delegated_scored_scoring_overlap_match_sentences_54(frames))
+        frames.update(self._step_delegated_scored_scoring_overlap_publish_document_overlap_scores_55(frames))
+        frames.update(self._step_delegated_scored_scoring_overlap_publish_section_overlap_scores_56(frames))
+        frames.update(self._step_delegated_scored_scoring_overlap_publish_paragraph_overlap_scores_57(frames))
+        frames.update(self._step_delegated_scored_scoring_overlap_publish_sentence_overlap_scores_58(frames))
+        frames.update(self._step_delegated_scored_scoring_bm25_expand_query_terms_59(frames))
+        frames.update(self._step_delegated_scored_scoring_bm25_count_query_terms_60(frames))
+        frames.update(self._step_delegated_scored_scoring_bm25_score_document_bm25_61(frames))
+        frames.update(self._step_delegated_scored_scoring_bm25_score_section_bm25_62(frames))
+        frames.update(self._step_delegated_scored_scoring_bm25_score_paragraph_bm25_63(frames))
+        frames.update(self._step_delegated_scored_scoring_bm25_score_sentence_bm25_64(frames))
+        frames.update(self._step_delegated_scored_scoring_selected_score_documents_65(frames))
+        frames.update(self._step_delegated_scored_scoring_selected_score_sections_66(frames))
+        frames.update(self._step_delegated_scored_scoring_selected_score_paragraphs_67(frames))
+        frames.update(self._step_delegated_scored_scoring_selected_score_sentences_68(frames))
+        frames.update(self._step_delegated_scored_scoring_vector_validate_policy_69(frames))
+        frames.update(self._step_delegated_scored_scoring_vector_score_documents_70(frames))
+        frames.update(self._step_delegated_scored_scoring_vector_score_paragraphs_71(frames))
+        frames.update(self._step_delegated_scored_merged_merge_scores_72(frames))
+        frames.update(self._step_delegated_scored_merged_vectors_identify_invalidated_queries_73(frames))
+        frames.update(self._step_delegated_scored_merged_vectors_select_cached_scores_74(frames))
+        frames.update(self._step_delegated_scored_merged_vectors_select_online_scores_75(frames))
+        frames.update(self._step_delegated_scored_merged_vectors_merge_scores_76(frames))
+        frames.update(self._step_delegated_scored_merged_paragraph_vectors_identify_invalidated_queries_77(frames))
+        frames.update(self._step_delegated_scored_merged_paragraph_vectors_select_cached_scores_78(frames))
+        frames.update(self._step_delegated_scored_merged_paragraph_vectors_select_online_scores_79(frames))
+        frames.update(self._step_delegated_scored_merged_paragraph_vectors_merge_scores_80(frames))
+        frames.update(self._step_delegated_retrieved_select_stored_candidates_81(frames))
+        frames.update(self._step_delegated_retrieved_select_streamed_candidates_82(frames))
+        frames.update(self._step_delegated_retrieved_merge_candidates_83(frames))
+        frames.update(self._step_delegated_retrieved_select_vector_candidates_84(frames))
+        frames.update(self._step_delegated_fused_rank_lexical_candidates_85(frames))
+        frames.update(self._step_delegated_fused_rank_vector_candidates_86(frames))
+        frames.update(self._step_delegated_fused_select_vector_candidates_87(frames))
+        frames.update(self._step_delegated_fused_validate_lexical_candidates_88(frames))
+        frames.update(self._step_delegated_fused_validate_vector_candidates_89(frames))
+        frames.update(self._step_delegated_fused_merge_candidates_90(frames))
+        frames.update(self._step_delegated_fused_fuse_candidates_91(frames))
+        frames.update(self._step_delegated_fused_score_candidates_92(frames))
+        frames.update(self._step_delegated_fused_rank_candidates_93(frames))
+        frames.update(self._step_delegated_fused_select_candidates_94(frames))
+        frames.update(self._step_delegated_fused_materialize_candidates_95(frames))
+        frames.update(self._step_delegated_reranked_select_feedback_options_96(frames))
+        frames.update(self._step_delegated_reranked_select_query_feedback_97(frames))
+        frames.update(self._step_delegated_reranked_select_popularity_feedback_98(frames))
+        frames.update(self._step_delegated_reranked_score_candidates_99(frames))
+        frames.update(self._step_delegated_reranked_normalize_score_100(frames))
+        frames.update(self._step_delegated_reranked_rank_results_101(frames))
+        frames.update(self._step_delegated_reranked_select_results_102(frames))
+        frames.update(self._step_published_publish_metadata_103(frames))
+        frames.update(self._step_published_publish_content_104(frames))
+        frames.update(self._step_published_publish_mixed_105(frames))
 
         # Step method: results
         results = frames["published__results"].alias("field_search_result")

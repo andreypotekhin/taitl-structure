@@ -53,6 +53,9 @@ class RenderPySparkExplainReport:
             lines.extend(["", "  optimizations:"])
             for optimization in recipe.optimizations:
                 lines.append(f"    {optimization.detail}")
+        if recipe.pruning is not None:
+            lines.extend(["", "  unused steps:"])
+            lines.extend(f"    {line}" for line in recipe.pruning.explain().splitlines())
         if plan.diagnostics:
             lines.extend(["", "  diagnostics:"])
             for diagnostic in plan.diagnostics:

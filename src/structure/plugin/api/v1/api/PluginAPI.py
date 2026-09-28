@@ -7,6 +7,7 @@ from structure.plugin.api.v1.api.CompilerAPI import CompilerAPI
 from structure.plugin.api.v1.api.ExecutionAPI import ExecutionAPI
 from structure.plugin.api.v1.api.ExplainAPI import ExplainAPI
 from structure.plugin.api.v1.api.GenerationAPI import GenerationAPI
+from structure.plugin.api.v1.api.OptimizationAPI import OptimizationAPI
 from structure.plugin.api.v1.api.SchemaAPI import SchemaAPI
 from structure.plugin.api.v1.api.SemanticDefaultsAPI import SemanticDefaultsAPI
 from structure.plugin.api.v1.api.SerializationAPI import SerializationAPI
@@ -24,3 +25,4 @@ class PluginAPI:
     explainer: ExplainAPI | None = None
     analysis: AnalysisAPI | None = None
     semantic_defaults: SemanticDefaultsAPI | None = None
+    optimizer: OptimizationAPI | None = None

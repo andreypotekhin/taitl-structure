@@ -14,6 +14,20 @@ the work needed to build the query is large. Asking for intermediate results can
 The detailed troubleshooting method is in [Performance.trbl.md](Performance.trbl.md), and the reproducible performance
 sequence is in the [Performance runbook](../../runbooks/Performance.runbook.md).
 
+## Compile setup failure
+
+If the test stops during fixture setup with an error such as
+`union_all(relation) requires a Structure relation parameter or transform input`, this is a compiler/DSL binding
+failure, not a slow Spark action or a cache miss. The usual cause is a helper passing a row-scoped value to a relation
+set operation. `union_all`, `union_by_name`, and similar operations require a declared Structure relation input.
+
+Fix the transform signature and call site so the relation is declared as a transform input (or pass the declared
+relation directly). When combining internal `lane(...)` outputs, use lane-compatible joins/filters or promote the
+relations to real transform inputs; do not pass a lane-scoped `RowScope` to `union_all`. Then rerun the focused test
+with compiler profiling enabled. Do not hide the failure by switching artifact-reuse policy, adding Spark actions, or
+treating the failed setup timer as a performance sample. Once the test completes, compare `off` and `module` in fresh
+runner processes as described below.
+
 ## Remedies
 
 For a focused test that only needs final Search results:

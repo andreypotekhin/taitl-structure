@@ -1,0 +1,2990 @@
+[
+  {
+    "backend": "pyspark35",
+    "case": "rerank",
+    "policy": "off",
+    "repetition": 1,
+    "exit_code": 0,
+    "wall_seconds": 89.47,
+    "log": "docs/dev/issues/I09272601/artifact-reuse-retries-2/artifact-reuse-pyspark35-rerank-off-1.log",
+    "phases": {
+      "generated source setup (integration_search_generated)": 0.0,
+      "SearchDocuments online construction": 29.5,
+      "SearchDocuments generated construction": 27.15,
+      "SearchDocuments online collection": 0.49,
+      "SearchDocuments generated collection": 0.3,
+      "generated source cleanup (integration_search_generated)": 0.0,
+      "snapshot fixture cleanup": 0.01,
+      "plan boundary cleanup": 0.12
+    },
+    "result": "1 passed, 193 deselected",
+    "pytest_seconds": 87.83,
+    "heap_exhaustion": false,
+    "snapshot_seconds": 8.26,
+    "compilation": {
+      "records": [
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.all.all.All",
+          "elapsed": 1.31,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.chunking.Chunking.Chunking",
+          "elapsed": 0.06,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.chunking.DocumentChunking.DocumentChunking",
+          "elapsed": 0.03,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.chunking.SentenceChunking.SentenceChunking",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.stats.ProfileDocuments.ProfileDocuments",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.features.BuildDocumentFeatures.BuildDocumentFeatures",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.features.BuildQueryFeatures.BuildQueryFeatures",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.features.Features.Features",
+          "elapsed": 0.02,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.training.BuildTrainingData.BuildTrainingData",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.training.RankDocumentCandidates.RankDocumentCandidates",
+          "elapsed": 0.02,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.training.Training.Training",
+          "elapsed": 0.02,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.stats.AnalyzeText.AnalyzeText",
+          "elapsed": 0.03,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.stats.CorpusText.CorpusText",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.indexing.Indexing.Indexing",
+          "elapsed": 0.09,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.fields.Fields.Fields",
+          "elapsed": 0.1,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.indexing.fields.FieldIndex.FieldIndex",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.searching.search_fields.SearchFields.SearchFields",
+          "elapsed": 0.55,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.searching.search_sentences.SearchSentences.SearchSentences",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.searching.search_passages.SearchPassages.SearchPassages",
+          "elapsed": 0.02,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.clicks.Impressions.Impressions",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.clicks.Clicks.Clicks",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals",
+          "elapsed": 0.08,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments",
+          "elapsed": 0.49,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.experiments.searching.search_docs.Searching001AdjustRerankSearchDocuments.Searching001AdjustRerankSearchDocuments",
+          "elapsed": 0.46,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.labeling.MergeQueryLabels.MergeQueryLabels",
+          "elapsed": 0.02,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.labeling.CreateQueryLabels.CreateQueryLabels",
+          "elapsed": 0.02,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.labeling.Labeling.Labeling",
+          "elapsed": 0.05,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.experiments.SelectExperimentScores.SelectExperimentScores",
+          "elapsed": 0.02,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.experiments.evaluation.search_docs.eval_ranking.EvaluateDocumentRanking",
+          "elapsed": 0.08,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.experiments.evaluation.search_docs.eval_behavior.EvaluateDocSearchBehavior",
+          "elapsed": 0.06,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.ranking.eval_ranking.EvaluateDocumentRanking",
+          "elapsed": 0.07,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior",
+          "elapsed": 0.06,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.ranking.with_labels.EvaluateDocumentRanking",
+          "elapsed": 0.06,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.behavior.with_labels.EvaluateDocSearchBehavior",
+          "elapsed": 0.05,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.ranking.with_users.EvaluateDocumentRanking",
+          "elapsed": 0.07,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.behavior.with_users.EvaluateDocSearchBehavior",
+          "elapsed": 0.07,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.ranking.with_all.EvaluateDocumentRanking",
+          "elapsed": 0.06,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.behavior.with_all.EvaluateDocSearchBehavior",
+          "elapsed": 0.07,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.similarity.lexical.queries.CreateSimilarityQueries",
+          "elapsed": 0.07,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.scoring.lexical.ScoreOverlap.ScoreOverlap",
+          "elapsed": 0.08,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.scoring.lexical.ScoreBm25.ScoreBm25",
+          "elapsed": 0.04,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.scoring.Scoring.Scoring",
+          "elapsed": 0.18,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.scoring.lexical.AllScoringTargets.AllScoringTargets",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.offline.scoring.lexical.OfflineScoring.OfflineScoring",
+          "elapsed": 0.19,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.offline.scoring.lexical.MergeOfflineQueries.MergeOfflineQueries",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.scoring.lexical.SelectPopularQueries.SelectPopularQueries",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.scoring.lexical.SelectRecentQueries.SelectRecentQueries",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.online.scoring.lexical.OnlineScoring.OnlineScoring",
+          "elapsed": 0.25,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.experiments.scoring.Scoring001AdjustBm.Scoring001AdjustBm",
+          "elapsed": 0.19,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.similarity.lexical.reduce.ReduceSimilarityScores",
+          "elapsed": 0.1,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.similarity.lexical.Similarities.Similarities",
+          "elapsed": 0.28,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.searching.search_similarity.candidates.ExactSimilarityCandidates",
+          "elapsed": 0.03,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.searching.search_similarity.SearchSimilarity.SearchSimilarity",
+          "elapsed": 0.06,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands",
+          "elapsed": 0.05,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.chunking.Chunking.Chunking",
+          "elapsed": 0.04,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.chunking.Chunking.Chunking",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.fields.Fields.Fields",
+          "elapsed": 0.14,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.fields.Fields.Fields",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.indexing.Indexing.Indexing",
+          "elapsed": 0.11,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.indexing.Indexing.Indexing",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments",
+          "elapsed": 0.51,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments",
+          "elapsed": 0.53,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        }
+      ],
+      "by_phase": {
+        "source preparation": {
+          "requests": 54,
+          "elapsed": 5.699999999999999,
+          "hits": 0,
+          "misses": 54
+        },
+        "runtime": {
+          "requests": 10,
+          "elapsed": 1.33,
+          "hits": 5,
+          "misses": 5
+        }
+      },
+      "module_total": {
+        "elapsed": 7.01,
+        "requests": 64,
+        "hits": 5,
+        "misses": 59
+      },
+      "requests": 64,
+      "elapsed": 7.03,
+      "hits": 5,
+      "misses": 59,
+      "failures": 0
+    }
+  },
+  {
+    "backend": "pyspark35",
+    "case": "rerank",
+    "policy": "module",
+    "repetition": 1,
+    "exit_code": 0,
+    "wall_seconds": 88.27,
+    "log": "docs/dev/issues/I09272601/artifact-reuse-retries-2/artifact-reuse-pyspark35-rerank-module-1.log",
+    "phases": {
+      "generated source setup (integration_search_generated)": 0.0,
+      "SearchDocuments online construction": 29.95,
+      "SearchDocuments generated construction": 25.47,
+      "SearchDocuments online collection": 0.42,
+      "SearchDocuments generated collection": 0.26,
+      "generated source cleanup (integration_search_generated)": 0.0,
+      "snapshot fixture cleanup": 0.01,
+      "plan boundary cleanup": 0.09
+    },
+    "result": "1 passed, 193 deselected",
+    "pytest_seconds": 87.22,
+    "heap_exhaustion": false,
+    "snapshot_seconds": 8.4,
+    "compilation": {
+      "records": [
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.all.all.All",
+          "elapsed": 1.27,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.chunking.Chunking.Chunking",
+          "elapsed": 0.07,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.chunking.DocumentChunking.DocumentChunking",
+          "elapsed": 0.03,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.chunking.SentenceChunking.SentenceChunking",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.stats.ProfileDocuments.ProfileDocuments",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.features.BuildDocumentFeatures.BuildDocumentFeatures",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.features.BuildQueryFeatures.BuildQueryFeatures",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.features.Features.Features",
+          "elapsed": 0.02,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.training.BuildTrainingData.BuildTrainingData",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.training.RankDocumentCandidates.RankDocumentCandidates",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.training.Training.Training",
+          "elapsed": 0.02,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.stats.AnalyzeText.AnalyzeText",
+          "elapsed": 0.06,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.stats.CorpusText.CorpusText",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.indexing.Indexing.Indexing",
+          "elapsed": 0.08,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.fields.Fields.Fields",
+          "elapsed": 0.12,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.indexing.fields.FieldIndex.FieldIndex",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.searching.search_fields.SearchFields.SearchFields",
+          "elapsed": 0.59,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.searching.search_sentences.SearchSentences.SearchSentences",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.searching.search_passages.SearchPassages.SearchPassages",
+          "elapsed": 0.02,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.clicks.Impressions.Impressions",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.clicks.Clicks.Clicks",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals",
+          "elapsed": 0.06,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments",
+          "elapsed": 0.57,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.experiments.searching.search_docs.Searching001AdjustRerankSearchDocuments.Searching001AdjustRerankSearchDocuments",
+          "elapsed": 0.53,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.labeling.MergeQueryLabels.MergeQueryLabels",
+          "elapsed": 0.02,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.labeling.CreateQueryLabels.CreateQueryLabels",
+          "elapsed": 0.02,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.labeling.Labeling.Labeling",
+          "elapsed": 0.04,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.experiments.SelectExperimentScores.SelectExperimentScores",
+          "elapsed": 0.09,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.experiments.evaluation.search_docs.eval_ranking.EvaluateDocumentRanking",
+          "elapsed": 0.06,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.experiments.evaluation.search_docs.eval_behavior.EvaluateDocSearchBehavior",
+          "elapsed": 0.06,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.ranking.eval_ranking.EvaluateDocumentRanking",
+          "elapsed": 0.05,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior",
+          "elapsed": 0.05,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.ranking.with_labels.EvaluateDocumentRanking",
+          "elapsed": 0.06,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.behavior.with_labels.EvaluateDocSearchBehavior",
+          "elapsed": 0.06,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.ranking.with_users.EvaluateDocumentRanking",
+          "elapsed": 0.13,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.behavior.with_users.EvaluateDocSearchBehavior",
+          "elapsed": 0.06,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.ranking.with_all.EvaluateDocumentRanking",
+          "elapsed": 0.06,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.behavior.with_all.EvaluateDocSearchBehavior",
+          "elapsed": 0.16,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.similarity.lexical.queries.CreateSimilarityQueries",
+          "elapsed": 0.13,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.scoring.lexical.ScoreOverlap.ScoreOverlap",
+          "elapsed": 0.08,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.scoring.lexical.ScoreBm25.ScoreBm25",
+          "elapsed": 0.04,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.scoring.Scoring.Scoring",
+          "elapsed": 0.23,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.scoring.lexical.AllScoringTargets.AllScoringTargets",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.offline.scoring.lexical.OfflineScoring.OfflineScoring",
+          "elapsed": 0.18,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.offline.scoring.lexical.MergeOfflineQueries.MergeOfflineQueries",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.scoring.lexical.SelectPopularQueries.SelectPopularQueries",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.scoring.lexical.SelectRecentQueries.SelectRecentQueries",
+          "elapsed": 0.08,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.online.scoring.lexical.OnlineScoring.OnlineScoring",
+          "elapsed": 0.3,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.experiments.scoring.Scoring001AdjustBm.Scoring001AdjustBm",
+          "elapsed": 0.16,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.similarity.lexical.reduce.ReduceSimilarityScores",
+          "elapsed": 0.18,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.similarity.lexical.Similarities.Similarities",
+          "elapsed": 0.24,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.searching.search_similarity.candidates.ExactSimilarityCandidates",
+          "elapsed": 0.13,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.searching.search_similarity.SearchSimilarity.SearchSimilarity",
+          "elapsed": 0.05,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands",
+          "elapsed": 0.05,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.chunking.Chunking.Chunking",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.chunking.Chunking.Chunking",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.fields.Fields.Fields",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.fields.Fields.Fields",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.indexing.Indexing.Indexing",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.indexing.Indexing.Indexing",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        }
+      ],
+      "by_phase": {
+        "source preparation": {
+          "requests": 54,
+          "elapsed": 6.349999999999998,
+          "hits": 0,
+          "misses": 54
+        },
+        "runtime": {
+          "requests": 10,
+          "elapsed": 0.0,
+          "hits": 10,
+          "misses": 0
+        }
+      },
+      "module_total": {
+        "elapsed": 6.38,
+        "requests": 64,
+        "hits": 10,
+        "misses": 54
+      },
+      "requests": 64,
+      "elapsed": 6.35,
+      "hits": 10,
+      "misses": 54,
+      "failures": 0
+    }
+  },
+  {
+    "backend": "pyspark35",
+    "case": "rerank",
+    "policy": "module",
+    "repetition": 2,
+    "exit_code": 0,
+    "wall_seconds": 87.12,
+    "log": "docs/dev/issues/I09272601/artifact-reuse-retries-2/artifact-reuse-pyspark35-rerank-module-2.log",
+    "phases": {
+      "generated source setup (integration_search_generated)": 0.0,
+      "SearchDocuments online construction": 28.99,
+      "SearchDocuments generated construction": 25.93,
+      "SearchDocuments online collection": 0.45,
+      "SearchDocuments generated collection": 0.27,
+      "generated source cleanup (integration_search_generated)": 0.0,
+      "snapshot fixture cleanup": 0.01,
+      "plan boundary cleanup": 0.1
+    },
+    "result": "1 passed, 193 deselected",
+    "pytest_seconds": 86.02,
+    "heap_exhaustion": false,
+    "snapshot_seconds": 8.17,
+    "compilation": {
+      "records": [
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.all.all.All",
+          "elapsed": 1.21,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.chunking.Chunking.Chunking",
+          "elapsed": 0.07,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.chunking.DocumentChunking.DocumentChunking",
+          "elapsed": 0.03,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.chunking.SentenceChunking.SentenceChunking",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.stats.ProfileDocuments.ProfileDocuments",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.features.BuildDocumentFeatures.BuildDocumentFeatures",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.features.BuildQueryFeatures.BuildQueryFeatures",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.features.Features.Features",
+          "elapsed": 0.02,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.training.BuildTrainingData.BuildTrainingData",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.training.RankDocumentCandidates.RankDocumentCandidates",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.training.Training.Training",
+          "elapsed": 0.02,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.stats.AnalyzeText.AnalyzeText",
+          "elapsed": 0.06,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.stats.CorpusText.CorpusText",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.indexing.Indexing.Indexing",
+          "elapsed": 0.08,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.fields.Fields.Fields",
+          "elapsed": 0.12,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.indexing.fields.FieldIndex.FieldIndex",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.searching.search_fields.SearchFields.SearchFields",
+          "elapsed": 0.59,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.searching.search_sentences.SearchSentences.SearchSentences",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.searching.search_passages.SearchPassages.SearchPassages",
+          "elapsed": 0.02,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.clicks.Impressions.Impressions",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.clicks.Clicks.Clicks",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals",
+          "elapsed": 0.07,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments",
+          "elapsed": 0.55,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.experiments.searching.search_docs.Searching001AdjustRerankSearchDocuments.Searching001AdjustRerankSearchDocuments",
+          "elapsed": 0.51,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.labeling.MergeQueryLabels.MergeQueryLabels",
+          "elapsed": 0.02,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.labeling.CreateQueryLabels.CreateQueryLabels",
+          "elapsed": 0.02,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.labeling.Labeling.Labeling",
+          "elapsed": 0.04,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.experiments.SelectExperimentScores.SelectExperimentScores",
+          "elapsed": 0.07,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.experiments.evaluation.search_docs.eval_ranking.EvaluateDocumentRanking",
+          "elapsed": 0.07,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.experiments.evaluation.search_docs.eval_behavior.EvaluateDocSearchBehavior",
+          "elapsed": 0.07,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.ranking.eval_ranking.EvaluateDocumentRanking",
+          "elapsed": 0.05,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior",
+          "elapsed": 0.05,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.ranking.with_labels.EvaluateDocumentRanking",
+          "elapsed": 0.06,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.behavior.with_labels.EvaluateDocSearchBehavior",
+          "elapsed": 0.06,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.ranking.with_users.EvaluateDocumentRanking",
+          "elapsed": 0.12,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.behavior.with_users.EvaluateDocSearchBehavior",
+          "elapsed": 0.05,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.ranking.with_all.EvaluateDocumentRanking",
+          "elapsed": 0.06,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.behavior.with_all.EvaluateDocSearchBehavior",
+          "elapsed": 0.06,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.similarity.lexical.queries.CreateSimilarityQueries",
+          "elapsed": 0.12,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.scoring.lexical.ScoreOverlap.ScoreOverlap",
+          "elapsed": 0.08,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.scoring.lexical.ScoreBm25.ScoreBm25",
+          "elapsed": 0.04,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.scoring.Scoring.Scoring",
+          "elapsed": 0.23,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.scoring.lexical.AllScoringTargets.AllScoringTargets",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.offline.scoring.lexical.OfflineScoring.OfflineScoring",
+          "elapsed": 0.17,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.offline.scoring.lexical.MergeOfflineQueries.MergeOfflineQueries",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.scoring.lexical.SelectPopularQueries.SelectPopularQueries",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.scoring.lexical.SelectRecentQueries.SelectRecentQueries",
+          "elapsed": 0.09,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.online.scoring.lexical.OnlineScoring.OnlineScoring",
+          "elapsed": 0.3,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.experiments.scoring.Scoring001AdjustBm.Scoring001AdjustBm",
+          "elapsed": 0.15,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.similarity.lexical.reduce.ReduceSimilarityScores",
+          "elapsed": 0.17,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.similarity.lexical.Similarities.Similarities",
+          "elapsed": 0.24,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.searching.search_similarity.candidates.ExactSimilarityCandidates",
+          "elapsed": 0.12,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.searching.search_similarity.SearchSimilarity.SearchSimilarity",
+          "elapsed": 0.05,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands",
+          "elapsed": 0.05,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.chunking.Chunking.Chunking",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.chunking.Chunking.Chunking",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.fields.Fields.Fields",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.fields.Fields.Fields",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.indexing.Indexing.Indexing",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.indexing.Indexing.Indexing",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        }
+      ],
+      "by_phase": {
+        "source preparation": {
+          "requests": 54,
+          "elapsed": 6.099999999999997,
+          "hits": 0,
+          "misses": 54
+        },
+        "runtime": {
+          "requests": 10,
+          "elapsed": 0.0,
+          "hits": 10,
+          "misses": 0
+        }
+      },
+      "module_total": {
+        "elapsed": 6.09,
+        "requests": 64,
+        "hits": 10,
+        "misses": 54
+      },
+      "requests": 64,
+      "elapsed": 6.1,
+      "hits": 10,
+      "misses": 54,
+      "failures": 0
+    }
+  },
+  {
+    "backend": "pyspark35",
+    "case": "rerank",
+    "policy": "off",
+    "repetition": 2,
+    "exit_code": 0,
+    "wall_seconds": 89.25,
+    "log": "docs/dev/issues/I09272601/artifact-reuse-retries-2/artifact-reuse-pyspark35-rerank-off-2.log",
+    "phases": {
+      "generated source setup (integration_search_generated)": 0.0,
+      "SearchDocuments online construction": 29.12,
+      "SearchDocuments generated construction": 26.24,
+      "SearchDocuments online collection": 0.39,
+      "SearchDocuments generated collection": 0.34,
+      "generated source cleanup (integration_search_generated)": 0.0,
+      "snapshot fixture cleanup": 0.01,
+      "plan boundary cleanup": 0.09
+    },
+    "result": "1 passed, 193 deselected",
+    "pytest_seconds": 88.22,
+    "heap_exhaustion": false,
+    "snapshot_seconds": 8.41,
+    "compilation": {
+      "records": [
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.all.all.All",
+          "elapsed": 1.27,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.chunking.Chunking.Chunking",
+          "elapsed": 0.06,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.chunking.DocumentChunking.DocumentChunking",
+          "elapsed": 0.04,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.chunking.SentenceChunking.SentenceChunking",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.stats.ProfileDocuments.ProfileDocuments",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.features.BuildDocumentFeatures.BuildDocumentFeatures",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.features.BuildQueryFeatures.BuildQueryFeatures",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.features.Features.Features",
+          "elapsed": 0.02,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.training.BuildTrainingData.BuildTrainingData",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.training.RankDocumentCandidates.RankDocumentCandidates",
+          "elapsed": 0.03,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.training.Training.Training",
+          "elapsed": 0.02,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.stats.AnalyzeText.AnalyzeText",
+          "elapsed": 0.03,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.stats.CorpusText.CorpusText",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.indexing.Indexing.Indexing",
+          "elapsed": 0.09,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.fields.Fields.Fields",
+          "elapsed": 0.11,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.indexing.fields.FieldIndex.FieldIndex",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.searching.search_fields.SearchFields.SearchFields",
+          "elapsed": 0.57,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.searching.search_sentences.SearchSentences.SearchSentences",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.searching.search_passages.SearchPassages.SearchPassages",
+          "elapsed": 0.02,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.clicks.Impressions.Impressions",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.clicks.Clicks.Clicks",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals",
+          "elapsed": 0.09,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments",
+          "elapsed": 0.5,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.experiments.searching.search_docs.Searching001AdjustRerankSearchDocuments.Searching001AdjustRerankSearchDocuments",
+          "elapsed": 0.48,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.labeling.MergeQueryLabels.MergeQueryLabels",
+          "elapsed": 0.02,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.labeling.CreateQueryLabels.CreateQueryLabels",
+          "elapsed": 0.02,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.labeling.Labeling.Labeling",
+          "elapsed": 0.05,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.experiments.SelectExperimentScores.SelectExperimentScores",
+          "elapsed": 0.02,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.experiments.evaluation.search_docs.eval_ranking.EvaluateDocumentRanking",
+          "elapsed": 0.08,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.experiments.evaluation.search_docs.eval_behavior.EvaluateDocSearchBehavior",
+          "elapsed": 0.07,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.ranking.eval_ranking.EvaluateDocumentRanking",
+          "elapsed": 0.07,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior",
+          "elapsed": 0.07,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.ranking.with_labels.EvaluateDocumentRanking",
+          "elapsed": 0.06,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.behavior.with_labels.EvaluateDocSearchBehavior",
+          "elapsed": 0.06,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.ranking.with_users.EvaluateDocumentRanking",
+          "elapsed": 0.07,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.behavior.with_users.EvaluateDocSearchBehavior",
+          "elapsed": 0.07,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.ranking.with_all.EvaluateDocumentRanking",
+          "elapsed": 0.06,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.behavior.with_all.EvaluateDocSearchBehavior",
+          "elapsed": 0.07,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.similarity.lexical.queries.CreateSimilarityQueries",
+          "elapsed": 0.07,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.scoring.lexical.ScoreOverlap.ScoreOverlap",
+          "elapsed": 0.08,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.scoring.lexical.ScoreBm25.ScoreBm25",
+          "elapsed": 0.04,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.scoring.Scoring.Scoring",
+          "elapsed": 0.25,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.scoring.lexical.AllScoringTargets.AllScoringTargets",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.offline.scoring.lexical.OfflineScoring.OfflineScoring",
+          "elapsed": 0.19,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.offline.scoring.lexical.MergeOfflineQueries.MergeOfflineQueries",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.scoring.lexical.SelectPopularQueries.SelectPopularQueries",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.scoring.lexical.SelectRecentQueries.SelectRecentQueries",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.online.scoring.lexical.OnlineScoring.OnlineScoring",
+          "elapsed": 0.26,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.experiments.scoring.Scoring001AdjustBm.Scoring001AdjustBm",
+          "elapsed": 0.19,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.similarity.lexical.reduce.ReduceSimilarityScores",
+          "elapsed": 0.1,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.similarity.lexical.Similarities.Similarities",
+          "elapsed": 0.29,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.searching.search_similarity.candidates.ExactSimilarityCandidates",
+          "elapsed": 0.04,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.searching.search_similarity.SearchSimilarity.SearchSimilarity",
+          "elapsed": 0.06,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands",
+          "elapsed": 0.05,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.chunking.Chunking.Chunking",
+          "elapsed": 0.04,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.chunking.Chunking.Chunking",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.fields.Fields.Fields",
+          "elapsed": 0.15,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.fields.Fields.Fields",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.indexing.Indexing.Indexing",
+          "elapsed": 0.11,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.indexing.Indexing.Indexing",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments",
+          "elapsed": 0.52,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments",
+          "elapsed": 0.51,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        }
+      ],
+      "by_phase": {
+        "source preparation": {
+          "requests": 54,
+          "elapsed": 5.879999999999999,
+          "hits": 0,
+          "misses": 54
+        },
+        "runtime": {
+          "requests": 10,
+          "elapsed": 1.33,
+          "hits": 5,
+          "misses": 5
+        }
+      },
+      "module_total": {
+        "elapsed": 7.2,
+        "requests": 64,
+        "hits": 5,
+        "misses": 59
+      },
+      "requests": 64,
+      "elapsed": 7.21,
+      "hits": 5,
+      "misses": 59,
+      "failures": 0
+    }
+  },
+  {
+    "backend": "pyspark35",
+    "case": "rerank",
+    "policy": "off",
+    "repetition": 3,
+    "exit_code": 0,
+    "wall_seconds": 86.32,
+    "log": "docs/dev/issues/I09272601/artifact-reuse-retries-2/artifact-reuse-pyspark35-rerank-off-3.log",
+    "phases": {
+      "generated source setup (integration_search_generated)": 0.0,
+      "SearchDocuments online construction": 29.72,
+      "SearchDocuments generated construction": 25.69,
+      "SearchDocuments online collection": 0.39,
+      "SearchDocuments generated collection": 0.27,
+      "generated source cleanup (integration_search_generated)": 0.0,
+      "snapshot fixture cleanup": 0.01,
+      "plan boundary cleanup": 0.09
+    },
+    "result": "1 passed, 193 deselected",
+    "pytest_seconds": 85.38,
+    "heap_exhaustion": false,
+    "snapshot_seconds": 8.01,
+    "compilation": {
+      "records": [
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.all.all.All",
+          "elapsed": 1.23,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.chunking.Chunking.Chunking",
+          "elapsed": 0.04,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.chunking.DocumentChunking.DocumentChunking",
+          "elapsed": 0.04,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.chunking.SentenceChunking.SentenceChunking",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.stats.ProfileDocuments.ProfileDocuments",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.features.BuildDocumentFeatures.BuildDocumentFeatures",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.features.BuildQueryFeatures.BuildQueryFeatures",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.features.Features.Features",
+          "elapsed": 0.02,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.training.BuildTrainingData.BuildTrainingData",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.training.RankDocumentCandidates.RankDocumentCandidates",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.training.Training.Training",
+          "elapsed": 0.02,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.stats.AnalyzeText.AnalyzeText",
+          "elapsed": 0.03,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.stats.CorpusText.CorpusText",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.indexing.Indexing.Indexing",
+          "elapsed": 0.09,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.fields.Fields.Fields",
+          "elapsed": 0.12,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.indexing.fields.FieldIndex.FieldIndex",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.searching.search_fields.SearchFields.SearchFields",
+          "elapsed": 0.57,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.searching.search_sentences.SearchSentences.SearchSentences",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.searching.search_passages.SearchPassages.SearchPassages",
+          "elapsed": 0.02,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.clicks.Impressions.Impressions",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.clicks.Clicks.Clicks",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals",
+          "elapsed": 0.08,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments",
+          "elapsed": 0.5,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.experiments.searching.search_docs.Searching001AdjustRerankSearchDocuments.Searching001AdjustRerankSearchDocuments",
+          "elapsed": 0.52,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.labeling.MergeQueryLabels.MergeQueryLabels",
+          "elapsed": 0.02,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.labeling.CreateQueryLabels.CreateQueryLabels",
+          "elapsed": 0.02,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.labeling.Labeling.Labeling",
+          "elapsed": 0.04,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.experiments.SelectExperimentScores.SelectExperimentScores",
+          "elapsed": 0.02,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.experiments.evaluation.search_docs.eval_ranking.EvaluateDocumentRanking",
+          "elapsed": 0.08,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.experiments.evaluation.search_docs.eval_behavior.EvaluateDocSearchBehavior",
+          "elapsed": 0.07,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.ranking.eval_ranking.EvaluateDocumentRanking",
+          "elapsed": 0.07,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior",
+          "elapsed": 0.07,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.ranking.with_labels.EvaluateDocumentRanking",
+          "elapsed": 0.06,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.behavior.with_labels.EvaluateDocSearchBehavior",
+          "elapsed": 0.06,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.ranking.with_users.EvaluateDocumentRanking",
+          "elapsed": 0.08,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.behavior.with_users.EvaluateDocSearchBehavior",
+          "elapsed": 0.07,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.ranking.with_all.EvaluateDocumentRanking",
+          "elapsed": 0.06,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.evaluation.search_docs.behavior.with_all.EvaluateDocSearchBehavior",
+          "elapsed": 0.07,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.similarity.lexical.queries.CreateSimilarityQueries",
+          "elapsed": 0.07,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.scoring.lexical.ScoreOverlap.ScoreOverlap",
+          "elapsed": 0.08,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.scoring.lexical.ScoreBm25.ScoreBm25",
+          "elapsed": 0.04,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.scoring.Scoring.Scoring",
+          "elapsed": 0.19,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.scoring.lexical.AllScoringTargets.AllScoringTargets",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.offline.scoring.lexical.OfflineScoring.OfflineScoring",
+          "elapsed": 0.21,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.offline.scoring.lexical.MergeOfflineQueries.MergeOfflineQueries",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.scoring.lexical.SelectPopularQueries.SelectPopularQueries",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.scoring.lexical.SelectRecentQueries.SelectRecentQueries",
+          "elapsed": 0.01,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.online.scoring.lexical.OnlineScoring.OnlineScoring",
+          "elapsed": 0.27,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.experiments.scoring.Scoring001AdjustBm.Scoring001AdjustBm",
+          "elapsed": 0.18,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.similarity.lexical.reduce.ReduceSimilarityScores",
+          "elapsed": 0.09,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.similarity.lexical.Similarities.Similarities",
+          "elapsed": 0.27,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.searching.search_similarity.candidates.ExactSimilarityCandidates",
+          "elapsed": 0.04,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.searching.search_similarity.SearchSimilarity.SearchSimilarity",
+          "elapsed": 0.06,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "source preparation",
+          "transform": "examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands",
+          "elapsed": 0.05,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.chunking.Chunking.Chunking",
+          "elapsed": 0.04,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.chunking.Chunking.Chunking",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.fields.Fields.Fields",
+          "elapsed": 0.13,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.fields.Fields.Fields",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.indexing.Indexing.Indexing",
+          "elapsed": 0.11,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.indexing.Indexing.Indexing",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments",
+          "elapsed": 0.51,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments",
+          "elapsed": 0.51,
+          "hits": 0,
+          "misses": 1,
+          "outcome": "success"
+        },
+        {
+          "phase": "runtime",
+          "transform": "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments",
+          "elapsed": 0.0,
+          "hits": 1,
+          "misses": 0,
+          "outcome": "success"
+        }
+      ],
+      "by_phase": {
+        "source preparation": {
+          "requests": 54,
+          "elapsed": 5.769999999999999,
+          "hits": 0,
+          "misses": 54
+        },
+        "runtime": {
+          "requests": 10,
+          "elapsed": 1.3,
+          "hits": 5,
+          "misses": 5
+        }
+      },
+      "module_total": {
+        "elapsed": 7.07,
+        "requests": 64,
+        "hits": 5,
+        "misses": 59
+      },
+      "requests": 64,
+      "elapsed": 7.07,
+      "hits": 5,
+      "misses": 59,
+      "failures": 0
+    }
+  },
+  {
+    "backend": "pyspark35",
+    "case": "rerank",
+    "policy": "module",
+    "repetition": 3,
+    "exit_code": 2,
+    "wall_seconds": 1.11,
+    "log": "docs/dev/issues/I09272601/artifact-reuse-retries-2/artifact-reuse-pyspark35-rerank-module-3.log",
+    "phases": {},
+    "result": "7 deselected, 1 error",
+    "pytest_seconds": 0.4,
+    "heap_exhaustion": false,
+    "snapshot_seconds": 0,
+    "compilation": {
+      "records": [],
+      "by_phase": {},
+      "module_total": null,
+      "requests": 0,
+      "elapsed": 0,
+      "hits": 0,
+      "misses": 0,
+      "failures": 0
+    }
+  },
+  {
+    "backend": "pyspark35",
+    "case": "text",
+    "policy": "off",
+    "repetition": 1,
+    "exit_code": 2,
+    "wall_seconds": 1.02,
+    "log": "docs/dev/issues/I09272601/artifact-reuse-retries-2/artifact-reuse-pyspark35-text-off-1.log",
+    "phases": {},
+    "result": "7 deselected, 1 error",
+    "pytest_seconds": 0.39,
+    "heap_exhaustion": false,
+    "snapshot_seconds": 0,
+    "compilation": {
+      "records": [],
+      "by_phase": {},
+      "module_total": null,
+      "requests": 0,
+      "elapsed": 0,
+      "hits": 0,
+      "misses": 0,
+      "failures": 0
+    }
+  },
+  {
+    "backend": "pyspark35",
+    "case": "text",
+    "policy": "module",
+    "repetition": 1,
+    "exit_code": 2,
+    "wall_seconds": 1.06,
+    "log": "docs/dev/issues/I09272601/artifact-reuse-retries-2/artifact-reuse-pyspark35-text-module-1.log",
+    "phases": {},
+    "result": "7 deselected, 1 error",
+    "pytest_seconds": 0.41,
+    "heap_exhaustion": false,
+    "snapshot_seconds": 0,
+    "compilation": {
+      "records": [],
+      "by_phase": {},
+      "module_total": null,
+      "requests": 0,
+      "elapsed": 0,
+      "hits": 0,
+      "misses": 0,
+      "failures": 0
+    }
+  },
+  {
+    "backend": "pyspark35",
+    "case": "text",
+    "policy": "module",
+    "repetition": 2,
+    "exit_code": 2,
+    "wall_seconds": 1.03,
+    "log": "docs/dev/issues/I09272601/artifact-reuse-retries-2/artifact-reuse-pyspark35-text-module-2.log",
+    "phases": {},
+    "result": "7 deselected, 1 error",
+    "pytest_seconds": 0.39,
+    "heap_exhaustion": false,
+    "snapshot_seconds": 0,
+    "compilation": {
+      "records": [],
+      "by_phase": {},
+      "module_total": null,
+      "requests": 0,
+      "elapsed": 0,
+      "hits": 0,
+      "misses": 0,
+      "failures": 0
+    }
+  },
+  {
+    "backend": "pyspark35",
+    "case": "text",
+    "policy": "off",
+    "repetition": 2,
+    "exit_code": 2,
+    "wall_seconds": 1.04,
+    "log": "docs/dev/issues/I09272601/artifact-reuse-retries-2/artifact-reuse-pyspark35-text-off-2.log",
+    "phases": {},
+    "result": "7 deselected, 1 error",
+    "pytest_seconds": 0.39,
+    "heap_exhaustion": false,
+    "snapshot_seconds": 0,
+    "compilation": {
+      "records": [],
+      "by_phase": {},
+      "module_total": null,
+      "requests": 0,
+      "elapsed": 0,
+      "hits": 0,
+      "misses": 0,
+      "failures": 0
+    }
+  },
+  {
+    "backend": "pyspark35",
+    "case": "text",
+    "policy": "off",
+    "repetition": 3,
+    "exit_code": 2,
+    "wall_seconds": 1.04,
+    "log": "docs/dev/issues/I09272601/artifact-reuse-retries-2/artifact-reuse-pyspark35-text-off-3.log",
+    "phases": {},
+    "result": "7 deselected, 1 error",
+    "pytest_seconds": 0.39,
+    "heap_exhaustion": false,
+    "snapshot_seconds": 0,
+    "compilation": {
+      "records": [],
+      "by_phase": {},
+      "module_total": null,
+      "requests": 0,
+      "elapsed": 0,
+      "hits": 0,
+      "misses": 0,
+      "failures": 0
+    }
+  },
+  {
+    "backend": "pyspark35",
+    "case": "text",
+    "policy": "module",
+    "repetition": 3,
+    "exit_code": 2,
+    "wall_seconds": 1.04,
+    "log": "docs/dev/issues/I09272601/artifact-reuse-retries-2/artifact-reuse-pyspark35-text-module-3.log",
+    "phases": {},
+    "result": "7 deselected, 1 error",
+    "pytest_seconds": 0.39,
+    "heap_exhaustion": false,
+    "snapshot_seconds": 0,
+    "compilation": {
+      "records": [],
+      "by_phase": {},
+      "module_total": null,
+      "requests": 0,
+      "elapsed": 0,
+      "hits": 0,
+      "misses": 0,
+      "failures": 0
+    }
+  }
+]

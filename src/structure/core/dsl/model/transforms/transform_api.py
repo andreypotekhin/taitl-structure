@@ -22,6 +22,7 @@ from structure.plugin.api.v1.model import current_symbolic_context
 _CLASS_OPTIONS = {
     "target",
     "validate_intermediate",
+    "prune_unused_steps",
     "streaming",
     "warn_on_udfs",
     "warn_on_lineage_growth",

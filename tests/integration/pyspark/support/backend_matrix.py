@@ -144,6 +144,15 @@ def _plugin() -> dict[str, dict[str, object]]:
     return {"pyspark": options}
 
 
+def _prune_unused_steps() -> bool:
+    value = os.environ.get("STRUCTURE_PRUNE_UNUSED_STEPS")
+    if value is None:
+        return True
+    if value.lower() not in {"true", "false"}:
+        raise ValueError("STRUCTURE_PRUNE_UNUSED_STEPS must be true or false")
+    return value.lower() == "true"
+
+
 def session(
     spark,
     *,
@@ -158,6 +167,7 @@ def session(
             execution_mode=execution_mode,
             generated_package=generated_package or "structure_generated",
             allow_stage_outputs=allow_stage_outputs,
+            prune_unused_steps=_prune_unused_steps(),
             plugin=_plugin(),
         ),
         artifacts=artifacts,
@@ -172,6 +182,7 @@ def _compiler_options(
         generated_package=generated_package,
         generated_code_options=generated_code_options,
         allow_stage_outputs=allow_stage_outputs,
+        prune_unused_steps=_prune_unused_steps(),
         plugin=_plugin(),
     )
     return CompilerOptions.from_config(config)
