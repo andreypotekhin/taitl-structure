@@ -100,6 +100,8 @@ def command_for(backend: str, case: str, policy: str, timeout: int) -> list[str]
         "-e",
         "STRUCTURE_SEARCH_STAGE_OUTPUTS=0",
         "-e",
+        "STRUCTURE_PRUNE_UNUSED_STEPS=false",
+        "-e",
         f"STRUCTURE_INTEGRATION_TIMEOUT={timeout}",
         "-e",
         f"INTEGRATION_PYTEST_ARGS=-k {CASES[case]} -vv -s --durations=20",

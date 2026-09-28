@@ -257,3 +257,59 @@ The lexical gap candidate passed the focused batch parity assertions and the gen
 existence join replaces the former four left joins. The stored/streamed retrieval-enrichment candidate was deferred:
 the current DSL cannot preserve both existing stage views while sharing the enrichment chain, and mixed batch/stream
 compatibility has not cleared its promotion gate. Upstream materialization and cross-backend repetition remain open.
+
+## Compiled-artifact reuse matrix (2026-09-28)
+
+The controlled reuse experiment completed 54 sequential samples: three repetitions each for reranking, the text
+fixture, and the complete `test_search.py` module; each repetition alternated `off` and `module` on ordinary Spark
+3.5, ordinary Spark 4.0, and Spark Connect 4.0. Every sample used a fresh Compose runner, identical fixtures and
+inputs, `STRUCTURE_PLAN_BOUNDARIES=auto`, stage outputs disabled, `STRUCTURE_PROFILE_COMPILATION=1`,
+`STRUCTURE_PROFILE_QUERY_PLANS=1`, and `STRUCTURE_PRUNE_UNUSED_STEPS=false`. No Docker benchmark or build ran
+concurrently after the matrix was restarted on the settled checkout.
+
+Runtime settings were Spark/PySpark 3.5.0 and 4.0.0, ordinary drivers at the 1 GiB default, Connect at 3 GiB with
+`local[2]`, one shuffle partition, adaptive execution disabled, broadcast joins disabled, and an 8192-character
+diagnostic plan-string cap. The benchmark command was:
+
+    poetry run python scripts/benchmark_search_artifact_reuse.py \
+      --output docs/dev/issues/I09272601/artifact-reuse-final-matrix
+
+All 54 runs passed their selected assertions (focused cases: one passed; full module: seven passed), and none reported
+driver heap exhaustion. The table reports medians across the three repetitions. Compilation hit/miss counts are split
+into source preparation and runtime; compilation time is nested in the normal preparation/construction totals.
+
+| Backend | Case | Policy | Pytest s | Wall s | Construction s | Source hits/misses | Runtime hits/misses | Compile s |
+| --- | --- | --- | ---: | ---: | ---: | --- | --- | ---: |
+| Spark 3.5 | rerank | off | 94.24 | 95.35 | 61.19 | 0/54 | 5/5 | 7.69 |
+| Spark 3.5 | rerank | module | 91.77 | 92.80 | 58.86 | 0/54 | 10/0 | 6.39 |
+| Spark 3.5 | text | off | 60.68 | 61.74 | 1.84 | 0/54 | 30/30 | 8.73 |
+| Spark 3.5 | text | module | 58.78 | 59.85 | 1.53 | 0/54 | 60/0 | 6.75 |
+| Spark 3.5 | full module | off | 162.36 | 163.42 | 51.81 | 0/57 | 55/55 | 10.96 |
+| Spark 3.5 | full module | module | 151.61 | 152.63 | 51.10 | 3/54 | 110/0 | 6.24 |
+| Spark 4.0 | rerank | off | 88.84 | 89.86 | 55.06 | 0/54 | 5/5 | 7.87 |
+| Spark 4.0 | rerank | module | 97.17 | 99.04 | 60.34 | 0/54 | 10/0 | 8.23 |
+| Spark 4.0 | text | off | 63.06 | 63.97 | 2.61 | 0/54 | 30/30 | 8.11 |
+| Spark 4.0 | text | module | 59.38 | 60.32 | 2.20 | 0/54 | 60/0 | 6.22 |
+| Spark 4.0 | full module | off | 244.61 | 245.64 | 81.65 | 0/57 | 55/55 | 12.95 |
+| Spark 4.0 | full module | module | 180.14 | 181.17 | 60.05 | 3/54 | 110/0 | 6.24 |
+| Connect 4.0 | rerank | off | 222.87 | 226.57 | 141.86 | 0/54 | 5/5 | 34.79 |
+| Connect 4.0 | rerank | module | 216.11 | 219.87 | 135.57 | 0/54 | 10/0 | 29.38 |
+| Connect 4.0 | text | off | 42.64 | 43.89 | 2.62 | 0/54 | 30/30 | 8.82 |
+| Connect 4.0 | text | module | 45.85 | 47.14 | 2.23 | 0/54 | 60/0 | 7.13 |
+| Connect 4.0 | full module | off | 111.67 | 112.94 | 31.45 | 0/57 | 55/55 | 11.22 |
+| Connect 4.0 | full module | module | 106.24 | 107.59 | 29.60 | 3/54 | 110/0 | 6.62 |
+
+Module reuse removed all repeated runtime misses in every successful cell and reduced compiler time by roughly 1.9–6.7
+seconds per sample. Total runtime changed with the dominant Spark workload: it improved by 2.7%/3.1%/6.6% on the
+Spark 3.5 rerank/text/full-module cases, by 10.2%/5.7%/26.2% on Spark 4.0, and by 3.0%/−7.4%/4.7% on Connect
+rerank/text/full-module cases (negative means the module median was slower). This supports artifact reuse as a
+real compiler-cost reduction, not a universal end-to-end speedup; Spark plan construction, checkpointing, and runner
+startup remain the dominant costs in the slower cases.
+
+Raw per-run results, concise logs, and parsed medians are in
+[artifact-reuse-final-matrix](artifact-reuse-final-matrix/). An earlier exploratory matrix retained four failed
+Spark 3.5 setup logs. They all traced to the temporary Search lane rewrite passing a row-scoped lane to `union_all`,
+and a later retry also exposed a missing optimizer descriptor in the concurrent checkout. The Search source was
+restored to its intended union-plus-single-existence-join form with the driving availability relation preserved; the
+optimizer task supplied the descriptor and its focused contract suite passed. Those diagnostic logs remain preserved
+outside the final matrix and are not included in the medians.
