@@ -1,0 +1,62 @@
+time="2026-09-29T13:37:15-07:00" level=warning msg="Found orphan containers ([structure-search-cohort-policy-final2 structure-search-cohort-policy-final structure-search-cohort-policy structure-search-pyspark35-remediation-final structure-search-rerank-remediation structure-search-pyspark35-remediation-3 structure-search-pyspark35-remediation-2 structure-search-pyspark35-remediation structure-connect35-projection]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up."
+ Container structure-integration-spark40-master-1  Running
+ Container structure-integration-spark40-worker-1  Running
+============================= test session starts ==============================
+platform linux -- Python 3.11.16, pytest-8.4.2, pluggy-1.6.0 -- /usr/local/bin/python
+rootdir: /workspace
+configfile: pyproject.toml
+collecting ... collected 209 items / 208 deselected / 1 selected
+
+../workspace/tests/integration/pyspark/search/test_search.py::test_document_search_reranks_bm25_candidates_for_multiple_queries [phase] generated source setup (integration_search_generated): starting
+[phase] generated source setup (integration_search_generated): 0.00s
+[snapshot] chunking.sections: starting
+[snapshot] chunking.sections: 1.44s
+[snapshot] chunking.paragraphs: starting
+[snapshot] chunking.paragraphs: 0.22s
+[snapshot] chunking.sentences: starting
+[snapshot] chunking.sentences: 1.26s
+[snapshot] indexing.document_terms: starting
+[snapshot] indexing.document_terms: 1.38s
+[snapshot] indexing.document_summary: starting
+[snapshot] indexing.document_summary: 0.21s
+[snapshot] indexing.section_terms: starting
+[snapshot] indexing.section_terms: 0.51s
+[snapshot] indexing.section_summary: starting
+[snapshot] indexing.section_summary: 0.20s
+[snapshot] indexing.paragraph_terms: starting
+[snapshot] indexing.paragraph_terms: 0.49s
+[snapshot] indexing.paragraph_summary: starting
+[snapshot] indexing.paragraph_summary: 0.21s
+[snapshot] indexing.sentence_terms: starting
+[snapshot] indexing.sentence_terms: 0.55s
+[snapshot] indexing.sentence_summary: starting
+[snapshot] indexing.sentence_summary: 0.20s
+[snapshot] indexing.field_terms: starting
+[snapshot] indexing.field_terms: 0.17s
+[phase] SearchDocuments online construction: starting
+[phase] SearchDocuments online construction: 17.65s
+[phase] SearchDocuments generated construction: starting
+[phase] SearchDocuments generated construction: 12.78s
+[phase] Handwritten cached lexical reference construction: starting
+[phase] Handwritten cached lexical reference construction: 0.24s
+[phase] SearchDocuments online collection: starting
+[phase] SearchDocuments online collection: 0.31s
+[phase] SearchDocuments generated collection: starting
+[phase] SearchDocuments generated collection: 0.22s
+[phase] Handwritten cached lexical reference collection: starting
+[phase] Handwritten cached lexical reference collection: 0.28s
+[search-repeat] {"collection_seconds": 0.24477687498438172, "construction_seconds": 15.709216507006204, "mode": "online", "query_id": "q-repeat-miss-0", "request_index": 0, "rows": 2, "workload": "score-cache-miss"}
+[search-repeat] {"collection_seconds": 0.23323004101985134, "construction_seconds": 12.809042548004072, "mode": "generated", "query_id": "q-repeat-miss-0", "request_index": 0, "rows": 2, "workload": "score-cache-miss"}
+[phase] generated source cleanup (integration_search_generated): starting
+[phase] generated source cleanup (integration_search_generated): 0.00s
+PASSED[phase] snapshot fixture cleanup: starting
+[phase] snapshot fixture cleanup: 0.01s
+[phase] plan boundary cleanup: starting
+[phase] plan boundary cleanup: 0.41s
+
+
+============================= slowest 20 durations =============================
+68.62s call     tests/integration/pyspark/search/test_search.py::test_document_search_reranks_bm25_candidates_for_multiple_queries
+12.36s setup    tests/integration/pyspark/search/test_search.py::test_document_search_reranks_bm25_candidates_for_multiple_queries
+0.46s teardown tests/integration/pyspark/search/test_search.py::test_document_search_reranks_bm25_candidates_for_multiple_queries
+================= 1 passed, 208 deselected in 82.70s (0:01:22) =================

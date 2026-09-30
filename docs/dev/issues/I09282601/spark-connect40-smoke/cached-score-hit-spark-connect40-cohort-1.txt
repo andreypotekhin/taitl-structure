@@ -1,0 +1,65 @@
+time="2026-09-29T11:56:37-07:00" level=warning msg="Found orphan containers ([structure-search-cohort-policy-final2 structure-search-cohort-policy-final structure-search-cohort-policy structure-search-pyspark35-remediation-final structure-search-rerank-remediation structure-search-pyspark35-remediation-3 structure-search-pyspark35-remediation-2 structure-search-pyspark35-remediation structure-connect35-projection]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up."
+ Container structure-integration-spark40-master-1  Running
+ Container structure-integration-spark40-worker-1  Running
+============================= test session starts ==============================
+platform linux -- Python 3.11.16, pytest-8.4.2, pluggy-1.6.0 -- /usr/local/bin/python
+rootdir: /workspace
+configfile: pyproject.toml
+collecting ... collected 209 items / 208 deselected / 1 selected
+
+../workspace/tests/integration/pyspark/search/test_search.py::test_document_search_reranks_bm25_candidates_for_multiple_queries [phase] generated source setup (integration_search_generated): starting
+[phase] generated source setup (integration_search_generated): 0.01s
+[snapshot] chunking.sections: starting
+[snapshot] chunking.sections: 2.94s
+[snapshot] chunking.paragraphs: starting
+[snapshot] chunking.paragraphs: 0.43s
+[snapshot] chunking.sentences: starting
+[snapshot] chunking.sentences: 2.61s
+[snapshot] indexing.document_terms: starting
+[snapshot] indexing.document_terms: 2.99s
+[snapshot] indexing.document_summary: starting
+[snapshot] indexing.document_summary: 0.48s
+[snapshot] indexing.section_terms: starting
+[snapshot] indexing.section_terms: 1.37s
+[snapshot] indexing.section_summary: starting
+[snapshot] indexing.section_summary: 0.49s
+[snapshot] indexing.paragraph_terms: starting
+[snapshot] indexing.paragraph_terms: 1.02s
+[snapshot] indexing.paragraph_summary: starting
+[snapshot] indexing.paragraph_summary: 0.54s
+[snapshot] indexing.sentence_terms: starting
+[snapshot] indexing.sentence_terms: 1.09s
+[snapshot] indexing.sentence_summary: starting
+[snapshot] indexing.sentence_summary: 0.47s
+[snapshot] indexing.field_terms: starting
+[snapshot] indexing.field_terms: 0.36s
+[phase] SearchDocuments online construction: starting
+[phase] SearchDocuments online construction: 32.82s
+[phase] SearchDocuments generated construction: starting
+[phase] SearchDocuments generated construction: 24.23s
+[phase] Handwritten cached lexical reference construction: starting
+[phase] Handwritten cached lexical reference construction: 0.39s
+[phase] SearchDocuments online collection: starting
+[phase] SearchDocuments online collection: 0.68s
+[phase] SearchDocuments generated collection: starting
+[phase] SearchDocuments generated collection: 0.51s
+[phase] Handwritten cached lexical reference collection: starting
+[phase] Handwritten cached lexical reference collection: 0.60s
+[search-repeat] {"mode": "prepared-handwritten", "preparation_seconds": 0.2528771249926649, "workload": "cached-score-hit"}
+[search-repeat] {"collection_seconds": 0.4605206249980256, "construction_seconds": 26.778616386989597, "mode": "online", "query_id": "q-repeat-0", "request_index": 0, "rows": 3, "workload": "cached-score-hit"}
+[search-repeat] {"collection_seconds": 0.5366557500092313, "construction_seconds": 26.697725970007014, "mode": "generated", "query_id": "q-repeat-0", "request_index": 0, "rows": 3, "workload": "cached-score-hit"}
+[search-repeat] {"collection_seconds": 0.4708753750019241, "construction_seconds": 0.35062625000136904, "mode": "handwritten", "query_id": "q-repeat-0", "request_index": 0, "rows": 3, "workload": "cached-score-hit"}
+[search-repeat] {"collection_seconds": 0.5648978340032045, "construction_seconds": 0.29880483401939273, "mode": "prepared-handwritten", "query_id": "q-repeat-0", "request_index": 0, "rows": 3, "workload": "cached-score-hit"}
+[phase] generated source cleanup (integration_search_generated): starting
+[phase] generated source cleanup (integration_search_generated): 0.00s
+PASSED[phase] snapshot fixture cleanup: starting
+[phase] snapshot fixture cleanup: 0.02s
+[phase] plan boundary cleanup: starting
+[phase] plan boundary cleanup: 1.00s
+
+
+============================= slowest 20 durations =============================
+133.31s call     tests/integration/pyspark/search/test_search.py::test_document_search_reranks_bm25_candidates_for_multiple_queries
+18.63s setup    tests/integration/pyspark/search/test_search.py::test_document_search_reranks_bm25_candidates_for_multiple_queries
+1.11s teardown tests/integration/pyspark/search/test_search.py::test_document_search_reranks_bm25_candidates_for_multiple_queries
+================ 1 passed, 208 deselected in 155.23s (0:02:35) =================

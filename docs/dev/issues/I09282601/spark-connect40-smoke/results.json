@@ -1,0 +1,92 @@
+[
+  {
+    "backend": "spark-connect40",
+    "variant": "cached-score-hit",
+    "cohort": 1,
+    "mode_order": [
+      "online",
+      "generated",
+      "handwritten",
+      "prepared-handwritten"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 157.0,
+    "log": "/Users/chaos/Files/Dev/Code/taitl-structure/docs/dev/issues/I09282601/spark-connect40-smoke/cached-score-hit-spark-connect40-cohort-1.txt",
+    "source_identity": {
+      "commit": "2bb21c8362720083b5596fee53e8453a6e78bdf1",
+      "dirty_file_sha256": {
+        "docs/dev/issues/I09282601.Search-repeat-query-latency.issue.md": "915fe82116d005e4807c87d6e7d0a50d317cea01cbb2c90c0a11dcf2df16b6cc",
+        "docs/dev/issues/I09282601/SearchRepeatQueries.bench.md": "56007eb4cc415e96e417544fe021eae8cd81705834291b39ef8f111ed51e5f9b",
+        "docs/dev/issues/I09282601/SearchRepeatQueries.design.md": "b41eb642a52dc63c3830ecef666ac38ad49dab86cd8964bccd2434fb9e1ff5dc",
+        "docs/dev/issues/I09282601/StreamingFeasibility.design.md": "c47f004e65987117e426959394c90ab14866965c38dbec43ddcab24e9e4c56dd",
+        "docs/dev/issues/I09282601/pyspark35-smoke/cached-score-hit-pyspark35-cohort-1.txt": "1c5f221cc6ce638a98b5e4dc3b80d73464412686b5a0888689ee002e44404c1b",
+        "docs/dev/issues/I09282601/pyspark35-smoke/medians.json": "1b8e6d39e816ba8829551bcffc0b7593842941f713e3838af25762f7c483181d",
+        "docs/dev/issues/I09282601/pyspark35-smoke/results.json": "81be9d9ade4a9b9398f26a1f523625468949f58d0560f0afce4e845fbcc41372",
+        "docs/dev/issues/I09282601/pyspark40-final/medians.json": "ee55cce0be0ddca470e1d7478f42fbec91e3c41a6e1582572e9e53254e795068",
+        "docs/dev/issues/I09282601/pyspark40-final/results.json": "21ee11a370801e352f0c31cb98a7350d06dc57c83ef815a97f20e580360e8ba6",
+        "docs/dev/issues/I09282601/pyspark40-parity/cached-score-hit-pyspark40-cohort-1.txt": "2251f8221d55006057a7e2e99f3f53f0a646e44ce09c877af938fd4a8a04002f",
+        "docs/dev/issues/I09282601/pyspark40-parity/medians.json": "62ffa799bec7072bead39ac09ce0979f35feccbd6735b2aac8386a033300cfda",
+        "docs/dev/issues/I09282601/pyspark40-parity/results.json": "caf2e8103ade58ce48a5301e563ff2c4b91e67a8444649f255ae40f22599a877",
+        "docs/dev/issues/I09282601/pyspark40-retry/medians.json": "ee55cce0be0ddca470e1d7478f42fbec91e3c41a6e1582572e9e53254e795068",
+        "docs/dev/issues/I09282601/pyspark40-retry/results.json": "7ebbd0e330fbdfb4705b3bffd1cc6e0b297539b805ff3cd485ada6c34d6db0a4",
+        "docs/dev/issues/I09282601/pyspark40-schema-check/medians.json": "ee55cce0be0ddca470e1d7478f42fbec91e3c41a6e1582572e9e53254e795068",
+        "docs/dev/issues/I09282601/pyspark40-schema-check/results.json": "fa1b48e488c4b4dca7318ba7c0f97e4e52a74234cbc7cfce4d7cb7c292b170db",
+        "docs/dev/issues/I09282601/pyspark40-smoke/medians.json": "ee55cce0be0ddca470e1d7478f42fbec91e3c41a6e1582572e9e53254e795068",
+        "docs/dev/issues/I09282601/pyspark40-smoke/results.json": "518d394eaf13372be72c1dfaf4ea3a2b06e0c7552f71e1e3f03d288f4a99e755",
+        "docs/dev/planning/P08022605.SearchDocuments-structured-streaming.plan.md": "90382f6e9d426d3c3f68971a43ba703f5e6cf1184a9528038430b69b10ec46f9",
+        "docs/dev/planning/P09282601.Search-repeat-query-streaming.plan.md": "6abc0d2b7a6ba519b4d8f83058a4ea206984570e0c798767472354ad91e809ee",
+        "scripts/benchmark_search_repeat_queries.py": "94ea3660cd96c81de4f3e6229b9eff742099dc1dd6359b3410ea5cedc2a769e5",
+        "tests/app/test_search_benchmark.py": "92f8698995608e82b60d0434c24a0c75851e6c026516c80346581ae494deb4ff",
+        "tests/integration/pyspark/search/support/handwritten_search.py": "743323930c9401cb995266d1ce9789a92145c68a5ef379dcf5d15f104cea0ebe",
+        "tests/integration/pyspark/search/test_search.py": "df036fadc4ca31af9e6f1da8ba3f430adccf49491f16f438ac718d6607298034",
+        "tests/integration/pyspark/search/test_search_streaming_prototype.py": "29e93989b3cad3a1e4c05b60e968f1919aefe1e48786d17afe922d840744f2b9",
+        "tests/integration/pyspark/support/backend_matrix.py": "c81b657e3ac48d496d3a7989253a451654f240bc1252d86a53aaec868b720e13",
+        "tests/integration/pyspark/support/test_connect_udf.py": "1b91113672ef1376807d86189660ef00124c8ec331ce3f6bd7ad98ad46f8176b"
+      }
+    },
+    "measurements": {
+      "preparation_seconds": 0.2528771249926649,
+      "requests": [
+        {
+          "collection_seconds": 0.4605206249980256,
+          "construction_seconds": 26.778616386989597,
+          "mode": "online",
+          "query_id": "q-repeat-0",
+          "request_index": 0,
+          "rows": 3,
+          "workload": "cached-score-hit"
+        },
+        {
+          "collection_seconds": 0.5366557500092313,
+          "construction_seconds": 26.697725970007014,
+          "mode": "generated",
+          "query_id": "q-repeat-0",
+          "request_index": 0,
+          "rows": 3,
+          "workload": "cached-score-hit"
+        },
+        {
+          "collection_seconds": 0.4708753750019241,
+          "construction_seconds": 0.35062625000136904,
+          "mode": "handwritten",
+          "query_id": "q-repeat-0",
+          "request_index": 0,
+          "rows": 3,
+          "workload": "cached-score-hit"
+        },
+        {
+          "collection_seconds": 0.5648978340032045,
+          "construction_seconds": 0.29880483401939273,
+          "mode": "prepared-handwritten",
+          "query_id": "q-repeat-0",
+          "request_index": 0,
+          "rows": 3,
+          "workload": "cached-score-hit"
+        }
+      ],
+      "test_result": "1 passed, 208 deselected",
+      "pytest_seconds": 155.23,
+      "heap_exhaustion": false
+    }
+  }
+]

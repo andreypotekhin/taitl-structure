@@ -1,0 +1,20 @@
+[
+  {
+    "backend": "pyspark35",
+    "variant": "score-cache-miss",
+    "mode": "online",
+    "request_samples": 3,
+    "median_construction_seconds": 50.677066689007916,
+    "median_collection_seconds": 0.564113542000996,
+    "median_preparation_seconds": null
+  },
+  {
+    "backend": "pyspark35",
+    "variant": "score-cache-miss",
+    "mode": "generated",
+    "request_samples": 3,
+    "median_construction_seconds": 124.12182176599163,
+    "median_collection_seconds": 1.641030750994105,
+    "median_preparation_seconds": null
+  }
+]

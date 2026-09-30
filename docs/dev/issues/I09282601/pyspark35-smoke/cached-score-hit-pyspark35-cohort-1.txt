@@ -1,0 +1,284 @@
+time="2026-09-29T10:24:15-07:00" level=warning msg="Found orphan containers ([structure-search-cohort-policy-final2 structure-search-cohort-policy-final structure-search-cohort-policy structure-search-pyspark35-remediation-final structure-search-rerank-remediation structure-search-pyspark35-remediation-3 structure-search-pyspark35-remediation-2 structure-search-pyspark35-remediation structure-connect35-projection]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up."
+ Container structure-integration-spark35-master-1  Running
+ Container structure-integration-spark35-worker-1  Running
+============================= test session starts ==============================
+platform linux -- Python 3.11.16, pytest-8.4.2, pluggy-1.6.0 -- /usr/local/bin/python
+rootdir: /workspace
+configfile: pyproject.toml
+collecting ... collected 209 items / 208 deselected / 1 selected
+
+../workspace/tests/integration/pyspark/search/test_search.py::test_document_search_reranks_bm25_candidates_for_multiple_queries :: loading settings :: url = jar:file:/usr/local/lib/python3.11/site-packages/pyspark/jars/ivy-2.5.1.jar!/org/apache/ivy/core/settings/ivysettings.xml
+Ivy Default Cache set to: /root/.ivy2/cache
+The jars for the packages stored in: /root/.ivy2/jars
+org.apache.sedona#sedona-spark-shaded-3.5_2.12 added as a dependency
+org.datasyslab#geotools-wrapper added as a dependency
+:: resolving dependencies :: org.apache.spark#spark-submit-parent-aedc0b48-e327-42c7-b2e4-585c883e34dc;1.0
+	confs: [default]
+	found org.apache.sedona#sedona-spark-shaded-3.5_2.12;1.9.0 in central
+	found org.datasyslab#geotools-wrapper;1.9.0-33.5 in central
+downloading https://repo1.maven.org/maven2/org/apache/sedona/sedona-spark-shaded-3.5_2.12/1.9.0/sedona-spark-shaded-3.5_2.12-1.9.0.jar ...
+	[SUCCESSFUL ] org.apache.sedona#sedona-spark-shaded-3.5_2.12;1.9.0!sedona-spark-shaded-3.5_2.12.jar (3885ms)
+downloading https://repo1.maven.org/maven2/org/datasyslab/geotools-wrapper/1.9.0-33.5/geotools-wrapper-1.9.0-33.5.jar ...
+	[SUCCESSFUL ] org.datasyslab#geotools-wrapper;1.9.0-33.5!geotools-wrapper.jar (1422ms)
+:: resolution report :: resolve 1676ms :: artifacts dl 5310ms
+	:: modules in use:
+	org.apache.sedona#sedona-spark-shaded-3.5_2.12;1.9.0 from central in [default]
+	org.datasyslab#geotools-wrapper;1.9.0-33.5 from central in [default]
+	---------------------------------------------------------------------
+	|                  |            modules            ||   artifacts   |
+	|       conf       | number| search|dwnlded|evicted|| number|dwnlded|
+	---------------------------------------------------------------------
+	|      default     |   2   |   2   |   2   |   0   ||   2   |   2   |
+	---------------------------------------------------------------------
+:: retrieving :: org.apache.spark#spark-submit-parent-aedc0b48-e327-42c7-b2e4-585c883e34dc
+	confs: [default]
+	2 artifacts copied, 0 already retrieved (111193kB/49ms)
+26/09/29 17:24:31 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+26/09/29 17:24:33 WARN SparkContext: Spark is not running in local mode, therefore the checkpoint directory must not be on the local filesystem. Directory '/workspace/.pytest-workspace-tmp/integration/checkpoints-w1wfza26' appears to be on the local filesystem.
+[phase] generated source setup (integration_search_generated): starting
+[phase] generated source setup (integration_search_generated): 0.00s
+26/09/29 17:24:34 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 8361 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:24:34 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 9097 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[snapshot] chunking.sections: starting
+[Stage 2:>                  (0 + 2) / 2][Stage 6:>                  (0 + 2) / 2]                                                                                [snapshot] chunking.sections: 2.05s
+[snapshot] chunking.paragraphs: starting
+[snapshot] chunking.paragraphs: 0.39s
+[snapshot] chunking.sentences: starting
+[Stage 20:>                                                         (0 + 1) / 1]                                                                                [snapshot] chunking.sentences: 1.68s
+[snapshot] indexing.document_terms: starting
+26/09/29 17:24:40 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 9511 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[snapshot] indexing.document_terms: 1.21s
+[snapshot] indexing.document_summary: starting
+[snapshot] indexing.document_summary: 0.25s
+[snapshot] indexing.section_terms: starting
+26/09/29 17:24:42 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 10808 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[snapshot] indexing.section_terms: 0.53s
+[snapshot] indexing.section_summary: starting
+[snapshot] indexing.section_summary: 0.30s
+[snapshot] indexing.paragraph_terms: starting
+26/09/29 17:24:43 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 11613 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[snapshot] indexing.paragraph_terms: 0.56s
+[snapshot] indexing.paragraph_summary: starting
+[snapshot] indexing.paragraph_summary: 0.30s
+[snapshot] indexing.sentence_terms: starting
+26/09/29 17:24:43 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 12249 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[snapshot] indexing.sentence_terms: 0.57s
+[snapshot] indexing.sentence_summary: starting
+[snapshot] indexing.sentence_summary: 0.29s
+[snapshot] indexing.field_terms: starting
+[snapshot] indexing.field_terms: 0.53s
+[phase] SearchDocuments online construction: starting
+26/09/29 17:24:45 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 19651 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:24:45 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 32050 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:24:46 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 129327 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:24:46 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 145689 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:24:46 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 155965 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:24:46 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 156023 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:24:46 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 156067 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:24:46 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 156100 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:24:47 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 145709 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:24:49 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 942431 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:24:53 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 1943715 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[Stage 152:=> (1 + 1) / 2][Stage 214:>  (0 + 1) / 1][Stage 317:>  (0 + 2) / 2][Stage 317:>  (0 + 2) / 2][Stage 322:>  (0 + 2) / 2][Stage 543:>  (0 + 2) / 2][Stage 286:>                                                        (0 + 0) / 1][Stage 286:>  (0 + 0) / 1][Stage 329:>  (0 + 0) / 1][Stage 347:>  (0 + 0) / 1][Stage 230:>  (0 + 0) / 1][Stage 246:>  (0 + 0) / 1][Stage 262:>  (0 + 0) / 1][Stage 216:>  (0 + 0) / 1][Stage 222:>  (0 + 0) / 1][Stage 230:>  (0 + 0) / 1][Stage 148:=> (1 + 2) / 3][Stage 164:==>(2 + 1) / 3][Stage 173:>  (0 + 2) / 3][Stage 173:==>(2 + 1) / 3][Stage 179:>  (0 + 2) / 3][Stage 187:>  (0 + 0) / 3][Stage 187:=> (1 + 2) / 3][Stage 194:>  (0 + 1) / 1][Stage 203:>  (0 + 0) / 3][Stage 203:>  (0 + 2) / 3][Stage 216:>  (0 + 0) / 1][Stage 222:>  (0 + 0) / 1][Stage 203:==>(2 + 1) / 3][Stage 216:>  (0 + 1) / 1][Stage 222:>  (0 + 0) / 1][Stage 222:>  (0 + 1) / 1][Stage 230:>  (0 + 1) / 1][Stage 238:>  (0 + 1) / 1][Stage 262:>  (0 + 0) / 1][Stage 271:>  (0 + 0) / 1][Stage 279:>  (0 + 0) / 1][Stage 262:>  (0 + 1) / 1][Stage 271:>  (0 + 1) / 1][Stage 279:>  (0 + 1) / 1][Stage 307:>  (0 + 1) / 1][Stage 319:>  (0 + 1) / 1][Stage 328:>  (0 + 0) / 1][Stage 328:>  (0 + 0) / 1][Stage 329:>  (0 + 0) / 1][Stage 336:>  (0 + 0) / 1][Stage 329:>  (0 + 1) / 1][Stage 341:>  (0 + 1) / 1][Stage 347:>  (0 + 0) / 1][Stage 347:>  (0 + 0) / 1][Stage 355:>  (0 + 0) / 1][Stage 363:>  (0 + 0) / 1][Stage 347:>  (0 + 1) / 1][Stage 355:>  (0 + 0) / 1][Stage 363:>  (0 + 0) / 1][Stage 355:>  (0 + 1) / 1][Stage 363:>  (0 + 1) / 1][Stage 371:>  (0 + 1) / 1][Stage 432:>  (0 + 0) / 1][Stage 439:>  (0 + 0) / 1][Stage 446:>  (0 + 0) / 1][Stage 439:>  (0 + 0) / 1][Stage 446:>  (0 + 0) / 1][Stage 454:>  (0 + 0) / 1]26/09/29 17:25:07 WARN DAGScheduler: Broadcasting large task binary with size 1221.0 KiB
+26/09/29 17:25:07 WARN DAGScheduler: Broadcasting large task binary with size 1268.1 KiB
+[Stage 454:>  (0 + 1) / 1][Stage 480:>  (0 + 1) / 1][Stage 489:>  (0 + 0) / 1]26/09/29 17:25:08 WARN DAGScheduler: Broadcasting large task binary with size 1740.2 KiB
+[Stage 534:>                (0 + 0) / 1][Stage 541:>                (0 + 0) / 1]26/09/29 17:25:08 WARN DAGScheduler: Broadcasting large task binary with size 1730.3 KiB
+26/09/29 17:25:08 WARN DAGScheduler: Broadcasting large task binary with size 1738.8 KiB
+26/09/29 17:25:09 WARN DAGScheduler: Broadcasting large task binary with size 1832.2 KiB
+[Stage 491:=> (1 + 2) / 3][Stage 498:>  (0 + 0) / 1][Stage 506:>  (0 + 0) / 1]26/09/29 17:25:09 WARN DAGScheduler: Broadcasting large task binary with size 1806.9 KiB
+26/09/29 17:25:09 WARN DAGScheduler: Broadcasting large task binary with size 1816.5 KiB
+26/09/29 17:25:09 WARN DAGScheduler: Broadcasting large task binary with size 1823.6 KiB
+26/09/29 17:25:09 WARN DAGScheduler: Broadcasting large task binary with size 1833.9 KiB
+26/09/29 17:25:10 WARN DAGScheduler: Broadcasting large task binary with size 1884.4 KiB
+26/09/29 17:25:10 WARN DAGScheduler: Broadcasting large task binary with size 1231.8 KiB
+26/09/29 17:25:10 WARN DAGScheduler: Broadcasting large task binary with size 1279.2 KiB
+26/09/29 17:25:10 WARN DAGScheduler: Broadcasting large task binary with size 1752.0 KiB
+26/09/29 17:25:10 WARN DAGScheduler: Broadcasting large task binary with size 1742.0 KiB
+26/09/29 17:25:10 WARN DAGScheduler: Broadcasting large task binary with size 1751.2 KiB
+26/09/29 17:25:10 WARN DAGScheduler: Broadcasting large task binary with size 1844.8 KiB
+26/09/29 17:25:10 WARN DAGScheduler: Broadcasting large task binary with size 1819.5 KiB
+26/09/29 17:25:11 WARN DAGScheduler: Broadcasting large task binary with size 1829.1 KiB
+26/09/29 17:25:11 WARN DAGScheduler: Broadcasting large task binary with size 1836.7 KiB
+26/09/29 17:25:11 WARN DAGScheduler: Broadcasting large task binary with size 1847.7 KiB
+26/09/29 17:25:11 WARN DAGScheduler: Broadcasting large task binary with size 1898.3 KiB
+26/09/29 17:25:11 WARN DAGScheduler: Broadcasting large task binary with size 3.5 MiB
+26/09/29 17:25:11 WARN DAGScheduler: Broadcasting large task binary with size 3.5 MiB
+                                                                                26/09/29 17:25:13 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 610764 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[Stage 649:>  (0 + 0) / 2][Stage 651:>  (0 + 0) / 2][Stage 659:>  (0 + 0) / 2][Stage 643:>  (0 + 0) / 1][Stage 649:>  (0 + 0) / 2][Stage 651:>  (0 + 0) / 2][Stage 572:>  (0 + 1) / 1][Stage 627:>  (0 + 1) / 1][Stage 643:>  (0 + 0) / 1][Stage 572:>  (0 + 1) / 1][Stage 627:>  (0 + 1) / 1][Stage 649:>  (0 + 1) / 2][Stage 572:>  (0 + 1) / 1][Stage 627:>  (0 + 1) / 1][Stage 651:>  (0 + 2) / 2][Stage 659:=> (1 + 0) / 2][Stage 662:>  (0 + 0) / 1][Stage 668:>  (0 + 0) / 2][Stage 662:>  (0 + 1) / 1][Stage 671:>  (0 + 2) / 2][Stage 672:>  (0 + 0) / 1][Stage 686:>  (0 + 2) / 2][Stage 689:>  (0 + 1) / 1][Stage 696:>  (0 + 0) / 2][Stage 696:========>        (1 + 1) / 2][Stage 700:>                (0 + 2) / 2]26/09/29 17:25:18 WARN DAGScheduler: Broadcasting large task binary with size 1369.4 KiB
+26/09/29 17:25:18 WARN DAGScheduler: Broadcasting large task binary with size 1334.2 KiB
+26/09/29 17:25:18 WARN DAGScheduler: Broadcasting large task binary with size 1350.4 KiB
+26/09/29 17:25:18 WARN DAGScheduler: Broadcasting large task binary with size 1357.8 KiB
+26/09/29 17:25:18 WARN DAGScheduler: Broadcasting large task binary with size 1368.2 KiB
+26/09/29 17:25:18 WARN DAGScheduler: Broadcasting large task binary with size 1425.2 KiB
+                                                                                26/09/29 17:25:18 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 16570 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[phase] SearchDocuments online construction: 34.16s
+[phase] SearchDocuments generated construction: starting
+26/09/29 17:25:19 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 19614 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:25:19 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 32092 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:25:20 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 129825 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:25:20 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 146107 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:25:20 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 156335 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:25:20 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 156398 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:25:20 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 156444 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:25:20 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 156479 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:25:21 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 146107 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:25:23 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 941375 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:25:27 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 1951830 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[Stage 916:>  (0 + 0) / 1][Stage 925:>  (0 + 0) / 2][Stage 936:>  (0 + 0) / 2][Stage 866:>  (0 + 0) / 1][Stage 886:>  (0 + 0) / 1][Stage 894:>  (0 + 0) / 1][Stage 866:>  (0 + 0) / 1][Stage 872:>  (0 + 0) / 1][Stage 878:>  (0 + 0) / 1][Stage 788:=> (1 + 2) / 3][Stage 796:=> (1 + 2) / 3][Stage 804:>  (0 + 1) / 3][Stage 804:=> (1 + 2) / 3][Stage 821:=> (1 + 2) / 3][Stage 829:>  (0 + 0) / 3][Stage 829:=> (1 + 2) / 3][Stage 835:>  (0 + 1) / 1][Stage 843:>  (0 + 1) / 1][Stage 872:>  (0 + 1) / 1][Stage 878:>  (0 + 1) / 1][Stage 886:>  (0 + 1) / 1][Stage 894:>  (0 + 0) / 1][Stage 902:>  (0 + 0) / 1][Stage 916:>  (0 + 0) / 1][Stage 894:>  (0 + 1) / 1][Stage 902:>  (0 + 0) / 1][Stage 916:>  (0 + 0) / 1][Stage 916:>  (0 + 1) / 1][Stage 925:>  (0 + 1) / 2][Stage 926:>  (0 + 0) / 1][Stage 926:>  (0 + 1) / 1][Stage 936:>  (0 + 1) / 2][Stage 938:>  (0 + 0) / 2][Stage 949:>  (0 + 1) / 1][Stage 955:>  (0 + 1) / 1][Stage 963:>  (0 + 0) / 1][Stage 993:>  (0 + 0) / 1][Stage 1001:> (0 + 0) / 1][Stage 1009:> (0 + 0) / 1]26/09/29 17:25:38 WARN DAGScheduler: Broadcasting large task binary with size 1231.9 KiB
+[Stage 993:>  (0 + 1) / 1][Stage 1001:> (0 + 0) / 1][Stage 1009:> (0 + 0) / 1]26/09/29 17:25:39 WARN DAGScheduler: Broadcasting large task binary with size 1279.3 KiB
+[Stage 1001:> (0 + 0) / 1][Stage 1009:> (0 + 0) / 1][Stage 1017:> (0 + 0) / 1][Stage 1009:> (0 + 1) / 1][Stage 1017:> (0 + 1) / 1][Stage 1031:> (0 + 0) / 1][Stage 1031:> (0 + 1) / 1][Stage 1041:> (0 + 0) / 1][Stage 1049:> (0 + 0) / 1][Stage 1057:> (0 + 1) / 1][Stage 1065:> (0 + 0) / 1][Stage 1083:> (0 + 0) / 1][Stage 1065:> (0 + 0) / 1][Stage 1082:> (0 + 0) / 1][Stage 1083:> (0 + 0) / 1]26/09/29 17:25:40 WARN DAGScheduler: Broadcasting large task binary with size 1752.1 KiB
+[Stage 1083:> (0 + 0) / 1][Stage 1089:> (0 + 0) / 1][Stage 1095:> (0 + 0) / 1][Stage 1103:> (0 + 0) / 1][Stage 1111:> (0 + 0) / 1][Stage 1119:> (0 + 0) / 1]26/09/29 17:25:40 WARN DAGScheduler: Broadcasting large task binary with size 1742.1 KiB
+26/09/29 17:25:40 WARN DAGScheduler: Broadcasting large task binary with size 1751.3 KiB
+[Stage 1103:> (0 + 1) / 1][Stage 1111:> (0 + 1) / 1][Stage 1119:> (0 + 1) / 1][Stage 1148:>                                                       (0 + 0) / 1]26/09/29 17:25:41 WARN DAGScheduler: Broadcasting large task binary with size 1844.9 KiB
+26/09/29 17:25:41 WARN DAGScheduler: Broadcasting large task binary with size 1819.6 KiB
+[Stage 1148:>                                                       (0 + 1) / 1]26/09/29 17:25:41 WARN DAGScheduler: Broadcasting large task binary with size 1829.2 KiB
+26/09/29 17:25:41 WARN DAGScheduler: Broadcasting large task binary with size 1836.8 KiB
+26/09/29 17:25:42 WARN DAGScheduler: Broadcasting large task binary with size 1847.8 KiB
+26/09/29 17:25:42 WARN DAGScheduler: Broadcasting large task binary with size 1222.3 KiB
+26/09/29 17:25:42 WARN DAGScheduler: Broadcasting large task binary with size 1898.4 KiB
+26/09/29 17:25:42 WARN DAGScheduler: Broadcasting large task binary with size 1269.4 KiB
+26/09/29 17:25:42 WARN DAGScheduler: Broadcasting large task binary with size 1741.5 KiB
+26/09/29 17:25:42 WARN DAGScheduler: Broadcasting large task binary with size 1731.6 KiB
+26/09/29 17:25:43 WARN DAGScheduler: Broadcasting large task binary with size 1740.1 KiB
+26/09/29 17:25:43 WARN DAGScheduler: Broadcasting large task binary with size 1833.5 KiB
+26/09/29 17:25:43 WARN DAGScheduler: Broadcasting large task binary with size 1808.2 KiB
+26/09/29 17:25:43 WARN DAGScheduler: Broadcasting large task binary with size 1817.8 KiB
+26/09/29 17:25:43 WARN DAGScheduler: Broadcasting large task binary with size 1825.0 KiB
+26/09/29 17:25:43 WARN DAGScheduler: Broadcasting large task binary with size 1835.2 KiB
+26/09/29 17:25:43 WARN DAGScheduler: Broadcasting large task binary with size 1885.7 KiB
+26/09/29 17:25:43 WARN DAGScheduler: Broadcasting large task binary with size 3.5 MiB
+26/09/29 17:25:44 WARN DAGScheduler: Broadcasting large task binary with size 3.5 MiB
+                                                                                26/09/29 17:25:45 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 613960 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[Stage 1234:=>(1 + 1) / 2][Stage 1235:> (0 + 2) / 2][Stage 1236:> (0 + 2) / 2][Stage 1258:>               (0 + 2) / 2][Stage 1311:>               (0 + 0) / 2][Stage 1266:> (0 + 0) / 1][Stage 1274:> (0 + 0) / 1][Stage 1285:> (0 + 0) / 1][Stage 1265:=>(1 + 1) / 2][Stage 1266:> (0 + 0) / 1][Stage 1274:> (0 + 0) / 1][Stage 1266:> (0 + 0) / 1][Stage 1274:> (0 + 0) / 1][Stage 1285:> (0 + 0) / 1][Stage 1311:>                                                       (0 + 1) / 2][Stage 1311:============================>                           (1 + 0) / 2][Stage 1311:============================>                           (1 + 1) / 2]26/09/29 17:25:50 WARN DAGScheduler: Broadcasting large task binary with size 1369.9 KiB
+26/09/29 17:25:50 WARN DAGScheduler: Broadcasting large task binary with size 1334.7 KiB
+26/09/29 17:25:51 WARN DAGScheduler: Broadcasting large task binary with size 1350.9 KiB
+26/09/29 17:25:51 WARN DAGScheduler: Broadcasting large task binary with size 1358.3 KiB
+26/09/29 17:25:51 WARN DAGScheduler: Broadcasting large task binary with size 1368.8 KiB
+26/09/29 17:25:51 WARN DAGScheduler: Broadcasting large task binary with size 1425.7 KiB
+                                                                                26/09/29 17:25:51 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 16592 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[phase] SearchDocuments generated construction: 32.72s
+[phase] Handwritten cached lexical reference construction: starting
+[phase] Handwritten cached lexical reference construction: 0.66s
+[phase] SearchDocuments online collection: starting
+26/09/29 17:25:52 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 34711 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[phase] SearchDocuments online collection: 0.68s
+[phase] SearchDocuments generated collection: starting
+26/09/29 17:25:53 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 34747 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[phase] SearchDocuments generated collection: 0.42s
+[phase] Handwritten cached lexical reference collection: starting
+26/09/29 17:25:53 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 17047 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[phase] Handwritten cached lexical reference collection: 0.54s
+[search-repeat] {"mode": "prepared-handwritten", "preparation_seconds": 0.5012531250249594, "workload": "cached-score-hit"}
+26/09/29 17:25:55 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 23675 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:25:55 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 36994 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:25:55 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 156247 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:25:55 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 175725 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:25:56 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 187861 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:25:56 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 187924 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:25:56 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 187970 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:25:56 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 188005 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:25:57 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 175725 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:25:59 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 1132072 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:26:05 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 1889663 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[Stage 1406:> (0 + 0) / 1][Stage 1413:> (0 + 0) / 2][Stage 1414:> (0 + 0) / 2]                                                                                [Stage 1500:> (0 + 0) / 2][Stage 1507:> (0 + 0) / 2][Stage 1514:> (0 + 0) / 2]                                                                                [Stage 1550:> (0 + 1) / 2][Stage 1558:> (0 + 0) / 2][Stage 1565:> (0 + 0) / 2][Stage 1550:=>(1 + 0) / 2][Stage 1558:> (0 + 0) / 2][Stage 1565:> (0 + 0) / 2]                                                                                [Stage 1565:> (0 + 0) / 2][Stage 1572:> (0 + 0) / 2][Stage 1579:> (0 + 0) / 2][Stage 1533:> (1 + 5) / 6][Stage 1540:> (0 + 3) / 6][Stage 1546:> (0 + 0) / 1][Stage 1540:=>(4 + 2) / 6][Stage 1551:> (0 + 0) / 1][Stage 1559:> (0 + 0) / 1][Stage 1551:> (0 + 0) / 1][Stage 1559:> (0 + 0) / 1][Stage 1565:> (0 + 0) / 2]                                                                                [Stage 1601:> (0 + 0) / 2][Stage 1608:> (0 + 0) / 2][Stage 1616:> (0 + 0) / 2][Stage 1562:> (2 + 4) / 6][Stage 1601:> (0 + 0) / 2][Stage 1608:> (0 + 0) / 2][Stage 1588:> (0 + 0) / 1][Stage 1595:> (0 + 0) / 1][Stage 1601:> (0 + 0) / 2]                                                                                [Stage 1623:=>(1 + 1) / 2][Stage 1630:=>(1 + 0) / 2][Stage 1637:> (0 + 0) / 2][Stage 1630:========>       (1 + 1) / 2][Stage 1637:>               (0 + 1) / 2]                                                                                [Stage 1637:============================>                           (1 + 1) / 2]                                                                                [Stage 1722:=>(1 + 0) / 2][Stage 1732:> (0 + 0) / 2][Stage 1733:> (0 + 0) / 2][Stage 1696:=>(1 + 0) / 2][Stage 1704:> (0 + 0) / 2][Stage 1712:> (0 + 0) / 2][Stage 1704:> (0 + 1) / 2][Stage 1712:> (0 + 0) / 2][Stage 1718:> (0 + 0) / 1][Stage 1704:=>(1 + 0) / 2][Stage 1712:> (0 + 0) / 2][Stage 1718:> (0 + 0) / 1][Stage 1704:=>(1 + 0) / 2][Stage 1711:> (0 + 0) / 1][Stage 1712:> (0 + 0) / 2][Stage 1704:=>(1 + 1) / 2][Stage 1712:> (0 + 2) / 2][Stage 1722:=>(1 + 1) / 2]26/09/29 17:26:22 WARN DAGScheduler: Broadcasting large task binary with size 1131.6 KiB
+[Stage 1732:> (0 + 2) / 2][Stage 1733:> (0 + 0) / 2][Stage 1740:> (0 + 0) / 2][Stage 1732:=>(1 + 1) / 2][Stage 1733:> (0 + 0) / 2][Stage 1740:> (0 + 0) / 2]26/09/29 17:26:22 WARN DAGScheduler: Broadcasting large task binary with size 1109.1 KiB
+[Stage 1700:=>(4 + 2) / 6][Stage 1733:> (0 + 2) / 2][Stage 1740:> (0 + 2) / 2][Stage 1733:=>(1 + 1) / 2][Stage 1740:=>(1 + 1) / 2][Stage 1741:=>(1 + 0) / 2]26/09/29 17:26:23 WARN DAGScheduler: Broadcasting large task binary with size 1179.0 KiB
+[Stage 1741:=>(1 + 0) / 2][Stage 1748:> (0 + 0) / 2][Stage 1753:=>(1 + 0) / 2][Stage 1731:> (0 + 6) / 6][Stage 1741:=>(1 + 0) / 2][Stage 1748:> (0 + 0) / 2]26/09/29 17:26:23 WARN DAGScheduler: Broadcasting large task binary with size 1616.8 KiB
+[Stage 1734:> (0 + 0) / 1][Stage 1741:=>(1 + 0) / 2][Stage 1743:> (0 + 0) / 1]26/09/29 17:26:23 WARN DAGScheduler: Broadcasting large task binary with size 1610.0 KiB
+[Stage 1716:=>(5 + 1) / 6][Stage 1726:> (0 + 6) / 6][Stage 1734:> (0 + 1) / 1][Stage 1726:=>(5 + 1) / 6][Stage 1741:=>(1 + 0) / 2][Stage 1743:> (0 + 0) / 1][Stage 1743:> (0 + 1) / 1][Stage 1748:> (0 + 2) / 2][Stage 1753:=>(1 + 1) / 2][Stage 1748:=>(1 + 1) / 2][Stage 1753:=>(1 + 1) / 2][Stage 1763:> (0 + 0) / 1]26/09/29 17:26:24 WARN DAGScheduler: Broadcasting large task binary with size 1618.6 KiB
+[Stage 1766:=>(1 + 1) / 2][Stage 1770:> (0 + 1) / 1][Stage 1773:> (0 + 1) / 2]26/09/29 17:26:24 WARN DAGScheduler: Broadcasting large task binary with size 1709.0 KiB
+26/09/29 17:26:25 WARN DAGScheduler: Broadcasting large task binary with size 1683.7 KiB
+26/09/29 17:26:25 WARN DAGScheduler: Broadcasting large task binary with size 1123.2 KiB
+26/09/29 17:26:25 WARN DAGScheduler: Broadcasting large task binary with size 1693.3 KiB
+26/09/29 17:26:25 WARN DAGScheduler: Broadcasting large task binary with size 1100.7 KiB
+26/09/29 17:26:25 WARN DAGScheduler: Broadcasting large task binary with size 1702.7 KiB
+26/09/29 17:26:25 WARN DAGScheduler: Broadcasting large task binary with size 1170.4 KiB
+26/09/29 17:26:25 WARN DAGScheduler: Broadcasting large task binary with size 1708.9 KiB
+26/09/29 17:26:25 WARN DAGScheduler: Broadcasting large task binary with size 1607.5 KiB
+26/09/29 17:26:25 WARN DAGScheduler: Broadcasting large task binary with size 1757.5 KiB
+26/09/29 17:26:25 WARN DAGScheduler: Broadcasting large task binary with size 1600.7 KiB
+26/09/29 17:26:26 WARN DAGScheduler: Broadcasting large task binary with size 1608.5 KiB
+26/09/29 17:26:26 WARN DAGScheduler: Broadcasting large task binary with size 1698.6 KiB
+26/09/29 17:26:26 WARN DAGScheduler: Broadcasting large task binary with size 1673.4 KiB
+26/09/29 17:26:26 WARN DAGScheduler: Broadcasting large task binary with size 1694.8 KiB
+26/09/29 17:26:26 WARN DAGScheduler: Broadcasting large task binary with size 1703.7 KiB
+26/09/29 17:26:26 WARN DAGScheduler: Broadcasting large task binary with size 1709.5 KiB
+26/09/29 17:26:26 WARN DAGScheduler: Broadcasting large task binary with size 1758.1 KiB
+26/09/29 17:26:26 WARN DAGScheduler: Broadcasting large task binary with size 3.3 MiB
+26/09/29 17:26:27 WARN DAGScheduler: Broadcasting large task binary with size 3.3 MiB
+                                                                                26/09/29 17:26:28 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 633813 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[Stage 1799:=====================================>                  (4 + 2) / 6][Stage 1807:=====>          (2 + 4) / 6][Stage 1814:>               (0 + 1) / 1]                                                                                [Stage 1882:=>(1 + 0) / 2][Stage 1884:> (0 + 0) / 2][Stage 1892:> (0 + 0) / 2][Stage 1843:> (2 + 4) / 6][Stage 1863:> (0 + 1) / 1][Stage 1870:> (0 + 1) / 1][Stage 1881:> (0 + 0) / 1][Stage 1882:=>(1 + 0) / 2][Stage 1884:> (0 + 0) / 2][Stage 1881:> (0 + 1) / 1][Stage 1882:=>(1 + 0) / 2][Stage 1884:> (0 + 0) / 2][Stage 1882:=>(1 + 1) / 2][Stage 1884:> (0 + 2) / 2][Stage 1892:> (0 + 2) / 2][Stage 1884:> (0 + 2) / 2][Stage 1892:=>(1 + 1) / 2][Stage 1899:> (0 + 0) / 2][Stage 1910:> (0 + 1) / 1][Stage 1912:> (0 + 0) / 1][Stage 1915:> (0 + 0) / 2][Stage 1912:> (0 + 0) / 1][Stage 1915:> (0 + 0) / 2][Stage 1917:> (0 + 0) / 2][Stage 1915:> (0 + 0) / 2][Stage 1917:> (0 + 0) / 2][Stage 1919:> (0 + 0) / 2][Stage 1917:>               (0 + 2) / 2][Stage 1919:>               (0 + 2) / 2]26/09/29 17:26:36 WARN DAGScheduler: Broadcasting large task binary with size 1359.9 KiB
+26/09/29 17:26:36 WARN DAGScheduler: Broadcasting large task binary with size 1320.1 KiB
+26/09/29 17:26:36 WARN DAGScheduler: Broadcasting large task binary with size 1336.7 KiB
+26/09/29 17:26:36 WARN DAGScheduler: Broadcasting large task binary with size 1345.4 KiB
+26/09/29 17:26:36 WARN DAGScheduler: Broadcasting large task binary with size 1352.0 KiB
+26/09/29 17:26:36 WARN DAGScheduler: Broadcasting large task binary with size 1408.2 KiB
+                                                                                26/09/29 17:26:37 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 16813 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:26:37 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 35073 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[search-repeat] {"collection_seconds": 0.42850058400654234, "construction_seconds": 42.91034968700842, "mode": "online", "query_id": "q-repeat-0", "request_index": 0, "rows": 3, "workload": "cached-score-hit"}
+26/09/29 17:26:38 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 23649 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:26:38 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 37048 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:26:39 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 156931 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:26:39 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 176341 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:26:39 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 188429 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:26:39 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 188497 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:26:39 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 188545 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:26:39 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 188582 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:26:41 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 176341 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:26:43 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 1134262 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:26:49 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 1903787 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[Stage 1951:> (0 + 0) / 1][Stage 1969:=>(1 + 1) / 2][Stage 1975:=>(1 + 1) / 2][Stage 1951:> (0 + 0) / 1][Stage 1984:> (0 + 2) / 2][Stage 1987:> (0 + 2) / 2][Stage 1951:> (0 + 0) / 1][Stage 2001:=>(1 + 1) / 2][Stage 2008:> (0 + 2) / 2][Stage 1951:> (0 + 0) / 1][Stage 2016:> (0 + 0) / 2][Stage 2023:> (0 + 0) / 2][Stage 1951:> (0 + 0) / 1][Stage 2016:=>(1 + 0) / 2][Stage 2023:> (0 + 0) / 2][Stage 1951:> (0 + 0) / 1][Stage 1982:> (0 + 6) / 6][Stage 1991:> (0 + 0) / 6][Stage 1951:> (0 + 0) / 1][Stage 1982:=>(5 + 1) / 6][Stage 1991:> (0 + 5) / 6][Stage 1951:> (0 + 0) / 1][Stage 1991:> (1 + 5) / 6][Stage 1997:> (0 + 0) / 1][Stage 1951:> (0 + 0) / 1][Stage 2023:=>(1 + 0) / 2][Stage 2030:> (0 + 0) / 2]                                                                                [Stage 2012:> (2 + 4) / 6][Stage 2018:> (0 + 1) / 1][Stage 2045:> (0 + 0) / 2][Stage 2045:> (0 + 2) / 2][Stage 2052:> (0 + 0) / 2][Stage 2059:> (0 + 0) / 2][Stage 2052:> (0 + 0) / 2][Stage 2059:> (0 + 0) / 2][Stage 2066:> (0 + 0) / 2][Stage 2066:> (0 + 0) / 2][Stage 2074:> (0 + 0) / 2][Stage 2081:> (0 + 0) / 2]                                                                                [Stage 2034:=>(3 + 3) / 6][Stage 2041:> (0 + 4) / 6][Stage 2047:> (0 + 0) / 1][Stage 2041:> (2 + 4) / 6][Stage 2047:> (0 + 1) / 1][Stage 2053:> (0 + 1) / 1][Stage 2029:> (0 + 2) / 2][Stage 2066:> (0 + 2) / 2][Stage 2074:> (0 + 0) / 2][Stage 2074:> (0 + 0) / 2][Stage 2081:> (0 + 0) / 2][Stage 2088:> (0 + 0) / 2][Stage 2074:> (0 + 2) / 2][Stage 2081:> (0 + 1) / 2][Stage 2088:> (0 + 0) / 2]                                                                                [Stage 2095:=>(1 + 0) / 2][Stage 2103:> (0 + 0) / 2][Stage 2110:> (0 + 0) / 2][Stage 2103:> (0 + 0) / 2][Stage 2110:> (0 + 0) / 2][Stage 2117:> (0 + 0) / 2]                                                                                [Stage 2124:> (0 + 2) / 2][Stage 2132:> (0 + 2) / 2][Stage 2139:> (0 + 1) / 2][Stage 2146:=>(1 + 1) / 2][Stage 2153:> (0 + 1) / 2][Stage 2161:> (0 + 0) / 2][Stage 2153:=>(1 + 0) / 2][Stage 2161:> (0 + 0) / 2][Stage 2168:> (0 + 0) / 2]                                                                                [Stage 2134:> (0 + 0) / 1][Stage 2140:> (0 + 0) / 1][Stage 2147:> (0 + 0) / 1][Stage 2134:> (0 + 1) / 1][Stage 2140:> (0 + 1) / 1][Stage 2147:> (0 + 0) / 1][Stage 2134:> (0 + 1) / 1][Stage 2140:> (0 + 1) / 1][Stage 2153:=>(1 + 1) / 2][Stage 2168:> (0 + 2) / 2][Stage 2175:> (0 + 0) / 2][Stage 2182:> (0 + 0) / 2][Stage 2175:>               (0 + 0) / 2][Stage 2182:>               (0 + 0) / 2]                                                                                [Stage 2150:=>(5 + 1) / 6][Stage 2163:> (0 + 0) / 1][Stage 2170:> (0 + 0) / 1][Stage 2163:> (0 + 1) / 1][Stage 2170:> (0 + 1) / 1][Stage 2175:> (0 + 1) / 2][Stage 2175:============================>                           (1 + 1) / 2][Stage 2165:=====================================>                  (4 + 2) / 6][Stage 2172:=========>                                              (1 + 5) / 6]                                                                                [Stage 2236:=>(1 + 1) / 2][Stage 2250:> (0 + 0) / 2][Stage 2257:> (0 + 0) / 2][Stage 2250:> (0 + 0) / 2][Stage 2257:> (0 + 0) / 2][Stage 2262:> (0 + 0) / 2]26/09/29 17:27:06 WARN DAGScheduler: Broadcasting large task binary with size 1132.7 KiB
+[Stage 2250:> (0 + 2) / 2][Stage 2257:> (0 + 2) / 2][Stage 2262:> (0 + 1) / 2][Stage 2262:=>(1 + 1) / 2][Stage 2271:> (0 + 0) / 2][Stage 2276:> (0 + 0) / 2]26/09/29 17:27:07 WARN DAGScheduler: Broadcasting large task binary with size 1110.2 KiB
+[Stage 2271:> (0 + 0) / 2][Stage 2276:> (0 + 0) / 2][Stage 2277:> (0 + 0) / 2]26/09/29 17:27:07 WARN DAGScheduler: Broadcasting large task binary with size 1180.1 KiB
+[Stage 2271:> (0 + 2) / 2][Stage 2276:> (0 + 0) / 2][Stage 2277:> (0 + 0) / 2][Stage 2276:> (0 + 0) / 2][Stage 2277:> (0 + 0) / 2][Stage 2278:> (0 + 0) / 2][Stage 2254:=>(3 + 3) / 6][Stage 2276:> (0 + 0) / 2][Stage 2277:> (0 + 0) / 2]26/09/29 17:27:08 WARN DAGScheduler: Broadcasting large task binary with size 1618.4 KiB
+[Stage 2272:> (0 + 0) / 1][Stage 2276:> (0 + 0) / 2][Stage 2277:> (0 + 0) / 2][Stage 2267:> (0 + 6) / 6][Stage 2272:> (0 + 1) / 1][Stage 2276:> (0 + 0) / 2][Stage 2267:=>(3 + 3) / 6][Stage 2276:> (0 + 2) / 2][Stage 2277:> (0 + 2) / 2]26/09/29 17:27:08 WARN DAGScheduler: Broadcasting large task binary with size 1611.6 KiB
+[Stage 2278:> (0 + 2) / 2][Stage 2283:> (0 + 1) / 2][Stage 2292:> (0 + 0) / 2][Stage 2283:=>(1 + 0) / 2][Stage 2292:> (0 + 0) / 2][Stage 2303:> (0 + 0) / 1][Stage 2234:=>(6 + 1) / 7][Stage 2288:> (0 + 1) / 1][Stage 2292:> (0 + 1) / 2]26/09/29 17:27:09 WARN DAGScheduler: Broadcasting large task binary with size 1620.3 KiB
+[Stage 2292:=>(1 + 0) / 2][Stage 2303:> (0 + 0) / 1][Stage 2305:> (0 + 0) / 2][Stage 2292:=>(1 + 1) / 2][Stage 2303:> (0 + 1) / 1][Stage 2305:=>(1 + 0) / 2]26/09/29 17:27:09 WARN DAGScheduler: Broadcasting large task binary with size 1710.7 KiB
+26/09/29 17:27:10 WARN DAGScheduler: Broadcasting large task binary with size 1685.5 KiB
+26/09/29 17:27:10 WARN DAGScheduler: Broadcasting large task binary with size 1695.0 KiB
+26/09/29 17:27:10 WARN DAGScheduler: Broadcasting large task binary with size 1124.3 KiB
+26/09/29 17:27:10 WARN DAGScheduler: Broadcasting large task binary with size 1704.4 KiB
+26/09/29 17:27:10 WARN DAGScheduler: Broadcasting large task binary with size 1101.7 KiB
+26/09/29 17:27:10 WARN DAGScheduler: Broadcasting large task binary with size 1171.5 KiB
+26/09/29 17:27:11 WARN DAGScheduler: Broadcasting large task binary with size 1710.6 KiB
+26/09/29 17:27:11 WARN DAGScheduler: Broadcasting large task binary with size 1609.1 KiB
+26/09/29 17:27:11 WARN DAGScheduler: Broadcasting large task binary with size 1759.3 KiB
+26/09/29 17:27:11 WARN DAGScheduler: Broadcasting large task binary with size 1602.3 KiB
+26/09/29 17:27:11 WARN DAGScheduler: Broadcasting large task binary with size 1610.2 KiB
+26/09/29 17:27:11 WARN DAGScheduler: Broadcasting large task binary with size 1700.3 KiB
+26/09/29 17:27:12 WARN DAGScheduler: Broadcasting large task binary with size 1675.1 KiB
+26/09/29 17:27:12 WARN DAGScheduler: Broadcasting large task binary with size 1696.5 KiB
+26/09/29 17:27:12 WARN DAGScheduler: Broadcasting large task binary with size 1705.4 KiB
+26/09/29 17:27:12 WARN DAGScheduler: Broadcasting large task binary with size 1711.2 KiB
+26/09/29 17:27:12 WARN DAGScheduler: Broadcasting large task binary with size 1759.9 KiB
+26/09/29 17:27:12 WARN DAGScheduler: Broadcasting large task binary with size 3.3 MiB
+26/09/29 17:27:13 WARN DAGScheduler: Broadcasting large task binary with size 3.3 MiB
+                                                                                26/09/29 17:27:15 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 638999 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[Stage 2344:>               (0 + 6) / 6][Stage 2359:>               (0 + 1) / 1]                                                                                [Stage 2425:> (0 + 0) / 2][Stage 2430:> (0 + 0) / 2][Stage 2432:> (0 + 0) / 2][Stage 2424:> (0 + 0) / 2][Stage 2425:> (0 + 0) / 2][Stage 2430:> (0 + 0) / 2][Stage 2424:> (0 + 2) / 2][Stage 2425:> (0 + 2) / 2][Stage 2430:> (0 + 0) / 2][Stage 2430:> (0 + 1) / 2][Stage 2432:> (0 + 0) / 2][Stage 2441:> (0 + 0) / 2][Stage 2430:=>(1 + 1) / 2][Stage 2432:> (0 + 0) / 2][Stage 2441:> (0 + 0) / 2][Stage 2418:=>(4 + 2) / 6][Stage 2432:> (0 + 2) / 2][Stage 2438:> (0 + 1) / 3][Stage 2438:> (1 + 2) / 3][Stage 2441:> (0 + 2) / 2][Stage 2448:> (0 + 1) / 2][Stage 2448:=>(1 + 0) / 2][Stage 2453:> (0 + 0) / 2][Stage 2464:> (0 + 0) / 2][Stage 2448:=>(1 + 1) / 2][Stage 2453:> (0 + 2) / 2][Stage 2464:> (0 + 0) / 2]26/09/29 17:27:22 WARN DAGScheduler: Broadcasting large task binary with size 1361.3 KiB
+26/09/29 17:27:22 WARN DAGScheduler: Broadcasting large task binary with size 1321.5 KiB
+26/09/29 17:27:23 WARN DAGScheduler: Broadcasting large task binary with size 1338.1 KiB
+26/09/29 17:27:23 WARN DAGScheduler: Broadcasting large task binary with size 1346.8 KiB
+26/09/29 17:27:23 WARN DAGScheduler: Broadcasting large task binary with size 1353.3 KiB
+26/09/29 17:27:23 WARN DAGScheduler: Broadcasting large task binary with size 1409.6 KiB
+                                                                                26/09/29 17:27:23 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 16945 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 17:27:24 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 35109 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[search-repeat] {"collection_seconds": 0.5450276250194293, "construction_seconds": 46.0764808949898, "mode": "generated", "query_id": "q-repeat-0", "request_index": 0, "rows": 3, "workload": "cached-score-hit"}
+26/09/29 17:27:25 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 16767 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[search-repeat] {"collection_seconds": 0.6669231260020752, "construction_seconds": 0.7387702919950243, "mode": "handwritten", "query_id": "q-repeat-0", "request_index": 0, "rows": 3, "workload": "cached-score-hit"}
+26/09/29 17:27:26 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 16767 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[search-repeat] {"collection_seconds": 0.4929054999956861, "construction_seconds": 0.38275766698643565, "mode": "prepared-handwritten", "query_id": "q-repeat-0", "request_index": 0, "rows": 3, "workload": "cached-score-hit"}
+[phase] generated source cleanup (integration_search_generated): starting
+[phase] generated source cleanup (integration_search_generated): 0.00s
+PASSED[phase] snapshot fixture cleanup: starting
+[phase] snapshot fixture cleanup: 0.02s
+[phase] plan boundary cleanup: starting
+[phase] plan boundary cleanup: 0.37s
+
+
+============================= slowest 20 durations =============================
+173.55s call     tests/integration/pyspark/search/test_search.py::test_document_search_reranks_bm25_candidates_for_multiple_queries
+17.45s setup    tests/integration/pyspark/search/test_search.py::test_document_search_reranks_bm25_candidates_for_multiple_queries
+1.03s teardown tests/integration/pyspark/search/test_search.py::test_document_search_reranks_bm25_candidates_for_multiple_queries
+================ 1 passed, 208 deselected in 192.84s (0:03:12) =================

@@ -1,0 +1,414 @@
+time="2026-09-29T13:34:47-07:00" level=warning msg="Found orphan containers ([structure-search-cohort-policy-final2 structure-search-cohort-policy-final structure-search-cohort-policy structure-search-pyspark35-remediation-final structure-search-rerank-remediation structure-search-pyspark35-remediation-3 structure-search-pyspark35-remediation-2 structure-search-pyspark35-remediation structure-connect35-projection]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up."
+ Container structure-integration-spark40-master-1  Running
+ Container structure-integration-spark40-worker-1  Running
+============================= test session starts ==============================
+platform linux -- Python 3.11.16, pytest-8.4.2, pluggy-1.6.0 -- /usr/local/bin/python
+rootdir: /workspace
+configfile: pyproject.toml
+collecting ... collected 209 items / 208 deselected / 1 selected
+
+../workspace/tests/integration/pyspark/search/test_search.py::test_document_search_reranks_bm25_candidates_for_multiple_queries WARNING: Using incubator modules: jdk.incubator.vector
+:: loading settings :: url = jar:file:/usr/local/lib/python3.11/site-packages/pyspark/jars/ivy-2.5.3.jar!/org/apache/ivy/core/settings/ivysettings.xml
+Ivy Default Cache set to: /root/.ivy2.5.2/cache
+The jars for the packages stored in: /root/.ivy2.5.2/jars
+org.apache.sedona#sedona-spark-shaded-4.0_2.13 added as a dependency
+org.datasyslab#geotools-wrapper added as a dependency
+:: resolving dependencies :: org.apache.spark#spark-submit-parent-50caf35c-a6aa-4a46-a32a-1faf7fca96f9;1.0
+	confs: [default]
+	found org.apache.sedona#sedona-spark-shaded-4.0_2.13;1.9.0 in central
+	found org.datasyslab#geotools-wrapper;1.9.0-33.5 in central
+downloading https://repo1.maven.org/maven2/org/apache/sedona/sedona-spark-shaded-4.0_2.13/1.9.0/sedona-spark-shaded-4.0_2.13-1.9.0.jar ...
+	[SUCCESSFUL ] org.apache.sedona#sedona-spark-shaded-4.0_2.13;1.9.0!sedona-spark-shaded-4.0_2.13.jar (4528ms)
+downloading https://repo1.maven.org/maven2/org/datasyslab/geotools-wrapper/1.9.0-33.5/geotools-wrapper-1.9.0-33.5.jar ...
+	[SUCCESSFUL ] org.datasyslab#geotools-wrapper;1.9.0-33.5!geotools-wrapper.jar (1503ms)
+:: resolution report :: resolve 715ms :: artifacts dl 6034ms
+	:: modules in use:
+	org.apache.sedona#sedona-spark-shaded-4.0_2.13;1.9.0 from central in [default]
+	org.datasyslab#geotools-wrapper;1.9.0-33.5 from central in [default]
+	---------------------------------------------------------------------
+	|                  |            modules            ||   artifacts   |
+	|       conf       | number| search|dwnlded|evicted|| number|dwnlded|
+	---------------------------------------------------------------------
+	|      default     |   2   |   2   |   2   |   0   ||   2   |   2   |
+	---------------------------------------------------------------------
+:: retrieving :: org.apache.spark#spark-submit-parent-50caf35c-a6aa-4a46-a32a-1faf7fca96f9
+	confs: [default]
+	2 artifacts copied, 0 already retrieved (111056kB/43ms)
+26/09/29 20:35:03 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+Using Spark's default log4j profile: org/apache/spark/log4j2-defaults.properties
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+26/09/29 20:35:07 WARN SparkContext: Spark is not running in local mode, therefore the checkpoint directory must not be on the local filesystem. Directory '/workspace/.pytest-workspace-tmp/integration/checkpoints-wx_yf871' appears to be on the local filesystem.
+[phase] generated source setup (integration_search_generated): starting
+[phase] generated source setup (integration_search_generated): 0.00s
+26/09/29 20:35:08 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 8236 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:35:08 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 8965 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[snapshot] chunking.sections: starting
+[Stage 2:>                  (0 + 2) / 2][Stage 6:>                  (0 + 2) / 2]                                                                                [snapshot] chunking.sections: 2.37s
+[snapshot] chunking.paragraphs: starting
+[snapshot] chunking.paragraphs: 0.33s
+[snapshot] chunking.sentences: starting
+[Stage 20:>                                                         (0 + 1) / 1]                                                                                [snapshot] chunking.sentences: 1.58s
+[snapshot] indexing.document_terms: starting
+26/09/29 20:35:15 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 9511 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[Stage 29:>                                                         (0 + 1) / 1]                                                                                [snapshot] indexing.document_terms: 1.26s
+[snapshot] indexing.document_summary: starting
+[snapshot] indexing.document_summary: 0.26s
+[snapshot] indexing.section_terms: starting
+26/09/29 20:35:16 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 10808 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[snapshot] indexing.section_terms: 0.56s
+[snapshot] indexing.section_summary: starting
+[snapshot] indexing.section_summary: 0.27s
+[snapshot] indexing.paragraph_terms: starting
+26/09/29 20:35:17 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 11613 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[snapshot] indexing.paragraph_terms: 0.49s
+[snapshot] indexing.paragraph_summary: starting
+[snapshot] indexing.paragraph_summary: 0.26s
+[snapshot] indexing.sentence_terms: starting
+26/09/29 20:35:18 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 12249 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[snapshot] indexing.sentence_terms: 0.46s
+[snapshot] indexing.sentence_summary: starting
+[snapshot] indexing.sentence_summary: 0.27s
+[snapshot] indexing.field_terms: starting
+[snapshot] indexing.field_terms: 0.41s
+[phase] SearchDocuments online construction: starting
+26/09/29 20:35:19 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 19793 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:35:19 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 32310 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:35:20 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 130294 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:35:20 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 146663 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:35:20 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 156940 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:35:20 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 156998 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:35:20 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 157042 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:35:20 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 157075 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:35:21 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 146683 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:35:22 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 948492 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:35:25 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 1956544 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[Stage 142:=> (1 + 1) / 2][Stage 160:>  (0 + 1) / 1][Stage 311:>  (0 + 2) / 2][Stage 160:>  (0 + 1) / 1][Stage 204:>  (0 + 1) / 1][Stage 311:>  (0 + 2) / 2][Stage 385:>  (0 + 0) / 1][Stage 394:>  (0 + 0) / 1][Stage 400:>  (0 + 0) / 1][Stage 259:>  (0 + 0) / 1][Stage 265:>  (0 + 0) / 1][Stage 273:>  (0 + 0) / 1][Stage 192:>  (0 + 1) / 1][Stage 212:>  (0 + 1) / 1][Stage 220:>  (0 + 0) / 1][Stage 220:>  (0 + 0) / 1][Stage 228:>  (0 + 0) / 1][Stage 235:>  (0 + 0) / 1][Stage 235:>  (0 + 1) / 1][Stage 253:>  (0 + 0) / 1][Stage 259:>  (0 + 0) / 1][Stage 253:>  (0 + 1) / 1][Stage 259:>  (0 + 1) / 1][Stage 265:>  (0 + 0) / 1][Stage 313:>  (0 + 0) / 1][Stage 322:>  (0 + 0) / 1][Stage 330:>  (0 + 0) / 1][Stage 322:>  (0 + 0) / 1][Stage 330:>  (0 + 0) / 1][Stage 336:>  (0 + 0) / 1]26/09/29 20:35:35 WARN DAGScheduler: Broadcasting large task binary with size 1166.4 KiB
+[Stage 371:>  (0 + 0) / 1][Stage 385:>  (0 + 0) / 1][Stage 394:>  (0 + 0) / 1]26/09/29 20:35:36 WARN DAGScheduler: Broadcasting large task binary with size 1668.5 KiB
+[Stage 385:>  (0 + 0) / 1][Stage 394:>  (0 + 0) / 1][Stage 400:>  (0 + 0) / 1]26/09/29 20:35:36 WARN DAGScheduler: Broadcasting large task binary with size 1740.7 KiB
+[Stage 385:>  (0 + 1) / 1][Stage 394:>  (0 + 1) / 1][Stage 400:>  (0 + 1) / 1][Stage 422:>  (0 + 0) / 1][Stage 430:>  (0 + 0) / 1][Stage 446:>  (0 + 0) / 1]26/09/29 20:35:37 WARN DAGScheduler: Broadcasting large task binary with size 2.3 MiB
+[Stage 486:>  (0 + 1) / 1][Stage 494:>  (0 + 0) / 1][Stage 502:>  (0 + 0) / 1]26/09/29 20:35:37 WARN DAGScheduler: Broadcasting large task binary with size 2.3 MiB
+[Stage 510:>  (0 + 0) / 1][Stage 530:>  (0 + 0) / 1][Stage 534:>  (0 + 0) / 1]26/09/29 20:35:37 WARN DAGScheduler: Broadcasting large task binary with size 2.3 MiB
+26/09/29 20:35:37 WARN DAGScheduler: Broadcasting large task binary with size 2.5 MiB
+[Stage 487:>  (0 + 1) / 1][Stage 503:>  (0 + 0) / 1][Stage 510:>  (0 + 0) / 1]26/09/29 20:35:37 WARN DAGScheduler: Broadcasting large task binary with size 2.4 MiB
+[Stage 503:>  (0 + 1) / 1][Stage 510:>  (0 + 1) / 1][Stage 527:>  (0 + 0) / 1]26/09/29 20:35:38 WARN DAGScheduler: Broadcasting large task binary with size 2.5 MiB
+[Stage 527:>  (0 + 1) / 1][Stage 530:>  (0 + 0) / 1][Stage 534:>  (0 + 0) / 1]26/09/29 20:35:38 WARN DAGScheduler: Broadcasting large task binary with size 2.5 MiB
+26/09/29 20:35:38 WARN DAGScheduler: Broadcasting large task binary with size 2.5 MiB
+26/09/29 20:35:38 WARN DAGScheduler: Broadcasting large task binary with size 2.5 MiB
+26/09/29 20:35:38 WARN DAGScheduler: Broadcasting large task binary with size 1153.1 KiB
+26/09/29 20:35:38 WARN DAGScheduler: Broadcasting large task binary with size 1654.6 KiB
+26/09/29 20:35:38 WARN DAGScheduler: Broadcasting large task binary with size 1726.4 KiB
+26/09/29 20:35:38 WARN DAGScheduler: Broadcasting large task binary with size 2.3 MiB
+26/09/29 20:35:39 WARN DAGScheduler: Broadcasting large task binary with size 2.3 MiB
+26/09/29 20:35:39 WARN DAGScheduler: Broadcasting large task binary with size 2.3 MiB
+26/09/29 20:35:39 WARN DAGScheduler: Broadcasting large task binary with size 2.4 MiB
+26/09/29 20:35:39 WARN DAGScheduler: Broadcasting large task binary with size 2.4 MiB
+26/09/29 20:35:39 WARN DAGScheduler: Broadcasting large task binary with size 2.4 MiB
+26/09/29 20:35:39 WARN DAGScheduler: Broadcasting large task binary with size 2.4 MiB
+26/09/29 20:35:39 WARN DAGScheduler: Broadcasting large task binary with size 2.5 MiB
+26/09/29 20:35:39 WARN DAGScheduler: Broadcasting large task binary with size 2.5 MiB
+26/09/29 20:35:39 WARN DAGScheduler: Broadcasting large task binary with size 4.9 MiB
+26/09/29 20:35:40 WARN DAGScheduler: Broadcasting large task binary with size 4.9 MiB
+                                                                                26/09/29 20:35:40 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 615909 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[Stage 628:>  (0 + 2) / 2][Stage 650:>  (0 + 0) / 2][Stage 651:>  (0 + 0) / 2][Stage 650:>  (0 + 0) / 2][Stage 651:>  (0 + 0) / 2][Stage 659:>  (0 + 0) / 2][Stage 553:>  (0 + 1) / 1][Stage 618:>  (0 + 1) / 1][Stage 650:>  (0 + 0) / 2][Stage 553:>  (0 + 1) / 1][Stage 618:>  (0 + 1) / 1][Stage 650:=> (1 + 0) / 2][Stage 651:=> (1 + 1) / 2][Stage 653:>  (0 + 1) / 1][Stage 659:>  (0 + 1) / 2][Stage 670:>  (0 + 2) / 2][Stage 672:>  (0 + 0) / 1][Stage 679:>  (0 + 0) / 2][Stage 685:========>        (1 + 1) / 2][Stage 700:>                (0 + 1) / 2]26/09/29 20:35:45 WARN DAGScheduler: Broadcasting large task binary with size 1118.2 KiB
+26/09/29 20:35:45 WARN DAGScheduler: Broadcasting large task binary with size 1107.1 KiB
+26/09/29 20:35:45 WARN DAGScheduler: Broadcasting large task binary with size 1207.8 KiB
+26/09/29 20:35:45 WARN DAGScheduler: Broadcasting large task binary with size 1856.2 KiB
+26/09/29 20:35:45 WARN DAGScheduler: Broadcasting large task binary with size 1820.6 KiB
+26/09/29 20:35:45 WARN DAGScheduler: Broadcasting large task binary with size 1839.4 KiB
+26/09/29 20:35:45 WARN DAGScheduler: Broadcasting large task binary with size 1849.1 KiB
+26/09/29 20:35:45 WARN DAGScheduler: Broadcasting large task binary with size 1862.0 KiB
+26/09/29 20:35:45 WARN DAGScheduler: Broadcasting large task binary with size 1928.9 KiB
+                                                                                26/09/29 20:35:46 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 16947 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[phase] SearchDocuments online construction: 27.33s
+[phase] SearchDocuments generated construction: starting
+26/09/29 20:35:46 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 19756 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:35:47 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 32353 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:35:47 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 130792 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:35:47 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 147081 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:35:47 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 157310 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:35:47 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 157373 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:35:47 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 157419 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:35:47 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 157454 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:35:48 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 147081 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:35:49 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 946024 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:35:51 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 1962505 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[Stage 919:>  (0 + 0) / 2][Stage 929:>  (0 + 0) / 2][Stage 932:>  (0 + 0) / 2][Stage 866:>  (0 + 0) / 1][Stage 874:>  (0 + 0) / 1][Stage 905:>  (0 + 0) / 1][Stage 866:>  (0 + 0) / 1][Stage 874:>  (0 + 0) / 1][Stage 882:>  (0 + 0) / 1][Stage 866:>  (0 + 1) / 1][Stage 890:>  (0 + 1) / 1][Stage 905:>  (0 + 0) / 1][Stage 919:>  (0 + 1) / 2][Stage 920:>  (0 + 0) / 1][Stage 929:>  (0 + 0) / 2][Stage 932:>  (0 + 2) / 2][Stage 933:>  (0 + 0) / 2][Stage 935:>  (0 + 0) / 1][Stage 957:>  (0 + 0) / 1][Stage 965:>  (0 + 0) / 1][Stage 973:>  (0 + 0) / 1]26/09/29 20:36:00 WARN DAGScheduler: Broadcasting large task binary with size 1154.6 KiB
+26/09/29 20:36:00 WARN DAGScheduler: Broadcasting large task binary with size 1656.3 KiB
+[Stage 990:>  (0 + 1) / 1][Stage 998:>  (0 + 0) / 1][Stage 1006:> (0 + 0) / 1]26/09/29 20:36:00 WARN DAGScheduler: Broadcasting large task binary with size 1728.1 KiB
+[Stage 998:>  (0 + 0) / 1][Stage 1006:> (0 + 0) / 1][Stage 1014:> (0 + 0) / 1][Stage 1052:> (0 + 0) / 1][Stage 1066:> (0 + 0) / 1][Stage 1074:> (0 + 0) / 1]26/09/29 20:36:01 WARN DAGScheduler: Broadcasting large task binary with size 2.3 MiB
+[Stage 1082:> (0 + 0) / 1][Stage 1090:> (0 + 0) / 1][Stage 1104:> (0 + 0) / 1]26/09/29 20:36:01 WARN DAGScheduler: Broadcasting large task binary with size 2.3 MiB
+26/09/29 20:36:01 WARN DAGScheduler: Broadcasting large task binary with size 2.3 MiB
+[Stage 1090:> (0 + 0) / 1][Stage 1104:> (0 + 0) / 1][Stage 1116:> (0 + 0) / 1]26/09/29 20:36:02 WARN DAGScheduler: Broadcasting large task binary with size 2.5 MiB
+[Stage 1090:> (0 + 1) / 1][Stage 1104:> (0 + 1) / 1][Stage 1116:> (0 + 1) / 1]26/09/29 20:36:02 WARN DAGScheduler: Broadcasting large task binary with size 2.4 MiB
+[Stage 1145:> (0 + 1) / 2][Stage 1148:> (0 + 0) / 1][Stage 1157:> (0 + 0) / 2]26/09/29 20:36:02 WARN DAGScheduler: Broadcasting large task binary with size 2.4 MiB
+26/09/29 20:36:02 WARN DAGScheduler: Broadcasting large task binary with size 2.4 MiB
+26/09/29 20:36:02 WARN DAGScheduler: Broadcasting large task binary with size 2.5 MiB
+26/09/29 20:36:02 WARN DAGScheduler: Broadcasting large task binary with size 2.5 MiB
+26/09/29 20:36:03 WARN DAGScheduler: Broadcasting large task binary with size 1167.1 KiB
+26/09/29 20:36:03 WARN DAGScheduler: Broadcasting large task binary with size 1669.0 KiB
+26/09/29 20:36:03 WARN DAGScheduler: Broadcasting large task binary with size 1741.2 KiB
+26/09/29 20:36:03 WARN DAGScheduler: Broadcasting large task binary with size 2.3 MiB
+26/09/29 20:36:03 WARN DAGScheduler: Broadcasting large task binary with size 2.3 MiB
+26/09/29 20:36:03 WARN DAGScheduler: Broadcasting large task binary with size 2.3 MiB
+26/09/29 20:36:03 WARN DAGScheduler: Broadcasting large task binary with size 2.5 MiB
+26/09/29 20:36:03 WARN DAGScheduler: Broadcasting large task binary with size 2.4 MiB
+26/09/29 20:36:03 WARN DAGScheduler: Broadcasting large task binary with size 2.5 MiB
+26/09/29 20:36:03 WARN DAGScheduler: Broadcasting large task binary with size 2.5 MiB
+26/09/29 20:36:03 WARN DAGScheduler: Broadcasting large task binary with size 2.5 MiB
+26/09/29 20:36:04 WARN DAGScheduler: Broadcasting large task binary with size 2.5 MiB
+26/09/29 20:36:04 WARN DAGScheduler: Broadcasting large task binary with size 4.9 MiB
+26/09/29 20:36:04 WARN DAGScheduler: Broadcasting large task binary with size 4.9 MiB
+                                                                                26/09/29 20:36:04 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 618516 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[Stage 1264:> (0 + 0) / 2][Stage 1266:> (0 + 0) / 2][Stage 1267:> (0 + 0) / 2][Stage 1266:=>(1 + 1) / 2][Stage 1267:> (0 + 2) / 2][Stage 1269:> (0 + 1) / 1][Stage 1287:> (0 + 1) / 1][Stage 1294:> (0 + 0) / 2][Stage 1301:> (0 + 0) / 2][Stage 1301:=>(1 + 1) / 2][Stage 1309:> (0 + 1) / 2][Stage 1311:> (0 + 0) / 2]26/09/29 20:36:08 WARN DAGScheduler: Broadcasting large task binary with size 1121.3 KiB
+26/09/29 20:36:08 WARN DAGScheduler: Broadcasting large task binary with size 1110.2 KiB
+26/09/29 20:36:08 WARN DAGScheduler: Broadcasting large task binary with size 1210.8 KiB
+26/09/29 20:36:09 WARN DAGScheduler: Broadcasting large task binary with size 1859.6 KiB
+26/09/29 20:36:09 WARN DAGScheduler: Broadcasting large task binary with size 1824.1 KiB
+26/09/29 20:36:09 WARN DAGScheduler: Broadcasting large task binary with size 1842.9 KiB
+26/09/29 20:36:09 WARN DAGScheduler: Broadcasting large task binary with size 1852.6 KiB
+26/09/29 20:36:09 WARN DAGScheduler: Broadcasting large task binary with size 1865.5 KiB
+26/09/29 20:36:09 WARN DAGScheduler: Broadcasting large task binary with size 1932.5 KiB
+                                                                                26/09/29 20:36:09 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 16958 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[phase] SearchDocuments generated construction: 23.53s
+[phase] Handwritten cached lexical reference construction: starting
+[phase] Handwritten cached lexical reference construction: 0.65s
+[phase] SearchDocuments online collection: starting
+26/09/29 20:36:10 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 35014 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[phase] SearchDocuments online collection: 0.52s
+[phase] SearchDocuments generated collection: starting
+26/09/29 20:36:11 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 35050 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[phase] SearchDocuments generated collection: 0.28s
+[phase] Handwritten cached lexical reference collection: starting
+26/09/29 20:36:11 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 17047 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[phase] Handwritten cached lexical reference collection: 0.39s
+26/09/29 20:36:12 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 23862 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:36:12 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 37300 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:36:12 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 155315 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:36:12 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 174590 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:36:12 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 186601 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:36:12 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 186664 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:36:12 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 186710 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:36:13 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 186745 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:36:13 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 174590 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:36:14 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 1124832 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:17 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 1689199 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[Stage 1398:> (0 + 0) / 1][Stage 1403:> (0 + 0) / 2][Stage 1404:> (0 + 0) / 2]                                                                                [Stage 1455:> (0 + 6) / 6][Stage 1460:> (0 + 1) / 6][Stage 1465:> (0 + 0) / 6][Stage 1460:> (1 + 5) / 6][Stage 1465:> (0 + 0) / 6][Stage 1471:> (0 + 0) / 6]                                                                                [Stage 1481:> (0 + 6) / 6][Stage 1486:> (0 + 0) / 6][Stage 1492:> (0 + 0) / 6]                                                                                [Stage 1518:=>(3 + 3) / 6][Stage 1527:> (0 + 0) / 1][Stage 1533:> (0 + 0) / 1]                                                                                [Stage 1544:> (2 + 4) / 6][Stage 1549:> (0 + 0) / 6][Stage 1554:> (0 + 0) / 1]                                                                                [Stage 1634:> (0 + 0) / 2][Stage 1635:> (0 + 0) / 2][Stage 1636:> (0 + 0) / 1][Stage 1623:> (0 + 0) / 2][Stage 1631:> (0 + 0) / 1][Stage 1633:=>(1 + 0) / 2]26/09/29 20:36:27 WARN DAGScheduler: Broadcasting large task binary with size 1423.5 KiB
+[Stage 1606:> (2 + 4) / 6][Stage 1617:> (0 + 1) / 1][Stage 1623:> (0 + 2) / 2]26/09/29 20:36:27 WARN DAGScheduler: Broadcasting large task binary with size 1400.7 KiB
+[Stage 1636:> (0 + 0) / 1][Stage 1645:> (0 + 0) / 1][Stage 1650:> (0 + 0) / 2]26/09/29 20:36:27 WARN DAGScheduler: Broadcasting large task binary with size 1485.1 KiB
+[Stage 1645:> (0 + 0) / 1][Stage 1650:> (0 + 0) / 2][Stage 1651:> (0 + 0) / 1]26/09/29 20:36:28 WARN DAGScheduler: Broadcasting large task binary with size 2041.3 KiB
+26/09/29 20:36:28 WARN DAGScheduler: Broadcasting large task binary with size 2033.8 KiB
+[Stage 1678:============================>                           (1 + 0) / 2]26/09/29 20:36:28 WARN DAGScheduler: Broadcasting large task binary with size 1411.8 KiB
+26/09/29 20:36:28 WARN DAGScheduler: Broadcasting large task binary with size 2.0 MiB
+26/09/29 20:36:28 WARN DAGScheduler: Broadcasting large task binary with size 1388.9 KiB
+26/09/29 20:36:28 WARN DAGScheduler: Broadcasting large task binary with size 2.1 MiB
+26/09/29 20:36:28 WARN DAGScheduler: Broadcasting large task binary with size 1473.1 KiB
+[Stage 1664:> (0 + 6) / 6][Stage 1674:> (0 + 1) / 6][Stage 1678:=>(1 + 0) / 2]26/09/29 20:36:28 WARN DAGScheduler: Broadcasting large task binary with size 2.1 MiB
+[Stage 1674:>               (0 + 6) / 6][Stage 1678:========>       (1 + 0) / 2]26/09/29 20:36:28 WARN DAGScheduler: Broadcasting large task binary with size 2.1 MiB
+26/09/29 20:36:29 WARN DAGScheduler: Broadcasting large task binary with size 2028.5 KiB
+26/09/29 20:36:29 WARN DAGScheduler: Broadcasting large task binary with size 2.1 MiB
+26/09/29 20:36:29 WARN DAGScheduler: Broadcasting large task binary with size 2020.9 KiB
+26/09/29 20:36:29 WARN DAGScheduler: Broadcasting large task binary with size 2.1 MiB
+26/09/29 20:36:29 WARN DAGScheduler: Broadcasting large task binary with size 2034.2 KiB
+26/09/29 20:36:29 WARN DAGScheduler: Broadcasting large task binary with size 2.2 MiB
+26/09/29 20:36:29 WARN DAGScheduler: Broadcasting large task binary with size 2.1 MiB
+26/09/29 20:36:29 WARN DAGScheduler: Broadcasting large task binary with size 2.1 MiB
+26/09/29 20:36:29 WARN DAGScheduler: Broadcasting large task binary with size 2.1 MiB
+26/09/29 20:36:29 WARN DAGScheduler: Broadcasting large task binary with size 2.1 MiB
+26/09/29 20:36:29 WARN DAGScheduler: Broadcasting large task binary with size 2.1 MiB
+26/09/29 20:36:29 WARN DAGScheduler: Broadcasting large task binary with size 2.2 MiB
+26/09/29 20:36:29 WARN DAGScheduler: Broadcasting large task binary with size 4.2 MiB
+26/09/29 20:36:29 WARN DAGScheduler: Broadcasting large task binary with size 4.2 MiB
+                                                                                26/09/29 20:36:30 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:30 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:30 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:30 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:30 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:30 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:30 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:30 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:30 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:30 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:30 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:30 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:30 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 562992 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[Stage 1714:============================>                           (3 + 3) / 6]                                                                                [Stage 1771:> (0 + 0) / 1][Stage 1783:> (0 + 0) / 1][Stage 1793:> (0 + 0) / 2][Stage 1771:> (0 + 0) / 1][Stage 1783:> (0 + 0) / 1][Stage 1787:> (0 + 0) / 1][Stage 1771:> (0 + 0) / 1][Stage 1782:> (0 + 0) / 1][Stage 1783:> (0 + 0) / 1][Stage 1764:> (2 + 4) / 6][Stage 1771:> (0 + 0) / 1][Stage 1782:> (0 + 0) / 1]26/09/29 20:36:34 WARN DAGScheduler: Broadcasting large task binary with size 1041.6 KiB
+26/09/29 20:36:34 WARN DAGScheduler: Broadcasting large task binary with size 1012.3 KiB
+26/09/29 20:36:34 WARN DAGScheduler: Broadcasting large task binary with size 1098.3 KiB
+26/09/29 20:36:35 WARN DAGScheduler: Broadcasting large task binary with size 1662.1 KiB
+26/09/29 20:36:35 WARN DAGScheduler: Broadcasting large task binary with size 1621.8 KiB
+26/09/29 20:36:35 WARN DAGScheduler: Broadcasting large task binary with size 1640.6 KiB
+26/09/29 20:36:35 WARN DAGScheduler: Broadcasting large task binary with size 1651.7 KiB
+26/09/29 20:36:35 WARN DAGScheduler: Broadcasting large task binary with size 1660.6 KiB
+26/09/29 20:36:35 WARN DAGScheduler: Broadcasting large task binary with size 1726.2 KiB
+                                                                                26/09/29 20:36:35 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 17228 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:36:36 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 34799 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[search-repeat] {"collection_seconds": 0.3193019169848412, "construction_seconds": 24.158671094017336, "mode": "online", "query_id": "q-repeat-miss-0", "request_index": 0, "rows": 2, "workload": "score-cache-miss"}
+26/09/29 20:36:36 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 23836 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:36:36 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 8178 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:36:36 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 37355 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:36:37 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 155996 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:36:37 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 175203 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:36:37 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 187166 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:36:37 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 187234 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:36:37 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 187282 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:36:37 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 187319 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:36:38 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 175203 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:36:39 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 1126961 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:41 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 1703375 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[Stage 1828:> (0 + 0) / 2][Stage 1829:> (0 + 0) / 1][Stage 1834:> (0 + 0) / 2]                                                                                [Stage 1911:> (0 + 0) / 1][Stage 1916:> (0 + 0) / 1][Stage 1921:> (0 + 0) / 1]                                                                                [Stage 1973:> (0 + 0) / 1][Stage 1978:> (0 + 0) / 1][Stage 1984:> (0 + 0) / 1]                                                                                [Stage 1978:> (0 + 0) / 1][Stage 1984:> (0 + 0) / 1][Stage 1989:> (0 + 0) / 1]                                                                                [Stage 1996:>               (0 + 6) / 6][Stage 2001:>               (0 + 0) / 6]                                                                                [Stage 2033:=>(1 + 1) / 2][Stage 2046:> (0 + 2) / 2][Stage 2056:> (0 + 0) / 1]26/09/29 20:36:50 WARN DAGScheduler: Broadcasting large task binary with size 1413.5 KiB
+[Stage 2051:=>(1 + 0) / 2][Stage 2056:> (0 + 0) / 1][Stage 2061:> (0 + 0) / 1]26/09/29 20:36:51 WARN DAGScheduler: Broadcasting large task binary with size 1390.6 KiB
+26/09/29 20:36:51 WARN DAGScheduler: Broadcasting large task binary with size 1474.8 KiB
+[Stage 2067:> (0 + 2) / 2][Stage 2068:> (0 + 0) / 2][Stage 2069:> (0 + 0) / 2]26/09/29 20:36:51 WARN DAGScheduler: Broadcasting large task binary with size 2031.3 KiB
+[Stage 2068:> (0 + 0) / 2][Stage 2069:> (0 + 0) / 2][Stage 2070:> (0 + 0) / 1]26/09/29 20:36:51 WARN DAGScheduler: Broadcasting large task binary with size 2023.9 KiB
+[Stage 2069:> (0 + 0) / 2][Stage 2070:> (0 + 0) / 1][Stage 2079:> (0 + 0) / 1]26/09/29 20:36:52 WARN DAGScheduler: Broadcasting large task binary with size 2037.3 KiB
+[Stage 2070:> (0 + 1) / 1][Stage 2077:> (0 + 1) / 1][Stage 2079:> (0 + 1) / 1]26/09/29 20:36:52 WARN DAGScheduler: Broadcasting large task binary with size 2.1 MiB
+26/09/29 20:36:52 WARN DAGScheduler: Broadcasting large task binary with size 2.1 MiB
+26/09/29 20:36:52 WARN DAGScheduler: Broadcasting large task binary with size 2.1 MiB
+26/09/29 20:36:52 WARN DAGScheduler: Broadcasting large task binary with size 1425.1 KiB
+26/09/29 20:36:52 WARN DAGScheduler: Broadcasting large task binary with size 2.1 MiB
+26/09/29 20:36:52 WARN DAGScheduler: Broadcasting large task binary with size 1402.3 KiB
+26/09/29 20:36:52 WARN DAGScheduler: Broadcasting large task binary with size 2.1 MiB
+26/09/29 20:36:52 WARN DAGScheduler: Broadcasting large task binary with size 1486.9 KiB
+26/09/29 20:36:52 WARN DAGScheduler: Broadcasting large task binary with size 2.2 MiB
+26/09/29 20:36:53 WARN DAGScheduler: Broadcasting large task binary with size 2044.2 KiB
+26/09/29 20:36:53 WARN DAGScheduler: Broadcasting large task binary with size 2036.8 KiB
+26/09/29 20:36:53 WARN DAGScheduler: Broadcasting large task binary with size 2.0 MiB
+26/09/29 20:36:53 WARN DAGScheduler: Broadcasting large task binary with size 2.1 MiB
+26/09/29 20:36:53 WARN DAGScheduler: Broadcasting large task binary with size 2.1 MiB
+26/09/29 20:36:53 WARN DAGScheduler: Broadcasting large task binary with size 2.1 MiB
+26/09/29 20:36:53 WARN DAGScheduler: Broadcasting large task binary with size 2.1 MiB
+26/09/29 20:36:53 WARN DAGScheduler: Broadcasting large task binary with size 2.1 MiB
+26/09/29 20:36:53 WARN DAGScheduler: Broadcasting large task binary with size 2.2 MiB
+26/09/29 20:36:53 WARN DAGScheduler: Broadcasting large task binary with size 4.2 MiB
+26/09/29 20:36:53 WARN DAGScheduler: Broadcasting large task binary with size 4.2 MiB
+                                                                                26/09/29 20:36:54 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:54 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:54 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:54 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:54 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:54 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:54 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:54 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:54 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:54 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:54 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:54 WARN WindowExec: No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+26/09/29 20:36:54 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 567801 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[Stage 2139:=============>  (5 + 1) / 6][Stage 2145:=====>          (2 + 3) / 6]                                                                                [Stage 2183:> (0 + 0) / 1][Stage 2193:> (0 + 0) / 1][Stage 2200:> (0 + 0) / 2][Stage 2200:=>(1 + 0) / 2][Stage 2202:> (0 + 0) / 1][Stage 2207:> (0 + 0) / 1][Stage 2202:> (0 + 0) / 1][Stage 2207:> (0 + 0) / 1][Stage 2219:> (0 + 0) / 1][Stage 2207:> (0 + 0) / 1][Stage 2219:> (0 + 0) / 1][Stage 2221:> (0 + 0) / 1]26/09/29 20:36:58 WARN DAGScheduler: Broadcasting large task binary with size 1045.5 KiB
+26/09/29 20:36:58 WARN DAGScheduler: Broadcasting large task binary with size 1016.1 KiB
+26/09/29 20:36:58 WARN DAGScheduler: Broadcasting large task binary with size 1102.3 KiB
+26/09/29 20:36:58 WARN DAGScheduler: Broadcasting large task binary with size 1666.9 KiB
+26/09/29 20:36:58 WARN DAGScheduler: Broadcasting large task binary with size 1626.7 KiB
+26/09/29 20:36:58 WARN DAGScheduler: Broadcasting large task binary with size 1645.4 KiB
+26/09/29 20:36:59 WARN DAGScheduler: Broadcasting large task binary with size 1656.5 KiB
+26/09/29 20:36:59 WARN DAGScheduler: Broadcasting large task binary with size 1665.4 KiB
+26/09/29 20:36:59 WARN DAGScheduler: Broadcasting large task binary with size 1731.2 KiB
+                                                                                26/09/29 20:36:59 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 17313 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/29 20:36:59 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 34835 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[search-repeat] {"collection_seconds": 0.38259733299491927, "construction_seconds": 23.496896135999123, "mode": "generated", "query_id": "q-repeat-miss-0", "request_index": 0, "rows": 2, "workload": "score-cache-miss"}
+[phase] generated source cleanup (integration_search_generated): starting
+[phase] generated source cleanup (integration_search_generated): 0.00s
+PASSED[phase] snapshot fixture cleanup: starting
+[phase] snapshot fixture cleanup: 0.01s
+[phase] plan boundary cleanup: starting
+[phase] plan boundary cleanup: 0.07s
+
+
+============================= slowest 20 durations =============================
+112.87s call     tests/integration/pyspark/search/test_search.py::test_document_search_reranks_bm25_candidates_for_multiple_queries
+18.64s setup    tests/integration/pyspark/search/test_search.py::test_document_search_reranks_bm25_candidates_for_multiple_queries
+1.04s teardown tests/integration/pyspark/search/test_search.py::test_document_search_reranks_bm25_candidates_for_multiple_queries
+================ 1 passed, 208 deselected in 133.34s (0:02:13) =================

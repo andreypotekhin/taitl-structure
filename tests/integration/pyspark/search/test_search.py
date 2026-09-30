@@ -1,9 +1,17 @@
 import csv
+import json
+import os
 from datetime import datetime
 from pathlib import Path
-from typing import Mapping, Sequence, cast
+from time import perf_counter
+from typing import Any, Mapping, Sequence, cast
 
 import pytest
+from integration.pyspark.search.support.handwritten_search import (
+    cached_lexical_search,
+    prepare_cached_lexical_search,
+    rekey_cached_query,
+)
 from integration.pyspark.support import backend_matrix
 from integration.pyspark.support.backend_matrix import generated_project
 from integration.pyspark.support.rows import rows, single
@@ -289,6 +297,7 @@ from examples.search.transforms.stats.ProfileDocuments import ProfileDocuments
 from examples.search.transforms.training import BuildTrainingData, RankDocumentCandidates
 from structure import Schema, Transform
 from structure.plugin.pyspark import TimeWindow
+from structure.plugin.pyspark.execution.logic.PlanBoundary import close_plan_boundaries
 
 pytestmark = pytest.mark.integration
 
@@ -1859,11 +1868,15 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(
                 .run(search_session(spark, execution_mode="generated", generated_package=PACKAGE))
                 .results
             )
+        with phase("Handwritten cached lexical reference construction"):
+            handwritten = cached_lexical_search(inputs)
         with phase("SearchDocuments online collection"):
             online_rows = rows(online, "search_query_id", "rank")
         with phase("SearchDocuments generated collection"):
             generated_rows = rows(generated, "search_query_id", "rank")
-        assert online_rows == generated_rows
+        with phase("Handwritten cached lexical reference collection"):
+            handwritten_rows = rows(handwritten, "search_query_id", "rank")
+        assert online_rows == generated_rows == handwritten_rows
         assert [
             row["rank"] for row in rows(generated, "search_query_id", "rank") if row["search_query_id"] == "q-free-form"
         ] == [
@@ -1879,6 +1892,220 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(
             single(generated, lambda row: row["search_query_id"] == "q-navigation" and row["rank"] == 1)["document_id"]
             == "d-13"
         )
+        repeat_requests = int(os.environ.get("STRUCTURE_SEARCH_REPEAT_REQUESTS", "0"))
+        if repeat_requests:
+            _benchmark_cached_score_repeats(spark, inputs, repeat_requests, search_session)
+
+
+def _benchmark_cached_score_repeats(spark, inputs, request_count: int, search_session) -> None:
+    """Measure sequential distinct requests over fixed, caller-owned cached-score fixture inputs.
+
+    This opt-in smoke benchmark deliberately excludes score-cache misses and index preparation. It uses direct
+    ``collect`` calls and reports graph construction separately from Spark execution.
+    """
+
+    if request_count < 1:
+        raise ValueError("STRUCTURE_SEARCH_REPEAT_REQUESTS must be a positive integer.")
+
+    workload = os.environ.get("STRUCTURE_SEARCH_REPEAT_WORKLOAD", "cached-score-hit")
+    release_boundaries = _release_repeat_boundaries()
+    if workload == "score-cache-miss":
+        _benchmark_score_cache_miss_repeats(spark, inputs, request_count, search_session)
+        return
+    if workload != "cached-score-hit":
+        raise ValueError("STRUCTURE_SEARCH_REPEAT_WORKLOAD must be cached-score-hit or score-cache-miss.")
+
+    default_order = "online,generated,handwritten,prepared-handwritten"
+    mode_order = os.environ.get("STRUCTURE_SEARCH_REPEAT_MODE_ORDER", default_order).split(",")
+    modes = {"online", "generated", "handwritten", "prepared-handwritten"}
+    if len(mode_order) != len(modes) or set(mode_order) != modes:
+        raise ValueError(f"STRUCTURE_SEARCH_REPEAT_MODE_ORDER must contain each of {sorted(modes)} exactly once.")
+
+    started = perf_counter()
+    prepared_inputs, prepared, cached_frames = prepare_cached_lexical_search(inputs)
+    preparation_seconds = perf_counter() - started
+    if release_boundaries:
+        close_plan_boundaries(spark)
+    print(
+        "[search-repeat] "
+        + json.dumps(
+            {"workload": "cached-score-hit", "mode": "prepared-handwritten", "preparation_seconds": preparation_seconds},
+            sort_keys=True,
+        ),
+        flush=True,
+    )
+
+    expected_by_request: dict[int, list[dict[str, object]]] = {}
+    expected_schema: dict[str, Any] | None = None
+    try:
+        for mode in mode_order:
+            runtime = (
+                search_session(spark, execution_mode=mode, generated_package=PACKAGE)
+                if mode in {"online", "generated"}
+                else None
+            )
+            for request_index in range(request_count):
+                request_inputs = rekey_cached_query(
+                    inputs,
+                    query_id=f"q-repeat-{request_index}",
+                    query_text=f"aurora beacon request {request_index}",
+                    request_id=f"r-repeat-{request_index}",
+                )
+                if mode == "prepared-handwritten":
+                    request_inputs["documents"] = prepared_inputs["documents"]
+                    request_inputs["document_popularity"] = prepared_inputs["document_popularity"]
+                boundary_views_before = _structure_boundary_view_count(spark)
+                started = perf_counter()
+                result = (
+                    SearchDocuments(**request_inputs).run(runtime).results
+                    if runtime is not None
+                    else cached_lexical_search(
+                        request_inputs,
+                        prepared=prepared if mode == "prepared-handwritten" else None,
+                    )
+                )
+                construction_seconds = perf_counter() - started
+                boundary_views_after = _structure_boundary_view_count(spark)
+                started = perf_counter()
+                actual = [row.asDict(recursive=True) for row in result.collect()]
+                collection_seconds = perf_counter() - started
+                boundary_cleanup_seconds = _release_repeat_boundaries_after_collection(spark, release_boundaries)
+                boundary_views_after_cleanup = _structure_boundary_view_count(spark)
+                actual.sort(key=lambda row: (row["rank"], row["document_id"]))
+                comparable = [dict(row, search_query_id="<query>") for row in actual]
+                schema = result.schema.jsonValue()
+                if expected_schema is None:
+                    expected_schema = schema
+                else:
+                    if schema != expected_schema:
+                        expected_fields = {field["name"]: field for field in expected_schema["fields"]}
+                        actual_fields = {field["name"]: field for field in schema["fields"]}
+                        differences = {
+                            name: (expected_fields.get(name), actual_fields.get(name))
+                            for name in expected_fields.keys() | actual_fields.keys()
+                            if expected_fields.get(name) != actual_fields.get(name)
+                        }
+                        raise AssertionError(
+                            f"Repeat-query schema changed for {mode} request {request_index}: {differences}"
+                        )
+                if mode == mode_order[0]:
+                    expected_by_request[request_index] = comparable
+                else:
+                    assert comparable == expected_by_request[request_index], (
+                        f"Output changed for {mode} cached-score request {request_index}."
+                    )
+                print(
+                    "[search-repeat] "
+                    + json.dumps(
+                        {
+                            "workload": "cached-score-hit",
+                            "mode": mode,
+                            "request_index": request_index,
+                            "query_id": f"q-repeat-{request_index}",
+                            "construction_seconds": construction_seconds,
+                            "collection_seconds": collection_seconds,
+                            "boundary_views_before": boundary_views_before,
+                            "boundary_views_after": boundary_views_after,
+                            "boundary_cleanup_seconds": boundary_cleanup_seconds,
+                            "boundary_views_after_cleanup": boundary_views_after_cleanup,
+                            "rows": len(actual),
+                        },
+                        sort_keys=True,
+                    ),
+                    flush=True,
+                )
+    finally:
+        for frame in cached_frames:
+            frame.unpersist()
+
+
+def _benchmark_score_cache_miss_repeats(spark, inputs, request_count: int, search_session) -> None:
+    """Measure Search requests that recompute document and overlap scores from the supplied term index."""
+
+    default_order = "online,generated"
+    mode_order = os.environ.get("STRUCTURE_SEARCH_REPEAT_MODE_ORDER", default_order).split(",")
+    if len(mode_order) != 2 or set(mode_order) != {"online", "generated"}:
+        raise ValueError("Score-cache-miss mode order must contain online and generated exactly once.")
+
+    expected_by_request: dict[int, list[dict[str, object]]] = {}
+    expected_schema: dict[str, Any] | None = None
+    release_boundaries = _release_repeat_boundaries()
+    if release_boundaries:
+        close_plan_boundaries(spark)
+    for mode in mode_order:
+        runtime = search_session(spark, execution_mode=mode, generated_package=PACKAGE)
+        for request_index in range(request_count):
+            request_inputs = rekey_cached_query(
+                inputs,
+                query_id=f"q-repeat-miss-{request_index}",
+                query_text=f"aurora beacon request {request_index}",
+                request_id=f"r-repeat-miss-{request_index}",
+                score_cache_hit=False,
+            )
+            boundary_views_before = _structure_boundary_view_count(spark)
+            started = perf_counter()
+            result = SearchDocuments(**request_inputs).run(runtime).results
+            construction_seconds = perf_counter() - started
+            boundary_views_after = _structure_boundary_view_count(spark)
+            started = perf_counter()
+            actual = [row.asDict(recursive=True) for row in result.collect()]
+            collection_seconds = perf_counter() - started
+            boundary_cleanup_seconds = _release_repeat_boundaries_after_collection(spark, release_boundaries)
+            boundary_views_after_cleanup = _structure_boundary_view_count(spark)
+            actual.sort(key=lambda row: (row["rank"], row["document_id"]))
+            comparable = [dict(row, search_query_id="<query>") for row in actual]
+            schema = result.schema.jsonValue()
+            if expected_schema is None:
+                expected_schema = schema
+            elif schema != expected_schema:
+                raise AssertionError(f"Score-cache-miss schema changed for {mode} request {request_index}.")
+            if mode == mode_order[0]:
+                expected_by_request[request_index] = comparable
+            else:
+                assert comparable == expected_by_request[request_index], (
+                    f"Output changed for {mode} score-cache-miss request {request_index}."
+                )
+            print(
+                "[search-repeat] "
+                + json.dumps(
+                    {
+                        "workload": "score-cache-miss",
+                        "mode": mode,
+                        "request_index": request_index,
+                        "query_id": f"q-repeat-miss-{request_index}",
+                        "construction_seconds": construction_seconds,
+                        "collection_seconds": collection_seconds,
+                        "boundary_views_before": boundary_views_before,
+                        "boundary_views_after": boundary_views_after,
+                        "boundary_cleanup_seconds": boundary_cleanup_seconds,
+                        "boundary_views_after_cleanup": boundary_views_after_cleanup,
+                        "rows": len(actual),
+                    },
+                    sort_keys=True,
+                ),
+                flush=True,
+            )
+
+
+def _structure_boundary_view_count(spark) -> int:
+    """Count Structure-owned temporary views that remain registered in the caller's session."""
+
+    return sum(table.name.startswith("_structure_boundary_") for table in spark.catalog.listTables())
+
+
+def _release_repeat_boundaries() -> bool:
+    value = os.environ.get("STRUCTURE_SEARCH_RELEASE_BOUNDARIES", "false").lower()
+    if value not in {"true", "false"}:
+        raise ValueError("STRUCTURE_SEARCH_RELEASE_BOUNDARIES must be true or false.")
+    return value == "true"
+
+
+def _release_repeat_boundaries_after_collection(spark, enabled: bool) -> float | None:
+    if not enabled:
+        return None
+    started = perf_counter()
+    close_plan_boundaries(spark)
+    return perf_counter() - started
 
 
 def _search_documents() -> list[tuple[object, ...]]:

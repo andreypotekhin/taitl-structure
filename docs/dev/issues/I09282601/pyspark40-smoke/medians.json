@@ -1,0 +1,34 @@
+[
+  {
+    "backend": "pyspark40",
+    "mode": "online",
+    "request_samples": 0,
+    "median_construction_seconds": null,
+    "median_collection_seconds": null,
+    "median_preparation_seconds": null
+  },
+  {
+    "backend": "pyspark40",
+    "mode": "generated",
+    "request_samples": 0,
+    "median_construction_seconds": null,
+    "median_collection_seconds": null,
+    "median_preparation_seconds": null
+  },
+  {
+    "backend": "pyspark40",
+    "mode": "handwritten",
+    "request_samples": 0,
+    "median_construction_seconds": null,
+    "median_collection_seconds": null,
+    "median_preparation_seconds": null
+  },
+  {
+    "backend": "pyspark40",
+    "mode": "prepared-handwritten",
+    "request_samples": 0,
+    "median_construction_seconds": null,
+    "median_collection_seconds": null,
+    "median_preparation_seconds": null
+  }
+]

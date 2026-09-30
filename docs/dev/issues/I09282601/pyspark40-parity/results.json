@@ -1,0 +1,88 @@
+[
+  {
+    "backend": "pyspark40",
+    "variant": "cached-score-hit",
+    "cohort": 1,
+    "mode_order": [
+      "online",
+      "generated",
+      "handwritten",
+      "prepared-handwritten"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 218.97,
+    "log": "/Users/chaos/Files/Dev/Code/taitl-structure/docs/dev/issues/I09282601/pyspark40-parity/cached-score-hit-pyspark40-cohort-1.txt",
+    "source_identity": {
+      "commit": "2bb21c8362720083b5596fee53e8453a6e78bdf1",
+      "dirty_file_sha256": {
+        "docs/dev/issues/I09282601.Search-repeat-query-latency.issue.md": "40252ebdbf298e728ae90affbb3cc5be788d9905cfd9f01c74a08d9d138c4ea5",
+        "docs/dev/issues/I09282601/SearchRepeatQueries.bench.md": "48228b595445c3653d6ada9ed7797940f7cb0d63710bc76c94a8a7764a3dee94",
+        "docs/dev/issues/I09282601/SearchRepeatQueries.design.md": "b41eb642a52dc63c3830ecef666ac38ad49dab86cd8964bccd2434fb9e1ff5dc",
+        "docs/dev/issues/I09282601/StreamingFeasibility.design.md": "c47f004e65987117e426959394c90ab14866965c38dbec43ddcab24e9e4c56dd",
+        "docs/dev/issues/I09282601/pyspark35-smoke/medians.json": "1b8e6d39e816ba8829551bcffc0b7593842941f713e3838af25762f7c483181d",
+        "docs/dev/issues/I09282601/pyspark35-smoke/results.json": "228325291335d85cb140aeee3e64e6fc8afceda0e202945603cbf15db65f2e62",
+        "docs/dev/issues/I09282601/pyspark40-final/medians.json": "ee55cce0be0ddca470e1d7478f42fbec91e3c41a6e1582572e9e53254e795068",
+        "docs/dev/issues/I09282601/pyspark40-final/results.json": "21ee11a370801e352f0c31cb98a7350d06dc57c83ef815a97f20e580360e8ba6",
+        "docs/dev/issues/I09282601/pyspark40-retry/medians.json": "ee55cce0be0ddca470e1d7478f42fbec91e3c41a6e1582572e9e53254e795068",
+        "docs/dev/issues/I09282601/pyspark40-retry/results.json": "7ebbd0e330fbdfb4705b3bffd1cc6e0b297539b805ff3cd485ada6c34d6db0a4",
+        "docs/dev/issues/I09282601/pyspark40-schema-check/medians.json": "ee55cce0be0ddca470e1d7478f42fbec91e3c41a6e1582572e9e53254e795068",
+        "docs/dev/issues/I09282601/pyspark40-schema-check/results.json": "fa1b48e488c4b4dca7318ba7c0f97e4e52a74234cbc7cfce4d7cb7c292b170db",
+        "docs/dev/issues/I09282601/pyspark40-smoke/medians.json": "ee55cce0be0ddca470e1d7478f42fbec91e3c41a6e1582572e9e53254e795068",
+        "docs/dev/issues/I09282601/pyspark40-smoke/results.json": "518d394eaf13372be72c1dfaf4ea3a2b06e0c7552f71e1e3f03d288f4a99e755",
+        "docs/dev/planning/P08022605.SearchDocuments-structured-streaming.plan.md": "90382f6e9d426d3c3f68971a43ba703f5e6cf1184a9528038430b69b10ec46f9",
+        "docs/dev/planning/P09282601.Search-repeat-query-streaming.plan.md": "32e19d62bf9571fe5f8ad115e2ce10c6f24447a39bf74320738c3d9656600fbf",
+        "scripts/benchmark_search_repeat_queries.py": "63ca50ac9b21e4db9a28a26b419f0aa48758677b6d37f75748bba3fbea08a07e",
+        "tests/app/test_search_benchmark.py": "92f8698995608e82b60d0434c24a0c75851e6c026516c80346581ae494deb4ff",
+        "tests/integration/pyspark/search/support/handwritten_search.py": "743323930c9401cb995266d1ce9789a92145c68a5ef379dcf5d15f104cea0ebe",
+        "tests/integration/pyspark/search/test_search.py": "df036fadc4ca31af9e6f1da8ba3f430adccf49491f16f438ac718d6607298034",
+        "tests/integration/pyspark/search/test_search_streaming_prototype.py": "29e93989b3cad3a1e4c05b60e968f1919aefe1e48786d17afe922d840744f2b9",
+        "tests/integration/pyspark/support/backend_matrix.py": "c81b657e3ac48d496d3a7989253a451654f240bc1252d86a53aaec868b720e13",
+        "tests/integration/pyspark/support/test_connect_udf.py": "1b91113672ef1376807d86189660ef00124c8ec331ce3f6bd7ad98ad46f8176b"
+      }
+    },
+    "measurements": {
+      "preparation_seconds": 0.7793053750065155,
+      "requests": [
+        {
+          "collection_seconds": 0.4835837510181591,
+          "construction_seconds": 45.5418077710201,
+          "mode": "online",
+          "query_id": "q-repeat-0",
+          "request_index": 0,
+          "rows": 3,
+          "workload": "cached-score-hit"
+        },
+        {
+          "collection_seconds": 0.47883091602125205,
+          "construction_seconds": 45.19116406198009,
+          "mode": "generated",
+          "query_id": "q-repeat-0",
+          "request_index": 0,
+          "rows": 3,
+          "workload": "cached-score-hit"
+        },
+        {
+          "collection_seconds": 0.6620168339868542,
+          "construction_seconds": 0.8602202089969069,
+          "mode": "handwritten",
+          "query_id": "q-repeat-0",
+          "request_index": 0,
+          "rows": 3,
+          "workload": "cached-score-hit"
+        },
+        {
+          "collection_seconds": 0.44570320800994523,
+          "construction_seconds": 0.7664939589740243,
+          "mode": "prepared-handwritten",
+          "query_id": "q-repeat-0",
+          "request_index": 0,
+          "rows": 3,
+          "workload": "cached-score-hit"
+        }
+      ],
+      "test_result": "1 passed, 208 deselected",
+      "pytest_seconds": 217.81,
+      "heap_exhaustion": false
+    }
+  }
+]

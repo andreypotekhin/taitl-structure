@@ -1,0 +1,34 @@
+[
+  {
+    "backend": "pyspark35",
+    "mode": "online",
+    "request_samples": 1,
+    "median_construction_seconds": 42.91034968700842,
+    "median_collection_seconds": 0.42850058400654234,
+    "median_preparation_seconds": null
+  },
+  {
+    "backend": "pyspark35",
+    "mode": "generated",
+    "request_samples": 1,
+    "median_construction_seconds": 46.0764808949898,
+    "median_collection_seconds": 0.5450276250194293,
+    "median_preparation_seconds": null
+  },
+  {
+    "backend": "pyspark35",
+    "mode": "handwritten",
+    "request_samples": 1,
+    "median_construction_seconds": 0.7387702919950243,
+    "median_collection_seconds": 0.6669231260020752,
+    "median_preparation_seconds": null
+  },
+  {
+    "backend": "pyspark35",
+    "mode": "prepared-handwritten",
+    "request_samples": 1,
+    "median_construction_seconds": 0.38275766698643565,
+    "median_collection_seconds": 0.4929054999956861,
+    "median_preparation_seconds": 0.5012531250249594
+  }
+]

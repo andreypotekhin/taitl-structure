@@ -1,0 +1,78 @@
+[
+  {
+    "backend": "pyspark35",
+    "variant": "cached-score-hit",
+    "cohort": 1,
+    "mode_order": [
+      "online",
+      "generated",
+      "handwritten",
+      "prepared-handwritten"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 193.92,
+    "log": "/Users/chaos/Files/Dev/Code/taitl-structure/docs/dev/issues/I09282601/pyspark35-smoke/cached-score-hit-pyspark35-cohort-1.txt",
+    "source_identity": {
+      "commit": "2bb21c8362720083b5596fee53e8453a6e78bdf1",
+      "dirty_file_sha256": {
+        "docs/dev/issues/I09282601.Search-repeat-query-latency.issue.md": "84292d6c0e476e03914d4de88f448f518fb9a9c3ec46f2ae3834aff3e8d2a523",
+        "docs/dev/issues/I09282601/SearchRepeatQueries.bench.md": "418346902549f6708150dc9b0197e3adb07f074472772e49d47f8f1fc7aac83c",
+        "docs/dev/issues/I09282601/SearchRepeatQueries.design.md": "5dde127f282b8d6aa5c63455d8a641fac4204f1522edfc3b0cc16a406b827f6d",
+        "docs/dev/issues/I09282601/StreamingFeasibility.design.md": "c47f004e65987117e426959394c90ab14866965c38dbec43ddcab24e9e4c56dd",
+        "docs/dev/planning/P08022605.SearchDocuments-structured-streaming.plan.md": "90382f6e9d426d3c3f68971a43ba703f5e6cf1184a9528038430b69b10ec46f9",
+        "docs/dev/planning/P09282601.Search-repeat-query-streaming.plan.md": "056fb3488beb39a874853a97b9e36cc471c6b227e47e1c360552d73d76e3fc3f",
+        "scripts/benchmark_search_repeat_queries.py": "63ca50ac9b21e4db9a28a26b419f0aa48758677b6d37f75748bba3fbea08a07e",
+        "tests/app/test_search_benchmark.py": "92f8698995608e82b60d0434c24a0c75851e6c026516c80346581ae494deb4ff",
+        "tests/integration/pyspark/search/support/handwritten_search.py": "0c38f54fe7fe933c9f7f60841232b556d53fe729f13f5dd51df96eab6324fb0f",
+        "tests/integration/pyspark/search/test_search.py": "df036fadc4ca31af9e6f1da8ba3f430adccf49491f16f438ac718d6607298034",
+        "tests/integration/pyspark/search/test_search_streaming_prototype.py": "29e93989b3cad3a1e4c05b60e968f1919aefe1e48786d17afe922d840744f2b9",
+        "tests/integration/pyspark/support/backend_matrix.py": "c81b657e3ac48d496d3a7989253a451654f240bc1252d86a53aaec868b720e13",
+        "tests/integration/pyspark/support/test_connect_udf.py": "1b91113672ef1376807d86189660ef00124c8ec331ce3f6bd7ad98ad46f8176b"
+      }
+    },
+    "measurements": {
+      "preparation_seconds": 0.5012531250249594,
+      "requests": [
+        {
+          "collection_seconds": 0.42850058400654234,
+          "construction_seconds": 42.91034968700842,
+          "mode": "online",
+          "query_id": "q-repeat-0",
+          "request_index": 0,
+          "rows": 3,
+          "workload": "cached-score-hit"
+        },
+        {
+          "collection_seconds": 0.5450276250194293,
+          "construction_seconds": 46.0764808949898,
+          "mode": "generated",
+          "query_id": "q-repeat-0",
+          "request_index": 0,
+          "rows": 3,
+          "workload": "cached-score-hit"
+        },
+        {
+          "collection_seconds": 0.6669231260020752,
+          "construction_seconds": 0.7387702919950243,
+          "mode": "handwritten",
+          "query_id": "q-repeat-0",
+          "request_index": 0,
+          "rows": 3,
+          "workload": "cached-score-hit"
+        },
+        {
+          "collection_seconds": 0.4929054999956861,
+          "construction_seconds": 0.38275766698643565,
+          "mode": "prepared-handwritten",
+          "query_id": "q-repeat-0",
+          "request_index": 0,
+          "rows": 3,
+          "workload": "cached-score-hit"
+        }
+      ],
+      "test_result": "1 passed, 208 deselected",
+      "pytest_seconds": 192.84,
+      "heap_exhaustion": false
+    }
+  }
+]

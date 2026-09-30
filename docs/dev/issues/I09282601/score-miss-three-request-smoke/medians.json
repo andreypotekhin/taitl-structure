@@ -1,0 +1,56 @@
+[
+  {
+    "backend": "pyspark35",
+    "variant": "score-cache-miss",
+    "mode": "online",
+    "request_samples": 3,
+    "median_construction_seconds": 30.218638140009716,
+    "median_collection_seconds": 0.40421300000161864,
+    "median_preparation_seconds": null
+  },
+  {
+    "backend": "pyspark35",
+    "variant": "score-cache-miss",
+    "mode": "generated",
+    "request_samples": 3,
+    "median_construction_seconds": 41.353108101000544,
+    "median_collection_seconds": 0.48496075000730343,
+    "median_preparation_seconds": null
+  },
+  {
+    "backend": "pyspark40",
+    "variant": "score-cache-miss",
+    "mode": "online",
+    "request_samples": 3,
+    "median_construction_seconds": 40.64842039300129,
+    "median_collection_seconds": 0.5279587919940241,
+    "median_preparation_seconds": null
+  },
+  {
+    "backend": "pyspark40",
+    "variant": "score-cache-miss",
+    "mode": "generated",
+    "request_samples": 3,
+    "median_construction_seconds": 50.10600189800607,
+    "median_collection_seconds": 0.5964655829884578,
+    "median_preparation_seconds": null
+  },
+  {
+    "backend": "spark-connect40",
+    "variant": "score-cache-miss",
+    "mode": "online",
+    "request_samples": 3,
+    "median_construction_seconds": 22.004451885994058,
+    "median_collection_seconds": 0.35204887500731274,
+    "median_preparation_seconds": null
+  },
+  {
+    "backend": "spark-connect40",
+    "variant": "score-cache-miss",
+    "mode": "generated",
+    "request_samples": 3,
+    "median_construction_seconds": 20.756112009985372,
+    "median_collection_seconds": 0.36313750100089237,
+    "median_preparation_seconds": null
+  }
+]

@@ -1,0 +1,20 @@
+[
+  {
+    "backend": "spark-connect40",
+    "variant": "score-cache-miss",
+    "mode": "online",
+    "request_samples": 1,
+    "median_construction_seconds": 15.709216507006204,
+    "median_collection_seconds": 0.24477687498438172,
+    "median_preparation_seconds": null
+  },
+  {
+    "backend": "spark-connect40",
+    "variant": "score-cache-miss",
+    "mode": "generated",
+    "request_samples": 1,
+    "median_construction_seconds": 12.809042548004072,
+    "median_collection_seconds": 0.23323004101985134,
+    "median_preparation_seconds": null
+  }
+]

@@ -10,6 +10,7 @@ from functools import wraps
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import cast
+from zipfile import ZIP_DEFLATED, ZipFile
 
 import pytest
 from integration.pyspark.support.timing import phase
@@ -77,6 +78,8 @@ def spark(pytestconfig, monkeypatch):
     for _ in range(24):
         try:
             session = builder.getOrCreate()
+            if remote:
+                _add_connect_python_artifacts(session, Path(pytestconfig.rootpath))
             session.range(1).count()
             break
         except Exception as error:  # pragma: no cover - only exercised while Spark starts.
@@ -112,6 +115,19 @@ def spark(pytestconfig, monkeypatch):
             session.stop()
             if hasattr(pyspark, "SparkContext"):
                 pyspark.SparkContext._active_spark_context = None
+
+
+def _add_connect_python_artifacts(session, repository: Path) -> None:
+    """Distribute project Python modules to Spark Connect executor workers."""
+
+    with TemporaryDirectory(prefix="structure-connect-python-") as temporary:
+        artifact = Path(temporary) / "structure-project.zip"
+        with ZipFile(artifact, "w", compression=ZIP_DEFLATED) as archive:
+            for package in (repository / "examples", repository / "src" / "structure"):
+                for source in package.rglob("*"):
+                    if source.is_file():
+                        archive.write(source, source.relative_to(repository))
+        session.addArtifacts(str(artifact), pyfile=True)
 
 
 def backend_name() -> str:

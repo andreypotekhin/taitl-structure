@@ -1,0 +1,475 @@
+time="2026-09-29T20:11:46-07:00" level=warning msg="Found orphan containers ([structure-search-cohort-policy-final2 structure-search-cohort-policy-final structure-search-cohort-policy structure-search-pyspark35-remediation-final structure-search-rerank-remediation structure-search-pyspark35-remediation-3 structure-search-pyspark35-remediation-2 structure-search-pyspark35-remediation structure-connect35-projection]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up."
+ Container structure-integration-spark35-master-1  Running
+ Container structure-integration-spark35-worker-1  Running
+============================= test session starts ==============================
+platform linux -- Python 3.11.16, pytest-8.4.2, pluggy-1.6.0 -- /usr/local/bin/python
+rootdir: /workspace
+configfile: pyproject.toml
+collecting ... collected 209 items / 208 deselected / 1 selected
+
+../workspace/tests/integration/pyspark/search/test_search.py::test_document_search_reranks_bm25_candidates_for_multiple_queries :: loading settings :: url = jar:file:/usr/local/lib/python3.11/site-packages/pyspark/jars/ivy-2.5.1.jar!/org/apache/ivy/core/settings/ivysettings.xml
+Ivy Default Cache set to: /root/.ivy2/cache
+The jars for the packages stored in: /root/.ivy2/jars
+org.apache.sedona#sedona-spark-shaded-3.5_2.12 added as a dependency
+org.datasyslab#geotools-wrapper added as a dependency
+:: resolving dependencies :: org.apache.spark#spark-submit-parent-039adc91-3336-448f-9939-8dd537cd3280;1.0
+	confs: [default]
+	found org.apache.sedona#sedona-spark-shaded-3.5_2.12;1.9.0 in central
+	found org.datasyslab#geotools-wrapper;1.9.0-33.5 in central
+downloading https://repo1.maven.org/maven2/org/apache/sedona/sedona-spark-shaded-3.5_2.12/1.9.0/sedona-spark-shaded-3.5_2.12-1.9.0.jar ...
+	[SUCCESSFUL ] org.apache.sedona#sedona-spark-shaded-3.5_2.12;1.9.0!sedona-spark-shaded-3.5_2.12.jar (3950ms)
+downloading https://repo1.maven.org/maven2/org/datasyslab/geotools-wrapper/1.9.0-33.5/geotools-wrapper-1.9.0-33.5.jar ...
+	[SUCCESSFUL ] org.datasyslab#geotools-wrapper;1.9.0-33.5!geotools-wrapper.jar (1380ms)
+:: resolution report :: resolve 767ms :: artifacts dl 5333ms
+	:: modules in use:
+	org.apache.sedona#sedona-spark-shaded-3.5_2.12;1.9.0 from central in [default]
+	org.datasyslab#geotools-wrapper;1.9.0-33.5 from central in [default]
+	---------------------------------------------------------------------
+	|                  |            modules            ||   artifacts   |
+	|       conf       | number| search|dwnlded|evicted|| number|dwnlded|
+	---------------------------------------------------------------------
+	|      default     |   2   |   2   |   2   |   0   ||   2   |   2   |
+	---------------------------------------------------------------------
+:: retrieving :: org.apache.spark#spark-submit-parent-039adc91-3336-448f-9939-8dd537cd3280
+	confs: [default]
+	2 artifacts copied, 0 already retrieved (111193kB/65ms)
+26/09/30 03:12:01 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+26/09/30 03:12:04 WARN SparkContext: Spark is not running in local mode, therefore the checkpoint directory must not be on the local filesystem. Directory '/workspace/.pytest-workspace-tmp/integration/checkpoints-o1vmivy8' appears to be on the local filesystem.
+[phase] generated source setup (integration_search_generated): starting
+[phase] generated source setup (integration_search_generated): 0.01s
+26/09/30 03:12:05 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 8361 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/30 03:12:05 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 9097 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[snapshot] chunking.sections: starting
+[Stage 2:>                  (0 + 2) / 2][Stage 6:>                  (0 + 2) / 2]                                                                                [snapshot] chunking.sections: 1.99s
+[snapshot] chunking.paragraphs: starting
+[snapshot] chunking.paragraphs: 0.35s
+[snapshot] chunking.sentences: starting
+[Stage 20:>                                                         (0 + 1) / 1]                                                                                [snapshot] chunking.sentences: 1.70s
+[snapshot] indexing.document_terms: starting
+26/09/30 03:12:11 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 9511 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[snapshot] indexing.document_terms: 1.17s
+[snapshot] indexing.document_summary: starting
+[snapshot] indexing.document_summary: 0.25s
+[snapshot] indexing.section_terms: starting
+26/09/30 03:12:12 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 10808 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[snapshot] indexing.section_terms: 0.50s
+[snapshot] indexing.section_summary: starting
+[snapshot] indexing.section_summary: 0.25s
+[snapshot] indexing.paragraph_terms: starting
+26/09/30 03:12:13 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 11613 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[snapshot] indexing.paragraph_terms: 0.43s
+[snapshot] indexing.paragraph_summary: starting
+[snapshot] indexing.paragraph_summary: 0.23s
+[snapshot] indexing.sentence_terms: starting
+26/09/30 03:12:14 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 12249 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[snapshot] indexing.sentence_terms: 0.42s
+[snapshot] indexing.sentence_summary: starting
+[snapshot] indexing.sentence_summary: 0.23s
+[snapshot] indexing.field_terms: starting
+[snapshot] indexing.field_terms: 0.36s
+[phase] SearchDocuments online construction: starting
+[plan-profile] checkpoint map: #1=fused.validate_lexical_candidates, #2=fused.validate_vector_candidates, #3=fused.materialize_candidates
+[plan-profile] filtered.gap.find_available_filters singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] filtered.filtering.overlap.publish_filter_scores singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] filtered.selected.merge_filter_scores singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] vectorized.query_gaps.select singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] vectorized.document_gaps.select_gaps singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] vectorized.vectorized.inferred.validated.validate require_all: expanded input references 1 -> 2 (estimate)
+[plan-profile] vectorized.vectorized.inferred.inferred_queries.infer singleton (old -> bounded source copies): expanded input references 4 -> 2 (estimate)
+[plan-profile] vectorized.vectorized.inferred.inferred_documents.infer singleton (old -> bounded source copies): expanded input references 4 -> 2 (estimate)
+[plan-profile] vectorized.vectorized.inferred.published_queries.embedding singleton (old -> bounded source copies): expanded input references 4 -> 2 (estimate)
+[plan-profile] vectorized.vectorized.inferred.published_queries.embedding require_all: expanded input references 7 -> 14 (estimate)
+[plan-profile] vectorized.vectorized.inferred.published_queries.status singleton (old -> bounded source copies): expanded input references 4 -> 2 (estimate)
+[plan-profile] vectorized.vectorized.inferred.published_documents.embedding singleton (old -> bounded source copies): expanded input references 4 -> 2 (estimate)
+[plan-profile] vectorized.vectorized.inferred.published_documents.embedding require_all: expanded input references 18 -> 36 (estimate)
+[plan-profile] vectorized.vectorized.inferred.published_documents.status singleton (old -> bounded source copies): expanded input references 4 -> 2 (estimate)
+[plan-profile] vectorized.merged_queries.merge singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] vectorized.merged_documents.merge singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.gap.find_available_documents singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.gap.find_available_documents singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.gap.find_available_overlaps singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.gap.find_available_overlaps singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.gap.find_available_vectors singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.gap.find_available_vectors singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.gap.find_available_vectors singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.gap.find_available_paragraph_vectors singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.gap.find_available_paragraph_vectors singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.gap.find_available_paragraph_vectors singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.scoring.overlap.publish_document_overlap_scores singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.scoring.overlap.publish_section_overlap_scores singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.scoring.overlap.publish_paragraph_overlap_scores singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.scoring.overlap.publish_sentence_overlap_scores singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.scoring.selected.score_documents singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.scoring.selected.score_sections singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.scoring.selected.score_paragraphs singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.scoring.selected.score_sentences singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.scoring.vector.validate_policy require_all: expanded input references 1 -> 2 (estimate)
+[plan-profile] scored.scoring.vector.score_documents singleton (old -> bounded source copies): expanded input references 4 -> 2 (estimate)
+[plan-profile] scored.scoring.vector.score_documents singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.scoring.vector.score_documents require_all: expanded input references 69 -> 138 (estimate)
+[plan-profile] scored.scoring.vector.score_paragraphs singleton (old -> bounded source copies): expanded input references 4 -> 2 (estimate)
+[plan-profile] scored.scoring.vector.score_paragraphs singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.scoring.vector.score_paragraphs require_all: expanded input references 16 -> 32 (estimate)
+[plan-profile] scored.merged.merge_scores singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.merged_vectors.select_cached_scores singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.merged_vectors.select_cached_scores singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.merged_vectors.select_online_scores singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.merged_vectors.select_online_scores singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.merged_paragraph_vectors.select_cached_scores singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.merged_paragraph_vectors.select_cached_scores singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.merged_paragraph_vectors.select_online_scores singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.merged_paragraph_vectors.select_online_scores singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] retrieved.select_vector_candidates singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] fused.select_vector_candidates singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] fused.validate_lexical_candidates checkpoint: expanded input references 672 -> 1 (estimate)
+[plan-profile] fused.validate_lexical_candidates require_unique: expanded input references 1 -> 2 (estimate)
+[plan-profile] fused.validate_vector_candidates checkpoint: expanded input references 236 -> 1 (estimate)
+[plan-profile] fused.validate_vector_candidates require_unique: expanded input references 1 -> 2 (estimate)
+[plan-profile] fused.fuse_candidates singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] fused.score_candidates singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] fused.rank_candidates singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] fused.select_candidates singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] fused.materialize_candidates checkpoint: expanded input references 8 -> 1 (estimate)
+[plan-profile] reranked.select_feedback_options singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] reranked.score_candidates singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] checkpoint map: #1=fused.validate_lexical_candidates, #2=fused.validate_vector_candidates, #3=fused.materialize_candidates
+[plan-profile] singleton policy (cache miss): 0.009s
+26/09/30 03:12:15 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 19651 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[plan-profile] singleton policy (cache miss): 0.008s
+[plan-profile] online _require_all: 0.013s
+[plan-profile] singleton policy (cache miss): 0.006s
+26/09/30 03:12:15 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 32050 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[plan-profile] online _require_all: 0.039s
+[plan-profile] online _require_all: 0.047s
+[plan-profile] singleton policy (cache miss): 0.005s
+[plan-profile] singleton policy (cache miss): 0.005s
+[plan-profile] singleton policy (cache miss): 0.006s
+26/09/30 03:12:15 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 129327 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/30 03:12:15 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 145689 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/30 03:12:16 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 155965 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/30 03:12:16 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 156023 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/30 03:12:16 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 156067 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/30 03:12:16 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 156100 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/30 03:12:16 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 145709 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[plan-profile] online _require_all: 0.009s
+[plan-profile] singleton policy (cache miss): 0.007s
+[plan-profile] singleton policy (cache miss): 0.005s
+[plan-profile] online _require_all: 0.093s
+[plan-profile] online _require_all: 0.046s
+26/09/30 03:12:18 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 942431 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/30 03:12:21 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 1943715 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[Stage 274:>  (0 + 0) / 1][Stage 321:>  (0 + 0) / 1][Stage 376:>  (0 + 0) / 1][Stage 231:>  (0 + 0) / 1][Stage 239:>  (0 + 0) / 1][Stage 259:>  (0 + 0) / 1][Stage 197:=> (1 + 0) / 3][Stage 216:>  (0 + 0) / 1][Stage 224:>  (0 + 0) / 1][Stage 224:>  (0 + 0) / 1][Stage 231:>  (0 + 0) / 1][Stage 239:>  (0 + 0) / 1][Stage 266:>  (0 + 1) / 1][Stage 274:>  (0 + 0) / 1][Stage 282:>  (0 + 0) / 1][Stage 274:>  (0 + 0) / 1][Stage 282:>  (0 + 0) / 1][Stage 299:>  (0 + 0) / 1][Stage 307:>  (0 + 1) / 1][Stage 321:>  (0 + 1) / 1][Stage 330:>  (0 + 0) / 1][Stage 345:>  (0 + 0) / 1][Stage 354:>  (0 + 0) / 1][Stage 367:>  (0 + 0) / 1][Stage 354:>  (0 + 0) / 1][Stage 367:>  (0 + 0) / 1][Stage 376:>  (0 + 0) / 1][Stage 376:>  (0 + 0) / 1][Stage 383:>  (0 + 0) / 1][Stage 388:>  (0 + 0) / 1][Stage 376:>  (0 + 1) / 1][Stage 383:>  (0 + 1) / 1][Stage 388:>  (0 + 0) / 1]26/09/30 03:12:32 WARN DAGScheduler: Broadcasting large task binary with size 1231.8 KiB
+[Stage 426:>  (0 + 0) / 1][Stage 434:>  (0 + 0) / 1][Stage 442:>  (0 + 0) / 1]26/09/30 03:12:32 WARN DAGScheduler: Broadcasting large task binary with size 1279.2 KiB
+[Stage 464:>  (0 + 0) / 1][Stage 470:>  (0 + 0) / 1][Stage 478:>  (0 + 0) / 1]26/09/30 03:12:32 WARN DAGScheduler: Broadcasting large task binary with size 1752.0 KiB
+[Stage 464:>  (0 + 1) / 1][Stage 470:>  (0 + 1) / 1][Stage 478:>  (0 + 0) / 1]26/09/30 03:12:32 WARN DAGScheduler: Broadcasting large task binary with size 1742.0 KiB
+[Stage 478:>  (0 + 0) / 1][Stage 486:>  (0 + 0) / 1][Stage 494:>  (0 + 0) / 1]26/09/30 03:12:32 WARN DAGScheduler: Broadcasting large task binary with size 1751.2 KiB
+26/09/30 03:12:33 WARN DAGScheduler: Broadcasting large task binary with size 1844.8 KiB
+[Stage 515:>  (0 + 1) / 1][Stage 517:>  (0 + 1) / 1][Stage 518:>  (0 + 1) / 1]26/09/30 03:12:33 WARN DAGScheduler: Broadcasting large task binary with size 1819.5 KiB
+26/09/30 03:12:33 WARN DAGScheduler: Broadcasting large task binary with size 1829.1 KiB
+26/09/30 03:12:33 WARN DAGScheduler: Broadcasting large task binary with size 1836.7 KiB
+26/09/30 03:12:33 WARN DAGScheduler: Broadcasting large task binary with size 1847.7 KiB
+26/09/30 03:12:33 WARN DAGScheduler: Broadcasting large task binary with size 1898.2 KiB
+26/09/30 03:12:34 WARN DAGScheduler: Broadcasting large task binary with size 1221.0 KiB
+26/09/30 03:12:34 WARN DAGScheduler: Broadcasting large task binary with size 1268.1 KiB
+26/09/30 03:12:34 WARN DAGScheduler: Broadcasting large task binary with size 1740.2 KiB
+26/09/30 03:12:34 WARN DAGScheduler: Broadcasting large task binary with size 1730.2 KiB
+26/09/30 03:12:34 WARN DAGScheduler: Broadcasting large task binary with size 1738.8 KiB
+26/09/30 03:12:34 WARN DAGScheduler: Broadcasting large task binary with size 1832.2 KiB
+26/09/30 03:12:34 WARN DAGScheduler: Broadcasting large task binary with size 1806.9 KiB
+26/09/30 03:12:34 WARN DAGScheduler: Broadcasting large task binary with size 1816.5 KiB
+26/09/30 03:12:34 WARN DAGScheduler: Broadcasting large task binary with size 1823.6 KiB
+26/09/30 03:12:34 WARN DAGScheduler: Broadcasting large task binary with size 1833.9 KiB
+26/09/30 03:12:34 WARN DAGScheduler: Broadcasting large task binary with size 1884.4 KiB
+26/09/30 03:12:35 WARN DAGScheduler: Broadcasting large task binary with size 3.5 MiB
+26/09/30 03:12:35 WARN DAGScheduler: Broadcasting large task binary with size 3.5 MiB
+                                                                                [plan-profile] checkpoint #1 (execution_mode=online, step=fused.validate_lexical_candidates) timing (eager=True, outcome=success): 16.217s
+[plan-profile] online _require_unique: 0.018s
+26/09/30 03:12:36 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 610764 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[Stage 637:>  (0 + 2) / 2][Stage 655:>  (0 + 0) / 2][Stage 700:>  (0 + 0) / 2][Stage 655:>                (0 + 0) / 2][Stage 700:>                (0 + 0) / 2][Stage 664:>  (0 + 1) / 1][Stage 682:>  (0 + 0) / 1][Stage 700:>  (0 + 0) / 2][Stage 682:>                (0 + 0) / 1][Stage 700:>                (0 + 0) / 2][Stage 700:>                                                        (0 + 2) / 2][Stage 639:>                (0 + 1) / 1][Stage 647:>                (0 + 1) / 1]26/09/30 03:12:40 WARN DAGScheduler: Broadcasting large task binary with size 1369.4 KiB
+26/09/30 03:12:40 WARN DAGScheduler: Broadcasting large task binary with size 1334.2 KiB
+26/09/30 03:12:40 WARN DAGScheduler: Broadcasting large task binary with size 1350.4 KiB
+26/09/30 03:12:40 WARN DAGScheduler: Broadcasting large task binary with size 1357.8 KiB
+26/09/30 03:12:40 WARN DAGScheduler: Broadcasting large task binary with size 1368.2 KiB
+26/09/30 03:12:40 WARN DAGScheduler: Broadcasting large task binary with size 1425.2 KiB
+                                                                                [plan-profile] checkpoint #2 (execution_mode=online, step=fused.validate_vector_candidates) timing (eager=True, outcome=success): 4.891s
+[plan-profile] online _require_unique: 0.012s
+26/09/30 03:12:40 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 16570 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[plan-profile] checkpoint #3 (execution_mode=online, step=fused.materialize_candidates) timing (eager=True, outcome=success): 0.197s
+[plan-profile] singleton policy (cache miss): 0.006s
+[phase] SearchDocuments online construction: 25.81s
+[phase] SearchDocuments generated construction: starting
+[plan-profile] checkpoint map: #1=fused.validate_lexical_candidates, #2=fused.validate_vector_candidates, #3=fused.materialize_candidates
+[plan-profile] singleton policy (cache miss): 0.004s
+26/09/30 03:12:41 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 19614 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[plan-profile] singleton policy (cache miss): 0.011s
+[plan-profile] singleton policy (cache miss): 0.006s
+26/09/30 03:12:41 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 32092 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[plan-profile] singleton policy (cache miss): 0.004s
+[plan-profile] singleton policy (cache miss): 0.004s
+[plan-profile] singleton policy (cache miss): 0.004s
+26/09/30 03:12:41 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 129825 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/30 03:12:41 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 146107 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/30 03:12:41 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 156335 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/30 03:12:41 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 156398 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/30 03:12:41 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 156444 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/30 03:12:41 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 156479 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/30 03:12:42 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 146107 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[plan-profile] singleton policy (cache miss): 0.006s
+[plan-profile] singleton policy (cache miss): 0.005s
+26/09/30 03:12:43 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 941375 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/30 03:12:46 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 1951830 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[Stage 924:>  (0 + 0) / 2][Stage 936:>  (0 + 0) / 2][Stage 1151:> (0 + 0) / 2][Stage 845:>  (0 + 0) / 1][Stage 853:>  (0 + 0) / 1][Stage 867:>  (0 + 0) / 1][Stage 853:>  (0 + 1) / 1][Stage 867:>  (0 + 0) / 1][Stage 875:>  (0 + 0) / 1][Stage 875:>  (0 + 1) / 1][Stage 883:>  (0 + 0) / 1][Stage 891:>  (0 + 0) / 1][Stage 891:>  (0 + 0) / 1][Stage 906:>  (0 + 0) / 1][Stage 921:>  (0 + 0) / 1][Stage 924:=> (1 + 0) / 2][Stage 926:>  (0 + 0) / 1][Stage 936:>  (0 + 0) / 2][Stage 943:>  (0 + 1) / 1][Stage 949:>  (0 + 1) / 1][Stage 955:>  (0 + 0) / 1][Stage 979:>  (0 + 1) / 1][Stage 996:>  (0 + 1) / 1][Stage 1004:> (0 + 0) / 1][Stage 1004:==(1 + 0) / 1][Stage 1020:> (0 + 0) / 1][Stage 1034:> (0 + 0) / 1][Stage 1042:> (0 + 0) / 1][Stage 1050:> (0 + 0) / 1][Stage 1058:> (0 + 0) / 1]26/09/30 03:12:54 WARN DAGScheduler: Broadcasting large task binary with size 1231.9 KiB
+[Stage 1058:> (0 + 0) / 1][Stage 1072:> (0 + 0) / 1][Stage 1080:> (0 + 0) / 1]26/09/30 03:12:55 WARN DAGScheduler: Broadcasting large task binary with size 1279.3 KiB
+26/09/30 03:12:55 WARN DAGScheduler: Broadcasting large task binary with size 1752.1 KiB
+[Stage 1096:> (0 + 0) / 1][Stage 1110:> (0 + 0) / 1][Stage 1122:> (0 + 0) / 1]26/09/30 03:12:55 WARN DAGScheduler: Broadcasting large task binary with size 1742.1 KiB
+[Stage 1096:> (0 + 1) / 1][Stage 1110:> (0 + 1) / 1][Stage 1122:> (0 + 0) / 1][Stage 1122:> (0 + 0) / 1][Stage 1130:> (0 + 0) / 1][Stage 1141:> (0 + 0) / 1]26/09/30 03:12:55 WARN DAGScheduler: Broadcasting large task binary with size 1751.3 KiB
+26/09/30 03:12:55 WARN DAGScheduler: Broadcasting large task binary with size 1844.9 KiB
+26/09/30 03:12:56 WARN DAGScheduler: Broadcasting large task binary with size 1819.6 KiB
+[Stage 1141:> (0 + 1) / 1][Stage 1151:> (0 + 1) / 2][Stage 1155:> (0 + 0) / 1]26/09/30 03:12:56 WARN DAGScheduler: Broadcasting large task binary with size 1829.2 KiB
+26/09/30 03:12:56 WARN DAGScheduler: Broadcasting large task binary with size 1836.8 KiB
+26/09/30 03:12:56 WARN DAGScheduler: Broadcasting large task binary with size 1847.8 KiB
+26/09/30 03:12:56 WARN DAGScheduler: Broadcasting large task binary with size 1898.4 KiB
+26/09/30 03:12:56 WARN DAGScheduler: Broadcasting large task binary with size 1222.3 KiB
+26/09/30 03:12:56 WARN DAGScheduler: Broadcasting large task binary with size 1269.4 KiB
+26/09/30 03:12:56 WARN DAGScheduler: Broadcasting large task binary with size 1741.5 KiB
+26/09/30 03:12:56 WARN DAGScheduler: Broadcasting large task binary with size 1731.6 KiB
+26/09/30 03:12:57 WARN DAGScheduler: Broadcasting large task binary with size 1740.1 KiB
+26/09/30 03:12:57 WARN DAGScheduler: Broadcasting large task binary with size 1833.5 KiB
+26/09/30 03:12:57 WARN DAGScheduler: Broadcasting large task binary with size 1808.2 KiB
+26/09/30 03:12:57 WARN DAGScheduler: Broadcasting large task binary with size 1817.8 KiB
+26/09/30 03:12:57 WARN DAGScheduler: Broadcasting large task binary with size 1825.0 KiB
+26/09/30 03:12:57 WARN DAGScheduler: Broadcasting large task binary with size 1835.2 KiB
+26/09/30 03:12:57 WARN DAGScheduler: Broadcasting large task binary with size 1885.7 KiB
+26/09/30 03:12:57 WARN DAGScheduler: Broadcasting large task binary with size 3.5 MiB
+26/09/30 03:12:57 WARN DAGScheduler: Broadcasting large task binary with size 3.5 MiB
+                                                                                [plan-profile] checkpoint #4 (execution_mode=generated, step=fused.validate_lexical_candidates) timing (eager=True, outcome=success): 13.391s
+26/09/30 03:12:58 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 613960 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[Stage 1248:> (0 + 1) / 2][Stage 1258:> (0 + 0) / 2][Stage 1259:> (0 + 0) / 2][Stage 1259:=>(1 + 1) / 2][Stage 1261:> (0 + 1) / 2][Stage 1262:> (0 + 0) / 1][Stage 1287:> (0 + 2) / 2][Stage 1293:> (0 + 2) / 2][Stage 1296:> (0 + 1) / 1][Stage 1314:>                                                       (0 + 0) / 2][Stage 1314:>                                                       (0 + 1) / 2]26/09/30 03:13:02 WARN DAGScheduler: Broadcasting large task binary with size 1369.9 KiB
+26/09/30 03:13:02 WARN DAGScheduler: Broadcasting large task binary with size 1334.7 KiB
+26/09/30 03:13:02 WARN DAGScheduler: Broadcasting large task binary with size 1350.9 KiB
+26/09/30 03:13:02 WARN DAGScheduler: Broadcasting large task binary with size 1358.3 KiB
+26/09/30 03:13:02 WARN DAGScheduler: Broadcasting large task binary with size 1368.8 KiB
+26/09/30 03:13:02 WARN DAGScheduler: Broadcasting large task binary with size 1425.7 KiB
+                                                                                [plan-profile] checkpoint #5 (execution_mode=generated, step=fused.validate_vector_candidates) timing (eager=True, outcome=success): 4.558s
+26/09/30 03:13:02 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 16592 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[plan-profile] checkpoint #6 (execution_mode=generated, step=fused.materialize_candidates) timing (eager=True, outcome=success): 0.203s
+[plan-profile] singleton policy (cache miss): 0.005s
+[phase] SearchDocuments generated construction: 22.31s
+[phase] Handwritten cached lexical reference construction: starting
+[phase] Handwritten cached lexical reference construction: 0.51s
+[phase] SearchDocuments online collection: starting
+26/09/30 03:13:03 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 34711 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[phase] SearchDocuments online collection: 0.40s
+[phase] SearchDocuments generated collection: starting
+26/09/30 03:13:04 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 34747 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[phase] SearchDocuments generated collection: 0.37s
+[phase] Handwritten cached lexical reference collection: starting
+26/09/30 03:13:04 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 17047 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[phase] Handwritten cached lexical reference collection: 0.33s
+[plan-profile] checkpoint map: #1=fused.validate_lexical_candidates, #2=fused.validate_vector_candidates, #3=fused.materialize_candidates
+[plan-profile] filtered.gap.find_available_filters singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] filtered.filtering.overlap.publish_filter_scores singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] filtered.selected.merge_filter_scores singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] vectorized.query_gaps.select singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] vectorized.document_gaps.select_gaps singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] vectorized.vectorized.inferred.validated.validate require_all: expanded input references 1 -> 2 (estimate)
+[plan-profile] vectorized.vectorized.inferred.inferred_queries.infer singleton (old -> bounded source copies): expanded input references 4 -> 2 (estimate)
+[plan-profile] vectorized.vectorized.inferred.inferred_documents.infer singleton (old -> bounded source copies): expanded input references 4 -> 2 (estimate)
+[plan-profile] vectorized.vectorized.inferred.published_queries.embedding singleton (old -> bounded source copies): expanded input references 4 -> 2 (estimate)
+[plan-profile] vectorized.vectorized.inferred.published_queries.embedding require_all: expanded input references 7 -> 14 (estimate)
+[plan-profile] vectorized.vectorized.inferred.published_queries.status singleton (old -> bounded source copies): expanded input references 4 -> 2 (estimate)
+[plan-profile] vectorized.vectorized.inferred.published_documents.embedding singleton (old -> bounded source copies): expanded input references 4 -> 2 (estimate)
+[plan-profile] vectorized.vectorized.inferred.published_documents.embedding require_all: expanded input references 18 -> 36 (estimate)
+[plan-profile] vectorized.vectorized.inferred.published_documents.status singleton (old -> bounded source copies): expanded input references 4 -> 2 (estimate)
+[plan-profile] vectorized.merged_queries.merge singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] vectorized.merged_documents.merge singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.gap.find_available_documents singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.gap.find_available_documents singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.gap.find_available_overlaps singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.gap.find_available_overlaps singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.gap.find_available_vectors singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.gap.find_available_vectors singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.gap.find_available_vectors singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.gap.find_available_paragraph_vectors singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.gap.find_available_paragraph_vectors singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.gap.find_available_paragraph_vectors singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.scoring.overlap.publish_document_overlap_scores singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.scoring.overlap.publish_section_overlap_scores singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.scoring.overlap.publish_paragraph_overlap_scores singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.scoring.overlap.publish_sentence_overlap_scores singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.scoring.selected.score_documents singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.scoring.selected.score_sections singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.scoring.selected.score_paragraphs singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.scoring.selected.score_sentences singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.scoring.vector.validate_policy require_all: expanded input references 1 -> 2 (estimate)
+[plan-profile] scored.scoring.vector.score_documents singleton (old -> bounded source copies): expanded input references 4 -> 2 (estimate)
+[plan-profile] scored.scoring.vector.score_documents singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.scoring.vector.score_documents require_all: expanded input references 69 -> 138 (estimate)
+[plan-profile] scored.scoring.vector.score_paragraphs singleton (old -> bounded source copies): expanded input references 4 -> 2 (estimate)
+[plan-profile] scored.scoring.vector.score_paragraphs singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.scoring.vector.score_paragraphs require_all: expanded input references 16 -> 32 (estimate)
+[plan-profile] scored.merged.merge_scores singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.merged_vectors.select_cached_scores singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.merged_vectors.select_cached_scores singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.merged_vectors.select_online_scores singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.merged_vectors.select_online_scores singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.merged_paragraph_vectors.select_cached_scores singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.merged_paragraph_vectors.select_cached_scores singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.merged_paragraph_vectors.select_online_scores singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] scored.merged_paragraph_vectors.select_online_scores singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] retrieved.select_vector_candidates singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] fused.select_vector_candidates singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] fused.validate_lexical_candidates checkpoint: expanded input references 672 -> 1 (estimate)
+[plan-profile] fused.validate_lexical_candidates require_unique: expanded input references 1 -> 2 (estimate)
+[plan-profile] fused.validate_vector_candidates checkpoint: expanded input references 236 -> 1 (estimate)
+[plan-profile] fused.validate_vector_candidates require_unique: expanded input references 1 -> 2 (estimate)
+[plan-profile] fused.fuse_candidates singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] fused.score_candidates singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] fused.rank_candidates singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] fused.select_candidates singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] fused.materialize_candidates checkpoint: expanded input references 8 -> 1 (estimate)
+[plan-profile] reranked.select_feedback_options singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] reranked.score_candidates singleton (old -> bounded source copies): expanded input references 2 -> 1 (estimate)
+[plan-profile] checkpoint map: #1=fused.validate_lexical_candidates, #2=fused.validate_vector_candidates, #3=fused.materialize_candidates
+[plan-profile] singleton policy (cache miss): 0.007s
+26/09/30 03:13:05 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 23720 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[plan-profile] singleton policy (cache miss): 0.005s
+[plan-profile] online _require_all: 0.008s
+[plan-profile] singleton policy (cache miss): 0.004s
+26/09/30 03:13:05 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 37039 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[plan-profile] online _require_all: 0.023s
+[plan-profile] online _require_all: 0.032s
+[plan-profile] singleton policy (cache miss): 0.005s
+[plan-profile] singleton policy (cache miss): 0.004s
+[plan-profile] singleton policy (cache miss): 0.004s
+26/09/30 03:13:05 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 155872 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/30 03:13:05 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 175230 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/30 03:13:05 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 187294 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/30 03:13:05 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 187357 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/30 03:13:05 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 187403 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/30 03:13:05 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 187438 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/30 03:13:06 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 175230 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[plan-profile] online _require_all: 0.009s
+[plan-profile] singleton policy (cache miss): 0.005s
+[plan-profile] singleton policy (cache miss): 0.004s
+[plan-profile] online _require_all: 0.088s
+[plan-profile] online _require_all: 0.048s
+26/09/30 03:13:07 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 1127872 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/30 03:13:10 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 1895615 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[Stage 1398:>               (0 + 0) / 1][Stage 1406:>               (0 + 0) / 2][Stage 1398:> (0 + 0) / 1][Stage 1406:> (0 + 0) / 2][Stage 1463:> (0 + 0) / 2][Stage 1398:> (0 + 0) / 1][Stage 1406:> (0 + 0) / 2][Stage 1470:=>(1 + 0) / 2]                                                                                [Stage 1499:=>(1 + 0) / 2][Stage 1506:> (0 + 0) / 2][Stage 1513:> (0 + 0) / 2]                                                                                [Stage 1528:> (0 + 0) / 2][Stage 1535:> (0 + 0) / 2][Stage 1542:> (0 + 0) / 2]                                                                                [Stage 1600:> (0 + 0) / 2][Stage 1608:> (0 + 0) / 2][Stage 1615:> (0 + 0) / 2][Stage 1600:=>(1 + 0) / 2][Stage 1608:> (0 + 0) / 2][Stage 1615:> (0 + 0) / 2]                                                                                [Stage 1692:> (0 + 0) / 2][Stage 1697:> (0 + 0) / 2][Stage 1704:> (0 + 0) / 2][Stage 1714:=>(1 + 0) / 2][Stage 1719:> (0 + 0) / 2][Stage 1722:> (0 + 0) / 2]26/09/30 03:13:19 WARN DAGScheduler: Broadcasting large task binary with size 1124.0 KiB
+[Stage 1730:> (0 + 0) / 2][Stage 1735:> (0 + 0) / 2][Stage 1740:> (0 + 0) / 2]26/09/30 03:13:20 WARN DAGScheduler: Broadcasting large task binary with size 1101.4 KiB
+26/09/30 03:13:20 WARN DAGScheduler: Broadcasting large task binary with size 1171.1 KiB
+26/09/30 03:13:20 WARN DAGScheduler: Broadcasting large task binary with size 1608.8 KiB
+26/09/30 03:13:20 WARN DAGScheduler: Broadcasting large task binary with size 1602.1 KiB
+[Stage 1730:> (0 + 2) / 2][Stage 1735:> (0 + 1) / 2][Stage 1740:> (0 + 0) / 2]26/09/30 03:13:20 WARN DAGScheduler: Broadcasting large task binary with size 1609.2 KiB
+26/09/30 03:13:20 WARN DAGScheduler: Broadcasting large task binary with size 1132.6 KiB
+26/09/30 03:13:20 WARN DAGScheduler: Broadcasting large task binary with size 1699.2 KiB
+26/09/30 03:13:20 WARN DAGScheduler: Broadcasting large task binary with size 1110.1 KiB
+26/09/30 03:13:21 WARN DAGScheduler: Broadcasting large task binary with size 1674.0 KiB
+26/09/30 03:13:21 WARN DAGScheduler: Broadcasting large task binary with size 1180.0 KiB
+26/09/30 03:13:21 WARN DAGScheduler: Broadcasting large task binary with size 1683.5 KiB
+26/09/30 03:13:21 WARN DAGScheduler: Broadcasting large task binary with size 1692.4 KiB
+26/09/30 03:13:21 WARN DAGScheduler: Broadcasting large task binary with size 1698.2 KiB
+26/09/30 03:13:21 WARN DAGScheduler: Broadcasting large task binary with size 1618.4 KiB
+26/09/30 03:13:21 WARN DAGScheduler: Broadcasting large task binary with size 1746.9 KiB
+26/09/30 03:13:21 WARN DAGScheduler: Broadcasting large task binary with size 1611.6 KiB
+26/09/30 03:13:21 WARN DAGScheduler: Broadcasting large task binary with size 1619.2 KiB
+26/09/30 03:13:21 WARN DAGScheduler: Broadcasting large task binary with size 1709.4 KiB
+26/09/30 03:13:21 WARN DAGScheduler: Broadcasting large task binary with size 1684.2 KiB
+26/09/30 03:13:21 WARN DAGScheduler: Broadcasting large task binary with size 1693.8 KiB
+26/09/30 03:13:22 WARN DAGScheduler: Broadcasting large task binary with size 1703.2 KiB
+26/09/30 03:13:22 WARN DAGScheduler: Broadcasting large task binary with size 1709.3 KiB
+26/09/30 03:13:22 WARN DAGScheduler: Broadcasting large task binary with size 1758.0 KiB
+26/09/30 03:13:22 WARN DAGScheduler: Broadcasting large task binary with size 3.3 MiB
+26/09/30 03:13:22 WARN DAGScheduler: Broadcasting large task binary with size 3.3 MiB
+                                                                                [plan-profile] checkpoint #7 (execution_mode=online, step=fused.validate_lexical_candidates) timing (eager=True, outcome=success): 13.345s
+[plan-profile] online _require_unique: 0.010s
+26/09/30 03:13:23 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 630377 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[Stage 1874:=>(1 + 0) / 2][Stage 1884:> (0 + 0) / 2][Stage 1893:> (0 + 0) / 1][Stage 1884:> (0 + 1) / 2][Stage 1893:> (0 + 0) / 1][Stage 1898:> (0 + 0) / 1][Stage 1884:=>(1 + 0) / 2][Stage 1893:> (0 + 0) / 1][Stage 1898:> (0 + 0) / 1][Stage 1907:========>       (1 + 1) / 2][Stage 1909:>               (0 + 2) / 2]26/09/30 03:13:26 WARN DAGScheduler: Broadcasting large task binary with size 1336.5 KiB
+26/09/30 03:13:27 WARN DAGScheduler: Broadcasting large task binary with size 1296.6 KiB
+26/09/30 03:13:27 WARN DAGScheduler: Broadcasting large task binary with size 1312.8 KiB
+26/09/30 03:13:27 WARN DAGScheduler: Broadcasting large task binary with size 1321.4 KiB
+26/09/30 03:13:27 WARN DAGScheduler: Broadcasting large task binary with size 1328.0 KiB
+26/09/30 03:13:27 WARN DAGScheduler: Broadcasting large task binary with size 1384.2 KiB
+                                                                                [plan-profile] checkpoint #8 (execution_mode=online, step=fused.validate_vector_candidates) timing (eager=True, outcome=success): 4.734s
+[plan-profile] online _require_unique: 0.011s
+26/09/30 03:13:27 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 16813 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[plan-profile] checkpoint #9 (execution_mode=online, step=fused.materialize_candidates) timing (eager=True, outcome=success): 0.193s
+[plan-profile] singleton policy (cache miss): 0.005s
+26/09/30 03:13:27 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 34496 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[search-repeat] {"boundary_cleanup_seconds": 0.032489791978150606, "boundary_views_after": 15, "boundary_views_after_cleanup": 0, "boundary_views_before": 0, "collection_seconds": 0.3823531669913791, "construction_seconds": 22.759067260019947, "mode": "online", "query_id": "q-repeat-miss-0", "request_index": 0, "rows": 2, "workload": "score-cache-miss"}
+[plan-profile] checkpoint map: #1=fused.validate_lexical_candidates, #2=fused.validate_vector_candidates, #3=fused.materialize_candidates
+[plan-profile] singleton policy (cache miss): 0.005s
+26/09/30 03:13:28 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 23694 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[plan-profile] singleton policy (cache miss): 0.004s
+[plan-profile] singleton policy (cache miss): 0.005s
+26/09/30 03:13:28 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 37093 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[plan-profile] singleton policy (cache miss): 0.005s
+[plan-profile] singleton policy (cache miss): 0.005s
+[plan-profile] singleton policy (cache miss): 0.004s
+26/09/30 03:13:28 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 156550 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/30 03:13:28 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 175840 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/30 03:13:28 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 187856 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/30 03:13:28 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 187924 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/30 03:13:28 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 187972 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/30 03:13:29 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 188009 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/30 03:13:29 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 175840 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[plan-profile] singleton policy (cache miss): 0.005s
+[plan-profile] singleton policy (cache miss): 0.005s
+26/09/30 03:13:31 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 1129989 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+26/09/30 03:13:34 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 1910311 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[Stage 1943:> (0 + 0) / 1][Stage 2000:=>(1 + 0) / 2][Stage 2008:> (0 + 0) / 2][Stage 1943:> (0 + 0) / 1][Stage 2022:> (0 + 0) / 2][Stage 2029:> (0 + 0) / 2]                                                                                [Stage 2044:> (0 + 0) / 2][Stage 2051:> (0 + 0) / 2][Stage 2058:> (0 + 0) / 2]                                                                                [Stage 2087:=>(1 + 0) / 2][Stage 2095:> (0 + 0) / 2][Stage 2102:> (0 + 0) / 2]                                                                                [Stage 2116:=>(1 + 1) / 2][Stage 2124:> (0 + 2) / 2][Stage 2131:> (0 + 1) / 2][Stage 2138:=>(1 + 0) / 2][Stage 2145:> (0 + 0) / 2][Stage 2153:> (0 + 0) / 2]                                                                                [Stage 2168:>               (0 + 1) / 1][Stage 2174:========>       (1 + 0) / 2]                                                                                [Stage 2236:=>(1 + 0) / 2][Stage 2269:> (0 + 0) / 2][Stage 2276:> (0 + 0) / 2][Stage 2236:=>(1 + 1) / 2][Stage 2241:> (0 + 0) / 2][Stage 2249:> (0 + 0) / 2][Stage 2241:=>(1 + 1) / 2][Stage 2249:> (0 + 2) / 2][Stage 2254:> (0 + 2) / 2]26/09/30 03:13:43 WARN DAGScheduler: Broadcasting large task binary with size 1125.0 KiB
+[Stage 2268:> (0 + 2) / 2][Stage 2269:> (0 + 0) / 2][Stage 2276:> (0 + 0) / 2]26/09/30 03:13:43 WARN DAGScheduler: Broadcasting large task binary with size 1102.4 KiB
+26/09/30 03:13:43 WARN DAGScheduler: Broadcasting large task binary with size 1172.3 KiB
+[Stage 2297:>               (0 + 0) / 2][Stage 2302:>               (0 + 0) / 1]26/09/30 03:13:43 WARN DAGScheduler: Broadcasting large task binary with size 1610.4 KiB
+26/09/30 03:13:43 WARN DAGScheduler: Broadcasting large task binary with size 1603.7 KiB
+26/09/30 03:13:44 WARN DAGScheduler: Broadcasting large task binary with size 1610.8 KiB
+26/09/30 03:13:44 WARN DAGScheduler: Broadcasting large task binary with size 1700.9 KiB
+26/09/30 03:13:44 WARN DAGScheduler: Broadcasting large task binary with size 1133.7 KiB
+26/09/30 03:13:44 WARN DAGScheduler: Broadcasting large task binary with size 1111.2 KiB
+26/09/30 03:13:44 WARN DAGScheduler: Broadcasting large task binary with size 1675.7 KiB
+26/09/30 03:13:44 WARN DAGScheduler: Broadcasting large task binary with size 1181.2 KiB
+26/09/30 03:13:44 WARN DAGScheduler: Broadcasting large task binary with size 1685.2 KiB
+26/09/30 03:13:44 WARN DAGScheduler: Broadcasting large task binary with size 1620.0 KiB
+26/09/30 03:13:44 WARN DAGScheduler: Broadcasting large task binary with size 1694.1 KiB
+26/09/30 03:13:44 WARN DAGScheduler: Broadcasting large task binary with size 1613.3 KiB
+26/09/30 03:13:44 WARN DAGScheduler: Broadcasting large task binary with size 1699.9 KiB
+26/09/30 03:13:44 WARN DAGScheduler: Broadcasting large task binary with size 1620.9 KiB
+26/09/30 03:13:44 WARN DAGScheduler: Broadcasting large task binary with size 1748.6 KiB
+26/09/30 03:13:44 WARN DAGScheduler: Broadcasting large task binary with size 1711.1 KiB
+26/09/30 03:13:44 WARN DAGScheduler: Broadcasting large task binary with size 1685.9 KiB
+26/09/30 03:13:45 WARN DAGScheduler: Broadcasting large task binary with size 1695.5 KiB
+26/09/30 03:13:45 WARN DAGScheduler: Broadcasting large task binary with size 1704.9 KiB
+26/09/30 03:13:45 WARN DAGScheduler: Broadcasting large task binary with size 1711.1 KiB
+26/09/30 03:13:45 WARN DAGScheduler: Broadcasting large task binary with size 1759.8 KiB
+26/09/30 03:13:45 WARN DAGScheduler: Broadcasting large task binary with size 3.3 MiB
+26/09/30 03:13:45 WARN DAGScheduler: Broadcasting large task binary with size 3.3 MiB
+                                                                                [plan-profile] checkpoint #10 (execution_mode=generated, step=fused.validate_lexical_candidates) timing (eager=True, outcome=success): 13.222s
+26/09/30 03:13:46 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 635495 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[Stage 2409:> (0 + 0) / 2][Stage 2416:> (0 + 0) / 2][Stage 2430:> (0 + 0) / 2][Stage 2409:> (0 + 2) / 2][Stage 2416:> (0 + 1) / 2][Stage 2430:> (0 + 0) / 2][Stage 2430:=>(1 + 1) / 2][Stage 2437:> (0 + 0) / 2][Stage 2443:> (0 + 0) / 1][Stage 2449:>               (0 + 0) / 2][Stage 2453:>               (0 + 0) / 2]26/09/30 03:13:50 WARN DAGScheduler: Broadcasting large task binary with size 1337.9 KiB
+26/09/30 03:13:50 WARN DAGScheduler: Broadcasting large task binary with size 1298.0 KiB
+26/09/30 03:13:50 WARN DAGScheduler: Broadcasting large task binary with size 1314.1 KiB
+26/09/30 03:13:50 WARN DAGScheduler: Broadcasting large task binary with size 1322.8 KiB
+26/09/30 03:13:50 WARN DAGScheduler: Broadcasting large task binary with size 1329.4 KiB
+26/09/30 03:13:50 WARN DAGScheduler: Broadcasting large task binary with size 1385.6 KiB
+                                                                                [plan-profile] checkpoint #11 (execution_mode=generated, step=fused.validate_vector_candidates) timing (eager=True, outcome=success): 4.756s
+26/09/30 03:13:50 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 16945 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[plan-profile] checkpoint #12 (execution_mode=generated, step=fused.materialize_candidates) timing (eager=True, outcome=success): 0.186s
+[plan-profile] singleton policy (cache miss): 0.006s
+26/09/30 03:13:51 WARN StringUtils: Truncated the string representation of a plan since it was too long. The plan had length 34532 and the maximum is 8162. This behavior can be adjusted by setting 'spark.sql.maxPlanStringLength'.
+[search-repeat] {"boundary_cleanup_seconds": 0.03178441704949364, "boundary_views_after": 15, "boundary_views_after_cleanup": 0, "boundary_views_before": 0, "collection_seconds": 0.34590191702591255, "construction_seconds": 22.652068511000834, "mode": "generated", "query_id": "q-repeat-miss-0", "request_index": 0, "rows": 2, "workload": "score-cache-miss"}
+[phase] generated source cleanup (integration_search_generated): starting
+[phase] generated source cleanup (integration_search_generated): 0.00s
+PASSED[phase] snapshot fixture cleanup: starting
+[phase] snapshot fixture cleanup: 0.01s
+[phase] plan boundary cleanup: starting
+[phase] plan boundary cleanup: 0.00s
+
+
+============================= slowest 20 durations =============================
+106.85s call     tests/integration/pyspark/search/test_search.py::test_document_search_reranks_bm25_candidates_for_multiple_queries
+16.96s setup    tests/integration/pyspark/search/test_search.py::test_document_search_reranks_bm25_candidates_for_multiple_queries
+1.00s teardown tests/integration/pyspark/search/test_search.py::test_document_search_reranks_bm25_candidates_for_multiple_queries
+================ 1 passed, 208 deselected in 125.67s (0:02:05) =================
