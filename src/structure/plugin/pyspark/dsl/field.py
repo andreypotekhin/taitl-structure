@@ -16,18 +16,22 @@ from structure.dsl import FieldDeclaration, Schema
 from structure.plugin.pyspark.dsl.types import (
     Array,
     Binary,
+    Bitmap,
     Boolean,
     Date,
     Decimal,
     Double,
     Float,
     Geometry,
+    HllSketch,
     Integer,
+    KllSketch,
     Long,
     Map,
     String,
     Struct,
     StructureType,
+    ThetaSketch,
     Timestamp,
     Variant,
 )
@@ -101,6 +105,26 @@ def variant(**options: object) -> Any:
     PySpark 4 profile. Structure preserves its schema and nullability.
     """
     return _declare(Variant(), options)
+
+
+def hll_sketch(*, profile: str = "baseline", lg_config_k: int = 12, **options: object) -> Any:
+    """Declare an opaque HyperLogLog sketch field stored as Spark binary."""
+    return _declare(HllSketch(profile, lg_config_k), options)
+
+
+def bitmap(*, profile: str = "baseline", **options: object) -> Any:
+    """Declare an opaque bitmap field stored as Spark binary."""
+    return _declare(Bitmap(profile), options)
+
+
+def kll_sketch(*, profile: str = "pyspark4.1", **options: object) -> Any:
+    """Declare a profile-gated opaque KLL sketch field."""
+    return _declare(KllSketch(profile), options)
+
+
+def theta_sketch(*, profile: str = "pyspark4.1", **options: object) -> Any:
+    """Declare a profile-gated opaque Theta sketch field."""
+    return _declare(ThetaSketch(profile), options)
 
 
 def geometry(srid: int, **options: object) -> Any:
@@ -237,6 +261,10 @@ __all__ = [
     "double",
     "float",
     "geometry",
+    "hll_sketch",
+    "bitmap",
+    "kll_sketch",
+    "theta_sketch",
     "integer",
     "long",
     "map",

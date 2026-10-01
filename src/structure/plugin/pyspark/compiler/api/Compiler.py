@@ -1,5 +1,8 @@
 from structure.plugin.pyspark.capabilities.model.PySparkCapabilities import PySparkCapabilities
 from structure.plugin.pyspark.compiler.commands.BuildCompilerTraceability import BuildCompilerTraceability
+from structure.plugin.pyspark.compiler.commands.BuildPySparkExpressionDiagnostics import (
+    BuildPySparkExpressionDiagnostics,
+)
 from structure.plugin.pyspark.compiler.commands.BuildPySparkLineageDiagnostics import BuildPySparkLineageDiagnostics
 from structure.plugin.pyspark.compiler.commands.BuildPySparkUdfDiagnostics import BuildPySparkUdfDiagnostics
 from structure.plugin.pyspark.compiler.commands.ClassifyStreamingCompatibility import ClassifyStreamingCompatibility
@@ -28,6 +31,9 @@ class Compiler:
 
     def udf_diagnostics(self) -> BuildPySparkUdfDiagnostics:
         return BuildPySparkUdfDiagnostics()
+
+    def expression_diagnostics(self) -> BuildPySparkExpressionDiagnostics:
+        return BuildPySparkExpressionDiagnostics()
 
     def lineage_diagnostics(self) -> BuildPySparkLineageDiagnostics:
         return BuildPySparkLineageDiagnostics()

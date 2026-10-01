@@ -90,6 +90,8 @@ the current `order` row scope as `o`.
 | `covar(...)` | `covar` | `covar(order.price, order.quantity)` |
 | `approx_count_distinct(...)` | `approx_count_distinct` | `approx_count_distinct(o.customer_id, relative_sd=0.05)` |
 | `approx_percentile(...)` | `approx_percentile` | `approx_percentile(order.total, 0.5, accuracy=100)` |
+| `hll_sketch_agg(...)` | Opaque HLL sketch aggregate | `hll_sketch_agg(order.customer_id, lg_config_k=12)` |
+| `bitmap_construct_agg(...)`, `bitmap_or_agg(...)` | Opaque Bitmap aggregates | `bitmap_construct_agg(order.position)` |
 | `percentile(...)` | `percentile` | `percentile(order.total, 0.5)` |
 | `schema_of_variant_agg(...)` | Variant schema aggregate | `schema_of_variant_agg(order.payload)` |
 | `mode(...)` | `mode` | `mode(order.category, deterministic=True)` |
@@ -117,6 +119,8 @@ the current `order` row scope as `o`.
   orderable candidate across supported PySpark targets.
 - `schema_of_variant_agg(...)` requires a Variant expression and returns a nullable SQL-format schema string. It is
   available only on resolved PySpark 4 profiles.
+- HLL and Bitmap aggregates return branded opaque Binary state. HLL unions require matching `lg_config_k` by default;
+  explicitly allowing mixed precision emits `SKETCH-W0802`. Scalar estimate/count helpers are row-local consumers.
 - Raw aggregate aliases are unsupported. Name aggregate outputs through the returned Schema constructor, and use schema
   field `alias=...` when the physical Spark column name must differ from the Structure field name.
 

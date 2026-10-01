@@ -13,6 +13,7 @@ class DiagnosticRegistry:
         "BACKEND",
         "CLI",
         "CONF",
+        "CRYPTO",
         "CONNECT",
         "CORE",
         "DISC",
@@ -25,6 +26,7 @@ class DiagnosticRegistry:
         "PYSPARK",
         "REL",
         "SCHEMA",
+        "SKETCH",
         "STREAM",
         "VAL",
     }

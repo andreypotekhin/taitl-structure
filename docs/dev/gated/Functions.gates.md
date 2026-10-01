@@ -21,10 +21,10 @@ the gate register searchable without duplicating the full PySpark inventory.
 
 | Scope | Status | Missing contract or boundary |
 | --- | --- | --- |
-| Current-time functions | `candidate` | Implement query-clock metadata and target evidence. |
-| AES-GCM helpers | `candidate` | Implement typed calls, nonce warning, and target evidence. |
+| Current-time functions | `implemented` | Typed query-clock metadata is implemented; ordinary target evidence remains a release check. |
+| AES-GCM helpers | `implemented` | Typed GCM calls and explicit-IV warning are implemented; ordinary target evidence remains a release check. |
 | Dynamic JSON schemas | `caller-owned-guided` | Runtime inference cannot alter a compiled Schema. |
-| Sketch and bitmap aggregates | `design-gated` | Add opaque types, mergeability, persistence, and evidence. |
+| Sketch and bitmap aggregates | `implemented` | Baseline HLL/Bitmap opaque types and merge consumers are implemented; KLL/Theta remain profile-gated and evidence-bound. |
 | Generic generators and partition transforms | `design-gated` | Schema, aliases, cardinality, and streaming behavior. |
 | Variant mutation helpers | `target-gated` | Released target profile and mutation contract. |
 | `expr` / `call_function` | `unsupported` | Raw SQL removes typed expression ownership. |

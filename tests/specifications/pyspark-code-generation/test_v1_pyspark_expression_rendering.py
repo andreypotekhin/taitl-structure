@@ -704,6 +704,10 @@ def test_v4_expression_renderer_renders_temporal_helpers() -> None:
         year_part = integer(nullable=True)
         hour_part = integer(nullable=True)
         epoch_days = integer(nullable=True)
+        epoch_text = string(nullable=True)
+        parsed_epoch = long(nullable=True)
+        current_epoch = long(nullable=False)
+        utc_at = timestamp(nullable=True)
         restored_day = date(nullable=True)
         parsed_date = date(nullable=True)
         parsed_timestamp = timestamp(nullable=True)
@@ -720,6 +724,10 @@ def test_v4_expression_renderer_renders_temporal_helpers() -> None:
                 year_part=year(row.observed_on),
                 hour_part=hour(row.observed_at),
                 epoch_days=unix_date(row.observed_on),
+                epoch_text=from_unixtime(1, format="yyyy-MM-dd"),
+                parsed_epoch=unix_timestamp(row.raw_observed_at, format="yyyy-MM-dd HH:mm:ss"),
+                current_epoch=unix_timestamp(),
+                utc_at=to_utc_timestamp(row.raw_observed_at, timezone="UTC"),
                 restored_day=date_from_unix_date(1),
                 parsed_date=to_date(row.raw_observed_at, format="yyyy-MM-dd HH:mm:ss"),
                 parsed_timestamp=to_timestamp(row.raw_observed_at, format="yyyy-MM-dd HH:mm:ss"),
@@ -739,6 +747,18 @@ def test_v4_expression_renderer_renders_temporal_helpers() -> None:
     assert render(projection["year_part"], scope_aliases={"rows": "orders"}) == 'F.year(F.col("orders.observed_on"))'
     assert render(projection["hour_part"], scope_aliases={"rows": "orders"}) == 'F.hour(F.col("orders.observed_at"))'
     assert render(projection["epoch_days"], scope_aliases={"rows": "orders"}) == 'F.unix_date(F.col("orders.observed_on"))'
+    assert render(projection["epoch_text"], scope_aliases={"rows": "orders"}) == (
+        "F.from_unixtime(F.lit(1), 'yyyy-MM-dd')"
+    )
+    assert render(projection["parsed_epoch"], scope_aliases={"rows": "orders"}) == (
+        'F.unix_timestamp(F.col("orders.raw_observed_at"), \'yyyy-MM-dd HH:mm:ss\')'
+    )
+    assert render(projection["current_epoch"], scope_aliases={"rows": "orders"}) == (
+        "F.unix_timestamp(format='yyyy-MM-dd HH:mm:ss')"
+    )
+    assert render(projection["utc_at"], scope_aliases={"rows": "orders"}) == (
+        'F.to_utc_timestamp(F.col("orders.raw_observed_at"), \'UTC\')'
+    )
     assert render(projection["restored_day"], scope_aliases={"rows": "orders"}) == 'F.date_from_unix_date(F.lit(1))'
     assert render(projection["parsed_date"], scope_aliases={"rows": "orders"}) == (
         'F.to_date(F.col("orders.raw_observed_at"), \'yyyy-MM-dd HH:mm:ss\')'

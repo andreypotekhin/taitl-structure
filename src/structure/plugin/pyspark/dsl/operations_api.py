@@ -42,10 +42,14 @@ from structure.plugin.pyspark.dsl.TimeWindow import TimeWindow
 from structure.plugin.pyspark.dsl.types import (
     ArrayType,
     BinaryType,
+    Bitmap,
+    BitmapType,
     BooleanType,
     DecimalType,
     DoubleType,
     FloatType,
+    HllSketch,
+    HllSketchType,
     IntegerType,
     LongType,
     MapType,
@@ -506,6 +510,42 @@ def approx_count_distinct(
         where=where,
         options=(("relative_sd", relative_sd),),
     )
+
+
+def hll_sketch_agg(
+    value: object,
+    *,
+    lg_config_k: int = 12,
+    where: object | None = None,
+) -> Expression:
+    """Build an opaque HLL sketch aggregate with explicit precision metadata."""
+    if isinstance(lg_config_k, bool) or not isinstance(lg_config_k, int) or not 4 <= lg_config_k <= 21:
+        raise TypeError("hll_sketch_agg(...) lg_config_k must be an integer from 4 through 21")
+    argument = literal(value)
+    return _aggregate(
+        "hll_sketch_agg",
+        argument,
+        type=HllSketch(lg_config_k=lg_config_k),
+        nullable=True,
+        where=where,
+        options=(("lg_config_k", lg_config_k),),
+    )
+
+
+def bitmap_construct_agg(value: object, *, where: object | None = None) -> Expression:
+    """Construct an opaque bitmap from integral positions."""
+    argument = literal(value)
+    if not isinstance(argument.type, (IntegerType, LongType)):
+        raise TypeError("bitmap_construct_agg(...) requires an integer or long Structure expression")
+    return _aggregate("bitmap_construct_agg", argument, type=Bitmap(), nullable=True, where=where)
+
+
+def bitmap_or_agg(value: object, *, where: object | None = None) -> Expression:
+    """OR opaque bitmap values within each aggregate group."""
+    argument = literal(value)
+    if not isinstance(argument.type, BitmapType):
+        raise TypeError("bitmap_or_agg(...) requires an opaque Bitmap Structure expression")
+    return _aggregate("bitmap_or_agg", argument, type=Bitmap(), nullable=True, where=where)
 
 
 def approx_percentile(

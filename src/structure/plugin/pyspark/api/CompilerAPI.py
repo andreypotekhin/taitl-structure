@@ -9,6 +9,7 @@ from structure.plugin.pyspark.api.PySpark import PySpark
 class CompilerAPI(CompilerAPIV1):
     def __init__(self) -> None:
         self._udf_diagnostics = PySpark.compiler.udf_diagnostics()
+        self._expression_diagnostics = PySpark.compiler.expression_diagnostics()
         self._lineage_diagnostics = PySpark.compiler.lineage_diagnostics()
 
     def compile(self, request: CompileRequest) -> PluginCompilation:
@@ -86,6 +87,7 @@ class CompilerAPI(CompilerAPIV1):
     ):
         return (
             *self._udf_diagnostics(plan, enabled=warn_on_udfs),
+            *self._expression_diagnostics(plan),
             *self._lineage_diagnostics(
                 plan,
                 enabled=warn_on_lineage_growth,

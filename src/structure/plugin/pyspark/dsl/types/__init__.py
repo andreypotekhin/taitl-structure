@@ -34,6 +34,11 @@ from structure.plugin.pyspark.dsl.types.TimestampType import TimestampType
 from structure.plugin.pyspark.dsl.types.Timestamp import Timestamp
 from structure.plugin.pyspark.dsl.types.VariantType import VariantType
 from structure.plugin.pyspark.dsl.types.Variant import Variant
+from structure.plugin.pyspark.dsl.types.SketchType import BitmapType, HllSketchType, KllSketchType, SketchType, ThetaSketchType
+from structure.plugin.pyspark.dsl.types.Bitmap import Bitmap
+from structure.plugin.pyspark.dsl.types.HllSketch import HllSketch
+from structure.plugin.pyspark.dsl.types.KllSketch import KllSketch
+from structure.plugin.pyspark.dsl.types.ThetaSketch import ThetaSketch
 
 if TYPE_CHECKING:
     from structure.dsl import Schema
@@ -48,6 +53,10 @@ def boolean() -> StructureType: return Boolean()
 def date() -> StructureType: return Date()
 def timestamp() -> StructureType: return Timestamp()
 def variant() -> StructureType: return Variant()
+def hll_sketch(*, profile: str = "baseline", lg_config_k: int = 12) -> StructureType: return HllSketch(profile, lg_config_k)
+def bitmap(*, profile: str = "baseline") -> StructureType: return Bitmap(profile)
+def kll_sketch(*, profile: str = "pyspark4.1") -> StructureType: return KllSketch(profile)
+def theta_sketch(*, profile: str = "pyspark4.1") -> StructureType: return ThetaSketch(profile)
 def geometry(srid: int) -> StructureType: return Geometry(srid)
 def decimal(precision: int, scale: int) -> StructureType: return Decimal(precision, scale)
 def array(element: StructureType, *, contains_null: object = True) -> StructureType: return Array(element, contains_null=contains_null)
@@ -58,6 +67,6 @@ def struct(schema: type[Schema]) -> StructureType: return Struct(schema)
 __all__ = [
     "Array", "ArrayType", "Binary", "BinaryType", "Boolean", "BooleanType", "Date", "DateType", "Decimal", "DecimalType", "Double",
     "DoubleType", "Float", "FloatType", "Integer", "IntegerType", "Long", "LongType", "Map", "MapType",
-    "Geometry", "GeometryType", "ScalarType", "String", "StringType", "Struct", "StructType", "StructureType", "Timestamp", "TimestampType", "Variant", "VariantType",
-    "array", "binary", "boolean", "date", "decimal", "double", "float", "geometry", "integer", "long", "map", "string", "struct", "timestamp", "variant",
+    "Geometry", "GeometryType", "ScalarType", "SketchType", "HllSketch", "HllSketchType", "Bitmap", "BitmapType", "KllSketch", "KllSketchType", "ThetaSketch", "ThetaSketchType", "String", "StringType", "Struct", "StructType", "StructureType", "Timestamp", "TimestampType", "Variant", "VariantType",
+    "array", "binary", "boolean", "date", "decimal", "double", "float", "geometry", "hll_sketch", "bitmap", "kll_sketch", "theta_sketch", "integer", "long", "map", "string", "struct", "timestamp", "variant",
 ]

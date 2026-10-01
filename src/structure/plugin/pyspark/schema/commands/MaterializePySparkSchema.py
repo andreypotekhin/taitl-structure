@@ -13,6 +13,7 @@ from structure.plugin.pyspark.dsl.types import (
     IntegerType,
     LongType,
     MapType,
+    SketchType,
     StringType,
     StructType,
     StructureType,
@@ -38,6 +39,8 @@ class MaterializePySparkSchema:
         if isinstance(type, StringType):
             return spark_types.StringType()
         if isinstance(type, BinaryType):
+            return spark_types.BinaryType()
+        if isinstance(type, SketchType):
             return spark_types.BinaryType()
         if isinstance(type, IntegerType):
             return spark_types.IntegerType()

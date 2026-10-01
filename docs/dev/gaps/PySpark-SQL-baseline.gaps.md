@@ -25,6 +25,9 @@ function a precise gate or caller remedy. It is not a promise to expose arbitrar
 | --- | --- | --- | --- |
 | Ordering descriptors | `implemented` | Harden validation across consumers. | Preserve direction and null placement. |
 | Binary conversion | `implemented` | Typed `to_binary` and `try_to_binary` with literal formats. | Preserve format and failure behavior. |
+| Unix-seconds formatting | `implemented` | Typed `from_unixtime` with numeric seconds and a literal format. | Preserve session-time-zone formatting. |
+| Unix-seconds parsing | `implemented` | Typed `unix_timestamp` with String/Date/Timestamp inputs and the query-time default form. | Preserve the default format and query-time stability. |
+| UTC conversion | `implemented` | Typed `to_utc_timestamp` and `from_utc_timestamp` with literal timezones. | Preserve timestamp nullability and timezone semantics. |
 
 ## Implementation Candidates
 
@@ -36,11 +39,11 @@ per verified PySpark function and record the 3.5/4.0 presence explicitly.
 | --- | --- | --- | --- |
 | `randstr`, UTF-8 | candidate | Verify String/Binary semantics. | Preserve spelling or equivalent. |
 | Time-zone, date-part | candidate | Add typed calls and nullability. | Match units, zones, timestamp types. |
-| Unix timestamp, UTC | candidate | Add typed conversion helpers. | Match units, parsing, null behavior. |
+| Unix timestamp, UTC | candidate | Add remaining conversion helpers. | Match units, parsing, null behavior. |
 | `make_*`, safe temporal | candidate | Add constructors and `try_*`. | Match validation and nullable failure. |
 | UTF-8 validation | candidate | Verify String/Binary semantics and invalid-byte behavior. | Preserve spelling or equivalent. |
-| Current-time | candidate | Add typed query-clock calls. | Preserve six spellings and same-query equality. |
-| AES-GCM | candidate | Add typed GCM calls and nonce-risk warning. | Use native PySpark for excluded AES forms. |
+| Current-time | implemented | Typed query-clock calls preserve six spellings and same-query equality metadata. | Use native PySpark for unmodeled timestamp variants. |
+| AES-GCM | implemented | Typed GCM calls, symbolic keys, and nonce-risk warning. | Use native PySpark for excluded AES forms. |
 | String aggregation | candidate | Add typed `string_agg`/`listagg`. | Match delimiter, null, order, empty input. |
 | `stack`, typed generators | candidate | Require schema and cardinality. | Match row multiplication, aliases, fields. |
 
@@ -53,7 +56,7 @@ missing contract or native-PySpark remedy before the status can change.
 | --- | --- | --- | --- |
 | `expr` / `call_function` | `unsupported` | Raw SQL removes typed ownership. | Use a native PySpark boundary. |
 | Dynamic JSON | `caller-owned-guided` | Runtime inference cannot alter Schema. | Use declared parsing or native code. |
-| Sketch/bitmap | `design-gated` | Need opaque types, merge, profiles, and evidence. | Use scalar or native code. |
+| Sketch/bitmap | `implemented` | Baseline HLL/Bitmap opaque types and consumers are implemented; KLL/Theta remain profile-gated and live evidence is pending. | Use native PySpark for unsupported profiles or Count-Min/observation metrics. |
 | Generators, partitions | `design-gated` | Schema, aliases, cardinality, stream. | Typed or native PySpark. |
 | Variant mutation | `target-gated` | Released profile and mutation contract. | Use the profile or native PySpark. |
 | XML/URL/provider/runtime | `design-gated` | Provider ownership, typed results. | Caller-owned integrations. |

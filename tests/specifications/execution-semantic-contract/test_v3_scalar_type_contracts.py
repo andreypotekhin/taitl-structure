@@ -792,6 +792,15 @@ def test_temporal_helpers_preserve_typed_calendar_contracts() -> None:
     epoch_days = unix_date(required_date)
     assert epoch_days.type is not None and epoch_days.type.name == "integer"
     assert date_from_unix_date(_expression(types.long(), nullable=True)).nullable is True
+    formatted_epoch = from_unixtime(_expression(types.long(), nullable=True), format="yyyy-MM-dd")
+    assert formatted_epoch.type is not None and formatted_epoch.type.name == "string"
+    assert formatted_epoch.nullable is True
+    parsed_epoch = unix_timestamp(nullable_timestamp, format="yyyy-MM-dd HH:mm:ss")
+    assert parsed_epoch.type is not None and parsed_epoch.type.name == "long"
+    assert parsed_epoch.nullable is True
+    assert unix_timestamp().nullable is False
+    assert to_utc_timestamp(nullable_timestamp, timezone="UTC").nullable is True
+    assert from_utc_timestamp(required_text, timezone="UTC").nullable is True
 
 
 def test_unix_date_helpers_require_their_declared_temporal_types() -> None:
@@ -799,6 +808,12 @@ def test_unix_date_helpers_require_their_declared_temporal_types() -> None:
         unix_date(_expression(types.timestamp(), nullable=False))
     with pytest.raises(TypeError, match=r"date_from_unix_date\(\.\.\.\) requires an integer or long"):
         date_from_unix_date(_expression(types.string(), nullable=False))
+    with pytest.raises(TypeError, match=r"from_unixtime\(\.\.\.\) requires a numeric Structure expression"):
+        from_unixtime(_expression(types.string(), nullable=False))
+    with pytest.raises(TypeError, match=r"unix_timestamp\(\.\.\.\) requires a String, Date, or Timestamp"):
+        unix_timestamp(_expression(types.integer(), nullable=False))
+    with pytest.raises(TypeError, match=r"to_utc_timestamp\(\.\.\.\) timezone must be a non-empty"):
+        to_utc_timestamp(_expression(types.timestamp(), nullable=False), timezone="")
 
 
 def test_calendar_and_padding_helpers_preserve_typed_contracts() -> None:

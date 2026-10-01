@@ -27,6 +27,7 @@ PYSPARK_4_CAPABILITIES = frozenset(
         ("expression", "try_cast"),
         ("expression", "variant"),
         ("schema", "variant"),
+        ("schema", "sketches_profile_4_1"),
     }
 )
 PYSPARK_4_2_CAPABILITIES = frozenset({("expression", "is_valid_variant")})
@@ -57,6 +58,7 @@ COMMON_CAPABILITIES = frozenset(
         ("expression", "cast"),
         ("expression", "assertion"),
         ("expression", "python_udf"),
+        ("schema", "sketches"),
         ("expression", "rand"),
         ("relation", "exactly_one"),
         ("expression", "standard_helper_call"),
@@ -106,6 +108,9 @@ COMMON_CAPABILITIES = frozenset(
         ("aggregate", "avg"),
         ("aggregate", "approx_count_distinct"),
         ("aggregate", "approx_percentile"),
+        ("aggregate", "hll_sketch_agg"),
+        ("aggregate", "bitmap_construct_agg"),
+        ("aggregate", "bitmap_or_agg"),
         ("aggregate", "bool_and"),
         ("aggregate", "bool_or"),
         ("aggregate", "collect_list"),

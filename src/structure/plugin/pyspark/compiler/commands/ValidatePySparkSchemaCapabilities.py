@@ -2,7 +2,16 @@ from typing import cast
 
 from structure.dsl import Schema
 from structure.plugin.api.v1.model import BackendCapabilities, CapabilityRequirement, TransformPlan
-from structure.plugin.pyspark.dsl.types import ArrayType, MapType, StructType, StructureType, VariantType
+from structure.plugin.pyspark.dsl.types import (
+    ArrayType,
+    KllSketchType,
+    MapType,
+    SketchType,
+    StructType,
+    StructureType,
+    ThetaSketchType,
+    VariantType,
+)
 
 
 class ValidatePySparkSchemaCapabilities:
@@ -34,6 +43,10 @@ class ValidatePySparkSchemaCapabilities:
     def _type(self, type: StructureType, *, capabilities: BackendCapabilities, visited: set[type[Schema]]) -> None:
         if isinstance(type, VariantType):
             capabilities.require(CapabilityRequirement(group="schema", name="variant"))
+        elif isinstance(type, SketchType):
+            capabilities.require(CapabilityRequirement(group="schema", name="sketches"))
+            if isinstance(type, (KllSketchType, ThetaSketchType)):
+                capabilities.require(CapabilityRequirement(group="schema", name="sketches_profile_4_1"))
         elif isinstance(type, ArrayType):
             self._type(type.element, capabilities=capabilities, visited=visited)
         elif isinstance(type, MapType):

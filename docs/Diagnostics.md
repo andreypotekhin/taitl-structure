@@ -195,3 +195,13 @@ See [Diagnostics.md](background/Diagnostics.back.md#stream-w0802).
 Spark permits ordinary business-key streaming aggregates with `update` or `complete` output mode, but a watermark
 does not evict their state because the grouping is not event-time bounded. Use an event-time or session window when
 state must be bounded, or explicitly accept the caller-owned unbounded-state policy.
+
+### CRYPTO-W0801
+
+An AES encryption expression uses a caller-supplied IV. Prefer Spark's generated IV, or prove that the supplied IV is
+unique for every encryption operation under the same key.
+
+### SKETCH-W0802
+
+An HLL union permits sketches with different `lg_config_k` precision. Use matching precision unless the resulting
+precision trade-off is intentional.

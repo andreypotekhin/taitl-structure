@@ -24,18 +24,28 @@ pytestmark: pytest.MarkDecorator | list[pytest.MarkDecorator] = (
 
 
 @pytest.mark.parametrize(
-    ("maximum", "duplicate", "active_requests", "overflow", "scope_count", "null_score", "at_validation_bound"),
+    (
+        "maximum",
+        "duplicate",
+        "active_requests",
+        "overflow",
+        "scope_count",
+        "null_score",
+        "at_validation_bound",
+        "restart_after_first_batch",
+    ),
     [
-        (0, False, 1, False, 1, False, False),
-        (1, False, 1, False, 1, False, False),
-        (3, False, 1, False, 1, False, False),
-        (3, False, 16, False, 1, False, False),
-        (3, False, 1, False, 4, False, False),
-        (3, False, 1, False, 1, True, False),
-        (1000, False, 1, False, 1, False, False),
-        (3, False, 1, False, 1, False, True),
-        (1, True, 1, False, 1, False, False),
-        (3, False, 1, True, 1, False, False),
+        (0, False, 1, False, 1, False, False, False),
+        (1, False, 1, False, 1, False, False, False),
+        (3, False, 1, False, 1, False, False, False),
+        (3, False, 16, False, 1, False, False, False),
+        (3, False, 1, False, 4, False, False, False),
+        (3, False, 1, False, 1, True, False, False),
+        (1000, False, 1, False, 1, False, False, False),
+        (3, False, 1, False, 1, False, True, False),
+        (3, False, 1, False, 1, False, False, True),
+        (1, True, 1, False, 1, False, False, False),
+        (3, False, 1, True, 1, False, False, False),
     ],
 )
 def test_i09282601_bounded_request_state_emits_result_after_idle_grace(
@@ -47,6 +57,7 @@ def test_i09282601_bounded_request_state_emits_result_after_idle_grace(
     scope_count: int,
     null_score: bool,
     at_validation_bound: bool,
+    restart_after_first_batch: bool,
 ) -> None:
     """Prototype bounded per-request ranking and processing-time finalization."""
 
@@ -122,7 +133,7 @@ def test_i09282601_bounded_request_state_emits_result_after_idle_grace(
         tie_score = float(candidate_count + 1)
         base_candidates.extend((("tie-z", tie_score), ("tie-a", tie_score)))
     write_batch("batch-1.json", base_candidates)
-    if maximum and not overflow:
+    if maximum and not overflow and not restart_after_first_batch:
         batch_two = [("d-0001", -1.0)] if duplicate else [("a-late", float(maximum + 1000))]
         write_batch("batch-2.json", batch_two)
 
@@ -235,15 +246,28 @@ def test_i09282601_bounded_request_state_emits_result_after_idle_grace(
         timeoutConf=GroupStateTimeout.ProcessingTimeTimeout,
     )
     query_name = f"issue_i09282601_{maximum}_{time.monotonic_ns()}"
-    query = (
-        result.writeStream.format("memory")
-        .queryName(query_name)
-        .outputMode("append")
-        .option("checkpointLocation", str(test_root / "checkpoint"))
-        .trigger(processingTime="200 milliseconds")
-        .start()
-    )
+
+    def start_query():
+        return (
+            result.writeStream.format("memory")
+            .queryName(query_name)
+            .outputMode("append")
+            .option("checkpointLocation", str(test_root / "checkpoint"))
+            .trigger(processingTime="200 milliseconds")
+            .start()
+        )
+
+    query = start_query()
     try:
+        if restart_after_first_batch:
+            query.processAllAvailable()
+            assert query.exception() is None
+            assert spark.table(query_name).collect() == []
+            query.stop()
+            batch_two = [("d-0001", -1.0)] if duplicate else [("a-late", float(maximum + 1000))]
+            write_batch("batch-2.json", batch_two)
+            query = start_query()
+
         observed = []
         wait_until = time.monotonic() + 35
         while time.monotonic() < wait_until:

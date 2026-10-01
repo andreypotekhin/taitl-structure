@@ -12,6 +12,7 @@ from structure.plugin.pyspark.dsl.types import (
     IntegerType,
     LongType,
     MapType,
+    SketchType,
     StringType,
     StructType,
     StructureType,
@@ -851,6 +852,16 @@ class EvaluatePySparkExpression:
                 if "format" not in expression.data
                 else getattr(functions, function)(args[0], functions.lit(expression.data["format"]))
             )
+        if function in {"current_date", "curdate", "current_timestamp", "now", "localtimestamp", "current_timezone"}:
+            return getattr(functions, function)()
+        if function in {"aes_encrypt", "aes_decrypt", "try_aes_decrypt"}:
+            return getattr(functions, function)(*args)
+        if function == "hll_sketch_estimate":
+            return functions.hll_sketch_estimate(args[0])
+        if function == "hll_union":
+            return functions.hll_union(args[0], args[1], expression.data["allow_different_lg_config_k"])
+        if function in {"bitmap_bit_position", "bitmap_bucket_number", "bitmap_count"}:
+            return getattr(functions, function)(args[0])
         if function == "from_json":
             schema = self._schema.materialize()(cast(type, expression.data["schema"]))
             options = expression.data["options"]
@@ -1021,6 +1032,14 @@ class EvaluatePySparkExpression:
             return functions.date_format(args[0], expression.data["format"])
         if function in {"unix_date", "date_from_unix_date"}:
             return getattr(functions, function)(args[0])
+        if function == "from_unixtime":
+            return functions.from_unixtime(args[0], expression.data["format"])
+        if function == "unix_timestamp":
+            if args:
+                return functions.unix_timestamp(args[0], expression.data["format"])
+            return functions.unix_timestamp(format=expression.data["format"])
+        if function in {"to_utc_timestamp", "from_utc_timestamp"}:
+            return getattr(functions, function)(args[0], expression.data["timezone"])
         if function == "mask":
             chars = cast(tuple[str | None, ...], expression.data["chars"])
             return functions.mask(args[0], *chars)
@@ -1156,6 +1175,8 @@ class EvaluatePySparkExpression:
         if isinstance(type, StringType):
             return "STRING"
         if isinstance(type, BinaryType):
+            return "BINARY"
+        if isinstance(type, SketchType):
             return "BINARY"
         if isinstance(type, IntegerType):
             return "INT"

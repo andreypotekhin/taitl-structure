@@ -21,11 +21,13 @@ from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.types import (
     ArrayType,
     BinaryType,
+    BitmapType,
     BooleanType,
     DateType,
     DecimalType,
     DoubleType,
     FloatType,
+    HllSketchType,
     IntegerType,
     LongType,
     MapType,
@@ -44,12 +46,14 @@ __all__ = [
     "lower", "lpad", "ltrim", "mask", "md5", "crc32", "elt", "format_string", "printf", "substr",
     "minute", "month", "nanvl", "nullif", "nvl", "nvl2", "pow", "regexp_extract", "regexp_replace", "repeat", "replace", "reverse",
     "round", "rpad", "rtrim", "sha1", "sha2", "second", "signum", "split", "sqrt", "substring", "to_csv", "to_date",
-    "to_binary", "to_decimal", "to_json", "to_timestamp", "translate", "trim", "trunc", "unbase64", "decode", "encode", "try_to_binary", "hex", "unhex", "upper", "ascii", "btrim", "char", "char_length", "date_format", "find_in_set", "format_number", "last_day", "left", "locate", "mask", "octet_length", "overlay", "position", "quarter", "right", "soundex", "split_part", "substring_index", "regexp_count", "regexp_extract_all", "regexp_instr", "regexp_substr", "weekofyear", "bit_count", "bit_get", "getbit",
+    "to_binary", "to_decimal", "to_json", "to_timestamp", "translate", "trim", "trunc", "unbase64", "decode", "encode", "try_to_binary", "from_unixtime", "unix_timestamp", "to_utc_timestamp", "from_utc_timestamp", "hex", "unhex", "upper", "ascii", "btrim", "char", "char_length", "date_format", "find_in_set", "format_number", "last_day", "left", "locate", "mask", "octet_length", "overlay", "position", "quarter", "right", "soundex", "split_part", "substring_index", "regexp_count", "regexp_extract_all", "regexp_instr", "regexp_substr", "weekofyear", "bit_count", "bit_get", "getbit",
     "when", "width_bucket", "xxhash64", "year", "zeroifnull", "acos", "acosh", "asin", "asinh", "atan", "atan2", "atanh", "cbrt", "cos", "cosh", "cot", "csc", "degrees", "e", "expm1", "factorial", "greatest", "hypot", "least", "ln", "log10", "log1p", "log2", "pmod", "pi", "radians", "rint", "sec", "sign", "sin", "sinh", "tan", "tanh", "add_months", "months_between", "next_day", "rand", "randn", "equal_null", "like", "ilike", "regexp", "regexp_like", "rlike", "date_from_unix_date", "unix_date", "weekday", "shiftleft", "shiftright", "shiftrightunsigned", "is_valid_variant", "is_variant_null", "parse_json",
     "schema_of_variant", "to_variant_object", "try_parse_json", "try_variant_get", "variant_get", "variant_literal",
     "variant_array_append", "try_variant_array_append", "variant_insert", "try_variant_insert", "variant_set",
     "try_variant_set", "variant_delete",
-    "raise_error",
+    "raise_error", "current_date", "curdate", "current_timestamp", "now", "localtimestamp", "current_timezone",
+    "aes_encrypt", "aes_decrypt", "try_aes_decrypt",
+    "hll_sketch_estimate", "hll_union", "bitmap_bit_position", "bitmap_bucket_number", "bitmap_count",
 ]
 
 
@@ -372,6 +376,180 @@ def try_to_binary(value: object, *, format: str | None = None) -> Expression:
         data={"function": "try_to_binary", **({"format": format} if format is not None else {})},
         args=(argument,),
     )
+
+
+def _query_clock(function: str, type: StructureType) -> Expression:
+    return Expression(
+        kind="call",
+        type=type,
+        nullable=False,
+        data={
+            "function": function,
+            "nondeterministic": True,
+            "query_stable": True,
+            "capability_group": "expression",
+            "capability_name": "query_clock",
+        },
+    )
+
+
+def current_date() -> Expression:
+    """Return the query-start date, stable within one Spark query."""
+    return _query_clock("current_date", DateType())
+
+
+def curdate() -> Expression:
+    """Alias for :func:`current_date`."""
+    return _query_clock("curdate", DateType())
+
+
+def current_timestamp() -> Expression:
+    """Return the query-start timestamp, stable within one Spark query."""
+    return _query_clock("current_timestamp", TimestampType())
+
+
+def now() -> Expression:
+    """Alias for :func:`current_timestamp`."""
+    return _query_clock("now", TimestampType())
+
+
+def localtimestamp() -> Expression:
+    """Return Spark's query-start local timestamp."""
+    return _query_clock("localtimestamp", TimestampType())
+
+
+def current_timezone() -> Expression:
+    """Return the active Spark session timezone configuration."""
+    return Expression(
+        kind="call",
+        type=StringType(),
+        nullable=False,
+        data={
+            "function": "current_timezone",
+            "capability_group": "expression",
+            "capability_name": "query_clock",
+        },
+    )
+
+
+def aes_encrypt(
+    value: object,
+    *,
+    key: object,
+    aad: object | None = None,
+    iv: object | None = None,
+) -> Expression:
+    """Encrypt a String or Binary value with Spark's AES-GCM contract.
+
+    ``key`` is deliberately symbolic: secrets must not be embedded as Python
+    literals in generated source.  An explicit ``iv`` is accepted for
+    interoperability but marks the expression with a caller-ownership warning.
+    """
+    return _aes_call("aes_encrypt", value, key=key, aad=aad, iv=iv, nullable=True)
+
+
+def aes_decrypt(value: object, *, key: object, aad: object | None = None) -> Expression:
+    """Decrypt a String or Binary value using Spark's strict AES-GCM helper."""
+    return _aes_call("aes_decrypt", value, key=key, aad=aad, nullable=True)
+
+
+def try_aes_decrypt(value: object, *, key: object, aad: object | None = None) -> Expression:
+    """Decrypt AES-GCM data, returning null for invalid ciphertext or keys."""
+    return _aes_call("try_aes_decrypt", value, key=key, aad=aad, nullable=True)
+
+
+def _aes_call(
+    function: str,
+    value: object,
+    *,
+    key: object,
+    aad: object | None = None,
+    iv: object | None = None,
+    nullable: bool,
+) -> Expression:
+    payload = _string_or_binary_argument(value, f"{function}(...)")
+    if not isinstance(key, Expression):
+        raise TypeError(f"{function}(...) key must be a symbolic String or Binary expression")
+    key_expression = _string_or_binary_argument(key, f"{function}(...)")
+    arguments = [payload, key_expression]
+    if aad is not None:
+        arguments.append(_string_or_binary_argument(aad, f"{function}(...)"))
+    if iv is not None:
+        if function != "aes_encrypt":
+            raise TypeError("aes_decrypt(...) IVs are not part of the Structure contract")
+        arguments.append(_binary_argument(iv, f"{function}(...)"))
+    data: dict[str, object] = {
+        "function": function,
+        "capability_group": "expression",
+        "capability_name": "aes_gcm",
+    }
+    if iv is not None:
+        data["warnings"] = ("CRYPTO-W0801",)
+        data["manual_iv"] = True
+    return Expression(
+        kind="call",
+        type=BinaryType(),
+        nullable=nullable or any(argument.nullable for argument in arguments),
+        data=data,
+        args=tuple(arguments),
+    )
+
+
+def hll_sketch_estimate(value: object) -> Expression:
+    """Estimate the cardinality represented by an opaque HLL sketch."""
+    argument = _sketch_argument(value, HllSketchType, "hll_sketch_estimate(...)")
+    return Expression(
+        kind="call", type=LongType(), nullable=argument.nullable,
+        data={"function": "hll_sketch_estimate", "capability_group": "expression", "capability_name": "sketches"},
+        args=(argument,),
+    )
+
+
+def hll_union(left: object, right: object, *, allow_different_lg_config_k: bool = False) -> Expression:
+    """Union two HLL sketches, rejecting precision mismatches by default."""
+    if not isinstance(allow_different_lg_config_k, bool):
+        raise TypeError("hll_union(...) allow_different_lg_config_k must be a Boolean")
+    first = _sketch_argument(left, HllSketchType, "hll_union(...)")
+    second = _sketch_argument(right, HllSketchType, "hll_union(...)")
+    first_type = first.type
+    second_type = second.type
+    assert isinstance(first_type, HllSketchType) and isinstance(second_type, HllSketchType)
+    if first_type.lg_config_k != second_type.lg_config_k and not allow_different_lg_config_k:
+        raise TypeError("hll_union(...) requires matching lg_config_k unless allow_different_lg_config_k=True")
+    data: dict[str, object] = {
+        "function": "hll_union",
+        "allow_different_lg_config_k": allow_different_lg_config_k,
+        "capability_group": "expression",
+        "capability_name": "sketches",
+    }
+    if first_type.lg_config_k != second_type.lg_config_k:
+        data["warnings"] = ("SKETCH-W0802",)
+    return Expression(
+        kind="call", type=first_type, nullable=first.nullable or second.nullable,
+        data=data, args=(first, second),
+    )
+
+
+def bitmap_bit_position(value: object) -> Expression:
+    argument = _integral_argument(value, "bitmap_bit_position(...)")
+    return Expression(kind="call", type=LongType(), nullable=argument.nullable, data={"function": "bitmap_bit_position"}, args=(argument,))
+
+
+def bitmap_bucket_number(value: object) -> Expression:
+    argument = _integral_argument(value, "bitmap_bucket_number(...)")
+    return Expression(kind="call", type=LongType(), nullable=argument.nullable, data={"function": "bitmap_bucket_number"}, args=(argument,))
+
+
+def bitmap_count(value: object) -> Expression:
+    argument = _sketch_argument(value, BitmapType, "bitmap_count(...)")
+    return Expression(kind="call", type=LongType(), nullable=argument.nullable, data={"function": "bitmap_count"}, args=(argument,))
+
+
+def _sketch_argument(value: object, expected: type[StructureType], call: str) -> Expression:
+    argument = literal(value)
+    if not isinstance(argument.type, expected):
+        raise TypeError(f"{call} requires an opaque {expected.__name__} Structure expression")
+    return argument
 
 
 def from_json(value: object, *, as_: type, options: JsonOptions = JsonOptions()) -> Expression:
@@ -1497,6 +1675,64 @@ def date_from_unix_date(days: object) -> Expression:
     )
 
 
+def from_unixtime(seconds: object, *, format: str = "yyyy-MM-dd HH:mm:ss") -> Expression:
+    """Format Unix epoch seconds in the Spark session time zone."""
+    argument = _numeric_argument(seconds, "from_unixtime(...)")
+    format_literal = _temporal_format(format, "from_unixtime(...)")
+    assert format_literal is not None
+    return Expression(
+        kind="call",
+        type=StringType(),
+        nullable=argument.nullable,
+        data={"function": "from_unixtime", "format": format_literal},
+        args=(argument,),
+    )
+
+
+def unix_timestamp(
+    value: object | None = None,
+    *,
+    format: str = "yyyy-MM-dd HH:mm:ss",
+) -> Expression:
+    """Parse a temporal expression into Unix epoch seconds.
+
+    Omitting ``value`` uses Spark's query-time current timestamp. Explicit
+    String, Date, and Timestamp inputs are parsed with the requested format.
+    """
+    format_literal = _temporal_format(format, "unix_timestamp(...)")
+    assert format_literal is not None
+    if value is None:
+        return Expression(
+            kind="call",
+            type=LongType(),
+            nullable=False,
+            data={
+                "function": "unix_timestamp",
+                "format": format_literal,
+                "nondeterministic": True,
+                "query_stable": True,
+            },
+        )
+    argument = _temporal_conversion_argument(value, "unix_timestamp(...)")
+    return Expression(
+        kind="call",
+        type=LongType(),
+        nullable=True if isinstance(argument.type, StringType) else argument.nullable,
+        data={"function": "unix_timestamp", "format": format_literal},
+        args=(argument,),
+    )
+
+
+def to_utc_timestamp(value: object, *, timezone: str) -> Expression:
+    """Convert a timestamp expression from a timezone to UTC."""
+    return _timezone_conversion("to_utc_timestamp", value, timezone)
+
+
+def from_utc_timestamp(value: object, *, timezone: str) -> Expression:
+    """Convert a UTC timestamp expression to a timezone."""
+    return _timezone_conversion("from_utc_timestamp", value, timezone)
+
+
 def abs(value: object) -> Expression:
     """Return the absolute value of a numeric expression."""
     argument = _numeric_argument(value, "abs(...)")
@@ -2533,6 +2769,19 @@ def _temporal_format(value: object, call: str) -> str | None:
     if not isinstance(value, str) or not value:
         raise TypeError(f"{call} format must be a non-empty string literal")
     return value
+
+
+def _timezone_conversion(function: str, value: object, timezone: str) -> Expression:
+    argument = _temporal_conversion_argument(value, f"{function}(...)")
+    if not isinstance(timezone, str) or not timezone:
+        raise TypeError(f"{function}(...) timezone must be a non-empty string literal")
+    return Expression(
+        kind="call",
+        type=TimestampType(),
+        nullable=True if isinstance(argument.type, StringType) else argument.nullable,
+        data={"function": function, "timezone": timezone},
+        args=(argument,),
+    )
 
 
 def _numeric_argument(value: object, call: str) -> Expression:

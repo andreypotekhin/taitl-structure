@@ -23,6 +23,7 @@ from structure.plugin.pyspark.dsl.types import (
     IntegerType,
     LongType,
     MapType,
+    SketchType,
     StringType,
     StructType,
     StructureType,
@@ -70,6 +71,8 @@ def _same_type(left: StructureType | None, right: StructureType | None) -> bool:
             and _same_type(left.key, right.key)
             and _same_type(left.value, right.value)
         )
+    if isinstance(left, SketchType) and isinstance(right, SketchType):
+        return left.algorithm == right.algorithm and left.profile == right.profile and getattr(left, "lg_config_k", None) == getattr(right, "lg_config_k", None)
     return not isinstance(left, StructType) or not isinstance(right, StructType) or left.schema is right.schema
 
 
@@ -671,4 +674,6 @@ class Expression:
             precision = getattr(target, "precision")
             scale = getattr(target, "scale")
             return f"decimal({precision},{scale})"
+        if isinstance(target, SketchType):
+            return "binary"
         return target.name

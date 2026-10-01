@@ -17,6 +17,7 @@ from structure.plugin.pyspark.dsl.types import (
     IntegerType,
     LongType,
     MapType,
+    SketchType,
     StringType,
     StructType,
     StructureType,
@@ -58,6 +59,8 @@ class RenderPySparkSchema:
         if isinstance(type, StringType):
             return "T.StringType()"
         if isinstance(type, BinaryType):
+            return "T.BinaryType()"
+        if isinstance(type, SketchType):
             return "T.BinaryType()"
         if isinstance(type, IntegerType):
             return "T.IntegerType()"

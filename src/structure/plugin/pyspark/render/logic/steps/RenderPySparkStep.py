@@ -1548,6 +1548,8 @@ class RenderPySparkStep:
                 rendered_arguments.extend((repr(options["percentage"]), repr(options["frequency"])))
             if assignment.function == "any_value":
                 rendered_arguments.append(repr(options["ignore_nulls"]))
+            if assignment.function == "hll_sketch_agg":
+                rendered_arguments.append(repr(options["lg_config_k"]))
             expression = f"{function}({', '.join(rendered_arguments)})"
             if not self._keeps_struct_collection_type(assignment, backend_target=backend_target):
                 expression = f"{expression}.cast({self._schema.type(assignment.field.type)})"
@@ -1667,6 +1669,9 @@ class RenderPySparkStep:
             "var_pop",
             "var_samp",
             "variance",
+            "hll_sketch_agg",
+            "bitmap_construct_agg",
+            "bitmap_or_agg",
         }
 
     def _aggregate_function(self, function: str) -> str:
@@ -1715,6 +1720,9 @@ class RenderPySparkStep:
             "var_pop": "F.var_pop",
             "var_samp": "F.var_samp",
             "variance": "F.variance",
+            "hll_sketch_agg": "F.hll_sketch_agg",
+            "bitmap_construct_agg": "F.bitmap_construct_agg",
+            "bitmap_or_agg": "F.bitmap_or_agg",
         }[function]
 
     def _aggregate_select(
