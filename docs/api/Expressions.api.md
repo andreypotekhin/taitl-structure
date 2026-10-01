@@ -225,6 +225,7 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
 | `raise_error(...)` | `functions.raise_error` | `where(raise_error("unexpected row"))` |
 | `base64(...)`, `unbase64(...)` | `base64`, `unbase64` | `base64(o.payload)` |
 | `encode(...)`, `decode(...)` | `encode`, `decode` | `decode(encode(o.name, charset="UTF-8"), charset="UTF-8")` |
+| `to_binary(...)`, `try_to_binary(...)` | `to_binary`, `try_to_binary` | `to_binary(o.token, format="utf-8")` |
 | `from_json(...)`, `to_json(...)` | `from_json`, `to_json` | `from_json(o.payload_json, as_=Payload)` |
 | `from_csv(...)`, `to_csv(...)` | `from_csv`, `to_csv` | `from_csv(o.payload_csv, as_=Payload)` |
 | `get_json_object(...)` | `get_json_object` | `get_json_object(o.payload_json, "$.customer.id")` |
@@ -313,6 +314,9 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
   `sha2(...)` are deterministic digests of String values, not password-storage primitives.
 - `base64(...)` and `decode(...)` return String values; `unbase64(...)` and `encode(...)` return Binary values.
   `encode(...)` and `decode(...)` accept compiler-visible charset names.
+- `to_binary(...)` and `try_to_binary(...)` accept String expressions and optional literal formats `hex`, `utf-8`,
+  `utf8`, or `base64`; omitted format defaults to `hex`. Both return Binary, while `try_to_binary(...)` is always
+  nullable because conversion failures become null.
 - `from_json(...)` and `from_csv(...)` require an explicit result Schema; `to_json(...)` and `to_csv(...)` require a
   Struct expression. Parsing and rendering results are nullable.
 - `get_json_object(...)` requires a non-empty literal JSON path and returns nullable String. `json_array_length(...)`

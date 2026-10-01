@@ -24,17 +24,18 @@ pytestmark: pytest.MarkDecorator | list[pytest.MarkDecorator] = (
 
 
 @pytest.mark.parametrize(
-    ("maximum", "duplicate", "active_requests", "overflow", "scope_count", "null_score"),
+    ("maximum", "duplicate", "active_requests", "overflow", "scope_count", "null_score", "at_validation_bound"),
     [
-        (0, False, 1, False, 1, False),
-        (1, False, 1, False, 1, False),
-        (3, False, 1, False, 1, False),
-        (3, False, 16, False, 1, False),
-        (3, False, 1, False, 4, False),
-        (3, False, 1, False, 1, True),
-        (1000, False, 1, False, 1, False),
-        (1, True, 1, False, 1, False),
-        (3, False, 1, True, 1, False),
+        (0, False, 1, False, 1, False, False),
+        (1, False, 1, False, 1, False, False),
+        (3, False, 1, False, 1, False, False),
+        (3, False, 16, False, 1, False, False),
+        (3, False, 1, False, 4, False, False),
+        (3, False, 1, False, 1, True, False),
+        (1000, False, 1, False, 1, False, False),
+        (3, False, 1, False, 1, False, True),
+        (1, True, 1, False, 1, False, False),
+        (3, False, 1, True, 1, False, False),
     ],
 )
 def test_i09282601_bounded_request_state_emits_result_after_idle_grace(
@@ -45,6 +46,7 @@ def test_i09282601_bounded_request_state_emits_result_after_idle_grace(
     overflow: bool,
     scope_count: int,
     null_score: bool,
+    at_validation_bound: bool,
 ) -> None:
     """Prototype bounded per-request ranking and processing-time finalization."""
 
@@ -78,7 +80,14 @@ def test_i09282601_bounded_request_state_emits_result_after_idle_grace(
     test_root = Path(tempfile.mkdtemp(prefix="issue-i09282601-", dir=shared_root))
     rows_path = test_root / "request_rows"
     rows_path.mkdir()
-    candidate_count = 10_001 if overflow else (1 if null_score else maximum + 100)
+    if at_validation_bound:
+        candidate_count = maximum_unique_candidates - 3
+    elif overflow:
+        candidate_count = maximum_unique_candidates + 1
+    elif null_score:
+        candidate_count = 1
+    else:
+        candidate_count = maximum + 100
     scores = range(candidate_count, 0, -1) if maximum else (None,)
 
     def write_batch(

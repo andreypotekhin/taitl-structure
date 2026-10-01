@@ -44,7 +44,7 @@ __all__ = [
     "lower", "lpad", "ltrim", "mask", "md5", "crc32", "elt", "format_string", "printf", "substr",
     "minute", "month", "nanvl", "nullif", "nvl", "nvl2", "pow", "regexp_extract", "regexp_replace", "repeat", "replace", "reverse",
     "round", "rpad", "rtrim", "sha1", "sha2", "second", "signum", "split", "sqrt", "substring", "to_csv", "to_date",
-    "to_decimal", "to_json", "to_timestamp", "translate", "trim", "trunc", "unbase64", "decode", "encode", "hex", "unhex", "upper", "ascii", "btrim", "char", "char_length", "date_format", "find_in_set", "format_number", "last_day", "left", "locate", "mask", "octet_length", "overlay", "position", "quarter", "right", "soundex", "split_part", "substring_index", "regexp_count", "regexp_extract_all", "regexp_instr", "regexp_substr", "weekofyear", "bit_count", "bit_get", "getbit",
+    "to_binary", "to_decimal", "to_json", "to_timestamp", "translate", "trim", "trunc", "unbase64", "decode", "encode", "try_to_binary", "hex", "unhex", "upper", "ascii", "btrim", "char", "char_length", "date_format", "find_in_set", "format_number", "last_day", "left", "locate", "mask", "octet_length", "overlay", "position", "quarter", "right", "soundex", "split_part", "substring_index", "regexp_count", "regexp_extract_all", "regexp_instr", "regexp_substr", "weekofyear", "bit_count", "bit_get", "getbit",
     "when", "width_bucket", "xxhash64", "year", "zeroifnull", "acos", "acosh", "asin", "asinh", "atan", "atan2", "atanh", "cbrt", "cos", "cosh", "cot", "csc", "degrees", "e", "expm1", "factorial", "greatest", "hypot", "least", "ln", "log10", "log1p", "log2", "pmod", "pi", "radians", "rint", "sec", "sign", "sin", "sinh", "tan", "tanh", "add_months", "months_between", "next_day", "rand", "randn", "equal_null", "like", "ilike", "regexp", "regexp_like", "rlike", "date_from_unix_date", "unix_date", "weekday", "shiftleft", "shiftright", "shiftrightunsigned", "is_valid_variant", "is_variant_null", "parse_json",
     "schema_of_variant", "to_variant_object", "try_parse_json", "try_variant_get", "variant_get", "variant_literal",
     "variant_array_append", "try_variant_array_append", "variant_insert", "try_variant_insert", "variant_set",
@@ -339,6 +339,37 @@ def decode(value: object, *, charset: str = "UTF-8") -> Expression:
         type=StringType(),
         nullable=argument.nullable,
         data={"function": "decode", "charset": _charset(charset, "decode(...)")},
+        args=(argument,),
+    )
+
+
+def to_binary(value: object, *, format: str | None = None) -> Expression:
+    """Convert text to binary using Spark's literal conversion formats.
+
+    ``format`` accepts ``hex``, ``utf-8``, ``utf8``, or ``base64``. When it
+    is omitted, Spark uses ``hex``. Invalid input raises during Spark
+    evaluation, matching PySpark ``to_binary``.
+    """
+    argument = _string_argument(value, "to_binary(...)")
+    format = _binary_format(format, "to_binary(...)")
+    return Expression(
+        kind="call",
+        type=BinaryType(),
+        nullable=argument.nullable,
+        data={"function": "to_binary", **({"format": format} if format is not None else {})},
+        args=(argument,),
+    )
+
+
+def try_to_binary(value: object, *, format: str | None = None) -> Expression:
+    """Convert text to binary, returning null when Spark cannot convert it."""
+    argument = _string_argument(value, "try_to_binary(...)")
+    format = _binary_format(format, "try_to_binary(...)")
+    return Expression(
+        kind="call",
+        type=BinaryType(),
+        nullable=True,
+        data={"function": "try_to_binary", **({"format": format} if format is not None else {})},
         args=(argument,),
     )
 
@@ -2277,6 +2308,17 @@ def _charset(value: object, call: str) -> str:
     if not isinstance(value, str) or not value:
         raise TypeError(f"{call} charset must be a non-empty string literal")
     return value
+
+
+def _binary_format(value: object, call: str) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str) or not value:
+        raise TypeError(f"{call} format must be one of: hex, utf-8, utf8, base64")
+    normalized = value.lower()
+    if normalized not in {"hex", "utf-8", "utf8", "base64"}:
+        raise TypeError(f"{call} format must be one of: hex, utf-8, utf8, base64")
+    return normalized
 
 
 def _concat_ws_argument(value: object) -> Expression:

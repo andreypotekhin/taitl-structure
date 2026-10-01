@@ -9,7 +9,7 @@ from integration.pyspark.support.rows import rows
 
 from structure import Schema, Transform, input, output, transform
 from structure.lib.testing import assert_online_generated_parity
-from structure.plugin.pyspark import base64, binary, decode, encode, string, unbase64
+from structure.plugin.pyspark import base64, binary, decode, encode, string, to_binary, try_to_binary, unbase64
 
 pytestmark = pytest.mark.integration
 
@@ -30,6 +30,8 @@ class DecodedOutput(Schema):
     payload_text = string(nullable=True)
     text_payload = binary(nullable=True)
     decoded_payload = binary(nullable=True)
+    converted_text = binary(nullable=True)
+    converted_base64 = binary(nullable=True)
 
 
 @transform
@@ -44,6 +46,8 @@ class DecodePayloads(Transform):
             payload_text=decode(row.payload, charset="UTF-8"),
             text_payload=encode(row.text, charset="UTF-8"),
             decoded_payload=unbase64(row.base64_text),
+            converted_text=to_binary(row.text, format="utf-8"),
+            converted_base64=try_to_binary(row.base64_text, format="base64"),
         )
 
 
@@ -60,6 +64,8 @@ def test_v7_binary_encoding_matches_generated_execution_on_live_backend(spark, t
     assert "F.unbase64(" in files[transform_path]
     assert "F.encode(" in files[transform_path]
     assert "F.decode(" in files[transform_path]
+    assert "F.to_binary(" in files[transform_path]
+    assert "F.try_to_binary(" in files[transform_path]
 
     with generated_project(tmp_path, PACKAGE, files):
         generated_schemas = importlib.import_module(f"{PACKAGE}.pyspark.schemas.test_binary_encoding")
@@ -84,10 +90,14 @@ def test_v7_binary_encoding_matches_generated_execution_on_live_backend(spark, t
     assert actual[0]["payload_text"] == "paid"
     assert bytes(cast(bytearray, actual[0]["text_payload"])) == b"ship"
     assert bytes(cast(bytearray, actual[0]["decoded_payload"])) == b"paid"
+    assert bytes(cast(bytearray, actual[0]["converted_text"])) == b"ship"
+    assert bytes(cast(bytearray, actual[0]["converted_base64"])) == b"paid"
     assert actual[1] == {
         "id": "row-2",
         "payload_base64": None,
         "payload_text": None,
         "text_payload": None,
         "decoded_payload": None,
+        "converted_text": None,
+        "converted_base64": None,
     }

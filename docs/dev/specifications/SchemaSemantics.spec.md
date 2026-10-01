@@ -226,11 +226,13 @@ See docs/dev/specifications/SchemaSemantics.spec.md
 declarations, generated schemas, validation, and ordinary projections. They are data values, not file or driver-side
 byte-processing abstractions.
 
-The typed scalar helpers are `base64(value)`, `unbase64(value)`, `encode(value, charset="UTF-8")`, and
-`decode(value, charset="UTF-8")`. Base64 accepts Binary and returns nullable String; unbase64 accepts String and
-returns nullable Binary; encode accepts String and returns nullable Binary; decode accepts Binary and returns nullable
-String. Charset names are non-empty literal canonical names. Invalid base64 and malformed decoding remain capability-
-gated until PySpark target behavior agrees.
+The typed scalar helpers are `base64(value)`, `unbase64(value)`, `encode(value, charset="UTF-8")`,
+`decode(value, charset="UTF-8")`, `to_binary(value, format=...)`, and `try_to_binary(value, format=...)`. Base64
+accepts Binary and returns nullable String; unbase64 accepts String and returns nullable Binary; encode accepts String
+and returns nullable Binary; decode accepts Binary and returns nullable String. `to_binary` and `try_to_binary` accept
+String plus an optional literal format of `hex`, `utf-8`, `utf8`, or `base64`, defaulting to `hex`; `try_to_binary`
+returns null for conversion failure. Charset and binary-format names are non-empty literals. Invalid base64 and
+malformed decoding retain Spark's runtime behavior.
 
 The type mapper, expression checks, capability model, recipes, online evaluator, renderer, explain output, and
 traceability must carry Binary explicitly. Generated code uses public PySpark functions and never logs binary contents.

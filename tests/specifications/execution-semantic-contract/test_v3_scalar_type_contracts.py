@@ -100,6 +100,9 @@ def test_v7_binary_literals_and_encoding_helpers_have_precise_types() -> None:
     decoded = unbase64(encoded)
     text_bytes = encode("paid", charset="UTF-8")
     text = decode(payload, charset="UTF-8")
+    converted = to_binary("70616964", format="hex")
+    base64_converted = to_binary("cGFpZA==", format="BASE64")
+    safe_converted = try_to_binary("not-hex", format="hex")
 
     assert isinstance(payload.type, BinaryType)
     assert payload.data is not None
@@ -112,6 +115,14 @@ def test_v7_binary_literals_and_encoding_helpers_have_precise_types() -> None:
     assert text_bytes.nullable is False
     assert isinstance(text.type, StringType)
     assert text.nullable is False
+    assert isinstance(converted.type, BinaryType)
+    assert converted.nullable is False
+    assert converted.data is not None
+    assert converted.data["format"] == "hex"
+    assert base64_converted.data is not None
+    assert base64_converted.data["format"] == "base64"
+    assert isinstance(safe_converted.type, BinaryType)
+    assert safe_converted.nullable is True
 
 
 def test_v7_binary_encoding_helpers_reject_wrong_types_and_invalid_charsets() -> None:
@@ -123,6 +134,10 @@ def test_v7_binary_encoding_helpers_reject_wrong_types_and_invalid_charsets() ->
         encode("paid", charset="")
     with pytest.raises(TypeError, match="decode\\(\\.\\.\\.\\) requires a Binary Structure expression"):
         decode("paid")
+    with pytest.raises(TypeError, match="to_binary\\(\\.\\.\\.\\) requires a String Structure expression"):
+        to_binary(b"paid")
+    with pytest.raises(TypeError, match="try_to_binary\\(\\.\\.\\.\\) format must be one of"):
+        try_to_binary("paid", format="ascii")
 
 
 def test_v7_schema_carrying_parsing_helpers_have_precise_types_and_options() -> None:

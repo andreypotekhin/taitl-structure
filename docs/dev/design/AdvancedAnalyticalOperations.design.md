@@ -250,8 +250,9 @@ visible; it must never hide Python UDFs or row-wise execution.
 ## Typed Binary, Parsing, and Grouped Mode Families
 
 The deferred PySpark families are admitted only through typed contracts. Binary values use a public immutable Binary
-field type, and base64/charset encoding helpers retain explicit input and output types. Schema-carrying JSON and CSV
-conversion requires a declared output Schema and normalized literal options; it does not infer schemas or accept a free-
+field type, and base64/charset/binary-format encoding helpers retain explicit input and output types. Schema-carrying
+JSON and CSV conversion requires a declared output Schema and normalized literal options; it does not infer schemas or
+accept a free-
 form options dictionary. Grouped `mode(value, deterministic=False)` follows the ordinary aggregate placement rules,
 with deterministic ties lowered through a portable typed Spark expression for the shared PySpark target range.
 

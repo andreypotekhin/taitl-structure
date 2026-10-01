@@ -607,6 +607,12 @@ class RenderPySparkExpression:
             return f"F.{function}({args[0]})"
         if function in {"encode", "decode"}:
             return f"F.{function}({args[0]}, {expression.data['charset']!r})"
+        if function in {"to_binary", "try_to_binary"}:
+            return (
+                f"F.{function}({args[0]})"
+                if "format" not in expression.data
+                else f"F.{function}({args[0]}, F.lit({expression.data['format']!r}))"
+            )
         if function == "from_json":
             schema = self._inline_schema(cast(type, expression.data["schema"]))
             options = cast(dict[str, str], expression.data["options"])

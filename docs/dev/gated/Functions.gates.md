@@ -21,10 +21,10 @@ the gate register searchable without duplicating the full PySpark inventory.
 
 | Scope | Status | Missing contract or boundary |
 | --- | --- | --- |
-| Current-time functions | `design-gated` | Query-time nondeterminism and streaming semantics. |
-| Crypto and encryption helpers | `design-gated` | Key, IV, padding, provider, and failure semantics. |
-| Dynamic JSON schemas | `design-gated` | Output schema must be declared before execution; `json_tuple` has a declared-schema contract. |
-| Sketch and bitmap aggregates | `design-gated` | State, accuracy, mergeability, and result type. |
+| Current-time functions | `candidate` | Implement query-clock metadata and target evidence. |
+| AES-GCM helpers | `candidate` | Implement typed calls, nonce warning, and target evidence. |
+| Dynamic JSON schemas | `caller-owned-guided` | Runtime inference cannot alter a compiled Schema. |
+| Sketch and bitmap aggregates | `design-gated` | Add opaque types, mergeability, persistence, and evidence. |
 | Generic generators and partition transforms | `design-gated` | Schema, aliases, cardinality, and streaming behavior. |
 | Variant mutation helpers | `target-gated` | Released target profile and mutation contract. |
 | `expr` / `call_function` | `unsupported` | Raw SQL removes typed expression ownership. |

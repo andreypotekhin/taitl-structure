@@ -255,6 +255,8 @@ def test_v7_expression_renderer_renders_binary_encoding_helpers() -> None:
         decoded_payload = binary(nullable=True)
         encoded_text = binary(nullable=True)
         decoded_text = string(nullable=True)
+        converted_payload = binary(nullable=True)
+        safe_payload = binary(nullable=True)
 
     @transform
     class Publish(Transform):
@@ -267,6 +269,8 @@ def test_v7_expression_renderer_renders_binary_encoding_helpers() -> None:
                 decoded_payload=unbase64(row.text),
                 encoded_text=encode(row.text, charset="UTF-8"),
                 decoded_text=decode(row.payload, charset="UTF-8"),
+                converted_payload=to_binary(row.text, format="utf-8"),
+                safe_payload=try_to_binary(row.text),
             )
 
     recipe = _recipe(Publish)
@@ -280,6 +284,12 @@ def test_v7_expression_renderer_renders_binary_encoding_helpers() -> None:
     )
     assert render(projection["decoded_text"], scope_aliases={"rows": "raw"}) == (
         'F.decode(F.col("raw.payload"), \'UTF-8\')'
+    )
+    assert render(projection["converted_payload"], scope_aliases={"rows": "raw"}) == (
+        'F.to_binary(F.col("raw.text"), F.lit(\'utf-8\'))'
+    )
+    assert render(projection["safe_payload"], scope_aliases={"rows": "raw"}) == (
+        'F.try_to_binary(F.col("raw.text"))'
     )
 
 

@@ -24,6 +24,7 @@ function a precise gate or caller remedy. It is not a promise to expose arbitrar
 | Scope | Status | Structure work | Migration requirement |
 | --- | --- | --- | --- |
 | Ordering descriptors | `implemented` | Harden validation across consumers. | Preserve direction and null placement. |
+| Binary conversion | `implemented` | Typed `to_binary` and `try_to_binary` with literal formats. | Preserve format and failure behavior. |
 
 ## Implementation Candidates
 
@@ -37,7 +38,9 @@ per verified PySpark function and record the 3.5/4.0 presence explicitly.
 | Time-zone, date-part | candidate | Add typed calls and nullability. | Match units, zones, timestamp types. |
 | Unix timestamp, UTC | candidate | Add typed conversion helpers. | Match units, parsing, null behavior. |
 | `make_*`, safe temporal | candidate | Add constructors and `try_*`. | Match validation and nullable failure. |
-| `to_binary`, `try_to_binary` | candidate | Add format and failure contracts. | Match formats and malformed input. |
+| UTF-8 validation | candidate | Verify String/Binary semantics and invalid-byte behavior. | Preserve spelling or equivalent. |
+| Current-time | candidate | Add typed query-clock calls. | Preserve six spellings and same-query equality. |
+| AES-GCM | candidate | Add typed GCM calls and nonce-risk warning. | Use native PySpark for excluded AES forms. |
 | String aggregation | candidate | Add typed `string_agg`/`listagg`. | Match delimiter, null, order, empty input. |
 | `stack`, typed generators | candidate | Require schema and cardinality. | Match row multiplication, aliases, fields. |
 
@@ -49,10 +52,8 @@ missing contract or native-PySpark remedy before the status can change.
 | Scope | Status | Missing contract or boundary | Migration remedy |
 | --- | --- | --- | --- |
 | `expr` / `call_function` | `unsupported` | Raw SQL removes typed ownership. | Use a native PySpark boundary. |
-| Current-time | `design-gated` | Query-time nondeterminism, streaming. | Use native PySpark where required. |
-| Crypto, encryption | `design-gated` | Key, IV, padding, provider, failure. | Keep security use caller-owned. |
-| Dynamic JSON schema | `design-gated` | Output schema must be declared before execution. | Use declared-schema `json_tuple`, `from_json`, or native PySpark. |
-| Sketch/bitmap aggregates | `design-gated` | State, accuracy, merge, result. | Native PySpark with evidence. |
+| Dynamic JSON | `caller-owned-guided` | Runtime inference cannot alter Schema. | Use declared parsing or native code. |
+| Sketch/bitmap | `design-gated` | Need opaque types, merge, profiles, and evidence. | Use scalar or native code. |
 | Generators, partitions | `design-gated` | Schema, aliases, cardinality, stream. | Typed or native PySpark. |
 | Variant mutation | `target-gated` | Released profile and mutation contract. | Use the profile or native PySpark. |
 | XML/URL/provider/runtime | `design-gated` | Provider ownership, typed results. | Caller-owned integrations. |

@@ -845,6 +845,12 @@ class EvaluatePySparkExpression:
             return getattr(functions, function)(args[0])
         if function in {"encode", "decode"}:
             return getattr(functions, function)(args[0], expression.data["charset"])
+        if function in {"to_binary", "try_to_binary"}:
+            return (
+                getattr(functions, function)(args[0])
+                if "format" not in expression.data
+                else getattr(functions, function)(args[0], functions.lit(expression.data["format"]))
+            )
         if function == "from_json":
             schema = self._schema.materialize()(cast(type, expression.data["schema"]))
             options = expression.data["options"]
