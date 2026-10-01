@@ -209,6 +209,7 @@ COMMON_CAPABILITIES = frozenset(
         ("generator", "explode_outer_map"),
         ("generator", "posexplode_map"),
         ("generator", "posexplode_outer_map"),
+        ("generator", "json_tuple"),
         ("relation", "hierarchy_closure"),
         ("relation", "hierarchy_fallbacks"),
         ("relation", "limit"),

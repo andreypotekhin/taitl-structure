@@ -12,6 +12,7 @@ from structure.plugin.pyspark.dsl.generators import explode_outer_struct as _exp
 from structure.plugin.pyspark.dsl.generators import explode_struct as _explode_struct
 from structure.plugin.pyspark.dsl.generators import inline_outer_struct as _inline_outer_struct
 from structure.plugin.pyspark.dsl.generators import inline_struct as _inline_struct
+from structure.plugin.pyspark.dsl.generators import json_tuple as _json_tuple
 from structure.plugin.pyspark.dsl.generators import posexplode_array as _posexplode_array
 from structure.plugin.pyspark.dsl.generators import posexplode_map as _posexplode_map
 from structure.plugin.pyspark.dsl.generators import posexplode_outer_array as _posexplode_outer_array
@@ -67,6 +68,10 @@ def inline_struct(*args: object, **kwargs: object) -> Any:
 
 def inline_outer_struct(*args: object, **kwargs: object) -> Any:
     return cast(Any, _inline_outer_struct)(*args, **kwargs)
+
+
+def json_tuple(*args: object, **kwargs: object) -> Any:
+    return cast(Any, _json_tuple)(*args, **kwargs)
 
 
 def posexplode_struct(*args: object, **kwargs: object) -> Any:
@@ -156,7 +161,7 @@ ntile offset order_by param_join percent_rank percentile pi posexplode_array pos
 sample sec select_first_qualified signum sin sinh slice sha1 sha2 second rand randn radians rint right_join rollup row_number rowset_join rows_between rolling_avg rolling_max position sort_array split_part elt format_string printf substr
 rolling_min rolling_sum scan subtract sum sum_distinct stddev sqrt size sequence session_window skewness split translate substring temporal_one next_day
 to_csv to_decimal to_date to_json to_timestamp TimeWindow trim trunc try_element_at unbase64 union_all union_by_name upper unbounded_following unbounded_preceding hex unhex cardinality weekofyear
-variance var_pop var_samp stddev_pop stddev_samp when width_bucket year xxhash64 zeroifnull where watermark window window_avg window_bool_and window_bool_or rpad repeat replace right sign tan tanh
+variance var_pop var_samp stddev_pop stddev_samp when width_bucket year xxhash64 zeroifnull where watermark window window_avg window_bool_and window_bool_or rpad repeat replace right sign tan tanh json_tuple
 window_time
 window_collect_list window_collect_set window_count window_count_distinct window_max window_min window_sum
 window_stddev window_variance is_valid_variant is_variant_null octet_length parse_json schema_of_csv schema_of_json schema_of_variant schema_of_variant_agg substring_index
@@ -332,6 +337,7 @@ __all__ = [  # noqa: F405
     "get_json_object",
     "json_array_length",
     "json_object_keys",
+    "json_tuple",
     "schema_of_csv",
     "schema_of_json",
     "get",

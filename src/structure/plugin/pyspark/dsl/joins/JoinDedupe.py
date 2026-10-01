@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from structure.plugin.pyspark.dsl.Expression import is_orderable_type
 from structure.plugin.pyspark.dsl.joins.TiePolicy import TiePolicy
 from structure.plugin.pyspark.dsl.options import tie_policy
 
@@ -30,9 +31,7 @@ class JoinDedupe:
                 f"JoinDedupe.{direction}_by(order_by=...) requires an unordered expression; "
                 f"{direction}_by(...) selects the ordering direction"
             )
-        if getattr(order_by.type, "name", None) not in {
-            "date", "decimal", "double", "float", "integer", "long", "string", "timestamp",
-        }:
+        if not is_orderable_type(order_by.type):
             raise TypeError(f"JoinDedupe.{direction}_by(order_by=...) requires an orderable scalar expression")
         return JoinDedupe(
             order_by=order_by,

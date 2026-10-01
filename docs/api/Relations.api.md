@@ -23,6 +23,8 @@ streaming schema-evolution gate are called out below.
   The name must be a unique, non-empty Python identifier within the step.
 - `order_by(...)` requires at least one orderable expression. `limit(...)` and `offset(...)` require a preceding
   `order_by(...)` and non-negative integer literals; later row-shaping operations cannot silently preserve that order.
+- `order_by(...)` and `repartition_by_range(...)` accept raw orderable expressions or any of the six typed ordering
+  descriptors. Invalid descriptor operands fail during Structure compilation.
 - `repartition_by_range(count, *orderings)` redistributes the current rowset into `count` range partitions using one
   or more typed order expressions. `count` must be a positive integer literal. The operation preserves rows and
   schema, but it does not promise the final materialized row order; use `order_by(...)` when output order matters.

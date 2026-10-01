@@ -14,6 +14,7 @@ from structure.plugin.pyspark.execution.logic.expressions.EvaluatePySparkExpress
 from structure.plugin.pyspark.execution.logic.InvokePySparkHooks import InvokePySparkHooks
 from structure.plugin.pyspark.execution.logic.PlanBoundary import apply_plan_boundary
 from structure.plugin.pyspark.execution.logic.PolicyChecks import reuse_policy_checks, singleton_policy
+from structure.plugin.pyspark.execution.logic.running.RunOnlinePySparkJsonTuple import RunOnlinePySparkJsonTuple
 from structure.plugin.pyspark.execution.logic.running.RunOnlinePySparkMapGenerator import RunOnlinePySparkMapGenerator
 from structure.plugin.pyspark.execution.logic.running.RunOnlinePySparkScalarGenerator import (
     RunOnlinePySparkScalarGenerator,
@@ -33,6 +34,7 @@ class RunOnlinePySparkTransform:
         self._struct_generators = RunOnlinePySparkStructGenerator()
         self._scalar_generators = RunOnlinePySparkScalarGenerator()
         self._map_generators = RunOnlinePySparkMapGenerator()
+        self._json_tuple_generator = RunOnlinePySparkJsonTuple()
         self._validator = ValidatePySparkFrame()
         self._backend_target = ">=3.5,<4.1"
 
@@ -379,6 +381,8 @@ class RunOnlinePySparkTransform:
                 and operation.map_generator is not None
             ):
                 df = self._map_generator(step, df, operation.map_generator, functions=functions, types=types)
+            if operation.kind == "json_tuple" and operation.json_tuple is not None:
+                df = self._json_tuple_operation(step, df, operation.json_tuple, functions=functions)
             if operation.kind == "ordered_timeline_scan" and operation.ordered_timeline_scan is not None:
                 df = self._ordered_timeline_scan(
                     step,
@@ -757,6 +761,11 @@ class RunOnlinePySparkTransform:
         aliases = self._scope_aliases(step)
         value = self._expressions.evaluate(generator.expression, functions=functions, aliases=aliases)
         return self._map_generators(frame, generator, functions=functions, types=types, value=value)
+
+    def _json_tuple_operation(self, step, frame, generator, *, functions):
+        aliases = self._scope_aliases(step)
+        value = self._expressions.evaluate(generator.expression, functions=functions, aliases=aliases)
+        return self._json_tuple_generator(frame, generator, functions=functions, value=value)
 
     def _ordered_timeline_scan(self, step, frame, scan, *, functions, types):
         prefix = f"__structure_{scan.scope.strip('_')}"
@@ -1938,6 +1947,8 @@ class RunOnlinePySparkTransform:
                 aliases[operation.scalar_generator.scope] = ""
             if operation.map_generator is not None:
                 aliases[operation.map_generator.scope] = ""
+            if operation.json_tuple is not None:
+                aliases[operation.json_tuple.scope] = ""
             if operation.ordered_timeline_scan is not None:
                 aliases[operation.ordered_timeline_scan.row_scope] = ""
                 aliases[operation.ordered_timeline_scan.scope] = ""

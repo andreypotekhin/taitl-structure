@@ -46,6 +46,7 @@ class BuildPySparkUdfDiagnostics:
                 for operation in body.operations
                 if operation.posexplode_struct is not None
             ),
+            *(operation.json_tuple.expression for operation in body.operations if operation.json_tuple is not None),
             *(
                 operation.scalar_generator.expression
                 for operation in body.operations

@@ -7,6 +7,19 @@ This document records API work intentionally deferred after the current gate rev
 
 The following items remain future work or caller-owned guidance:
 
+## SQL Baseline Deferred Index
+
+Function-level migration rows are maintained in [PySpark SQL Baseline Gaps](../gaps/PySpark-SQL-baseline.gaps.md). Use
+this table for deferred SQL-family direction; the gap register remains the source for exact PySpark names and remedies.
+
+| Scope | Status | Deferred direction |
+| --- | --- | --- |
+| Dynamic JSON schemas | `design-gated` | Define a schema before execution; declared-schema `json_tuple` is supported separately. |
+| Sketch and bitmap aggregates | `design-gated` | Define state, accuracy, mergeability, and result contracts. |
+| Generic generators and partition transforms | `design-gated` | Define schema, aliases, cardinality, streaming. |
+| XML, URL, provider, and runtime APIs | `design-gated` | Define provider ownership and typed result contracts. |
+| Variant mutation helpers | `target-gated` | Define released target profile and mutation semantics. |
+
 ## Non-Streaming Gates
 
 ### XML Helpers

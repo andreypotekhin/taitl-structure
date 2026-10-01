@@ -353,6 +353,13 @@ class MapPySparkStep:
                         operation,
                     )
                 )
+            if operation.kind == "json_tuple" and operation.json_tuple is not None:
+                recipes.append(
+                    self._operation_modes(
+                        self._generators.json_tuple(operation.json_tuple, capabilities=capabilities),
+                        operation,
+                    )
+                )
             if operation.kind == "ordered_timeline_scan" and operation.ordered_timeline_scan is not None:
                 scan = operation.ordered_timeline_scan
                 recipes.append(

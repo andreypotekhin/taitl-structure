@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from structure.plugin.api.v1.model import StreamingFinding
+from structure.plugin.pyspark.compiler.model.PySparkJsonTupleRecipe import PySparkJsonTupleRecipe
 from structure.plugin.pyspark.compiler.model.PySparkMapGeneratorRecipe import PySparkMapGeneratorRecipe
 from structure.plugin.pyspark.compiler.model.PySparkPosexplodeStructRecipe import PySparkPosexplodeStructRecipe
 from structure.plugin.pyspark.compiler.model.PySparkScalarGeneratorRecipe import PySparkScalarGeneratorRecipe
@@ -27,5 +28,12 @@ class ClassifyGeneratorStreamingCompatibility:
         self,
         step: str,
         generator: PySparkMapGeneratorRecipe,
+    ) -> tuple[StreamingFinding, ...]:
+        return ()
+
+    def json_tuple(
+        self,
+        step: str,
+        generator: PySparkJsonTupleRecipe,
     ) -> tuple[StreamingFinding, ...]:
         return ()

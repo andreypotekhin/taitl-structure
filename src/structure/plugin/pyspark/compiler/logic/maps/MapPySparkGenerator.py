@@ -2,10 +2,12 @@ from __future__ import annotations
 
 from structure.plugin.api.v1.model import BackendCapabilities
 from structure.plugin.pyspark.compiler.logic.maps.MapPySparkExpression import MapPySparkExpression
+from structure.plugin.pyspark.compiler.model.PySparkJsonTupleRecipe import PySparkJsonTupleRecipe
 from structure.plugin.pyspark.compiler.model.PySparkMapGeneratorRecipe import PySparkMapGeneratorRecipe
 from structure.plugin.pyspark.compiler.model.PySparkOperationRecipe import PySparkOperationRecipe
 from structure.plugin.pyspark.compiler.model.PySparkPosexplodeStructRecipe import PySparkPosexplodeStructRecipe
 from structure.plugin.pyspark.compiler.model.PySparkScalarGeneratorRecipe import PySparkScalarGeneratorRecipe
+from structure.plugin.pyspark.dsl.operations.JsonTuplePlan import JsonTuplePlan
 from structure.plugin.pyspark.dsl.operations.MapGeneratorPlan import MapGeneratorPlan
 from structure.plugin.pyspark.dsl.operations.PosexplodeStructPlan import PosexplodeStructPlan
 from structure.plugin.pyspark.dsl.operations.ScalarGeneratorPlan import ScalarGeneratorPlan
@@ -82,3 +84,17 @@ class MapPySparkGenerator:
             outer=generator.outer,
         )
         return getattr(PySparkOperationRecipe, f"{generator.function}_map_operation")(recipe)
+
+    def json_tuple(
+        self,
+        generator: JsonTuplePlan,
+        *,
+        capabilities: BackendCapabilities,
+    ) -> PySparkOperationRecipe:
+        recipe = PySparkJsonTupleRecipe(
+            expression=self._expressions.map(generator.expression, capabilities=capabilities),
+            scope=generator.scope,
+            schema=generator.schema,
+            fields=generator.fields,
+        )
+        return PySparkOperationRecipe.json_tuple_operation(recipe)

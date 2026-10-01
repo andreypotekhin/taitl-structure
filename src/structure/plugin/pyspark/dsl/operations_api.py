@@ -22,7 +22,7 @@ import structure.plugin.pyspark.dsl.options as options
 from structure.dsl import FieldDeclaration, Schema
 from structure.plugin.api.v1.model import SymbolicContext
 from structure.plugin.api.v1.model import current_symbolic_context as current_context
-from structure.plugin.pyspark.dsl.Expression import Expression
+from structure.plugin.pyspark.dsl.Expression import Expression, is_order_direction, is_orderable_type
 from structure.plugin.pyspark.dsl.expressions import literal
 from structure.plugin.pyspark.dsl.joins import TiePolicy
 from structure.plugin.pyspark.dsl.operations import (
@@ -1385,8 +1385,10 @@ def _ordered_aggregate_key(value: object, call: str) -> Expression:
     expression = literal(value)
     if expression.kind == "order":
         direction = expression.data["direction"] if expression.data is not None else None
-        if not isinstance(direction, str) or direction not in {"asc", "desc"}:
+        if not is_order_direction(direction) or direction not in {"asc", "desc"}:
             raise TypeError(f"{call} order_by supports asc() or desc() only")
+        if not is_orderable_type(expression.type):
+            raise TypeError(f"{call} order_by requires an orderable scalar expression")
         return expression
     return _orderable_expression(expression, f"{call} order_by")
 
@@ -1751,17 +1753,12 @@ def _avg_type(argument: Expression) -> StructureType:
 
 def _orderable_expression(value: object, call: str) -> Expression:
     argument = literal(value)
-    if argument.type is None or argument.type.name not in {
-        "date",
-        "decimal",
-        "double",
-        "float",
-        "integer",
-        "long",
-        "string",
-        "timestamp",
-    }:
+    if not is_orderable_type(argument.type):
         raise TypeError(f"{call} requires an orderable scalar expression")
+    if argument.kind == "order":
+        direction = argument.data["direction"] if argument.data is not None else None
+        if not is_order_direction(direction):
+            raise TypeError(f"{call} requires a valid ordering descriptor")
     return argument
 
 

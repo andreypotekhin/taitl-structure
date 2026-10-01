@@ -8,6 +8,7 @@ from structure.plugin.pyspark.compiler.model.PySparkDuplicateRowsRecipe import P
 from structure.plugin.pyspark.compiler.model.PySparkExactlyOneRecipe import PySparkExactlyOneRecipe
 from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.plugin.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoinRecipe
+from structure.plugin.pyspark.compiler.model.PySparkJsonTupleRecipe import PySparkJsonTupleRecipe
 from structure.plugin.pyspark.compiler.model.PySparkMapGeneratorRecipe import PySparkMapGeneratorRecipe
 from structure.plugin.pyspark.compiler.model.PySparkMaterializationRecipe import (
     PySparkCheckpointRecipe,
@@ -48,6 +49,7 @@ class PySparkOperationRecipe:
     duplicate_rows: PySparkDuplicateRowsRecipe | None = None
     exactly_one: PySparkExactlyOneRecipe | None = None
     posexplode_struct: PySparkPosexplodeStructRecipe | None = None
+    json_tuple: PySparkJsonTupleRecipe | None = None
     scalar_generator: PySparkScalarGeneratorRecipe | None = None
     map_generator: PySparkMapGeneratorRecipe | None = None
     ordered_timeline_scan: PySparkOrderedTimelineScanRecipe | None = None
@@ -99,6 +101,10 @@ class PySparkOperationRecipe:
     @staticmethod
     def posexplode_struct_operation(posexplode_struct: PySparkPosexplodeStructRecipe) -> "PySparkOperationRecipe":
         return PySparkOperationRecipe(kind="posexplode_struct", posexplode_struct=posexplode_struct)
+
+    @staticmethod
+    def json_tuple_operation(json_tuple: PySparkJsonTupleRecipe) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="json_tuple", json_tuple=json_tuple)
 
     @staticmethod
     def posexplode_outer_struct_operation(

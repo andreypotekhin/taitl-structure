@@ -13,6 +13,8 @@ See the user-facing summary in [API.md](../API.md) and the unified API status ta
 
 Current cross-family design gates are registered in [API Catalog gates](gated/ApiCatalog.gates.md), and
 function-specific design gates are indexed in [Function Gates](gated/Functions.gates.md).
+The function-level migration gap tables are maintained in
+[PySpark SQL Baseline Gaps](gaps/PySpark-SQL-baseline.gaps.md).
 
 ## Status
 
@@ -127,7 +129,7 @@ intentionally more explicit; “open” names the remaining PySpark functions or
 | Date and timestamp | partial | `add_months`, `date_add`, `date_sub`, `date_format`, `date_from_unix_date`, `datediff`, `date_trunc`, `months_between`, `trunc`, `unix_date`, `weekday`, calendar extraction including `dayofweek`, `dayofyear`, `hour`, `next_day`, `quarter`, `weekofyear`, `last_day`, and date/timestamp parsing | timezone/current-time functions, date part/name helpers, Unix timestamp/UTC conversion, `make_*` constructors, timestamp arithmetic/construction, and `try_*` temporal helpers. |
 | Bitwise and binary | partial | typed Column bitwise methods, SQL `bit_count`, `bit_get`, `getbit`, `shiftleft`, `shiftright`, `shiftrightunsigned`, `base64`, `unbase64`, `encode`, `decode`, `hex`, `unhex` | `to_binary`, `try_to_binary`, and UTF-8/binary validation helpers. |
 | Hash | implemented | `hash`, `xxhash64`, `crc32`, `md5`, `sha1`, `sha2` | Hashes remain non-identity and non-password-storage primitives; CRC-32 is a checksum rather than a cryptographic digest. |
-| JSON and CSV | partial | Schema-carrying `from_json`, `to_json`, `from_csv`, `to_csv`, typed `get_json_object`, `json_array_length`, `json_object_keys`, and literal `schema_of_json`/`schema_of_csv` | `json_tuple` remains deferred until multi-column output schemas are supported; dynamic schema inference remains unsupported. |
+| JSON and CSV | partial | Schema-carrying `from_json`, `to_json`, `from_csv`, `to_csv`, typed `get_json_object`, `json_array_length`, `json_object_keys`, declared-schema `json_tuple`, and literal `schema_of_json`/`schema_of_csv` | `json_tuple` is top-level and nullable-string-only; dynamic schema inference remains unsupported. |
 | Arrays and higher-order functions | implemented | Typed array construction, lookup, mutation, set, concatenation, size, join, extrema, overlap, sort, shuffle, `sequence`, `slice`, `reduce`, `arrays_zip`, and symbolic callbacks through `arr_*`/`array_*` | Remaining baseline callback/array aliases require only a parity decision; stable `array_N` field names keep `arrays_zip` schema-visible. |
 | Struct and map | implemented | Typed `create_map`, `map_from_arrays`, `str_to_map`, `named_struct`, map lookup/entries/callbacks; schema constructors own declared struct shape | Map keys are non-null, `str_to_map` delimiters are non-empty literals, and `named_struct` field names are unique non-empty literals. |
 | Aggregates | partial | Core, boolean, statistical, `count_if`, `median`, population/sample standard-deviation and variance aliases, percentile, collection, deterministic `mode`, `any_value`, `array_agg`, bitwise, `first`/`last`, `max_by`/`min_by`, `product`, `sum_distinct`, and regression aggregates | String aggregation and sketch/bitmap aggregates remain open or design-gated. |

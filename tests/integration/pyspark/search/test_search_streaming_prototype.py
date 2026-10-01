@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import bisect
 import json
+import math
 import shutil
 import tempfile
 import time
@@ -23,20 +24,27 @@ pytestmark: pytest.MarkDecorator | list[pytest.MarkDecorator] = (
 
 
 @pytest.mark.parametrize(
-    ("maximum", "duplicate", "active_requests", "overflow", "scope_count"),
+    ("maximum", "duplicate", "active_requests", "overflow", "scope_count", "null_score"),
     [
-        (0, False, 1, False, 1),
-        (1, False, 1, False, 1),
-        (3, False, 1, False, 1),
-        (3, False, 16, False, 1),
-        (3, False, 1, False, 4),
-        (1000, False, 1, False, 1),
-        (1, True, 1, False, 1),
-        (3, False, 1, True, 1),
+        (0, False, 1, False, 1, False),
+        (1, False, 1, False, 1, False),
+        (3, False, 1, False, 1, False),
+        (3, False, 16, False, 1, False),
+        (3, False, 1, False, 4, False),
+        (3, False, 1, False, 1, True),
+        (1000, False, 1, False, 1, False),
+        (1, True, 1, False, 1, False),
+        (3, False, 1, True, 1, False),
     ],
 )
 def test_i09282601_bounded_request_state_emits_result_after_idle_grace(
-    spark, maximum: int, duplicate: bool, active_requests: int, overflow: bool, scope_count: int
+    spark,
+    maximum: int,
+    duplicate: bool,
+    active_requests: int,
+    overflow: bool,
+    scope_count: int,
+    null_score: bool,
 ) -> None:
     """Prototype bounded per-request ranking and processing-time finalization."""
 
@@ -70,7 +78,7 @@ def test_i09282601_bounded_request_state_emits_result_after_idle_grace(
     test_root = Path(tempfile.mkdtemp(prefix="issue-i09282601-", dir=shared_root))
     rows_path = test_root / "request_rows"
     rows_path.mkdir()
-    candidate_count = 10_001 if overflow else maximum + 100
+    candidate_count = 10_001 if overflow else (1 if null_score else maximum + 100)
     scores = range(candidate_count, 0, -1) if maximum else (None,)
 
     def write_batch(
@@ -90,8 +98,8 @@ def test_i09282601_bounded_request_state_emits_result_after_idle_grace(
                         "request_deadline": row_deadline.isoformat(timespec="milliseconds").replace("+00:00", "Z"),
                     }
                 )
-                for active_request, experiment_id, band_id in scope_keys
                 for document_id, score in batch_scores
+                for active_request, experiment_id, band_id in scope_keys
             ),
             encoding="utf-8",
         )
@@ -99,10 +107,15 @@ def test_i09282601_bounded_request_state_emits_result_after_idle_grace(
     base_candidates: list[tuple[str | None, float | None]] = [
         (f"d-{score:04d}", float(score)) for score in scores if score is not None
     ] or [(None, None)]
-    if maximum:
+    if null_score:
+        base_candidates.append(("d-null-score", None))
+    if maximum and not null_score:
         tie_score = float(candidate_count + 1)
         base_candidates.extend((("tie-z", tie_score), ("tie-a", tie_score)))
     write_batch("batch-1.json", base_candidates)
+    if maximum and not overflow:
+        batch_two = [("d-0001", -1.0)] if duplicate else [("a-late", float(maximum + 1000))]
+        write_batch("batch-2.json", batch_two)
 
     input_schema = StructType(
         [
@@ -123,6 +136,9 @@ def test_i09282601_bounded_request_state_emits_result_after_idle_grace(
             StructField("document_id", StringType(), nullable=True),
             StructField("score", DoubleType(), nullable=True),
             StructField("is_final", BooleanType(), nullable=False),
+            StructField("retained_candidate_count", IntegerType(), nullable=False),
+            StructField("validated_id_count", IntegerType(), nullable=False),
+            StructField("serialized_state_bytes", IntegerType(), nullable=False),
         ]
     )
     state_schema = StructType(
@@ -140,16 +156,24 @@ def test_i09282601_bounded_request_state_emits_result_after_idle_grace(
                 return iter(())
             state.update(("{}", True))
             state.setTimeoutDuration(10_000)
-            candidates = [tuple(candidate) for candidate in json.loads(payload_json).get("candidates", [])]
+            payload = json.loads(payload_json)
+            candidates = [tuple(candidate) for candidate in payload.get("candidates", [])]
+            candidates.sort()
+            state_metrics = {
+                "retained_candidate_count": len(candidates),
+                "validated_id_count": len(payload.get("seen_ids", [])),
+                "serialized_state_bytes": len(payload_json.encode("utf-8")),
+            }
             final_rows = [
                 {
                     "request_id": key[0],
                     "experiment_id": key[1],
                     "band_id": key[2],
                     "rank": rank,
-                    "document_id": candidate[1],
-                    "score": -candidate[0],
+                    "document_id": candidate[2],
+                    "score": candidate[3],
                     "is_final": True,
+                    **state_metrics,
                 }
                 for rank, candidate in enumerate(candidates, start=1)
             ] or [
@@ -161,6 +185,7 @@ def test_i09282601_bounded_request_state_emits_result_after_idle_grace(
                     "document_id": None,
                     "score": None,
                     "is_final": True,
+                    **state_metrics,
                 }
             ]
             return iter((pd.DataFrame(final_rows),))
@@ -173,7 +198,7 @@ def test_i09282601_bounded_request_state_emits_result_after_idle_grace(
             return iter(())
         for batch in batches:
             for _, _, _, document_id, score, _ in batch.itertuples(index=False, name=None):
-                if document_id is not None:
+                if not pd.isna(document_id):
                     if document_id in seen_ids:
                         raise ValueError(f"Duplicate candidate key for scope {key!r}: {document_id!r}")
                     seen_ids.add(document_id)
@@ -182,14 +207,16 @@ def test_i09282601_bounded_request_state_emits_result_after_idle_grace(
                             f"Request exceeds the declared candidate bound of {maximum_unique_candidates}."
                         )
                     if maximum:
-                        bisect.insort(candidates, (-float(score), document_id))
+                        score = None if score is None or math.isnan(score) else float(score)
+                        sort_key = (score is None, -score if score is not None else 0.0, document_id, score)
+                        bisect.insort(candidates, sort_key)
                         if len(candidates) > maximum:
                             candidates.pop()
         state.update((json.dumps({"candidates": candidates, "seen_ids": sorted(seen_ids)}), False))
         state.setTimeoutDuration(grace_seconds * 1_000)
         return iter(())
 
-    source = spark.readStream.schema(input_schema).json(str(rows_path))
+    source = spark.readStream.schema(input_schema).option("maxFilesPerTrigger", 1).json(str(rows_path))
     live_rows = source.where(F.col("request_deadline") > F.current_timestamp())
     result = live_rows.groupBy("request_id", "experiment_id", "band_id").applyInPandasWithState(
         top_k,
@@ -210,7 +237,6 @@ def test_i09282601_bounded_request_state_emits_result_after_idle_grace(
     try:
         observed = []
         wait_until = time.monotonic() + 35
-        late_batch_written = False
         while time.monotonic() < wait_until:
             observed = [row.asDict() for row in spark.table(query_name).collect()]
             failure = query.exception()
@@ -221,12 +247,6 @@ def test_i09282601_bounded_request_state_emits_result_after_idle_grace(
                     return
             elif failure is not None:
                 raise AssertionError(f"State prototype failed: {failure}")
-            progress = query.lastProgress
-            if maximum and not overflow and not late_batch_written and progress is not None:
-                if progress["numInputRows"] > 0:
-                    batch_two = [("d-0001", -1.0)] if duplicate else [("a-late", float(maximum + 1000))]
-                    write_batch("batch-2.json", batch_two)
-                    late_batch_written = True
             finalized_scopes = {
                 (row["request_id"], row["experiment_id"], row["band_id"])
                 for row in observed
@@ -241,7 +261,7 @@ def test_i09282601_bounded_request_state_emits_result_after_idle_grace(
         assert observed, "Idle requests did not receive final results before the deadline."
         expected_per_scope = maximum or 1
         assert len(observed) == expected_per_scope * len(scope_keys)
-        expected_by_scope: dict[tuple[str, str, str], list[tuple[int, str]]] = {}
+        expected_by_scope: dict[tuple[str, str, str], list[tuple[int, str, float | None]]] = {}
         if maximum:
             from pyspark.sql import Window
 
@@ -258,7 +278,7 @@ def test_i09282601_bounded_request_state_emits_result_after_idle_grace(
             )
             for row in oracle_rows:
                 scope_key = (row["request_id"], row["experiment_id"], row["band_id"])
-                expected_by_scope.setdefault(scope_key, []).append((row["rank"], row["document_id"]))
+                expected_by_scope.setdefault(scope_key, []).append((row["rank"], row["document_id"], row["score"]))
         rows_by_scope = {
             scope_key: [
                 row
@@ -267,15 +287,39 @@ def test_i09282601_bounded_request_state_emits_result_after_idle_grace(
             ]
             for scope_key in scope_keys
         }
+        state_observations = []
         for scope_key, request_rows in rows_by_scope.items():
+            observed_state = {
+                (
+                    row["retained_candidate_count"],
+                    row["validated_id_count"],
+                    row["serialized_state_bytes"],
+                )
+                for row in request_rows
+            }
+            assert len(observed_state) == 1
+            retained_count, validated_count, serialized_bytes = observed_state.pop()
+            state_observations.append((retained_count, validated_count, serialized_bytes))
+            assert retained_count <= maximum
+            assert validated_count <= maximum_unique_candidates
+            assert serialized_bytes > 0
+            expected_validated_count = 0 if not maximum else (3 if null_score else candidate_count + 3)
+            assert validated_count == expected_validated_count
             if maximum:
-                actual = [row["document_id"] for row in sorted(request_rows, key=lambda row: row["rank"])]
-                expected = [document_id for _, document_id in sorted(expected_by_scope[scope_key])]
+                actual = [
+                    (row["document_id"], row["score"])
+                    for row in sorted(request_rows, key=lambda row: row["rank"])
+                ]
+                expected = [
+                    (document_id, score)
+                    for _, document_id, score in sorted(expected_by_scope[scope_key])
+                ]
+                assert retained_count == len(expected)
                 if actual != expected:
                     pytest.fail(
-                        f"Scope {scope_key!r} expected {len(expected)} ranked IDs but received {len(actual)}; "
-                        f"missing={sorted(set(expected) - set(actual))[:5]!r}; "
-                        f"unexpected={sorted(set(actual) - set(expected))[:5]!r}; "
+                        f"Scope {scope_key!r} expected {len(expected)} ranked candidates but received "
+                        f"{len(actual)}; missing={sorted(set(expected) - set(actual), key=str)[:5]!r}; "
+                        f"unexpected={sorted(set(actual) - set(expected), key=str)[:5]!r}; "
                         f"actual_prefix={actual[:5]!r}; expected_prefix={expected[:5]!r}"
                     )
             else:
@@ -285,6 +329,12 @@ def test_i09282601_bounded_request_state_emits_result_after_idle_grace(
         write_batch("batch-late.json", [("after-final", float(maximum + 2000))], expired_deadline)
         time.sleep(1)
         assert [row.asDict() for row in spark.table(query_name).collect()] == observed
+        print(
+            "Prototype final state maxima: "
+            f"candidates={max(item[0] for item in state_observations)}, "
+            f"validated IDs={max(item[1] for item in state_observations)}, "
+            f"serialized bytes={max(item[2] for item in state_observations)}"
+        )
     finally:
         query.stop()
         shutil.rmtree(test_root, ignore_errors=True)

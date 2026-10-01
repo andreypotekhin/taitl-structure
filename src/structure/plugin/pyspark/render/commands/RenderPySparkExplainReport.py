@@ -158,11 +158,7 @@ class RenderPySparkExplainReport:
         if not findings:
             return ()
         optimization = next(
-            (
-                trace.detail
-                for trace in recipe.optimizations
-                if trace.kind == "projection-union-fusion"
-            ),
+            (trace.detail for trace in recipe.optimizations if trace.kind == "projection-union-fusion"),
             None,
         )
         states: list[str] = []
@@ -238,6 +234,8 @@ class RenderPySparkExplainReport:
             return f"exactly_one(row_preserving scope={operation.exactly_one.scope})"
         if operation.posexplode_struct is not None:
             return self._generators.posexplode_struct(operation.posexplode_struct)
+        if operation.json_tuple is not None:
+            return self._generators.json_tuple(operation.json_tuple)
         if operation.scalar_generator is not None:
             return self._generators.scalar_array(operation.scalar_generator)
         if operation.map_generator is not None:

@@ -107,6 +107,8 @@ the current `order` row scope as `o`.
 - `count_if(...)` accepts a Boolean expression and returns a non-null Long. `median(...)` and the population/sample
   standard-deviation and variance aliases return nullable Double values.
 - `collect_list(...)` and `collect_set(...)` skip null inputs and return an empty non-null array when no values qualify.
+  Ordered `collect_list(...)` accepts `asc()` or `desc()` descriptors; null-placement descriptors are rejected by its
+  narrower cross-version contract.
 - `first_value(...)` and `last_value(...)` aggregate forms require a scalar `order_by=` and currently use
   `"error"`; `ignore_nulls=` is supported only with `over=`.
 - A filtered `first_value(...)` or `last_value(...)` masks nonqualifying order keys, so an excluded row cannot become

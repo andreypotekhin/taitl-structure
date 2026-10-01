@@ -51,6 +51,8 @@ class ValidatePySparkRelationReads:
                     self._validate(relations, joined, reads, request)
             if operation.kind == "posexplode_struct" and operation.posexplode_struct is not None:
                 self._validate(relations, joined, self._scopes(operation.posexplode_struct.expression), request)
+            if operation.kind == "json_tuple" and operation.json_tuple is not None:
+                self._validate(relations, joined, self._scopes(operation.json_tuple.expression), request)
             if operation.scalar_generator is not None:
                 self._validate(relations, joined, self._scopes(operation.scalar_generator.expression), request)
             if operation.map_generator is not None:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from structure.plugin.pyspark.compiler.model.PySparkJsonTupleRecipe import PySparkJsonTupleRecipe
 from structure.plugin.pyspark.compiler.model.PySparkMapGeneratorRecipe import PySparkMapGeneratorRecipe
 from structure.plugin.pyspark.compiler.model.PySparkPosexplodeStructRecipe import PySparkPosexplodeStructRecipe
 from structure.plugin.pyspark.compiler.model.PySparkScalarGeneratorRecipe import PySparkScalarGeneratorRecipe
@@ -18,3 +19,6 @@ class RenderPySparkGeneratorExplain:
 
     def map(self, generator: PySparkMapGeneratorRecipe) -> str:
         return f"{generator.function}_map(row_multiplying scope={generator.scope} schema={generator.schema.__name__})"
+
+    def json_tuple(self, generator: PySparkJsonTupleRecipe) -> str:
+        return f"json_tuple(row_preserving scope={generator.scope} schema={generator.schema.__name__})"

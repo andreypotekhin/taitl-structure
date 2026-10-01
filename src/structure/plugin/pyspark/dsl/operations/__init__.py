@@ -1,6 +1,7 @@
 from structure.plugin.pyspark.dsl.operations.CachePlan import CachePlan
 from structure.plugin.pyspark.dsl.operations.DuplicateRowsPlan import DuplicateRowsPlan
 from structure.plugin.pyspark.dsl.operations.ExactlyOnePlan import ExactlyOnePlan
+from structure.plugin.pyspark.dsl.operations.JsonTuplePlan import JsonTuplePlan
 from structure.plugin.pyspark.dsl.operations.MapGeneratorPlan import MapGeneratorPlan
 from structure.plugin.pyspark.dsl.operations.MaterializationPlan import CheckpointPlan, PersistPlan, UnpersistPlan
 from structure.plugin.pyspark.dsl.operations.OperationCapability import OperationCapability
@@ -36,6 +37,7 @@ __all__ = [
     "PersistPlan",
     "OrderedTimelineScanPlan",
     "PosexplodeStructPlan",
+    "JsonTuplePlan",
     "ScalarGeneratorPlan",
     "RelationAliasPlan",
     "RelationAssertionPlan",

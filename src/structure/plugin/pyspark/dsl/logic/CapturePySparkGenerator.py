@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import cast
 
 from structure.dsl import Schema
@@ -7,6 +8,7 @@ from structure.plugin.api.v1.model import SymbolicContext
 from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.expressions import literal
 from structure.plugin.pyspark.dsl.operations import (
+    JsonTuplePlan,
     MapGeneratorPlan,
     OperationPlan,
     PosexplodeStructPlan,
@@ -67,6 +69,44 @@ class CapturePySparkGenerator:
                     ordinal=None,
                     function="explode",
                 )
+            )
+        )
+        context.register_current_scope(generated_scope)
+        return RowScope(name=generated_scope, schema=as_)
+
+    def json_tuple(
+        self,
+        context: SymbolicContext,
+        value: object,
+        *,
+        as_: type[Schema],
+        fields: Mapping[str, str] | None,
+        scope: str | None,
+    ) -> RowScope:
+        function = "json_tuple"
+        self._validate_options(as_=as_, ordinal=None, scope=scope, function=function)
+        expression = literal(value)
+        if not isinstance(expression, Expression) or not isinstance(expression.type, StringType):
+            raise TypeError("json_tuple(...) requires a String expression")
+        schema_fields = as_._structure_fields
+        if not schema_fields:
+            raise TypeError("json_tuple(as_=...) requires at least one output field")
+        if any(not isinstance(field.type, StringType) or not field.nullable for field in schema_fields.values()):
+            raise TypeError("json_tuple(as_=...) fields must all be nullable String fields")
+        if fields is not None and not isinstance(fields, Mapping):
+            raise TypeError("json_tuple(fields=...) must be a mapping")
+        overrides = dict(fields or {})
+        unknown = sorted(set(overrides) - set(schema_fields))
+        if unknown:
+            raise TypeError(f"json_tuple(fields=...) contains undeclared output field(s): {', '.join(unknown)}")
+        if any(not isinstance(name, str) for name in overrides.values()):
+            raise TypeError("json_tuple(fields=...) JSON member names must be strings")
+        resolved = tuple((name, overrides.get(name, name)) for name in schema_fields)
+        self._validate_source_collisions(context.default_project_source, generated=as_, function=function)
+        generated_scope = scope or self._default_scope(as_)
+        context.operations.append(
+            OperationPlan.json_tuple_operation(
+                JsonTuplePlan(expression=expression, scope=generated_scope, schema=as_, fields=resolved)
             )
         )
         context.register_current_scope(generated_scope)
@@ -735,7 +775,9 @@ class CapturePySparkGenerator:
                 f"extra field(s): {', '.join(extras)}"
             )
 
-    def _validate_source_collisions(self, source: object, *, generated: type[Schema]) -> None:
+    def _validate_source_collisions(
+        self, source: object, *, generated: type[Schema], function: str = "posexplode_struct"
+    ) -> None:
         source_schema = getattr(source, "_structure_scope_schema", None)
         if not isinstance(source_schema, type) or not issubclass(source_schema, Schema):
             return
@@ -745,7 +787,7 @@ class CapturePySparkGenerator:
         collisions = sorted(source_columns & generated_columns)
         if collisions:
             raise TypeError(
-                "posexplode_struct(as_=...) generated columns collide with current input column(s): "
+                f"{function}(as_=...) generated columns collide with current input column(s): "
                 f"{', '.join(collisions)}. Use field aliases on the generated schema."
             )
 

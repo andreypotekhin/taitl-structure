@@ -7,6 +7,7 @@ from structure.lib.cross.errors.SourceSpan import SourceSpan
 from structure.plugin.pyspark.dsl.operations.CachePlan import CachePlan
 from structure.plugin.pyspark.dsl.operations.DuplicateRowsPlan import DuplicateRowsPlan
 from structure.plugin.pyspark.dsl.operations.ExactlyOnePlan import ExactlyOnePlan
+from structure.plugin.pyspark.dsl.operations.JsonTuplePlan import JsonTuplePlan
 from structure.plugin.pyspark.dsl.operations.MapGeneratorPlan import MapGeneratorPlan
 from structure.plugin.pyspark.dsl.operations.MaterializationPlan import CheckpointPlan, PersistPlan, UnpersistPlan
 from structure.plugin.pyspark.dsl.operations.OperationCapability import OperationCapability
@@ -40,6 +41,7 @@ class OperationPlan:
     duplicate_rows: DuplicateRowsPlan | None = None
     exactly_one: ExactlyOnePlan | None = None
     posexplode_struct: PosexplodeStructPlan | None = None
+    json_tuple: JsonTuplePlan | None = None
     scalar_generator: ScalarGeneratorPlan | None = None
     map_generator: MapGeneratorPlan | None = None
     ordered_timeline_scan: OrderedTimelineScanPlan | None = None
@@ -166,6 +168,17 @@ class OperationPlan:
             family="generator",
             capability=OperationCapability("generator", "posexplode_struct"),
             cardinality=OperationCardinality.ROW_MULTIPLYING,
+            streaming=StreamingSupport.COMPATIBLE,
+        )
+
+    @staticmethod
+    def json_tuple_operation(json_tuple: JsonTuplePlan) -> OperationPlan:
+        return OperationPlan(
+            "json_tuple",
+            json_tuple=json_tuple,
+            family="generator",
+            capability=OperationCapability("generator", "json_tuple"),
+            cardinality=OperationCardinality.ROW_PRESERVING,
             streaming=StreamingSupport.COMPATIBLE,
         )
 

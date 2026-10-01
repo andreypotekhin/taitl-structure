@@ -129,6 +129,8 @@ class ClassifyStreamingCompatibility:
                     findings.extend(self._relation_assertion(step.name, operation.kind))
                 if streaming_step and operation.posexplode_struct is not None:
                     findings.extend(self._generators.posexplode_struct(step.name, operation.posexplode_struct))
+                if streaming_step and operation.json_tuple is not None:
+                    findings.extend(self._generators.json_tuple(step.name, operation.json_tuple))
                 if operation.scalar_generator is not None:
                     findings.extend(self._generators.scalar_array(step.name, operation.scalar_generator))
                 if operation.map_generator is not None:

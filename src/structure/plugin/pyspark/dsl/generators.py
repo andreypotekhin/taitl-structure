@@ -2,12 +2,28 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+
 from structure.dsl import Schema
 from structure.plugin.api.v1.model import current_symbolic_context
 from structure.plugin.pyspark.dsl.logic.CapturePySparkGenerator import CapturePySparkGenerator
 from structure.plugin.pyspark.dsl.RowScope import RowScope
 
 _generators = CapturePySparkGenerator()
+
+
+def json_tuple(
+    value: object,
+    *,
+    as_: type[Schema],
+    fields: Mapping[str, str] | None = None,
+    scope: str | None = None,
+) -> RowScope:
+    """Extract several top-level JSON members into a typed row-preserving scope."""
+    context = current_symbolic_context()
+    if context is None:
+        raise RuntimeError("json_tuple(...) can only be used inside a compiled Structure step method")
+    return _generators.json_tuple(context, value, as_=as_, fields=fields, scope=scope)
 
 
 def explode_struct(

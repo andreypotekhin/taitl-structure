@@ -36,9 +36,7 @@ class CapturePySparkStep:
         if first.aggregate is not None:
             context.record_aggregate(first.aggregate)
         operations = tuple(
-            replace(operation, source_span=request.primary_span)
-            if request.primary_span is not None
-            else operation
+            replace(operation, source_span=request.primary_span) if request.primary_span is not None else operation
             for operation in context.operations
         )
         body = PySparkStepBody(
@@ -66,6 +64,9 @@ class CapturePySparkStep:
             operation.posexplode_struct.expression
             for operation in body.operations
             if operation.posexplode_struct is not None
+        )
+        expressions.extend(
+            operation.json_tuple.expression for operation in body.operations if operation.json_tuple is not None
         )
         expressions.extend(
             operation.scalar_generator.expression

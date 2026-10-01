@@ -30,6 +30,17 @@ from structure.plugin.pyspark.dsl.types import (
 )
 
 _ORDERABLE_TYPES = frozenset({"date", "decimal", "double", "float", "integer", "long", "string", "timestamp"})
+_ORDER_DIRECTIONS = frozenset(
+    {"asc", "desc", "asc_nulls_first", "asc_nulls_last", "desc_nulls_first", "desc_nulls_last"}
+)
+
+
+def is_orderable_type(type: StructureType | None) -> bool:
+    return type is not None and type.name in _ORDERABLE_TYPES
+
+
+def is_order_direction(direction: object) -> bool:
+    return isinstance(direction, str) and direction in _ORDER_DIRECTIONS
 
 
 def _schema_field(schema: Any, name: str):
@@ -505,7 +516,7 @@ class Expression:
     def _orderable_comparison(self, other: "Expression") -> bool:
         if self.type is None or other.type is None:
             return True
-        return self.type.name in _ORDERABLE_TYPES and other.type.name in _ORDERABLE_TYPES
+        return is_orderable_type(self.type) and is_orderable_type(other.type)
 
     def _require_boolean(self, call: str) -> None:
         if not isinstance(self.type, BooleanType):
@@ -645,6 +656,8 @@ class Expression:
         )
 
     def _order(self, direction: str) -> "Expression":
+        if not is_orderable_type(self.type):
+            raise TypeError("Ordering descriptors require an orderable scalar expression")
         return Expression(
             kind="order", type=self.type, nullable=self.nullable, data={"direction": direction}, args=(self,)
         )

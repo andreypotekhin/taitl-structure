@@ -14,6 +14,22 @@ and caller-owned boundaries are maintained in the [Parity register](../Parity.md
 
 ## Current Function Gates
 
+### SQL baseline gate index
+
+The row-level migration register is [PySpark SQL Baseline Gaps](../gaps/PySpark-SQL-baseline.gaps.md). This table keeps
+the gate register searchable without duplicating the full PySpark inventory.
+
+| Scope | Status | Missing contract or boundary |
+| --- | --- | --- |
+| Current-time functions | `design-gated` | Query-time nondeterminism and streaming semantics. |
+| Crypto and encryption helpers | `design-gated` | Key, IV, padding, provider, and failure semantics. |
+| Dynamic JSON schemas | `design-gated` | Output schema must be declared before execution; `json_tuple` has a declared-schema contract. |
+| Sketch and bitmap aggregates | `design-gated` | State, accuracy, mergeability, and result type. |
+| Generic generators and partition transforms | `design-gated` | Schema, aliases, cardinality, and streaming behavior. |
+| Variant mutation helpers | `target-gated` | Released target profile and mutation contract. |
+| `expr` / `call_function` | `unsupported` | Raw SQL removes typed expression ownership. |
+| UDTFs, pandas UDFs, callbacks | `caller-owned-guided` | Arbitrary runtime behavior is outside typed transforms. |
+
 ### Family-level parity and evidence
 
 The [Parity register](../Parity.md) is authoritative for every reviewed PySpark function family. Open rows must retain

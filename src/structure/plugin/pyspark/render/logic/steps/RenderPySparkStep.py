@@ -23,6 +23,7 @@ from structure.plugin.pyspark.dsl.types import ArrayType, DecimalType, MapType, 
 from structure.plugin.pyspark.render.logic.expressions.RenderPySparkExpression import render_pyspark_expression
 from structure.plugin.pyspark.render.logic.steps.RenderPySparkAggregatePlan import RenderPySparkAggregatePlan
 from structure.plugin.pyspark.render.logic.steps.RenderPySparkFilters import RenderPySparkFilters
+from structure.plugin.pyspark.render.logic.steps.RenderPySparkJsonTuple import RenderPySparkJsonTuple
 from structure.plugin.pyspark.render.logic.steps.RenderPySparkMapGenerator import RenderPySparkMapGenerator
 from structure.plugin.pyspark.render.logic.steps.RenderPySparkScalarGenerator import RenderPySparkScalarGenerator
 from structure.plugin.pyspark.render.logic.steps.RenderPySparkStructGenerator import RenderPySparkStructGenerator
@@ -36,6 +37,7 @@ class RenderPySparkStep:
         self._struct_generator_renderer = RenderPySparkStructGenerator()
         self._scalar_generator_renderer = RenderPySparkScalarGenerator()
         self._map_generator_renderer = RenderPySparkMapGenerator()
+        self._json_tuple_renderer = RenderPySparkJsonTuple()
         from structure.plugin.pyspark.api.PySpark import PySpark
 
         self._schema = PySpark.schema.render(schema_names)
@@ -425,6 +427,14 @@ class RenderPySparkStep:
                         aliases=self._scope_aliases(step),
                         target=target,
                         index=generator_index,
+                    )
+                )
+            if operation.kind == "json_tuple" and operation.json_tuple is not None:
+                ordered_lines.extend(
+                    self._json_tuple_renderer(
+                        operation.json_tuple,
+                        aliases=self._scope_aliases(step),
+                        target=target,
                     )
                 )
             if operation.kind == "ordered_timeline_scan" and operation.ordered_timeline_scan is not None:
@@ -2073,6 +2083,8 @@ class RenderPySparkStep:
                 aliases.update(self._scalar_generator_renderer.aliases(step))
             if operation.map_generator is not None:
                 aliases.update(self._map_generator_renderer.aliases(step))
+            if operation.json_tuple is not None:
+                aliases.update(self._json_tuple_renderer.aliases(step))
             if operation.ordered_timeline_scan is not None:
                 aliases[operation.ordered_timeline_scan.row_scope] = ""
                 aliases[operation.ordered_timeline_scan.scope] = ""

@@ -41,24 +41,35 @@ public results schema without an explicit design decision.
 
 ## Evidence
 
-Focused Compose runs passed eight cases on each ordinary backend:
+Focused Compose runs passed nine cases on each ordinary backend:
 
 | Backend | Cases | Test session duration | Slowest per-case call |
 | --- | ---: | ---: | ---: |
-| PySpark 3.5 | 8 passed | 87.58 s | 11.90 s |
-| PySpark 4.0 | 8 passed | 87.66 s | 11.65 s |
+| PySpark 3.5 | 9 passed | 93.58 s | 9.26 s |
+| PySpark 4.0 | 9 passed | 95.64 s | 9.83 s |
 
-The cases cover K=0, 1, 3, and 1,000; 16 simultaneous request groups with
-K=3; four experiment/band scopes under one request with the same document IDs
-reused independently; a higher-scoring candidate arriving in a later
+The cases cover K=0, 1, 3, and 1,000; null-score ordering and preservation; 16
+simultaneous request groups with K=3 and interleaved source rows; four experiment/band scopes under one
+request with the same document IDs reused independently; a higher-scoring candidate arriving in a later
 micro-batch; an expired candidate; a duplicate below the retained top K
 arriving in a later micro-batch; and rejection after the 10,000-ID validation
 bound is exceeded. The duplicate case confirms that validation is not limited
 to currently retained result rows or one input batch. The multi-scope case
 confirms duplicate state is scoped by request, experiment, and band. A static
 Spark DataFrame window/ranking calculation now serves as a batch oracle for
-all successful cases; tied scores verify document-ID ordering. Timings include
-Spark session setup and are not comparative latency measurements.
+all successful cases; tied scores verify document-ID ordering. The first
+Spark 3.5 null-score run found that Pandas represents nullable doubles as
+`NaN`, which breaks Python tuple ordering although Spark later renders the
+value as null. The prototype now normalizes null-like scores before ordering
+and persistence. The corrected nine-case matrices pass on both ordinary Spark
+profiles. Timings include Spark session setup and are not comparative latency
+measurements.
+
+The test creates the first two files before starting the stream and sets
+`maxFilesPerTrigger=1`, guaranteeing that the normal higher-scoring candidate
+and the duplicate-validation candidate arrive in a later micro-batch instead
+of relying on test-thread timing. It also normalizes Pandas' `NaN` document-ID
+representation, so the K=0 null-row sentinel does not count as a candidate ID.
 
 The five-second idle grace is already far above the desired sub-second
 request target, before accounting for micro-batch scheduling, processing,
@@ -67,14 +78,22 @@ cannot support the target unless the product contract permits a shorter
 grace or Search can obtain a different reliable completion signal. Do not
 reduce late-data tolerance or weaken validation just to make the timing pass.
 
+The final callback now emits test-only counters for retained candidates,
+validated IDs, and serialized JSON state bytes. Assertions enforce at most K
+retained candidates and at most 10,000 validated IDs. In the Spark 4.0 K=1,000
+case, the observed final state retained 1,000 candidates, tracked 1,103 IDs,
+and occupied 45,264 serialized bytes. This is a fixture measurement, not a
+general memory estimate; it does not measure Spark's checkpoint encoding,
+Python object overhead, or the 10,000-ID limit's maximum state size.
+
 ## Promotion gate still open
 
 Before this probe can justify production Structure extensions, extend it to
 cover a range of active-request counts and interleaved requests, ties/nulls/
-missing pairs, and direct observations of serialized candidate and auxiliary
-state sizes. The test currently covers a 16-request point, cross-batch
-duplicates, and overflow, but does not yet measure state size. Compare its
-answers and failure behavior with an explicit batch oracle. Then prove state
+missing pairs, and broader serialized candidate and auxiliary state sizes.
+The test now reports state size for its exercised cases, including K=1,000,
+but does not exercise a successful request near the 10,000-ID ceiling. Compare
+its answers and failure behavior with an explicit batch oracle. Then prove state
 recovery, failed-batch replay, late-event handling,
 changed-snapshot/checkpoint incompatibility, and the composed
 score-aggregation/fusion/reranking sequence on both ordinary profiles.

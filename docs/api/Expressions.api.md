@@ -87,6 +87,8 @@ PySpark `Column` surface; functions such as `trim` and `lower` remain function-f
 
 **Details And Differences**
 
+- Ordering descriptors require a scalar expression whose type is orderable in Structure: Date, Decimal, Double, Float,
+  Integer, Long, String, or Timestamp. All six descriptors preserve the expression type and nullability.
 - Array and map lookup results are nullable. String predicates require String expressions; `contains(...)`,
   `startswith(...)`, and `endswith(...)` accept either a string literal or a String expression operand and become
   nullable when either operand is nullable. `rlike(...)` uses Java regex.
@@ -228,6 +230,7 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
 | `get_json_object(...)` | `get_json_object` | `get_json_object(o.payload_json, "$.customer.id")` |
 | `json_array_length(...)` | `json_array_length` | `json_array_length(o.payload_json)` |
 | `json_object_keys(...)` | `json_object_keys` | `json_object_keys(o.payload_json)` |
+| `json_tuple(...)` | `json_tuple` | `json_tuple(o.payload_json, as_=LegacyFields, fields={"customer_id": "customerId"})` |
 | `schema_of_json(...)`, `schema_of_csv(...)` | `schema_of_json`, `schema_of_csv` | `schema_of_json('{"id": 1}')` |
 | `parse_json(...)`, `try_parse_json(...)` | Variant JSON parsing | `parse_json(o.payload_json)` |
 | `variant_literal(...)` | Compile-time JSON Variant literal | `variant_literal('{"source":"migration"}')` |
@@ -313,8 +316,9 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
 - `from_json(...)` and `from_csv(...)` require an explicit result Schema; `to_json(...)` and `to_csv(...)` require a
   Struct expression. Parsing and rendering results are nullable.
 - `get_json_object(...)` requires a non-empty literal JSON path and returns nullable String. `json_array_length(...)`
-  returns nullable Integer, and `json_object_keys(...)` returns nullable `array<string>`. `json_tuple(...)` remains
-  deferred because it produces multiple output columns rather than one typed expression.
+  returns nullable Integer, and `json_object_keys(...)` returns nullable `array<string>`. `json_tuple(...)` requires
+  a declared schema of nullable String fields and returns a row-preserving generated scope; optional literal mappings
+  translate Structure output names to top-level JSON member names.
 - `schema_of_json(...)` and `schema_of_csv(...)` accept non-empty text literals plus immutable parser options and
   return non-nullable SQL-format schema Strings. Dynamic input is rejected because schema inference must be resolved
   before the typed output schema is compiled.

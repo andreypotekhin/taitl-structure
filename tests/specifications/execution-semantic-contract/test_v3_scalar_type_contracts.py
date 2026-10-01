@@ -1365,6 +1365,15 @@ def test_comparisons_require_compatible_and_orderable_operands() -> None:
     assert (_expression(types.date(), nullable=False) < datetime.datetime(2026, 7, 15)).type is not None
 
 
+@pytest.mark.parametrize(
+    "direction",
+    ["asc", "desc", "asc_nulls_first", "asc_nulls_last", "desc_nulls_first", "desc_nulls_last"],
+)
+def test_ordering_descriptors_reject_non_orderable_expression_types(direction: str) -> None:
+    with pytest.raises(TypeError, match="Ordering descriptors require an orderable scalar expression"):
+        getattr(_expression(types.boolean(), nullable=False), direction)()
+
+
 @pytest.mark.parametrize("helper", [lower, trim, upper])
 def test_string_normalizers_require_and_return_string_expressions(helper) -> None:
     normalized = helper(_expression(types.string(), nullable=False))

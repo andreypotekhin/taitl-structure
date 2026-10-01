@@ -989,6 +989,8 @@ class RenderPySparkTransformModule:
     def _operation_expressions(self, operation):
         if operation.posexplode_struct is not None:
             yield operation.posexplode_struct.expression
+        if operation.json_tuple is not None:
+            yield operation.json_tuple.expression
         if operation.scalar_generator is not None:
             yield operation.scalar_generator.expression
         if operation.map_generator is not None:
@@ -1229,7 +1231,9 @@ class RenderPySparkTransformModule:
 
     def _has_policy_checks(self, plan: PySparkExecutionPlan) -> bool:
         owners: tuple[PySparkStepRecipe | PySparkOutputRecipe, ...] = (
-            *plan.steps, *plan.outputs, *(item.output for item in plan.stage_outputs)
+            *plan.steps,
+            *plan.outputs,
+            *(item.output for item in plan.stage_outputs),
         )
         joins = [join for owner in owners for join in owner.joins]
         joins.extend(operation.join for owner in owners for operation in owner.operations if operation.join)

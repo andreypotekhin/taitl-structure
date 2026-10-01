@@ -43,6 +43,7 @@ class RewritePySparkStepBody:
             posexplode_struct=(
                 None if operation.posexplode_struct is None else self._posexplode_struct(operation.posexplode_struct)
             ),
+            json_tuple=None if operation.json_tuple is None else self._json_tuple(operation.json_tuple),
             scalar_generator=(
                 None if operation.scalar_generator is None else self._scalar_generator(operation.scalar_generator)
             ),
@@ -143,6 +144,9 @@ class RewritePySparkStepBody:
 
     def _posexplode_struct(self, posexplode_struct):
         return replace(posexplode_struct, expression=self._expression(posexplode_struct.expression))
+
+    def _json_tuple(self, json_tuple):
+        return replace(json_tuple, expression=self._expression(json_tuple.expression))
 
     def _scalar_generator(self, generator):
         return replace(generator, expression=self._expression(generator.expression))
