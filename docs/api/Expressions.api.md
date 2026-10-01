@@ -234,6 +234,8 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
 | `unix_timestamp(...)` | `unix_timestamp` | `unix_timestamp(o.raw_at, format="yyyy-MM-dd HH:mm:ss")` |
 | `to_utc_timestamp(...)` | `to_utc_timestamp` | `to_utc_timestamp(o.raw_at, timezone="UTC")` |
 | `from_utc_timestamp(...)` | `from_utc_timestamp` | `from_utc_timestamp(o.raw_at, timezone="America/Los_Angeles")` |
+| `date_part(...)` | `date_part` | `date_part("month", o.raw_at)` |
+| `datepart(...)` | `datepart` | `datepart("year", o.raw_at)` |
 | `from_json(...)`, `to_json(...)` | `from_json`, `to_json` | `from_json(o.payload_json, as_=Payload)` |
 | `from_csv(...)`, `to_csv(...)` | `from_csv`, `to_csv` | `from_csv(o.payload_csv, as_=Payload)` |
 | `get_json_object(...)` | `get_json_object` | `get_json_object(o.payload_json, "$.customer.id")` |
@@ -332,6 +334,9 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
   Long.
 - `to_utc_timestamp(...)` and `from_utc_timestamp(...)` accept String or Timestamp expressions and a non-empty
   timezone literal, returning nullable Timestamp values.
+- `date_part(...)` and `datepart(...)` accept a supported field literal and a Date or Timestamp expression. They
+  return nullable Integer parts, or nullable `Decimal(8,6)` for seconds; interval sources remain outside the typed
+  Structure contract.
 - Query-clock helpers preserve Spark start-of-query/session-timezone semantics. Clock values are non-null and
   query-stable but not stable across retries or streaming micro-batches.
 - AES helpers are GCM-only typed equivalents. Keys are symbolic String/Binary expressions; explicit encryption IVs

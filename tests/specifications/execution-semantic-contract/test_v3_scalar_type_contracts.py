@@ -801,6 +801,12 @@ def test_temporal_helpers_preserve_typed_calendar_contracts() -> None:
     assert unix_timestamp().nullable is False
     assert to_utc_timestamp(nullable_timestamp, timezone="UTC").nullable is True
     assert from_utc_timestamp(required_text, timezone="UTC").nullable is True
+    month_part = date_part("month", required_date)
+    second_part = datepart("SECOND", nullable_timestamp)
+    assert month_part.type is not None and month_part.type.name == "integer"
+    assert isinstance(second_part.type, DecimalType)
+    assert second_part.type.scale == 6
+    assert second_part.nullable is True
 
 
 def test_unix_date_helpers_require_their_declared_temporal_types() -> None:
@@ -814,6 +820,8 @@ def test_unix_date_helpers_require_their_declared_temporal_types() -> None:
         unix_timestamp(_expression(types.integer(), nullable=False))
     with pytest.raises(TypeError, match=r"to_utc_timestamp\(\.\.\.\) timezone must be a non-empty"):
         to_utc_timestamp(_expression(types.timestamp(), nullable=False), timezone="")
+    with pytest.raises(TypeError, match=r"date_part\(\.\.\.\) field is not supported"):
+        date_part("quarter_name", _expression(types.date(), nullable=False))
 
 
 def test_calendar_and_padding_helpers_preserve_typed_contracts() -> None:

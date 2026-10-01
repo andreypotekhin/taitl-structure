@@ -125,6 +125,18 @@ session = StructureSession(spark=spark, config=config)
 `StructureSession` must not start Spark, stop Spark, mutate Spark configuration silently, read or write streaming
 queries, or own orchestration concerns such as Airflow DAGs, triggers, checkpoints, or output sinks.
 
+`StructureSession` supports deterministic cleanup as a context manager:
+
+```python
+with StructureSession(spark=spark) as session:
+    result = EnrichOrders(orders=orders_df, customers=customers_df).run(session)
+```
+
+Exiting the block calls `session.close()`, including when the block raises, and propagates the original exception.
+Callers must materialize or release lazy results that depend on Structure-owned temporary views before leaving the
+block. Closing releases Structure-owned resources but does not stop or reconfigure the caller-owned Spark session;
+explicit `close()` remains supported and idempotent.
+
 The session compiles a transform lazily on its first compatible invocation and reuses the resulting artifact for later
 invocations. `Transform.compile(...)` remains available for early diagnostics; callers load its result with
 `session.load(artifact)`. Sessions are isolated by default, while applications may deliberately share a

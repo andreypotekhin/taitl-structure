@@ -160,7 +160,7 @@ map_transform_values map_values map_zip_with max min minute mode month nanvl nvl
 ntile offset order_by param_join percent_rank percentile pi posexplode_array posexplode_outer_array posexplode_struct posexplode_outer_struct posexplode_map posexplode_outer_map explode_array explode_outer_array explode_struct explode_outer_struct explode_map explode_outer_map inline_struct inline_outer_struct variant_explode variant_explode_outer preceding pmod project quarter raise_error rank range_between relation_alias regexp_extract regexp_replace regexp regexp_like rlike like ilike require_all require_parent_hierarchy require_reference require_unique hierarchy_closure hierarchy_fallbacks reverse rtrim round
 sample sec select_first_qualified signum sin sinh slice sha1 sha2 second rand randn radians rint right_join rollup row_number rowset_join rows_between rolling_avg rolling_max position sort_array split_part elt format_string printf substr
 rolling_min rolling_sum scan subtract sum sum_distinct stddev sqrt size sequence session_window skewness split translate substring temporal_one next_day
-to_binary to_csv to_decimal to_date to_json to_timestamp from_unixtime unix_timestamp to_utc_timestamp from_utc_timestamp TimeWindow trim trunc try_element_at try_to_binary unbase64 union_all union_by_name upper unbounded_following unbounded_preceding hex unhex cardinality weekofyear
+to_binary to_csv to_decimal to_date to_json to_timestamp from_unixtime unix_timestamp to_utc_timestamp from_utc_timestamp date_part datepart TimeWindow trim trunc try_element_at try_to_binary unbase64 union_all union_by_name upper unbounded_following unbounded_preceding hex unhex cardinality weekofyear
 variance var_pop var_samp stddev_pop stddev_samp when width_bucket year xxhash64 zeroifnull where watermark window window_avg window_bool_and window_bool_or rpad repeat replace right sign tan tanh json_tuple
 window_time current_date curdate current_timestamp now localtimestamp current_timezone aes_encrypt aes_decrypt try_aes_decrypt hll_sketch_agg hll_sketch_estimate hll_union bitmap_construct_agg bitmap_or_agg bitmap_bit_position bitmap_bucket_number bitmap_count
 window_collect_list window_collect_set window_count window_count_distinct window_max window_min window_sum
@@ -303,6 +303,8 @@ __all__ = [  # noqa: F405
     "unix_timestamp",
     "to_utc_timestamp",
     "from_utc_timestamp",
+    "date_part",
+    "datepart",
     "date_sub",
     "date_trunc",
     "dayofmonth",

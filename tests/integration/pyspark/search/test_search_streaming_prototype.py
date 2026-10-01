@@ -91,6 +91,7 @@ def test_i09282601_bounded_request_state_emits_result_after_idle_grace(
     test_root = Path(tempfile.mkdtemp(prefix="issue-i09282601-", dir=shared_root))
     rows_path = test_root / "request_rows"
     rows_path.mkdir()
+    output_path = test_root / "results"
     if at_validation_bound:
         candidate_count = maximum_unique_candidates - 3
     elif overflow:
@@ -248,21 +249,37 @@ def test_i09282601_bounded_request_state_emits_result_after_idle_grace(
     query_name = f"issue_i09282601_{maximum}_{time.monotonic_ns()}"
 
     def start_query():
-        return (
-            result.writeStream.format("memory")
-            .queryName(query_name)
-            .outputMode("append")
-            .option("checkpointLocation", str(test_root / "checkpoint"))
-            .trigger(processingTime="200 milliseconds")
-            .start()
+        writer = result.writeStream.outputMode("append").option(
+            "checkpointLocation", str(test_root / "checkpoint")
         )
+        if restart_after_first_batch:
+            writer = writer.format("parquet").option("path", str(output_path))
+        else:
+            writer = writer.format("memory").queryName(query_name)
+        return writer.trigger(processingTime="200 milliseconds").start()
+
+    def observed_rows():
+        if restart_after_first_batch:
+            if not any(output_path.glob("part-*.parquet")):
+                return []
+            return [row.asDict() for row in spark.read.schema(output_schema).parquet(str(output_path)).collect()]
+        return [row.asDict() for row in spark.table(query_name).collect()]
 
     query = start_query()
     try:
         if restart_after_first_batch:
-            query.processAllAvailable()
+            first_batch_deadline = time.monotonic() + 20
+            while time.monotonic() < first_batch_deadline:
+                progress = query.lastProgress
+                if progress is not None and progress.get("numInputRows", 0) > 0:
+                    break
+                if query.exception() is not None:
+                    raise AssertionError(f"State prototype failed before checkpoint restart: {query.exception()}")
+                time.sleep(0.1)
+            else:
+                pytest.fail("The streaming query did not process its first input batch before checkpoint restart.")
             assert query.exception() is None
-            assert spark.table(query_name).collect() == []
+            assert observed_rows() == []
             query.stop()
             batch_two = [("d-0001", -1.0)] if duplicate else [("a-late", float(maximum + 1000))]
             write_batch("batch-2.json", batch_two)
@@ -271,7 +288,7 @@ def test_i09282601_bounded_request_state_emits_result_after_idle_grace(
         observed = []
         wait_until = time.monotonic() + 35
         while time.monotonic() < wait_until:
-            observed = [row.asDict() for row in spark.table(query_name).collect()]
+            observed = observed_rows()
             failure = query.exception()
             if duplicate or overflow:
                 if failure is not None:
@@ -361,7 +378,7 @@ def test_i09282601_bounded_request_state_emits_result_after_idle_grace(
         assert {row["is_final"] for row in observed} == {True}
         write_batch("batch-late.json", [("after-final", float(maximum + 2000))], expired_deadline)
         time.sleep(1)
-        assert [row.asDict() for row in spark.table(query_name).collect()] == observed
+        assert observed_rows() == observed
         print(
             "Prototype final state maxima: "
             f"candidates={max(item[0] for item in state_observations)}, "

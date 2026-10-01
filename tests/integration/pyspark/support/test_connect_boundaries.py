@@ -127,8 +127,11 @@ def test_structure_session_close_drops_views_without_stopping_spark(spark) -> No
     boundary = apply_plan_boundary(source, spark)
     assert boundary.count() == 1
 
-    StructureSession(
+    with StructureSession(
         spark=spark,
         config=StructureConfig.create(plugin=_plugin()),
-    ).close()
+    ) as runtime:
+        runtime.close()
+        runtime.close()
+
     assert spark.range(1).count() == 1

@@ -38,14 +38,25 @@ per verified PySpark function and record the 3.5/4.0 presence explicitly.
 | Scope | Status | Structure work | Migration requirement |
 | --- | --- | --- | --- |
 | `randstr`, UTF-8 | candidate | Verify String/Binary semantics. | Preserve spelling or equivalent. |
-| Time-zone, date-part | candidate | Add typed calls and nullability. | Match units, zones, timestamp types. |
+| Time-zone conversion | candidate | Add `convert_timezone` with an explicit NTZ/source-zone contract. | Match source and target zone semantics. |
 | Unix timestamp, UTC | candidate | Add remaining conversion helpers. | Match units, parsing, null behavior. |
 | `make_*`, safe temporal | candidate | Add constructors and `try_*`. | Match validation and nullable failure. |
-| UTF-8 validation | candidate | Verify String/Binary semantics and invalid-byte behavior. | Preserve spelling or equivalent. |
+| UTF-8 validation | target-gated | PySpark 4.0-only validation helpers are outside the default intersection baseline. | Use native PySpark or add a versioned UTF-8 profile. |
 | Current-time | implemented | Typed query-clock calls preserve six spellings and same-query equality metadata. | Use native PySpark for unmodeled timestamp variants. |
 | AES-GCM | implemented | Typed GCM calls, symbolic keys, and nonce-risk warning. | Use native PySpark for excluded AES forms. |
-| String aggregation | candidate | Add typed `string_agg`/`listagg`. | Match delimiter, null, order, empty input. |
+| String aggregation | target-gated | PySpark 4.0-only `string_agg`/`listagg` are outside the 3.5/4.0 intersection baseline. | Use native PySpark on the 4.0 target or await a target-profile admission. |
 | `stack`, typed generators | candidate | Require schema and cardinality. | Match row multiplication, aliases, fields. |
+
+## Target-Line Additions Outside the Default Baseline
+
+These APIs exist in one reviewed PySpark target line but not the 3.5/4.0 intersection. They are recorded here so the
+baseline implementation count does not silently expand.
+
+| PySpark API | Present in | Status | Migration remedy |
+| --- | --- | --- | --- |
+| `string_agg`, `listagg` | 4.0 | `target-gated` | Use native PySpark or add a versioned aggregate profile. |
+| `is_valid_utf8`, `make_valid_utf8`, `try_validate_utf8`, `validate_utf8` | 4.0 | `target-gated` | Use native PySpark or add a versioned UTF-8 profile. |
+| `randstr`, `uniform`, `uuid`, and related random helpers | 4.1 | `target-gated` | Track in the V11 adoption ledger with explicit seed semantics. |
 
 ## Design-Gated or Boundary Items
 

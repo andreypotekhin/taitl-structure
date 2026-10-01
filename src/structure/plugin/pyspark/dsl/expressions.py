@@ -46,7 +46,7 @@ __all__ = [
     "lower", "lpad", "ltrim", "mask", "md5", "crc32", "elt", "format_string", "printf", "substr",
     "minute", "month", "nanvl", "nullif", "nvl", "nvl2", "pow", "regexp_extract", "regexp_replace", "repeat", "replace", "reverse",
     "round", "rpad", "rtrim", "sha1", "sha2", "second", "signum", "split", "sqrt", "substring", "to_csv", "to_date",
-    "to_binary", "to_decimal", "to_json", "to_timestamp", "translate", "trim", "trunc", "unbase64", "decode", "encode", "try_to_binary", "from_unixtime", "unix_timestamp", "to_utc_timestamp", "from_utc_timestamp", "hex", "unhex", "upper", "ascii", "btrim", "char", "char_length", "date_format", "find_in_set", "format_number", "last_day", "left", "locate", "mask", "octet_length", "overlay", "position", "quarter", "right", "soundex", "split_part", "substring_index", "regexp_count", "regexp_extract_all", "regexp_instr", "regexp_substr", "weekofyear", "bit_count", "bit_get", "getbit",
+    "to_binary", "to_decimal", "to_json", "to_timestamp", "translate", "trim", "trunc", "unbase64", "decode", "encode", "try_to_binary", "from_unixtime", "unix_timestamp", "to_utc_timestamp", "from_utc_timestamp", "date_part", "datepart", "hex", "unhex", "upper", "ascii", "btrim", "char", "char_length", "date_format", "find_in_set", "format_number", "last_day", "left", "locate", "mask", "octet_length", "overlay", "position", "quarter", "right", "soundex", "split_part", "substring_index", "regexp_count", "regexp_extract_all", "regexp_instr", "regexp_substr", "weekofyear", "bit_count", "bit_get", "getbit",
     "when", "width_bucket", "xxhash64", "year", "zeroifnull", "acos", "acosh", "asin", "asinh", "atan", "atan2", "atanh", "cbrt", "cos", "cosh", "cot", "csc", "degrees", "e", "expm1", "factorial", "greatest", "hypot", "least", "ln", "log10", "log1p", "log2", "pmod", "pi", "radians", "rint", "sec", "sign", "sin", "sinh", "tan", "tanh", "add_months", "months_between", "next_day", "rand", "randn", "equal_null", "like", "ilike", "regexp", "regexp_like", "rlike", "date_from_unix_date", "unix_date", "weekday", "shiftleft", "shiftright", "shiftrightunsigned", "is_valid_variant", "is_variant_null", "parse_json",
     "schema_of_variant", "to_variant_object", "try_parse_json", "try_variant_get", "variant_get", "variant_literal",
     "variant_array_append", "try_variant_array_append", "variant_insert", "try_variant_insert", "variant_set",
@@ -1733,6 +1733,16 @@ def from_utc_timestamp(value: object, *, timezone: str) -> Expression:
     return _timezone_conversion("from_utc_timestamp", value, timezone)
 
 
+def date_part(field: str, value: object) -> Expression:
+    """Extract a named date or timestamp part with a compiler-visible field."""
+    return _date_part("date_part", field, value)
+
+
+def datepart(field: str, value: object) -> Expression:
+    """Alias for :func:`date_part`, matching PySpark's SQL spelling."""
+    return _date_part("datepart", field, value)
+
+
 def abs(value: object) -> Expression:
     """Return the absolute value of a numeric expression."""
     argument = _numeric_argument(value, "abs(...)")
@@ -2780,6 +2790,28 @@ def _timezone_conversion(function: str, value: object, timezone: str) -> Express
         type=TimestampType(),
         nullable=True if isinstance(argument.type, StringType) else argument.nullable,
         data={"function": function, "timezone": timezone},
+        args=(argument,),
+    )
+
+
+def _date_part(function: str, field: str, value: object) -> Expression:
+    if not isinstance(field, str) or not field.strip():
+        raise TypeError(f"{function}(...) field must be a non-empty string literal")
+    normalized = field.strip().lower()
+    integer_fields = {
+        "year", "y", "month", "mon", "week", "w", "day", "d", "dayofweek", "dow", "dayofyear", "doy",
+        "hour", "h", "minute", "min", "m",
+    }
+    second_fields = {"second", "seconds", "sec", "s"}
+    if normalized not in integer_fields | second_fields:
+        raise TypeError(f"{function}(...) field is not supported: {field!r}")
+    argument = _date_or_timestamp_argument(value, f"{function}(...)")
+    result_type = DecimalType(precision=8, scale=6) if normalized in second_fields else IntegerType()
+    return Expression(
+        kind="call",
+        type=result_type,
+        nullable=argument.nullable,
+        data={"function": function, "field": field.strip()},
         args=(argument,),
     )
 

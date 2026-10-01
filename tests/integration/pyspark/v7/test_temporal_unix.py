@@ -8,7 +8,7 @@ from integration.pyspark.support.rows import rows
 
 from structure import Schema, Transform, input, output, transform
 from structure.lib.testing import assert_online_generated_parity
-from structure.plugin.pyspark import from_unixtime, long, string, unix_timestamp
+from structure.plugin.pyspark import date_part, from_unixtime, integer, long, string, to_timestamp, unix_timestamp
 
 pytestmark = pytest.mark.integration
 
@@ -25,6 +25,7 @@ class EpochOutput(Schema):
     id = string(nullable=False)
     day = string(nullable=True)
     seconds_round_trip = long(nullable=True)
+    month = integer(nullable=True)
 
 
 @transform
@@ -34,10 +35,12 @@ class FormatEpoch(Transform):
 
     def publish(self, row: EpochInput) -> EpochOutput:
         formatted = from_unixtime(row.seconds, format="yyyy-MM-dd")
+        parsed = to_timestamp(formatted, format="yyyy-MM-dd")
         return EpochOutput(
             id=row.id,
             day=formatted,
             seconds_round_trip=unix_timestamp(formatted, format="yyyy-MM-dd"),
+            month=date_part("month", parsed),
         )
 
 
@@ -51,6 +54,7 @@ def test_v7_from_unixtime_matches_generated_execution_on_live_backend(spark, tmp
     transform_path = f"{PACKAGE}/pyspark/transforms/integration/pyspark/v7/test_temporal_unix.py"
     assert "F.from_unixtime(" in files[transform_path]
     assert "F.unix_timestamp(" in files[transform_path]
+    assert "F.date_part(F.lit('month')," in files[transform_path]
 
     with generated_project(tmp_path, PACKAGE, files):
         generated_schemas = importlib.import_module(f"{PACKAGE}.pyspark.schemas.test_temporal_unix")
@@ -67,6 +71,6 @@ def test_v7_from_unixtime_matches_generated_execution_on_live_backend(spark, tmp
         actual = rows(generated.formatted, "id")
 
     assert actual == [
-        {"id": "row-1", "day": "1970-01-01", "seconds_round_trip": 0},
-        {"id": "row-2", "day": None, "seconds_round_trip": None},
+        {"id": "row-1", "day": "1970-01-01", "seconds_round_trip": 0, "month": 1},
+        {"id": "row-2", "day": None, "seconds_round_trip": None, "month": None},
     ]

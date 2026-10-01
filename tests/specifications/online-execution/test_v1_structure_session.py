@@ -214,6 +214,24 @@ def test_v5_session_accepts_a_generic_runtime() -> None:
         StructureSession(spark="spark", runtime="runtime", schema_types=FakeTypes)
 
 
+def test_v1_session_context_manager_closes_and_propagates_exceptions(monkeypatch) -> None:
+    session = StructureSession(schema_types=FakeTypes)
+    closed = []
+    monkeypatch.setattr(session, "close", lambda: closed.append(True))
+
+    with pytest.raises(RuntimeError, match="session failure"):
+        with session as active:
+            assert active is session
+            raise RuntimeError("session failure")
+
+    assert closed == [True]
+
+
+def test_v1_session_context_manager_without_runtime_is_harmless() -> None:
+    with StructureSession(schema_types=FakeTypes) as session:
+        assert session.runtime is None
+
+
 def test_v1_online_session_reuses_session_compiled_artifact(monkeypatch) -> None:
     from testing.model.orders.transforms.order import EnrichOrders
 

@@ -89,6 +89,19 @@ are fixture measurements, not general memory estimates; they do not measure
 Spark's checkpoint encoding, Python object overhead, or identifiers longer
 than those in this fixture.
 
+### Normal restart probe
+
+The restart case checkpoints after the first input batch, stops the query,
+adds a second batch, and resumes the same query with the same checkpoint. The
+final rows match the batch oracle on ordinary Spark 3.5 and 4.0. This case uses
+Spark's Parquet file sink: the memory sink is test-only and Spark rejects
+recovering it from a checkpoint. The probe waits for `lastProgress` to confirm
+that batch 1 was processed; `processAllAvailable()` did not return reliably
+with processing-time state timeouts because those timeouts continue to drive
+micro-batches. This establishes only normal checkpoint restart for this narrow
+operation. It does not establish failed-batch replay, sink idempotence, late
+event semantics, or Search pipeline recovery.
+
 ## Promotion gate still open
 
 Before this probe can justify production Structure extensions, extend it to

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from pathlib import Path
+from typing import Literal
 
 from structure.core.compiler.artifacts.api.Artifacts import Artifacts
 from structure.core.compiler.artifacts.model import CompiledArtifactPool, CompiledTransform, CompilerOptions
@@ -68,6 +69,13 @@ class StructureSession:
         self.compiler_options = CompilerOptions.from_config(resolved, schema_types=schema_types)
         self.artifacts = artifacts or CompiledArtifactPool()
         self._source_transforms: dict[SourceTransformAddress, list[type[Transform]]] = {}
+
+    def __enter__(self) -> StructureSession:
+        return self
+
+    def __exit__(self, exc_type, exc, traceback) -> Literal[False]:
+        self.close()
+        return False
 
     def close(self) -> None:
         """Drop temporary views created by Structure without stopping Spark."""

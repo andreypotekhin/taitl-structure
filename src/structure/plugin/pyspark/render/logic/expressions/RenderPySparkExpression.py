@@ -811,6 +811,8 @@ class RenderPySparkExpression:
             return f"F.unix_timestamp(format={format_literal!r})"
         if function in {"to_utc_timestamp", "from_utc_timestamp"}:
             return f"F.{function}({args[0]}, {expression.data['timezone']!r})"
+        if function in {"date_part", "datepart"}:
+            return f"F.{function}(F.lit({expression.data['field']!r}), {args[0]})"
         if function == "mask":
             chars = cast(tuple[str | None, ...], expression.data["chars"])
             if all(character is None for character in chars):

@@ -159,6 +159,18 @@ session = StructureSession(
 )
 ```
 
+For deterministic cleanup of Structure-owned temporary views, use the session as a context manager:
+
+```python
+with StructureSession(spark=spark, ctx=ctx) as session:
+    result = EnrichOrders(orders=orders_df, customers=customers_df).run(session)
+    enriched = result.enriched
+```
+
+Leaving the block calls `session.close()`. Materialize or release lazy results that depend on Structure temporary
+views before leaving the block. Cleanup does not stop or reconfigure the caller-owned Spark session; the caller still
+controls Spark and streaming shutdown. Explicit `session.close()` remains available and is safe to call repeatedly.
+
 The caller controls Spark startup and shutdown, DataFrame reads and writes, streaming sources and sinks, triggers,
 checkpoints, output modes, and orchestration. A session does not silently change Spark configuration or start a query.
 

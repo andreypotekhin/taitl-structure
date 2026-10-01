@@ -1040,6 +1040,8 @@ class EvaluatePySparkExpression:
             return functions.unix_timestamp(format=expression.data["format"])
         if function in {"to_utc_timestamp", "from_utc_timestamp"}:
             return getattr(functions, function)(args[0], expression.data["timezone"])
+        if function in {"date_part", "datepart"}:
+            return getattr(functions, function)(functions.lit(expression.data["field"]), args[0])
         if function == "mask":
             chars = cast(tuple[str | None, ...], expression.data["chars"])
             return functions.mask(args[0], *chars)

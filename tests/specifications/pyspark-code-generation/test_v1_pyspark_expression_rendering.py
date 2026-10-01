@@ -708,6 +708,7 @@ def test_v4_expression_renderer_renders_temporal_helpers() -> None:
         parsed_epoch = long(nullable=True)
         current_epoch = long(nullable=False)
         utc_at = timestamp(nullable=True)
+        month_part = integer(nullable=True)
         restored_day = date(nullable=True)
         parsed_date = date(nullable=True)
         parsed_timestamp = timestamp(nullable=True)
@@ -728,6 +729,7 @@ def test_v4_expression_renderer_renders_temporal_helpers() -> None:
                 parsed_epoch=unix_timestamp(row.raw_observed_at, format="yyyy-MM-dd HH:mm:ss"),
                 current_epoch=unix_timestamp(),
                 utc_at=to_utc_timestamp(row.raw_observed_at, timezone="UTC"),
+                month_part=date_part("month", row.observed_on),
                 restored_day=date_from_unix_date(1),
                 parsed_date=to_date(row.raw_observed_at, format="yyyy-MM-dd HH:mm:ss"),
                 parsed_timestamp=to_timestamp(row.raw_observed_at, format="yyyy-MM-dd HH:mm:ss"),
@@ -758,6 +760,9 @@ def test_v4_expression_renderer_renders_temporal_helpers() -> None:
     )
     assert render(projection["utc_at"], scope_aliases={"rows": "orders"}) == (
         'F.to_utc_timestamp(F.col("orders.raw_observed_at"), \'UTC\')'
+    )
+    assert render(projection["month_part"], scope_aliases={"rows": "orders"}) == (
+        'F.date_part(F.lit(\'month\'), F.col("orders.observed_on"))'
     )
     assert render(projection["restored_day"], scope_aliases={"rows": "orders"}) == 'F.date_from_unix_date(F.lit(1))'
     assert render(projection["parsed_date"], scope_aliases={"rows": "orders"}) == (
