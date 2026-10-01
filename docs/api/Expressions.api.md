@@ -228,7 +228,8 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
 | `to_binary(...)`, `try_to_binary(...)` | `to_binary`, `try_to_binary` | `to_binary(o.token, format="utf-8")` |
 | Query-clock helpers | `current_date`, `curdate`, `current_timestamp`, `now`, `localtimestamp`, `current_timezone` | `current_timestamp()` |
 | AES-GCM helpers | `aes_encrypt`, `aes_decrypt`, `try_aes_decrypt` | `aes_encrypt(o.payload, key=o.key)` |
-| Opaque sketch helpers | HLL/Bitmap typed equivalents | `hll_sketch_estimate(o.sketch)` |
+| `hll_sketch_estimate(...)`, `hll_union(...)` | HLL typed equivalents | `hll_sketch_estimate(o.sketch)` |
+| `bitmap_count(...)`, `bitmap_bit_position(...)`, `bitmap_bucket_number(...)` | Bitmap equivalents | `bitmap_count(o.bitmap)` |
 | `from_unixtime(...)` | `from_unixtime` | `from_unixtime(o.epoch_seconds, format="yyyy-MM-dd")` |
 | `unix_timestamp(...)` | `unix_timestamp` | `unix_timestamp(o.raw_at, format="yyyy-MM-dd HH:mm:ss")` |
 | `to_utc_timestamp(...)` | `to_utc_timestamp` | `to_utc_timestamp(o.raw_at, timezone="UTC")` |
@@ -336,7 +337,8 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
 - AES helpers are GCM-only typed equivalents. Keys are symbolic String/Binary expressions; explicit encryption IVs
   are accepted for interoperability and emit `CRYPTO-W0801`.
 - HLL and Bitmap helpers use branded opaque Binary state. HLL precision mismatches reject by default; sketch
-  aggregates follow the existing grouped-streaming contract.
+  aggregates follow the existing grouped-streaming contract. See the [Sketches and Bitmaps API](Sketches.api.md) for
+  their schema, aggregate, persistence, and profile rules.
 - `from_json(...)` and `from_csv(...)` require an explicit result Schema; `to_json(...)` and `to_csv(...)` require a
   Struct expression. Parsing and rendering results are nullable.
 - `get_json_object(...)` requires a non-empty literal JSON path and returns nullable String. `json_array_length(...)`

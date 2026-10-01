@@ -29,7 +29,8 @@ default support range until the adoption work closes.
 | Random/seeded helpers | design-gated | Explicit seed and nondeterminism policy; no streaming |
 | `DataFrame.exists` and IN subqueries | planned | Correlation, aliases, null behavior, and boolean result |
 | `DataFrame.lateralJoin` | design-gated | Typed relation output, cardinality, correlation, and streaming contract |
-| Complex observations and sketch aggregates | design-gated | Metric side channels and serialized sketch contracts |
+| Complex observations | design-gated | Metric side channels, retrieval, serialization, and streaming contracts |
+| KLL and Theta sketches | profile-gated | PySpark 4.1 opaque-state contract and live evidence; baseline HLL/Bitmap are supported separately |
 | Arrow UDF/UDTF; `transformWithState` | application-controlled/design-gated | Raw PySpark; no worker Python |
 
 The full ledger is in [APICatalog.md](../APICatalog.md#pyspark-41-adoption). The current public baseline remains
@@ -77,6 +78,7 @@ The schema, transform, and expression remain visible to compile-time checking an
 | --- | --- | --- | --- |
 | Joins | supported | DataFrame joins and windowed matching | [Join reference](Join.ref.md) |
 | Aggregations and dedupe | supported | GroupedData and windows | [Aggregations reference](Aggregations.ref.md) |
+| Sketches and bitmaps | supported | Typed opaque HLL/Bitmap state | [Sketches and Bitmaps reference](Sketches.ref.md) |
 | Inline and reusable windows | supported | `Window` and window functions | [Windows API](../api/Windows.api.md) |
 | Array/map helpers | supported | Higher-order and map SQL functions | [Collections API](../api/Collections.api.md) |
 | Relation operations | supported | Sets, order, assertions, hierarchy, sampling | [API](../api/Relations.api.md) |

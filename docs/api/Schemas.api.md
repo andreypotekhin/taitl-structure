@@ -19,6 +19,8 @@ Schema declarations define Structure's typed row contract and materialize to Spa
 | `decimal(...)` | `DecimalType` | `total = decimal(12, 2)` |
 | `variant(...)` | `VariantType` | `payload = variant(nullable=True)` |
 | `geometry(srid=...)` | Provider-neutral `GEOMETRY` | `location = geometry(srid=4326)` |
+| `hll_sketch(lg_config_k=...)` | Branded opaque Binary HLL state | `customers = hll_sketch(lg_config_k=12)` |
+| `bitmap()` | Branded opaque Binary Bitmap state | `features = bitmap()` |
 
 **Details And Differences**
 
@@ -33,6 +35,8 @@ Schema declarations define Structure's typed row contract and materialize to Spa
   integer literal and is part of the type; `GEOGRAPHY`, runtime-selected SRIDs, and provider-specific fields are not
   admitted. Geometry runtime availability remains an optional provider concern. See the
   [Geometry expressions](Expressions.api.md#geometry-expressions).
+- `hll_sketch(...)` and `bitmap()` preserve an opaque algorithm brand even though Spark materializes Binary. HLL
+  precision is part of the declared type. See the [Sketches and Bitmaps API](Sketches.api.md).
 
 ## Nested Declarations
 

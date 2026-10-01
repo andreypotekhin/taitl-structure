@@ -3,8 +3,8 @@
 For exhaustive reference on supported APIs, PySpark parity, examples and semantic differences, see the
 [API](API.md): [schemas](api/Schemas.api.md), [transforms](api/Transforms.api.md),
 [expressions](api/Expressions.api.md), [joins](api/Joins.api.md), [aggregations](api/Aggregations.api.md),
-[windows](api/Windows.api.md), [collections](api/Collections.api.md), [relations](api/Relations.api.md), and
-[streaming](api/Streaming.api.md).
+[sketches and bitmaps](api/Sketches.api.md), [windows](api/Windows.api.md), [collections](api/Collections.api.md),
+[relations](api/Relations.api.md), and [streaming](api/Streaming.api.md).
 
 ## Schema Classes
 
@@ -522,6 +522,30 @@ Reference: [aggregations API](api/Aggregations.api.md),
 [Transform](background/Transform.back.md),
 [IR](background/Compiler.back.md), [PySpark code generation](background/Generation.back.md), and
 [streaming compatibility](background/Streaming.back.md).
+
+## Sketches and Bitmaps
+
+Use `hll_sketch_agg(...)` or `bitmap_construct_agg(...)` when a grouped summary must publish reusable opaque state,
+rather than only an immediate count. Declare the output as `hll_sketch(lg_config_k=...)` or `bitmap()` so later
+operations remain type-safe.
+
+```python
+group_by(tenant_id=event.tenant_id)
+return TenantSketches(
+    tenant_id=event.tenant_id,
+    customer_hll=hll_sketch_agg(event.customer_id, lg_config_k=12),
+    feature_bitmap=bitmap_construct_agg(event.feature_id),
+)
+```
+
+`hll_sketch_estimate(...)` and `bitmap_count(...)` are row-preserving consumers. `hll_union(...)` accepts matching HLL
+precision by default; a mixed-precision union requires an explicit opt-in and emits `SKETCH-W0802`. Opaque sketch
+state is Spark/profile specific, not generic Binary interchange. Grouped sketch operations in streaming follow normal
+watermark and output-mode rules.
+
+Reference: [Sketches and Bitmaps API](api/Sketches.api.md),
+[Sketches and Bitmaps reference](reference/Sketches.ref.md), and
+[Sketch and Bitmap Metrics recipe](recipes/SketchBitmapMetrics.md).
 
 ## Latest/Earliest Rows
 

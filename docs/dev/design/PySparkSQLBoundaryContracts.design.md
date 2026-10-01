@@ -67,6 +67,10 @@ surface produces bytes without a typed SQL consumer. KLL and Theta reuse this op
 profile; they are not default-baseline support. Observation metrics are a separate future side-channel design, not
 regular transform output fields.
 
+The complete default-baseline implementation and documentation contract is maintained in
+[PySpark Sketch and Bitmap Design](PySparkSketchBitmap.design.md). It separates the supported HLL/Bitmap surface from
+the profile-gated KLL/Theta work without treating Spark Binary state as portable interchange data.
+
 ## Evidence and diagnostics
 
 No boundary decision alone promotes an API to implemented. Each candidate needs a capability key, typed symbolic

@@ -38,6 +38,7 @@ reference page, see [API.ref.md](reference/API.ref.md).
 | --- | --- | --- | --- |
 | Joins | supported | DataFrame joins and windowed matching | [Joins API](api/Joins.api.md) |
 | Aggregations and dedupe | supported | `GroupedData` and Window patterns | [Aggregates](api/Aggregations.api.md) |
+| Sketches and bitmaps | supported | Typed opaque HLL/Bitmap state | [Sketches and Bitmaps API](api/Sketches.api.md) |
 | Inline and reusable windows | supported | `Window` and window functions | [Windows API](api/Windows.api.md) |
 | Array/map helpers | supported | Higher-order and map SQL functions | [Collections API](api/Collections.api.md) |
 | Relation operations | supported | Set composition, ordering, assertions, hierarchy, and sampling | [Relations API](api/Relations.api.md) |

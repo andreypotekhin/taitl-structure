@@ -163,6 +163,13 @@ precision/scale grow within Spark's bounds. Statistical results are nullable dou
 requires grouped keys and uses the lowest orderable candidate for ties. Variant aggregates require a resolved PySpark 4
 profile.
 
+### Opaque sketch metrics
+
+`hll_sketch_agg(...)`, `bitmap_construct_agg(...)`, and `bitmap_or_agg(...)` publish opaque analytical state rather
+than an immediately final metric. HLL estimates and Bitmap counts are row-local consumers of that state. Keep HLL
+`lg_config_k` consistent when values may be unioned, and do not treat Spark's Binary representation as a portable
+interchange format. See the [Sketches and Bitmaps reference](Sketches.ref.md) for the complete contract.
+
 ```python
 return ProductStats(
     average_price=avg(product.price),

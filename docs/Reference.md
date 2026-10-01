@@ -12,6 +12,8 @@ discrepancies, use the [API catalog](APICatalog.md) and [API reference](referenc
   composition, streaming compatibility, and execution boundaries.
 - [Aggregations reference](reference/Aggregations.ref.md): grouped metrics, selected rows, deduplication, windows,
   and higher-order collection operations.
+- [Sketches and Bitmaps reference](reference/Sketches.ref.md): opaque HLL/Bitmap fields, precision, composition,
+  persistence, target profiles, and streaming boundaries.
 - [Join reference](reference/Join.ref.md): lookup, rowset, existence, temporal, as-of, and Cartesian joins.
 - [Configuration reference](reference/ConfigSchema.ref.md): files, precedence, target selection, validation, and CI
   settings.

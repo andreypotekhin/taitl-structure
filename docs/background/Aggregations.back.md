@@ -15,6 +15,10 @@ The analytical surface supports common grouped aggregates, custom grouping sets,
 metrics, deterministic latest/earliest selection, exact/subset duplicate removal, and basic array/map callbacks. This
 page describes the admitted surface and the boundaries still enforced by backend capability checks.
 
+Opaque HLL and Bitmap metrics are a dedicated cross-schema aggregate surface. Their construction changes row grain,
+while their estimate/count consumers preserve it; see [Sketches and Bitmaps](Sketches.back.md) for precision,
+persistence, profile, and streaming boundaries.
+
 ## Choosing an Analytical Shape
 
 Use the smallest operation family that expresses the intended cardinality:

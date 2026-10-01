@@ -121,6 +121,7 @@ the current `order` row scope as `o`.
   available only on resolved PySpark 4 profiles.
 - HLL and Bitmap aggregates return branded opaque Binary state. HLL unions require matching `lg_config_k` by default;
   explicitly allowing mixed precision emits `SKETCH-W0802`. Scalar estimate/count helpers are row-local consumers.
+  See the [Sketches and Bitmaps API](Sketches.api.md) for type, persistence, profile, and streaming boundaries.
 - Raw aggregate aliases are unsupported. Name aggregate outputs through the returned Schema constructor, and use schema
   field `alias=...` when the physical Spark column name must differ from the Structure field name.
 

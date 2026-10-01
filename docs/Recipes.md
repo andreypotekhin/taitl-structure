@@ -13,6 +13,11 @@ the API, and the [Reference](Reference.md), which defines detailed behavior.
 - [Latest Rows](recipes/LatestRows.md): retain the most recent row for each business key.
 - [Earliest Rows](recipes/EarliestRows.md): retain the first row for each business key.
 
+## Analytical State Recipes
+
+- [Sketch and Bitmap Metrics](recipes/SketchBitmapMetrics.md): publish reusable typed HLL/Bitmap state and later
+  derive estimates or counts without treating the state as generic Binary data.
+
 ## Source Layout Recipes
 
 - [Colocated Intermediate Schemas](recipes/ColocatedIntermediateSchemas.md): keep a transform-only schema beside its transform.
