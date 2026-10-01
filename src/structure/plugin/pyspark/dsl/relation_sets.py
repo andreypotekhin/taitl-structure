@@ -17,20 +17,18 @@ from structure.plugin.api.v1.model import current_symbolic_context
 from structure.plugin.pyspark.dsl.Expression import Expression, is_order_direction, is_orderable_type
 from structure.plugin.pyspark.dsl.expressions import literal
 from structure.plugin.pyspark.dsl.InputScope import InputScope
-from structure.plugin.pyspark.dsl.joins import TiePolicy
-from structure.plugin.pyspark.dsl.operations import (
-    OperationPlan,
-    RelationAliasPlan,
-    RelationAssertionPlan,
-    RelationBoundPlan,
-    RelationHierarchyClosurePlan,
-    RelationHierarchyFallbackPlan,
-    RelationOrderPlan,
-    RelationPrioritySelectionPlan,
-    RelationSamplePlan,
-    RelationSetPlan,
-)
+from structure.plugin.pyspark.dsl.joins.TiePolicy import TiePolicy
+from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
+from structure.plugin.pyspark.dsl.operations.RelationAliasPlan import RelationAliasPlan
+from structure.plugin.pyspark.dsl.operations.RelationAssertionPlan import RelationAssertionPlan
+from structure.plugin.pyspark.dsl.operations.RelationBoundPlan import RelationBoundPlan
+from structure.plugin.pyspark.dsl.operations.RelationHierarchyClosurePlan import RelationHierarchyClosurePlan
+from structure.plugin.pyspark.dsl.operations.RelationHierarchyFallbackPlan import RelationHierarchyFallbackPlan
+from structure.plugin.pyspark.dsl.operations.RelationOrderPlan import RelationOrderPlan
 from structure.plugin.pyspark.dsl.operations.RelationPartitionPlan import RelationPartitionPlan
+from structure.plugin.pyspark.dsl.operations.RelationPrioritySelectionPlan import RelationPrioritySelectionPlan
+from structure.plugin.pyspark.dsl.operations.RelationSamplePlan import RelationSamplePlan
+from structure.plugin.pyspark.dsl.operations.RelationSetPlan import RelationSetPlan
 from structure.plugin.pyspark.dsl.RowScope import RowScope
 from structure.plugin.pyspark.dsl.types import ArrayType, DecimalType, LongType, MapType, StringType, StructType
 

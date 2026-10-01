@@ -24,20 +24,17 @@ from structure.plugin.api.v1.model import SymbolicContext
 from structure.plugin.api.v1.model import current_symbolic_context as current_context
 from structure.plugin.pyspark.dsl.Expression import Expression, is_order_direction, is_orderable_type
 from structure.plugin.pyspark.dsl.expressions import literal
-from structure.plugin.pyspark.dsl.joins import TiePolicy
-from structure.plugin.pyspark.dsl.operations import (
-    CheckpointPlan,
-    DuplicateRowsPlan,
-    OperationPlan,
-    OrderedTimelineScanPlan,
-    SelectedRowsPlan,
-    UnpersistPlan,
-)
+from structure.plugin.pyspark.dsl.joins.TiePolicy import TiePolicy
 from structure.plugin.pyspark.dsl.operations.CacheOperations import (
     cache_operation,
     persist_operation,
     reserved_operations,
 )
+from structure.plugin.pyspark.dsl.operations.DuplicateRowsPlan import DuplicateRowsPlan
+from structure.plugin.pyspark.dsl.operations.MaterializationPlan import CheckpointPlan, UnpersistPlan
+from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
+from structure.plugin.pyspark.dsl.operations.OrderedTimelineScanPlan import OrderedTimelineScanPlan
+from structure.plugin.pyspark.dsl.operations.SelectedRowsPlan import SelectedRowsPlan
 from structure.plugin.pyspark.dsl.TimeWindow import TimeWindow
 from structure.plugin.pyspark.dsl.types import (
     ArrayType,

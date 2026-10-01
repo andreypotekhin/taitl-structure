@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 from structure.plugin.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoinRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkStepRecipe
-from structure.plugin.pyspark.dsl.joins import Join
+from structure.plugin.pyspark.dsl.joins.Join import Join
 from structure.plugin.pyspark.execution.logic.running.RunOnlinePySparkTransform import RunOnlinePySparkTransform
 
 

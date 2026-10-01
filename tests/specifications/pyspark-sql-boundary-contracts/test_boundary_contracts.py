@@ -26,11 +26,15 @@ def _render(expression):
 
 
 def test_query_clock_contract_is_typed_and_query_stable():
-    assert isinstance(current_date().type, type(current_date().type))
-    assert current_date().nullable is False
-    assert current_date().data["query_stable"] is True
-    assert current_date().data["nondeterministic"] is True
-    assert now().type.name == "timestamp"
+    expression = current_date()
+    assert expression.type is not None
+    assert expression.nullable is False
+    assert expression.data is not None
+    assert expression.data["query_stable"] is True
+    assert expression.data["nondeterministic"] is True
+    clock = now()
+    assert clock.type is not None
+    assert clock.type.name == "timestamp"
     assert current_timezone().type == StringType()
     assert _render(now()) == "F.now()"
 
@@ -39,7 +43,9 @@ def test_aes_contract_rejects_literal_keys_and_warns_for_explicit_iv():
     with pytest.raises(TypeError, match="symbolic String or Binary"):
         aes_encrypt("payload", key="literal-secret")
     expression = aes_encrypt("payload", key=current_timezone(), iv=b"123456789012")
+    assert expression.type is not None
     assert expression.type.name == "binary"
+    assert expression.data is not None
     assert expression.data["warnings"] == ("CRYPTO-W0801",)
     assert _render(expression) == "F.aes_encrypt(F.lit('payload'), F.current_timezone(), F.lit(b'123456789012'))"
     assert _render(aes_decrypt("payload", key=current_timezone())) == "F.aes_decrypt(F.lit('payload'), F.current_timezone())"
@@ -53,4 +59,6 @@ def test_opaque_sketch_contract_preserves_brands_and_precision_guard():
     assert isinstance(hll_sketch_estimate(first).type, LongType)
     with pytest.raises(TypeError, match="matching lg_config_k"):
         hll_union(first, second)
-    assert hll_union(first, second, allow_different_lg_config_k=True).data["warnings"] == ("SKETCH-W0802",)
+    union = hll_union(first, second, allow_different_lg_config_k=True)
+    assert union.data is not None
+    assert union.data["warnings"] == ("SKETCH-W0802",)

@@ -46,8 +46,9 @@ from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkSte
 from structure.plugin.pyspark.compiler.model.PySparkStepResultRecipe import PySparkStepResultRecipe
 from structure.plugin.pyspark.compiler.model.PySparkWatermarkRecipe import PySparkWatermarkRecipe
 from structure.plugin.pyspark.dsl.aggregation import AggregatePlan, ProjectAssignment
-from structure.plugin.pyspark.dsl.joins import JoinMethod, JoinPlan
-from structure.plugin.pyspark.dsl.operations import OperationCapability
+from structure.plugin.pyspark.dsl.joins.JoinMethod import JoinMethod
+from structure.plugin.pyspark.dsl.joins.JoinPlan import JoinPlan
+from structure.plugin.pyspark.dsl.operations.OperationCapability import OperationCapability
 from structure.plugin.pyspark.symbolic_execution.model.PySparkResultBody import PySparkResultBody
 from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any
 
-from structure.plugin.pyspark.dsl.joins import TiePolicy
+from structure.plugin.pyspark.dsl.joins.TiePolicy import TiePolicy
 
 
 @dataclass(frozen=True)

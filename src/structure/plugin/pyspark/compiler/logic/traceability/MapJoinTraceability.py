@@ -2,7 +2,7 @@ from structure.plugin.api.v1.model import CompilerProvenance, DataflowDependency
 from structure.plugin.pyspark.compiler.logic.traceability.CompilerDataflowReads import CompilerDataflowReads
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkStepRecipe
-from structure.plugin.pyspark.dsl.joins import JoinMethod
+from structure.plugin.pyspark.dsl.joins.JoinMethod import JoinMethod
 
 
 class MapJoinTraceability:

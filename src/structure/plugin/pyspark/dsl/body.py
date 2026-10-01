@@ -15,7 +15,7 @@ from structure.dsl import Schema
 from structure.plugin.api.v1.model import current_symbolic_context
 from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.expressions import literal
-from structure.plugin.pyspark.dsl.joins import JoinPlan
+from structure.plugin.pyspark.dsl.joins.JoinPlan import JoinPlan
 from structure.plugin.pyspark.dsl.model.Projection import Projection
 from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
 from structure.plugin.pyspark.dsl.operations.WatermarkPlan import WatermarkPlan

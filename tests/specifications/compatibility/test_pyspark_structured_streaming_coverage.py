@@ -72,19 +72,19 @@ def test_structured_streaming_ledger_entries_are_actionable() -> None:
 def test_current_structured_streaming_measurement_is_checked() -> None:
     measurement = _measure()
 
-    assert measurement.batch_supported == 42
-    assert measurement.batch_catalog_size == 45
-    assert measurement.streaming_supported == 40
-    assert measurement.streaming_supported_batch_families == 40
+    assert measurement.batch_supported == 45
+    assert measurement.batch_catalog_size == 48
+    assert measurement.streaming_supported == 43
+    assert measurement.streaming_supported_batch_families == 43
     assert measurement.deferred_batch_families == []
     assert measurement.ineligible_batch_families == [
         "dataframe.ordering",
         "dataframe.priority-selection",
     ]
-    assert measurement.batch_ratio == "93.3%"
-    assert measurement.streaming_ratio == "88.9%"
-    assert measurement.streaming_batch_family_ratio == "95.2%"
-    assert measurement.effective_streaming_denominator == 40
+    assert measurement.batch_ratio == "93.8%"
+    assert measurement.streaming_ratio == "89.6%"
+    assert measurement.streaming_batch_family_ratio == "95.6%"
+    assert measurement.effective_streaming_denominator == 43
     assert measurement.effective_streaming_ratio == "100.0%"
 
 

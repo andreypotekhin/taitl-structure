@@ -6,7 +6,7 @@ from structure import *
 from structure.core.compiler.api import Compiler
 from structure.plugin.pyspark import *
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
-from structure.plugin.pyspark.dsl.operations import OperationCardinality
+from structure.plugin.pyspark.dsl.operations.OperationCardinality import OperationCardinality
 from structure.plugin.pyspark.render.commands.RenderPySparkStep import render_pyspark_step
 from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 

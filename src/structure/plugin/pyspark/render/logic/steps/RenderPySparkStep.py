@@ -18,7 +18,8 @@ from structure.plugin.pyspark.compiler.model.PySparkSelectedRowsRecipe import Py
 from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.plugin.pyspark.compiler.model.PySparkValidationRecipe import PySparkValidationRecipe
 from structure.plugin.pyspark.compiler.model.PySparkWatermarkRecipe import PySparkWatermarkRecipe
-from structure.plugin.pyspark.dsl.joins import Join, JoinMethod
+from structure.plugin.pyspark.dsl.joins.Join import Join
+from structure.plugin.pyspark.dsl.joins.JoinMethod import JoinMethod
 from structure.plugin.pyspark.dsl.types import ArrayType, DecimalType, MapType, StructType, StructureType
 from structure.plugin.pyspark.render.logic.expressions.RenderPySparkExpression import render_pyspark_expression
 from structure.plugin.pyspark.render.logic.steps.RenderPySparkAggregatePlan import RenderPySparkAggregatePlan

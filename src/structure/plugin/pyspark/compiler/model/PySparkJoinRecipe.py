@@ -7,7 +7,10 @@ from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySp
 from structure.plugin.pyspark.compiler.model.PySparkJoinAsOfRecipe import PySparkJoinAsOfRecipe
 from structure.plugin.pyspark.compiler.model.PySparkJoinDedupeRecipe import PySparkJoinDedupeRecipe
 from structure.plugin.pyspark.compiler.model.PySparkJoinTemporalRecipe import PySparkJoinTemporalRecipe
-from structure.plugin.pyspark.dsl.joins import Join, JoinHint, JoinMethod, JoinStrategy
+from structure.plugin.pyspark.dsl.joins.Join import Join
+from structure.plugin.pyspark.dsl.joins.JoinHint import JoinHint
+from structure.plugin.pyspark.dsl.joins.JoinMethod import JoinMethod
+from structure.plugin.pyspark.dsl.joins.JoinStrategy import JoinStrategy
 
 
 @dataclass(frozen=True)

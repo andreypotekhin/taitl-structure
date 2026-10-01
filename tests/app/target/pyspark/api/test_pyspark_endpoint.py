@@ -20,17 +20,15 @@ from structure.plugin.pyspark.dsl.aggregation import AggregateAssignment, Aggreg
 from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.expressions import literal
 from structure.plugin.pyspark.dsl.model.Projection import Projection
-from structure.plugin.pyspark.dsl.operations import (
-    CachePlan,
-    DuplicateRowsPlan,
-    OperationCapability,
-    OperationCardinality,
-    OperationPlan,
-    SelectedRowsPlan,
-    StreamingOutputMode,
-    StreamingSupport,
-    WatermarkPlan,
-)
+from structure.plugin.pyspark.dsl.operations.CachePlan import CachePlan
+from structure.plugin.pyspark.dsl.operations.DuplicateRowsPlan import DuplicateRowsPlan
+from structure.plugin.pyspark.dsl.operations.OperationCapability import OperationCapability
+from structure.plugin.pyspark.dsl.operations.OperationCardinality import OperationCardinality
+from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
+from structure.plugin.pyspark.dsl.operations.SelectedRowsPlan import SelectedRowsPlan
+from structure.plugin.pyspark.dsl.operations.StreamingOutputMode import StreamingOutputMode
+from structure.plugin.pyspark.dsl.operations.StreamingSupport import StreamingSupport
+from structure.plugin.pyspark.dsl.operations.WatermarkPlan import WatermarkPlan
 from structure.plugin.pyspark.dsl.operations_api import count
 from structure.plugin.pyspark.dsl.types import ArrayType, DecimalType, StructType
 from structure.plugin.pyspark.files.api.Files import CompareGeneratedFiles

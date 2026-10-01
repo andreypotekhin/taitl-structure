@@ -10,7 +10,8 @@ from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySpark
 from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.plugin.pyspark.compiler.model.PySparkHookRecipe import PySparkHookRecipe
 from structure.plugin.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoinRecipe
-from structure.plugin.pyspark.dsl.joins import Join, JoinMethod
+from structure.plugin.pyspark.dsl.joins.Join import Join
+from structure.plugin.pyspark.dsl.joins.JoinMethod import JoinMethod
 from structure.plugin.pyspark.dsl.operations.StreamingSupport import StreamingSupport
 
 

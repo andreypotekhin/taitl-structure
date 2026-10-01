@@ -5,7 +5,8 @@ from structure.plugin.api.v1.model import ExplainRequest, TransformPlan
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.plugin.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoinRecipe
 from structure.plugin.pyspark.compiler.model.PySparkOperationRecipe import PySparkOperationRecipe
-from structure.plugin.pyspark.dsl.joins import Join, JoinMethod
+from structure.plugin.pyspark.dsl.joins.Join import Join
+from structure.plugin.pyspark.dsl.joins.JoinMethod import JoinMethod
 from structure.plugin.pyspark.render.logic.explain.RenderPySparkGeneratorExplain import RenderPySparkGeneratorExplain
 
 

@@ -8,7 +8,7 @@ from examples.school.transforms.sequences import Fibonacci, PrimeNumbers
 from examples.school.transforms.series import EAsSeries, Ln2AsSeries, PiAsSeries
 from examples.school.transforms.vectors import EvaluateVectors
 from structure.core.compiler.api import Compiler
-from structure.plugin.pyspark.dsl.operations import OperationCardinality
+from structure.plugin.pyspark.dsl.operations.OperationCardinality import OperationCardinality
 from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 
 

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from structure.dsl import Schema
 from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
-from structure.plugin.pyspark.dsl.joins import TiePolicy
+from structure.plugin.pyspark.dsl.joins.TiePolicy import TiePolicy
 
 
 @dataclass(frozen=True)

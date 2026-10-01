@@ -3,8 +3,10 @@ from dataclasses import replace
 
 from structure.plugin.pyspark.dsl.aggregation import AggregateAssignment, AggregateKey, AggregatePlan, ProjectAssignment
 from structure.plugin.pyspark.dsl.Expression import Expression
-from structure.plugin.pyspark.dsl.joins import JoinPlan
-from structure.plugin.pyspark.dsl.operations import DuplicateRowsPlan, OperationPlan, SelectedRowsPlan
+from structure.plugin.pyspark.dsl.joins.JoinPlan import JoinPlan
+from structure.plugin.pyspark.dsl.operations.DuplicateRowsPlan import DuplicateRowsPlan
+from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
+from structure.plugin.pyspark.dsl.operations.SelectedRowsPlan import SelectedRowsPlan
 from structure.plugin.pyspark.symbolic_execution.model.PySparkResultBody import PySparkResultBody
 from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 

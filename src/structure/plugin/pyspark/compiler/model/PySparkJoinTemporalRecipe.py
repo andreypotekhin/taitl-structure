@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
-from structure.plugin.pyspark.dsl.joins import OverlapPolicy
+from structure.plugin.pyspark.dsl.joins.OverlapPolicy import OverlapPolicy
 
 
 @dataclass(frozen=True)

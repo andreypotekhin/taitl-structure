@@ -7,13 +7,11 @@ from structure.dsl import Schema
 from structure.plugin.api.v1.model import SymbolicContext
 from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.expressions import literal
-from structure.plugin.pyspark.dsl.operations import (
-    JsonTuplePlan,
-    MapGeneratorPlan,
-    OperationPlan,
-    PosexplodeStructPlan,
-    ScalarGeneratorPlan,
-)
+from structure.plugin.pyspark.dsl.operations.JsonTuplePlan import JsonTuplePlan
+from structure.plugin.pyspark.dsl.operations.MapGeneratorPlan import MapGeneratorPlan
+from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
+from structure.plugin.pyspark.dsl.operations.PosexplodeStructPlan import PosexplodeStructPlan
+from structure.plugin.pyspark.dsl.operations.ScalarGeneratorPlan import ScalarGeneratorPlan
 from structure.plugin.pyspark.dsl.RowScope import RowScope
 from structure.plugin.pyspark.dsl.types import (
     ArrayType,

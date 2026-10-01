@@ -2,16 +2,14 @@ from structure import StructureCompileError
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
 from structure.plugin.api.v1.model.StepAuthoringRequest import StepAuthoringRequest
 from structure.plugin.pyspark.dsl.Expression import Expression
-from structure.plugin.pyspark.dsl.joins import (
-    AsOf,
-    Join,
-    JoinDedupe,
-    JoinHint,
-    JoinMethod,
-    JoinStrategy,
-    OverlapPolicy,
-    TiePolicy,
-)
+from structure.plugin.pyspark.dsl.joins.AsOf import AsOf
+from structure.plugin.pyspark.dsl.joins.Join import Join
+from structure.plugin.pyspark.dsl.joins.JoinDedupe import JoinDedupe
+from structure.plugin.pyspark.dsl.joins.JoinHint import JoinHint
+from structure.plugin.pyspark.dsl.joins.JoinMethod import JoinMethod
+from structure.plugin.pyspark.dsl.joins.JoinStrategy import JoinStrategy
+from structure.plugin.pyspark.dsl.joins.OverlapPolicy import OverlapPolicy
+from structure.plugin.pyspark.dsl.joins.TiePolicy import TiePolicy
 from structure.plugin.pyspark.dsl.types import DecimalType, StructType, StructureType
 from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 

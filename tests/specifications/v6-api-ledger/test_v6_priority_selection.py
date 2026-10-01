@@ -8,7 +8,7 @@ from structure.core.compiler.api import Compiler
 from structure.plugin import pyspark
 from structure.plugin.pyspark import boolean, integer, select_first_qualified, string
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
-from structure.plugin.pyspark.dsl.joins import TiePolicy
+from structure.plugin.pyspark.dsl.joins.TiePolicy import TiePolicy
 from structure.plugin.pyspark.render.commands.RenderPySparkStep import render_pyspark_step
 
 

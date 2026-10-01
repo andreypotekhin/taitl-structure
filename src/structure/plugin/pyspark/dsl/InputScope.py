@@ -10,19 +10,17 @@ from structure.dsl import Schema
 from structure.plugin.api.v1.model import current_symbolic_context as current_context
 from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.expressions import literal
-from structure.plugin.pyspark.dsl.joins import (
-    AsOf,
-    Join,
-    JoinAsOf,
-    JoinDedupe,
-    JoinHint,
-    JoinMethod,
-    JoinPlan,
-    JoinStrategy,
-    JoinTemporal,
-    OverlapPolicy,
-    TiePolicy,
-)
+from structure.plugin.pyspark.dsl.joins.AsOf import AsOf
+from structure.plugin.pyspark.dsl.joins.Join import Join
+from structure.plugin.pyspark.dsl.joins.JoinAsOf import JoinAsOf
+from structure.plugin.pyspark.dsl.joins.JoinDedupe import JoinDedupe
+from structure.plugin.pyspark.dsl.joins.JoinHint import JoinHint
+from structure.plugin.pyspark.dsl.joins.JoinMethod import JoinMethod
+from structure.plugin.pyspark.dsl.joins.JoinPlan import JoinPlan
+from structure.plugin.pyspark.dsl.joins.JoinStrategy import JoinStrategy
+from structure.plugin.pyspark.dsl.joins.JoinTemporal import JoinTemporal
+from structure.plugin.pyspark.dsl.joins.OverlapPolicy import OverlapPolicy
+from structure.plugin.pyspark.dsl.joins.TiePolicy import TiePolicy
 from structure.plugin.pyspark.dsl.operations.ExactlyOnePlan import ExactlyOnePlan
 from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
 from structure.plugin.pyspark.dsl.RowScope import RowScope

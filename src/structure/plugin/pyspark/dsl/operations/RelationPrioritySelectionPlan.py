@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from structure.plugin.pyspark.dsl.Expression import Expression
-from structure.plugin.pyspark.dsl.joins import TiePolicy
+from structure.plugin.pyspark.dsl.joins.TiePolicy import TiePolicy
 
 
 @dataclass(frozen=True)
