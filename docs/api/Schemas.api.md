@@ -36,7 +36,7 @@ Schema declarations define Structure's typed row contract and materialize to Spa
   admitted. Geometry runtime availability remains an optional provider concern. See the
   [Geometry expressions](Expressions.api.md#geometry-expressions).
 - `hll_sketch(...)` and `bitmap()` preserve an opaque algorithm brand even though Spark materializes Binary. HLL
-  precision is part of the declared type. See the [Sketches and Bitmaps API](Sketches.api.md).
+  precision is part of the declared type. See [Sketches and Bitmaps](Aggregations.api.md#sketches-and-bitmaps).
 
 ## Nested Declarations
 

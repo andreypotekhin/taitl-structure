@@ -165,10 +165,42 @@ profile.
 
 ### Opaque sketch metrics
 
-`hll_sketch_agg(...)`, `bitmap_construct_agg(...)`, and `bitmap_or_agg(...)` publish opaque analytical state rather
-than an immediately final metric. HLL estimates and Bitmap counts are row-local consumers of that state. Keep HLL
-`lg_config_k` consistent when values may be unioned, and do not treat Spark's Binary representation as a portable
-interchange format. See the [Sketches and Bitmaps reference](Sketches.ref.md) for the complete contract.
+Use HLL and Bitmap fields when a later transform must carry compact analytical state rather than only a final number.
+HLL represents approximate cardinality; Bitmap represents integral positions. For a one-off final value, prefer
+`count_distinct(...)` when an exact answer is practical or `approx_count_distinct(...)` when only the approximation is
+needed.
+
+```python
+class TenantSketches(Schema):
+    tenant_id = string(nullable=False)
+    customers = hll_sketch(lg_config_k=12, nullable=True)
+    features = bitmap(nullable=True)
+```
+
+The HLL precision belongs in the declaration. Choose one value for every HLL field that will be merged. Neither value
+is ordinary `binary()` in the Structure API, so a serialized payload, an HLL, and a Bitmap cannot be interchanged by
+accident.
+
+```python
+group_by(tenant_id=event.tenant_id)
+return TenantSketches(
+    tenant_id=event.tenant_id,
+    customers=hll_sketch_agg(event.customer_id, lg_config_k=12),
+    features=bitmap_construct_agg(event.feature_id),
+)
+```
+
+`hll_sketch_agg(...)`, `bitmap_construct_agg(...)`, and `bitmap_or_agg(...)` are grouped metrics. Their resulting
+state can be read in a later row-preserving projection with `hll_sketch_estimate(...)` or `bitmap_count(...)`.
+`hll_union(left, right)` requires matching HLL precision by default. An external compatibility case may explicitly
+set `allow_different_lg_config_k=True`; it emits `SKETCH-W0802` because Spark can reduce the result precision.
+
+Spark's Binary representation is not a portable interchange format. Applications own compatibility testing whenever
+state is persisted or transferred. HLL and Bitmap are default-baseline features; KLL and Theta declarations require a
+PySpark 4.1 profile and do not imply baseline aggregate support. Count-Min and observations remain caller-owned.
+
+Scalar sketch consumers preserve rows. Construction and Bitmap OR follow the ordinary grouped-streaming watermark,
+state, and output-mode rules; a transform does not own the source, sink, checkpoint, or retention policy.
 
 ```python
 return ProductStats(

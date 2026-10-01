@@ -337,8 +337,8 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
 - AES helpers are GCM-only typed equivalents. Keys are symbolic String/Binary expressions; explicit encryption IVs
   are accepted for interoperability and emit `CRYPTO-W0801`.
 - HLL and Bitmap helpers use branded opaque Binary state. HLL precision mismatches reject by default; sketch
-  aggregates follow the existing grouped-streaming contract. See the [Sketches and Bitmaps API](Sketches.api.md) for
-  their schema, aggregate, persistence, and profile rules.
+  aggregates follow the existing grouped-streaming contract. See [Sketches and Bitmaps](Aggregations.api.md#sketches-and-bitmaps)
+  for their schema, aggregate, persistence, and profile rules.
 - `from_json(...)` and `from_csv(...)` require an explicit result Schema; `to_json(...)` and `to_csv(...)` require a
   Struct expression. Parsing and rendering results are nullable.
 - `get_json_object(...)` requires a non-empty literal JSON path and returns nullable String. `json_array_length(...)`

@@ -90,8 +90,6 @@ the current `order` row scope as `o`.
 | `covar(...)` | `covar` | `covar(order.price, order.quantity)` |
 | `approx_count_distinct(...)` | `approx_count_distinct` | `approx_count_distinct(o.customer_id, relative_sd=0.05)` |
 | `approx_percentile(...)` | `approx_percentile` | `approx_percentile(order.total, 0.5, accuracy=100)` |
-| `hll_sketch_agg(...)` | Opaque HLL sketch aggregate | `hll_sketch_agg(order.customer_id, lg_config_k=12)` |
-| `bitmap_construct_agg(...)`, `bitmap_or_agg(...)` | Opaque Bitmap aggregates | `bitmap_construct_agg(order.position)` |
 | `percentile(...)` | `percentile` | `percentile(order.total, 0.5)` |
 | `schema_of_variant_agg(...)` | Variant schema aggregate | `schema_of_variant_agg(order.payload)` |
 | `mode(...)` | `mode` | `mode(order.category, deterministic=True)` |
@@ -119,11 +117,50 @@ the current `order` row scope as `o`.
   orderable candidate across supported PySpark targets.
 - `schema_of_variant_agg(...)` requires a Variant expression and returns a nullable SQL-format schema string. It is
   available only on resolved PySpark 4 profiles.
-- HLL and Bitmap aggregates return branded opaque Binary state. HLL unions require matching `lg_config_k` by default;
-  explicitly allowing mixed precision emits `SKETCH-W0802`. Scalar estimate/count helpers are row-local consumers.
-  See the [Sketches and Bitmaps API](Sketches.api.md) for type, persistence, profile, and streaming boundaries.
 - Raw aggregate aliases are unsupported. Name aggregate outputs through the returned Schema constructor, and use schema
   field `alias=...` when the physical Spark column name must differ from the Structure field name.
+
+## Sketches and Bitmaps
+
+Use HLL or Bitmap state when a grouped transform must publish a reusable approximation or compact set summary. For a
+final exact count, prefer `count_distinct(...)`; for an immediate approximate count, consider
+`approx_count_distinct(...)`. Sketch state is useful when a later transform must consume or combine it.
+
+### Declared state
+
+| Structure API | Spark representation | Example |
+| --- | --- | --- |
+| `hll_sketch(lg_config_k=12)` | Branded Binary HLL state | `customers = hll_sketch(lg_config_k=12)` |
+| `bitmap()` | Branded Binary Bitmap state | `features = bitmap()` |
+| `kll_sketch()`, `theta_sketch()` | Profile-gated Binary declarations | PySpark 4.1 profile only |
+
+`hll_sketch(...)` retains a literal precision from 4 through 21. HLL and Bitmap values cannot be cast to ordinary
+`binary()` or to each other. KLL and Theta declarations require the PySpark 4.1 profile; they do not add a baseline
+aggregate surface.
+
+### Operations
+
+| Structure API | PySpark parity | Example |
+| --- | --- | --- |
+| `hll_sketch_agg(value, lg_config_k=12, where=None)` | HLL construction | `hll_sketch_agg(order.customer_id)` |
+| `hll_union(left, right, allow_different_lg_config_k=False)` | `hll_union` | `hll_union(order.left_hll, order.right_hll)` |
+| `hll_sketch_estimate(value)` | `hll_sketch_estimate` | `hll_sketch_estimate(order.customer_hll)` |
+| `bitmap_construct_agg(value, where=None)` | Bitmap construction | `bitmap_construct_agg(order.position)` |
+| `bitmap_or_agg(value, where=None)` | `bitmap_or_agg` | `bitmap_or_agg(order.feature_bitmap)` |
+| `bitmap_count(value)` | `bitmap_count` | `bitmap_count(order.feature_bitmap)` |
+| `bitmap_bit_position(value)`, `bitmap_bucket_number(value)` | Bitmap position helpers | `bitmap_bit_position(order.position)` |
+
+**Details And Differences**
+
+- HLL construction, Bitmap construction, and Bitmap OR are grouped aggregates. HLL union, estimate, Bitmap count,
+  and position helpers preserve the current row.
+- HLL union requires matching `lg_config_k` by default. Deliberately setting
+  `allow_different_lg_config_k=True` emits `SKETCH-W0802`, because Spark may reduce the result precision.
+- Bitmap construction and position helpers require Integer or Long input. Sketch consumers reject raw Binary and the
+  wrong opaque family before execution.
+- Sketch state is compatible only with the appropriate Spark/profile implementation; it is not a portable Binary
+  interchange format. In streaming, grouped operations follow ordinary watermark and output-mode rules. Callers own
+  checkpoints, sinks, retention, and external exchange.
 
 ## Selection And Dedupe
 

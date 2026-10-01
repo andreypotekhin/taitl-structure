@@ -82,5 +82,5 @@ because Spark may reduce precision.
 Do not persist these fields as a generic cross-engine Binary interchange format. The data remains Spark/profile
 specific. For streaming summaries, also satisfy the ordinary grouped-aggregate watermark and output-mode requirements.
 
-For the complete contracts, see the [Sketches and Bitmaps API](../api/Sketches.api.md) and
-[Sketches and Bitmaps reference](../reference/Sketches.ref.md).
+For the complete contracts, see [Sketches and Bitmaps](../api/Aggregations.api.md#sketches-and-bitmaps) and the
+[opaque sketch metrics reference](../reference/Aggregations.ref.md#opaque-sketch-metrics).

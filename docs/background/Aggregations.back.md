@@ -15,10 +15,6 @@ The analytical surface supports common grouped aggregates, custom grouping sets,
 metrics, deterministic latest/earliest selection, exact/subset duplicate removal, and basic array/map callbacks. This
 page describes the admitted surface and the boundaries still enforced by backend capability checks.
 
-Opaque HLL and Bitmap metrics are a dedicated cross-schema aggregate surface. Their construction changes row grain,
-while their estimate/count consumers preserve it; see [Sketches and Bitmaps](Sketches.back.md) for precision,
-persistence, profile, and streaming boundaries.
-
 ## Choosing an Analytical Shape
 
 Use the smallest operation family that expresses the intended cardinality:
@@ -64,6 +60,35 @@ def summarize(self, order: FulfilledOrder) -> DailyCustomerSales:
 
 The output constructor describes the post-aggregate row, not the input row. Input fields that are neither grouping keys
 nor aggregate expressions are unavailable as ordinary row-local values after `group_by(...)`.
+
+### Opaque Analytical State
+
+HLL and Bitmap aggregates publish compact state that a later transform can read or combine. Use them when the state is
+itself a useful output: HLL represents an approximate distinct-cardinality summary, while Bitmap represents integral
+positions. For a final exact count, use `count_distinct(...)`; for an immediate approximate result, consider
+`approx_count_distinct(...)`.
+
+```python
+group_by(tenant_id=event.tenant_id)
+return TenantSketches(
+    tenant_id=event.tenant_id,
+    customer_hll=hll_sketch_agg(event.customer_id, lg_config_k=12),
+    feature_bitmap=bitmap_construct_agg(event.feature_id),
+)
+```
+
+Construction and Bitmap OR change row grain like any grouped aggregate. `hll_sketch_estimate(...)` and
+`bitmap_count(...)` read one opaque value and preserve the current row. Keep a common `lg_config_k` for HLL values
+that will be unioned; a mismatch fails unless the caller explicitly permits it with
+`allow_different_lg_config_k=True`, which emits `SKETCH-W0802` because Spark can reduce precision.
+
+Spark stores these values as Binary, but Structure retains their algorithm brand. An HLL cannot be used as a Bitmap or
+as ordinary Binary. Persisted sketch state is compatible only with the relevant Spark/profile implementation, not a
+general interchange format. Grouped sketches in streaming follow the ordinary watermark and output-mode rules; callers
+remain responsible for sources, sinks, checkpoints, retention, and external exchange.
+
+KLL and Theta declarations are profile-gated for PySpark 4.1; they are not baseline aggregate support. Count-Min and
+observation metrics remain caller-owned.
 
 ### Windowed Enrichment
 

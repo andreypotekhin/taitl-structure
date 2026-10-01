@@ -78,7 +78,7 @@ The schema, transform, and expression remain visible to compile-time checking an
 | --- | --- | --- | --- |
 | Joins | supported | DataFrame joins and windowed matching | [Join reference](Join.ref.md) |
 | Aggregations and dedupe | supported | GroupedData and windows | [Aggregations reference](Aggregations.ref.md) |
-| Sketches and bitmaps | supported | Typed opaque HLL/Bitmap state | [Sketches and Bitmaps reference](Sketches.ref.md) |
+| Sketches and bitmaps | supported | Typed opaque HLL/Bitmap state | [Aggregations reference](Aggregations.ref.md#opaque-sketch-metrics) |
 | Inline and reusable windows | supported | `Window` and window functions | [Windows API](../api/Windows.api.md) |
 | Array/map helpers | supported | Higher-order and map SQL functions | [Collections API](../api/Collections.api.md) |
 | Relation operations | supported | Sets, order, assertions, hierarchy, sampling | [API](../api/Relations.api.md) |

@@ -3,7 +3,8 @@
 For exhaustive reference on supported APIs, PySpark parity, examples and semantic differences, see the
 [API](API.md): [schemas](api/Schemas.api.md), [transforms](api/Transforms.api.md),
 [expressions](api/Expressions.api.md), [joins](api/Joins.api.md), [aggregations](api/Aggregations.api.md),
-[sketches and bitmaps](api/Sketches.api.md), [windows](api/Windows.api.md), [collections](api/Collections.api.md),
+[sketches and bitmaps](api/Aggregations.api.md#sketches-and-bitmaps), [windows](api/Windows.api.md),
+[collections](api/Collections.api.md),
 [relations](api/Relations.api.md), and [streaming](api/Streaming.api.md).
 
 ## Schema Classes
@@ -543,8 +544,8 @@ precision by default; a mixed-precision union requires an explicit opt-in and em
 state is Spark/profile specific, not generic Binary interchange. Grouped sketch operations in streaming follow normal
 watermark and output-mode rules.
 
-Reference: [Sketches and Bitmaps API](api/Sketches.api.md),
-[Sketches and Bitmaps reference](reference/Sketches.ref.md), and
+Reference: [Sketches and Bitmaps API](api/Aggregations.api.md#sketches-and-bitmaps),
+[Sketches and Bitmaps reference](reference/Aggregations.ref.md#opaque-sketch-metrics), and
 [Sketch and Bitmap Metrics recipe](recipes/SketchBitmapMetrics.md).
 
 ## Latest/Earliest Rows
