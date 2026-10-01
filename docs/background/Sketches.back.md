@@ -8,7 +8,7 @@ Use this topic when a transform needs to publish a reusable approximate-distinct
 For ordinary exact counts, use `count_distinct(...)`; for a one-off approximate count, consider
 `approx_count_distinct(...)`. Choose a sketch only when its opaque state is itself a useful output.
 
-## Two shapes
+## Choose the shape
 
 ```text
 events -> grouped sketch construction -> typed sketch field -> scalar estimate/count

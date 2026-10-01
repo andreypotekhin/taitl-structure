@@ -1,9 +1,10 @@
 # Sketches and Bitmaps API
 
-These helpers build and consume typed opaque HLL and Bitmap state. Spark represents the state as Binary, but Structure
+These helpers build and consume typed opaque HLL and Bitmap state. Use them when an aggregate must publish reusable
+state for a later transform, rather than only an immediate count. Spark represents the state as Binary, but Structure
 retains the sketch family and HLL precision so only compatible operations compose.
 
-## Schema Types
+## Schema types
 
 | Structure API | Spark representation | Example |
 | --- | --- | --- |

@@ -8,7 +8,7 @@ For a one-off distinct count, prefer `count_distinct(...)` when an exact answer 
 `approx_count_distinct(...)` when only the final approximation matters. Use a sketch when a later transform must
 consume or combine the state itself.
 
-## Declare state explicitly
+## Choose and declare state
 
 ```python
 class TenantSketches(Schema):
@@ -17,11 +17,12 @@ class TenantSketches(Schema):
     features = bitmap(nullable=True)
 ```
 
-The HLL precision belongs in the declaration. Choose one value for every HLL field that will be merged. Bitmap values
-contain only integral positions. Neither value is ordinary `binary()` in the Structure API, so accidental use of a
-serialized payload as a sketch is rejected before execution.
+Choose HLL when the downstream value is an approximate distinct estimate; choose Bitmap when it represents integral
+positions. The HLL precision belongs in the declaration, so use one value for every HLL field that will be merged.
+Bitmap values contain only integral positions. Neither value is ordinary `binary()` in the Structure API, so accidental
+use of a serialized payload as a sketch is rejected before execution.
 
-## Build and consume HLL values
+## Build state, then read a metric
 
 ```python
 group_by(tenant_id=event.tenant_id)

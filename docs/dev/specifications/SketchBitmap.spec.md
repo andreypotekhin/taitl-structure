@@ -1,27 +1,26 @@
-# PySpark Sketch and Bitmap Specification
+# Sketches and Bitmaps Specification
 
 ## Scope
 
-This specification defines the compiler-visible HLL and Bitmap contract for the ordinary PySpark
-`>=3.5,<4.1` baseline. It covers declared opaque schema fields, aggregate construction/composition, scalar consumers,
-diagnostics, rendering, streaming classification, and public documentation. It does not claim a portable Binary
-serialization format, KLL/Theta aggregate support, Count-Min support, or observation metrics.
+This specification makes the baseline HLL and Bitmap design executable for ordinary PySpark `>=3.5,<4.1`. It covers
+declared opaque schema fields, aggregate construction/composition, scalar consumers, diagnostics, rendering, and
+streaming classification. It does not claim a portable Binary serialization format, KLL/Theta aggregate support,
+Count-Min support, or observation metrics.
 
-The governing design is [PySpark Sketch and Bitmap Design](../design/PySparkSketchBitmap.design.md). The broader
+The governing design is [Sketches and Bitmaps](../design/SketchBitmap.design.md). The broader
 boundary rationale remains in [PySpark SQL Boundary Contracts](../design/PySparkSQLBoundaryContracts.design.md).
 
-## Opaque type contract
+## Declaring state
 
-1. `hll_sketch(lg_config_k=12)` declares an HLL value with a literal precision from 4 through 21.
-2. `bitmap()` declares a Bitmap value.
-3. Both types materialize to Spark Binary while retaining their Structure algorithm brand and profile metadata.
-4. An opaque sketch value is not assignable to ordinary Binary or to another opaque sketch kind.
-5. A Schema field may carry HLL or Bitmap state across a compiled transform boundary; a raw Binary field may not enter
-   a typed sketch consumer without an admitted explicit import contract.
-6. `kll_sketch()` and `theta_sketch()` require the separate PySpark 4.1 profile capability and remain outside this
-   baseline function surface.
+`hll_sketch(lg_config_k=12)` declares an HLL value with a literal precision from 4 through 21; `bitmap()` declares a
+Bitmap value. Both materialize to Spark Binary while retaining their Structure algorithm brand and profile metadata.
+They are not assignable to ordinary Binary or to another sketch family.
 
-## Function contract
+A Schema field may carry HLL or Bitmap state across a compiled transform boundary. A raw Binary field cannot enter a
+typed sketch consumer without a separately admitted import contract. `kll_sketch()` and `theta_sketch()` require the
+PySpark 4.1 profile capability and remain outside this baseline function surface.
+
+## Operations
 
 | Function | Input contract | Result contract |
 | --- | --- | --- |
@@ -51,7 +50,7 @@ caller intentionally permits a precision trade-off. Diagnostic text must never r
 `hll_sketch_agg`, `bitmap_construct_agg`, and `bitmap_or_agg` are grouped aggregates and follow the ordinary
 watermark/state/output-mode rules. No helper grants an ownership claim over checkpoint state, sinks, or output modes.
 
-## Acceptance evidence
+## Acceptance
 
 The implementation is acceptable when focused tests prove all of the following:
 

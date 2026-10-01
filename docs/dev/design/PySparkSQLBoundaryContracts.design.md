@@ -68,7 +68,7 @@ profile; they are not default-baseline support. Observation metrics are a separa
 regular transform output fields.
 
 The complete default-baseline implementation and documentation contract is maintained in
-[PySpark Sketch and Bitmap Design](PySparkSketchBitmap.design.md). It separates the supported HLL/Bitmap surface from
+[Sketches and Bitmaps design](SketchBitmap.design.md). It separates the supported HLL/Bitmap surface from
 the profile-gated KLL/Theta work without treating Spark Binary state as portable interchange data.
 
 ## Evidence and diagnostics

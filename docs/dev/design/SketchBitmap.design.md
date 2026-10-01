@@ -1,18 +1,22 @@
-# PySpark Sketch and Bitmap Design
+# Design: Sketches and Bitmaps
 
 ## Purpose
 
-This design defines Structure's documented contract for the default-baseline HyperLogLog (HLL) and Bitmap functions.
-It refines the sketch boundary in [PySpark SQL Boundary Contracts](PySparkSQLBoundaryContracts.design.md) into a
-separate implementation and public-documentation lane. The lane exists because sketch state crosses schema, aggregate,
-scalar-expression, capability, persistence, and streaming boundaries; it is not merely another aggregate alias.
+HLL and Bitmap support lets a transform publish compact analytical state instead of only a final count. An HLL carries
+an approximate distinct-cardinality summary; a Bitmap carries a compact set of integral positions. Both are useful
+only when a later transform can understand the state that an earlier transform produced.
 
-## Design decision
+This design defines that shared state boundary for the default PySpark `>=3.5,<4.1` baseline. It refines the opaque
+state discussion in [PySpark SQL Boundary Contracts](PySparkSQLBoundaryContracts.design.md) into an implementable and
+user-facing feature. It does not attempt to admit every Spark sketch or to present Spark Binary values as a general
+serialization format.
 
-HLL and Bitmap are first-class opaque Structure types. Spark stores both as Binary, but Structure retains an algorithm
-brand so an HLL cannot be passed to a Bitmap consumer, cast to ordinary Binary, or silently exchanged with a different
-sketch family. A declared `hll_sketch(lg_config_k=...)` field also retains its precision parameter in the compiled
-schema contract.
+## Design stance
+
+Sketch state is a typed value, not an implementation-shaped `binary()` field. Spark stores both values as Binary, but
+Structure retains an algorithm brand so an HLL cannot be passed to a Bitmap consumer, cast to ordinary Binary, or
+silently exchanged with another sketch family. A declared `hll_sketch(lg_config_k=...)` field also retains its
+precision parameter in the compiled schema contract.
 
 The public documentation uses dedicated Sketches and Bitmaps pages rather than an `Other` section. The APIs span the
 Schemas, Aggregations, and Expressions surfaces; the ownership, precision, and persistence rules would be difficult to
@@ -33,9 +37,10 @@ The default PySpark `>=3.5,<4.1` surface contains:
 | Bitmap consumption | `bitmap_count(value)` | Nullable Long count |
 | Bitmap position helpers | `bitmap_bit_position(value)`, `bitmap_bucket_number(value)` | Nullable Long values |
 
-All aggregate forms are grouped metrics. The scalar HLL/Bitmap consumers preserve one input row. Bitmap construction
-accepts Integer or Long positions. HLL construction accepts a typed scalar expression and records a literal
-`lg_config_k` in the inclusive range 4 through 21.
+The construction and Bitmap OR forms are grouped metrics, so they change row grain. HLL union, HLL estimate, Bitmap
+count, and position helpers are scalar expressions and preserve one input row. Bitmap construction accepts Integer or
+Long positions. HLL construction accepts a typed scalar expression and records a literal `lg_config_k` from 4 through
+21.
 
 ## Precision and composition
 
@@ -65,4 +70,4 @@ state has a portable streaming checkpoint or interchange guarantee.
 
 Promotion or extension requires symbolic type/nullability validation, capability checks, online/generated rendering
 parity, diagnostics, streaming classification, and target evidence. The authoritative specification is
-[PySpark Sketch and Bitmap Specification](../specifications/PySparkSketchBitmap.spec.md).
+[Sketches and Bitmaps Specification](../specifications/SketchBitmap.spec.md).
