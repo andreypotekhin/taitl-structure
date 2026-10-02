@@ -31,10 +31,13 @@ from structure.plugin.pyspark.compiler.model.PySparkRelationPartitionRecipe impo
 from structure.plugin.pyspark.compiler.model.PySparkRelationPrioritySelectionRecipe import (
     PySparkRelationPrioritySelectionRecipe,
 )
+from structure.plugin.pyspark.compiler.model.PySparkRelationRepartitionRecipe import PySparkRelationRepartitionRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationSampleRecipe import PySparkRelationSampleRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationSetRecipe import PySparkRelationSetRecipe
 from structure.plugin.pyspark.compiler.model.PySparkScalarGeneratorRecipe import PySparkScalarGeneratorRecipe
 from structure.plugin.pyspark.compiler.model.PySparkSelectedRowsRecipe import PySparkSelectedRowsRecipe
+from structure.plugin.pyspark.compiler.model.PySparkSqlRecipe import PySparkSqlRecipe
+from structure.plugin.pyspark.compiler.model.PySparkStackRecipe import PySparkStackRecipe
 from structure.plugin.pyspark.compiler.model.PySparkWatermarkRecipe import PySparkWatermarkRecipe
 from structure.plugin.pyspark.dsl.operations.StreamingOutputMode import StreamingOutputMode
 
@@ -50,6 +53,8 @@ class PySparkOperationRecipe:
     exactly_one: PySparkExactlyOneRecipe | None = None
     posexplode_struct: PySparkPosexplodeStructRecipe | None = None
     json_tuple: PySparkJsonTupleRecipe | None = None
+    stack: PySparkStackRecipe | None = None
+    sql: PySparkSqlRecipe | None = None
     scalar_generator: PySparkScalarGeneratorRecipe | None = None
     map_generator: PySparkMapGeneratorRecipe | None = None
     ordered_timeline_scan: PySparkOrderedTimelineScanRecipe | None = None
@@ -59,6 +64,8 @@ class PySparkOperationRecipe:
     relation_hierarchy_fallback: PySparkRelationHierarchyFallbackRecipe | None = None
     relation_order: PySparkRelationOrderRecipe | None = None
     relation_partition: PySparkRelationPartitionRecipe | None = None
+    relation_repartition: PySparkRelationRepartitionRecipe | None = None
+    relation_coalesce: int | None = None
     relation_priority_selection: PySparkRelationPrioritySelectionRecipe | None = None
     relation_bound: PySparkRelationBoundRecipe | None = None
     relation_sample: PySparkRelationSampleRecipe | None = None
@@ -105,6 +112,14 @@ class PySparkOperationRecipe:
     @staticmethod
     def json_tuple_operation(json_tuple: PySparkJsonTupleRecipe) -> "PySparkOperationRecipe":
         return PySparkOperationRecipe(kind="json_tuple", json_tuple=json_tuple)
+
+    @staticmethod
+    def stack_operation(stack: PySparkStackRecipe) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="stack", stack=stack)
+
+    @staticmethod
+    def sql_operation(sql: PySparkSqlRecipe) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="sql", sql=sql)
 
     @staticmethod
     def posexplode_outer_struct_operation(
@@ -194,6 +209,16 @@ class PySparkOperationRecipe:
     @staticmethod
     def relation_partition_operation(partition: PySparkRelationPartitionRecipe) -> "PySparkOperationRecipe":
         return PySparkOperationRecipe(kind="repartition_by_range", relation_partition=partition)
+
+    @staticmethod
+    def relation_repartition_operation(
+        repartition: PySparkRelationRepartitionRecipe,
+    ) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="repartition", relation_repartition=repartition)
+
+    @staticmethod
+    def relation_coalesce_operation(partitions: int) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="coalesce", relation_coalesce=partitions)
 
     @staticmethod
     def relation_bound_operation(kind: str, relation_bound: PySparkRelationBoundRecipe) -> "PySparkOperationRecipe":

@@ -24,6 +24,8 @@ function a precise gate or caller remedy. It is not a promise to expose arbitrar
 | Scope | Status | Structure work | Migration requirement |
 | --- | --- | --- | --- |
 | Ordering descriptors | `implemented` | Harden validation across consumers. | Preserve direction and null placement. |
+| `stack` | `implemented` | `stack(rows, *values, as_=Schema, scope=None)` fixes row multiplication, position-wise common types, and trailing-NULL padding before execution. | Preserve output aliases, types, nullability, and streaming row expansion. |
+| Relation distribution | `partial` | `coalesce(partitions=...)` and typed hash `repartition(count, *keys)` / `repartition(*keys)` preserve row/schema; range repartition remains batch-only. | Preserve the leading-integer count rule and avoid ordering or stable-partition promises. |
 | Binary conversion | `implemented` | Typed `to_binary` and `try_to_binary` with literal formats. | Preserve format and failure behavior. |
 | Unix-seconds formatting | `implemented` | Typed `from_unixtime` with numeric seconds and a literal format. | Preserve session-time-zone formatting. |
 | Unix-seconds parsing | `implemented` | Typed `unix_timestamp` with String/Date/Timestamp inputs and the query-time default form. | Preserve the default format and query-time stability. |
@@ -45,7 +47,6 @@ per verified PySpark function and record the 3.5/4.0 presence explicitly.
 | Current-time | implemented | Typed query-clock calls preserve six spellings and same-query equality metadata. | Use native PySpark for unmodeled timestamp variants. |
 | AES-GCM | implemented | Typed GCM calls, symbolic keys, and nonce-risk warning. | Use native PySpark for excluded AES forms. |
 | String aggregation | target-gated | PySpark 4.0-only `string_agg`/`listagg` are outside the 3.5/4.0 intersection baseline. | Use native PySpark on the 4.0 target or await a target-profile admission. |
-| `stack`, typed generators | candidate | Require schema and cardinality. | Match row multiplication, aliases, fields. |
 
 ## Target-Line Additions Outside the Default Baseline
 
@@ -57,6 +58,7 @@ baseline implementation count does not silently expand.
 | `string_agg`, `listagg` | 4.0 | `target-gated` | Use native PySpark or add a versioned aggregate profile. |
 | `is_valid_utf8`, `make_valid_utf8`, `try_validate_utf8`, `validate_utf8` | 4.0 | `target-gated` | Use native PySpark or add a versioned UTF-8 profile. |
 | `randstr`, `uniform`, `uuid`, and related random helpers | 4.1 | `target-gated` | Track in the V11 adoption ledger with explicit seed semantics. |
+| Native `st_geomfromwkb`, `st_geogfromwkb`, `st_asbinary`, `st_srid`, `st_setsrid` | 4.1 | `target-gated` | Track native Geometry/Geography in P10012602 with provider and mode evidence. |
 
 ## Design-Gated or Boundary Items
 
@@ -68,9 +70,13 @@ missing contract or native-PySpark remedy before the status can change.
 | `expr` / `call_function` | `unsupported` | Raw SQL removes typed ownership. | Use a native PySpark boundary. |
 | Dynamic JSON | `caller-owned-guided` | Runtime inference cannot alter Schema. | Use declared parsing or native code. |
 | Sketch/bitmap | `implemented` | Baseline HLL/Bitmap opaque types and consumers are implemented; KLL/Theta remain profile-gated and live evidence is pending. | Use native PySpark for unsupported profiles or Count-Min/observation metrics. |
-| Generators, partitions | `design-gated` | Schema, aliases, cardinality, stream. | Typed or native PySpark. |
-| Variant mutation | `target-gated` | Released profile and mutation contract. | Use the profile or native PySpark. |
-| XML/URL/provider/runtime | `design-gated` | Provider ownership, typed results. | Caller-owned integrations. |
+| Generic generators | `caller-owned-guided` | Only `stack` has a fixed typed result contract; raw generators lack static schema and cardinality. | Use native PySpark at a declared result boundary. |
+| Writer partition transforms | `caller-owned-guided` | Output file layout remains separate from relation distribution and caller-owned. | Use native PySpark writer partition transforms. |
+| Variant mutation | `target-gated` | Released profile plus classic, Connect, generated/online, and streaming evidence. | Use the profile or native PySpark. |
+| XML | `design-gated` | Declared schema, normalized options, malformed-record policy, and parse/serialize evidence. | Use a native PySpark boundary. |
+| URL | `partial` | `url_encode` and strict `url_decode` are baseline row-local; `try_url_decode` is 4.0 target-gated. | Use native PySpark for safe decoding or unsupported profiles. |
+| Geospatial providers | `target-gated` | Native root `st_*` is 4.1+; external providers are namespaced and scope-matched. | Use native PySpark or an explicit Binary boundary. |
+| Runtime metadata and reflection | `caller-owned-guided` | Query-clock expressions are the only admitted symbolic runtime reads. | Use an explicit native PySpark boundary. |
 | UDTFs, pandas UDFs, callbacks | `caller-owned-guided` | Arbitrary runtime behavior. | Use explicit native PySpark. |
 
 ## Reconciliation Rules

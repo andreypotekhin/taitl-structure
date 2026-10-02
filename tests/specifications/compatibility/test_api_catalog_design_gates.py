@@ -9,6 +9,9 @@ DESIGN = ROOT / "docs/dev/gated/ApiCatalog.gates.md"
 DEFERRED = ROOT / "docs/dev/deferred/ApiCatalog.deferred.md"
 SPEC = ROOT / "docs/dev/specifications/PySparkApiCatalog.spec.md"
 V9_SPEC = ROOT / "docs/dev/specifications/V9ApiCatalogDesignGatedFeatures.spec.md"
+GEO_DESIGN = ROOT / "docs/dev/design/Geospatial.design.md"
+GEO_SPEC = ROOT / "docs/dev/specifications/Geospatial.spec.md"
+GEO_PLAN = ROOT / "docs/dev/planning/P10012602.Geospatial-provider-boundaries.plan.md"
 
 
 def test_api_catalog_open_rows_use_design_gate_language() -> None:
@@ -16,10 +19,11 @@ def test_api_catalog_open_rows_use_design_gate_language() -> None:
 
     assert "planned" not in text.lower()
     assert "| deferred |" not in text.lower()
-    assert "| XML, URL, and provider/runtime functions | design-gated or unsupported |" in text
+    assert "| XML, URL, and runtime functions | partial or unsupported |" in text
+    assert "| Geospatial provider APIs | target-gated |" in text
     assert "| Variant functions | partial |" in text
-    assert "Variant mutation helpers remain design-gated" in text
-    assert "provider-neutral geometry remains separately gated" in text
+    assert "mutation remain target-gated" in text
+    assert "Native `st_*` belongs to PySpark 4.1+" in text
     assert "| Aggregate aliases | unsupported |" in text
     assert "| Sampling | implemented |" in text
     assert "| Join reordering | design-gated |" in text
@@ -32,18 +36,27 @@ def test_api_catalog_design_gate_docs_cover_non_streaming_open_rows() -> None:
     deferred = DEFERRED.read_text(encoding="utf-8")
     spec = SPEC.read_text(encoding="utf-8")
     v9_spec = V9_SPEC.read_text(encoding="utf-8")
-    combined = design + "\n" + deferred + "\n" + spec + "\n" + v9_spec
+    combined = "\n".join(
+        (
+            design,
+            deferred,
+            spec,
+            v9_spec,
+            GEO_DESIGN.read_text(encoding="utf-8"),
+            GEO_SPEC.read_text(encoding="utf-8"),
+            GEO_PLAN.read_text(encoding="utf-8"),
+        )
+    )
 
     for phrase in (
         "XML remains low priority",
         "Variant Mutation Profiles",
         "Geospatial Provider Boundary",
-        "geometry(srid=..., nullable=True)",
-        "Apache Sedona 1.9.0",
-        "never the bundled PySpark plugin",
-        "`GEOGRAPHY` is not admitted",
-        "GeoProvider",
-        "must not contain a provider name or import",
+        "native PySpark 4.1+",
+        "sedona.st_geomfromwkt",
+        "geo_provider",
+        "Binary handoff",
+        "H3 and S2",
         "join_order(\"optimizer\")",
         'ties="error"',
         "sample(fraction",

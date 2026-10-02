@@ -18,7 +18,8 @@ Schema declarations define Structure's typed row contract and materialize to Spa
 | `binary()` | Spark binary type | `payload = binary(nullable=True)` |
 | `decimal(...)` | `DecimalType` | `total = decimal(12, 2)` |
 | `variant(...)` | `VariantType` | `payload = variant(nullable=True)` |
-| `geometry(srid=...)` | Provider-neutral `GEOMETRY` | `location = geometry(srid=4326)` |
+| `geometry(srid=...)` | Target-gated provider-bound Geometry | `location = geometry(srid=4326)` |
+| `geography(srid=...)` | Target-gated provider-bound Geography | `location = geography(srid=4326)` |
 | `hll_sketch(lg_config_k=...)` | Branded opaque Binary HLL state | `customers = hll_sketch(lg_config_k=12)` |
 | `bitmap()` | Branded opaque Binary Bitmap state | `features = bitmap()` |
 
@@ -31,10 +32,9 @@ Schema declarations define Structure's typed row contract and materialize to Spa
 - `variant(...)` declares Spark's opaque semi-structured `VariantType`. It preserves schema and field nullability only.
   A transform using it must resolve to a PySpark 4 profile, including when that profile comes from
   `[tool.structure.plugin.pyspark]`.
-- `geometry(srid=...)` is a provider-neutral, currently design-gated Geometry contract. `srid` must be a positive
-  integer literal and is part of the type; `GEOGRAPHY`, runtime-selected SRIDs, and provider-specific fields are not
-  admitted. Geometry runtime availability remains an optional provider concern. See the
-  [Geometry expressions](Expressions.api.md#geometry-expressions).
+- `geometry(srid=...)` and `geography(srid=...)` are planned target-gated declarations. A resolved provider owns their
+  physical Spark type. A literal SRID is fixed; `srid=None` is mixed. The default baseline has no stable spatial field
+  claim. See the [Geospatial reference](../reference/Geospatial.ref.md).
 - `hll_sketch(...)` and `bitmap()` preserve an opaque algorithm brand even though Spark materializes Binary. HLL
   precision is part of the declared type. See [Sketches and Bitmaps](Aggregations.api.md#sketches-and-bitmaps).
 

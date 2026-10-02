@@ -4,7 +4,9 @@
 
 This design records the decisions made while closing the PySpark `>=3.5,<4.1` SQL baseline gaps. It preserves useful
 PySpark migration paths when Structure can state a typed, compiler-visible contract. It keeps the remaining behavior at
-an explicit caller-owned boundary rather than admitting raw SQL, mutable runtime schemas, or untyped serialized state.
+an explicit caller-owned boundary rather than admitting raw scalar SQL, mutable runtime schemas, or untyped serialized
+state. The separately designed [Typed SQL Execution](TypedSqlExecution.design.md) feature is a full-relation operation
+with a declared schema; it does not change the exclusion of raw scalar SQL expressions.
 
 The owning execution sequence is
 [P09302601](../planning/P09302601.PySpark-SQL-baseline-gap-closeout.plan.md). The function-level status and migration
@@ -70,6 +72,62 @@ regular transform output fields.
 The complete default-baseline implementation and documentation contract is maintained in
 [Sketches and Bitmaps design](SketchBitmap.design.md). It separates the supported HLL/Bitmap surface from
 the profile-gated KLL/Theta work without treating Spark Binary state as portable interchange data.
+
+## Typed generators and relation distribution
+
+`stack(rows, *values, as_=StackRow, scope=...)` is the one additional typed generator shape. `StackRow` is a declared
+Schema, not a runtime alias list: it fixes each output field's name, type, and nullability before Spark runs. The
+generator multiplies each input row by `rows`; values are arranged row-major and each output field uses the common
+Structure type of values in that position. As in PySpark, an incomplete final row is padded with NULL; therefore every
+Schema field that might receive padding must be nullable. `stack` is a fixed stateless generator, not batch-only, and
+is classified streaming-compatible while ordinary and Spark Connect runtime evidence remains a release check.
+
+Generic generators stay caller-owned because Structure cannot infer their output schema, aliases, or cardinality from a
+function spelling. They belong at a raw PySpark boundary with the caller declaring the result relation on the far side.
+
+Structure may own relation distribution without owning writer layout. Relation coalescing is spelled
+`coalesce(partitions=count)` with a keyword-only positive integer count at the current unshaped relation boundary. It is
+row-preserving, makes no output-order or stable-partition-identity promise, and on streaming relations emits a
+suppressible throughput-tuning advisory. Scalar `coalesce(value, fallback, *values)` requires at least two values; a
+single value should be used directly. Hash repartitioning is `repartition(count, *keys)` or `repartition(*keys)`: a
+leading integer always means count, while a constant integer key must be an explicit literal expression. It preserves
+rows and schema, promises neither order nor stable partition identity, and on streaming relations emits a suppressible
+throughput advisory. `repartition_by_range` remains batch-only. Writer
+partition transforms, including `years`, `months`, `days`, `hours`, and `bucket`, remain caller-owned output-layout
+policy.
+
+## Variant mutation
+
+The existing typed literal-path Variant mutations remain visible but target-gated. They are released only after a
+concrete profile proves capability, symbolic typing, generated and online parity, classic and Connect behavior, and the
+applicable streaming classification. The default `>=3.5,<4.1` baseline makes no Variant mutation claim.
+
+## URL, XML, runtime, and opaque Python
+
+`url_encode` and strict `url_decode` are typed row-local String helpers; strict decode retains Spark's malformed-input
+failure behavior. `try_url_decode` is implemented as a PySpark 4.0 target gate. URL parsing remains separate because its
+result shape needs its own typed contract. Live ordinary/Connect parity evidence remains a release check.
+
+XML remains gated until one design owns declared input/output schemas, parser and serializer options, malformed-input
+behavior, nullability, and target evidence together. XML sources and writers remain caller-owned.
+
+Source, session, catalog, partition, and engine metadata, along with arbitrary reflection, remain caller-owned runtime
+reads. Query-clock expressions are the narrow exception because their symbolic type, query stability, and
+nondeterminism are declared. Pandas UDFs, UDTFs, arbitrary Python callbacks, and custom runtime types likewise remain
+at an explicit raw boundary; existing scalar UDFs and compiler-visible expression callbacks are distinct supported
+forms.
+
+## Geospatial provider boundary
+
+The full geospatial contract is maintained in [Geospatial design](Geospatial.design.md) and its execution sequence in
+[P10012602](../planning/P10012602.Geospatial-provider-boundaries.plan.md). The default baseline does not include native
+Spark Geometry/Geography or external provider support.
+
+Future native PySpark 4.1+ APIs use familiar no-prefix `st_*` names. External providers use their own namespaces, such
+as `sedona.st_geomfromwkt`, and must match an application, transform, or step `geo_provider` selection. Geometry and
+Geography values retain dialect, kind, and fixed or mixed SRID facts; they cannot cross provider dialects directly.
+An ordinary declared `binary()` field is the deliberate handoff boundary. WKB, EWKB, and any other Binary codec remain
+caller-owned interoperability decisions rather than portable Structure guarantees.
 
 ## Evidence and diagnostics
 

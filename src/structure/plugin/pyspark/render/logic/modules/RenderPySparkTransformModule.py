@@ -496,6 +496,13 @@ class RenderPySparkTransformModule:
 
         sources = {input.name: input.name for input in plan.inputs}
         sources.update({f"input:{input.name}": self._raw_input_name(input.name) for input in plan.inputs})
+        tracks_command_results = any(
+            getattr(result.schema, "__structure_sql_command_result__", False)
+            for step in plan.steps
+            for result in step.results
+        )
+        if tracks_command_results:
+            lines.append("        __structure_sql_command_results = {}")
         for step in plan.steps:
             lines.append("")
             lines.append(
@@ -508,6 +515,14 @@ class RenderPySparkTransformModule:
                 )
             )
             for result in step.results:
+                if getattr(result.schema, "__structure_sql_command_result__", False):
+                    lines.extend(
+                        [
+                            f"        if {result.frame!r} in __structure_sql_command_results:",
+                            f"            {result.frame} = __structure_sql_command_results[{result.frame!r}].unionByName({result.frame}, allowMissingColumns=True)",
+                            f"        __structure_sql_command_results[{result.frame!r}] = {result.frame}",
+                        ]
+                    )
                 sources[result.frame] = result.frame
 
         result_entries: list[str] = []
@@ -693,6 +708,7 @@ class RenderPySparkTransformModule:
                     source_transform=source_transform,
                     generated_hooks=generated_hooks,
                     backend_target=plan.backend.target,
+                    frame_mapping="frames",
                 )
             )
             methods.append("        return {")

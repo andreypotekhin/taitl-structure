@@ -44,6 +44,7 @@ evidence.
 | Schemas | supported | `StructType`, SQL types | [Schema reference](Schema.ref.md) |
 | Transforms and hooks | supported | DataFrame pipeline | [Transform reference](Transform.ref.md) |
 | Expressions | supported | Column and SQL-function subset | [Expressions API](../api/Expressions.api.md) |
+| Geospatial | target-gated | Native PySpark 4.1+ and provider namespaces | [Geospatial reference](Geospatial.ref.md) |
 
 **Details And Differences**
 

@@ -26,6 +26,14 @@ def json_tuple(
     return _generators.json_tuple(context, value, as_=as_, fields=fields, scope=scope)
 
 
+def stack(rows: int, *values: object, as_: type[Schema], scope: str | None = None) -> RowScope:
+    """Turn a row-major list of scalar values into a fixed set of generated rows."""
+    context = current_symbolic_context()
+    if context is None:
+        raise RuntimeError("stack(...) can only be used inside a compiled Structure step method")
+    return _generators.stack(context, rows, values, as_=as_, scope=scope)
+
+
 def explode_struct(
     value: object,
     *,

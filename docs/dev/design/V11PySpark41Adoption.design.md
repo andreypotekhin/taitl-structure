@@ -43,6 +43,12 @@ The observations-and-sketches package separates row output from metrics and opaq
 values may be recorded as a runtime capability or remain outside the compiler-visible transform contract. KLL and Theta
 sketches need explicit binary-type, mergeability, dependency, and deterministic-output contracts before support.
 
+The geospatial package owns native Geometry/Geography and the root `st_geomfromwkb`, `st_geogfromwkb`, `st_asbinary`,
+`st_srid`, and `st_setsrid` helpers. It uses the `>=4.1,<4.2` profile, begins with ordinary PySpark evidence, and makes
+no Connect or streaming claim before positive evidence. External providers are not aliases for the native package;
+their namespaces and Binary boundaries are specified in
+[Geospatial Provider Boundaries](../planning/P10012602.Geospatial-provider-boundaries.plan.md).
+
 The Python-and-streaming package records Arrow UDF/UDTF and row-based `transformWithState` as design-gated. These APIs
 execute user Python or own state and retries, so no generated Structure support is claimed merely because PySpark 4.1
 exposes them. The package specifies the boundary, diagnostics, and a future promotion test.

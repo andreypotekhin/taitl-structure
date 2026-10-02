@@ -20,6 +20,8 @@ discrepancies, use the [API catalog](APICatalog.md) and [API reference](referenc
   validation, and application-controlled Spark lifecycle.
 - [Streaming reference](reference/Streaming.ref.md): streaming inputs, compatibility checks, watermarks, stateful
   operations, joins, lifecycle handoff, and corrective diagnostics.
+- [Geospatial reference](reference/Geospatial.ref.md): native and provider target gates, SRIDs, scope, and Binary
+  handoffs.
 - [Search example reference](reference/Search.ref.md): chunking, indexing, lexical scoring, presentation, similarity,
   feedback, and evaluation.
 - [Store example reference](reference/Store.ref.md): catalog, recommendations, demand, fulfillment, reconciliation,

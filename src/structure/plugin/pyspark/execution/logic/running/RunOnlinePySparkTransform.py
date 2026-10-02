@@ -98,6 +98,7 @@ class RunOnlinePySparkTransform:
 
         frames = dict(inputs)
         frames.update({f"input:{name}": frame for name, frame in inputs.items()})
+        command_result_frames: set[str] = set()
         for step in plan.steps:
             produced = self._step(
                 step,
@@ -109,6 +110,7 @@ class RunOnlinePySparkTransform:
                 functions=F,
                 window=Window,
                 types=T,
+                command_result_frames=command_result_frames,
             )
             frames.update(produced)
 
@@ -165,7 +167,10 @@ class RunOnlinePySparkTransform:
         functions,
         window,
         types,
+        command_result_frames: set[str] | None = None,
     ):
+        if command_result_frames is None:
+            command_result_frames = set()
         active = current
         if step.before_hooks:
             self._hooks.apply(
@@ -211,6 +216,9 @@ class RunOnlinePySparkTransform:
                     if validation.boundary and not projected.isStreaming:
                         projected = apply_plan_boundary(projected, session.spark)
                 projected = self._post_operations(step, projected)
+                projected = self._append_command_result(
+                    result, projected, frames=frames, command_result_frames=command_result_frames
+                )
                 produced[result.frame] = projected
             return produced
 
@@ -241,7 +249,20 @@ class RunOnlinePySparkTransform:
             if validation.boundary and not df.isStreaming:
                 df = apply_plan_boundary(df, session.spark)
         df = self._post_operations(step, df)
-        return {step.results[0].frame: df}
+        result = step.results[0]
+        df = self._append_command_result(result, df, frames=frames, command_result_frames=command_result_frames)
+        return {result.frame: df}
+
+    @staticmethod
+    def _append_command_result(result, frame, *, frames, command_result_frames):
+        from structure.plugin.pyspark.dsl.SqlResult import SqlCommandResult
+
+        if not issubclass(result.schema, SqlCommandResult):
+            return frame
+        if result.frame in command_result_frames:
+            return frames[result.frame].unionByName(frame, allowMissingColumns=True)
+        command_result_frames.add(result.frame)
+        return frame
 
     def _output(
         self,
@@ -255,6 +276,14 @@ class RunOnlinePySparkTransform:
     ):
         df = source.alias(output.input_alias)
         df = self._operations(output, df, frames=inputs, functions=functions, window=window, types=types)
+
+        if output.input_schema is not output.output_schema:
+            df = df.select(
+                *(
+                    functions.col(field.column).alias(field.column)
+                    for field in output.output_schema._structure_fields.values()
+                )
+            )
 
         if output.projection:
             df = df.select(
@@ -383,6 +412,12 @@ class RunOnlinePySparkTransform:
                 df = self._map_generator(step, df, operation.map_generator, functions=functions, types=types)
             if operation.kind == "json_tuple" and operation.json_tuple is not None:
                 df = self._json_tuple_operation(step, df, operation.json_tuple, functions=functions)
+            if operation.kind == "stack" and operation.stack is not None:
+                df = self._stack_operation(step, df, operation.stack, functions=functions)
+            if operation.kind == "sql" and operation.sql is not None:
+                df = self._sql_operation(
+                    step, df, operation.sql, frames=prepared_frames, functions=functions, types=types
+                )
             if operation.kind == "ordered_timeline_scan" and operation.ordered_timeline_scan is not None:
                 df = self._ordered_timeline_scan(
                     step,
@@ -414,6 +449,16 @@ class RunOnlinePySparkTransform:
                         for expression in partition.order_by
                     ),
                 )
+            if operation.relation_repartition is not None:
+                repartition = operation.relation_repartition
+                keys = tuple(
+                    self._expressions.evaluate(expression, functions=functions, aliases=self._scope_aliases(step))
+                    for expression in repartition.keys
+                )
+                arguments = ((repartition.partitions,) if repartition.partitions is not None else ()) + keys
+                df = df.repartition(*arguments)
+            if operation.relation_coalesce is not None:
+                df = df.coalesce(operation.relation_coalesce)
             if operation.relation_sample is not None:
                 df = df.sample(
                     withReplacement=operation.relation_sample.with_replacement,
@@ -488,6 +533,42 @@ class RunOnlinePySparkTransform:
                 if operation.watermark.scope == getattr(step, "source_scope", ""):
                     df = self._watermark(operation.watermark, df)
         return df
+
+    def _sql_operation(self, step, df, recipe, *, frames, functions, types):
+        relations = {}
+        for name, scope in recipe.relations:
+            frame = frames.get(scope)
+            if frame is None:
+                source = self._source_for_scope(step, scope)
+                frame = frames.get(source)
+            if frame is None:
+                raise KeyError(f"SQL relation scope {scope!r} is not available in step {step.name!r}")
+            relations[name] = frame
+        spark = df.sparkSession
+        from structure.plugin.pyspark.execution.logic.running.ExecutePySparkSql import execute_pyspark_sql
+
+        result = execute_pyspark_sql(
+            spark,
+            recipe.statement,
+            args=recipe.args,
+            relations=relations,
+            step=recipe.step,
+            label=recipe.label,
+        )
+        from structure.plugin.pyspark.dsl.SqlResult import SqlCommandResult
+        from structure.plugin.pyspark.execution.logic.running.NormalizePySparkSqlCommandResult import (
+            normalize_sql_command_result,
+        )
+
+        if issubclass(recipe.schema, SqlCommandResult):
+            result = normalize_sql_command_result(
+                result,
+                label=recipe.label,
+                schema=self._schema.materialize()(recipe.schema, types=types),
+                functions=functions,
+                types=types,
+            )
+        return result.alias(recipe.scope)
 
     @staticmethod
     def _is_streaming_step(step: PySparkStepRecipe | PySparkOutputRecipe, frames) -> bool:
@@ -766,6 +847,17 @@ class RunOnlinePySparkTransform:
         aliases = self._scope_aliases(step)
         value = self._expressions.evaluate(generator.expression, functions=functions, aliases=aliases)
         return self._json_tuple_generator(frame, generator, functions=functions, value=value)
+
+    def _stack_operation(self, step, frame, stack, *, functions):
+        aliases = self._scope_aliases(step)
+        values = tuple(
+            self._expressions.evaluate(value, functions=functions, aliases=aliases) for value in stack.values
+        )
+        output_columns = tuple(field.column for field in stack.schema._structure_fields.values())
+        return frame.select(
+            "*",
+            functions.stack(functions.lit(stack.rows), *values).alias(*output_columns),
+        )
 
     def _ordered_timeline_scan(self, step, frame, scan, *, functions, types):
         prefix = f"__structure_{scan.scope.strip('_')}"
@@ -1957,6 +2049,10 @@ class RunOnlinePySparkTransform:
                 aliases[operation.map_generator.scope] = ""
             if operation.json_tuple is not None:
                 aliases[operation.json_tuple.scope] = ""
+            if operation.stack is not None:
+                aliases[operation.stack.scope] = ""
+            if operation.sql is not None:
+                aliases[operation.sql.scope] = ""
             if operation.ordered_timeline_scan is not None:
                 aliases[operation.ordered_timeline_scan.row_scope] = ""
                 aliases[operation.ordered_timeline_scan.scope] = ""

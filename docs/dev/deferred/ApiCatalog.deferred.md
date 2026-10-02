@@ -16,8 +16,11 @@ this table for deferred SQL-family direction; the gap register remains the sourc
 | --- | --- | --- |
 | Dynamic JSON schemas | `design-gated` | Define a schema before execution; declared-schema `json_tuple` is supported separately. |
 | Sketch and bitmap aggregates | `design-gated` | Define state, accuracy, mergeability, and result contracts. |
-| Generic generators and partition transforms | `design-gated` | Define schema, aliases, cardinality, streaming. |
-| XML, URL, provider, and runtime APIs | `design-gated` | Define provider ownership and typed result contracts. |
+| Generic generators and writer partition transforms | `caller-owned-guided` | `stack` and typed relation distribution are implemented; generic/result-layout forms remain caller-owned. |
+| XML | `design-gated` | Define declared schemas, options, malformed input, and parse/serialize evidence. |
+| URL parsing and safe decoding | `target-gated` | `try_url_decode` requires PySpark 4.0; URL parsing needs a separate typed result-shape design. |
+| Geospatial providers | `target-gated` | Native 4.1 root APIs and external provider namespaces are tracked in P10012602. |
+| Runtime metadata and reflection | `caller-owned-guided` | Keep non-query-clock runtime reads at an explicit native boundary. |
 | Variant mutation helpers | `target-gated` | Define released target profile and mutation semantics. |
 
 ## Non-Streaming Gates
@@ -36,12 +39,11 @@ Variant parsing and extraction slice.
 
 ### Geospatial Provider Boundary
 
-The provider-neutral contract must define `geometry(srid=..., nullable=True)`, WKT construction and serialization,
-SRID compatibility, and nullable `intersects`, `contains`, and `within` predicates without exposing provider imports.
-Optional providers own materialization, lowering, imports, and runtime availability. Sedona is not bundled, and
-`GEOGRAPHY`, CRS transformation, measurements, spatial joins, indexes, collections, non-WKT forms, and raw `ST_*`
-wrappers remain outside the contract. The pinned Docker lane now supplies positive Sedona WKT round-trip evidence on
-PySpark 3.5/4.0 and focused Spark Connect 3.5/4.0, but that evidence does not promote the broader provider surface.
+Native Spark `st_*` helpers are a PySpark 4.1+ target slice. External providers use exact-name namespaces such as
+`sedona.st_geomfromwkt` and require matching `geo_provider` scope. Spatial values retain provider dialect, kind, and
+fixed or mixed SRID facts; they cannot cross providers directly. An ordinary Binary field is the explicit handoff, with
+codec compatibility owned by the application. The complete design and adoption requirements are in
+[P10012602](../planning/P10012602.Geospatial-provider-boundaries.plan.md).
 
 ### Join Reordering
 
@@ -70,7 +72,7 @@ materialization boundaries, and `caller-owned-guided` for runnable caller integr
 
 ## Deferred Scope
 
-- XML, provider-neutral geometry, Variant mutation, join-reordering, and directional as-of tie contracts;
+- XML, target-gated geospatial providers, Variant mutation, join-reordering, and directional as-of tie contracts;
 - sampling refinements that preserve explicit reproducibility and batch-only streaming behavior; and
 - missing-column union defaults plus nested, alias-preserving, and streaming schema-evolution rules.
 
@@ -85,7 +87,6 @@ materialization boundaries, and `caller-owned-guided` for runnable caller integr
 ## V10 Adoption
 
 The adopted core API slices are governed by the grouped plan
-`docs/dev/planning/P08022601.V10-api-catalog-and-schema-evolution.plan.md`. It covers provider-neutral Geometry,
-sampling refinements, and missing-column union defaults with nested-struct and alias-preserving rules. XML, unreleased
-Variant mutation profiles, and join reordering remain explicit catalog dispositions rather than automatic support
-claims.
+`docs/dev/planning/P08022601.V10-api-catalog-and-schema-evolution.plan.md`. Geospatial provider adoption is now
+tracked separately in P10012602. XML, unreleased Variant mutation profiles, and join reordering remain explicit catalog
+dispositions rather than automatic support claims.

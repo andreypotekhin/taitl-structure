@@ -120,6 +120,18 @@ Structure contract.
 - `arr_sort_by(..., descending=...)` requires a Boolean direction flag.
 - `arr_sort(...)` accepts arrays whose element type Spark can order; `arr_reverse(...)` preserves the array element type.
 
+## Fixed Stack Generator
+
+| Structure API | PySpark parity | Example |
+| --- | --- | --- |
+| `stack(rows, *values, as_=Schema, scope=None)` | `functions.stack` | `stack(2, row.id, row.name, row.id, as_=StackRow)` |
+
+`stack` groups scalar values row-major into a fixed number of generated rows per input row. `as_` declares exactly
+`ceil(len(values) / rows)` output fields; each field type is the common type of values in that output position. As in
+PySpark, a short final row is padded with NULL, so the corresponding field must be nullable. Input values that may be
+null also require a nullable output field. `rows` is a positive integer literal, and the generator is compatible with
+streaming input as stateless row expansion; ordinary and Connect runtime evidence remains a release check.
+
 ## Typed Struct Generators
 
 | Structure API | PySpark parity | Example |

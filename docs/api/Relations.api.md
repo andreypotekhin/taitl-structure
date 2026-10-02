@@ -12,7 +12,9 @@ streaming schema-evolution gate are called out below.
 | --- | --- | --- |
 | `relation_alias(...)` | DataFrame alias | `historical = relation_alias(customer, name="historical_customer")` |
 | `order_by(...)` | `orderBy` | `latest = order_by(order.created_at.desc())` |
+| `repartition(count, *keys)` / `repartition(*keys)` | `DataFrame.repartition` | `by_customer = repartition(8, order.customer_id)` |
 | `repartition_by_range(...)` | `repartitionByRange` | `partitioned = repartition_by_range(8, order.customer_id)` |
+| `coalesce(*, partitions=...)` | `DataFrame.coalesce` | `fewer_partitions = coalesce(partitions=4)` |
 | `limit(...)` | `limit` | `order_by(order.created_at.desc()); limit(1)` |
 | `offset(...)` | `offset` | `order_by(order.created_at.asc()); offset(20)` |
 | `sample(...)` | `sample` | `sample(0.25, seed=17)` |
@@ -25,9 +27,20 @@ streaming schema-evolution gate are called out below.
   `order_by(...)` and non-negative integer literals; later row-shaping operations cannot silently preserve that order.
 - `order_by(...)` and `repartition_by_range(...)` accept raw orderable expressions or any of the six typed ordering
   descriptors. Invalid descriptor operands fail during Structure compilation.
+- `repartition(count, *keys)` hash-shuffles the current rowset to a positive partition count and optional key
+  expressions; `repartition(*keys)` uses Spark's configured shuffle partition count. A leading integer always means
+  the partition count, matching PySpark. Use an explicit literal expression (for example, `literal(8)`) to hash on a
+  constant integer key. The operation preserves rows and schema, but makes no order or stable partition-identity
+  promise. Streaming use is compatible with `STREAM-W0804`, a throughput advisory. Range repartitioning remains
+  batch-only.
 - `repartition_by_range(count, *orderings)` redistributes the current rowset into `count` range partitions using one
   or more typed order expressions. `count` must be a positive integer literal. The operation preserves rows and
   schema, but it does not promise the final materialized row order; use `order_by(...)` when output order matters.
+- `coalesce(*, partitions=count)` reduces the current rowset to a positive number of partitions without changing rows
+  or schema. The keyword-only argument keeps this relation operation distinct from scalar `coalesce(value, fallback,
+  *values)`, which requires at least two values. Partition layout and output order are not stable contracts. On
+  streaming relations, Structure emits `STREAM-W0803`: treat the count as a throughput-tuning hint, not a stable
+  partition identity or ordering guarantee.
 - `sample(...)` validates a literal fraction: `[0, 1]` without replacement and non-negative with replacement. A seed
   is required by default; `reproducible=False` explicitly opts into non-repeatable sampling.
 - Ordering, range repartitioning, bounds, and sampling are batch-oriented and are streaming materialization boundaries.

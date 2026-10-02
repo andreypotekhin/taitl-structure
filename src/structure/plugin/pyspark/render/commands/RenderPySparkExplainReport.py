@@ -237,6 +237,8 @@ class RenderPySparkExplainReport:
             return self._generators.posexplode_struct(operation.posexplode_struct)
         if operation.json_tuple is not None:
             return self._generators.json_tuple(operation.json_tuple)
+        if operation.stack is not None:
+            return f"stack(row_multiplying rows={operation.stack.rows} values={len(operation.stack.values)})"
         if operation.scalar_generator is not None:
             return self._generators.scalar_array(operation.scalar_generator)
         if operation.map_generator is not None:
@@ -266,6 +268,14 @@ class RenderPySparkExplainReport:
         if operation.relation_partition is not None:
             partition = operation.relation_partition
             return f"repartition_by_range(row_preserving partitions={partition.count} keys={len(partition.order_by)})"
+        if operation.relation_repartition is not None:
+            repartition = operation.relation_repartition
+            return (
+                "repartition(row_preserving "
+                f"partitions={repartition.partitions} keys={len(repartition.keys)})"
+            )
+        if operation.relation_coalesce is not None:
+            return f"coalesce(row_preserving partitions={operation.relation_coalesce})"
         if operation.relation_sample is not None:
             seed = "unseeded" if operation.relation_sample.seed is None else f"seed={operation.relation_sample.seed}"
             return (

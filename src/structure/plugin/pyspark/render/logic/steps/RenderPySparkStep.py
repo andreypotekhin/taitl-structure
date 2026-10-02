@@ -15,6 +15,7 @@ from structure.plugin.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoi
 from structure.plugin.pyspark.compiler.model.PySparkOrderedTimelineScanRecipe import PySparkOrderedTimelineScanRecipe
 from structure.plugin.pyspark.compiler.model.PySparkOutputRecipe import PySparkOutputRecipe
 from structure.plugin.pyspark.compiler.model.PySparkSelectedRowsRecipe import PySparkSelectedRowsRecipe
+from structure.plugin.pyspark.compiler.model.PySparkSqlRecipe import PySparkSqlRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.plugin.pyspark.compiler.model.PySparkValidationRecipe import PySparkValidationRecipe
 from structure.plugin.pyspark.compiler.model.PySparkWatermarkRecipe import PySparkWatermarkRecipe
@@ -27,6 +28,7 @@ from structure.plugin.pyspark.render.logic.steps.RenderPySparkFilters import Ren
 from structure.plugin.pyspark.render.logic.steps.RenderPySparkJsonTuple import RenderPySparkJsonTuple
 from structure.plugin.pyspark.render.logic.steps.RenderPySparkMapGenerator import RenderPySparkMapGenerator
 from structure.plugin.pyspark.render.logic.steps.RenderPySparkScalarGenerator import RenderPySparkScalarGenerator
+from structure.plugin.pyspark.render.logic.steps.RenderPySparkStack import RenderPySparkStack
 from structure.plugin.pyspark.render.logic.steps.RenderPySparkStructGenerator import RenderPySparkStructGenerator
 
 
@@ -39,6 +41,7 @@ class RenderPySparkStep:
         self._scalar_generator_renderer = RenderPySparkScalarGenerator()
         self._map_generator_renderer = RenderPySparkMapGenerator()
         self._json_tuple_renderer = RenderPySparkJsonTuple()
+        self._stack_renderer = RenderPySparkStack()
         from structure.plugin.pyspark.api.PySpark import PySpark
 
         self._schema = PySpark.schema.render(schema_names)
@@ -52,6 +55,7 @@ class RenderPySparkStep:
         source_transform: str | None = None,
         generated_hooks: bool = False,
         backend_target: str = ">=3.5,<4.1",
+        frame_mapping: str | None = None,
     ) -> str:
         if isinstance(step, PySparkStepRecipe) and len(step.results) > 1:
             return self._multiple(
@@ -61,6 +65,7 @@ class RenderPySparkStep:
                 source_transform=source_transform,
                 generated_hooks=generated_hooks,
                 backend_target=backend_target,
+                frame_mapping=frame_mapping,
             )
         target = self._target(step)
         lines = [f"        # Step method: {step.name}"]
@@ -76,6 +81,12 @@ class RenderPySparkStep:
             )
         lines.append(f'        {target} = {active}.alias("{step.input_alias}")')
         lines.extend(self._operations(step, sources=sources or {}, target=target, backend_target=backend_target))
+        if isinstance(step, PySparkOutputRecipe) and step.input_schema is not step.output_schema:
+            columns = ", ".join(
+                f"F.col({field.column!r}).alias({field.column!r})"
+                for field in step.output_schema._structure_fields.values()
+            )
+            lines.append(f"        {target} = {target}.select({columns})")
         lines.extend(self._projection(step, target=target))
         if isinstance(step, PySparkStepRecipe):
             hook_sources = {**(sources or {}), step.results[0].frame: target}
@@ -89,6 +100,9 @@ class RenderPySparkStep:
             )
         lines.extend(self._validations(step.validations, target=target))
         lines.extend(self._post_operations(step, target=target))
+        if frame_mapping is not None and isinstance(step, PySparkStepRecipe):
+            for result in step.results:
+                lines.extend(self._command_result_accumulation(result, frame_mapping=frame_mapping))
         return "\n".join(lines)
 
     def _multiple(
@@ -100,6 +114,7 @@ class RenderPySparkStep:
         source_transform: str | None,
         generated_hooks: bool,
         backend_target: str,
+        frame_mapping: str | None,
     ) -> str:
         lines = [f"        # Step method: {step.name}"]
         active = current
@@ -128,6 +143,8 @@ class RenderPySparkStep:
             )
             lines.extend(self._validations(result.validations, target=result.frame))
             lines.extend(self._post_operations(step, target=result.frame))
+            if frame_mapping is not None:
+                lines.extend(self._command_result_accumulation(result, frame_mapping=frame_mapping))
         return "\n".join(lines)
 
     def _result_projection(self, step: PySparkStepRecipe, result, *, base: str) -> list[str]:
@@ -438,6 +455,16 @@ class RenderPySparkStep:
                         target=target,
                     )
                 )
+            if operation.kind == "stack" and operation.stack is not None:
+                ordered_lines.extend(
+                    self._stack_renderer(
+                        operation.stack,
+                        aliases=self._scope_aliases(step),
+                        target=target,
+                    )
+                )
+            if operation.kind == "sql" and operation.sql is not None:
+                ordered_lines.extend(self._sql_operation(operation.sql, sources=sources, target=target))
             if operation.kind == "ordered_timeline_scan" and operation.ordered_timeline_scan is not None:
                 ordered_lines.extend(
                     self._ordered_timeline_scan(
@@ -470,6 +497,18 @@ class RenderPySparkStep:
                     for expression in partition.order_by
                 )
                 ordered_lines.append(f"        {target} = {target}.repartitionByRange({partition.count}, {keys})")
+            if operation.relation_repartition is not None:
+                repartition = operation.relation_repartition
+                arguments = ", ".join(
+                    ([str(repartition.partitions)] if repartition.partitions is not None else [])
+                    + [
+                        render_pyspark_expression(expression, scope_aliases=self._scope_aliases(step))
+                        for expression in repartition.keys
+                    ]
+                )
+                ordered_lines.append(f"        {target} = {target}.repartition({arguments})")
+            if operation.relation_coalesce is not None:
+                ordered_lines.append(f"        {target} = {target}.coalesce({operation.relation_coalesce})")
             if operation.relation_sample is not None:
                 ordered_lines.extend(self._relation_sample(operation.relation_sample, target=target))
             if operation.relation_priority_selection is not None:
@@ -2094,6 +2133,10 @@ class RenderPySparkStep:
                 aliases.update(self._map_generator_renderer.aliases(step))
             if operation.json_tuple is not None:
                 aliases.update(self._json_tuple_renderer.aliases(step))
+            if operation.stack is not None:
+                aliases.update(self._stack_renderer.aliases(step))
+            if operation.sql is not None:
+                aliases[operation.sql.scope] = ""
             if operation.ordered_timeline_scan is not None:
                 aliases[operation.ordered_timeline_scan.row_scope] = ""
                 aliases[operation.ordered_timeline_scan.scope] = ""
@@ -2111,6 +2154,43 @@ class RenderPySparkStep:
 
     def _literal(self, value: str) -> str:
         return json.dumps(value)
+
+    def _sql_operation(self, recipe: PySparkSqlRecipe, *, sources: dict[str, str], target: str) -> list[str]:
+        relations = ", ".join(f"{name!r}: {sources[scope]}" for name, scope in recipe.relations)
+        relation_mapping = f"{{{relations}}}" if relations else "{}"
+        lines = [
+            "        from structure.plugin.pyspark.execution.logic.running.ExecutePySparkSql import execute_pyspark_sql",
+            f"        {target} = execute_pyspark_sql(",
+            f"            self.spark, {recipe.statement!r}, args={recipe.args!r}, relations={relation_mapping},",
+            f"            step={recipe.step!r}, label={recipe.label!r},",
+            "        )",
+        ]
+        from structure.plugin.pyspark.dsl.SqlResult import SqlCommandResult
+
+        if issubclass(recipe.schema, SqlCommandResult):
+            lines = [
+                "        from structure.plugin.pyspark.execution.logic.running.NormalizePySparkSqlCommandResult import normalize_sql_command_result",
+                f"        {target} = normalize_sql_command_result(",
+                f"            {target}, label={recipe.label!r}, schema={self._schema.expression(recipe.schema)},",
+                "            functions=F, types=T,",
+                "        )",
+            ]
+        lines.append(f"        {target} = {target}.alias({recipe.scope!r})")
+        return lines
+
+    def _command_result_accumulation(self, result, *, frame_mapping: str) -> list[str]:
+        from structure.plugin.pyspark.dsl.SqlResult import SqlCommandResult
+
+        if not issubclass(result.schema, SqlCommandResult):
+            return []
+        marker = "__structure_sql_command_result_frames__"
+        return [
+            f"        {frame_mapping}.setdefault({marker!r}, set())",
+            f"        if {result.frame!r} in {frame_mapping}[{marker!r}]:",
+            f"            {result.frame} = {frame_mapping}[{result.frame!r}].unionByName({result.frame}, allowMissingColumns=True)",
+            "        else:",
+            f"            {frame_mapping}[{marker!r}].add({result.frame!r})",
+        ]
 
 
 def render_pyspark_step(

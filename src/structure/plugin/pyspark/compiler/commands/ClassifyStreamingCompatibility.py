@@ -140,6 +140,10 @@ class ClassifyStreamingCompatibility:
                     findings.extend(self._relation_ordering(step.name, "order_by"))
                 if streaming_step and operation.relation_partition is not None:
                     findings.extend(self._relation_ordering(step.name, "repartition_by_range"))
+                if streaming_step and operation.relation_repartition is not None:
+                    findings.append(self._streaming_repartition_warning(step.name, operation.relation_repartition))
+                if streaming_step and operation.relation_coalesce is not None:
+                    findings.append(self._streaming_coalesce_warning(step.name, operation.relation_coalesce))
                 if streaming_step and operation.relation_bound is not None:
                     findings.extend(self._relation_ordering(step.name, operation.kind))
                 if streaming_step and operation.relation_sample is not None:
@@ -757,6 +761,37 @@ class ClassifyStreamingCompatibility:
                     "relations."
                 ),
                 use="Keep this transform batch-only or move ordering and bounded selection to a batch materialization boundary.",
+            ),
+        )
+
+    def _streaming_coalesce_warning(self, step: str, partitions: int) -> StreamingFinding:
+        return StreamingFinding(
+            code="STREAM-W0803",
+            support=StreamingSupport.COMPATIBLE,
+            step=step,
+            operation="coalesce",
+            problem=(
+                f"coalesce(partitions={partitions}) changes streaming task parallelism and may affect throughput."
+            ),
+            use=(
+                "Treat the partition count as a deployment tuning choice; it does not establish stable output order "
+                "or partition identity."
+            ),
+        )
+
+    def _streaming_repartition_warning(self, step: str, partition) -> StreamingFinding:
+        count = "default" if partition.partitions is None else str(partition.partitions)
+        return StreamingFinding(
+            code="STREAM-W0804",
+            support=StreamingSupport.COMPATIBLE,
+            step=step,
+            operation="repartition",
+            problem=(
+                f"repartition(...) shuffles streaming rows into {count} partitions and may affect throughput."
+            ),
+            use=(
+                "Treat the partition count and hash keys as deployment tuning; repartitioning does not establish "
+                "stable row order or partition identity."
             ),
         )
 

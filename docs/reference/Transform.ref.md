@@ -84,12 +84,16 @@ class PublishOrders(Transform):
 | `cache=True` | Persist the completed step at Spark's default storage level |
 | `cache=StorageLevel...` | Persist with an explicit PySpark storage level |
 | `streaming=` | Declare or reject streaming compatibility for the transform |
+| `geo_provider=` | Planned target-gated spatial provider scope; see [Geospatial](Geospatial.ref.md) |
 
 Method-level `input=` and `output=` accept ordered lists for steps with multiple inputs or results. A lane with the
 same name as an original input shadows that input for later inferred bindings.
 
 Operations are applied in source order. Independent lanes remain independent; a step does not silently merge every
 DataFrame currently in scope.
+
+The planned `geo_provider=` option resolves at step, transform, and application levels. It selects a spatial provider's
+physical schema and validates its namespaced functions; it does not make arbitrary provider values interchangeable.
 
 ## Projections and filters
 
@@ -251,6 +255,55 @@ def summarize(self, order: Order, customer: Customer) -> CustomerTotal:
 
 The same source-order rules apply when the step uses a window, collection callback, or relation-shape operation; choose
 the focused API reference for the operation's cardinality and target conditions.
+
+### Typed Spark SQL
+
+Use `sql(...)` inside a Transform method when a complete relation is clearer as Spark SQL. Declare the output schema
+with required `as_`; Structure uses it to type later expressions and to validate the runtime relation when the
+configured validation phase is enabled. `relations` binds `{name}` placeholders to typed relation scopes or caller-
+supplied SQL table text. `args` supplies Spark's literal parameters. SQL text and table text remain caller-owned and
+are interpreted by Spark and the configured provider.
+
+```python
+def select_orders(self, order: Order) -> OrderSummary:
+    return sql(
+        "SELECT id, total FROM {orders} WHERE total > :minimum",
+        relations={"orders": order},
+        args={"minimum": 100},
+        as_=OrderSummary,
+    )
+```
+
+The `as_` schema may be an ordinary Structure `Schema` for a query. Use `SqlCommandResult` for a mutation result;
+its optional `label` attributes each result row when supplied, while `num_affected_rows`, `num_updated_rows`, `num_inserted_rows`,
+and `num_deleted_rows` are nullable metrics. A metric is null when the backend does not return its column; null does
+not mean zero. Command-result schemas can be returned from steps and routed to command-result outputs or lanes.
+Repeated writes accumulate rows, and callers access a declared output through the usual `TransformResult` output
+name. SQL command legality and metric availability depend on Spark and the selected provider.
+
+For a data mutation, return the command relation from the step so the caller can inspect its metrics:
+
+```python
+class MergeOrders(Transform):
+    TARGET_TABLE = "catalog.sales.orders"
+
+    changes = input(OrderChange)
+    command_results = output(SqlCommandResult)
+
+    def merge(self, change: OrderChange) -> SqlCommandResult:
+        return sql(
+            "MERGE INTO {target} AS t USING {changes} AS s ON t.id = s.id "
+            "WHEN MATCHED THEN UPDATE SET total = s.total",
+            relations={"target": self.TARGET_TABLE, "changes": change},
+            as_=SqlCommandResult,
+        )
+
+result = MergeOrders(changes=changes_df).run(session)
+commands_df = result.command_results
+```
+
+The caller may add `label="merge-orders"` to the `sql(...)` call when it needs to attribute this row among several
+commands. With no label, the result's `label` value is null.
 
 ## Streaming
 

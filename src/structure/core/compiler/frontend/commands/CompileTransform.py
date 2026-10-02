@@ -49,9 +49,7 @@ _diagnostic_project_root: ContextVar[Path | None] = ContextVar("diagnostic_proje
 _authoring: ContextVar[tuple[object | None, str, Mapping[str, object], Mapping[str, object]]] = ContextVar(
     "structure_platform_authoring", default=(None, "", {}, {})
 )
-_semantic_policies: ContextVar[tuple[bool, bool]] = ContextVar(
-    "structure_output_policies", default=(False, False)
-)
+_semantic_policies: ContextVar[tuple[bool, bool]] = ContextVar("structure_output_policies", default=(False, False))
 _assigned_outputs: ContextVar[set[str] | None] = ContextVar("structure_assigned_outputs", default=None)
 
 
@@ -710,9 +708,7 @@ class CompileTransform:
                 "DSL-E0401",
                 transform_class=transform_class,
                 member=name,
-                problem=(
-                    f"{transform_class.__name__}.{name} uses unsupported symbolic code in {helper}: {error}"
-                ),
+                problem=(f"{transform_class.__name__}.{name} uses unsupported symbolic code in {helper}: {error}"),
                 use=(
                     "Use Structure expression helpers or leave the helper undecorated when it can compile; combine "
                     "predicates with &, |, or ~; use @special(type=\"udf\") for intentional scalar Python; "
@@ -1460,11 +1456,15 @@ class CompileTransform:
             self._assigned_output_names().add(declaration.name)
         return declaration.name
 
-    def _check_output_assignment(self, transform_class: type[Transform], declaration: WriteDeclaration, *, member: str) -> None:
+    def _check_output_assignment(
+        self, transform_class: type[Transform], declaration: WriteDeclaration, *, member: str
+    ) -> None:
         if not self._writes_output(declaration) or declaration.name not in self._assigned_output_names():
             return
         _, allow_reassign = self._output_policy()
         if allow_reassign:
+            return
+        if getattr(declaration.schema, "__structure_sql_command_result__", False):
             return
         raise self._error(
             "DSL-E0402",
@@ -1507,7 +1507,15 @@ class CompileTransform:
         declaration: OutputDeclaration,
         lanes: dict[str, dict[str, object]],
     ) -> tuple[str, dict[str, object]]:
-        matches = [(lane, source) for lane, source in lanes.items() if source["schema"] is declaration.schema]
+        matches = [
+            (lane, source)
+            for lane, source in lanes.items()
+            if source["schema"] is declaration.schema
+            or (
+                getattr(declaration.schema, "__structure_sql_command_result__", False)
+                and issubclass(cast(type[Schema], source["schema"]), declaration.schema)
+            )
+        ]
         if len(matches) != 1:
             names = ", ".join(lane for lane, _ in matches) or "none"
             raise self._error(
@@ -1542,7 +1550,10 @@ class CompileTransform:
                 context={"output": name},
             )
         actual_schema = cast(type[Schema], source["schema"])
-        if actual_schema is not schema:
+        command_result_is_assignable = getattr(schema, "__structure_sql_command_result__", False) and issubclass(
+            actual_schema, schema
+        )
+        if actual_schema is not schema and not command_result_is_assignable:
             raise self._error(
                 "DSL-E0402",
                 transform_class=transform_class,
@@ -1662,10 +1673,19 @@ class CompileTransform:
                 if isinstance(declaration.declaration, LaneDeclaration):
                     return issubclass(schema, declaration.schema)
                 return True
-            return declaration.role == "output" and schema is declaration.schema
+            return declaration.role == "output" and (
+                schema is declaration.schema
+                or (
+                    getattr(declaration.schema, "__structure_sql_command_result__", False)
+                    and issubclass(schema, declaration.schema)
+                )
+            )
         if isinstance(declaration, LaneDeclaration):
             return issubclass(schema, declaration.schema)
-        return schema is declaration.schema
+        return schema is declaration.schema or (
+            getattr(declaration.schema, "__structure_sql_command_result__", False)
+            and issubclass(schema, declaration.schema)
+        )
 
     def _writes_output(self, declaration: WriteDeclaration) -> bool:
         if isinstance(declaration, BindingSelector):

@@ -13,6 +13,8 @@ _MODULES = (
     "TimeWindow",
     "types",
     "field",
+    "sql_api",
+    "SqlResult",
 )
 
 __all__ = ["field", "types"]

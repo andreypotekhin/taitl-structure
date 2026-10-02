@@ -22,6 +22,10 @@ the API, and the [Reference](Reference.md), which defines detailed behavior.
 
 - [Colocated Intermediate Schemas](recipes/ColocatedIntermediateSchemas.md): keep a transform-only schema beside its transform.
 
+## Integration Boundary Recipes
+
+- [Geospatial Provider Bridge](recipes/GeospatialProviderBridge.md): make a provider-specific Binary handoff explicit.
+
 More recipes should cover one recognizable outcome, make their data assumptions explicit, and link to the API or
 reference pages that define their behavior. They should use ordinary Structure source rather than hand-written PySpark
 unless the recipe is specifically about a hook.

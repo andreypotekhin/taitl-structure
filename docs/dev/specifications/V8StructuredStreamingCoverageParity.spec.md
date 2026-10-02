@@ -63,6 +63,10 @@ The first stateless design gate admits `functions.generators` as row-expanding b
 are declared with `streaming=True`; `intersect(...)`, `intersect_all(...)`, `subtract(...)`, and `except_all(...)`
 remain streaming-ineligible.
 
+Hash `repartition(count, *keys)` and `repartition(*keys)` are also admitted as stateless, row-preserving distribution
+changes. `STREAM-W0804` warns that their shuffle and partition settings are throughput tuning choices; range
+repartitioning remains batch-only.
+
 The ordering and priority-selection design gates are closed as ineligible for v8. `order_by(...)`, `limit(...)`, and
 `offset(...)` require a batch materialization boundary for unbounded streaming relations. `select_first_qualified(...)`
 remains batch-only because it lowers through ranking and validation aggregates.

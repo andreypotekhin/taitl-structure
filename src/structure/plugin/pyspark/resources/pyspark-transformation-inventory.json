@@ -12,6 +12,7 @@
     "Python UDF/UDTF registration and arbitrary callback APIs"
   ],
   "apis": [
+    {"id": "functions.stack", "family": "SQL functions", "pyspark": ["stack"]},
     {"id": "column.comparison", "family": "Column", "pyspark": ["__eq__", "eqNullSafe", "__ne__", "__lt__", "__le__", "__gt__", "__ge__", "between", "isin"]},
     {"id": "column.boolean", "family": "Column", "pyspark": ["__and__", "__or__", "__invert__", "isNull", "isNotNull", "isNaN"]},
     {"id": "column.arithmetic", "family": "Column", "pyspark": ["__add__", "__sub__", "__mul__", "__truediv__", "__mod__", "__neg__"]},
@@ -27,7 +28,7 @@
     {"id": "functions.assertion", "family": "SQL functions", "pyspark": ["assert_true", "raise_error"]},
     {"id": "functions.predicate", "family": "SQL functions", "pyspark": ["equal_null", "like", "ilike", "regexp", "regexp_like", "rlike"]},
     {"id": "functions.null", "family": "SQL functions", "pyspark": ["isnull", "isnotnull", "isnan", "nanvl"]},
-    {"id": "functions.string", "family": "SQL functions", "pyspark": ["ascii", "btrim", "char", "char_length", "contains", "elt", "find_in_set", "format_number", "format_string", "left", "lower", "upper", "trim", "ltrim", "rtrim", "lpad", "rpad", "length", "locate", "mask", "octet_length", "overlay", "position", "printf", "regexp_count", "regexp_extract", "regexp_extract_all", "regexp_instr", "regexp_replace", "regexp_substr", "repeat", "replace", "right", "soundex", "split_part", "substr", "substring", "substring_index", "split", "concat_ws", "initcap", "reverse", "translate", "instr", "levenshtein"]},
+    {"id": "functions.string", "family": "SQL functions", "pyspark": ["ascii", "btrim", "char", "char_length", "contains", "elt", "find_in_set", "format_number", "format_string", "left", "lower", "upper", "trim", "ltrim", "rtrim", "lpad", "rpad", "length", "locate", "mask", "octet_length", "overlay", "position", "printf", "regexp_count", "regexp_extract", "regexp_extract_all", "regexp_instr", "regexp_replace", "regexp_substr", "repeat", "replace", "right", "soundex", "split_part", "substr", "substring", "substring_index", "split", "concat_ws", "initcap", "reverse", "translate", "instr", "levenshtein", "url_encode", "url_decode", "try_url_decode"]},
     {"id": "functions.numeric", "family": "SQL functions", "pyspark": ["abs", "acos", "acosh", "asin", "asinh", "atan", "atan2", "atanh", "bin", "round", "bround", "cbrt", "ceil", "conv", "cos", "cosh", "cot", "csc", "degrees", "e", "expm1", "factorial", "floor", "greatest", "hex", "hypot", "least", "ln", "log", "log10", "log1p", "log2", "exp", "pmod", "pi", "radians", "rint", "sec", "sign", "sin", "sinh", "signum", "sqrt", "tan", "tanh", "pow", "unhex", "width_bucket"]},
     {"id": "functions.bitwise", "family": "SQL functions", "pyspark": ["bit_count", "bit_get", "getbit", "shiftleft", "shiftright", "shiftrightunsigned"]},
     {"id": "functions.random", "family": "SQL functions", "pyspark": ["rand", "randn"]},
@@ -59,6 +60,8 @@
     {"id": "functions.aggregate-advanced", "family": "SQL functions", "pyspark": ["count_distinct", "count_if", "approx_count_distinct", "approx_percentile", "median", "percentile", "stddev", "stddev_pop", "stddev_samp", "variance", "var_pop", "var_samp", "corr", "covar_samp", "skewness", "kurtosis", "mode", "any_value", "array_agg", "bit_and", "bit_or", "bit_xor", "first", "last", "max_by", "min_by", "product", "sum_distinct", "regr_avgx", "regr_avgy", "regr_count", "regr_intercept", "regr_r2", "regr_slope", "regr_sxx", "regr_sxy", "regr_syy"]},
     {"id": "functions.window", "family": "SQL functions", "pyspark": ["row_number", "rank", "dense_rank", "percent_rank", "cume_dist", "ntile", "lag", "lead", "first_value", "last_value", "nth_value"]},
     {"id": "streaming.watermark", "family": "DataFrame", "pyspark": ["withWatermark"]},
-    {"id": "streaming.session-window", "family": "SQL functions", "pyspark": ["session_window"]}
+    {"id": "streaming.session-window", "family": "SQL functions", "pyspark": ["session_window"]},
+    {"id": "dataframe.coalescing", "family": "DataFrame", "pyspark": ["coalesce"]},
+    {"id": "dataframe.repartitioning", "family": "DataFrame", "pyspark": ["repartition"]}
   ]
 }

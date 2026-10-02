@@ -1,6 +1,7 @@
 from structure.plugin.api.v1.model import CompilerProvenance, DataflowDependency
 from structure.plugin.pyspark.compiler.logic.traceability.CompilerDataflowReads import CompilerDataflowReads
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
+from structure.plugin.pyspark.compiler.model.PySparkStackRecipe import PySparkStackRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkStepRecipe
 
 
@@ -29,6 +30,7 @@ class MapGeneratorTraceability:
             for index, operation in enumerate(step.operations)
             if operation.posexplode_struct is not None
             or operation.json_tuple is not None
+            or operation.stack is not None
             or operation.scalar_generator is not None
             or operation.map_generator is not None
         )
@@ -37,7 +39,15 @@ class MapGeneratorTraceability:
         return tuple(
             DataflowDependency(
                 target=f"{step.name}.{operation.kind}[{index}].{generator.scope}",
-                sources=self._dataflow.reads(generator.expression),
+                sources=(
+                    tuple(
+                        sorted(
+                            set().union(*(self._dataflow.reads(value) for value in generator.values))
+                        )
+                    )
+                    if isinstance(generator, PySparkStackRecipe)
+                    else self._dataflow.reads(generator.expression)
+                ),
                 operation=operation.kind,
                 step=step.name,
                 detail={
@@ -58,12 +68,14 @@ class MapGeneratorTraceability:
                         else {}
                     ),
                     **({"fields": getattr(generator, "fields")} if operation.json_tuple is not None else {}),
+                    **({"rows": getattr(generator, "rows")} if operation.stack is not None else {}),
                 },
             )
             for index, operation in enumerate(step.operations)
             for generator in (
                 operation.posexplode_struct
                 or operation.json_tuple
+                or operation.stack
                 or operation.scalar_generator
                 or operation.map_generator,
             )

@@ -6,6 +6,7 @@ For exhaustive reference on supported APIs, PySpark parity, examples and semanti
 [sketches and bitmaps](api/Aggregations.api.md#sketches-and-bitmaps), [windows](api/Windows.api.md),
 [collections](api/Collections.api.md),
 [relations](api/Relations.api.md), and [streaming](api/Streaming.api.md).
+Target-gated spatial provider guidance is in the [Geospatial reference](reference/Geospatial.ref.md).
 
 ## Schema Classes
 
@@ -344,7 +345,9 @@ Supported expression forms are:
 - String helpers:  `contains(...)`, `like(...)`, `ilike(...)`, `rlike(...)`,
   array/map indexing, `lower(...)`, `upper(...)`, `trim(...)`, `to_decimal(...)`, `coalesce(...)`, and
   `substring(...)`, `substr(...)`, `split(...)`,
-  `regexp_replace(...)`, `regexp_extract(...)`, `length(...)`, `concat_ws(...)`,   `initcap(...)`, `reverse(...)`, `translate(...)`, `instr(...)`.
+  `regexp_replace(...)`, `regexp_extract(...)`, `url_encode(...)`, strict `url_decode(...)`,
+  4.0+ `try_url_decode(...)`, `length(...)`,
+  `concat_ws(...)`, `initcap(...)`, `reverse(...)`, `translate(...)`, `instr(...)`.
 - PySpark Column method parity: string expressions support `order.name.substr(1, 10)`,
   `order.status.isin(["new", "paid"])`, and dynamic matching such as `order.name.startswith(order.prefix)`.
   `trim(...)` and `lower(...)` remain function helpers, so the equivalent composition is

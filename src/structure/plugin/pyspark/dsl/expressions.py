@@ -15,7 +15,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from math import isfinite
 from re import fullmatch
-from typing import Any, Mapping
+from typing import TYPE_CHECKING, Any, Mapping, overload
 
 from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.types import (
@@ -38,6 +38,9 @@ from structure.plugin.pyspark.dsl.types import (
     VariantType,
 )
 
+if TYPE_CHECKING:
+    from structure.plugin.pyspark.dsl.RowScope import RowScope
+
 __all__ = [
     "abs", "assert_true", "base64", "bin", "bround", "ceil", "coalesce", "concat_ws", "conv", "date_add", "date_sub", "date_trunc", "datediff",
     "dayofmonth", "dayofweek", "dayofyear", "event_time_between", "exp", "floor", "from_csv", "from_json", "hash", "hour", "ifnull", "initcap",
@@ -54,6 +57,7 @@ __all__ = [
     "raise_error", "current_date", "curdate", "current_timestamp", "now", "localtimestamp", "current_timezone",
     "aes_encrypt", "aes_decrypt", "try_aes_decrypt",
     "hll_sketch_estimate", "hll_union", "bitmap_bit_position", "bitmap_bucket_number", "bitmap_count",
+    "url_encode", "url_decode", "try_url_decode",
 ]
 
 
@@ -255,6 +259,21 @@ def btrim(value: object, *, trim: str = " ") -> Expression:
 def upper(value: object) -> Expression:
     """Uppercase a string expression, like Spark ``upper``."""
     return _string_call("upper", value)
+
+
+def url_encode(value: object) -> Expression:
+    """Encode a String expression using Spark's URL form-encoding rules."""
+    return _string_call("url_encode", value)
+
+
+def url_decode(value: object) -> Expression:
+    """Decode a URL-encoded String expression; malformed input follows Spark's strict behavior."""
+    return _string_call("url_decode", value)
+
+
+def try_url_decode(value: object) -> Expression:
+    """Decode a URL-encoded String expression, returning null for malformed input on PySpark 4.0+."""
+    return _string_call("try_url_decode", value)
 
 
 def base64(value: object) -> Expression:
@@ -2184,20 +2203,44 @@ def to_decimal(value: object, *, precision: int, scale: int) -> Expression:
     )
 
 
-def coalesce(*values: object) -> Expression:
+_PARTITIONS_UNSET = object()
+
+
+@overload
+def coalesce(value: object, fallback: object, /, *values: object) -> Expression: ...
+
+
+@overload
+def coalesce(*, partitions: int) -> RowScope: ...
+
+
+def coalesce(
+    *values: object,
+    partitions: object = _PARTITIONS_UNSET,
+) -> Expression | RowScope:
     """Return the first non-null value using Structure common-type rules.
 
     Args:
-        *values: Compatible expressions or literals.
+        *values: At least two compatible scalar expressions or literals.
+        partitions: Keyword-only positive partition count for relation coalescing.
 
     Returns:
-        A symbolic expression with the common Structure type.
+        A typed scalar expression, or the current row scope after relation coalescing.
 
     Example:
         display_name = coalesce(customer.nickname, customer.full_name, "unknown")
+        fewer_partitions = coalesce(partitions=4)
     """
+    if partitions is not _PARTITIONS_UNSET:
+        if values:
+            raise TypeError("coalesce(partitions=...) cannot be combined with scalar values")
+        from structure.plugin.pyspark.dsl.relation_sets import _coalesce_partitions
+
+        return _coalesce_partitions(partitions)
     if not values:
-        raise TypeError("coalesce(...) requires at least one value")
+        raise TypeError("coalesce(...) requires at least two scalar values or the keyword partitions=...")
+    if len(values) < 2:
+        raise TypeError("scalar coalesce(...) requires at least two values; use the value directly")
     arguments = tuple(literal(value) for value in values)
     return Expression(
         kind="call",

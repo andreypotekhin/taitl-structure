@@ -58,6 +58,8 @@ class MapPySparkExpression:
             function = (expression.data or {}).get("function")
             if function == "is_valid_variant":
                 return "expression", "is_valid_variant"
+            if function == "try_url_decode":
+                return "expression", "try_url_decode"
             if function == "rand":
                 return "expression", "rand"
             if function in {

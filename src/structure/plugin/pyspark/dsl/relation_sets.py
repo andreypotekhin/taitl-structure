@@ -27,6 +27,7 @@ from structure.plugin.pyspark.dsl.operations.RelationHierarchyFallbackPlan impor
 from structure.plugin.pyspark.dsl.operations.RelationOrderPlan import RelationOrderPlan
 from structure.plugin.pyspark.dsl.operations.RelationPartitionPlan import RelationPartitionPlan
 from structure.plugin.pyspark.dsl.operations.RelationPrioritySelectionPlan import RelationPrioritySelectionPlan
+from structure.plugin.pyspark.dsl.operations.RelationRepartitionPlan import RelationRepartitionPlan
 from structure.plugin.pyspark.dsl.operations.RelationSamplePlan import RelationSamplePlan
 from structure.plugin.pyspark.dsl.operations.RelationSetPlan import RelationSetPlan
 from structure.plugin.pyspark.dsl.RowScope import RowScope
@@ -122,6 +123,52 @@ def repartition_by_range(count: int, *orderings: object) -> RowScope:
     context.operations.append(
         OperationPlan.relation_partition_operation(RelationPartitionPlan(count=count, order_by=order))
     )
+    return RowScope(name=_current_scope(context.default_project_source), schema=source_schema)
+
+
+def repartition(*values: object) -> RowScope:
+    """Hash-repartition the current relation by an optional count and key expressions.
+
+    A leading integer is the target partition count, matching PySpark. Without a
+    leading integer, the values are partition keys and Spark chooses the count.
+    """
+    function = "repartition(...)"
+    context = _context(function)
+    if not values:
+        raise TypeError("repartition(...) requires a positive count or at least one partition key")
+
+    partitions: int | None = None
+    keys = values
+    if isinstance(values[0], bool):
+        raise TypeError("repartition(count, ...) requires a positive integer partition count")
+    if isinstance(values[0], int):
+        partitions = values[0]
+        keys = values[1:]
+        if partitions < 1:
+            raise TypeError("repartition(count, ...) requires a positive integer partition count")
+        if not keys and len(values) > 1:
+            raise TypeError("repartition(count, ...) requires partition keys after the count")
+
+    if not keys and partitions is None:
+        raise TypeError("repartition(...) requires a positive count or at least one partition key")
+    source_schema = _current_schema(context.default_project_source, function="repartition")
+    expressions = tuple(literal(value) for value in keys)
+    _validate_prior_operations(context.operations, function="repartition")
+    context.operations.append(
+        OperationPlan.relation_repartition_operation(RelationRepartitionPlan(partitions=partitions, keys=expressions))
+    )
+    return RowScope(name=_current_scope(context.default_project_source), schema=source_schema)
+
+
+def _coalesce_partitions(partitions: object) -> RowScope:
+    """Reduce the current relation to a positive number of partitions."""
+    function = "coalesce(partitions=...)"
+    context = _context(function)
+    if isinstance(partitions, bool) or not isinstance(partitions, int) or partitions < 1:
+        raise TypeError("coalesce(partitions=...) requires a positive integer partition count")
+    source_schema = _current_schema(context.default_project_source, function="coalesce")
+    _validate_prior_operations(context.operations, function="coalesce")
+    context.operations.append(OperationPlan.relation_coalesce_operation(partitions))
     return RowScope(name=_current_scope(context.default_project_source), schema=source_schema)
 
 
@@ -670,6 +717,7 @@ def _validate_prior_operations(operations, *, function: str) -> None:
             "inline_struct",
             "inline_outer_struct",
             "posexplode_struct",
+            "stack",
             "posexplode_outer_struct",
             "explode_array",
             "explode_outer_array",
@@ -710,6 +758,8 @@ def _validate_ordered_state(operations, *, function: str) -> None:
             "posexplode_outer_array",
             "sample",
             "repartition_by_range",
+            "repartition",
+            "coalesce",
             "selected_rows",
             "select_first_qualified",
             "hierarchy_closure",

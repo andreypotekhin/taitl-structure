@@ -32,8 +32,10 @@ from structure.plugin.pyspark.compiler.model.PySparkProjectionRecipe import PySp
 from structure.plugin.pyspark.compiler.model.PySparkRelationAssertionRecipe import PySparkRelationAssertionRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationBoundRecipe import PySparkRelationBoundRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationOrderRecipe import PySparkRelationOrderRecipe
+from structure.plugin.pyspark.compiler.model.PySparkRelationRepartitionRecipe import PySparkRelationRepartitionRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationSetRecipe import PySparkRelationSetRecipe
 from structure.plugin.pyspark.compiler.model.PySparkSelectedRowsRecipe import PySparkSelectedRowsRecipe
+from structure.plugin.pyspark.compiler.model.PySparkStackRecipe import PySparkStackRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStepResultRecipe import PySparkStepResultRecipe
 from structure.plugin.pyspark.compiler.model.PySparkValidationRecipe import PySparkValidationRecipe
@@ -47,6 +49,10 @@ from structure.plugin.pyspark.execution.logic.ValidatePySparkFrame import Valida
 class RawOrder(Schema):
     id = string(nullable=False)
     status = string(nullable=True)
+
+
+class StackedValue(Schema):
+    value = string(nullable=True, alias="stacked_value")
 
 
 class RequiredStatusOrder(Schema):
@@ -575,6 +581,60 @@ def test_online_runner_executes_lowered_pyspark_recipe(monkeypatch) -> None:
         "select:id=col(orders.id),status=lower(trim(col(orders.status)))",
         "alias:published",
     )
+
+
+def test_online_runner_executes_stack_recipe(monkeypatch) -> None:
+    functions = FakeFunctions("pyspark.sql.functions")
+    _install_fake_pyspark(monkeypatch, functions)
+    stack = PySparkStackRecipe(
+        rows=2,
+        values=(_field_scope("orders", RawOrder, "id"), _field_scope("orders", RawOrder, "status")),
+        scope="stacked",
+        schema=StackedValue,
+    )
+    plan = _with_operations(_online_plan(), PySparkOperationRecipe.stack_operation(stack))
+
+    result = RunOnlinePySparkTransform()(
+        cast(Any, FakeInvocation(orders=_frame("orders", RawOrder))),
+        plan,
+        session=SimpleNamespace(
+            online_executor=None,
+            spark=object(),
+            ctx=None,
+            execution_mode="online",
+            target="pyspark",
+        ),
+    )
+
+    assert any(
+        operation.startswith("select:*=*,stacked_value=stack(lit(2),col(orders.id),col(orders.status))")
+        for operation in cast(FakeFrame, result.published).operations
+    )
+
+
+def test_online_runner_executes_relation_repartition_recipe(monkeypatch) -> None:
+    _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
+    repartition = PySparkRelationRepartitionRecipe(
+        partitions=8,
+        keys=(_field_scope("orders", RawOrder, "id"),),
+    )
+    plan = _with_operations(
+        _online_plan(), PySparkOperationRecipe.relation_repartition_operation(repartition)
+    )
+
+    result = RunOnlinePySparkTransform()(
+        cast(Any, FakeInvocation(orders=_frame("orders", RawOrder))),
+        plan,
+        session=SimpleNamespace(
+            online_executor=None,
+            spark=object(),
+            ctx=None,
+            execution_mode="online",
+            target="pyspark",
+        ),
+    )
+
+    assert "repartition:8:col(orders.id)" in cast(FakeFrame, result.published).operations
 
 
 def test_online_runner_preserves_explicit_cache_level(monkeypatch) -> None:
@@ -3788,6 +3848,9 @@ class FakeFunctions(ModuleType):
     def expr(self, value):
         return FakeColumn(f"expr({value!r})")
 
+    def stack(self, rows, *values):
+        return FakeColumn(f"stack({','.join(value.expression for value in (rows, *values))})")
+
     def lower(self, column):
         return FakeColumn(f"lower({column.expression})", source_name=column.source_name)
 
@@ -4449,6 +4512,12 @@ class FakeFrame:
 
     def withWatermark(self, field: str, delay: str):
         return self.with_operation(f"withWatermark:{field}:{delay}")
+
+    def repartition(self, *columns):
+        rendered = ":".join(
+            column.expression if isinstance(column, FakeColumn) else str(column) for column in columns
+        )
+        return self.with_operation(f"repartition:{rendered}")
 
     def drop(self, *names: str):
         return self.with_operation(f"drop:{','.join(names)}")

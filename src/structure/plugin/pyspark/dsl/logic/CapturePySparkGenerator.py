@@ -6,12 +6,13 @@ from typing import cast
 from structure.dsl import Schema
 from structure.plugin.api.v1.model import SymbolicContext
 from structure.plugin.pyspark.dsl.Expression import Expression
-from structure.plugin.pyspark.dsl.expressions import literal
+from structure.plugin.pyspark.dsl.expressions import _common_type, literal
 from structure.plugin.pyspark.dsl.operations.JsonTuplePlan import JsonTuplePlan
 from structure.plugin.pyspark.dsl.operations.MapGeneratorPlan import MapGeneratorPlan
 from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
 from structure.plugin.pyspark.dsl.operations.PosexplodeStructPlan import PosexplodeStructPlan
 from structure.plugin.pyspark.dsl.operations.ScalarGeneratorPlan import ScalarGeneratorPlan
+from structure.plugin.pyspark.dsl.operations.StackPlan import StackPlan
 from structure.plugin.pyspark.dsl.RowScope import RowScope
 from structure.plugin.pyspark.dsl.types import (
     ArrayType,
@@ -105,6 +106,54 @@ class CapturePySparkGenerator:
         context.operations.append(
             OperationPlan.json_tuple_operation(
                 JsonTuplePlan(expression=expression, scope=generated_scope, schema=as_, fields=resolved)
+            )
+        )
+        context.register_current_scope(generated_scope)
+        return RowScope(name=generated_scope, schema=as_)
+
+    def stack(
+        self,
+        context: SymbolicContext,
+        rows: object,
+        values: tuple[object, ...],
+        *,
+        as_: type[Schema],
+        scope: str | None,
+    ) -> RowScope:
+        function = "stack"
+        self._validate_options(as_=as_, ordinal=None, scope=scope, function=function)
+        if isinstance(rows, bool) or not isinstance(rows, int) or rows < 1:
+            raise TypeError("stack(rows, ...) requires a positive integer row count")
+        if not values:
+            raise TypeError("stack(rows, *values, ...) requires at least one value")
+
+        width = (len(values) + rows - 1) // rows
+        fields = as_._structure_fields
+        if len(fields) != width:
+            raise TypeError(f"stack(as_=...) must declare exactly {width} output field(s)")
+
+        expressions = tuple(literal(value) for value in values)
+        if any(not isinstance(expression, Expression) for expression in expressions):
+            raise TypeError("stack(...) requires typed Structure expressions or literals")
+        typed_expressions = cast(tuple[Expression, ...], expressions)
+        for position, (name, field) in enumerate(fields.items()):
+            column_values = tuple(typed_expressions[index] for index in range(position, len(values), width))
+            common_type = _common_type(f"stack(... field {name!r})", column_values)
+            if common_type is None:
+                raise TypeError(f"stack(as_=...) field {name!r} needs at least one typed value")
+            if field.type != common_type:
+                raise TypeError(f"stack(as_=...) field {name!r} must have type {common_type.name}")
+            nullable = len(column_values) < rows or any(value.nullable for value in column_values)
+            if nullable and not field.nullable:
+                raise TypeError(
+                    f"stack(as_=...) field {name!r} must be nullable because its stack values can be null or padded"
+                )
+
+        self._validate_source_collisions(context.default_project_source, generated=as_, function=function)
+        generated_scope = scope or self._default_scope(as_)
+        context.operations.append(
+            OperationPlan.stack_operation(
+                StackPlan(rows=rows, values=typed_expressions, scope=generated_scope, schema=as_)
             )
         )
         context.register_current_scope(generated_scope)

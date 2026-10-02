@@ -46,6 +46,10 @@ class RewritePySparkStepBody:
                 None if operation.posexplode_struct is None else self._posexplode_struct(operation.posexplode_struct)
             ),
             json_tuple=None if operation.json_tuple is None else self._json_tuple(operation.json_tuple),
+            stack=None if operation.stack is None else replace(
+                operation.stack,
+                values=tuple(self._expression(value) for value in operation.stack.values),
+            ),
             scalar_generator=(
                 None if operation.scalar_generator is None else self._scalar_generator(operation.scalar_generator)
             ),
@@ -74,6 +78,15 @@ class RewritePySparkStepBody:
             relation_partition=(
                 None if operation.relation_partition is None else self._relation_partition(operation.relation_partition)
             ),
+            relation_repartition=(
+                None
+                if operation.relation_repartition is None
+                else replace(
+                    operation.relation_repartition,
+                    keys=tuple(self._expression(expression) for expression in operation.relation_repartition.keys),
+                )
+            ),
+            relation_coalesce=operation.relation_coalesce,
             relation_set=(
                 None if operation.relation_set is None else self._relation_set(operation.relation_set, frames=frames)
             ),

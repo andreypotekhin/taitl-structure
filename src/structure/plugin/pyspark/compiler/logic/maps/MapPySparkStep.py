@@ -39,9 +39,12 @@ from structure.plugin.pyspark.compiler.model.PySparkRelationPartitionRecipe impo
 from structure.plugin.pyspark.compiler.model.PySparkRelationPrioritySelectionRecipe import (
     PySparkRelationPrioritySelectionRecipe,
 )
+from structure.plugin.pyspark.compiler.model.PySparkRelationRepartitionRecipe import PySparkRelationRepartitionRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationSampleRecipe import PySparkRelationSampleRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationSetRecipe import PySparkRelationSetRecipe
 from structure.plugin.pyspark.compiler.model.PySparkSelectedRowsRecipe import PySparkSelectedRowsRecipe
+from structure.plugin.pyspark.compiler.model.PySparkSqlRecipe import PySparkSqlRecipe
+from structure.plugin.pyspark.compiler.model.PySparkStackRecipe import PySparkStackRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStepResultRecipe import PySparkStepResultRecipe
 from structure.plugin.pyspark.compiler.model.PySparkWatermarkRecipe import PySparkWatermarkRecipe
@@ -75,7 +78,7 @@ class MapPySparkStep:
         body = self._body(step)
         input_alias = self._names.alias(step.input_schema.__name__)
         output_alias = self._names.alias(step.output_schema.__name__)
-        operations = self._operations(body, input_alias=input_alias, capabilities=capabilities)
+        operations = self._operations(body, input_alias=input_alias, capabilities=capabilities, step_name=step.name)
         alias_scopes = self._alias_scopes(body)
         joins = tuple(operation.join for operation in operations if operation.join is not None) or tuple(
             self._join(
@@ -169,6 +172,7 @@ class MapPySparkStep:
         *,
         input_alias: str,
         capabilities: BackendCapabilities,
+        step_name: str,
     ) -> tuple[PySparkOperationRecipe, ...]:
         recipes: list[PySparkOperationRecipe] = []
         occurrence = 0
@@ -361,6 +365,41 @@ class MapPySparkStep:
                         operation,
                     )
                 )
+            if operation.kind == "stack" and operation.stack is not None:
+                recipes.append(
+                    self._operation_modes(
+                        PySparkOperationRecipe.stack_operation(
+                            PySparkStackRecipe(
+                                rows=operation.stack.rows,
+                                values=tuple(
+                                    self._expressions.map(value, capabilities=capabilities)
+                                    for value in operation.stack.values
+                                ),
+                                scope=operation.stack.scope,
+                                schema=operation.stack.schema,
+                            )
+                        ),
+                        operation,
+                    )
+                )
+            if operation.kind == "sql" and operation.sql is not None:
+                plan = operation.sql
+                recipes.append(
+                    self._operation_modes(
+                        PySparkOperationRecipe.sql_operation(
+                            PySparkSqlRecipe(
+                                statement=plan.statement,
+                                relations=plan.relations,
+                                args=plan.args,
+                                schema=plan.schema,
+                                label=plan.label,
+                                scope=plan.scope,
+                                step=step_name,
+                            )
+                        ),
+                        operation,
+                    )
+                )
             if operation.kind == "ordered_timeline_scan" and operation.ordered_timeline_scan is not None:
                 scan = operation.ordered_timeline_scan
                 recipes.append(
@@ -525,6 +564,29 @@ class MapPySparkStep:
                                 ),
                             )
                         ),
+                        operation,
+                    )
+                )
+            if operation.relation_repartition is not None:
+                repartition = operation.relation_repartition
+                recipes.append(
+                    self._operation_modes(
+                        PySparkOperationRecipe.relation_repartition_operation(
+                            PySparkRelationRepartitionRecipe(
+                                partitions=repartition.partitions,
+                                keys=tuple(
+                                    self._expressions.map(expression, capabilities=capabilities)
+                                    for expression in repartition.keys
+                                ),
+                            )
+                        ),
+                        operation,
+                    )
+                )
+            if operation.relation_coalesce is not None:
+                recipes.append(
+                    self._operation_modes(
+                        PySparkOperationRecipe.relation_coalesce_operation(operation.relation_coalesce),
                         operation,
                     )
                 )

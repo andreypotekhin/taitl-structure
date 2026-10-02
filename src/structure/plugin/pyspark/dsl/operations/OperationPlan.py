@@ -22,10 +22,13 @@ from structure.plugin.pyspark.dsl.operations.RelationHierarchyFallbackPlan impor
 from structure.plugin.pyspark.dsl.operations.RelationOrderPlan import RelationOrderPlan
 from structure.plugin.pyspark.dsl.operations.RelationPartitionPlan import RelationPartitionPlan
 from structure.plugin.pyspark.dsl.operations.RelationPrioritySelectionPlan import RelationPrioritySelectionPlan
+from structure.plugin.pyspark.dsl.operations.RelationRepartitionPlan import RelationRepartitionPlan
 from structure.plugin.pyspark.dsl.operations.RelationSamplePlan import RelationSamplePlan
 from structure.plugin.pyspark.dsl.operations.RelationSetPlan import RelationSetPlan
 from structure.plugin.pyspark.dsl.operations.ScalarGeneratorPlan import ScalarGeneratorPlan
 from structure.plugin.pyspark.dsl.operations.SelectedRowsPlan import SelectedRowsPlan
+from structure.plugin.pyspark.dsl.operations.SqlPlan import SqlPlan
+from structure.plugin.pyspark.dsl.operations.StackPlan import StackPlan
 from structure.plugin.pyspark.dsl.operations.StreamingOutputMode import StreamingOutputMode
 from structure.plugin.pyspark.dsl.operations.StreamingSupport import StreamingSupport
 from structure.plugin.pyspark.dsl.operations.WatermarkPlan import WatermarkPlan
@@ -42,6 +45,8 @@ class OperationPlan:
     exactly_one: ExactlyOnePlan | None = None
     posexplode_struct: PosexplodeStructPlan | None = None
     json_tuple: JsonTuplePlan | None = None
+    stack: StackPlan | None = None
+    sql: SqlPlan | None = None
     scalar_generator: ScalarGeneratorPlan | None = None
     map_generator: MapGeneratorPlan | None = None
     ordered_timeline_scan: OrderedTimelineScanPlan | None = None
@@ -51,6 +56,8 @@ class OperationPlan:
     relation_hierarchy_fallback: RelationHierarchyFallbackPlan | None = None
     relation_order: RelationOrderPlan | None = None
     relation_partition: RelationPartitionPlan | None = None
+    relation_repartition: RelationRepartitionPlan | None = None
+    relation_coalesce: int | None = None
     relation_priority_selection: RelationPrioritySelectionPlan | None = None
     relation_bound: RelationBoundPlan | None = None
     relation_sample: RelationSamplePlan | None = None
@@ -127,6 +134,17 @@ class OperationPlan:
         )
 
     @staticmethod
+    def sql_operation(sql: SqlPlan) -> OperationPlan:
+        return OperationPlan(
+            "sql",
+            sql=sql,
+            family="relation",
+            capability=OperationCapability("relation", "sql"),
+            cardinality=OperationCardinality.UNKNOWN,
+            streaming=StreamingSupport.UNKNOWN,
+        )
+
+    @staticmethod
     def selected_rows_operation(selected_rows: SelectedRowsPlan) -> OperationPlan:
         return OperationPlan(
             "selected_rows",
@@ -167,6 +185,17 @@ class OperationPlan:
             posexplode_struct=posexplode_struct,
             family="generator",
             capability=OperationCapability("generator", "posexplode_struct"),
+            cardinality=OperationCardinality.ROW_MULTIPLYING,
+            streaming=StreamingSupport.COMPATIBLE,
+        )
+
+    @staticmethod
+    def stack_operation(stack: StackPlan) -> OperationPlan:
+        return OperationPlan(
+            "stack",
+            stack=stack,
+            family="generator",
+            capability=OperationCapability("generator", "stack"),
             cardinality=OperationCardinality.ROW_MULTIPLYING,
             streaming=StreamingSupport.COMPATIBLE,
         )
@@ -501,6 +530,28 @@ class OperationPlan:
             capability=OperationCapability("relation", "repartition_by_range"),
             cardinality=OperationCardinality.ROW_PRESERVING,
             streaming=StreamingSupport.BATCH_ONLY,
+        )
+
+    @staticmethod
+    def relation_repartition_operation(repartition: RelationRepartitionPlan) -> OperationPlan:
+        return OperationPlan(
+            "repartition",
+            relation_repartition=repartition,
+            family="relation",
+            capability=OperationCapability("relation", "repartition"),
+            cardinality=OperationCardinality.ROW_PRESERVING,
+            streaming=StreamingSupport.COMPATIBLE,
+        )
+
+    @staticmethod
+    def relation_coalesce_operation(partitions: int) -> OperationPlan:
+        return OperationPlan(
+            "coalesce",
+            relation_coalesce=partitions,
+            family="relation",
+            capability=OperationCapability("relation", "coalesce"),
+            cardinality=OperationCardinality.ROW_PRESERVING,
+            streaming=StreamingSupport.COMPATIBLE,
         )
 
     @staticmethod

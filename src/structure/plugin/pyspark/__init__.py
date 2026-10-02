@@ -19,6 +19,7 @@ from structure.plugin.pyspark.dsl.generators import posexplode_outer_array as _p
 from structure.plugin.pyspark.dsl.generators import posexplode_outer_map as _posexplode_outer_map
 from structure.plugin.pyspark.dsl.generators import posexplode_outer_struct as _posexplode_outer_struct
 from structure.plugin.pyspark.dsl.generators import posexplode_struct as _posexplode_struct
+from structure.plugin.pyspark.dsl.generators import stack as _stack
 from structure.plugin.pyspark.dsl.generators import variant_explode as _variant_explode
 from structure.plugin.pyspark.dsl.generators import variant_explode_outer as _variant_explode_outer
 from structure.plugin.pyspark.dsl.geo import contains, geometry_as_wkt, geometry_from_wkt, intersects, within
@@ -32,6 +33,7 @@ from structure.plugin.pyspark.dsl.relation_sets import (
     offset,
     order_by,
     relation_alias,
+    repartition,
     repartition_by_range,
     require_all,
     require_parent_hierarchy,
@@ -72,6 +74,10 @@ def inline_outer_struct(*args: object, **kwargs: object) -> Any:
 
 def json_tuple(*args: object, **kwargs: object) -> Any:
     return cast(Any, _json_tuple)(*args, **kwargs)
+
+
+def stack(*args: object, **kwargs: object) -> Any:
+    return cast(Any, _stack)(*args, **kwargs)
 
 
 def posexplode_struct(*args: object, **kwargs: object) -> Any:
@@ -158,11 +164,11 @@ isnotnull isnull is_grouped kurtosis lag last last_value left_join latest_by lea
 ltrim ln locate log log10 log1p log2 least limit md5 create_map map_from_arrays str_to_map named_struct map_entries map_concat map_contains_key map_filter map_from_entries map_keys map_transform_keys max_by median min_by
 map_transform_values map_values map_zip_with max min minute mode month nanvl nvl nvl2 nullif pow not_exists nth_value product
 ntile offset order_by param_join percent_rank percentile pi posexplode_array posexplode_outer_array posexplode_struct posexplode_outer_struct posexplode_map posexplode_outer_map explode_array explode_outer_array explode_struct explode_outer_struct explode_map explode_outer_map inline_struct inline_outer_struct variant_explode variant_explode_outer preceding pmod project quarter raise_error rank range_between relation_alias regexp_extract regexp_replace regexp regexp_like rlike like ilike require_all require_parent_hierarchy require_reference require_unique hierarchy_closure hierarchy_fallbacks reverse rtrim round
-sample sec select_first_qualified signum sin sinh slice sha1 sha2 second rand randn radians rint right_join rollup row_number rowset_join rows_between rolling_avg rolling_max position sort_array split_part elt format_string printf substr
+sample sec select_first_qualified signum sin sinh slice sha1 sha2 second rand randn radians rint right_join rollup row_number rowset_join rows_between rolling_avg rolling_max position repartition sort_array split_part elt format_string printf substr
 rolling_min rolling_sum scan subtract sum sum_distinct stddev sqrt size sequence session_window skewness split translate substring temporal_one next_day
 to_binary to_csv to_decimal to_date to_json to_timestamp from_unixtime unix_timestamp to_utc_timestamp from_utc_timestamp date_part datepart TimeWindow trim trunc try_element_at try_to_binary unbase64 union_all union_by_name upper unbounded_following unbounded_preceding hex unhex cardinality weekofyear
-variance var_pop var_samp stddev_pop stddev_samp when width_bucket year xxhash64 zeroifnull where watermark window window_avg window_bool_and window_bool_or rpad repeat replace right sign tan tanh json_tuple
-window_time current_date curdate current_timestamp now localtimestamp current_timezone aes_encrypt aes_decrypt try_aes_decrypt hll_sketch_agg hll_sketch_estimate hll_union bitmap_construct_agg bitmap_or_agg bitmap_bit_position bitmap_bucket_number bitmap_count
+variance var_pop var_samp stddev_pop stddev_samp when width_bucket year xxhash64 zeroifnull where watermark window window_avg window_bool_and window_bool_or rpad repeat replace right sign tan tanh json_tuple stack
+window_time current_date curdate current_timestamp now localtimestamp current_timezone aes_encrypt aes_decrypt try_aes_decrypt hll_sketch_agg hll_sketch_estimate hll_union bitmap_construct_agg bitmap_or_agg bitmap_bit_position bitmap_bucket_number bitmap_count url_encode url_decode try_url_decode
 window_collect_list window_collect_set window_count window_count_distinct window_max window_min window_sum
 window_stddev window_variance is_valid_variant is_variant_null octet_length parse_json schema_of_csv schema_of_json schema_of_variant schema_of_variant_agg substring_index
 to_variant_object try_parse_json try_variant_get variant_get
@@ -194,6 +200,8 @@ _FIELD_FACTORIES = {
 __all__ = [  # noqa: F405
     "PySpark",
     "PySparkPlugin",
+    "SqlResult",
+    "SqlCommandResult",
     "field",
     "types",
     "AsOf",
@@ -347,6 +355,7 @@ __all__ = [  # noqa: F405
     "json_array_length",
     "json_object_keys",
     "json_tuple",
+    "stack",
     "schema_of_csv",
     "schema_of_json",
     "get",
@@ -451,6 +460,7 @@ __all__ = [  # noqa: F405
     "param_join",
     "order_by",
     "repartition_by_range",
+    "repartition",
     "overlay",
     "percent_rank",
     "percentile",
@@ -469,6 +479,7 @@ __all__ = [  # noqa: F405
     "preceding",
     "pmod",
     "project",
+    "sql",
     "rank",
     "range_between",
     "relation_alias",
@@ -589,6 +600,9 @@ __all__ = [  # noqa: F405
     "bitmap_bit_position",
     "bitmap_bucket_number",
     "bitmap_count",
+    "url_encode",
+    "url_decode",
+    "try_url_decode",
     "is_valid_variant",
     "is_variant_null",
     "parse_json",
@@ -661,6 +675,10 @@ def __getattr__(name: str):
         return getattr(import_module("structure.plugin.pyspark.dsl.field"), name)
     if name in {"Expression", "InputScope", "RowScope", "TimeWindow"}:
         return getattr(import_module(f"structure.plugin.pyspark.dsl.{name}"), name)
+    if name in {"SqlResult", "SqlCommandResult"}:
+        return getattr(import_module("structure.plugin.pyspark.dsl.SqlResult"), name)
+    if name == "sql":
+        return import_module("structure.plugin.pyspark.dsl.sql_api").sql
     dsl = import_module("structure.plugin.pyspark.dsl")
 
     try:

@@ -24,6 +24,7 @@ reference page, see [API.ref.md](reference/API.ref.md).
 | Schemas | supported | `StructType`, SQL types | [Schema reference](reference/Schema.ref.md) |
 | Transforms and hooks | supported | DataFrame pipeline | [Transforms API](api/Transforms.api.md) |
 | Expressions | supported | Column and SQL-function subset | [Expressions API](api/Expressions.api.md) |
+| Geospatial | target-gated | Native PySpark 4.1+ and provider namespaces | [Geospatial reference](reference/Geospatial.ref.md) |
 
 **Details And Differences**
 

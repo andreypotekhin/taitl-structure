@@ -824,7 +824,7 @@ class EvaluatePySparkExpression:
         args = [
             self.evaluate(argument, functions=functions, aliases=aliases, window=window) for argument in expression.args
         ]
-        if function in {"lower", "ltrim", "rtrim", "trim", "upper"}:
+        if function in {"lower", "ltrim", "rtrim", "trim", "upper", "url_encode", "url_decode", "try_url_decode"}:
             return getattr(functions, function)(args[0])
         if function == "btrim":
             return functions.btrim(args[0], expression.data["trim"])

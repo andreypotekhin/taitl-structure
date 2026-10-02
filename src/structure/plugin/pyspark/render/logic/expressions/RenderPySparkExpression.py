@@ -596,7 +596,7 @@ class RenderPySparkExpression:
     def _call(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:
         function = expression.data["function"]
         args = [self._render(argument, aliases) for argument in expression.args]
-        if function in {"lower", "ltrim", "rtrim", "trim", "upper"}:
+        if function in {"lower", "ltrim", "rtrim", "trim", "upper", "url_encode", "url_decode", "try_url_decode"}:
             return f"F.{function}({args[0]})"
         if function == "btrim":
             return f"F.btrim({args[0]}, {expression.data['trim']!r})"

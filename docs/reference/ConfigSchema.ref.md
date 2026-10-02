@@ -95,6 +95,7 @@ hand.
 | `plugin.<name>.*` | Immutable options owned by the selected plugin |
 | `plugin.pyspark.profile` | Supported PySpark version range |
 | `plugin.pyspark.variant` | `ordinary` or `spark-connect` |
+| `plugin.pyspark.geo_provider` | Planned target-gated Geometry/Geography provider identifier |
 
 Target selection can also be supplied by a transform decorator, workflow `target=`, `StructureSession(target=...)`, or
 a CLI override. One composed pipeline resolves one target before plugin services run. Plugin options are not passed to
@@ -103,6 +104,10 @@ other plugins.
 `ordinary` targets the in-process PySpark `SparkSession`, DataFrame, and Column APIs. `spark-connect` uses the public
 Spark Connect-compatible DataFrame and Column surface and rejects classic-only APIs. It does not change the Structure
 DSL or transform `run(...)` signature.
+
+`geo_provider` is a planned PySpark spatial setting, not an active default-baseline option. Future values select an
+external Geometry/Geography provider such as `sedona`; native is inferred only on a certified PySpark 4.1+ target. See
+the [Geospatial reference](Geospatial.ref.md) before adding the setting to application configuration.
 
 Select the target in the project configuration so every composed transform resolves the same plugin:
 

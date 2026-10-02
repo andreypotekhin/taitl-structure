@@ -42,6 +42,8 @@ Below is an index for published diagnostic codes. For the full diagnostic contra
 | STREAM-E0802 | error | Streaming output is not accepted by downstream input | Declare the downstream input with `streaming=True`, or explicitly allow the stream-to-batch boundary with `allow_stream_to_batch=True`. |
 | STREAM-W0801 | warning | Hook streaming compatibility is unknown | Mark the hook `streaming=True` only after verifying it. |
 | STREAM-W0802 | warning | Streaming aggregate state is unbounded | Use an event-time or session window with a matching watermark, or accept the caller-owned unbounded-state policy. |
+| STREAM-W0803 | warning | Streaming partition parallelism is caller-tuned | Treat the count as deployment tuning, not stable partition identity. |
+| STREAM-W0804 | warning | Streaming repartitioning is caller-tuned | Treat the count and hash keys as deployment tuning, not stable ordering or partition identity. |
 
 ## Reading Source Annotations
 
@@ -195,6 +197,18 @@ See [Diagnostics.md](background/Diagnostics.back.md#stream-w0802).
 Spark permits ordinary business-key streaming aggregates with `update` or `complete` output mode, but a watermark
 does not evict their state because the grouping is not event-time bounded. Use an event-time or session window when
 state must be bounded, or explicitly accept the caller-owned unbounded-state policy.
+
+### STREAM-W0803
+
+See [Diagnostics background](background/Diagnostics.back.md).
+
+Relation coalescing changes streaming task parallelism and can affect throughput. Treat the count as a deployment
+tuning choice; it does not establish stable output order or partition identity.
+
+### STREAM-W0804
+
+Hash repartitioning shuffles streaming rows and can affect throughput. Treat the partition count and hash keys as
+deployment tuning choices; they do not establish stable output order or partition identity.
 
 ### CRYPTO-W0801
 

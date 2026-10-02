@@ -25,8 +25,14 @@ the gate register searchable without duplicating the full PySpark inventory.
 | AES-GCM helpers | `implemented` | Typed GCM calls and explicit-IV warning are implemented; ordinary target evidence remains a release check. |
 | Dynamic JSON schemas | `caller-owned-guided` | Runtime inference cannot alter a compiled Schema. |
 | Sketch and bitmap aggregates | `implemented` | Baseline HLL/Bitmap opaque types and merge consumers are implemented; KLL/Theta remain profile-gated and evidence-bound. |
-| Generic generators and partition transforms | `design-gated` | Schema, aliases, cardinality, and streaming behavior. |
-| Variant mutation helpers | `target-gated` | Released target profile and mutation contract. |
+| `stack` | `implemented` | Fixed row multiplication and trailing-NULL padding use an explicit result Schema; ordinary and Connect runtime evidence remains a release check. |
+| Generic generators and writer partition transforms | `caller-owned-guided` | No compiler-visible schema/cardinality or output-layout contract. |
+| Relation distribution | `partial` | `coalesce(partitions=...)` and typed hash repartitioning are implemented; range repartitioning remains batch-only. Scalar `coalesce(...)` requires at least two values. |
+| Variant mutation helpers | `target-gated` | Released target profile plus classic, Connect, generated/online, and streaming evidence. |
+| URL encode/decode | `partial` | `url_encode` and strict `url_decode` are typed; `try_url_decode` is a 4.0 target gate. |
+| XML helpers | `design-gated` | Declared schema, options, malformed-input behavior, and parse/serialize evidence. |
+| Geospatial providers | `target-gated` | Native 4.1 root APIs and namespaced external providers are tracked in P10012602. |
+| Runtime metadata and reflection | `caller-owned-guided` | Query-clock expressions are the only admitted symbolic runtime reads. |
 | `expr` / `call_function` | `unsupported` | Raw SQL removes typed expression ownership. |
 | UDTFs, pandas UDFs, callbacks | `caller-owned-guided` | Arbitrary runtime behavior is outside typed transforms. |
 
@@ -38,15 +44,25 @@ runtime evidence. A family is not complete merely because one representative fun
 
 ### Generators and partition transforms
 
-Typed array, map, and struct generators are admitted only where schema and cardinality are explicit. `stack`, generic
-PySpark generator spellings, and partition transforms remain open in the parity table until their cardinality, schema,
-and streaming contracts are decided.
+Typed array, map, and struct generators are admitted only where schema and cardinality are explicit. `stack` has a
+fixed Schema/cardinality design; generic generator spellings and writer partition transforms remain caller-owned.
+Relation `coalesce(partitions=...)` is a row-preserving operation with a streaming throughput advisory. Scalar
+`coalesce(...)` requires at least two expressions; a lone value should be used directly. Typed hash
+`repartition(count, *keys)` / `repartition(*keys)` preserves rows and schema. A leading integer is always the count;
+use an explicit literal expression for an integer key. Streaming hash repartitioning emits `STREAM-W0804`, while
+range repartitioning remains batch-only.
 
 ### Variant mutations
 
 Variant append, insert, set, and delete helpers are reserved for a released target profile. The active profile and
-evidence gate is maintained in [API Catalog Gates](ApiCatalog.gates.md); future-profile direction is in
-[API Catalog Deferred Work](../deferred/ApiCatalog.deferred.md).
+evidence gate is maintained in [API Catalog Gates](ApiCatalog.gates.md); classic, Connect, generated/online, and
+streaming evidence are all required before release.
+
+### Geospatial providers
+
+Native Geometry/Geography is a PySpark 4.1 target gate. External provider helpers are namespaced and require matching
+provider scope. The default baseline makes no spatial support claim; see
+[P10012602](../planning/P10012602.Geospatial-provider-boundaries.plan.md).
 
 ### Random and order-sensitive functions
 

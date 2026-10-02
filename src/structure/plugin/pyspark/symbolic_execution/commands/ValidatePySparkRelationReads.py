@@ -53,6 +53,9 @@ class ValidatePySparkRelationReads:
                 self._validate(relations, joined, self._scopes(operation.posexplode_struct.expression), request)
             if operation.kind == "json_tuple" and operation.json_tuple is not None:
                 self._validate(relations, joined, self._scopes(operation.json_tuple.expression), request)
+            if operation.stack is not None:
+                reads = set().union(*(self._scopes(value) for value in operation.stack.values))
+                self._validate(relations, joined, reads, request)
             if operation.scalar_generator is not None:
                 self._validate(relations, joined, self._scopes(operation.scalar_generator.expression), request)
             if operation.map_generator is not None:
@@ -72,6 +75,9 @@ class ValidatePySparkRelationReads:
                 self._validate(relations, joined, reads, request)
             if operation.relation_partition is not None:
                 reads = set().union(*(self._scopes(expression) for expression in operation.relation_partition.order_by))
+                self._validate(relations, joined, reads, request)
+            if operation.relation_repartition is not None:
+                reads = set().union(*(self._scopes(expression) for expression in operation.relation_repartition.keys))
                 self._validate(relations, joined, reads, request)
             if operation.relation_assertion is not None:
                 assertion = operation.relation_assertion

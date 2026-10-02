@@ -50,6 +50,8 @@ PySpark `Column` surface; functions such as `trim` and `lower` remain function-f
   An empty list, nested list, or list mixed with additional positional values is rejected.
 - Struct mutation requires an explicit declared result Schema. It is rejected unless that schema exactly preserves the
   source shape apart from the named replacement or removals.
+- URL helpers accept String expressions and preserve input nullability. `url_decode(...)` is strict: malformed encoded
+  input follows Spark's error behavior. `try_url_decode(...)` returns null for malformed input and requires PySpark 4.0+.
 
 ## General Column Transformations
 
@@ -119,6 +121,8 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
 | --- | --- | --- |
 | `lower(...)` | `lower` | `lower(o.name)` |
 | `upper(...)` | `upper` | `upper(o.name)` |
+| `url_encode(...)`, `url_decode(...)` | `url_encode`, `url_decode` | `url_encode(o.url)` |
+| `try_url_decode(...)` | `try_url_decode` | `try_url_decode(o.url)`; PySpark 4.0+ |
 | `ltrim(...)` | `ltrim` | `ltrim(o.name)` |
 | `rtrim(...)` | `rtrim` | `rtrim(o.name)` |
 | `trim(...)` | `trim` | `trim(o.name)` |
@@ -258,6 +262,9 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
 
 **Details And Differences**
 
+- Scalar `coalesce(value, fallback, *values)` requires at least two values. For a single nullable expression, use the
+  expression directly; relation partition coalescing is a distinct keyword-only form, `coalesce(partitions=4)`.
+
 - Pattern, replacement, separator, and search arguments are explicit compiler-visible values.
 - `assert_true(...)` and `raise_error(...)` are typed Boolean guards. They lower to the matching native PySpark
   assertion followed by `.isNull()`, so a successful `assert_true(...)` can be used directly in `where(...)` without
@@ -387,22 +394,14 @@ names and validation rules.
 provided, except `null_value`, which may be an empty string. Parser Schemas must make every parsed field nullable,
 including nested fields, because permissive Spark parsing can produce null values.
 
-## Geometry Expressions
+## Geospatial Expressions
 
-These expressions form the provider-neutral planar Geometry slice. Geometry runtime support is optional and resolved
-late through the active `GeoProvider`; the bundled PySpark plugin does not require a provider during ordinary
-compilation or generated-source import.
+Geospatial expressions are target-gated; the default PySpark `>=3.5,<4.1` profile has no stable spatial expression API.
+The planned native PySpark 4.1+ root names are `st_geomfromwkb`, `st_geogfromwkb`, `st_asbinary`, `st_srid`, and
+`st_setsrid`. External providers keep their own names in modules such as `sedona.st_geomfromwkt` and
+`sedona.st_intersects`.
 
-| Structure API | PySpark parity | Example |
-| --- | --- | --- |
-| `geometry_from_wkt(...)` | `ST_GeomFromWKT` | `geometry_from_wkt(o.wkt, srid=4326)` |
-| `geometry_as_wkt(...)` | `ST_AsText` | `geometry_as_wkt(o.shape)` |
-| `intersects(...)` | `ST_Intersects` | `intersects(o.shape, other.shape)` |
-| `contains(...)` | `ST_Contains` | `contains(o.shape, other.shape)` |
-| `within(...)` | `ST_Within` | `within(o.shape, other.shape)` |
-
-The WKT constructor requires a String expression and a positive literal SRID. Geometry predicates require matching
-SRIDs and return nullable Boolean values; null inputs propagate null. WKT serialization returns nullable String. The
-contract excludes `GEOGRAPHY`, runtime-selected SRIDs, CRS transformation, measurements, spatial joins/indexes, and
-raw provider-specific `ST_*` calls. Missing providers fail with the Geometry runtime diagnostic when the type or
-operation is materialized.
+Spatial values do not become interchangeable because the function names are similar. A provider-scoped operation needs
+the same `geo_provider` scope as its arguments; predicates require the same provider, Geometry/Geography kind, and
+fixed SRID. See the [Geospatial reference](../reference/Geospatial.ref.md) for target status, scope, and Binary
+handoffs.

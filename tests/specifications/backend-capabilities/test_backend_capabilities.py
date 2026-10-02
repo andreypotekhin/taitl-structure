@@ -16,6 +16,8 @@ from structure.core.target.capabilities.api import (
     CapabilityRequirement,
 )
 from structure.plugin.pyspark.capabilities.model.PySparkCapabilities import PySparkCapabilities
+from structure.plugin.pyspark.compiler.logic.maps.MapPySparkExpression import MapPySparkExpression
+from structure.plugin.pyspark.dsl.expressions import try_url_decode
 
 
 def test_default_pyspark_capabilities_do_not_import_pyspark() -> None:
@@ -485,6 +487,20 @@ def test_try_cast_requires_the_pyspark_4_profile() -> None:
     assert not PySparkCapabilities().supports(requirement).supported
     assert PySparkCapabilities(target_profile=">=4.0,<4.1").supports(requirement).supported
     assert PySparkCapabilities(target_profile=">=4.2,<4.3").supports(requirement).supported
+
+
+def test_try_url_decode_requires_the_pyspark_4_profile() -> None:
+    requirement = CapabilityRequirement(group="expression", name="try_url_decode")
+
+    assert not PySparkCapabilities().supports(requirement).supported
+    assert not PySparkCapabilities(target_profile=">=3.5,<4.0").supports(requirement).supported
+    assert PySparkCapabilities(target_profile=">=4.0,<4.1").supports(requirement).supported
+    assert PySparkCapabilities(target_profile=">=4.2,<4.3").supports(requirement).supported
+    with pytest.raises(BackendCapabilityError):
+        MapPySparkExpression().map(try_url_decode("x"), capabilities=PySparkCapabilities())
+    assert MapPySparkExpression().map(
+        try_url_decode("x"), capabilities=PySparkCapabilities(target_profile=">=4.0,<4.1")
+    ).data["function"] == "try_url_decode"
 
 
 def test_variant_schema_requires_the_pyspark_4_profile() -> None:

@@ -90,6 +90,12 @@ output boundary. A later operator may not claim to preserve that order unless it
 It records a batch-only, row-preserving range repartitioning boundary. Repartitioning invalidates the current ordered
 state: it controls partition placement, not the order of rows at a materialized output boundary.
 
+`repartition(count, *keys)` and `repartition(*keys)` record row-preserving hash repartitioning. A leading integer is
+always the positive target count; without it Spark's configured shuffle partition count applies. A constant integer key
+must be passed as an explicit literal expression. The operation preserves declared schema and rows, but invalidates
+presentation order and promises no stable partition identity. It is stateless and streaming-compatible, with
+`STREAM-W0804` advising that shuffling and partition tuning can affect throughput.
+
 `limit(n)` and `offset(n)` require non-negative integer literals. Both require the current relation state to have a
 preceding explicit `order_by(...)`; if a row-shaping or set operation has run after the latest ordering, the bound is
 rejected as nondeterministic.

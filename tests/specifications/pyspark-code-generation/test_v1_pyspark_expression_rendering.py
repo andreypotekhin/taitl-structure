@@ -33,6 +33,37 @@ def test_v1_expression_renderer_renders_filter_helpers_and_literals() -> None:
     )
 
 
+def test_v1_expression_renderer_renders_url_encoding_helpers() -> None:
+    class Raw(Schema):
+        encoded = string(nullable=True)
+
+    class Published(Schema):
+        encoded = string(nullable=True)
+        decoded = string(nullable=True)
+
+    @transform
+    class ConvertUrl(Transform):
+        raw = input(Raw)
+        published = output(Published)
+
+        def convert(self, row: Raw) -> Published:
+            return Published(encoded=url_encode(row.encoded), decoded=url_decode(row.encoded))
+
+    recipe = _recipe(ConvertUrl)
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    assert render(projection["encoded"], scope_aliases={"raw": "raw"}) == 'F.url_encode(F.col("raw.encoded"))'
+    assert render(projection["decoded"], scope_aliases={"raw": "raw"}) == 'F.url_decode(F.col("raw.encoded"))'
+
+
+def test_url_helpers_require_string_expressions() -> None:
+    with pytest.raises(TypeError, match="url_encode\\(\\.\\.\\.\\) requires a String Structure expression"):
+        url_encode(1)
+    with pytest.raises(TypeError, match="url_decode\\(\\.\\.\\.\\) requires a String Structure expression"):
+        url_decode(1)
+
+
 def test_v1_expression_renderer_renders_arithmetic_and_comparison() -> None:
     from testing.model.orders.transforms.order import EnrichOrders
 
