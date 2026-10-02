@@ -170,6 +170,7 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
 | `sha2(...)` | `sha2` | `sha2(o.name, bits=256)` |
 | `date_add(...)` | `date_add` | `date_add(o.day, days=1)` |
 | `date_sub(...)` | `date_sub` | `date_sub(o.day, days=1)` |
+| `make_date(...)` | `make_date` | `make_date(o.year, o.month, o.day)` |
 | `add_months(...)` | `add_months` | `add_months(o.day, months=1)` |
 | `datediff(...)` | `datediff` | `datediff(o.end_day, o.start_day)` |
 | `months_between(...)` | `months_between` | `months_between(o.end_day, o.start_day, round_off=True)` |
@@ -183,6 +184,7 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
 | `next_day(...)` | `next_day` | `next_day(o.day, day_of_week="Mon")` |
 | `to_date(...)` | `to_date` | `to_date(o.raw_day, format="yyyy-MM-dd")` |
 | `to_timestamp(...)` | `to_timestamp` | `to_timestamp(o.raw_at, format="yyyy-MM-dd HH:mm:ss")` |
+| `to_timestamp_ntz(...)` | `to_timestamp_ntz` | `to_timestamp_ntz(o.raw_at, format=o.pattern)` |
 | `abs(...)` | `abs` | `abs(o.total)` |
 | `bit_count(...)` | `bit_count` | `bit_count(o.flags)` |
 | `bit_get(...)`, `getbit(...)` | `bit_get`, `getbit` | `bit_get(o.flags, o.position)` |
@@ -238,6 +240,7 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
 | `unix_timestamp(...)` | `unix_timestamp` | `unix_timestamp(o.raw_at, format="yyyy-MM-dd HH:mm:ss")` |
 | `to_utc_timestamp(...)` | `to_utc_timestamp` | `to_utc_timestamp(o.raw_at, timezone="UTC")` |
 | `from_utc_timestamp(...)` | `from_utc_timestamp` | `from_utc_timestamp(o.raw_at, timezone="America/Los_Angeles")` |
+| `convert_timezone(...)` | `convert_timezone` | `convert_timezone(o.source_zone, o.target_zone, o.local_time)` |
 | `date_part(...)` | `date_part` | `date_part("month", o.raw_at)` |
 | `datepart(...)` | `datepart` | `datepart("year", o.raw_at)` |
 | `from_json(...)`, `to_json(...)` | `from_json`, `to_json` | `from_json(o.payload_json, as_=Payload)` |
@@ -341,9 +344,19 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
   Long.
 - `to_utc_timestamp(...)` and `from_utc_timestamp(...)` accept String or Timestamp expressions and a non-empty
   timezone literal, returning nullable Timestamp values.
+- `convert_timezone(source_tz, target_tz, source_ts)` accepts String expressions for both time zones and a
+  `timestamp_ntz()` source, returning nullable TimestampNTZ. Pass `None` for `source_tz` to use Spark's session time
+  zone, matching PySpark. LTZ Timestamp and NTZ values remain distinct; use an explicit conversion when changing
+  between instants and wall-clock values.
+- `to_timestamp_ntz(...)` accepts String source and optional String format expressions, returning nullable
+  TimestampNTZ. Malformed text returns null regardless of ANSI mode. The format may be row-dependent, matching
+  PySpark's `ColumnOrName` format argument.
 - `date_part(...)` and `datepart(...)` accept a supported field literal and a Date or Timestamp expression. They
   return nullable Integer parts, or nullable `Decimal(8,6)` for seconds; interval sources remain outside the typed
   Structure contract.
+- `make_date(...)` accepts Integer/Long year, month, and day expressions and returns a nullable Date. Invalid
+  components follow Spark's `spark.sql.ansi.enabled` behavior: NULL when ANSI mode is disabled, or a runtime error when
+  it is enabled.
 - Query-clock helpers preserve Spark start-of-query/session-timezone semantics. Clock values are non-null and
   query-stable but not stable across retries or streaming micro-batches.
 - AES helpers are GCM-only typed equivalents. Keys are symbolic String/Binary expressions; explicit encryption IVs

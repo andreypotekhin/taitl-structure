@@ -15,6 +15,7 @@ Schema declarations define Structure's typed row contract and materialize to Spa
 | `double()` | Spark double type | `double()` |
 | `date()` | Spark date type | `date()` |
 | `timestamp()` | Spark timestamp type | `timestamp()` |
+| `timestamp_ntz()` | Spark timestamp without time zone | `timestamp_ntz()` |
 | `binary()` | Spark binary type | `payload = binary(nullable=True)` |
 | `decimal(...)` | `DecimalType` | `total = decimal(12, 2)` |
 | `variant(...)` | `VariantType` | `payload = variant(nullable=True)` |
@@ -29,6 +30,9 @@ Schema declarations define Structure's typed row contract and materialize to Spa
   outside the DSL.
 - `nullable=`, `alias=`, `metadata=`, and `description=` belong on field factories.
 - `decimal(...)` requires precision and scale in the type contract.
+- `timestamp()` represents Spark's instant-based TimestampType; `timestamp_ntz()` represents wall-clock
+  TimestampNTZType. The two types are not interchangeable. Python `datetime` annotations continue to map to
+  `timestamp()`; declare `timestamp_ntz()` explicitly for NTZ fields.
 - `variant(...)` declares Spark's opaque semi-structured `VariantType`. It preserves schema and field nullability only.
   A transform using it must resolve to a PySpark 4 profile, including when that profile comes from
   `[tool.structure.plugin.pyspark]`.

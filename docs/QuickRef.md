@@ -354,7 +354,9 @@ Supported expression forms are:
   `substr(lower(trim(order.name)), start=1, length=10)`.
 - Struct fields may be read with `.get_field(name)`.
 
-- Temporal helpers: `date_add(...)`, `datediff(...)`, and `date_trunc(...)`.
+- Temporal helpers: `make_date(...)`, `date_add(...)`, `datediff(...)`, `date_trunc(...)`, `to_timestamp_ntz(...)`, and `convert_timezone(...)` for explicit
+  `timestamp_ntz()` wall-clock values. Use typed String zone expressions; pass `None` as the source zone to use Spark's
+  session timezone. `timestamp()` remains the distinct instant-based type.
 - Numeric helpers: `abs(...)`, `round(...)`, `ceil(...)`, and `floor(...)`.
 
 Reference: [expressions API](api/Expressions.api.md), [Transform expressions](background/Transform.back.md), and

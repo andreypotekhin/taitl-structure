@@ -28,6 +28,7 @@ from structure.plugin.pyspark.dsl.types import (
     StringType,
     StructType,
     StructureType,
+    TimestampNTZType,
     TimestampType,
     VariantType,
 )
@@ -658,6 +659,7 @@ class CapturePySparkGenerator:
             DecimalType,
             DateType,
             TimestampType,
+            TimestampNTZType,
             BinaryType,
         )
 

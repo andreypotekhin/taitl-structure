@@ -3060,7 +3060,7 @@ def _map_key_type(call: str, map_type: MapType, key: Expression) -> None:
 
 def _sortable_type(call: str, expression: Expression) -> None:
     type = _typed_type(call, expression)
-    if type.name not in {"date", "decimal", "double", "float", "integer", "long", "string", "timestamp"}:
+    if type.name not in {"date", "decimal", "double", "float", "integer", "long", "string", "timestamp", "timestamp_ntz"}:
         raise TypeError(f"{call} must return an orderable scalar expression; received {type.name}")
 
 

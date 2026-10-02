@@ -24,6 +24,33 @@ These expressions preserve row cardinality and participate wherever the existing
 expressions. Tests must prove types, same-query equality, generated spelling, ordinary PySpark and Spark Connect
 behavior, and the absence of a cross-query reproducibility claim.
 
+## Timestamp-without-time-zone conversion
+
+`timestamp()` and `timestamp_ntz()` are distinct schema types. The former represents Spark's instant-based
+`TimestampType`; the latter represents wall-clock `TimestampNTZType`. They do not compare or assign across types, and
+Python `datetime` annotations continue to mean `timestamp()` unless a schema explicitly declares NTZ.
+
+`convert_timezone(source_tz, target_tz, source_ts)` mirrors PySpark: `source_ts` must be TimestampNTZ, and each zone
+may be a typed String expression. `source_tz=None` preserves PySpark's session-time-zone default. The result is
+TimestampNTZ and nullable when any input is nullable. The operation is a stateless row-local expression, including in
+streaming transforms. It does not silently reinterpret instant-based Timestamp values; callers must choose an explicit
+conversion boundary for LTZ/NTZ changes. Runtime profile evidence remains a release check.
+
+## Calendar-date construction
+
+`make_date(year, month, day)` accepts compiler-visible Integer or Long expressions and always returns a nullable Date.
+It does not validate calendar ranges at authoring time: Spark's `spark.sql.ansi.enabled` setting controls whether an
+invalid date produces NULL or fails at execution. The operation is stateless and row-local; Structure neither reads nor
+changes the Spark SQL ANSI setting.
+
+## NTZ parsing
+
+`to_timestamp_ntz(value, format=None)` accepts typed String expressions for the input and optional datetime pattern.
+It has a stable TimestampNTZ result independent of `spark.sql.timestampType`; invalid text returns NULL even when ANSI
+mode is enabled. The optional pattern may vary per row, matching PySpark's typed `ColumnOrName` parameter. This is a
+stateless row-local expression. The generic `to_timestamp` and `try_to_timestamp` result type remains separate because
+PySpark selects its timestamp family from session configuration.
+
 ## AES-GCM equivalent
 
 Structure will provide `aes_encrypt`, `aes_decrypt`, and `try_aes_decrypt` as an intentionally narrower typed

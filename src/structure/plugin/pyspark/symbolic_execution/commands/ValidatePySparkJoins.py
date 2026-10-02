@@ -351,6 +351,7 @@ class ValidatePySparkJoins:
             "long",
             "string",
             "timestamp",
+            "timestamp_ntz",
         }
 
     def _type(self, type: StructureType | None) -> str:

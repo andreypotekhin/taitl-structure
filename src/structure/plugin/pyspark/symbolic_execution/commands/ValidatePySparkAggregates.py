@@ -140,6 +140,7 @@ class ValidatePySparkAggregates:
             "long",
             "string",
             "timestamp",
+            "timestamp_ntz",
         }
 
     def _scalar(self, type: StructureType | None) -> bool:

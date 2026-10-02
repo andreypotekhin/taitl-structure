@@ -33,6 +33,7 @@ from structure.plugin.pyspark.dsl.types import (
     StructureType,
     ThetaSketch,
     Timestamp,
+    TimestampNTZ,
     Variant,
 )
 from structure.plugin.pyspark.dsl.validation.ValidatePySparkSchemas import ValidatePySparkSchemas
@@ -96,6 +97,11 @@ def boolean(**options: object) -> Any:
 def timestamp(**options: object) -> Any:
     """Declare a Spark ``timestamp`` field."""
     return _declare(Timestamp(), options)
+
+
+def timestamp_ntz(**options: object) -> Any:
+    """Declare a Spark ``timestamp_ntz`` wall-clock field without time zone."""
+    return _declare(TimestampNTZ(), options)
 
 
 def variant(**options: object) -> Any:
@@ -271,5 +277,6 @@ __all__ = [
     "string",
     "struct",
     "timestamp",
+    "timestamp_ntz",
     "variant",
 ]

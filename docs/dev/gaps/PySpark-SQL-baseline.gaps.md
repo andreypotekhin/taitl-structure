@@ -30,6 +30,9 @@ function a precise gate or caller remedy. It is not a promise to expose arbitrar
 | Unix-seconds formatting | `implemented` | Typed `from_unixtime` with numeric seconds and a literal format. | Preserve session-time-zone formatting. |
 | Unix-seconds parsing | `implemented` | Typed `unix_timestamp` with String/Date/Timestamp inputs and the query-time default form. | Preserve the default format and query-time stability. |
 | UTC conversion | `implemented` | Typed `to_utc_timestamp` and `from_utc_timestamp` with literal timezones. | Preserve timestamp nullability and timezone semantics. |
+| NTZ timezone conversion | `implemented` | `convert_timezone(source_tz, target_tz, timestamp_ntz)` accepts typed String zone expressions and PySpark's `None` source-zone default. | Keep wall-clock NTZ values distinct from instant-based Timestamp values. |
+| Date construction | `implemented` | `make_date(year, month, day)` accepts typed Integer/Long expressions and returns nullable Date. | Invalid-component behavior follows Spark ANSI configuration. |
+| NTZ parsing | `implemented` | `to_timestamp_ntz` parses a String expression with an optional typed String format expression to nullable TimestampNTZ. | Keep result type independent of `spark.sql.timestampType`; malformed text returns null. |
 
 ## Implementation Candidates
 
@@ -40,9 +43,9 @@ per verified PySpark function and record the 3.5/4.0 presence explicitly.
 | Scope | Status | Structure work | Migration requirement |
 | --- | --- | --- | --- |
 | `randstr`, UTF-8 | candidate | Verify String/Binary semantics. | Preserve spelling or equivalent. |
-| Time-zone conversion | candidate | Add `convert_timezone` with an explicit NTZ/source-zone contract. | Match source and target zone semantics. |
+| Time-zone conversion | implemented | Typed `convert_timezone` requires a `timestamp_ntz` value and typed String zone expressions; `source_tz=None` uses the session zone. | Preserve PySpark's TimestampNTZ result and source/target zone semantics. |
 | Unix timestamp, UTC | candidate | Add remaining conversion helpers. | Match units, parsing, null behavior. |
-| `make_*`, safe temporal | candidate | Add constructors and `try_*`. | Match validation and nullable failure. |
+| Timestamp constructors and safe temporal | candidate | Resolve configuration-sensitive NTZ/LTZ constructors and remaining admitted `try_*` conversions. | Match target type, validation, and nullable-failure behavior. |
 | UTF-8 validation | target-gated | PySpark 4.0-only validation helpers are outside the default intersection baseline. | Use native PySpark or add a versioned UTF-8 profile. |
 | Current-time | implemented | Typed query-clock calls preserve six spellings and same-query equality metadata. | Use native PySpark for unmodeled timestamp variants. |
 | AES-GCM | implemented | Typed GCM calls, symbolic keys, and nonce-risk warning. | Use native PySpark for excluded AES forms. |

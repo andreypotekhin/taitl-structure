@@ -25,7 +25,7 @@ class RenderPySparkStructureSource:
         if field.alias is not None:
             options.append(f"alias={json.dumps(field.alias)}")
         declaration = re.sub(
-            r"\b(array|boolean|date|decimal|double|float|integer|long|map|string|struct|timestamp)\(",
+            r"\b(array|boolean|date|decimal|double|float|integer|long|map|string|struct|timestamp_ntz|timestamp)\(",
             r"\1(",
             field.type,
         )

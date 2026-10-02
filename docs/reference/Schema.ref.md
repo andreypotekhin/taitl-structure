@@ -160,9 +160,12 @@ struct(Address) == struct(Address)
 | `boolean()` | `T.BooleanType()` |
 | `date()` | `T.DateType()` |
 | `timestamp()` | `T.TimestampType()` |
+| `timestamp_ntz()` | `T.TimestampNTZType()` |
 | `binary()` | `T.BinaryType()` |
 
 The choice is part of the contract. Structure does not infer a field type from live data.
+`timestamp()` is Spark's instant-based type, while `timestamp_ntz()` is a wall-clock type; they are distinct and are
+not compared or assigned interchangeably. Python `datetime.datetime` annotations continue to infer `timestamp()`.
 
 ### Decimal
 

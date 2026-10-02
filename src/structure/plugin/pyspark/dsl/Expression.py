@@ -27,10 +27,13 @@ from structure.plugin.pyspark.dsl.types import (
     StringType,
     StructType,
     StructureType,
+    TimestampNTZType,
     TimestampType,
 )
 
-_ORDERABLE_TYPES = frozenset({"date", "decimal", "double", "float", "integer", "long", "string", "timestamp"})
+_ORDERABLE_TYPES = frozenset(
+    {"date", "decimal", "double", "float", "integer", "long", "string", "timestamp", "timestamp_ntz"}
+)
 _ORDER_DIRECTIONS = frozenset(
     {"asc", "desc", "asc_nulls_first", "asc_nulls_last", "desc_nulls_first", "desc_nulls_last"}
 )
@@ -502,6 +505,8 @@ class Expression:
         return self._compatible_comparison_types(self.type, other.type)
 
     def _compatible_comparison_types(self, left: StructureType, right: StructureType) -> bool:
+        if isinstance(left, TimestampNTZType) or isinstance(right, TimestampNTZType):
+            return isinstance(left, TimestampNTZType) and isinstance(right, TimestampNTZType)
         if isinstance(left, (IntegerType, LongType, FloatType, DoubleType, DecimalType)) and isinstance(
             right, (IntegerType, LongType, FloatType, DoubleType, DecimalType)
         ):

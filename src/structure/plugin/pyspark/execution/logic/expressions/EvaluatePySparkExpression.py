@@ -16,6 +16,7 @@ from structure.plugin.pyspark.dsl.types import (
     StringType,
     StructType,
     StructureType,
+    TimestampNTZType,
     TimestampType,
 )
 
@@ -1009,6 +1010,8 @@ class EvaluatePySparkExpression:
         if function == "date_add":
             days = expression.data.get("days", args[1] if len(args) == 2 else None)
             return functions.date_add(args[0], days)
+        if function == "make_date":
+            return functions.make_date(*args)
         if function == "date_sub":
             return functions.date_sub(args[0], expression.data["days"])
         if function == "add_months":
@@ -1040,6 +1043,10 @@ class EvaluatePySparkExpression:
             return functions.unix_timestamp(format=expression.data["format"])
         if function in {"to_utc_timestamp", "from_utc_timestamp"}:
             return getattr(functions, function)(args[0], expression.data["timezone"])
+        if function == "convert_timezone":
+            if expression.data["source_tz_default"]:
+                return functions.convert_timezone(None, args[0], args[1])
+            return functions.convert_timezone(args[0], args[1], args[2])
         if function in {"date_part", "datepart"}:
             return getattr(functions, function)(functions.lit(expression.data["field"]), args[0])
         if function == "mask":
@@ -1047,6 +1054,8 @@ class EvaluatePySparkExpression:
             return functions.mask(args[0], *chars)
         if function == "overlay":
             return functions.overlay(args[0], args[1], args[2], args[3])
+        if function == "to_timestamp_ntz":
+            return functions.to_timestamp_ntz(*args)
         if function in {"to_date", "to_timestamp"}:
             return (
                 getattr(functions, function)(args[0], expression.data["format"])
@@ -1194,6 +1203,8 @@ class EvaluatePySparkExpression:
             return "DATE"
         if isinstance(type, TimestampType):
             return "TIMESTAMP"
+        if isinstance(type, TimestampNTZType):
+            return "TIMESTAMP_NTZ"
         if isinstance(type, DecimalType):
             return f"DECIMAL({type.precision},{type.scale})"
         if isinstance(type, ArrayType):

@@ -32,6 +32,8 @@ from structure.plugin.pyspark.dsl.types.Struct import Struct
 from structure.plugin.pyspark.dsl.types.StructureType import StructureType
 from structure.plugin.pyspark.dsl.types.TimestampType import TimestampType
 from structure.plugin.pyspark.dsl.types.Timestamp import Timestamp
+from structure.plugin.pyspark.dsl.types.TimestampNTZType import TimestampNTZType
+from structure.plugin.pyspark.dsl.types.TimestampNTZ import TimestampNTZ
 from structure.plugin.pyspark.dsl.types.VariantType import VariantType
 from structure.plugin.pyspark.dsl.types.Variant import Variant
 from structure.plugin.pyspark.dsl.types.SketchType import BitmapType, HllSketchType, KllSketchType, SketchType, ThetaSketchType
@@ -52,6 +54,7 @@ def double() -> StructureType: return Double()
 def boolean() -> StructureType: return Boolean()
 def date() -> StructureType: return Date()
 def timestamp() -> StructureType: return Timestamp()
+def timestamp_ntz() -> StructureType: return TimestampNTZ()
 def variant() -> StructureType: return Variant()
 def hll_sketch(*, profile: str = "baseline", lg_config_k: int = 12) -> StructureType: return HllSketch(profile, lg_config_k)
 def bitmap(*, profile: str = "baseline") -> StructureType: return Bitmap(profile)
@@ -67,6 +70,6 @@ def struct(schema: type[Schema]) -> StructureType: return Struct(schema)
 __all__ = [
     "Array", "ArrayType", "Binary", "BinaryType", "Boolean", "BooleanType", "Date", "DateType", "Decimal", "DecimalType", "Double",
     "DoubleType", "Float", "FloatType", "Integer", "IntegerType", "Long", "LongType", "Map", "MapType",
-    "Geometry", "GeometryType", "ScalarType", "SketchType", "HllSketch", "HllSketchType", "Bitmap", "BitmapType", "KllSketch", "KllSketchType", "ThetaSketch", "ThetaSketchType", "String", "StringType", "Struct", "StructType", "StructureType", "Timestamp", "TimestampType", "Variant", "VariantType",
-    "array", "binary", "boolean", "date", "decimal", "double", "float", "geometry", "hll_sketch", "bitmap", "kll_sketch", "theta_sketch", "integer", "long", "map", "string", "struct", "timestamp", "variant",
+    "Geometry", "GeometryType", "ScalarType", "SketchType", "HllSketch", "HllSketchType", "Bitmap", "BitmapType", "KllSketch", "KllSketchType", "ThetaSketch", "ThetaSketchType", "String", "StringType", "Struct", "StructType", "StructureType", "Timestamp", "TimestampType", "TimestampNTZ", "TimestampNTZType", "Variant", "VariantType",
+    "array", "binary", "boolean", "date", "decimal", "double", "float", "geometry", "hll_sketch", "bitmap", "kll_sketch", "theta_sketch", "integer", "long", "map", "string", "struct", "timestamp", "timestamp_ntz", "variant",
 ]

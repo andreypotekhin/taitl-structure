@@ -140,6 +140,7 @@ if TYPE_CHECKING:
         string,
         struct,
         timestamp,
+        timestamp_ntz,
         variant,
     )
     from structure.plugin.pyspark.dsl.InputScope import *  # type: ignore  # noqa: F403
@@ -168,7 +169,7 @@ sample sec select_first_qualified signum sin sinh slice sha1 sha2 second rand ra
 rolling_min rolling_sum scan subtract sum sum_distinct stddev sqrt size sequence session_window skewness split translate substring temporal_one next_day
 to_binary to_csv to_decimal to_date to_json to_timestamp from_unixtime unix_timestamp to_utc_timestamp from_utc_timestamp date_part datepart TimeWindow trim trunc try_element_at try_to_binary unbase64 union_all union_by_name upper unbounded_following unbounded_preceding hex unhex cardinality weekofyear
 variance var_pop var_samp stddev_pop stddev_samp when width_bucket year xxhash64 zeroifnull where watermark window window_avg window_bool_and window_bool_or rpad repeat replace right sign tan tanh json_tuple stack
-window_time current_date curdate current_timestamp now localtimestamp current_timezone aes_encrypt aes_decrypt try_aes_decrypt hll_sketch_agg hll_sketch_estimate hll_union bitmap_construct_agg bitmap_or_agg bitmap_bit_position bitmap_bucket_number bitmap_count url_encode url_decode try_url_decode
+window_time current_date curdate current_timestamp now localtimestamp current_timezone aes_encrypt aes_decrypt try_aes_decrypt hll_sketch_agg hll_sketch_estimate hll_union bitmap_construct_agg bitmap_or_agg bitmap_bit_position bitmap_bucket_number bitmap_count url_encode url_decode try_url_decode convert_timezone make_date to_timestamp_ntz
 window_collect_list window_collect_set window_count window_count_distinct window_max window_min window_sum
 window_stddev window_variance is_valid_variant is_variant_null octet_length parse_json schema_of_csv schema_of_json schema_of_variant schema_of_variant_agg substring_index
 to_variant_object try_parse_json try_variant_get variant_get
@@ -189,6 +190,7 @@ _FIELD_FACTORIES = {
     "string",
     "struct",
     "timestamp",
+    "timestamp_ntz",
     "variant",
     "geometry",
     "hll_sketch",
@@ -645,6 +647,7 @@ __all__ = [  # noqa: F405
     "string",
     "struct",
     "timestamp",
+    "timestamp_ntz",
     "variant",
     "geometry",
     "hll_sketch",

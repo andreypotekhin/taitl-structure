@@ -21,6 +21,7 @@ from structure.plugin.pyspark.dsl.types import (
     StringType,
     StructType,
     StructureType,
+    TimestampNTZType,
     TimestampType,
     VariantType,
 )
@@ -76,6 +77,8 @@ class RenderPySparkSchema:
             return "T.DateType()"
         if isinstance(type, TimestampType):
             return "T.TimestampType()"
+        if isinstance(type, TimestampNTZType):
+            return "T.TimestampNTZType()"
         if isinstance(type, VariantType):
             return "T.VariantType()"
         if isinstance(type, GeometryType):

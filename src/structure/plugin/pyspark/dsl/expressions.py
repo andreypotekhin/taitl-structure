@@ -34,6 +34,7 @@ from structure.plugin.pyspark.dsl.types import (
     StringType,
     StructType,
     StructureType,
+    TimestampNTZType,
     TimestampType,
     VariantType,
 )
@@ -49,7 +50,7 @@ __all__ = [
     "lower", "lpad", "ltrim", "mask", "md5", "crc32", "elt", "format_string", "printf", "substr",
     "minute", "month", "nanvl", "nullif", "nvl", "nvl2", "pow", "regexp_extract", "regexp_replace", "repeat", "replace", "reverse",
     "round", "rpad", "rtrim", "sha1", "sha2", "second", "signum", "split", "sqrt", "substring", "to_csv", "to_date",
-    "to_binary", "to_decimal", "to_json", "to_timestamp", "translate", "trim", "trunc", "unbase64", "decode", "encode", "try_to_binary", "from_unixtime", "unix_timestamp", "to_utc_timestamp", "from_utc_timestamp", "date_part", "datepart", "hex", "unhex", "upper", "ascii", "btrim", "char", "char_length", "date_format", "find_in_set", "format_number", "last_day", "left", "locate", "mask", "octet_length", "overlay", "position", "quarter", "right", "soundex", "split_part", "substring_index", "regexp_count", "regexp_extract_all", "regexp_instr", "regexp_substr", "weekofyear", "bit_count", "bit_get", "getbit",
+    "to_binary", "to_decimal", "to_json", "to_timestamp", "to_timestamp_ntz", "translate", "trim", "trunc", "unbase64", "decode", "encode", "try_to_binary", "from_unixtime", "unix_timestamp", "to_utc_timestamp", "from_utc_timestamp", "date_part", "datepart", "hex", "unhex", "upper", "ascii", "btrim", "char", "char_length", "date_format", "find_in_set", "format_number", "last_day", "left", "locate", "mask", "octet_length", "overlay", "position", "quarter", "right", "soundex", "split_part", "substring_index", "regexp_count", "regexp_extract_all", "regexp_instr", "regexp_substr", "weekofyear", "bit_count", "bit_get", "getbit",
     "when", "width_bucket", "xxhash64", "year", "zeroifnull", "acos", "acosh", "asin", "asinh", "atan", "atan2", "atanh", "cbrt", "cos", "cosh", "cot", "csc", "degrees", "e", "expm1", "factorial", "greatest", "hypot", "least", "ln", "log10", "log1p", "log2", "pmod", "pi", "radians", "rint", "sec", "sign", "sin", "sinh", "tan", "tanh", "add_months", "months_between", "next_day", "rand", "randn", "equal_null", "like", "ilike", "regexp", "regexp_like", "rlike", "date_from_unix_date", "unix_date", "weekday", "shiftleft", "shiftright", "shiftrightunsigned", "is_valid_variant", "is_variant_null", "parse_json",
     "schema_of_variant", "to_variant_object", "try_parse_json", "try_variant_get", "variant_get", "variant_literal",
     "variant_array_append", "try_variant_array_append", "variant_insert", "try_variant_insert", "variant_set",
@@ -57,7 +58,8 @@ __all__ = [
     "raise_error", "current_date", "curdate", "current_timestamp", "now", "localtimestamp", "current_timezone",
     "aes_encrypt", "aes_decrypt", "try_aes_decrypt",
     "hll_sketch_estimate", "hll_union", "bitmap_bit_position", "bitmap_bucket_number", "bitmap_count",
-    "url_encode", "url_decode", "try_url_decode",
+    "url_encode", "url_decode", "try_url_decode", "make_date",
+    "convert_timezone",
 ]
 
 
@@ -1417,6 +1419,32 @@ def date_add(value: object, *, days: object) -> Expression:
     )
 
 
+def make_date(year: object, month: object, day: object) -> Expression:
+    """Build a Date from typed year, month, and day expressions.
+
+    Args:
+        year: Integer or Long expression for the year.
+        month: Integer or Long expression for the month.
+        day: Integer or Long expression for the day of the month.
+
+    Returns:
+        A nullable Date expression, following PySpark ``make_date``. Invalid
+        calendar components return null or raise during execution according to
+        Spark's ``spark.sql.ansi.enabled`` setting.
+
+    Example:
+        order_date = make_date(order.year, order.month, order.day)
+    """
+    arguments = tuple(_integral_argument(value, "make_date(...)") for value in (year, month, day))
+    return Expression(
+        kind="call",
+        type=DateType(),
+        nullable=True,
+        data={"function": "make_date"},
+        args=arguments,
+    )
+
+
 def date_sub(value: object, *, days: int) -> Expression:
     """Subtract whole days from a Date or Timestamp expression."""
     argument = _date_or_timestamp_argument(value, "date_sub(...)")
@@ -1674,6 +1702,34 @@ def to_timestamp(value: object, *, format: str | None = None) -> Expression:
     )
 
 
+def to_timestamp_ntz(value: object, *, format: object | None = None) -> Expression:
+    """Parse a String expression as a timestamp without time zone.
+
+    Args:
+        value: String expression containing the timestamp text.
+        format: Optional String expression containing Spark's datetime pattern.
+
+    Returns:
+        Nullable TimestampNTZ. Invalid input always returns null, independently
+        of Spark's ANSI setting, matching PySpark ``to_timestamp_ntz``.
+
+    Example:
+        local_time = to_timestamp_ntz(row.raw_time, format=row.pattern)
+    """
+    source = _string_argument(value, "to_timestamp_ntz(...)")
+    arguments = (source,) if format is None else (
+        source,
+        _string_argument(format, "to_timestamp_ntz(...) format"),
+    )
+    return Expression(
+        kind="call",
+        type=TimestampNTZType(),
+        nullable=True,
+        data={"function": "to_timestamp_ntz"},
+        args=arguments,
+    )
+
+
 def unix_date(value: object) -> Expression:
     """Return the number of days since 1970-01-01 for a Date expression."""
     argument = _date_argument(value, "unix_date(...)")
@@ -1750,6 +1806,21 @@ def to_utc_timestamp(value: object, *, timezone: str) -> Expression:
 def from_utc_timestamp(value: object, *, timezone: str) -> Expression:
     """Convert a UTC timestamp expression to a timezone."""
     return _timezone_conversion("from_utc_timestamp", value, timezone)
+
+
+def convert_timezone(source_tz: object | None, target_tz: object, source_ts: object) -> Expression:
+    """Convert a wall-clock timestamp between time zones, preserving TimestampNTZ semantics."""
+    timestamp = _timestamp_ntz_argument(source_ts, "convert_timezone(...)")
+    target = _string_argument(target_tz, "convert_timezone(...)")
+    source = None if source_tz is None else _string_argument(source_tz, "convert_timezone(...)")
+    arguments = (target, timestamp) if source is None else (source, target, timestamp)
+    return Expression(
+        kind="call",
+        type=TimestampNTZType(),
+        nullable=any(argument.nullable for argument in arguments),
+        data={"function": "convert_timezone", "source_tz_default": source is None},
+        args=arguments,
+    )
 
 
 def date_part(field: str, value: object) -> Expression:
@@ -2669,6 +2740,7 @@ def _scalar_argument(value: object, call: str) -> Expression:
             BooleanType,
             DateType,
             TimestampType,
+            TimestampNTZType,
             StringType,
             IntegerType,
             LongType,
@@ -2775,6 +2847,7 @@ def _hash_argument(value: object, call: str) -> Expression:
             DecimalType,
             DateType,
             TimestampType,
+            TimestampNTZType,
         ),
     ):
         raise TypeError(f"{call} requires scalar Structure expressions")
@@ -2783,7 +2856,7 @@ def _hash_argument(value: object, call: str) -> Expression:
 
 def _date_or_timestamp_argument(value: object, call: str) -> Expression:
     argument = literal(value)
-    if not isinstance(argument.type, (DateType, TimestampType)):
+    if not isinstance(argument.type, (DateType, TimestampType, TimestampNTZType)):
         raise TypeError(f"{call} requires a Date or Timestamp Structure expression")
     return argument
 
@@ -2799,6 +2872,13 @@ def _timestamp_argument(value: object, call: str) -> Expression:
     argument = literal(value)
     if not isinstance(argument.type, TimestampType):
         raise TypeError(f"{call} requires a Timestamp Structure expression")
+    return argument
+
+
+def _timestamp_ntz_argument(value: object, call: str) -> Expression:
+    argument = literal(value)
+    if not isinstance(argument.type, TimestampNTZType):
+        raise TypeError(f"{call} requires a TimestampNTZ Structure expression")
     return argument
 
 

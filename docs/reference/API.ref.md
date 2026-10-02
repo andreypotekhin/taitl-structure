@@ -49,6 +49,9 @@ evidence.
 **Details And Differences**
 
 - Schema classes own field names, aliases, types, and nullability instead of exposing raw Spark schema objects.
+- `timestamp()` and `timestamp_ntz()` remain distinct. `convert_timezone(...)` takes an NTZ source and typed String
+  zone expressions; see the [expression reference](../api/Expressions.api.md#sql-function-helpers) for its signature.
+- `to_timestamp_ntz(...)` also returns the distinct NTZ type and accepts a typed, row-dependent String format.
 - Transform source is compiler-visible. `@raw` remains the explicit boundary for caller-supplied PySpark behavior.
 - Expression truthiness, raw SQL strings, UDTFs, and arbitrary callback bodies are unsupported. Scalar
   `@special(type="udf")` remains an ordinary-PySpark row-local feature with its warning policy.

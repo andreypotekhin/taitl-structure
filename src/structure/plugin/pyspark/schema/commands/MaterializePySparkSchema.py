@@ -17,6 +17,7 @@ from structure.plugin.pyspark.dsl.types import (
     StringType,
     StructType,
     StructureType,
+    TimestampNTZType,
     TimestampType,
     VariantType,
 )
@@ -56,6 +57,8 @@ class MaterializePySparkSchema:
             return spark_types.DateType()
         if isinstance(type, TimestampType):
             return spark_types.TimestampType()
+        if isinstance(type, TimestampNTZType):
+            return spark_types.TimestampNTZType()
         if isinstance(type, VariantType):
             return spark_types.VariantType()
         if isinstance(type, GeometryType):

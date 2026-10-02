@@ -22,6 +22,7 @@ from structure.plugin.pyspark.dsl.types import (
     StringType,
     StructType,
     StructureType,
+    TimestampNTZType,
     TimestampType,
 )
 
@@ -779,6 +780,8 @@ class RenderPySparkExpression:
         if function == "date_add":
             days = expression.data.get("days", args[1] if len(args) == 2 else None)
             return f"F.date_add({args[0]}, {days})"
+        if function == "make_date":
+            return f"F.make_date({', '.join(args)})"
         if function == "date_sub":
             return f"F.date_sub({args[0]}, {expression.data['days']})"
         if function == "add_months":
@@ -811,6 +814,10 @@ class RenderPySparkExpression:
             return f"F.unix_timestamp(format={format_literal!r})"
         if function in {"to_utc_timestamp", "from_utc_timestamp"}:
             return f"F.{function}({args[0]}, {expression.data['timezone']!r})"
+        if function == "convert_timezone":
+            if expression.data["source_tz_default"]:
+                return f"F.convert_timezone(None, {args[0]}, {args[1]})"
+            return f"F.convert_timezone({args[0]}, {args[1]}, {args[2]})"
         if function in {"date_part", "datepart"}:
             return f"F.{function}(F.lit({expression.data['field']!r}), {args[0]})"
         if function == "mask":
@@ -820,6 +827,8 @@ class RenderPySparkExpression:
             return f"F.mask({args[0]}, {', '.join(repr(character) for character in chars)})"
         if function == "overlay":
             return f"F.overlay({', '.join(args)})"
+        if function == "to_timestamp_ntz":
+            return f"F.to_timestamp_ntz({', '.join(args)})"
         if function in {"to_date", "to_timestamp"}:
             return (
                 f"F.{function}({args[0]}, {expression.data['format']!r})"
@@ -925,6 +934,8 @@ class RenderPySparkExpression:
             return "T.DateType()"
         if isinstance(type, TimestampType):
             return "T.TimestampType()"
+        if isinstance(type, TimestampNTZType):
+            return "T.TimestampNTZType()"
         if isinstance(type, DecimalType):
             return f"T.DecimalType({type.precision}, {type.scale})"
         if isinstance(type, ArrayType):
@@ -972,6 +983,8 @@ class RenderPySparkExpression:
             return "DATE"
         if isinstance(type, TimestampType):
             return "TIMESTAMP"
+        if isinstance(type, TimestampNTZType):
+            return "TIMESTAMP_NTZ"
         if isinstance(type, DecimalType):
             return f"DECIMAL({type.precision},{type.scale})"
         if isinstance(type, ArrayType):
