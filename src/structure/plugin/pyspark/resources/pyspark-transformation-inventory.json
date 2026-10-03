@@ -2,7 +2,11 @@
   "baseline": {
     "pyspark": ">=3.5,<4.1",
     "policy": "Intersection of the public PySpark 3.5.x and 4.0.x transformation APIs selected for Structure's typed DSL.",
-    "source": "https://spark.apache.org/docs/4.0.1/api/python/reference/pyspark.sql/"
+    "source": "https://spark.apache.org/docs/4.0.1/api/python/reference/pyspark.sql/",
+    "comparison_sources": [
+      "https://spark.apache.org/docs/3.5.6/api/python/reference/pyspark.sql/functions.html",
+      "https://spark.apache.org/docs/4.0.0/api/python/reference/pyspark.sql/functions.html"
+    ]
   },
   "excluded_categories": [
     "DataFrameReader, DataStreamReader, DataFrameWriter, and DataStreamWriter",
@@ -32,7 +36,7 @@
     {"id": "functions.numeric", "family": "SQL functions", "pyspark": ["abs", "acos", "acosh", "asin", "asinh", "atan", "atan2", "atanh", "bin", "round", "bround", "cbrt", "ceil", "conv", "cos", "cosh", "cot", "csc", "degrees", "e", "expm1", "factorial", "floor", "greatest", "hex", "hypot", "least", "ln", "log", "log10", "log1p", "log2", "exp", "pmod", "pi", "radians", "rint", "sec", "sign", "sin", "sinh", "signum", "sqrt", "tan", "tanh", "pow", "unhex", "width_bucket"]},
     {"id": "functions.bitwise", "family": "SQL functions", "pyspark": ["bit_count", "bit_get", "getbit", "shiftleft", "shiftright", "shiftrightunsigned"]},
     {"id": "functions.random", "family": "SQL functions", "pyspark": ["rand", "randn"]},
-    {"id": "functions.temporal", "family": "SQL functions", "pyspark": ["add_months", "date_add", "date_sub", "datediff", "date_trunc", "date_format", "date_from_unix_date", "unix_date", "from_unixtime", "unix_timestamp", "to_utc_timestamp", "from_utc_timestamp", "convert_timezone", "make_date", "date_part", "datepart", "last_day", "months_between", "trunc", "year", "month", "dayofmonth", "dayofweek", "dayofyear", "hour", "minute", "next_day", "quarter", "second", "to_date", "to_timestamp", "to_timestamp_ntz", "weekday", "weekofyear"]},
+    {"id": "functions.temporal", "family": "SQL functions", "pyspark": ["add_months", "date_add", "date_sub", "date_diff", "dateadd", "datediff", "date_trunc", "date_format", "date_from_unix_date", "unix_date", "from_unixtime", "unix_timestamp", "to_unix_timestamp", "to_utc_timestamp", "from_utc_timestamp", "convert_timezone", "make_date", "make_dt_interval", "make_interval", "make_timestamp", "make_timestamp_ltz", "make_timestamp_ntz", "make_ym_interval", "date_part", "datepart", "extract", "day", "last_day", "months_between", "trunc", "year", "month", "dayofmonth", "dayofweek", "dayofyear", "hour", "minute", "next_day", "quarter", "second", "to_date", "to_timestamp", "to_timestamp_ltz", "to_timestamp_ntz", "try_to_timestamp", "timestamp_micros", "timestamp_millis", "timestamp_seconds", "unix_micros", "unix_millis", "unix_seconds", "weekday", "weekofyear"]},
     {"id": "functions.query-clock", "family": "SQL functions", "pyspark": ["current_date", "curdate", "current_timestamp", "now", "localtimestamp", "current_timezone"]},
     {"id": "functions.hash", "family": "SQL functions", "pyspark": ["hash", "xxhash64", "crc32", "md5", "sha1", "sha2"]},
     {"id": "functions.encoding", "family": "SQL functions", "pyspark": ["base64", "unbase64", "encode", "decode", "to_binary", "try_to_binary"]},

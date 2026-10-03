@@ -10,6 +10,7 @@ from structure.plugin.pyspark.dsl.types import (
     DoubleType,
     FloatType,
     IntegerType,
+    IntervalType,
     LongType,
     MapType,
     SketchType,
@@ -1007,18 +1008,28 @@ class EvaluatePySparkExpression:
             return getattr(functions, function)(args[0])
         if function == "sha2":
             return functions.sha2(args[0], expression.data["bits"])
-        if function == "date_add":
+        if function in {"date_add", "dateadd"}:
             days = expression.data.get("days", args[1] if len(args) == 2 else None)
-            return functions.date_add(args[0], days)
+            return getattr(functions, function)(args[0], days)
         if function == "make_date":
             return functions.make_date(*args)
+        if function in {"make_timestamp", "make_timestamp_ltz", "make_timestamp_ntz"}:
+            return getattr(functions, function)(*args)
+        if function in {"make_interval", "make_ym_interval", "make_dt_interval"}:
+            return getattr(functions, function)(*args)
+        if function == "interval":
+            assert isinstance(expression.type, IntervalType)
+            kind = expression.type.kind
+            builder = "make_interval" if kind == "calendar" else "make_ym_interval" if kind == "year_month" else "make_dt_interval"
+            source = getattr(functions, builder)(*args)
+            return source if kind == "calendar" else source.cast(expression.type.sql)
         if function == "date_sub":
             return functions.date_sub(args[0], expression.data["days"])
         if function == "add_months":
             months = expression.data.get("months", args[1] if len(args) == 2 else None)
             return functions.add_months(args[0], months)
-        if function == "datediff":
-            return functions.datediff(args[0], args[1])
+        if function in {"datediff", "date_diff"}:
+            return getattr(functions, function)(args[0], args[1])
         if function == "months_between":
             return functions.months_between(args[0], args[1], roundOff=expression.data["round_off"])
         if function == "date_trunc":
@@ -1027,7 +1038,7 @@ class EvaluatePySparkExpression:
             return functions.trunc(args[0], expression.data["unit"])
         if function == "next_day":
             return functions.next_day(args[0], expression.data["day_of_week"])
-        if function in {"year", "month", "dayofmonth", "dayofweek", "weekday", "dayofyear", "hour", "minute", "quarter", "second", "weekofyear"}:
+        if function in {"year", "month", "day", "dayofmonth", "dayofweek", "weekday", "dayofyear", "hour", "minute", "quarter", "second", "weekofyear"}:
             return getattr(functions, function)(args[0])
         if function == "last_day":
             return functions.last_day(args[0])
@@ -1038,25 +1049,31 @@ class EvaluatePySparkExpression:
         if function == "from_unixtime":
             return functions.from_unixtime(args[0], expression.data["format"])
         if function == "unix_timestamp":
+            if len(args) == 2:
+                return functions.call_function("unix_timestamp", *args)
             if args:
                 return functions.unix_timestamp(args[0], expression.data["format"])
             return functions.unix_timestamp(format=expression.data["format"])
+        if function in {"to_unix_timestamp", "timestamp_seconds", "timestamp_millis", "timestamp_micros", "unix_seconds", "unix_millis", "unix_micros"}:
+            return getattr(functions, function)(*args)
         if function in {"to_utc_timestamp", "from_utc_timestamp"}:
             return getattr(functions, function)(args[0], expression.data["timezone"])
         if function == "convert_timezone":
             if expression.data["source_tz_default"]:
                 return functions.convert_timezone(None, args[0], args[1])
             return functions.convert_timezone(args[0], args[1], args[2])
-        if function in {"date_part", "datepart"}:
+        if function in {"date_part", "datepart", "extract"}:
             return getattr(functions, function)(functions.lit(expression.data["field"]), args[0])
         if function == "mask":
             chars = cast(tuple[str | None, ...], expression.data["chars"])
             return functions.mask(args[0], *chars)
         if function == "overlay":
             return functions.overlay(args[0], args[1], args[2], args[3])
-        if function == "to_timestamp_ntz":
-            return functions.to_timestamp_ntz(*args)
+        if function in {"to_timestamp_ntz", "to_timestamp_ltz", "try_to_timestamp"}:
+            return getattr(functions, function)(*args)
         if function in {"to_date", "to_timestamp"}:
+            if len(args) == 2:
+                return functions.call_function("to_timestamp", *args)
             return (
                 getattr(functions, function)(args[0], expression.data["format"])
                 if "format" in expression.data
@@ -1205,6 +1222,8 @@ class EvaluatePySparkExpression:
             return "TIMESTAMP"
         if isinstance(type, TimestampNTZType):
             return "TIMESTAMP_NTZ"
+        if isinstance(type, IntervalType):
+            return type.sql.upper()
         if isinstance(type, DecimalType):
             return f"DECIMAL({type.precision},{type.scale})"
         if isinstance(type, ArrayType):

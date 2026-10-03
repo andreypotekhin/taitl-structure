@@ -20,6 +20,7 @@ class StructureConfigValidator:
         "output_validation_mode": ("off", "schema_only", "schema_and_constraints"),
         "stream_to_batch_policy": ("default", "strict"),
         "spark.sql.storeAssignmentPolicy": ("ANSI", "LEGACY", "STRICT"),
+        "spark.sql.timestampType": ("TIMESTAMP_LTZ", "TIMESTAMP_NTZ"),
     }
     _bools = {
         "generated_docs",
@@ -36,6 +37,7 @@ class StructureConfigValidator:
         "prune_unused_steps",
         "fail_on_diff",
         "spark.sql.ansi.enabled",
+        "spark.sql.legacy.interval.enabled",
     }
 
     def validate(self, values: Mapping[str, object], root: Path, *, allow_empty_source_roots: bool = False) -> None:

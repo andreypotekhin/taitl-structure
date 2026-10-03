@@ -44,6 +44,8 @@ class StructureConfigDefaults:
             "fail_on_diff": False,
             "spark.sql.ansi.enabled": True,
             "spark.sql.storeAssignmentPolicy": "ANSI",
+            "spark.sql.timestampType": "TIMESTAMP_LTZ",
+            "spark.sql.legacy.interval.enabled": False,
             "plugin": {"default": "pyspark", "pyspark": {"profile": ">=3.5,<4.1", "variant": "ordinary"}},
         }
         return values, {key: "default" for key in values}

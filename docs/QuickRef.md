@@ -354,9 +354,11 @@ Supported expression forms are:
   `substr(lower(trim(order.name)), start=1, length=10)`.
 - Struct fields may be read with `.get_field(name)`.
 
-- Temporal helpers: `make_date(...)`, `date_add(...)`, `datediff(...)`, `date_trunc(...)`, `to_timestamp_ntz(...)`, and `convert_timezone(...)` for explicit
-  `timestamp_ntz()` wall-clock values. Use typed String zone expressions; pass `None` as the source zone to use Spark's
-  session timezone. `timestamp()` remains the distinct instant-based type.
+- Temporal helpers: `make_date(...)`, `make_timestamp(...)`, `to_timestamp(...)`, `try_to_timestamp(...)`, epoch
+  conversions, `extract(Temporal.DAY_OF_YEAR, value)`, and `interval(type=Interval.YEAR_TO_MONTH, years=y, months=m)`.
+  Generic timestamps follow `spark.sql.timestampType`; `_ltz`/`_ntz` helpers keep fixed types. Declare qualified
+  interval fields with `field.interval(...)` or `types.interval(...)`. `convert_timezone(...)` accepts NTZ input and
+  typed String zones; `None` for the source zone uses Spark's session timezone.
 - Numeric helpers: `abs(...)`, `round(...)`, `ceil(...)`, and `floor(...)`.
 
 Reference: [expressions API](api/Expressions.api.md), [Transform expressions](background/Transform.back.md), and

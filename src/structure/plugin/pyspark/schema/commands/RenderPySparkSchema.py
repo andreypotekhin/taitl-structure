@@ -15,6 +15,7 @@ from structure.plugin.pyspark.dsl.types import (
     FloatType,
     GeometryType,
     IntegerType,
+    IntervalType,
     LongType,
     MapType,
     SketchType,
@@ -79,6 +80,11 @@ class RenderPySparkSchema:
             return "T.TimestampType()"
         if isinstance(type, TimestampNTZType):
             return "T.TimestampNTZType()"
+        if isinstance(type, IntervalType):
+            if type.kind == "calendar":
+                return "T.CalendarIntervalType()"
+            name = "YearMonthIntervalType" if type.kind == "year_month" else "DayTimeIntervalType"
+            return f"T.{name}({type.start_field}, {type.end_field})"
         if isinstance(type, VariantType):
             return "T.VariantType()"
         if isinstance(type, GeometryType):

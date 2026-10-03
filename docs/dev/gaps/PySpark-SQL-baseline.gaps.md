@@ -25,14 +25,45 @@ function a precise gate or caller remedy. It is not a promise to expose arbitrar
 | --- | --- | --- | --- |
 | Ordering descriptors | `implemented` | Harden validation across consumers. | Preserve direction and null placement. |
 | `stack` | `implemented` | `stack(rows, *values, as_=Schema, scope=None)` fixes row multiplication, position-wise common types, and trailing-NULL padding before execution. | Preserve output aliases, types, nullability, and streaming row expansion. |
-| Relation distribution | `partial` | `coalesce(partitions=...)` and typed hash `repartition(count, *keys)` / `repartition(*keys)` preserve row/schema; range repartition remains batch-only. | Preserve the leading-integer count rule and avoid ordering or stable-partition promises. |
+| Relation distribution | `implemented` | `coalesce(partitions=...)` and typed hash `repartition(count, *keys)` / `repartition(*keys)` preserve row/schema; range repartition remains batch-only. | Preserve the leading-integer count rule and avoid ordering or stable-partition promises. |
 | Binary conversion | `implemented` | Typed `to_binary` and `try_to_binary` with literal formats. | Preserve format and failure behavior. |
 | Unix-seconds formatting | `implemented` | Typed `from_unixtime` with numeric seconds and a literal format. | Preserve session-time-zone formatting. |
 | Unix-seconds parsing | `implemented` | Typed `unix_timestamp` with String/Date/Timestamp inputs and the query-time default form. | Preserve the default format and query-time stability. |
 | UTC conversion | `implemented` | Typed `to_utc_timestamp` and `from_utc_timestamp` with literal timezones. | Preserve timestamp nullability and timezone semantics. |
 | NTZ timezone conversion | `implemented` | `convert_timezone(source_tz, target_tz, timestamp_ntz)` accepts typed String zone expressions and PySpark's `None` source-zone default. | Keep wall-clock NTZ values distinct from instant-based Timestamp values. |
 | Date construction | `implemented` | `make_date(year, month, day)` accepts typed Integer/Long expressions and returns nullable Date. | Invalid-component behavior follows Spark ANSI configuration. |
-| NTZ parsing | `implemented` | `to_timestamp_ntz` parses a String expression with an optional typed String format expression to nullable TimestampNTZ. | Keep result type independent of `spark.sql.timestampType`; malformed text returns null. |
+| NTZ parsing | `implemented` | `to_timestamp_ntz` parses a String expression with an optional typed String format expression to nullable TimestampNTZ. | Keep result type independent of `spark.sql.timestampType`; malformed text follows Spark's ANSI setting. |
+
+## Newly Reconciled Temporal Functions
+
+The PySpark 3.5.6 and 4.0.0 public function indexes contain the following common temporal names omitted from the
+previous inventory. They are added to the machine-readable inventory above; both target columns are `yes` for every row.
+The status is deliberately function-specific rather than inferred from the surrounding family.
+
+| PySpark function | PySpark 3.5.6 | PySpark 4.0.0 | Status | Structure equivalent or missing contract | Migration remedy |
+| --- | --- | --- | --- | --- | --- |
+| `date_diff` | yes | yes | `implemented` | Alias of `datediff(end, start)`; generated spelling is preserved. | Use `date_diff(...)` directly. |
+| `dateadd` | yes | yes | `implemented` | Alias of `date_add(start, days)`; generated spelling is preserved. | Use `dateadd(...)` directly. |
+| `day` | yes | yes | `implemented` | Alias of `dayofmonth(...)`; generated spelling is preserved. | Use `day(...)` directly. |
+| `extract` | yes | yes | `implemented` | Typed field constants/literals; Date, Timestamp, and interval inputs; Integer parts or Decimal(8,6) seconds. | Use `extract(...)` with a compiler-visible field. |
+| `make_dt_interval` | yes | yes | `implemented` | Typed DayTime interval expression with integral components and numeric seconds. | Use `make_dt_interval(...)` or qualified `interval(...)`. |
+| `make_interval` | yes | yes | `implemented` | Typed mixed Calendar interval expression with Spark's seven components. | Calendar Schema is target-gated as documented. |
+| `make_timestamp` | yes | yes | `implemented` | Output follows resolved `spark.sql.timestampType`; NTZ zone use warns. | Set the Structure/Spark timestamp profile consistently. |
+| `make_timestamp_ltz` | yes | yes | `implemented` | Fixed LTZ output, typed optional zone, typed component expressions. | Use `make_timestamp_ltz(...)` for an instant. |
+| `make_timestamp_ntz` | yes | yes | `implemented` | Fixed NTZ output with typed component expressions. | Use `make_timestamp_ntz(...)` for wall-clock values. |
+| `make_ym_interval` | yes | yes | `implemented` | Typed YearMonth interval expression. | Use `make_ym_interval(...)` or qualified `interval(...)`. |
+| `to_timestamp_ltz` | yes | yes | `implemented` | Fixed LTZ parser with typed String input and optional typed pattern. | Use `to_timestamp_ltz(...)` for instant parsing. |
+| `try_to_timestamp` | yes | yes | `implemented` | Generic timestamp output follows resolved configuration and invalid text returns null. | Use it when parse failures should be null. |
+| `to_unix_timestamp` | yes | yes | `implemented` | Required-input parser with typed String pattern; preserves its function name. | Use it when an input is required. |
+| `timestamp_micros` | yes | yes | `implemented` | Integral microseconds convert to fixed LTZ Timestamp. | Use `timestamp_micros(...)`. |
+| `timestamp_millis` | yes | yes | `implemented` | Integral milliseconds convert to fixed LTZ Timestamp. | Use `timestamp_millis(...)`. |
+| `timestamp_seconds` | yes | yes | `implemented` | Numeric seconds, including fractions, convert to fixed LTZ Timestamp. | Use `timestamp_seconds(...)`. |
+| `unix_micros` | yes | yes | `implemented` | LTZ Timestamp to Long microseconds; NTZ is rejected. | Use an explicit LTZ conversion first. |
+| `unix_millis` | yes | yes | `implemented` | LTZ Timestamp to Long milliseconds; NTZ is rejected. | Use an explicit LTZ conversion first. |
+| `unix_seconds` | yes | yes | `implemented` | LTZ Timestamp to Long seconds; NTZ is rejected. | Use an explicit LTZ conversion first. |
+
+Source comparison: [PySpark 3.5.6 SQL functions](https://spark.apache.org/docs/3.5.6/api/python/reference/pyspark.sql/functions.html)
+and [PySpark 4.0.0 SQL functions](https://spark.apache.org/docs/4.0.0/api/python/reference/pyspark.sql/functions.html).
 
 ## Implementation Candidates
 
@@ -43,9 +74,7 @@ per verified PySpark function and record the 3.5/4.0 presence explicitly.
 | Scope | Status | Structure work | Migration requirement |
 | --- | --- | --- | --- |
 | `randstr`, UTF-8 | candidate | Verify String/Binary semantics. | Preserve spelling or equivalent. |
-| Time-zone conversion | implemented | Typed `convert_timezone` requires a `timestamp_ntz` value and typed String zone expressions; `source_tz=None` uses the session zone. | Preserve PySpark's TimestampNTZ result and source/target zone semantics. |
-| Unix timestamp, UTC | candidate | Add remaining conversion helpers. | Match units, parsing, null behavior. |
-| Timestamp constructors and safe temporal | candidate | Resolve configuration-sensitive NTZ/LTZ constructors and remaining admitted `try_*` conversions. | Match target type, validation, and nullable-failure behavior. |
+| Temporal API additions | candidate / design-gated | Per-function contracts and target presence are recorded in [Newly Reconciled Temporal Functions](#newly-reconciled-temporal-functions); no implementation is assumed from family-level prose. | Use each row's explicit Structure equivalent or native-PySpark remedy. |
 | UTF-8 validation | target-gated | PySpark 4.0-only validation helpers are outside the default intersection baseline. | Use native PySpark or add a versioned UTF-8 profile. |
 | Current-time | implemented | Typed query-clock calls preserve six spellings and same-query equality metadata. | Use native PySpark for unmodeled timestamp variants. |
 | AES-GCM | implemented | Typed GCM calls, symbolic keys, and nonce-risk warning. | Use native PySpark for excluded AES forms. |

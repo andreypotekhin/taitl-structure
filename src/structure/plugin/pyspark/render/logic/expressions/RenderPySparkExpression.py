@@ -16,6 +16,7 @@ from structure.plugin.pyspark.dsl.types import (
     DoubleType,
     FloatType,
     IntegerType,
+    IntervalType,
     LongType,
     MapType,
     SketchType,
@@ -777,18 +778,28 @@ class RenderPySparkExpression:
             return f"F.{function}({args[0]})"
         if function == "sha2":
             return f"F.sha2({args[0]}, {expression.data['bits']})"
-        if function == "date_add":
+        if function in {"date_add", "dateadd"}:
             days = expression.data.get("days", args[1] if len(args) == 2 else None)
-            return f"F.date_add({args[0]}, {days})"
+            return f"F.{function}({args[0]}, {days})"
         if function == "make_date":
             return f"F.make_date({', '.join(args)})"
+        if function in {"make_timestamp", "make_timestamp_ltz", "make_timestamp_ntz"}:
+            return f"F.{function}({', '.join(args)})"
+        if function in {"make_interval", "make_ym_interval", "make_dt_interval"}:
+            return f"F.{function}({', '.join(args)})"
+        if function == "interval":
+            assert isinstance(expression.type, IntervalType)
+            kind = expression.type.kind
+            builder = "make_interval" if kind == "calendar" else "make_ym_interval" if kind == "year_month" else "make_dt_interval"
+            source = f"F.{builder}({', '.join(args)})"
+            return source if kind == "calendar" else f"{source}.cast({expression.type.sql!r})"
         if function == "date_sub":
             return f"F.date_sub({args[0]}, {expression.data['days']})"
         if function == "add_months":
             months = expression.data.get("months", args[1] if len(args) == 2 else None)
             return f"F.add_months({args[0]}, {months})"
-        if function == "datediff":
-            return f"F.datediff({args[0]}, {args[1]})"
+        if function in {"datediff", "date_diff"}:
+            return f"F.{function}({args[0]}, {args[1]})"
         if function == "months_between":
             return f"F.months_between({args[0]}, {args[1]}, roundOff={expression.data['round_off']})"
         if function == "date_trunc":
@@ -797,7 +808,7 @@ class RenderPySparkExpression:
             return f"F.trunc({args[0]}, {expression.data['unit']!r})"
         if function == "next_day":
             return f"F.next_day({args[0]}, {expression.data['day_of_week']!r})"
-        if function in {"year", "month", "dayofmonth", "dayofweek", "weekday", "dayofyear", "hour", "minute", "quarter", "second", "weekofyear"}:
+        if function in {"year", "month", "day", "dayofmonth", "dayofweek", "weekday", "dayofyear", "hour", "minute", "quarter", "second", "weekofyear"}:
             return f"F.{function}({args[0]})"
         if function == "last_day":
             return f"F.last_day({args[0]})"
@@ -808,17 +819,21 @@ class RenderPySparkExpression:
         if function == "from_unixtime":
             return f"F.from_unixtime({args[0]}, {expression.data['format']!r})"
         if function == "unix_timestamp":
+            if len(args) == 2:
+                return f"F.call_function('unix_timestamp', {', '.join(args)})"
             format_literal = expression.data["format"]
             if args:
                 return f"F.unix_timestamp({args[0]}, {format_literal!r})"
             return f"F.unix_timestamp(format={format_literal!r})"
+        if function in {"to_unix_timestamp", "timestamp_seconds", "timestamp_millis", "timestamp_micros", "unix_seconds", "unix_millis", "unix_micros"}:
+            return f"F.{function}({', '.join(args)})"
         if function in {"to_utc_timestamp", "from_utc_timestamp"}:
             return f"F.{function}({args[0]}, {expression.data['timezone']!r})"
         if function == "convert_timezone":
             if expression.data["source_tz_default"]:
                 return f"F.convert_timezone(None, {args[0]}, {args[1]})"
             return f"F.convert_timezone({args[0]}, {args[1]}, {args[2]})"
-        if function in {"date_part", "datepart"}:
+        if function in {"date_part", "datepart", "extract"}:
             return f"F.{function}(F.lit({expression.data['field']!r}), {args[0]})"
         if function == "mask":
             chars = cast(tuple[str | None, ...], expression.data["chars"])
@@ -827,9 +842,11 @@ class RenderPySparkExpression:
             return f"F.mask({args[0]}, {', '.join(repr(character) for character in chars)})"
         if function == "overlay":
             return f"F.overlay({', '.join(args)})"
-        if function == "to_timestamp_ntz":
-            return f"F.to_timestamp_ntz({', '.join(args)})"
+        if function in {"to_timestamp_ntz", "to_timestamp_ltz", "try_to_timestamp"}:
+            return f"F.{function}({', '.join(args)})"
         if function in {"to_date", "to_timestamp"}:
+            if len(args) == 2:
+                return f"F.call_function('to_timestamp', {', '.join(args)})"
             return (
                 f"F.{function}({args[0]}, {expression.data['format']!r})"
                 if "format" in expression.data
@@ -936,6 +953,11 @@ class RenderPySparkExpression:
             return "T.TimestampType()"
         if isinstance(type, TimestampNTZType):
             return "T.TimestampNTZType()"
+        if isinstance(type, IntervalType):
+            if type.kind == "calendar":
+                return "T.CalendarIntervalType()"
+            name = "YearMonthIntervalType" if type.kind == "year_month" else "DayTimeIntervalType"
+            return f"T.{name}({type.start_field}, {type.end_field})"
         if isinstance(type, DecimalType):
             return f"T.DecimalType({type.precision}, {type.scale})"
         if isinstance(type, ArrayType):
@@ -985,6 +1007,8 @@ class RenderPySparkExpression:
             return "TIMESTAMP"
         if isinstance(type, TimestampNTZType):
             return "TIMESTAMP_NTZ"
+        if isinstance(type, IntervalType):
+            return type.sql.upper()
         if isinstance(type, DecimalType):
             return f"DECIMAL({type.precision},{type.scale})"
         if isinstance(type, ArrayType):

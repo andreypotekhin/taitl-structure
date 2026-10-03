@@ -11,6 +11,7 @@ from structure.plugin.pyspark.dsl.types import (
     FloatType,
     GeometryType,
     IntegerType,
+    IntervalType,
     LongType,
     MapType,
     SketchType,
@@ -59,6 +60,14 @@ class MaterializePySparkSchema:
             return spark_types.TimestampType()
         if isinstance(type, TimestampNTZType):
             return spark_types.TimestampNTZType()
+        if isinstance(type, IntervalType):
+            if type.kind == "calendar":
+                calendar = getattr(spark_types, "CalendarIntervalType", None)
+                if calendar is None:
+                    raise TypeError("CalendarIntervalType is unavailable on this PySpark target; use an expression-only calendar interval on Spark 3.5.")
+                return calendar()
+            cls = spark_types.YearMonthIntervalType if type.kind == "year_month" else spark_types.DayTimeIntervalType
+            return cls(type.start_field, type.end_field)
         if isinstance(type, VariantType):
             return spark_types.VariantType()
         if isinstance(type, GeometryType):

@@ -42,6 +42,7 @@ from structure.plugin.api.v1 import (
     StepInputPlan,
     TransformMemberOrigin,
 )
+from structure.plugin.api.v1.model.CompilationSettings import compilation_settings
 
 SourceDeclaration = InputDeclaration | LaneDeclaration | OutputDeclaration | BindingSelector
 WriteDeclaration = LaneDeclaration | OutputDeclaration | BindingSelector
@@ -110,7 +111,8 @@ class CompileTransform:
         try:
             assigned_token = _assigned_outputs.set(set())
             try:
-                return self._compile(transform_class, config=resolved)
+                with compilation_settings(resolved.spark_sql):
+                    return self._compile(transform_class, config=resolved)
             finally:
                 _assigned_outputs.reset(assigned_token)
         finally:

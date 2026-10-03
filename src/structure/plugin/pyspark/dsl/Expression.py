@@ -13,6 +13,7 @@ import builtins
 from dataclasses import dataclass
 from typing import Any, Mapping, cast
 
+from structure.plugin.api.v1.model.CompilationSettings import current_compilation_settings
 from structure.plugin.pyspark.dsl.types import (
     ArrayType,
     BooleanType,
@@ -21,6 +22,7 @@ from structure.plugin.pyspark.dsl.types import (
     DoubleType,
     FloatType,
     IntegerType,
+    IntervalType,
     LongType,
     MapType,
     SketchType,
@@ -408,6 +410,8 @@ class Expression:
         return self._arithmetic("mod", other, reverse=True)
 
     def __neg__(self) -> "Expression":
+        if isinstance(self.type, IntervalType):
+            return Expression(kind="neg", type=self.type, nullable=self.nullable, args=(self,))
         self._arithmetic_type("neg", self)
         return Expression(kind="neg", type=self.type, nullable=self.nullable, args=(self,))
 
@@ -549,7 +553,7 @@ class Expression:
         from structure.plugin.pyspark.dsl.expressions import literal
 
         other_expression = literal(other)
-        type = self._arithmetic_type(kind, other_expression)
+        type = self._arithmetic_type(kind, other_expression, reverse=reverse)
         arguments = (other_expression, self) if reverse else (self, other_expression)
         return Expression(kind=kind, type=type, nullable=self.nullable or other_expression.nullable, args=arguments)
 
@@ -575,8 +579,12 @@ class Expression:
         if not all(isinstance(operand.type, (IntegerType, LongType)) for operand in operands):
             raise TypeError("Bitwise operations require integral Structure expressions")
 
-    def _arithmetic_type(self, kind: str, other: "Expression") -> StructureType:
+    def _arithmetic_type(self, kind: str, other: "Expression", *, reverse: bool = False) -> StructureType:
         types = (self.type, other.type)
+        if any(isinstance(type, IntervalType) for type in types) or (
+            kind == "sub" and all(isinstance(type, (DateType, TimestampType, TimestampNTZType)) for type in types)
+        ):
+            return self._interval_arithmetic_type(kind, other, reverse=reverse)
         if not all(isinstance(type, (IntegerType, LongType, FloatType, DoubleType, DecimalType)) for type in types):
             raise TypeError("Arithmetic requires numeric Structure expressions")
         numeric = cast(tuple[StructureType, StructureType], types)
@@ -595,6 +603,33 @@ class Expression:
         if any(isinstance(type, LongType) for type in numeric):
             return LongType()
         return IntegerType()
+
+    def _interval_arithmetic_type(self, kind: str, other: "Expression", *, reverse: bool) -> StructureType:
+        left, right = (other.type, self.type) if reverse else (self.type, other.type)
+        numeric = (IntegerType, LongType, FloatType, DoubleType, DecimalType)
+        temporal = (DateType, TimestampType, TimestampNTZType)
+        if kind == "sub" and isinstance(left, temporal) and type(left) is type(right):
+            legacy = current_compilation_settings().get("spark.sql.legacy.interval.enabled", False)
+            return IntervalType("calendar", "calendar") if legacy else IntervalType("day_time", "day_to_second")
+        if kind in {"add", "sub"} and isinstance(left, IntervalType) and isinstance(right, IntervalType):
+            if left.kind != right.kind:
+                raise TypeError("Interval arithmetic requires compatible interval families")
+            return IntervalType(left.kind, left.qualifier if left == right else
+                                "year_to_month" if left.kind == "year_month" else
+                                "day_to_second" if left.kind == "day_time" else "calendar")
+        if kind in {"mul", "div"} and isinstance(left, IntervalType) and isinstance(right, numeric):
+            return left
+        if kind == "mul" and isinstance(right, IntervalType) and isinstance(left, numeric):
+            return right
+        if kind in {"add", "sub"} and isinstance(left, temporal) and isinstance(right, IntervalType):
+            if isinstance(left, DateType):
+                return DateType() if right.kind == "year_month" else TimestampType()
+            return left
+        if kind == "add" and isinstance(left, IntervalType) and isinstance(right, temporal):
+            if isinstance(right, DateType):
+                return DateType() if left.kind == "year_month" else TimestampType()
+            return right
+        raise TypeError("Unsupported interval arithmetic; combine compatible intervals, scale by a number, or add to a date/timestamp")
 
     def _decimal_arithmetic_type(self, kind: str, operands: tuple[StructureType, StructureType]) -> DecimalType:
         left, right = (self._decimal_operand(type) for type in operands)

@@ -36,6 +36,7 @@ from structure.plugin.pyspark.dsl.types import (
     TimestampNTZ,
     Variant,
 )
+from structure.plugin.pyspark.dsl.types import interval as interval_type
 from structure.plugin.pyspark.dsl.validation.ValidatePySparkSchemas import ValidatePySparkSchemas
 
 _validate = ValidatePySparkSchemas().validate
@@ -102,6 +103,11 @@ def timestamp(**options: object) -> Any:
 def timestamp_ntz(**options: object) -> Any:
     """Declare a Spark ``timestamp_ntz`` wall-clock field without time zone."""
     return _declare(TimestampNTZ(), options)
+
+
+def interval(*, type: str | None = None, unit: str | None = None, **options: object) -> Any:
+    """Declare a Schema field with an exact Spark interval qualifier."""
+    return _declare(interval_type(type=type, unit=unit), options)
 
 
 def variant(**options: object) -> Any:
@@ -278,5 +284,6 @@ __all__ = [
     "struct",
     "timestamp",
     "timestamp_ntz",
+    "interval",
     "variant",
 ]

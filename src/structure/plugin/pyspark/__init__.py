@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING, Any, cast, overload
 from structure.dsl import FieldDeclaration
 from structure.plugin.pyspark.dsl import field as field
 from structure.plugin.pyspark.dsl import types as types
+from structure.plugin.pyspark.dsl.Interval import Interval
+from structure.plugin.pyspark.dsl.Temporal import Temporal
 from structure.plugin.pyspark.dsl.generators import explode_array as _explode_array
 from structure.plugin.pyspark.dsl.generators import explode_map as _explode_map
 from structure.plugin.pyspark.dsl.generators import explode_outer_array as _explode_outer_array
@@ -169,7 +171,7 @@ sample sec select_first_qualified signum sin sinh slice sha1 sha2 second rand ra
 rolling_min rolling_sum scan subtract sum sum_distinct stddev sqrt size sequence session_window skewness split translate substring temporal_one next_day
 to_binary to_csv to_decimal to_date to_json to_timestamp from_unixtime unix_timestamp to_utc_timestamp from_utc_timestamp date_part datepart TimeWindow trim trunc try_element_at try_to_binary unbase64 union_all union_by_name upper unbounded_following unbounded_preceding hex unhex cardinality weekofyear
 variance var_pop var_samp stddev_pop stddev_samp when width_bucket year xxhash64 zeroifnull where watermark window window_avg window_bool_and window_bool_or rpad repeat replace right sign tan tanh json_tuple stack
-window_time current_date curdate current_timestamp now localtimestamp current_timezone aes_encrypt aes_decrypt try_aes_decrypt hll_sketch_agg hll_sketch_estimate hll_union bitmap_construct_agg bitmap_or_agg bitmap_bit_position bitmap_bucket_number bitmap_count url_encode url_decode try_url_decode convert_timezone make_date to_timestamp_ntz
+window_time current_date curdate current_timestamp now localtimestamp current_timezone aes_encrypt aes_decrypt try_aes_decrypt hll_sketch_agg hll_sketch_estimate hll_union bitmap_construct_agg bitmap_or_agg bitmap_bit_position bitmap_bucket_number bitmap_count url_encode url_decode try_url_decode convert_timezone make_date make_timestamp make_timestamp_ltz make_timestamp_ntz to_timestamp_ntz to_timestamp_ltz try_to_timestamp to_unix_timestamp timestamp_seconds timestamp_millis timestamp_micros unix_seconds unix_millis unix_micros interval make_interval make_ym_interval make_dt_interval extract date_diff dateadd day Temporal Interval
 window_collect_list window_collect_set window_count window_count_distinct window_max window_min window_sum
 window_stddev window_variance is_valid_variant is_variant_null octet_length parse_json schema_of_csv schema_of_json schema_of_variant schema_of_variant_agg substring_index
 to_variant_object try_parse_json try_variant_get variant_get
@@ -217,6 +219,8 @@ __all__ = [  # noqa: F405
     "OverlapPolicy",
     "StreamingOutputMode",
     "TiePolicy",
+    "Temporal",
+    "Interval",
     "abs",
     "acos",
     "acosh",
@@ -605,6 +609,26 @@ __all__ = [  # noqa: F405
     "url_encode",
     "url_decode",
     "try_url_decode",
+    "date_diff",
+    "dateadd",
+    "day",
+    "make_timestamp_ltz",
+    "make_timestamp_ntz",
+    "make_timestamp",
+    "try_to_timestamp",
+    "interval",
+    "make_interval",
+    "make_ym_interval",
+    "make_dt_interval",
+    "extract",
+    "to_timestamp_ltz",
+    "to_unix_timestamp",
+    "timestamp_seconds",
+    "timestamp_millis",
+    "timestamp_micros",
+    "unix_seconds",
+    "unix_millis",
+    "unix_micros",
     "is_valid_variant",
     "is_variant_null",
     "parse_json",

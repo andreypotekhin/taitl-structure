@@ -169,10 +169,12 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
 | `sha1(...)` | `sha1` | `sha1(o.name)` |
 | `sha2(...)` | `sha2` | `sha2(o.name, bits=256)` |
 | `date_add(...)` | `date_add` | `date_add(o.day, days=1)` |
+| `dateadd(...)` | `dateadd` | `dateadd(o.day, days=1)` |
 | `date_sub(...)` | `date_sub` | `date_sub(o.day, days=1)` |
 | `make_date(...)` | `make_date` | `make_date(o.year, o.month, o.day)` |
 | `add_months(...)` | `add_months` | `add_months(o.day, months=1)` |
 | `datediff(...)` | `datediff` | `datediff(o.end_day, o.start_day)` |
+| `date_diff(...)` | `date_diff` | `date_diff(o.end_day, o.start_day)` |
 | `months_between(...)` | `months_between` | `months_between(o.end_day, o.start_day, round_off=True)` |
 | `date_trunc(...)` | `date_trunc` | `date_trunc(o.at, unit="month")` |
 | `trunc(...)` | `trunc` | `trunc(o.day, unit="month")` |
@@ -180,11 +182,18 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
 | `date_from_unix_date(...)` | `date_from_unix_date` | `date_from_unix_date(o.epoch_days)` |
 | `weekday(...)` | `weekday` | `weekday(o.day)` |
 | `year(...)`, `month(...)`, `dayofmonth(...)` | Calendar extraction | `year(o.day)` |
+| `day(...)` | `day` | `day(o.day)` |
 | `hour(...)`, `minute(...)`, `second(...)` | Time extraction | `hour(o.at)` |
 | `next_day(...)` | `next_day` | `next_day(o.day, day_of_week="Mon")` |
 | `to_date(...)` | `to_date` | `to_date(o.raw_day, format="yyyy-MM-dd")` |
 | `to_timestamp(...)` | `to_timestamp` | `to_timestamp(o.raw_at, format="yyyy-MM-dd HH:mm:ss")` |
+| `try_to_timestamp(...)` | `try_to_timestamp` | `try_to_timestamp(o.raw_at, format=o.pattern)` |
+| `to_timestamp_ltz(...)` | `to_timestamp_ltz` | `to_timestamp_ltz(o.raw_at, format=o.pattern)` |
 | `to_timestamp_ntz(...)` | `to_timestamp_ntz` | `to_timestamp_ntz(o.raw_at, format=o.pattern)` |
+| `make_timestamp(...)`, `make_timestamp_ltz(...)`, `make_timestamp_ntz(...)` | Component construction | `make_timestamp_ltz(o.year, o.month, o.day, o.hour, o.minute, o.second, timezone=o.zone)` |
+| `timestamp_seconds(...)`, `timestamp_millis(...)`, `timestamp_micros(...)` | Epoch to LTZ | `timestamp_micros(o.epoch_micros)` |
+| `unix_seconds(...)`, `unix_millis(...)`, `unix_micros(...)` | LTZ to epoch | `unix_micros(o.at)` |
+| `interval(...)`, `make_ym_interval(...)`, `make_dt_interval(...)`, `make_interval(...)` | Typed interval construction | `interval(type=Interval.YEAR_TO_MONTH, years=o.years, months=o.months)` |
 | `abs(...)` | `abs` | `abs(o.total)` |
 | `bit_count(...)` | `bit_count` | `bit_count(o.flags)` |
 | `bit_get(...)`, `getbit(...)` | `bit_get`, `getbit` | `bit_get(o.flags, o.position)` |
@@ -238,11 +247,13 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
 | `bitmap_count(...)`, `bitmap_bit_position(...)`, `bitmap_bucket_number(...)` | Bitmap equivalents | `bitmap_count(o.bitmap)` |
 | `from_unixtime(...)` | `from_unixtime` | `from_unixtime(o.epoch_seconds, format="yyyy-MM-dd")` |
 | `unix_timestamp(...)` | `unix_timestamp` | `unix_timestamp(o.raw_at, format="yyyy-MM-dd HH:mm:ss")` |
+| `to_unix_timestamp(...)` | `to_unix_timestamp` | `to_unix_timestamp(o.raw_at, format=o.pattern)` |
 | `to_utc_timestamp(...)` | `to_utc_timestamp` | `to_utc_timestamp(o.raw_at, timezone="UTC")` |
 | `from_utc_timestamp(...)` | `from_utc_timestamp` | `from_utc_timestamp(o.raw_at, timezone="America/Los_Angeles")` |
 | `convert_timezone(...)` | `convert_timezone` | `convert_timezone(o.source_zone, o.target_zone, o.local_time)` |
 | `date_part(...)` | `date_part` | `date_part("month", o.raw_at)` |
 | `datepart(...)` | `datepart` | `datepart("year", o.raw_at)` |
+| `extract(...)` | `extract` | `extract(Temporal.DAY_OF_YEAR, o.day)` |
 | `from_json(...)`, `to_json(...)` | `from_json`, `to_json` | `from_json(o.payload_json, as_=Payload)` |
 | `from_csv(...)`, `to_csv(...)` | `from_csv`, `to_csv` | `from_csv(o.payload_csv, as_=Payload)` |
 | `get_json_object(...)` | `get_json_object` | `get_json_object(o.payload_json, "$.customer.id")` |
@@ -339,21 +350,33 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
   nullable because conversion failures become null.
 - `from_unixtime(...)` accepts a numeric epoch-seconds expression and a non-empty literal format, returning a
   nullable String formatted in Spark's session time zone.
-- `unix_timestamp(...)` accepts String, Date, or Timestamp expressions and a non-empty literal format, returning
+- `unix_timestamp(...)` accepts String, Date, or LTZ Timestamp expressions and a literal or typed String format, returning
   nullable Long epoch seconds. Omitting the value uses Spark's query-time current timestamp and returns a non-nullable
-  Long.
+  Long; its no-input format remains literal-only. `to_unix_timestamp(...)` requires an input. A format on Date/LTZ
+  input is ignored by Spark and produces `PYSPARK-W2705`.
 - `to_utc_timestamp(...)` and `from_utc_timestamp(...)` accept String or Timestamp expressions and a non-empty
   timezone literal, returning nullable Timestamp values.
 - `convert_timezone(source_tz, target_tz, source_ts)` accepts String expressions for both time zones and a
   `timestamp_ntz()` source, returning nullable TimestampNTZ. Pass `None` for `source_tz` to use Spark's session time
   zone, matching PySpark. LTZ Timestamp and NTZ values remain distinct; use an explicit conversion when changing
   between instants and wall-clock values.
-- `to_timestamp_ntz(...)` accepts String source and optional String format expressions, returning nullable
-  TimestampNTZ. Malformed text returns null regardless of ANSI mode. The format may be row-dependent, matching
-  PySpark's `ColumnOrName` format argument.
-- `date_part(...)` and `datepart(...)` accept a supported field literal and a Date or Timestamp expression. They
-  return nullable Integer parts, or nullable `Decimal(8,6)` for seconds; interval sources remain outside the typed
-  Structure contract.
+- Generic `to_timestamp(...)`, `try_to_timestamp(...)`, and `make_timestamp(...)` follow the resolved
+  `spark.sql.timestampType` (`TIMESTAMP_LTZ` by default); explicit `_ltz` and `_ntz` helpers have fixed result types.
+  Parsers accept typed String formats, including row-dependent patterns. `try_to_timestamp(...)` returns null on
+  invalid text; the other parsers follow Spark's ANSI policy. A format on typed Date/LTZ input is ignored and emits
+  `PYSPARK-W2705`. An NTZ `make_timestamp(...)` with `timezone=` emits `PYSPARK-W2706`.
+- `timestamp_seconds/millis/micros` always return LTZ; the inverse `unix_seconds/millis/micros` accept LTZ and return
+  Long. Millisecond/microsecond inputs must be integral; seconds may have a fractional part. Negative epochs use
+  Spark's rounding and overflow rules.
+- `date_part(...)`, `datepart(...)`, and `extract(...)` accept a compiler-visible String field (ordinary string,
+  `Temporal` constant, or typed String literal) and a Date, Timestamp, or interval source. `"dayofyear"` is accepted
+  as an alias of `Temporal.DAY_OF_YEAR` (`"doy"`). Integral fields return Integer; seconds return `Decimal(8,6)`.
+- `interval(...)` requires exactly one of `type=` (compound qualifier) or `unit=` (single field), and exactly one
+  named component per selected field. `types.interval(...)` declares matching Schema types. Spark's
+  `make_ym_interval`, `make_dt_interval`, and mixed `make_interval` keep their public names. Calendar intervals are
+  expression-only on PySpark 3.5; PySpark 4.0 may materialize them in Schema, but Python Row conversion can fail.
+  Date/timestamp subtraction returns DayTimeInterval or CalendarInterval according to
+  `spark.sql.legacy.interval.enabled`.
 - `make_date(...)` accepts Integer/Long year, month, and day expressions and returns a nullable Date. Invalid
   components follow Spark's `spark.sql.ansi.enabled` behavior: NULL when ANSI mode is disabled, or a runtime error when
   it is enabled.

@@ -44,6 +44,8 @@ class ResolveStructureConfig:
         "fail_on_diff",
         "spark.sql.ansi.enabled",
         "spark.sql.storeAssignmentPolicy",
+        "spark.sql.timestampType",
+        "spark.sql.legacy.interval.enabled",
         "plugin",
     }
 

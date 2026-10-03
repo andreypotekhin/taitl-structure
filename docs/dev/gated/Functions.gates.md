@@ -27,7 +27,7 @@ the gate register searchable without duplicating the full PySpark inventory.
 | Sketch and bitmap aggregates | `implemented` | Baseline HLL/Bitmap opaque types and merge consumers are implemented; KLL/Theta remain profile-gated and evidence-bound. |
 | `stack` | `implemented` | Fixed row multiplication and trailing-NULL padding use an explicit result Schema; ordinary and Connect runtime evidence remains a release check. |
 | Generic generators and writer partition transforms | `caller-owned-guided` | No compiler-visible schema/cardinality or output-layout contract. |
-| Relation distribution | `partial` | `coalesce(partitions=...)` and typed hash repartitioning are implemented; range repartitioning remains batch-only. Scalar `coalesce(...)` requires at least two values. |
+| Relation distribution | `implemented` | `coalesce(partitions=...)`, typed hash repartitioning, and batch-only range repartitioning are implemented. Writer partition transforms remain caller-owned; scalar `coalesce(...)` requires at least two values. |
 | Variant mutation helpers | `target-gated` | Released target profile plus classic, Connect, generated/online, and streaming evidence. |
 | URL encode/decode | `partial` | `url_encode` and strict `url_decode` are typed; `try_url_decode` is a 4.0 target gate. |
 | XML helpers | `design-gated` | Declared schema, options, malformed-input behavior, and parse/serialize evidence. |

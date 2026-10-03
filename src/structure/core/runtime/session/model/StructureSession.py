@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from dataclasses import replace
 from pathlib import Path
 from typing import Literal
 
@@ -56,6 +57,7 @@ class StructureSession:
 
         resolved = config or StructureConfig.resolve(project_root=project_root, overrides=supplied_overrides)
         self.runtime = runtime if runtime is not None else spark
+        resolved = self._resolve_runtime_temporal_settings(resolved)
         self.spark = self.runtime
         self.ctx = ctx
         self.config = resolved
@@ -167,6 +169,7 @@ class StructureSession:
         return self.compile(invocation)
 
     def compile(self, transform_or_pipeline: type[Transform] | Transform | TransformPipeline | StructureSources):
+        self._check_runtime_temporal_settings()
         if isinstance(transform_or_pipeline, StructureSources):
             compiled = Artifacts().sources()(
                 transform_or_pipeline,
@@ -183,6 +186,29 @@ class StructureSession:
             options=self.compiler_options,
             schema_types=self.schema_types,
         )
+
+    def _resolve_runtime_temporal_settings(self, config: StructureConfig) -> StructureConfig:
+        conf = getattr(self.runtime, "conf", None)
+        if conf is None:
+            return config
+        values = dict(config.spark_sql)
+        for name in ("spark.sql.timestampType", "spark.sql.legacy.interval.enabled"):
+            raw = conf.get(name, str(values[name]))
+            actual = raw.upper() if name.endswith("timestampType") else str(raw).lower() == "true"
+            if name.endswith("timestampType") and actual not in {"TIMESTAMP_LTZ", "TIMESTAMP_NTZ"}:
+                raise ValueError(f"Unsupported Spark {name}={raw!r}; use TIMESTAMP_LTZ or TIMESTAMP_NTZ.")
+            if config.source_map.get(name) != "default" and values[name] != actual:
+                raise ValueError(f"Spark {name}={raw!r} conflicts with Structure configuration {values[name]!r}.")
+            values[name] = actual
+        return replace(config, spark_sql=values)
+
+    def _check_runtime_temporal_settings(self) -> None:
+        observed = self._resolve_runtime_temporal_settings(self.config)
+        for name in ("spark.sql.timestampType", "spark.sql.legacy.interval.enabled"):
+            if observed.spark_sql[name] != self.config.spark_sql[name]:
+                raise ValueError(
+                    f"Spark {name} changed after StructureSession creation. Create a new session and recompile."
+                )
 
     def load(self, artifact: CompiledTransform | CompiledSources) -> None:
         if isinstance(artifact, CompiledSources):

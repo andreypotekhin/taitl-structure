@@ -71,6 +71,7 @@ class CompilePluginTransform:
             "generated_code_options": resolved.generated_code_options,
             "schema_types": schema_types,
             "materialize_schemas": materialize_schemas,
+            "spark_sql": resolved.spark_sql,
         }
         plugin_options = resolved.plugin_options.get(target, {})
         plugin = (registry or self._registry or Plugin.registry()).select(target)
@@ -141,6 +142,7 @@ class CompilePluginTransform:
                 "allow_stage_outputs": options.allow_stage_outputs,
                 "prune_unused_steps": options.prune_unused_steps,
                 "generated_code_options": options.generated_code_options,
+                **options.spark_sql,
             },
         )
         analysis = self._analyze(

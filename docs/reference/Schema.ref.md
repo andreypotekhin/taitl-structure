@@ -161,11 +161,16 @@ struct(Address) == struct(Address)
 | `date()` | `T.DateType()` |
 | `timestamp()` | `T.TimestampType()` |
 | `timestamp_ntz()` | `T.TimestampNTZType()` |
+| `field.interval(type=Interval.YEAR_TO_MONTH)` | `T.YearMonthIntervalType(0, 1)` |
+| `field.interval(unit=Interval.DAY)` | `T.DayTimeIntervalType(0, 0)` |
 | `binary()` | `T.BinaryType()` |
 
 The choice is part of the contract. Structure does not infer a field type from live data.
 `timestamp()` is Spark's instant-based type, while `timestamp_ntz()` is a wall-clock type; they are distinct and are
 not compared or assigned interchangeably. Python `datetime.datetime` annotations continue to infer `timestamp()`.
+Qualified intervals use `field.interval(...)` in a Schema and `types.interval(...)` where a standalone Structure type
+is needed. Both require exactly one of `type=` or `unit=`. Calendar interval fields require PySpark 4.0; on 3.5,
+calendar intervals remain expression-only. PySpark may reject Python Row conversion for CalendarIntervalType.
 
 ### Decimal
 

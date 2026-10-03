@@ -34,6 +34,8 @@ from structure.plugin.pyspark.dsl.types.TimestampType import TimestampType
 from structure.plugin.pyspark.dsl.types.Timestamp import Timestamp
 from structure.plugin.pyspark.dsl.types.TimestampNTZType import TimestampNTZType
 from structure.plugin.pyspark.dsl.types.TimestampNTZ import TimestampNTZ
+from structure.plugin.pyspark.dsl.types.IntervalType import IntervalType
+from structure.plugin.pyspark.dsl.Interval import Interval
 from structure.plugin.pyspark.dsl.types.VariantType import VariantType
 from structure.plugin.pyspark.dsl.types.Variant import Variant
 from structure.plugin.pyspark.dsl.types.SketchType import BitmapType, HllSketchType, KllSketchType, SketchType, ThetaSketchType
@@ -55,6 +57,20 @@ def boolean() -> StructureType: return Boolean()
 def date() -> StructureType: return Date()
 def timestamp() -> StructureType: return Timestamp()
 def timestamp_ntz() -> StructureType: return TimestampNTZ()
+def interval(*, type: str | None = None, unit: str | None = None) -> IntervalType:
+    """Declare one exact Spark interval qualifier or unit."""
+    if (type is None) == (unit is None):
+        raise TypeError("types.interval(...) requires exactly one of type= or unit=")
+    choice = type if type is not None else unit
+    assert choice is not None
+    if choice not in {item.value for item in Interval}:
+        raise ValueError(f"Unsupported interval qualifier or unit: {choice!r}")
+    if type is not None and choice not in {"year_to_month", "day_to_hour", "day_to_minute", "day_to_second", "hour_to_minute", "hour_to_second", "minute_to_second", "calendar"}:
+        raise ValueError("types.interval(...) type= requires a compound qualifier or calendar; use unit= for one field")
+    if unit is not None and choice == "calendar" or (unit is not None and "_to_" in choice):
+        raise ValueError("types.interval(...) unit= requires one interval field")
+    kind = "calendar" if choice == "calendar" else "year_month" if choice in {"year", "month", "year_to_month"} else "day_time"
+    return IntervalType(kind, choice)
 def variant() -> StructureType: return Variant()
 def hll_sketch(*, profile: str = "baseline", lg_config_k: int = 12) -> StructureType: return HllSketch(profile, lg_config_k)
 def bitmap(*, profile: str = "baseline") -> StructureType: return Bitmap(profile)
@@ -72,4 +88,5 @@ __all__ = [
     "DoubleType", "Float", "FloatType", "Integer", "IntegerType", "Long", "LongType", "Map", "MapType",
     "Geometry", "GeometryType", "ScalarType", "SketchType", "HllSketch", "HllSketchType", "Bitmap", "BitmapType", "KllSketch", "KllSketchType", "ThetaSketch", "ThetaSketchType", "String", "StringType", "Struct", "StructType", "StructureType", "Timestamp", "TimestampType", "TimestampNTZ", "TimestampNTZType", "Variant", "VariantType",
     "array", "binary", "boolean", "date", "decimal", "double", "float", "geometry", "hll_sketch", "bitmap", "kll_sketch", "theta_sketch", "integer", "long", "map", "string", "struct", "timestamp", "timestamp_ntz", "variant",
+    "interval", "IntervalType",
 ]

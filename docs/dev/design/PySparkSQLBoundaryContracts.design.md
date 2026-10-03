@@ -46,10 +46,32 @@ changes the Spark SQL ANSI setting.
 ## NTZ parsing
 
 `to_timestamp_ntz(value, format=None)` accepts typed String expressions for the input and optional datetime pattern.
-It has a stable TimestampNTZ result independent of `spark.sql.timestampType`; invalid text returns NULL even when ANSI
-mode is enabled. The optional pattern may vary per row, matching PySpark's typed `ColumnOrName` parameter. This is a
+It has a stable TimestampNTZ result independent of `spark.sql.timestampType`; invalid text follows Spark's ANSI
+policy, while `try_to_timestamp` is the nullable-on-invalid parser. The optional pattern may vary per row, matching
+PySpark's typed `ColumnOrName` parameter. This is a
 stateless row-local expression. The generic `to_timestamp` and `try_to_timestamp` result type remains separate because
 PySpark selects its timestamp family from session configuration.
+
+## Temporal and interval baseline
+
+`Temporal` and `Interval` are string-valued constants, not a closed input vocabulary. `Temporal.DAY_OF_YEAR` is
+`"doy"`; `"dayofyear"` remains an accepted migration alias. `extract`, `date_part`, and `datepart` accept a
+compiler-visible String literal or constant, never a row-dependent field name. They accept typed temporal and
+interval sources, returning Integer parts except Decimal(8,6) seconds.
+
+Generic `make_timestamp`, `to_timestamp`, and `try_to_timestamp` resolve `spark.sql.timestampType` before symbolic
+authoring. The setting and `spark.sql.legacy.interval.enabled` enter the compiler fingerprint; a live session reads
+them from Spark, and an explicit Structure override must match. Offline compilation defaults to LTZ and nonlegacy
+intervals. Explicit LTZ/NTZ constructors and parsers ignore the generic timestamp setting. `to_timestamp` and
+`unix_timestamp` accept typed String patterns; their no-input query-clock forms retain literal patterns. A pattern on
+already typed Date/LTZ inputs warns, as does a generic NTZ constructor given a time zone.
+
+`types.interval(...)` selects one exact qualifier via `type=` or `unit=`. `interval(...)` requires exactly the
+corresponding components and casts Spark's `make_ym_interval`/`make_dt_interval` result to that qualifier. The public
+Spark constructors remain available. YearMonth and DayTime qualifiers can appear in Schema. Mixed Calendar intervals
+remain expression-only on 3.5; 4.0 may declare them, subject to PySpark's Python Row conversion behavior. Arithmetic
+preserves interval families and types date/timestamp subtraction as DayTime or Calendar according to the legacy
+setting. Target-specific runtime evidence remains a release gate.
 
 ## AES-GCM equivalent
 

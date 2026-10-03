@@ -17,6 +17,8 @@ Below is an index for published diagnostic codes. For the full diagnostic contra
 | PYSPARK-W2702 | warning | PySpark query plan branch is reused many times | A costly query plan branch feeds several downstream operations. Add a checkpoint at the shared branch or reduce its consumers. |
 | PYSPARK-W2703 | warning | Repeated PySpark query plan validation is expensive | Several strict checks are attached to a large query plan. Keep checks at input/output boundaries or checkpoint before validating a reused branch. |
 | PYSPARK-W2704 | warning | PySpark output query plan is unusually large | An output depends on many operations without enough planning boundaries. Split the computation with a checkpoint or simplify the output path. |
+| PYSPARK-W2705 | warning | Timestamp pattern has no effect on typed temporal input | Remove the pattern, or parse a String expression. |
+| PYSPARK-W2706 | warning | Time zone has no effect on NTZ timestamp construction | Remove the zone, or use `make_timestamp_ltz(...)`. |
 | SCHEMA-E0301 | error | Nullable expression assigned to non-nullable field | Guard the value or provide a non-null default. |
 | SCHEMA-E0302 | error | Explicit conversion required | Use an explicit conversion helper such as `to_decimal(...)`. |
 | SCHEMA-E0303 | error | Incompatible output field type | Use a compatible expression type or explicit conversion. |
@@ -100,6 +102,16 @@ duplicate checks, or checkpoint before validating a reused branch.
 
 See the [driver-heap gotcha](troubleshooting/memory/spark_driver_heap_oom.gotcha.md). Add a planning boundary before
 the expensive output path or split the output computation into smaller stages.
+
+### PYSPARK-W2705
+
+Spark ignores a parsing pattern when its input is already a Date or LTZ Timestamp. Remove `format=`, or provide a
+String expression containing the text to parse.
+
+### PYSPARK-W2706
+
+`make_timestamp(...)` with `spark.sql.timestampType=TIMESTAMP_NTZ` builds a wall-clock timestamp; the `timezone=`
+argument does not shift that value. Remove it, or use `make_timestamp_ltz(...)` when you need an instant.
 
 ### SCHEMA-E0301
 See [Diagnostics.md](background/Diagnostics.back.md#schema-e0301).

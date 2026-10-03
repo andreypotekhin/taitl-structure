@@ -6,6 +6,7 @@ import sys
 import time
 from collections.abc import Iterator, Mapping, Sequence
 from contextlib import contextmanager
+from dataclasses import replace as dataclass_replace
 from functools import wraps
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -213,12 +214,15 @@ def render_generated_project(
     generated_code_options: tuple[str, ...] = (),
     allow_stage_outputs: bool = True,
     artifacts: CompiledArtifactPool | None = None,
+    spark_sql: Mapping[str, object] | None = None,
 ) -> dict[str, str]:
     options = _compiler_options(
         generated_package=generated_package,
         generated_code_options=generated_code_options,
         allow_stage_outputs=allow_stage_outputs,
     )
+    if spark_sql:
+        options = dataclass_replace(options, spark_sql={**options.spark_sql, **spark_sql})
     artifact = cast(
         CompiledTransform,
         (artifacts or CompiledArtifactPool()).get_or_compile(transform_type, options=options),

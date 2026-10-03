@@ -75,6 +75,8 @@ class StructureConfigBuilder:
             spark_sql={
                 "spark.sql.ansi.enabled": values["spark.sql.ansi.enabled"],
                 "spark.sql.storeAssignmentPolicy": values["spark.sql.storeAssignmentPolicy"],
+                "spark.sql.timestampType": values["spark.sql.timestampType"],
+                "spark.sql.legacy.interval.enabled": values["spark.sql.legacy.interval.enabled"],
             },
             plugin_options=plugins,
             source_map=dict(sources),

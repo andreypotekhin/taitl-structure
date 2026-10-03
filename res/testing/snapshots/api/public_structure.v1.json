@@ -88,13 +88,14 @@
         "allow_stage_outputs",
         "prune_unused_steps",
         "schema_types_key",
-        "plugin_options"
+        "plugin_options",
+        "spark_sql"
       ],
       "enum_members": [],
       "kind": "class",
       "module": "structure.core.compiler.artifacts.model.CompilerOptions",
       "qualname": "CompilerOptions",
-      "signature": "(project_root: 'Path', source_roots: 'tuple[Path, ...]', generated_dir: 'Path', generated_package: 'str', generated_code_options: 'tuple[str, ...]', generated_code_hard_wrap: 'int', target: 'str', traceability: 'str', validate_inputs: 'bool', input_validation_mode: 'str', validate_intermediate: 'bool', intermediate_validation_mode: 'str', validate_outputs: 'bool', output_validation_mode: 'str', strict_performance: 'bool', warn_on_udfs: 'bool', warn_on_lineage_growth: 'bool', disable: 'tuple[str, ...]', allow_stream_to_batch: 'bool', stream_to_batch_policy: 'str', allow_output_to_input: 'bool', allow_to_reassign_output: 'bool', allow_stage_outputs: 'bool', prune_unused_steps: 'bool', schema_types_key: 'str | None' = None, plugin_options: 'Mapping[str, Mapping[str, object]]' = <factory>) -> None"
+      "signature": "(project_root: 'Path', source_roots: 'tuple[Path, ...]', generated_dir: 'Path', generated_package: 'str', generated_code_options: 'tuple[str, ...]', generated_code_hard_wrap: 'int', target: 'str', traceability: 'str', validate_inputs: 'bool', input_validation_mode: 'str', validate_intermediate: 'bool', intermediate_validation_mode: 'str', validate_outputs: 'bool', output_validation_mode: 'str', strict_performance: 'bool', warn_on_udfs: 'bool', warn_on_lineage_growth: 'bool', disable: 'tuple[str, ...]', allow_stream_to_batch: 'bool', stream_to_batch_policy: 'str', allow_output_to_input: 'bool', allow_to_reassign_output: 'bool', allow_stage_outputs: 'bool', prune_unused_steps: 'bool', schema_types_key: 'str | None' = None, plugin_options: 'Mapping[str, Mapping[str, object]]' = <factory>, spark_sql: 'Mapping[str, object]' = <factory>) -> None"
     },
     "DiskStorage": {
       "dataclass_fields": [],

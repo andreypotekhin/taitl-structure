@@ -52,6 +52,9 @@ evidence.
 - `timestamp()` and `timestamp_ntz()` remain distinct. `convert_timezone(...)` takes an NTZ source and typed String
   zone expressions; see the [expression reference](../api/Expressions.api.md#sql-function-helpers) for its signature.
 - `to_timestamp_ntz(...)` also returns the distinct NTZ type and accepts a typed, row-dependent String format.
+- Generic timestamp helpers follow `spark.sql.timestampType`, while `_ltz` and `_ntz` helpers have fixed types.
+  `Temporal` and `Interval` are string constants for `extract(...)` and exact interval construction; see the
+  [expression API](../api/Expressions.api.md#sql-function-helpers) and [Schema API](../api/Schemas.api.md).
 - Transform source is compiler-visible. `@raw` remains the explicit boundary for caller-supplied PySpark behavior.
 - Expression truthiness, raw SQL strings, UDTFs, and arbitrary callback bodies are unsupported. Scalar
   `@special(type="udf")` remains an ordinary-PySpark row-local feature with its warning policy.

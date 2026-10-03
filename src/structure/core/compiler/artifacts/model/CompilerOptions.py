@@ -36,6 +36,7 @@ class CompilerOptions:
     prune_unused_steps: bool
     schema_types_key: str | None = None
     plugin_options: Mapping[str, Mapping[str, object]] = field(default_factory=lambda: MappingProxyType({}))
+    spark_sql: Mapping[str, object] = field(default_factory=lambda: MappingProxyType({}))
 
     @classmethod
     def resolve(
@@ -85,6 +86,7 @@ class CompilerOptions:
             allow_stage_outputs=config.allow_stage_outputs,
             prune_unused_steps=config.prune_unused_steps,
             plugin_options=config.plugin_options,
+            spark_sql=config.spark_sql,
             schema_types_key=cls._schema_types_key(schema_types),
         )
 
@@ -112,6 +114,7 @@ class CompilerOptions:
             self.allow_stage_outputs,
             self.prune_unused_steps,
             self._plugin_options_key(),
+            tuple(sorted(self.spark_sql.items())),
             self.schema_types_key,
         )
 

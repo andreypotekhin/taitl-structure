@@ -413,6 +413,17 @@ Default: `"ANSI"`.
 
 Detailed v1 assignment rules are specified for `ANSI`.
 
+### spark.sql.timestampType
+
+Type: string enum `TIMESTAMP_LTZ` or `TIMESTAMP_NTZ`; default `TIMESTAMP_LTZ`. Structure resolves the live Spark
+session value before compiling generic timestamp expressions. An explicit Structure value must match Spark.
+
+### spark.sql.legacy.interval.enabled
+
+Type: boolean; default `false`. Structure resolves the live Spark session value before compiling date/timestamp
+subtraction. Both temporal settings enter the compiler fingerprint; a changed live value requires a new session and
+recompilation.
+
 ## Unknown Keys
 
 Unknown keys are errors. Structure should suggest close known keys when the edit distance is small and the suggestion is

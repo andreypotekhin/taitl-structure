@@ -16,6 +16,7 @@ Schema declarations define Structure's typed row contract and materialize to Spa
 | `date()` | Spark date type | `date()` |
 | `timestamp()` | Spark timestamp type | `timestamp()` |
 | `timestamp_ntz()` | Spark timestamp without time zone | `timestamp_ntz()` |
+| `field.interval(type=...)`, `field.interval(unit=...)` | Qualified Spark interval | `field.interval(type=Interval.YEAR_TO_MONTH)` |
 | `binary()` | Spark binary type | `payload = binary(nullable=True)` |
 | `decimal(...)` | `DecimalType` | `total = decimal(12, 2)` |
 | `variant(...)` | `VariantType` | `payload = variant(nullable=True)` |
@@ -33,6 +34,10 @@ Schema declarations define Structure's typed row contract and materialize to Spa
 - `timestamp()` represents Spark's instant-based TimestampType; `timestamp_ntz()` represents wall-clock
   TimestampNTZType. The two types are not interchangeable. Python `datetime` annotations continue to map to
   `timestamp()`; declare `timestamp_ntz()` explicitly for NTZ fields.
+- `field.interval(...)` and `types.interval(...)` require exactly one of `type=` (a compound qualifier such as
+  `Interval.YEAR_TO_MONTH`) or `unit=` (one field such as `Interval.DAY`). The qualifier is preserved in generated
+  `YearMonthIntervalType` or `DayTimeIntervalType`. `Interval.CALENDAR` is expression-only on PySpark 3.5 and may be
+  declared in PySpark 4.0 schemas, where Python Row conversion remains governed by PySpark.
 - `variant(...)` declares Spark's opaque semi-structured `VariantType`. It preserves schema and field nullability only.
   A transform using it must resolve to a PySpark 4 profile, including when that profile comes from
   `[tool.structure.plugin.pyspark]`.

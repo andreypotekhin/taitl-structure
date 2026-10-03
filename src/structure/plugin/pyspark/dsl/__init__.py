@@ -1,5 +1,8 @@
 from importlib import import_module
 
+from structure.plugin.pyspark.dsl.Interval import Interval
+from structure.plugin.pyspark.dsl.Temporal import Temporal
+
 _MODULES = (
     "joins",
     "operations",
@@ -11,6 +14,8 @@ _MODULES = (
     "InputScope",
     "body",
     "TimeWindow",
+    "Temporal",
+    "Interval",
     "types",
     "field",
     "sql_api",

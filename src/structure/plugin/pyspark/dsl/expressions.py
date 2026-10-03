@@ -17,6 +17,7 @@ from math import isfinite
 from re import fullmatch
 from typing import TYPE_CHECKING, Any, Mapping, overload
 
+from structure.plugin.api.v1.model.CompilationSettings import current_compilation_settings
 from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.types import (
     ArrayType,
@@ -29,6 +30,7 @@ from structure.plugin.pyspark.dsl.types import (
     FloatType,
     HllSketchType,
     IntegerType,
+    IntervalType,
     LongType,
     MapType,
     StringType,
@@ -58,8 +60,10 @@ __all__ = [
     "raise_error", "current_date", "curdate", "current_timestamp", "now", "localtimestamp", "current_timezone",
     "aes_encrypt", "aes_decrypt", "try_aes_decrypt",
     "hll_sketch_estimate", "hll_union", "bitmap_bit_position", "bitmap_bucket_number", "bitmap_count",
-    "url_encode", "url_decode", "try_url_decode", "make_date",
-    "convert_timezone",
+    "url_encode", "url_decode", "try_url_decode", "make_date", "date_diff", "dateadd", "day",
+    "convert_timezone", "make_timestamp", "try_to_timestamp", "to_timestamp_ltz", "to_unix_timestamp", "timestamp_seconds", "timestamp_millis",
+    "timestamp_micros", "unix_seconds", "unix_millis", "unix_micros", "make_timestamp_ltz", "make_timestamp_ntz",
+    "interval", "make_interval", "make_ym_interval", "make_dt_interval", "extract",
 ]
 
 
@@ -436,7 +440,7 @@ def now() -> Expression:
 
 def localtimestamp() -> Expression:
     """Return Spark's query-start local timestamp."""
-    return _query_clock("localtimestamp", TimestampType())
+    return _query_clock("localtimestamp", TimestampNTZType())
 
 
 def current_timezone() -> Expression:
@@ -1445,6 +1449,122 @@ def make_date(year: object, month: object, day: object) -> Expression:
     )
 
 
+def make_timestamp_ltz(
+    year: object, month: object, day: object, hour: object, minute: object, second: object,
+    *, timezone: object | None = None,
+) -> Expression:
+    """Build a nullable instant timestamp from typed calendar components.
+
+    Args:
+        year: Integral year expression.
+        month: Integral month expression.
+        day: Integral day expression.
+        hour: Integral hour expression.
+        minute: Integral minute expression.
+        second: Numeric seconds expression; Decimal preserves exact fractions.
+        timezone: Optional String expression; omitted uses Spark's session zone.
+
+    Returns:
+        Nullable LTZ Timestamp. Invalid components follow Spark's ANSI policy.
+    """
+    return _make_timestamp("make_timestamp_ltz", (year, month, day, hour, minute, second), timezone)
+
+
+def make_timestamp_ntz(
+    year: object, month: object, day: object, hour: object, minute: object, second: object,
+) -> Expression:
+    """Build a nullable wall-clock timestamp from typed calendar components."""
+    return _make_timestamp("make_timestamp_ntz", (year, month, day, hour, minute, second), None)
+
+
+def make_timestamp(
+    year: object, month: object, day: object, hour: object, minute: object, second: object,
+    *, timezone: object | None = None,
+) -> Expression:
+    """Build a timestamp using the resolved Spark timestamp type."""
+    result = _make_timestamp("make_timestamp", (year, month, day, hour, minute, second), timezone)
+    if isinstance(result.type, TimestampNTZType) and timezone is not None:
+        return Expression(kind=result.kind, type=result.type, nullable=result.nullable,
+                          data={**(result.data or {}), "warnings": ("PYSPARK-W2706",)}, args=result.args)
+    return result
+
+
+def _make_timestamp(function: str, values: tuple[object, ...], timezone: object | None) -> Expression:
+    components = tuple(_integral_argument(value, f"{function}(...)") for value in values[:5])
+    seconds = _numeric_argument(values[5], f"{function}(...) seconds")
+    zone = () if timezone is None else (_string_argument(timezone, f"{function}(...) timezone"),)
+    return Expression(
+        kind="call",
+        type=(
+            TimestampNTZType()
+            if function == "make_timestamp_ntz" or (function == "make_timestamp" and _generic_timestamp_is_ntz())
+            else TimestampType()
+        ),
+        nullable=True,
+        data={"function": function},
+        args=(*components, seconds, *zone),
+    )
+
+
+def make_ym_interval(years: object = 0, months: object = 0) -> Expression:
+    """Build Spark's year-to-month interval from integral components."""
+    return _interval_call("make_ym_interval", IntervalType("year_month", "year_to_month"), (years, months))
+
+
+def make_dt_interval(days: object = 0, hours: object = 0, mins: object = 0, secs: object = 0) -> Expression:
+    """Build Spark's day-to-second interval from integral and numeric components."""
+    return _interval_call("make_dt_interval", IntervalType("day_time", "day_to_second"), (days, hours, mins, secs))
+
+
+def make_interval(
+    years: object = 0, months: object = 0, weeks: object = 0, days: object = 0,
+    hours: object = 0, mins: object = 0, secs: object = 0,
+) -> Expression:
+    """Build a mixed calendar interval using Spark's seven components."""
+    return _interval_call("make_interval", IntervalType("calendar", "calendar"),
+                          (years, months, weeks, days, hours, mins, secs))
+
+
+def interval(*, type: str | None = None, unit: str | None = None, **components: object) -> Expression:
+    """Build one exact interval qualifier from the corresponding named components.
+
+    For example, ``interval(type=Interval.YEAR_TO_MONTH, years=y, months=m)``
+    requires both components; ``interval(unit=Interval.DAY, days=d)`` requires one.
+    """
+    from structure.plugin.pyspark.dsl.types import interval as interval_type
+
+    result_type = interval_type(type=type, unit=unit)
+    fields = {
+        "year": "years", "month": "months", "day": "days", "hour": "hours",
+        "minute": "mins", "second": "secs",
+    }
+    if result_type.kind == "calendar":
+        selected: tuple[str, ...] = ("years", "months", "weeks", "days", "hours", "mins", "secs")
+    else:
+        ordered = ("year", "month") if result_type.kind == "year_month" else ("day", "hour", "minute", "second")
+        assert result_type.start_field is not None and result_type.end_field is not None
+        selected = tuple(fields[name] for name in ordered[result_type.start_field:result_type.end_field + 1])
+    if set(components) != set(selected):
+        raise TypeError(f"interval(...) {result_type.qualifier} requires exactly: {', '.join(selected)}")
+    all_fields = ("years", "months") if result_type.kind == "year_month" else (
+        ("days", "hours", "mins", "secs") if result_type.kind == "day_time" else
+        ("years", "months", "weeks", "days", "hours", "mins", "secs")
+    )
+    values = tuple(components.get(name, 0) for name in all_fields)
+    return _interval_call("interval", result_type, values)
+
+
+def _interval_call(function: str, result_type: IntervalType, values: tuple[object, ...]) -> Expression:
+    arguments = tuple(
+        _numeric_argument(value, f"{function}(...) seconds")
+        if index == len(values) - 1 and result_type.kind != "year_month"
+        else _integral_argument(value, f"{function}(...)")
+        for index, value in enumerate(values)
+    )
+    return Expression(kind="call", type=result_type, nullable=any(arg.nullable for arg in arguments),
+                      data={"function": function}, args=arguments)
+
+
 def date_sub(value: object, *, days: int) -> Expression:
     """Subtract whole days from a Date or Timestamp expression."""
     argument = _date_or_timestamp_argument(value, "date_sub(...)")
@@ -1495,6 +1615,23 @@ def datediff(end: object, start: object) -> Expression:
         data={"function": "datediff"},
         args=(end_argument, start_argument),
     )
+
+
+def date_diff(end: object, start: object) -> Expression:
+    """Return the number of days from ``start`` to ``end`` using Spark's alias."""
+    result = datediff(end, start)
+    return Expression(kind="call", type=result.type, nullable=result.nullable, data={"function": "date_diff"}, args=result.args)
+
+
+def dateadd(value: object, *, days: object) -> Expression:
+    """Add whole days to a Date or Timestamp using Spark's alias."""
+    result = date_add(value, days=days)
+    return Expression(kind="call", type=result.type, nullable=result.nullable, data={**(result.data or {}), "function": "dateadd"}, args=result.args)
+
+
+def day(value: object) -> Expression:
+    """Extract the day of month from a Date or Timestamp."""
+    return _calendar_part("day", value, _date_or_timestamp_argument)
 
 
 def months_between(left: object, right: object, *, round_off: bool = True) -> Expression:
@@ -1689,17 +1826,40 @@ def to_date(value: object, *, format: str | None = None) -> Expression:
     )
 
 
-def to_timestamp(value: object, *, format: str | None = None) -> Expression:
+def to_timestamp(value: object, *, format: object | None = None) -> Expression:
     """Convert a String, Date, or Timestamp expression to Timestamp."""
     argument = _temporal_conversion_argument(value, "to_timestamp(...)")
-    format = _temporal_format(format, "to_timestamp(...)")
+    data: dict[str, object] = {"function": "to_timestamp"}
+    arguments: tuple[Expression, ...] = (argument,)
+    if isinstance(format, str):
+        pattern = _temporal_format(format, "to_timestamp(...)")
+        data["format"] = pattern
+    elif format is not None:
+        arguments = (argument, _string_argument(format, "to_timestamp(...) format"))
+    if format is not None and not isinstance(argument.type, StringType):
+        data["warnings"] = ("PYSPARK-W2705",)
     return Expression(
         kind="call",
-        type=TimestampType(),
+        type=TimestampNTZType() if _generic_timestamp_is_ntz() else TimestampType(),
         nullable=True if isinstance(argument.type, StringType) else argument.nullable,
-        data={"function": "to_timestamp", **({"format": format} if format is not None else {})},
-        args=(argument,),
+        data=data,
+        args=arguments,
     )
+
+
+def try_to_timestamp(value: object, *, format: object | None = None) -> Expression:
+    """Convert a String, Date, or LTZ Timestamp, returning null for invalid text."""
+    source = _temporal_conversion_argument(value, "try_to_timestamp(...)")
+    arguments = (source,) if format is None else (source, _string_argument(format, "try_to_timestamp(...) format"))
+    data: dict[str, object] = {"function": "try_to_timestamp"}
+    if format is not None and not isinstance(source.type, StringType):
+        data["warnings"] = ("PYSPARK-W2705",)
+    return Expression(kind="call", type=TimestampNTZType() if _generic_timestamp_is_ntz() else TimestampType(),
+                      nullable=True, data=data, args=arguments)
+
+
+def _generic_timestamp_is_ntz() -> bool:
+    return current_compilation_settings().get("spark.sql.timestampType", "TIMESTAMP_LTZ") == "TIMESTAMP_NTZ"
 
 
 def to_timestamp_ntz(value: object, *, format: object | None = None) -> Expression:
@@ -1710,8 +1870,8 @@ def to_timestamp_ntz(value: object, *, format: object | None = None) -> Expressi
         format: Optional String expression containing Spark's datetime pattern.
 
     Returns:
-        Nullable TimestampNTZ. Invalid input always returns null, independently
-        of Spark's ANSI setting, matching PySpark ``to_timestamp_ntz``.
+        Nullable TimestampNTZ. Invalid input follows Spark's ANSI setting;
+        use ``try_to_timestamp`` when parse failures must become null.
 
     Example:
         local_time = to_timestamp_ntz(row.raw_time, format=row.pattern)
@@ -1728,6 +1888,13 @@ def to_timestamp_ntz(value: object, *, format: object | None = None) -> Expressi
         data={"function": "to_timestamp_ntz"},
         args=arguments,
     )
+
+
+def to_timestamp_ltz(value: object, *, format: object | None = None) -> Expression:
+    """Parse String input into a nullable instant timestamp with a typed pattern."""
+    source = _string_argument(value, "to_timestamp_ltz(...)")
+    arguments = (source,) if format is None else (source, _string_argument(format, "to_timestamp_ltz(...) format"))
+    return Expression(kind="call", type=TimestampType(), nullable=True, data={"function": "to_timestamp_ltz"}, args=arguments)
 
 
 def unix_date(value: object) -> Expression:
@@ -1767,16 +1934,16 @@ def from_unixtime(seconds: object, *, format: str = "yyyy-MM-dd HH:mm:ss") -> Ex
 def unix_timestamp(
     value: object | None = None,
     *,
-    format: str = "yyyy-MM-dd HH:mm:ss",
+    format: object | None = None,
 ) -> Expression:
     """Parse a temporal expression into Unix epoch seconds.
 
     Omitting ``value`` uses Spark's query-time current timestamp. Explicit
     String, Date, and Timestamp inputs are parsed with the requested format.
     """
-    format_literal = _temporal_format(format, "unix_timestamp(...)")
-    assert format_literal is not None
     if value is None:
+        format_literal = _temporal_format("yyyy-MM-dd HH:mm:ss" if format is None else format, "unix_timestamp(...)")
+        assert format_literal is not None
         return Expression(
             kind="call",
             type=LongType(),
@@ -1789,13 +1956,84 @@ def unix_timestamp(
             },
         )
     argument = _temporal_conversion_argument(value, "unix_timestamp(...)")
+    data: dict[str, object]
+    arguments: tuple[Expression, ...]
+    if format is None or isinstance(format, str):
+        format_literal = _temporal_format("yyyy-MM-dd HH:mm:ss" if format is None else format, "unix_timestamp(...)")
+        assert format_literal is not None
+        data = {"function": "unix_timestamp", "format": format_literal}
+        arguments = (argument,)
+    else:
+        pattern = _string_argument(format, "unix_timestamp(...) format")
+        data = {"function": "unix_timestamp"}
+        arguments = (argument, pattern)
+    if format is not None and not isinstance(argument.type, StringType):
+        data["warnings"] = ("PYSPARK-W2705",)
     return Expression(
         kind="call",
         type=LongType(),
         nullable=True if isinstance(argument.type, StringType) else argument.nullable,
-        data={"function": "unix_timestamp", "format": format_literal},
-        args=(argument,),
+        data=data,
+        args=arguments,
     )
+
+
+def to_unix_timestamp(value: object, *, format: object | None = None) -> Expression:
+    """Parse a required String, Date, or Timestamp value into epoch seconds."""
+    source = _temporal_conversion_argument(value, "to_unix_timestamp(...)")
+    arguments = (source,) if format is None else (source, _string_argument(format, "to_unix_timestamp(...) format"))
+    data: dict[str, object] = {"function": "to_unix_timestamp"}
+    if format is not None and not isinstance(source.type, StringType):
+        data["warnings"] = ("PYSPARK-W2705",)
+    return Expression(
+        kind="call", type=LongType(), nullable=True if isinstance(source.type, StringType) else source.nullable,
+        data=data, args=arguments,
+    )
+
+
+def timestamp_seconds(value: object) -> Expression:
+    """Turn numeric Unix seconds, including fractions, into an LTZ Timestamp."""
+    argument = _numeric_argument(value, "timestamp_seconds(...)")
+    return Expression(
+        kind="call", type=TimestampType(),
+        nullable=argument.nullable or isinstance(argument.type, (FloatType, DoubleType)),
+        data={"function": "timestamp_seconds"}, args=(argument,),
+    )
+
+
+def timestamp_millis(value: object) -> Expression:
+    """Turn integral Unix milliseconds into an LTZ Timestamp."""
+    return _epoch_to_timestamp("timestamp_millis", value)
+
+
+def timestamp_micros(value: object) -> Expression:
+    """Turn integral Unix microseconds into an LTZ Timestamp."""
+    return _epoch_to_timestamp("timestamp_micros", value)
+
+
+def _epoch_to_timestamp(function: str, value: object) -> Expression:
+    argument = _integral_argument(value, f"{function}(...)")
+    return Expression(kind="call", type=TimestampType(), nullable=argument.nullable, data={"function": function}, args=(argument,))
+
+
+def unix_seconds(value: object) -> Expression:
+    """Return integral epoch seconds for an LTZ Timestamp."""
+    return _timestamp_to_epoch("unix_seconds", value)
+
+
+def unix_millis(value: object) -> Expression:
+    """Return integral epoch milliseconds for an LTZ Timestamp."""
+    return _timestamp_to_epoch("unix_millis", value)
+
+
+def unix_micros(value: object) -> Expression:
+    """Return integral epoch microseconds for an LTZ Timestamp."""
+    return _timestamp_to_epoch("unix_micros", value)
+
+
+def _timestamp_to_epoch(function: str, value: object) -> Expression:
+    argument = _timestamp_argument(value, f"{function}(...)")
+    return Expression(kind="call", type=LongType(), nullable=argument.nullable, data={"function": function}, args=(argument,))
 
 
 def to_utc_timestamp(value: object, *, timezone: str) -> Expression:
@@ -1823,14 +2061,19 @@ def convert_timezone(source_tz: object | None, target_tz: object, source_ts: obj
     )
 
 
-def date_part(field: str, value: object) -> Expression:
+def date_part(field: object, value: object) -> Expression:
     """Extract a named date or timestamp part with a compiler-visible field."""
     return _date_part("date_part", field, value)
 
 
-def datepart(field: str, value: object) -> Expression:
+def datepart(field: object, value: object) -> Expression:
     """Alias for :func:`date_part`, matching PySpark's SQL spelling."""
     return _date_part("datepart", field, value)
+
+
+def extract(field: object, value: object) -> Expression:
+    """Extract a compiler-visible Spark date, timestamp, or interval part."""
+    return _date_part("extract", field, value)
 
 
 def abs(value: object) -> Expression:
@@ -2917,24 +3160,34 @@ def _timezone_conversion(function: str, value: object, timezone: str) -> Express
     )
 
 
-def _date_part(function: str, field: str, value: object) -> Expression:
+def _date_part(function: str, field: object, value: object) -> Expression:
+    if isinstance(field, Expression) and field.kind == "literal" and isinstance(field.type, StringType):
+        field = (field.data or {}).get("value")
     if not isinstance(field, str) or not field.strip():
-        raise TypeError(f"{function}(...) field must be a non-empty string literal")
+        raise TypeError(f"{function}(...) field must be a compiler-visible non-empty String literal")
     normalized = field.strip().lower()
-    integer_fields = {
-        "year", "y", "month", "mon", "week", "w", "day", "d", "dayofweek", "dow", "dayofyear", "doy",
-        "hour", "h", "minute", "min", "m",
+    aliases = {
+        "y": "year", "years": "year", "yr": "year", "yrs": "year",
+        "qtr": "quarter", "mon": "month", "mons": "month", "months": "month",
+        "w": "week", "weeks": "week", "d": "day", "days": "day",
+        "dow": "dayofweek", "dow_iso": "dayofweek_iso", "dayofyear": "doy",
+        "h": "hour", "hours": "hour", "hr": "hour", "hrs": "hour",
+        "m": "minute", "min": "minute", "mins": "minute", "minutes": "minute",
+        "s": "second", "sec": "second", "secs": "second", "seconds": "second",
     }
-    second_fields = {"second", "seconds", "sec", "s"}
-    if normalized not in integer_fields | second_fields:
-        raise TypeError(f"{function}(...) field is not supported: {field!r}")
-    argument = _date_or_timestamp_argument(value, f"{function}(...)")
-    result_type = DecimalType(precision=8, scale=6) if normalized in second_fields else IntegerType()
+    normalized = aliases.get(normalized, normalized)
+    temporal_fields = {"year", "yearofweek", "quarter", "month", "week", "day", "dayofweek", "dayofweek_iso", "doy", "hour", "minute", "second"}
+    interval_fields = {"year", "month", "day", "hour", "minute", "second"}
+    argument = literal(value)
+    allowed = interval_fields if isinstance(argument.type, IntervalType) else temporal_fields
+    if normalized not in allowed or not isinstance(argument.type, (DateType, TimestampType, TimestampNTZType, IntervalType)):
+        raise TypeError(f"{function}(...) field is not supported for this source type: {field!r}")
+    result_type = DecimalType(precision=8, scale=6) if normalized == "second" else IntegerType()
     return Expression(
         kind="call",
         type=result_type,
         nullable=argument.nullable,
-        data={"function": function, "field": field.strip()},
+        data={"function": function, "field": normalized},
         args=(argument,),
     )
 
