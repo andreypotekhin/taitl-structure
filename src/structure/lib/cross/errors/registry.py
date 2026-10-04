@@ -59,6 +59,17 @@ diagnostic_registry = DiagnosticRegistry(
             use_template='Keep it outside compiled logic, or use @special(type="udf") or an explicit hook when execution is intentional.',
         ),
         DiagnosticEntry(
+            code="DSL-E0405",
+            severity="error",
+            title="Opaque runtime code reached",
+            owner="dsl",
+            status="active",
+            docs="docs/Diagnostics.md#dsl-e0405",
+            introduced="1.0.0",
+            problem_template="Compiler-visible logic called a helper marked as opaque runtime code.",
+            use_template='Keep it outside compiled logic, or use @special(type="udf") or an explicit hook when execution is intentional.',
+        ),
+        DiagnosticEntry(
             code="DSL-W0403",
             severity="warning",
             title="Python UDF is optimizer-opaque",

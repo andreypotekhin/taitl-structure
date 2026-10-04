@@ -158,9 +158,54 @@ def test_ignored_helper_class_runs_outside_compilation_but_fails_inside_it() -> 
     assert raised.value.diagnostic.code == "DSL-E0404"
 
 
-def test_opaque_special_mode_is_rejected_in_favor_of_ignore() -> None:
-    with pytest.raises(TypeError, match="expr.*ignore.*udf"):
-        special(type="opaque")
+def test_opaque_helper_runs_outside_compilation_but_fails_inside_it() -> None:
+    @special(type="opaque")
+    def clean(value):
+        return value.strip()
+
+    assert clean(" ready ") == "ready"
+
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(id=clean(row.id))
+
+    with pytest.raises(StructureCompileError) as raised:
+        _compile(Publish)
+
+    assert raised.value.diagnostic.code == "DSL-E0405"
+    assert "opaque runtime code" in raised.value.diagnostic.problem_text()
+
+
+def test_opaque_class_runs_outside_compilation_but_fails_inside_it() -> None:
+    @special(type="opaque")
+    class OpaqueRanker:
+        def clean(self, value):
+            return value.strip()
+
+    opaque_ranker = OpaqueRanker()
+    assert opaque_ranker.clean(" ready ") == "ready"
+
+    class Publish(Transform):
+        ranker = parameter(opaque_ranker)
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            ranker = cast(OpaqueRanker, self.ranker)
+            return Published(id=ranker.clean(row.id))
+
+    with pytest.raises(StructureCompileError) as raised:
+        _compile(Publish)
+
+    assert raised.value.diagnostic.code == "DSL-E0405"
+
+
+def test_opaque_helper_rejects_udf_options() -> None:
+    with pytest.raises(TypeError, match="unknown option"):
+        special(type="opaque", return_type=types.string())
 
 
 def test_special_udf_records_optimizer_warning_by_default() -> None:

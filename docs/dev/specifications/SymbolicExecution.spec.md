@@ -153,7 +153,8 @@ Rules:
 - Hooks are not executed.
 - Ordinary reachable helper methods and classes are compiled when they manipulate symbolic expressions in ways the DSL
   can capture. Unsupported behavior fails with a structured diagnostic. Reusable expression logic may use optional
-  `@special(type="expr")`; `@special(type="ignore")` explicitly rejects compiler-visible calls.
+  `@special(type="expr")`; `@special(type="ignore")` and `@special(type="opaque")` explicitly reject compiler-visible
+  calls. An explicit consuming API is needed to pass opaque runtime code through compilation.
 - If user code performs side effects during symbolic execution, Structure is not required to undo them. Diagnostics
   should still guide developers toward pure compiled step methods or explicit hooks.
 

@@ -14,7 +14,7 @@ from structure.core.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.core.dsl.model.transforms.OutputDeclaration import OutputBindings, OutputDeclaration
 from structure.core.dsl.model.transforms.ParameterDeclaration import ParameterDeclaration
 from structure.core.dsl.model.transforms.SchemaMode import SchemaMode
-from structure.core.dsl.model.transforms.SpecialFunction import IgnoredCompilerCode, SpecialFunction
+from structure.core.dsl.model.transforms.SpecialFunction import IgnoredCompilerCode, OpaqueCompilerCode, SpecialFunction
 from structure.core.dsl.model.transforms.StageDeclaration import StageDeclaration
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.plugin.api.v1.model import current_symbolic_context
@@ -305,8 +305,9 @@ def special(function: Callable | None = None, *, type: str, **kwargs):
     Args:
         function: Helper function when used without decorator parentheses.
         type: ``"expr"`` for transparent symbolic expansion, ``"udf"`` for a
-            plugin UDF expression, or ``"ignore"`` for code that must stay
-            outside compiler-visible logic.
+            plugin UDF expression, ``"ignore"`` for code deliberately excluded
+            from compiled logic, or ``"opaque"`` for runtime code whose body
+            Structure does not inspect.
         **kwargs: ``return_type`` and ``nullable`` for UDF helpers.
 
     Returns:
@@ -318,15 +319,15 @@ def special(function: Callable | None = None, *, type: str, **kwargs):
         def normalized_email(value):
             return lower(trim(value))
     """
-    allowed = {"expr", "udf", "ignore"}
+    allowed = {"expr", "udf", "ignore", "opaque"}
     if type not in allowed:
         raise TypeError(f"@special(type=...) must use one of: {', '.join(sorted(allowed))}")
     if type == "expr" and kwargs:
         unknown = ", ".join(sorted(kwargs))
         raise TypeError(f"@special(type=\"expr\") got unknown option(s): {unknown}")
-    if type == "ignore" and kwargs:
+    if type in {"ignore", "opaque"} and kwargs:
         unknown = ", ".join(sorted(kwargs))
-        raise TypeError(f"@special(type=\"ignore\") got unknown option(s): {unknown}")
+        raise TypeError(f"@special(type=\"{type}\") got unknown option(s): {unknown}")
     if type == "udf":
         unknown_options = set(kwargs) - {"return_type", "nullable"}
         if unknown_options:
@@ -336,11 +337,11 @@ def special(function: Callable | None = None, *, type: str, **kwargs):
 
     def decorate(target: Callable) -> SpecialFunction | Callable:
         if inspect.isclass(target):
-            if type not in {"expr", "ignore"}:
-                raise TypeError('@special can decorate classes only with type="expr" or type="ignore"')
+            if type not in {"expr", "ignore", "opaque"}:
+                raise TypeError('@special can decorate classes only with type="expr", type="ignore", or type="opaque"')
             setattr(target, "_structure_special_type", type)
-            if type == "ignore":
-                _guard_ignored_class(target)
+            if type in {"ignore", "opaque"}:
+                _guard_excluded_class(target, mode=type)
             return target
         return SpecialFunction(
             target,
@@ -354,22 +355,23 @@ def special(function: Callable | None = None, *, type: str, **kwargs):
     return decorate(function)
 
 
-def _guard_ignored_class(cls: type) -> None:
-    """Reject callable access on an ignored class only during compilation."""
+def _guard_excluded_class(cls: type, *, mode: str) -> None:
+    """Reject callable access on a runtime-only class during compilation."""
     original = getattr(cls, "__getattribute__", object.__getattribute__)
-    if getattr(original, "_structure_ignore_guard", False):
+    if getattr(original, "_structure_excluded_guard", False):
         return
 
     def guarded(instance, name):
         value = original(instance, name)
         if current_symbolic_context() is not None and not name.startswith("_") and callable(value):
-            raise IgnoredCompilerCode(
-                f"{cls.__qualname__}.{name} is marked @special(type=\"ignore\") and cannot be used in "
+            error_type = OpaqueCompilerCode if mode == "opaque" else IgnoredCompilerCode
+            raise error_type(
+                f"{cls.__qualname__}.{name} is marked @special(type=\"{mode}\") and cannot be used in "
                 "compiler-visible logic"
             )
         return value
 
-    setattr(guarded, "_structure_ignore_guard", True)
+    setattr(guarded, "_structure_excluded_guard", True)
     setattr(cls, "__getattribute__", cast(Any, guarded))
 
 

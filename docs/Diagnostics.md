@@ -12,6 +12,7 @@ Below is an index for published diagnostic codes. For the full diagnostic contra
 | DSL-E0401 | error | Unsupported symbolic expression | Rewrite with Structure DSL helpers or an ordinary compiler-visible helper; use `@special(type="expr")` for explicit metadata, `@special(type="udf")` for intentional scalar Python execution, or a hook for arbitrary DataFrame logic. |
 | DSL-E0402 | error | Invalid transform structure | Check decoration, annotations, schema flow, and output fields. |
 | DSL-E0404 | error | Ignored compiler code reached | Keep ignored code outside compiled logic, or use a UDF or explicit hook for intentional runtime execution. |
+| DSL-E0405 | error | Opaque runtime code reached | Keep opaque runtime code outside compiled logic, or use a UDF or explicit hook for intentional runtime execution. |
 | DSL-W0403 | warning | Python UDF is optimizer-opaque | Keep intentional UDFs or set `warn_on_udfs = false`. |
 | PYSPARK-W2701 | warning | PySpark query plan is growing through repeated reuse | A branch is reused after joins or unions have made the Spark query plan expensive to build. Add `checkpoint()` or `local_checkpoint()` before reusing it, or restructure around a stable base relation; `cache()` and `persist()` alone do not shorten the query plan. See the [driver-heap gotcha](troubleshooting/memory/spark_driver_heap_oom.gotcha.md). |
 | PYSPARK-W2702 | warning | PySpark query plan branch is reused many times | A costly query plan branch feeds several downstream operations. Add a checkpoint at the shared branch or reduce its consumers. |
@@ -71,6 +72,10 @@ See [Diagnostics.md](background/Diagnostics.back.md#dsl-e0402).
 
 ### DSL-E0404
 See [Diagnostics.md](background/Diagnostics.back.md#dsl-e0404).
+
+### DSL-E0405
+`@special(type="opaque")` code was called from a compiled step. Move the call outside compiler-visible logic, use
+`@special(type="udf")` for scalar Python execution, or use an explicit hook for DataFrame logic.
 
 ### DSL-W0403
 See [Diagnostics.md](background/Diagnostics.back.md#dsl-w0403).

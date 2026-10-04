@@ -24,8 +24,8 @@ class SpecialFunction:
     """Dispatch a decorated Python helper according to its special mode.
 
     ``expr`` helpers expand into symbolic expression trees and ``udf`` helpers
-    become Python UDF expression nodes inside compilation. ``ignore`` is
-    rejected by the target-neutral wrapper before reaching this class.
+    become Python UDF expression nodes inside compilation. ``ignore`` and
+    ``opaque`` are rejected by the target-neutral wrapper before reaching this class.
     """
 
     def __init__(
@@ -55,11 +55,6 @@ class SpecialFunction:
             if kwargs:
                 raise TypeError("@special(type=\"udf\") calls only support positional expression arguments")
             return self._udf(args)
-        if self.type == "opaque" and context is not None:
-            raise TypeError(
-                f"{self.function.__qualname__} is @special(type=\"opaque\") and cannot be called from a compiled "
-                "step method. Use @special(type=\"udf\") for scalar Python UDFs or a hook for DataFrame logic."
-            )
         return self.function(*args, **kwargs)
 
     def _expr(self, args: tuple[object, ...], kwargs: dict[str, object], *, context) -> Expression:

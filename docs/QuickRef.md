@@ -388,6 +388,8 @@ Reference: [expressions API](api/Expressions.api.md) and [Transform expression h
 
 Use `@special(type="ignore")` only for code that must remain outside compiler-visible logic. Calling it from a compiled
 method is an error; use `@special(type="udf")` for intentional scalar Python or `@raw` for arbitrary DataFrame logic.
+Use `@special(type="opaque")` for a runtime callback or class whose body Structure must not inspect. Calling it directly
+from a compiled method also fails; a consuming API must explicitly accept it.
 
 ### UDFs
 

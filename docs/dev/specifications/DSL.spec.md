@@ -492,6 +492,9 @@ Rules:
 - Helpers must not import or require PySpark during compiler phases.
 - `@special(type="ignore")` helpers may run normally outside compilation but fail with `DSL-E0404` when reached from
   compiler-visible logic.
+- `@special(type="opaque")` marks runtime functions and classes that run normally outside compilation. Calling them
+  from compiler-visible logic fails with `DSL-E0405`; a separate consuming API must define how an opaque value may be
+  passed into a compiled transform.
 - Recursive expression helpers are invalid in v1 unless a future spec defines recursion limits and expansion behavior.
 
 When a helper call is unsupported, diagnostics should show the helper name and the call site, not only the expanded

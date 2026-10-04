@@ -11,14 +11,18 @@ class IgnoredCompilerCode(TypeError):
     """Signal that deliberately non-compiler code was reached symbolically."""
 
 
+class OpaqueCompilerCode(TypeError):
+    """Signal that opaque runtime code was called during symbolic compilation."""
+
+
 class SpecialFunction:
     """A helper function with plugin-visible symbolic behavior.
 
     Outside compilation, the wrapped function behaves like ordinary Python.
     During compilation, calls are delegated to the active plugin so a backend
     such as PySpark can expand expressions or create UDF nodes. ``ignore``
-    helpers are rejected before delegation because they are outside the
-    compiler-visible contract.
+    and ``opaque`` helpers are rejected before delegation because their bodies
+    are outside the compiler-visible contract.
     """
 
     def __init__(
@@ -42,9 +46,10 @@ class SpecialFunction:
         context = current_symbolic_context()
         if context is None:
             return self.function(*args, **kwargs)
-        if self.type == "ignore":
-            raise IgnoredCompilerCode(
-                f"{self.function.__qualname__} is marked @special(type=\"ignore\") and cannot be used in "
+        if self.type in {"ignore", "opaque"}:
+            error_type = OpaqueCompilerCode if self.type == "opaque" else IgnoredCompilerCode
+            raise error_type(
+                f"{self.function.__qualname__} is marked @special(type=\"{self.type}\") and cannot be used in "
                 "compiler-visible logic"
             )
         special = getattr(context, "special", None)
@@ -54,6 +59,6 @@ class SpecialFunction:
 
     def __get__(self, instance: object, owner: type | None = None):
         """Bind decorated methods without hiding the wrapper on the class."""
-        if instance is None or self.type != "ignore":
+        if instance is None or self.type not in {"ignore", "opaque"}:
             return self if instance is None else self.__call__
         return lambda *args, **kwargs: self(instance, *args, **kwargs)

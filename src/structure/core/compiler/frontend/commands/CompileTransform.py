@@ -29,7 +29,7 @@ from structure.core.dsl.model.transforms.InputDeclaration import InputDeclaratio
 from structure.core.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.core.dsl.model.transforms.OutputDeclaration import OutputDeclaration
 from structure.core.dsl.model.transforms.SchemaMode import SchemaMode
-from structure.core.dsl.model.transforms.SpecialFunction import IgnoredCompilerCode
+from structure.core.dsl.model.transforms.SpecialFunction import IgnoredCompilerCode, OpaqueCompilerCode
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
@@ -696,14 +696,16 @@ class CompileTransform:
                         result = member(instance, *arguments)
         except StructureCompileError:
             raise
-        except IgnoredCompilerCode as error:
+        except (IgnoredCompilerCode, OpaqueCompilerCode) as error:
+            opaque = isinstance(error, OpaqueCompilerCode)
             raise self._error(
-                "DSL-E0404",
+                "DSL-E0405" if opaque else "DSL-E0404",
                 transform_class=transform_class,
                 member=name,
-                problem=f"{transform_class.__name__}.{name} reached ignored compiler code: {error}",
+                problem=f"{transform_class.__name__}.{name} reached {'opaque runtime' if opaque else 'ignored compiler'} code: {error}",
                 use=(
-                    "Keep ignored code outside compiled logic. Use Structure expression helpers or an undecorated "
+                    f"Keep {'opaque runtime' if opaque else 'ignored'} code outside compiled logic. "
+                    "Use Structure expression helpers or an undecorated "
                     "helper when it can compile, @special(type=\"udf\") for intentional scalar Python, or @raw "
                     "for DataFrame logic."
                 ),

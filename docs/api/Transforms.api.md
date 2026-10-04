@@ -70,6 +70,9 @@ are documented in the [Relations API](Relations.api.md).
 
 - `@raw(...)` is the explicit opaque boundary: Structure validates its binding declaration, not the hook body.
 - `@special(type="ignore")` marks code that must remain outside compiler-visible logic; calling it from compiled code fails.
+- `@special(type="opaque")` marks runtime functions or classes whose Python bodies Structure does not inspect. They run
+  normally outside compilation; calling them from compiler-visible logic fails with `DSL-E0405`. This marker does not
+  execute a side effect or make a callback usable inside a transform by itself.
 - `SchemaMode.STRICT` is the default; `SchemaMode.ALLOW_EXTRA_COLUMNS` permits additional hook output columns.
 - `StructureCompileError` exposes a rendered diagnostic with remediation. See the
   [Transforms background](../background/Transform.back.md) and [Hooks reference](../background/HookSemantics.back.md).
