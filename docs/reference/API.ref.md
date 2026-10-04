@@ -11,31 +11,11 @@ wrapper: admitted APIs remain typed, symbolic, capability-checked, explainable, 
 
 The default target is ordinary PySpark `>=3.5,<4.1`; completed compiler-visible batch features also target Spark
 Connect. See [Compatibility.md](../Compatibility.md) for the full target policy,
-[APICatalog.md](../APICatalog.md) for the public API catalog and checked coverage table.
+[API.md](../API.md#api-documentation-map) for the API documentation gateway, and [APICompatibility.md](../compatibility/APICompatibility.md)
+for the family-level compatibility summary.
 
 The examples use declaration forms from the [Schema reference](Schema.ref.md) and the
 [Transform reference](Transform.ref.md).
-
-## PySpark 4.1 adoption reference
-
-The planned target profile is `>=4.1,<4.2`. Ordinary PySpark is the primary variant; Spark Connect is a separate claim
-requiring 4.1-specific live evidence. The rows below describe the planned boundary and do not widen the current
-default support range until the adoption work closes.
-
-| PySpark 4.1 surface | Planned Structure status | Contract |
-| --- | --- | --- |
-| `Column.transform` and higher-order additions | design-gated | Typed whole-expression callback/result; type and nullability; row preservation |
-| Deterministic scalar/string/binary/collection functions | design-gated | Typed helpers with capability/parity checks |
-| Random/seeded helpers | design-gated | Explicit seed and nondeterminism policy; no streaming |
-| `DataFrame.exists` and IN subqueries | planned | Correlation, aliases, null behavior, and boolean result |
-| `DataFrame.lateralJoin` | design-gated | Typed relation output, cardinality, correlation, and streaming contract |
-| Complex observations | design-gated | Metric side channels, retrieval, serialization, and streaming contracts |
-| KLL and Theta sketches | profile-gated | PySpark 4.1 opaque-state contract and live evidence; baseline HLL/Bitmap are supported separately |
-| Arrow UDF/UDTF; `transformWithState` | application-controlled/design-gated | Raw PySpark; no worker Python |
-
-The full ledger is in [APICatalog.md](../APICatalog.md#pyspark-41-adoption). The current public baseline remains
-ordinary and Connect PySpark `>=3.5,<4.1` until every promoted 4.1 row has capability, diagnostics, tests, and runtime
-evidence.
 
 ## Core APIs
 
@@ -135,8 +115,8 @@ typed operation graph.
 
 ## Planned And Unsupported Surface
 
-The [API Coverage](../APICatalog.md#api-coverage) table classifies the current PySpark transformation baseline, and
-the [Streaming](../APICatalog.md#streaming) section classifies the current PySpark Structured Streaming surface. The
+The [API compatibility overview](../compatibility/APICompatibility.md) classifies the current PySpark transformation
+baseline, and the per-family compatibility ledgers classify function and Structured Streaming surfaces. The
 rows below remain a compact orientation aid. Loading, storage, actions, and orchestration are not transformation APIs
 and stay outside Structure's scope.
 
@@ -151,8 +131,8 @@ and stay outside Structure's scope.
 | Collection basics | supported | Core arrays/maps | [Collections API](../api/Collections.api.md) |
 | Raw APIs/lifecycle | unsupported | `expr`, `WindowSpec`, UDTF | Use hooks; caller controls lifecycle. |
 
-For detailed restrictions, diagnostics, and feature-admission rationale, consult [APICatalog.md](../APICatalog.md)
-and the linked reference pages.
+For detailed restrictions, diagnostics, and feature-admission rationale, consult [APICompatibility.md](../compatibility/APICompatibility.md),
+[APITracker.md](../compatibility/APITracker.md), and the linked reference pages.
 
 ## Next Steps
 

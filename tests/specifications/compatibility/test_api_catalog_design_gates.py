@@ -4,7 +4,7 @@ from pathlib import Path
 import structure.plugin.pyspark as pyspark
 
 ROOT = Path(__file__).resolve().parents[3]
-API_CATALOG = ROOT / "docs/APICatalog.md"
+API_COMPATIBILITY = ROOT / "docs/compatibility/APICompatibility.md"
 DESIGN = ROOT / "docs/dev/gated/ApiCatalog.gates.md"
 DEFERRED = ROOT / "docs/dev/deferred/ApiCatalog.deferred.md"
 SPEC = ROOT / "docs/dev/specifications/PySparkApiCatalog.spec.md"
@@ -15,7 +15,7 @@ GEO_PLAN = ROOT / "docs/dev/planning/P10012602.Geospatial-provider-boundaries.pl
 
 
 def test_api_catalog_open_rows_use_design_gate_language() -> None:
-    text = API_CATALOG.read_text(encoding="utf-8")
+    text = API_COMPATIBILITY.read_text(encoding="utf-8")
 
     assert "planned" not in text.lower()
     assert "| deferred |" not in text.lower()

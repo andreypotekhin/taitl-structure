@@ -6,7 +6,7 @@ ROOT = Path(__file__).resolve().parents[3]
 RESOURCES = ROOT / "src/structure/plugin/pyspark/resources"
 V8_LEDGER = RESOURCES / "pyspark-structured-streaming-coverage.json"
 V9_LEDGER = RESOURCES / "pyspark-streaming-api-coverage.json"
-API_CATALOG = ROOT / "docs/APICatalog.md"
+API_COMPATIBILITY = ROOT / "docs/compatibility/APICompatibility.md"
 VALID_STATUSES = {
     "structure-supported",
     "caller-owned-guided",
@@ -142,7 +142,7 @@ def test_structure_supported_streaming_apis_do_not_claim_lifecycle_ownership() -
 
 
 def test_public_streaming_catalog_uses_v9_status_language() -> None:
-    streaming = _section(API_CATALOG.read_text(encoding="utf-8"), "## Streaming", "## API Coverage")
+    streaming = _section(API_COMPATIBILITY.read_text(encoding="utf-8"), "## Streaming", "## API Coverage")
 
     assert "| planned |" not in streaming
     assert "| deferred |" not in streaming

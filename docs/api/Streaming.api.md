@@ -134,3 +134,7 @@ integration lanes can prove bounded ranking state, finite event-time completion,
 restart. The current Search transform does not expose a caller-adoption contract or start a streaming query. See the
 retained requirements in
 [search streaming plan](../dev/planning/P08022605.SearchDocuments-structured-streaming.plan.md).
+
+## Compatibility
+
+See the exhaustive [Streaming compatibility ledger](../compatibility/Streaming.compat.md).

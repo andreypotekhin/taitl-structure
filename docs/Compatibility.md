@@ -55,7 +55,7 @@ Unknown plugin targets use `BACKEND-E2401`; unsupported target features use `BAC
 ## API Compatibility
 
 The public API compatibility surface is the compiler-visible Structure DSL plus the admitted PySpark plugin API listed
-in [APICatalog.md](APICatalog.md). A catalog row marked `supported` or `implemented` is part of the current public
+in [APICompatibility.md](compatibility/APICompatibility.md). A catalog row marked `supported` or `implemented` is part of the current public
 contract for its stated target profile. Rows marked `planned`, `scheduled`, `partial`, `deferred`, `unsupported`, or
 `intentional raw` are not compatibility promises beyond the exact boundary stated in the catalog.
 
@@ -64,8 +64,27 @@ capability checks for their target profile. Removing a supported catalog row, ch
 or narrowing its result schema/nullability in a breaking way, or changing documented semantics requires a major version
 after 1.0 or an explicit compatibility shim.
 
-PySpark-plugin additions on top of PySpark are summarized in [APIExtensions.md](APIExtensions.md). Detailed API
-reference material remains in [API.ref.md](reference/API.ref.md).
+Structure additions on top of PySpark are summarized in [API.md](API.md#extensions-beyond-pyspark). Detailed API
+reference material remains in [API.ref.md](reference/API.ref.md). The [API documentation map](API.md#api-documentation-map)
+connects family references to their exhaustive compatibility ledgers; [APITracker.md](compatibility/APITracker.md)
+holds detailed parity and target-gated tracking.
+
+### API Compatibility Ledgers
+
+Each API reference links to its exhaustive compatibility ledger. These tables record the corresponding PySpark API,
+examples, per-version availability, and Structure contract or migration boundary.
+
+| API area | Compatibility ledger |
+| --- | --- |
+| Aggregations and sketches | [Aggregations](compatibility/Aggregations.compat.md) |
+| Collections | [Collections](compatibility/Collections.compat.md) |
+| Expressions and SQL functions | [Expressions](compatibility/Expressions.compat.md) |
+| Joins | [Joins](compatibility/Joins.compat.md) |
+| Relations | [Relations](compatibility/Relations.compat.md) |
+| Schemas and types | [Schemas](compatibility/Schemas.compat.md) |
+| Streaming | [Streaming](compatibility/Streaming.compat.md) |
+| Transforms and hooks | [Transforms](compatibility/Transforms.compat.md) |
+| Windows | [Windows](compatibility/Windows.compat.md) |
 
 ## Spark Connect
 
@@ -189,7 +208,8 @@ Plugin API v1 has four required facets and three optional lifecycle facets:
 | `generator` | Optional; returns generated file content while Core owns paths and writes. |
 | `serializer` | Optional; encodes and decodes only opaque plugin payloads inside Core-owned artifact envelopes. |
 
-A plugin may add compiler-visible API only when its public rows are documented in [APICatalog.md](APICatalog.md), backed
+A plugin may add compiler-visible API only when its public rows are documented in [APICompatibility.md](compatibility/APICompatibility.md)
+and the relevant API references, backed
 by capability diagnostics, and compatible with the selected profile. Unknown plugins fail with `BACKEND-E2401`; known
 plugins that cannot support a requested feature for the configured target fail with `BACKEND-E2402`.
 

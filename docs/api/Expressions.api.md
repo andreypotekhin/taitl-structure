@@ -462,3 +462,7 @@ Spatial values do not become interchangeable because the function names are simi
 the same `geo_provider` scope as its arguments; predicates require the same provider, Geometry/Geography kind, and
 fixed SRID. See the [Geospatial reference](../reference/Geospatial.ref.md) for target status, scope, and Binary
 handoffs.
+
+## Compatibility
+
+See the exhaustive [Expressions compatibility ledger](../compatibility/Expressions.compat.md).

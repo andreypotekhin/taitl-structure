@@ -98,3 +98,7 @@ as `o`, its customer key as `p`, and its event-time order key as `t`.
 
 `window_count_distinct(...)` is intentionally unsupported because Spark does not permit distinct window aggregates.
 Use `window_count(...)` or grouped `count_distinct(...)` instead.
+
+## Compatibility
+
+See the exhaustive [Windows compatibility ledger](../compatibility/Windows.compat.md).

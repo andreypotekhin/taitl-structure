@@ -1492,7 +1492,7 @@ Get started: [GettingStarted.md](GettingStarted.md)
 
 API: [API.md](API.md)
 
-API catalog: [APICatalog.md](APICatalog.md)
+API catalog: [API documentation map](API.md#api-documentation-map)
 
 API reference: [API.ref.md](reference/API.ref.md)
 
@@ -1504,7 +1504,7 @@ Reference docs: [Reference.md](Reference.md)
 
 ## Extensions to PySpark
 
-Reference: [API extensions](APIExtensions.md)
+Reference: [API extensions](API.md#extensions-beyond-pyspark)
 
 #### Scan
 

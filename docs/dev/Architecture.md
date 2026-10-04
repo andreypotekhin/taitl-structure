@@ -1,6 +1,6 @@
 # Architecture
 
-The detailed parity and boundary register is [Parity.md](Parity.md). Current API and streaming gates are maintained in
+The detailed parity and boundary register is [APITracker.md](../compatibility/APITracker.md). Current API and streaming gates are maintained in
 [docs/dev/gated](gated/), with deferred direction in [docs/dev/deferred](deferred/).
 
 Structure is a schema-driven compiler and runtime toolkit. Core owns the public workflow: it discovers source,

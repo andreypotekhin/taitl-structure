@@ -11,11 +11,29 @@ Structure is not a one-to-one PySpark
 wrapper: admitted APIs remain typed, symbolic, capability-checked, explainable, and readable in generated code.
 
 The default target is ordinary PySpark `>=3.5,<4.1`; batch features also target Spark
-Connect. See [Compatibility.md](Compatibility.md) for the full target policy, [APICatalog.md](APICatalog.md) for the
-public API catalog and checked coverage table, and the [Parity register](dev/Parity.md) for
-the developer backlog.
-For additions on top of PySpark, see [APIExtensions.md](APIExtensions.md). For the detailed
-reference page, see [API.ref.md](reference/API.ref.md).
+Connect. See [Compatibility.md](Compatibility.md) for the full target policy, [APICompatibility.md](compatibility/APICompatibility.md)
+for family-level compatibility, and [APITracker.md](compatibility/APITracker.md) for detailed parity tracking.
+For the detailed narrative reference, see [API.ref.md](reference/API.ref.md).
+
+## API Documentation Map
+
+Use each API reference for its supported helper contracts and its compatibility ledger for the exhaustive
+PySpark correspondence and boundary details.
+
+| API area | API reference | Compatibility ledger |
+| --- | --- | --- |
+| Aggregations and sketches | [Aggregations API](api/Aggregations.api.md) | [Aggregations compatibility](compatibility/Aggregations.compat.md) |
+| Collections | [Collections API](api/Collections.api.md) | [Collections compatibility](compatibility/Collections.compat.md) |
+| Expressions and SQL functions | [Expressions API](api/Expressions.api.md) | [Expressions compatibility](compatibility/Expressions.compat.md) |
+| Joins | [Joins API](api/Joins.api.md) | [Joins compatibility](compatibility/Joins.compat.md) |
+| Relations | [Relations API](api/Relations.api.md) | [Relations compatibility](compatibility/Relations.compat.md) |
+| Schemas and types | [Schemas API](api/Schemas.api.md) | [Schemas compatibility](compatibility/Schemas.compat.md) |
+| Streaming | [Streaming API](api/Streaming.api.md) | [Streaming compatibility](compatibility/Streaming.compat.md) |
+| Transforms and hooks | [Transforms API](api/Transforms.api.md) | [Transforms compatibility](compatibility/Transforms.compat.md) |
+| Windows | [Windows API](api/Windows.api.md) | [Windows compatibility](compatibility/Windows.compat.md) |
+
+Other orientation: [API compatibility overview](compatibility/APICompatibility.md), [API tracker](compatibility/APITracker.md),
+[Quick reference](QuickRef.md), and [reference overview](reference/API.ref.md).
 
 ## Core APIs
 
@@ -70,10 +88,10 @@ reference page, see [API.ref.md](reference/API.ref.md).
 
 ## Planned And Unsupported Surface
 
-The [API Coverage](APICatalog.md#api-coverage) classifies the current PySpark transformation baseline, and the
-[Streaming](APICatalog.md#streaming) section classifies the current PySpark Structured Streaming surface. The rows
-below remain a compact orientation aid. Loading, storage, actions, and orchestration are not transformation APIs and
-stay outside Structure's scope.
+The [API compatibility overview](compatibility/APICompatibility.md) classifies the current PySpark transformation
+baseline, with detailed family contracts in the linked compatibility ledgers. The rows below remain a compact
+orientation aid. Loading, storage, actions, and orchestration are not transformation APIs and stay outside Structure's
+scope.
 
 | API Area | Status | PySpark Parity | Details |
 | --- | --- | --- | --- |
@@ -86,8 +104,32 @@ stay outside Structure's scope.
 | Collection basics | supported | Core arrays/maps | [Collections API](api/Collections.api.md) |
 | Raw APIs/lifecycle | unsupported | `expr`, raw `WindowSpec`, UDTF | Use hooks; caller owns lifecycle. Scalar `@special(type="udf")` is row-local ordinary-PySpark supported. |
 
-For detailed restrictions, diagnostics, and feature-admission rationale, consult [APICatalog.md](APICatalog.md),
-[Parity register](dev/Parity.md), with function-specific gates in [Function Gates](dev/gated/Functions.gates.md), and the linked reference pages.
+For detailed restrictions, diagnostics, and feature-admission rationale, consult [APICompatibility.md](compatibility/APICompatibility.md),
+[APITracker.md](compatibility/APITracker.md), [Function Gates](dev/gated/Functions.gates.md), and the linked reference pages.
+
+## Extensions Beyond PySpark
+
+These Structure additions make common transform-writing tasks explicit and typed; they are not direct PySpark
+methods or functions.
+
+| Capability | Built on | Addition | Reference |
+| --- | --- | --- | --- |
+| Schema fields in plain Python | Spark SQL types | `boolean`, `date`, `decimal`, `double`, `float`, `integer`, `long`, `map`, `string`, `struct`, `timestamp`, and field-form `array` declare fields that lower to PySpark schemas. | [Schema reference](reference/Schema.ref.md) |
+| String options | PySpark string options | Join, as-of, overlap, and tie options accept validated PySpark-style string literals; constants remain available as aliases. | [Relations API](api/Relations.api.md), [Joins API](api/Joins.api.md) |
+| Relation cardinality assertion | Lazy aggregate guard | `exactly_one(...)` checks cardinality with `REL-E0701` when Spark evaluates its guard; optimized-away work can skip it. | [Relations API](api/Relations.api.md) |
+| Relation integrity assertions | Lazy aggregate guard | `require_unique(...)`, `require_all(...)`, and `require_reference(...)` express typed integrity checks. | [Relations API](api/Relations.api.md) |
+| Parent hierarchy validation | Finite self-join validation | `require_parent_hierarchy(...)` checks bounded catalogs and reports `REL-E0706`. | [Relations API](api/Relations.api.md) |
+| Priority row selection | Ordered grouping/window pattern | `select_first_qualified(...)` selects one eligible row per declared business key and reports `REL-E0705`. | [Relations API](api/Relations.api.md) |
+| Parent hierarchy closure | Iterative relation expansion | `hierarchy_closure(...)` emits typed `(node, ancestor, depth)` closure rows. | [Relations API](api/Relations.api.md) |
+| Bounded parent hierarchy fallbacks | Iterative relation expansion | `hierarchy_fallbacks(...)` emits deterministic fallback rows from a bounded path. | [Relations API](api/Relations.api.md) |
+| Relation sampling | Spark `DataFrame.sample` | `sample(...)` records reproducible batch sampling. | [Relations API](api/Relations.api.md) |
+| Range repartitioning | Spark `DataFrame.repartitionByRange` | `repartition_by_range(...)` records typed, batch-only range partitioning without promising output order. | [Relations API](api/Relations.api.md) |
+| Missing-column union | Spark `DataFrame.unionByName` | Nullable/defaulted and nested-struct evolution is supported for batch; array/map and streaming evolution remain gated. | [Relations API](api/Relations.api.md) |
+| Bounded ordered scan | Ordered recurrence pattern | `scan(...)` provides batch-only typed state progression over a bounded ordered timeline. | [Relations API](api/Relations.api.md) |
+| Deterministic selected-row helpers | Ordered grouping/window patterns | `earliest_by(...)`, `latest_by(...)`, `dedupe_earliest_by(...)`, and `dedupe_latest_by(...)` encode deterministic row-selection policies. | [Aggregations API](api/Aggregations.api.md) |
+| Temporal selected-row helpers | As-of join/window patterns | `temporal_one(...)` and `as_of_one(...)` make time direction, tolerance, and tie behavior explicit. | [Joins API](api/Joins.api.md) |
+
+For the exhaustive PySpark comparison, use the compatibility ledgers in the [API documentation map](#api-documentation-map).
 
 ## Next Steps
 

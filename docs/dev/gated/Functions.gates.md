@@ -1,7 +1,7 @@
 # Function Gates
 
 This document indexes function-specific design and evidence gates. The detailed PySpark family tables, parity status,
-and caller-owned boundaries are maintained in the [Parity register](../Parity.md). Cross-family API decisions belong in
+and caller-owned boundaries are maintained in the [Parity register](../../compatibility/APITracker.md). Cross-family API decisions belong in
 [API Catalog Gates](ApiCatalog.gates.md); streaming-specific decisions belong in [Streaming Gates](Streaming.gates.md).
 
 ## Gate Vocabulary
@@ -38,7 +38,7 @@ the gate register searchable without duplicating the full PySpark inventory.
 
 ### Family-level parity and evidence
 
-The [Parity register](../Parity.md) is authoritative for every reviewed PySpark function family. Open rows must retain
+The [Parity register](../../compatibility/APITracker.md) is authoritative for every reviewed PySpark function family. Open rows must retain
 one precise disposition and identify the missing type, nullability, determinism, cardinality, target, streaming, or
 runtime evidence. A family is not complete merely because one representative function has tests.
 
@@ -67,7 +67,7 @@ provider scope. The default baseline makes no spatial support claim; see
 ### Random and order-sensitive functions
 
 Seeded random functions, sampling, ordering, and selected-row helpers must state reproducibility, tie, null, and
-streaming behavior. Their detailed family status remains in [Parity](../Parity.md), while postponed direction is in
+streaming behavior. Their detailed family status remains in [Parity](../../compatibility/APITracker.md), while postponed direction is in
 [API Catalog Deferred Work](../deferred/ApiCatalog.deferred.md).
 
 ## Admission Evidence
@@ -78,7 +78,7 @@ and streaming classification. A skipped target lane is unavailable evidence, not
 
 ## Related Records
 
-- [Parity](../Parity.md) is the detailed parity and boundary register.
+- [Parity](../../compatibility/APITracker.md) is the detailed parity and boundary register.
 - [API Catalog Gates](ApiCatalog.gates.md) owns cross-family API gates.
 - [API Catalog Deferred Work](../deferred/ApiCatalog.deferred.md) owns postponed API direction.
 - [Streaming Gates](Streaming.gates.md) owns streaming-specific gates.

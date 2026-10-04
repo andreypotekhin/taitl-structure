@@ -180,7 +180,7 @@ generated lifecycle code can rely on a complete enough PySpark-family contract.
 
 ### v3 must include
 
-- Planned Column API and SQL function gaps from the [Parity register](../Parity.md), with function-specific gates in
+- Planned Column API and SQL function gaps from the [Parity register](../../compatibility/APITracker.md), with function-specific gates in
   [Function Gates](../gated/Functions.gates.md).
 - Using-key joins, right/full diagnostics hardening, cross join safety, supported join strategy directives, and forward
   as-of joins.
@@ -479,7 +479,7 @@ V10 follows the completed V9 design-gate closeout and expands only the core API 
 adopted from `docs/dev/deferred/ApiCatalog.deferred.md` and `docs/dev/deferred/Streaming.deferred.md`. It keeps streaming lifecycle,
 deployment, recovery, and side effects caller-owned.
 
-The current detailed parity and boundary register is [Parity.md](../Parity.md). Function-specific gates are indexed in
+The current detailed parity and boundary register is [Parity.md](../../compatibility/APITracker.md). Function-specific gates are indexed in
 [Functions.gates.md](../gated/Functions.gates.md); cross-family and streaming gates are in
 [ApiCatalog.gates.md](../gated/ApiCatalog.gates.md) and [Streaming.gates.md](../gated/Streaming.gates.md).
 

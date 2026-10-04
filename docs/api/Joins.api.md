@@ -82,3 +82,7 @@ and `e` denote a temporal predicate, event time, valid-from, and valid-to expres
 - String options are validated and normalized before compilation; enum constants remain accepted as aliases.
 - Dedupe is only for lookup joins and must make the right-row selection rule explicit.
 - Raw SQL join predicates are unsupported. See the [Transforms background](../background/Transform.back.md).
+
+## Compatibility
+
+See the exhaustive [Joins compatibility ledger](../compatibility/Joins.compat.md).

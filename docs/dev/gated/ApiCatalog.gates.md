@@ -3,7 +3,7 @@
 This document is the single register for API design gates. Structure admits a PySpark feature only when its typed
 contract, cardinality and nullability rules, target capability, diagnostics, generated form, online behavior, and
 evidence agree. Use the [Function Gates](Functions.gates.md) for function-specific gates and the
-[Parity register](../Parity.md) for detailed family coverage.
+[Parity register](../../compatibility/APITracker.md) for detailed family coverage.
 
 ## Status
 
@@ -32,7 +32,7 @@ or materialize to batch. The detailed implementation work is in the
 [V10 API plan](../planning/P08022601.V10-api-catalog-and-schema-evolution.plan.md).
 
 The typed API intentionally covers useful families rather than every PySpark spelling. Open function families remain in
-the [Parity register](../Parity.md) and [Function Gates](Functions.gates.md) until each has a type, nullability,
+the [Parity register](../../compatibility/APITracker.md) and [Function Gates](Functions.gates.md) until each has a type, nullability,
 determinism, cardinality, capability, and evidence decision.
 
 The XML, geospatial, join-reordering, and directional as-of items intentionally deferred after review are recorded in
@@ -42,7 +42,7 @@ The XML, geospatial, join-reordering, and directional as-of items intentionally 
 
 Before a gate moves to `implemented` or `supported`, update the public reference, capability or unsupported
 diagnostic, symbolic/IR tests, generated rendering tests, online execution tests, Spark Connect evidence where claimed,
-streaming classification, and the [API Catalog](../../APICatalog.md). Unavailable live evidence remains unavailable; it
+streaming classification, and the [API documentation map](../../API.md#api-documentation-map). Unavailable live evidence remains unavailable; it
 is never promoted to support.
 
 ## Evidence Gates
@@ -65,5 +65,5 @@ matrix is maintained in [V10 Release Evidence](../project-management/V10ReleaseE
 
 - [Streaming gates](Streaming.gates.md) owns streaming-specific state, lifecycle, and side-effect gates.
 - [API Catalog deferred work](../deferred/ApiCatalog.deferred.md) owns postponed API direction and adoption scope.
-- [API Catalog](../../APICatalog.md) is the public status table.
+- [API documentation map](../../API.md#api-documentation-map) is the public status and documentation map.
 - [Compatibility](../../Compatibility.md) defines the default PySpark target range.

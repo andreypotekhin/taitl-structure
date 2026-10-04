@@ -3,7 +3,7 @@
 ## Purpose
 
 This specification defines the checked catalog and release-ledger contract for Structure's PySpark transformation
-surface. The public [API Catalog](../../APICatalog.md) is the user-facing status view; the machine-readable inventories
+surface. The public [API documentation map](../../API.md#api-documentation-map) is the user-facing entry point; the machine-readable inventories
 under `src/structure/plugin/pyspark/resources/` are the checked implementation source. This document records how those
 views stay aligned and how a feature earns a support claim.
 

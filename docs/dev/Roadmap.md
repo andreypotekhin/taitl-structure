@@ -8,7 +8,7 @@ supplies target-specific service facets, and external wheels can supply equivale
 
 The historical phase checklist is archived in
 [Implementation.md](../../close/archive/implementation/Implementation.md). Current parity and boundary detail is in
-[Parity.md](Parity.md); current API and streaming gates are in [gated/](gated/), and deferred direction is in
+[APITracker.md](../compatibility/APITracker.md); current API and streaming gates are in [gated/](gated/), and deferred direction is in
 [deferred/](deferred/).
 
 ## Foundations

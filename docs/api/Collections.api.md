@@ -219,3 +219,7 @@ empty maps preserve their source row. Nested maps, structs, variants, and compat
 - Python callback control flow and raw/untyped row-expanding generators such as direct `explode(...)` are unsupported.
   Use the typed struct or scalar-array generator forms above when the element shape is admitted. See the
   [Transforms background](../background/Transform.back.md).
+
+## Compatibility
+
+See the exhaustive [Collections compatibility ledger](../compatibility/Collections.compat.md).

@@ -16,7 +16,7 @@ evidence or a named missing contract.
 
 - Run pinned PySpark 3.5/4.0 online/generated streaming lanes and restart checks.
 - Run optional Geometry-provider evidence only when dependencies are pinned.
-- Reconcile `docs/APICatalog.md`, API references, capability ledgers, diagnostics, troubleshooting, and generated docs.
+- Reconcile `docs/API.md`, API references, capability ledgers, diagnostics, troubleshooting, and generated docs.
 - Record unavailable target lanes honestly.
 
 ## Acceptance and Demo

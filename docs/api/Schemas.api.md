@@ -65,3 +65,7 @@ Schema declarations define Structure's typed row contract and materialize to Spa
 - `types.decimal(...)` is the standalone decimal type factory; use `decimal(...)` in schema declarations.
 
 See the [Schemas reference](../reference/Schema.ref.md) for construction and nullability rules.
+
+## Compatibility
+
+See the exhaustive [Schemas compatibility ledger](../compatibility/Schemas.compat.md).

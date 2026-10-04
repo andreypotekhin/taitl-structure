@@ -196,3 +196,7 @@ aggregate surface.
   frames it requires a preceding watermark and uses bounded `dropDuplicatesWithinWatermark`; batch frames use normal
   `dropDuplicates`. `drop_duplicates_within_watermark(...)` is the explicit streaming-only spelling.
 - Operations apply in source order. See [Transforms background](../background/Transform.back.md).
+
+## Compatibility
+
+See the exhaustive [Aggregations compatibility ledger](../compatibility/Aggregations.compat.md).

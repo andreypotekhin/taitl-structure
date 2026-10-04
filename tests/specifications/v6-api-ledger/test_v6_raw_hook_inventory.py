@@ -6,7 +6,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[3]
 EXAMPLES = ROOT / "examples"
 INVENTORY = ROOT / "docs/dev/specifications/ExampleRawHookInventory.json"
-PARITY = ROOT / "docs/dev/Parity.md"
+PARITY = ROOT / "docs/compatibility/APITracker.md"
 VALID_STATUSES = {"scheduled", "retired", "intentional", "deferred"}
 PARITY_REGISTER = (
     "Normal, conditional, predicate, and sort",

@@ -73,3 +73,7 @@ are documented in the [Relations API](Relations.api.md).
 - `SchemaMode.STRICT` is the default; `SchemaMode.ALLOW_EXTRA_COLUMNS` permits additional hook output columns.
 - `StructureCompileError` exposes a rendered diagnostic with remediation. See the
   [Transforms background](../background/Transform.back.md) and [Hooks reference](../background/HookSemantics.back.md).
+
+## Compatibility
+
+See the exhaustive [Transforms compatibility ledger](../compatibility/Transforms.compat.md).

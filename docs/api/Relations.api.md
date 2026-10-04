@@ -155,3 +155,7 @@ row, and must return the same state Schema. A positive `max_rows` bounds the ins
 ordering keys fail under the current `ties="error"` policy.
 
 See [Ordered Timeline Scan](../dev/specifications/OrderedTimelineScan.spec.md) for the complete state and recurrence rules.
+
+## Compatibility
+
+See the exhaustive [Relations compatibility ledger](../compatibility/Relations.compat.md).

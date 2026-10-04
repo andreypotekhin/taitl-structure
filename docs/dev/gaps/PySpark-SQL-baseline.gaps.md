@@ -2,7 +2,8 @@
 
 This is the function-level migration gap register for the ordinary PySpark `>=3.5,<4.1` baseline. The baseline is the
 intersection of the public PySpark 3.5.x and 4.0.x APIs. It complements the family summary in
-[Parity](../Parity.md) and the public status table in [APICatalog.md](../../APICatalog.md).
+[APITracker](../../compatibility/APITracker.md) and the public compatibility summary in
+[APICompatibility.md](../../compatibility/APICompatibility.md).
 
 The register targets PySpark parity for migration: preserve the PySpark name and semantics where Structure can own a
 typed contract; record an explicit Structure equivalent where the public spelling must differ; and give every remaining
@@ -878,6 +879,6 @@ Structure may use a more explicit typed API, but the gap row must show how a PyS
 ## Ownership and Updates
 
 The owning ExecPlan is [P09302601](../planning/P09302601.PySpark-SQL-baseline-gap-closeout.plan.md). Update this table
-with [Parity](../Parity.md), [Function Gates](../gated/Functions.gates.md),
+with [Parity](../../compatibility/APITracker.md), [Function Gates](../gated/Functions.gates.md),
 [API Catalog Deferred Work](../deferred/ApiCatalog.deferred.md), the public catalog, capability ledgers, API references,
 and tests whenever a disposition changes.
