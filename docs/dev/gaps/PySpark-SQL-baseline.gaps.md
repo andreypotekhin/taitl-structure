@@ -878,7 +878,7 @@ Structure may use a more explicit typed API, but the gap row must show how a PyS
 
 ## Ownership and Updates
 
-The owning ExecPlan is [P09302601](../planning/P09302601.PySpark-SQL-baseline-gap-closeout.plan.md). Update this table
+The owning ExecPlan is [P09302601](../planning/past/P09302601.PySpark-SQL-baseline-gap-closeout.plan.md). Update this table
 with [Parity](../../compatibility/APITracker.md), [Function Gates](../gated/Functions.gates.md),
 [API Catalog Deferred Work](../deferred/ApiCatalog.deferred.md), the public catalog, capability ledgers, API references,
 and tests whenever a disposition changes.

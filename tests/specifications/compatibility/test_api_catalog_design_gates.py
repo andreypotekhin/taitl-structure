@@ -11,7 +11,7 @@ SPEC = ROOT / "docs/dev/specifications/PySparkApiCatalog.spec.md"
 V9_SPEC = ROOT / "docs/dev/specifications/V9ApiCatalogDesignGatedFeatures.spec.md"
 GEO_DESIGN = ROOT / "docs/dev/design/Geospatial.design.md"
 GEO_SPEC = ROOT / "docs/dev/specifications/Geospatial.spec.md"
-GEO_PLAN = ROOT / "docs/dev/planning/P10012602.Geospatial-provider-boundaries.plan.md"
+GEO_PLAN = ROOT / "docs/dev/planning/past/P10012602.Geospatial-provider-boundaries.plan.md"
 
 
 def test_api_catalog_open_rows_use_design_gate_language() -> None:

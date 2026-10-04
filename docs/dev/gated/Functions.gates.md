@@ -62,7 +62,7 @@ streaming evidence are all required before release.
 
 Native Geometry/Geography is a PySpark 4.1 target gate. External provider helpers are namespaced and require matching
 provider scope. The default baseline makes no spatial support claim; see
-[P10012602](../planning/P10012602.Geospatial-provider-boundaries.plan.md).
+[P10012602](../planning/past/P10012602.Geospatial-provider-boundaries.plan.md).
 
 ### Random and order-sensitive functions
 

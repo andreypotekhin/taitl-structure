@@ -274,6 +274,7 @@ from examples.search.transforms.experiment import (
 from examples.search.transforms.features import BuildDocumentFeatures, BuildQueryFeatures, Features
 from examples.search.transforms.fields import Fields
 from examples.search.transforms.indexing import FieldIndex, Indexing
+from examples.search.transforms.indexing.vector import VectorIndex
 from examples.search.transforms.labeling import CreateQueryLabels, Labeling, MergeQueryLabels
 from examples.search.transforms.offline.scoring.lexical.MergeOfflineQueries import MergeOfflineQueries
 from examples.search.transforms.offline.scoring.lexical.OfflineScoring import OfflineScoring
@@ -612,6 +613,7 @@ TRANSFORMS = (
     (AnalyzeText, "examples.search.transforms.stats.AnalyzeText.AnalyzeText"),
     (CorpusText, "examples.search.transforms.stats.CorpusText.CorpusText"),
     (Indexing, "examples.search.transforms.indexing.Indexing.Indexing"),
+    (VectorIndex, "examples.search.transforms.indexing.vector.VectorIndex.VectorIndex"),
     (Fields, "examples.search.transforms.fields.Fields.Fields"),
     (FieldIndex, "examples.search.transforms.indexing.fields.FieldIndex.FieldIndex"),
     (SearchFields, "examples.search.transforms.searching.search_fields.SearchFields.SearchFields"),
@@ -741,6 +743,60 @@ def test_query_labeling_pipeline_renders_with_stage_owned_raw_hook(compiled_arti
     assert "from examples.search.transforms.labeling.CreateQueryLabels import CreateQueryLabels" in text
     assert "match_patterns(" in text
     assert "merge_created_labels" in text
+
+
+@pytest.mark.parametrize("execution_mode", ["online", "generated"])
+@pytest.mark.parametrize(
+    ("invalid_field", "invalid_value"),
+    [
+        ("dimension", 2),
+        ("model_id", "other-model"),
+        ("content_revision", "rev-2"),
+        ("experiment_id", "search-v2"),
+        ("vector", []),
+        ("vector", [0.0, 0.0, 0.0]),
+    ],
+    ids=["dimension", "model", "revision", "experiment", "empty-vector", "zero-vector"],
+)
+def test_vector_index_rejects_invalid_embeddings(
+    spark, tmp_path, search_sources, search_session, execution_mode: str, invalid_field: str, invalid_value
+) -> None:
+    fields = {
+        "vector": [1.0, 0.0, 0.0],
+        "model_id": "fixture-embed",
+        "dimension": 3,
+        "content_revision": "rev-1",
+        "experiment_id": "search-v1",
+        "document_id": "d-1",
+    }
+    fields[invalid_field] = invalid_value
+
+    with generated_project(tmp_path, PACKAGE, search_sources):
+        schemas = __import__(f"{PACKAGE}.pyspark.schemas.indexing_vector", fromlist=["DOCUMENT_VECTOR_EMBEDDING_SCHEMA"])
+        policy = spark.createDataFrame(
+            [("fixture-embed", 3, "rev-1", "search-v1", 10, 60)],
+            schemas.VECTOR_INDEX_POLICY_SCHEMA,
+        )
+        documents = spark.createDataFrame(
+            [
+                (
+                    fields["vector"],
+                    fields["model_id"],
+                    fields["dimension"],
+                    fields["content_revision"],
+                    fields["experiment_id"],
+                    fields["document_id"],
+                )
+            ],
+            schemas.DOCUMENT_VECTOR_EMBEDDING_SCHEMA,
+        )
+        paragraphs = spark.createDataFrame([], schemas.PARAGRAPH_VECTOR_EMBEDDING_SCHEMA)
+        execution = VectorIndex(policy=policy, document_embeddings=documents, paragraph_embeddings=paragraphs).run(
+            search_session(spark, execution_mode=execution_mode)
+        )
+
+        with pytest.raises(Exception, match="REL-E0703"):
+            execution.document_index.collect()
 
 
 def test_query_intents_create_multilingual_english_labels_online_and_generated(

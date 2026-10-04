@@ -485,9 +485,10 @@ The current detailed parity and boundary register is [Parity.md](../../compatibi
 
 ### v10 closeout status
 
-The environment-independent V10 scope is conditionally complete as of 2026-08-22. Catalog, ledger, diagnostic,
-documentation, generated-artifact, collision-safety, and package/build reconciliation is complete. Docker-dependent
-live target evidence remains unavailable, and SearchDocuments streaming remains design-gated; see
+The environment-independent V10 scope is conditionally complete as of 2026-10-04. Catalog, ledger, diagnostic,
+documentation, generated-artifact, collision-safety, and package/build reconciliation is complete. Docker is available:
+the classic PySpark 3.5 full selection and focused four-backend vector evidence are current; broad classic 4.0 and Connect
+3.5/4.0 selections did not complete, so runtime claims remain per-feature. SearchDocuments streaming remains design-gated; see
 [V10 Release Evidence](V10ReleaseEvidence.md).
 
 ### v10 sequence

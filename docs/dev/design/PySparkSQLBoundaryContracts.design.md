@@ -9,7 +9,7 @@ state. The separately designed [Typed SQL Execution](TypedSqlExecution.design.md
 with a declared schema; it does not change the exclusion of raw scalar SQL expressions.
 
 The owning execution sequence is
-[P09302601](../planning/P09302601.PySpark-SQL-baseline-gap-closeout.plan.md). The function-level status and migration
+[P09302601](../planning/past/P09302601.PySpark-SQL-baseline-gap-closeout.plan.md). The function-level status and migration
 remedy remain in [PySpark SQL Baseline Gaps](../gaps/PySpark-SQL-baseline.gaps.md).
 
 ## Query-clock expressions
@@ -172,7 +172,7 @@ forms.
 ## Geospatial provider boundary
 
 The full geospatial contract is maintained in [Geospatial design](Geospatial.design.md) and its execution sequence in
-[P10012602](../planning/P10012602.Geospatial-provider-boundaries.plan.md). The default baseline does not include native
+[P10012602](../planning/past/P10012602.Geospatial-provider-boundaries.plan.md). The default baseline does not include native
 Spark Geometry/Geography or external provider support.
 
 Future native PySpark 4.1+ APIs use familiar no-prefix `st_*` names. External providers use their own namespaces, such

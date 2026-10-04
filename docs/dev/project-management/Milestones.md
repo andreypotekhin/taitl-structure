@@ -471,8 +471,11 @@ The dated execution schedule is
 
 ## M15: v10 API Catalog and Streaming Contract Expansion
 
-Status: conditionally complete (2026-08-22). Environment-independent implementation and documentation closeout are
-complete; Docker-dependent live evidence and the SearchDocuments streaming proving lane remain open follow-ups.
+Status: conditionally complete (2026-10-04). Environment-independent implementation and documentation closeout are
+complete. The refreshed classic PySpark 3.5 full selection passes all V10 Search/vector and streaming checks; focused
+vector evidence covers all four runtimes. Broad full selections were attempted on all targets; classic 4.0 timed out
+and Connect 3.5/4.0 did not yield summaries, so support claims remain per-feature rather than suite-wide.
+SearchDocuments streaming and optional-provider Geometry evidence remain separately gated, not V10 support claims.
 
 ### Exit Criteria
 
@@ -492,9 +495,9 @@ complete; Docker-dependent live evidence and the SearchDocuments streaming provi
 
 ### Closeout evidence
 
-See [V10 Release Evidence](V10ReleaseEvidence.md) for the exact pass/skip totals, unavailable lanes, retained design
-gates, and follow-up owners. V10 is conditionally closed and ready for handoff to V11 planning; it is not an
-unconditional runtime-support promotion for the unavailable target lanes.
+See [V10 Release Evidence](V10ReleaseEvidence.md) for exact current and historical lane totals, retained design gates,
+and follow-up owners. V10 is conditionally closed and ready for V11 planning, not a suite-wide runtime promotion for
+lanes whose broad full-selection runs did not complete.
 
 ### Governing Documents
 

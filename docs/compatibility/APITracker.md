@@ -122,23 +122,24 @@ non-nullable String inputs, literal and symbolic integral bounds, online executi
 
 ## Docker Live Evidence Checkpoint
 
-The repository Compose stack under `infra/compose/` was rerun on 2026-09-25 for the full 178-test selection on the
-PySpark 3.5, PySpark 4.0, Spark Connect 3.5, and Spark Connect 4.0 lanes. The PySpark 4.0 run was interrupted after
-approximately one hour without a final summary; its bounded Security test passed separately. These results are runtime
-evidence for the listed slices only; a passing infrastructure lane does not promote an unrelated family or clear a
-design gate.
+The repository Compose stack under `infra/compose/` ran the current 244-test selection on all four backend lanes on
+2026-10-04. Classic PySpark 3.5 completed; classic 4.0 reached its one-hour timeout, and both Connect broad runs were
+stopped without summaries because they made no progress in the bounded observation window. Focused per-family evidence
+is separately recorded. Runtime evidence applies only to the listed slices and does not promote unrelated families or
+clear design gates.
 
 | Backend | Collected | Passed | Skipped | Failed | Evidence boundary |
 | --- | ---: | ---: | ---: | ---: | --- |
-| `pyspark35` | 178 | 164 | 6 | 8 | Current full integration/concept selection; generated stage-result failures are cleared. Two Search cases hit driver-heap exhaustion; six unrelated live-contract/import failures remain. |
-| `pyspark40` | 178 collected; incomplete | — | — | — | Current full lane timed out/interrupted during the heavy Search/Spark workload. A bounded Security test passed (`1 passed, 177 deselected`). Historical 56/3/6 counts are retained only as a prior focused checkpoint. |
-| `spark-connect35` | 178 | 148 | 19 | 11 | Current full integration/concept selection. Five Search cases fail during generated rendering; order-contract and V11 import-path failures remain. |
-| `spark-connect40` | 178 | 151 | 16 | 11 | Current full integration/concept selection. Five Search cases fail during generated rendering with an unsupported `array` helper call; order-contract and V11 import-path failures remain. |
+| `pyspark35` | 244 | 231 | 7 | 6 | Refreshed full integration/concept selection. Search/vector and V10 streaming checks pass; failures are V1/V2 order-hook schema contracts and V11 generated-import tests. |
+| `pyspark40` | 244; incomplete at 3,600s | — | — | — | Reached 74%, during `v2/advanced_order_analytics`; Search and V10 restart checks had passed. |
+| `spark-connect35` | 244; incomplete, stopped after >1h | — | — | — | Multiple failures observed in book-contract tests before Search; no final result. Focused Search: 22 passed/4 skipped; vector validation: 12 passed. |
+| `spark-connect40` | 244; incomplete, stopped after about 27m | — | — | — | No progress beyond collection/initial test; focused Search and vector validation evidence is separate. |
 
-The current ordinary PySpark 3.5 Search failures are Java heap exhaustion during repeated logical-plan union/reverse
-expansion, not generated-result contract failures. Connect Search failures occur during generated rendering; Connect 4.0
-identifies the unsupported helper as `array`. Exact Search vector retrieval, Search generated/online comparison, full
-Connect Search proving, and broader streaming state/lifecycle claims remain gated or deferred.
+The current classic 3.5 full selection no longer reproduces prior Search heap failures. The vector validation selection
+passed on all four backends. Search focused proving cases pass on the four runtimes across the current and recent focused
+runs. Broad full-selection result totals are unavailable on classic 4.0 and both Connect backends because those suites
+timed out or were stopped before completion. SearchDocuments streaming and broader unsupported streaming shapes remain
+gated.
 
 ### Focused P09302601 runtime evidence (2026-10-03)
 

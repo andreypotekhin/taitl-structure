@@ -43,7 +43,7 @@ Native Spark `st_*` helpers are a PySpark 4.1+ target slice. External providers 
 `sedona.st_geomfromwkt` and require matching `geo_provider` scope. Spatial values retain provider dialect, kind, and
 fixed or mixed SRID facts; they cannot cross providers directly. An ordinary Binary field is the explicit handoff, with
 codec compatibility owned by the application. The complete design and adoption requirements are in
-[P10012602](../planning/P10012602.Geospatial-provider-boundaries.plan.md).
+[P10012602](../planning/past/P10012602.Geospatial-provider-boundaries.plan.md).
 
 ### Join Reordering
 

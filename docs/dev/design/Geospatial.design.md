@@ -7,7 +7,7 @@ Geography, Sedona Geometry, and future Mosaic-like providers do not become inter
 similar names. This design provides a migration-friendly native surface and an equal, explicit place for provider APIs
 without pretending their values, codecs, or runtime setup are portable.
 
-The delivery and evidence sequence is [P10012602](../planning/P10012602.Geospatial-provider-boundaries.plan.md). This
+The delivery and evidence sequence is [P10012602](../planning/past/P10012602.Geospatial-provider-boundaries.plan.md). This
 document defines future behavior; it does not promote geospatial support in the PySpark `>=3.5,<4.1` baseline.
 
 ## Namespaces
