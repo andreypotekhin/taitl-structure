@@ -38,6 +38,7 @@ from structure.plugin.pyspark.compiler.model.PySparkScalarGeneratorRecipe import
 from structure.plugin.pyspark.compiler.model.PySparkSelectedRowsRecipe import PySparkSelectedRowsRecipe
 from structure.plugin.pyspark.compiler.model.PySparkSqlRecipe import PySparkSqlRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStackRecipe import PySparkStackRecipe
+from structure.plugin.pyspark.compiler.model.PySparkStatefulTransformRecipe import PySparkStatefulTransformRecipe
 from structure.plugin.pyspark.compiler.model.PySparkWatermarkRecipe import PySparkWatermarkRecipe
 from structure.plugin.pyspark.dsl.operations.StreamingOutputMode import StreamingOutputMode
 
@@ -54,6 +55,7 @@ class PySparkOperationRecipe:
     posexplode_struct: PySparkPosexplodeStructRecipe | None = None
     json_tuple: PySparkJsonTupleRecipe | None = None
     stack: PySparkStackRecipe | None = None
+    stateful_transform: PySparkStatefulTransformRecipe | None = None
     sql: PySparkSqlRecipe | None = None
     scalar_generator: PySparkScalarGeneratorRecipe | None = None
     map_generator: PySparkMapGeneratorRecipe | None = None
@@ -120,6 +122,12 @@ class PySparkOperationRecipe:
     @staticmethod
     def sql_operation(sql: PySparkSqlRecipe) -> "PySparkOperationRecipe":
         return PySparkOperationRecipe(kind="sql", sql=sql)
+
+    @staticmethod
+    def transform_with_state_operation(
+        stateful_transform: PySparkStatefulTransformRecipe,
+    ) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="transform_with_state", stateful_transform=stateful_transform)
 
     @staticmethod
     def posexplode_outer_struct_operation(

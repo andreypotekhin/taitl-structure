@@ -122,6 +122,11 @@ def variant_explode_outer(*args: object, **kwargs: object) -> Any:
     return cast(Any, _variant_explode_outer)(*args, **kwargs)
 
 
+def foreach(row: object, sink: object) -> None:
+    callback = getattr(import_module("structure.plugin.pyspark.dsl.body"), "foreach")
+    callback(row, sink)
+
+
 if TYPE_CHECKING:
     from structure.plugin.pyspark.api.PySpark import PySpark
     from structure.plugin.pyspark.dsl.aggregation import *  # type: ignore  # noqa: F403
@@ -604,6 +609,7 @@ __all__ = [  # noqa: F405
     "year",
     "xxhash64",
     "zeroifnull",
+    "foreach",
     "where",
     "watermark",
     "width_bucket",

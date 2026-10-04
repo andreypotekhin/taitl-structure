@@ -15,12 +15,15 @@ from structure.plugin.api.v1.model.OptimizationRequest import OptimizationReques
 from structure.plugin.api.v1.model.SchemaInspectionRequest import SchemaInspectionRequest
 from structure.plugin.api.v1.model.SchemaValidationRequest import SchemaValidationRequest
 from structure.plugin.api.v1.model.StepAuthoringInput import StepAuthoringInput
+from structure.plugin.api.v1.model.StepAuthoringSink import StepAuthoringSink
 from structure.plugin.api.v1.model.StepAuthoringCapture import StepAuthoringCapture
 from structure.plugin.api.v1.model.StepAuthoringRequest import StepAuthoringRequest
 from structure.plugin.api.v1.model.StepAuthoringResult import StepAuthoringResult
 from structure.plugin.api.v1.model.StepAuthoringSession import StepAuthoringSession
 from structure.plugin.api.v1.model.StepInputPlan import StepInputPlan
 from structure.plugin.api.v1.model.StepPlan import StepPlan
+from structure.plugin.api.v1.model.StepSinkCapture import StepSinkCapture
+from structure.plugin.api.v1.model.SinkPlan import SinkPlan
 from structure.plugin.api.v1.model.StepResultPlan import StepResultPlan
 from structure.plugin.api.v1.model.StreamingAnalysisRequest import StreamingAnalysisRequest
 from structure.plugin.api.v1.model.StreamingBoundaryPlan import StreamingBoundaryPlan
@@ -56,6 +59,7 @@ _CORE_CONTRACTS = {
     "StructureRuntimeError": "structure.core.runtime.session.model.StructureRuntimeError",
     "StructureToolError": "structure.core.tools.model.StructureToolError",
     "TransformResult": "structure.core.runtime.session.model.TransformResult",
+    "SinkResult": "structure.core.runtime.session.model.SinkResult",
     "StageResult": "structure.core.runtime.session.model.StageResult",
     "TransformSchemas": "structure.core.runtime.schemas.model.TransformSchemas",
     "ValidateSchemaToolRequest": "structure.core.tools.logic.rules.ValidateSchemaToolRequest",
@@ -65,7 +69,7 @@ __all__ = [
     "OptimizationGraph", "OptimizationStep", "OptimizationDecision", "OptimizationReport", "OptimizationRequest",
     "CompilationPurpose", "CompileRequest", "ExecutionRequest", "ExplainRequest", "GenerationRequest", "GenerationResult", "InputPlan", "PluginCompilation",
     "SchemaInspectionRequest", "SchemaValidationRequest", "StepAuthoringCapture", "StepAuthoringInput", "StepAuthoringRequest", "HookPlan",
-    "StepAuthoringResult", "StageResult", "StepAuthoringSession", "StepInputPlan", "StepPlan", "StepResultPlan", "StreamingAnalysisRequest", "StreamingSupport",
+    "StepAuthoringResult", "StageResult", "StepAuthoringSession", "StepAuthoringSink", "StepInputPlan", "StepPlan", "StepResultPlan", "StepSinkCapture", "StreamingAnalysisRequest", "StreamingSupport",
     "SymbolicContext", "OutputPlan", "StageOutputPlan", "TraceabilityRequest", "TransformMemberOrigin", "TransformPlan", "TransformSchemaRequest", "StreamingBoundaryPlan", "current_symbolic_context",
     *_CORE_CONTRACTS,
 ]

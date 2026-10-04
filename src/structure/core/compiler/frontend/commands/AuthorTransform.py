@@ -52,8 +52,9 @@ class AuthorTransform:
         return replace(
             plan,
             steps=tuple(
-                replace(structural, plugin_body=captured.plugin_body)
+                replace(structural, plugin_body=captured.plugin_body, sinks=captured.sinks)
                 for structural, captured in zip(plan.steps, authored.steps, strict=True)
             ),
+            sinks=authored.sinks,
             diagnostics=(*plan.diagnostics, *authored.diagnostics),
         )

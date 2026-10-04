@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import replace
+from importlib import import_module
 from pathlib import Path
 from typing import Literal
 
@@ -13,6 +14,7 @@ from structure.core.dsl.model.transforms.TransformPipeline import TransformPipel
 from structure.core.plugins.api.Plugin import Plugin
 from structure.core.plugins.model.PluginConfiguration import PluginConfiguration
 from structure.core.runtime.session.model.RuntimeDiagnostic import RuntimeDiagnostic
+from structure.core.runtime.session.model.SinkResult import SinkResult
 from structure.core.runtime.session.model.StructureRuntimeError import StructureRuntimeError
 from structure.core.runtime.session.model.TransformResult import TransformResult
 from structure.core.sources.api import Sources
@@ -121,7 +123,18 @@ class StructureSession:
         )
         if not isinstance(result, TransformResult):
             raise TypeError(f"Plugin {self.target!r} returned an invalid execution result.")
-        return result._structure_with_schema(schemas.outputs, aliases=schemas.output_aliases)
+        result._structure_with_schema(schemas.outputs, aliases=schemas.output_aliases)
+        if artifact.transform_plan.sinks:
+            sink_results = {}
+            for sink in artifact.transform_plan.sinks:
+                writer: object = import_module(sink.writer_module)
+                for part in sink.writer_qualname.split("."):
+                    writer = getattr(writer, part)
+                if not isinstance(writer, type):
+                    raise TypeError(f"Declared sink writer {sink.writer_qualname!r} is no longer a class.")
+                sink_results[sink.name] = SinkResult(dataframe=result[sink.output], writer=writer)
+            result._structure_with_sinks(sink_results)
+        return result
 
     def _run_plugin(self, invocation: Transform) -> TransformResult:
         configuration = self._plugin_configuration()

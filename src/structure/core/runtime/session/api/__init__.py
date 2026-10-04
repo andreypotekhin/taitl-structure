@@ -2,6 +2,7 @@ from structure.core.runtime.session.model.RuntimeDiagnostic import RuntimeDiagno
 from structure.core.runtime.session.model.StructureRuntimeError import StructureRuntimeError
 from structure.core.runtime.session.model.StructureSession import StructureSession
 from structure.core.runtime.session.model.StageResult import StageResult
+from structure.core.runtime.session.model.SinkResult import SinkResult
 from structure.core.runtime.session.model.TransformResult import TransformResult
 
 __all__ = [
@@ -9,5 +10,6 @@ __all__ = [
     "StructureRuntimeError",
     "StructureSession",
     "StageResult",
+    "SinkResult",
     "TransformResult",
 ]

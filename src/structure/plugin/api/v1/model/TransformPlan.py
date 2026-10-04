@@ -3,6 +3,7 @@ from typing import Any
 
 from structure.plugin.api.v1.model.InputPlan import InputPlan
 from structure.plugin.api.v1.model.OutputPlan import OutputPlan
+from structure.plugin.api.v1.model.SinkPlan import SinkPlan
 from structure.plugin.api.v1.model.StageOutputPlan import StageOutputPlan
 from structure.plugin.api.v1.model.StepPlan import StepPlan
 from structure.plugin.api.v1.model.StreamingBoundaryPlan import StreamingBoundaryPlan
@@ -22,6 +23,7 @@ class TransformPlan:
     options: dict[str, object] | None = None
     diagnostics: tuple[Any, ...] = ()
     streaming_boundaries: tuple[StreamingBoundaryPlan, ...] = ()
+    sinks: tuple[SinkPlan, ...] = ()
 
     @property
     def output_schema(self) -> Any:

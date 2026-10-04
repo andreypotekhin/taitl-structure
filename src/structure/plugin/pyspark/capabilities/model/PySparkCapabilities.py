@@ -14,6 +14,7 @@ SUPPORTED_PROFILES = frozenset(
         ">=3.5,<4.1",
         ">=3.5,<4.0",
         ">=4.0,<4.1",
+        ">=4.1,<4.2",
         ">=4.2,<4.3",
     }
 )
@@ -31,7 +32,12 @@ PYSPARK_4_CAPABILITIES = frozenset(
         ("schema", "sketches_profile_4_1"),
     }
 )
-PYSPARK_4_0_CAPABILITIES = frozenset({("aggregate", "histogram_numeric_decimal")})
+PYSPARK_4_0_CAPABILITIES = frozenset(
+    {
+        ("aggregate", "histogram_numeric_decimal"),
+        ("streaming", "transform_with_state"),
+    }
+)
 PYSPARK_4_2_CAPABILITIES = frozenset({("expression", "is_valid_variant")})
 MATERIALIZATION_CAPABILITIES = frozenset(
     {
@@ -347,9 +353,11 @@ class PySparkCapabilities:
             return base_capabilities
         if target_profile == ">=4.0,<4.1":
             base_capabilities = base_capabilities | PYSPARK_4_CAPABILITIES | PYSPARK_4_0_CAPABILITIES
+        elif target_profile == ">=4.1,<4.2":
+            base_capabilities = base_capabilities | PYSPARK_4_CAPABILITIES | PYSPARK_4_0_CAPABILITIES
         elif target_profile == ">=4.2,<4.3":
             base_capabilities = base_capabilities | PYSPARK_4_CAPABILITIES | PYSPARK_4_2_CAPABILITIES
-        if self.id.variant == "ordinary" and target_profile in MATERIALIZATION_PROFILES:
+        if self.id.variant == "ordinary" and target_profile in MATERIALIZATION_PROFILES | {">=4.1,<4.2"}:
             base_capabilities |= MATERIALIZATION_CAPABILITIES
         elif self.id.variant == "spark-connect" and target_profile == ">=4.0,<4.1":
             base_capabilities |= frozenset({("optimization", "checkpoint")})

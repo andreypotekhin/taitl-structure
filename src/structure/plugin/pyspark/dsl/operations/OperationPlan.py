@@ -29,6 +29,7 @@ from structure.plugin.pyspark.dsl.operations.ScalarGeneratorPlan import ScalarGe
 from structure.plugin.pyspark.dsl.operations.SelectedRowsPlan import SelectedRowsPlan
 from structure.plugin.pyspark.dsl.operations.SqlPlan import SqlPlan
 from structure.plugin.pyspark.dsl.operations.StackPlan import StackPlan
+from structure.plugin.pyspark.dsl.operations.StatefulTransformPlan import StatefulTransformPlan
 from structure.plugin.pyspark.dsl.operations.StreamingOutputMode import StreamingOutputMode
 from structure.plugin.pyspark.dsl.operations.StreamingSupport import StreamingSupport
 from structure.plugin.pyspark.dsl.operations.WatermarkPlan import WatermarkPlan
@@ -46,6 +47,7 @@ class OperationPlan:
     posexplode_struct: PosexplodeStructPlan | None = None
     json_tuple: JsonTuplePlan | None = None
     stack: StackPlan | None = None
+    stateful_transform: StatefulTransformPlan | None = None
     sql: SqlPlan | None = None
     scalar_generator: ScalarGeneratorPlan | None = None
     map_generator: MapGeneratorPlan | None = None
@@ -142,6 +144,17 @@ class OperationPlan:
             capability=OperationCapability("relation", "sql"),
             cardinality=OperationCardinality.UNKNOWN,
             streaming=StreamingSupport.UNKNOWN,
+        )
+
+    @staticmethod
+    def transform_with_state_operation(**values: Any) -> OperationPlan:
+        return OperationPlan(
+            "transform_with_state",
+            stateful_transform=StatefulTransformPlan(**values),
+            family="stateful",
+            capability=OperationCapability("streaming", "transform_with_state"),
+            cardinality=OperationCardinality.UNKNOWN,
+            streaming=StreamingSupport.COMPATIBLE,
         )
 
     @staticmethod

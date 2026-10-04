@@ -108,9 +108,29 @@ query = start_foreach_batch_query(
 )
 ```
 
-Structure does not call `foreachBatch` from transform methods or generated transform modules. Row-level `foreach`
-callbacks remain design-gated until a future side-effect contract defines sink identity, idempotence, retry, and
-recovery behavior.
+Structure does not call `foreachBatch` from transform methods or generated transform modules. A transform may capture an
+opt-in row-level sink for one of its declared final outputs; it returns the writer class and DataFrame on a named
+handoff. The caller still creates the writer instance and starts a separate query. PySpark retries may repeat writes,
+so external sink identity, idempotence, checkpoint, and recovery remain caller-owned.
+
+`examples.streams.transforms.foreach_alerts.PublishAlerts` shows the typed step form. The existing output query stays
+unchanged; start the additional row sink only when the caller opts in:
+
+```python
+result = PublishAlerts(events=events).run(session)
+primary = result.alerts.writeStream.format("parquet").option(
+    "checkpointLocation", primary_checkpoint
+).start(alerts_path)
+
+handoff = result.publish_alerts
+side_sink = handoff.dataframe.writeStream.foreach(
+    handoff.writer(destination=alert_json_path)
+).option("checkpointLocation", foreach_checkpoint).start()
+```
+
+Give the two queries distinct checkpoints and manage both query handles. They can progress and fail independently. The
+sample writer uses `open/process/close` on streaming workers; a batch sink instead passes the configured writer's
+`process` method to `DataFrame.foreach` and does not use streaming lifecycle methods.
 
 Arbitrary state is also design-gated. Callers can use `ArbitraryStateContract` to review the typed boundary before
 writing native `applyInPandasWithState` or `transformWithState` code, but validation does not provide a state runtime:

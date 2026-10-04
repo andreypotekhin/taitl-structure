@@ -10,6 +10,7 @@ from structure.core.dsl.model.transforms.InputDeclaration import InputDeclaratio
 from structure.core.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.core.dsl.model.transforms.OutputDeclaration import OutputBindings, OutputDeclaration
 from structure.core.dsl.model.transforms.ParameterDeclaration import ParameterDeclaration
+from structure.core.dsl.model.transforms.SinkDeclaration import SinkDeclaration
 from structure.core.dsl.model.transforms.StageDeclaration import (
     StageDeclaration,
     StageOutputReference,
@@ -61,6 +62,7 @@ class Transform:
     _structure_inputs: dict[str, InputDeclaration] = {}
     _structure_lanes: dict[str, LaneDeclaration] = {}
     _structure_outputs: dict[str, OutputDeclaration] = {}
+    _structure_sinks: dict[str, SinkDeclaration] = {}
     _structure_parameters: dict[str, ParameterDeclaration] = {}
     _structure_input_aliases: dict[str, str] = {}
     _structure_lane_aliases: dict[str, str] = {}
@@ -78,12 +80,14 @@ class Transform:
         inputs: dict[str, InputDeclaration] = {}
         lanes: dict[str, LaneDeclaration] = {}
         outputs: dict[str, OutputDeclaration] = {}
+        sinks: dict[str, SinkDeclaration] = {}
         output_bindings: dict[str, object] = {}
         parameters: dict[str, ParameterDeclaration] = {}
         for base in cls.__bases__:
             inputs.update(getattr(base, "_structure_inputs", {}))
             lanes.update(getattr(base, "_structure_lanes", {}))
             outputs.update(getattr(base, "_structure_outputs", {}))
+            sinks.update(getattr(base, "_structure_sinks", {}))
             output_bindings.update(getattr(base, "_structure_output_bindings", {}))
             parameters.update(getattr(base, "_structure_parameters", {}))
 
@@ -97,6 +101,8 @@ class Transform:
                 output_bindings.pop(value.name, None)
                 if value.binding == "delta":
                     inputs[value.name] = InputDeclaration(schema=value.schema, name=value.name, binding="delta")
+            if isinstance(value, SinkDeclaration):
+                sinks[value.name] = value
             if isinstance(value, ParameterDeclaration):
                 parameters[value.name] = value
             elif name in parameters:
@@ -105,6 +111,7 @@ class Transform:
         cls._structure_inputs = inputs
         cls._structure_lanes = lanes
         cls._structure_outputs = outputs
+        cls._structure_sinks = sinks
         binding_blocks = [value for value in cls.__dict__.values() if isinstance(value, OutputBindings)]
         if len(binding_blocks) > 1:
             raise TypeError(f"{cls.__name__} declares more than one output binding block")

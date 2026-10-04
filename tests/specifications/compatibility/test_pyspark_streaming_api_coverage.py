@@ -92,7 +92,7 @@ def test_lifecycle_apis_are_guided_without_becoming_structure_transform_claims()
         assert "lifecycle" in entry["api_family"]
 
 
-def test_foreach_batch_is_guided_without_admitting_row_foreach() -> None:
+def test_foreach_batch_and_row_foreach_keep_caller_owned_lifecycle() -> None:
     entries = {entry["id"]: entry for entry in _v9_entries()}
 
     foreach_batch = entries["streaming.foreach-batch"]
@@ -102,9 +102,11 @@ def test_foreach_batch_is_guided_without_admitting_row_foreach() -> None:
     assert "start_foreach_batch_query" in " ".join(foreach_batch["structure_surface"])
 
     foreach = entries["streaming.foreach"]
-    assert foreach["status"] == "design-gated"
-    assert foreach["support_claim"] == "no-structure-support"
-    assert "DataStreamWriter.foreach" in foreach["pyspark_apis"]
+    assert foreach["status"] == "caller-owned-guided"
+    assert foreach["owner_boundary"] == "caller-owned"
+    assert foreach["support_claim"] == "typed-final-output-writer-handoff"
+    assert {"DataFrame.foreach", "DataStreamWriter.foreach"} <= set(foreach["pyspark_apis"])
+    assert "foreach(row, sink)" in foreach["structure_surface"]
 
 
 def test_chained_window_aggregation_has_structure_and_live_profile_evidence() -> None:

@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from structure.plugin.api.v1.model.StepSinkCapture import StepSinkCapture
 from structure.plugin.pyspark.delta.model import DeltaMutation
 from structure.plugin.pyspark.dsl.aggregation.AggregatePlan import AggregatePlan
 from structure.plugin.pyspark.dsl.aggregation.ProjectAssignment import ProjectAssignment
@@ -25,3 +26,4 @@ class PySparkStepBody:
     projection: tuple[ProjectAssignment, ...] = ()
     aggregate: AggregatePlan | None = None
     results: tuple[PySparkResultBody, ...] = ()
+    sinks: tuple[StepSinkCapture, ...] = ()

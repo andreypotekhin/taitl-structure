@@ -4,6 +4,7 @@ from structure.core.runtime.schemas.api import ResultSchemas, Schemas, Transform
 from structure.core.runtime.session.api import (
     RuntimeDiagnostic,
     StageResult,
+    SinkResult,
     StructureRuntimeError,
     StructureSession,
     TransformResult,
@@ -13,6 +14,7 @@ __all__ = [
     "Execution",
     "RuntimeDiagnostic",
     "StageResult",
+    "SinkResult",
     "ResultSchemas",
     "Runtime",
     "Schemas",

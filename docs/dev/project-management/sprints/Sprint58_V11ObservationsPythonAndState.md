@@ -16,7 +16,8 @@ API; no gated state or worker-Python API is generated accidentally.
 
 - Specify and implement a typed metric channel or retain the observation gate.
 - Specify sketch binary/merge/dependency semantics or retain the gate.
-- Add stable diagnostics and generated-source negative scans for Arrow UDF/UDTF and state APIs.
+- Add stable diagnostics and generated-source boundary checks for Arrow UDF/UDTF and unsupported state APIs. Implement
+  row-based `transformWithState` according to its dedicated ExecPlan; keep its support claim gated on target evidence.
 - Add streaming classification and caller-owned examples where needed.
 
 ## Acceptance
@@ -25,4 +26,5 @@ Catalog status, diagnostics, specification, and tests agree; gated APIs are reje
 
 ## Governing plan
 
-`docs/dev/planning/P08042601.V11-pyspark-4.1-adoption.plan.md` and the V11 Python/streaming and observations designs.
+`docs/dev/planning/P08042601.V11-pyspark-4.1-adoption.plan.md`,
+`docs/dev/planning/P10042603.V11-transform-with-state.plan.md`, and the V11 Python/streaming and observations designs.

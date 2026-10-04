@@ -69,6 +69,33 @@ class ClassifyStreamingCompatibility:
                         operation.watermark.column
                     ] = operation.watermark.delay
                     continue
+                if operation.kind == "transform_with_state" and operation.stateful_transform is not None:
+                    state = operation.stateful_transform
+                    if not streaming_step:
+                        findings.append(
+                            StreamingFinding(
+                                code="STREAM-E0801",
+                                support=StreamingSupport.BATCH_ONLY,
+                                step=step.name,
+                                operation="transform_with_state",
+                                problem="transform_with_state(...) requires a streaming input.",
+                                use="Declare the driving input as streaming and keep query lifecycle ownership with the caller.",
+                            )
+                        )
+                    else:
+                        state_stages.append(
+                            StreamingStateStage(
+                                step=step.name,
+                                operation=f"transform_with_state ({state.processor_mode})",
+                                keys=(self._expression_label(state.key),),
+                                retention=(state.state_schema.__name__,) if state.state_schema is not None else (),
+                                output_modes=(state.output_mode,),
+                                allows_later_stateful=False,
+                            )
+                        )
+                        stateful_operations.append(
+                            _StatefulStreamingOperation(step.name, "transform_with_state")
+                        )
                 if operation.aggregate is not None:
                     allow_chained_window = len(stateful_operations) == 1 and self._approved_chained_window(
                         stateful_operations[0], operation.aggregate
@@ -428,7 +455,7 @@ class ClassifyStreamingCompatibility:
                     f"stateless work; found {first.operation} in {first.step} and {second.operation} in {second.step}."
                 ),
                 use=(
-                    "Keep one watermarked dedupe, window/session aggregate, or bounded stream-stream join in this "
+                    "Keep one transform_with_state processor, watermarked dedupe, window/session aggregate, or bounded stream-stream join in this "
                     "transform, then split any later stateful work into a separate pipeline boundary."
                 ),
             ),

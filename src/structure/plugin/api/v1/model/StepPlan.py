@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Any
 from structure.plugin.api.v1.model.HookPlan import HookPlan
 from structure.plugin.api.v1.model.StepInputPlan import StepInputPlan
 from structure.plugin.api.v1.model.StepResultPlan import StepResultPlan
+from structure.plugin.api.v1.model.StepSinkCapture import StepSinkCapture
 from structure.plugin.api.v1.model.TransformMemberOrigin import TransformMemberOrigin
 
 
@@ -27,6 +28,7 @@ class StepPlan:
     origin: TransformMemberOrigin | None = None
     plugin_body: object | None = None
     effect: bool = False
+    sinks: tuple[StepSinkCapture, ...] = ()
 
     if TYPE_CHECKING:
         # The transitional Core authorer returns Core-private subclasses.

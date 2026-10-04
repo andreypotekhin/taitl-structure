@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 from structure.plugin.api.v1.model import BackendId
 from structure.plugin.api.v1.model.OptimizationReport import OptimizationReport
+from structure.plugin.api.v1.model.SinkPlan import SinkPlan
 from structure.plugin.pyspark.compiler.model.PySparkInputRecipe import PySparkInputRecipe
 from structure.plugin.pyspark.compiler.model.PySparkOptimizationTrace import PySparkOptimizationTrace
 from structure.plugin.pyspark.compiler.model.PySparkOutputRecipe import PySparkOutputRecipe
@@ -25,6 +26,7 @@ class PySparkExecutionPlan:
     optimizations: tuple[PySparkOptimizationTrace, ...] = ()
     pruning: OptimizationReport | None = None
     delta_check_match: str = "expression"
+    sinks: tuple[SinkPlan, ...] = ()
 
     @property
     def final_validation(self) -> PySparkValidationRecipe:

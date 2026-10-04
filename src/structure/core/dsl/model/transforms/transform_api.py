@@ -14,6 +14,7 @@ from structure.core.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.core.dsl.model.transforms.OutputDeclaration import OutputBindings, OutputDeclaration
 from structure.core.dsl.model.transforms.ParameterDeclaration import ParameterDeclaration
 from structure.core.dsl.model.transforms.SchemaMode import SchemaMode
+from structure.core.dsl.model.transforms.SinkDeclaration import SinkDeclaration
 from structure.core.dsl.model.transforms.SpecialFunction import IgnoredCompilerCode, OpaqueCompilerCode, SpecialFunction
 from structure.core.dsl.model.transforms.StageDeclaration import StageDeclaration
 from structure.core.dsl.model.transforms.Transform import Transform
@@ -31,7 +32,7 @@ _CLASS_OPTIONS = {
     "delta_check_match",
 }
 _STEP_METHOD_OPTIONS = {"target", "target_platform", "target_profile", "delta_check_match"}
-_METHOD_BINDING_OPTIONS = {"input", "output", "inout"}
+_METHOD_BINDING_OPTIONS = {"input", "output", "inout", "sink"}
 _METHOD_OPTIMIZATION_OPTIONS = {"cache"}
 
 
@@ -163,6 +164,11 @@ def output(
     if source is _UNSET:
         return declaration
     return replace(declaration, source=source)
+
+
+def sink(writer_type: type) -> SinkDeclaration:
+    """Declare an opaque row writer that a compiled step may reference."""
+    return SinkDeclaration(writer_type=writer_type)
 
 
 @overload
@@ -396,7 +402,7 @@ def _decorate_transform_method(function, kwargs):
     if unknown:
         raise TypeError(f"@step got unknown method option(s): {', '.join(sorted(unknown))}")
     if not kwargs:
-        raise TypeError("@step on a method requires input=..., output=..., or inout=...")
+        raise TypeError("@step on a method requires input=..., output=..., sink=..., or inout=...")
     if "inout" in kwargs and ("input" in kwargs or "output" in kwargs):
         raise TypeError("@step on a method cannot combine inout=... with input=... or output=...")
 
@@ -412,6 +418,7 @@ def _decorate_transform_method(function, kwargs):
         bare=(LaneDeclaration, OutputDeclaration),
         roles={"lane", "output"},
     )
+    sinks = _step_sink_declarations(kwargs.get("sink"))
     if "inout" in kwargs:
         binding = kwargs["inout"]
         if not isinstance(binding, InOutBinding):
@@ -438,11 +445,25 @@ def _decorate_transform_method(function, kwargs):
         {
             "inputs": inputs,
             "outputs": outputs,
+            "sinks": sinks,
             "options": _step_method_options(kwargs),
             "reserved_operations": _reserved_operations(kwargs),
         },
     )
     return function
+
+
+def _step_sink_declarations(value: object | None) -> tuple[SinkDeclaration, ...]:
+    if value is None:
+        return ()
+    if isinstance(value, SinkDeclaration):
+        return (value,)
+    values = _declaration_sequence(value, option="@step(sink=...)")
+    if not all(isinstance(item, SinkDeclaration) for item in values):
+        raise TypeError("@step(sink=...) requires sink(...) declarations")
+    if len({id(item) for item in values}) != len(values):
+        raise TypeError("@step(sink=...) cannot repeat a declaration")
+    return cast(tuple[SinkDeclaration, ...], values)
 
 
 def _normalize_method_options(kwargs: dict[str, object]) -> dict[str, object]:

@@ -27,7 +27,7 @@ The retained-gates package uses the V11 status vocabulary:
 | Variant mutation helpers | `design-gated` | Released PySpark 4.3+ profile with positive evidence | No mutation lowering until path, null, type, and generated-spelling rules are specified | Use native PySpark Variant expressions in a caller-owned wrapper |
 | `is_valid_variant(...)` | `design-gated` | PySpark 4.2 target; positive live evidence is currently unavailable | Capability and negative rejection remain valid; no positive support claim | Use the native PySpark function outside Structure or retain the rejection |
 | Chained stateful operators | `design-gated` | Explicit state budget, watermark, retention, output, and restart contract | Only the already admitted two-stage event-time window shape remains supported | Compose separate caller-owned streaming stages |
-| Row-level `foreach` | `caller-owned-guided` | Isolated sink and retry/restart evidence for any future promotion | Structure does not own sink identity, retries, checkpoints, or side effects | Use `foreachBatch` or `foreach` in the caller-owned streaming job |
+| Row-level `foreach` | `caller-owned-guided` | Typed handoff for declared final outputs; classic PySpark 3.5 and 4.0 pass isolated live evidence | Structure captures a sink association and returns a writer class plus DataFrame; the caller owns writer instances, query lifecycle, retries, checkpoints, and side effects | Configure and attach the returned handoff with ordinary PySpark APIs |
 | Arbitrary state and `transformWithState` | `design-gated` | Typed state schema, timeout, serialization, checkpoint, and recovery contract | No user state store or streaming lifecycle is generated | Use native Structured Streaming state APIs around the transform |
 | XML helpers | `unsupported` | No V11 admission | No XML parser or XML source/writer API is exported | Use native Spark XML/provider APIs in caller-owned code |
 | Cost-based join reordering | `unsupported` | Separate optimizer design required | Source-authored join order remains authoritative | Arrange joins explicitly in caller code |
@@ -35,7 +35,8 @@ The retained-gates package uses the V11 status vocabulary:
 ## Invariants
 
 Generated Structure modules must contain no `foreach`, `foreachBatch`, `writeStream`, `start`, checkpoint, trigger,
-sink, state-store, or arbitrary Python lifecycle calls. XML and join-reordering helpers remain unexported. A missing
+writer construction, state-store, or arbitrary Python lifecycle calls. The compile-time `foreach(row, sink)` marker is
+metadata only and is not rendered into generated modules. XML and join-reordering helpers remain unexported. A missing
 PySpark 4.2 or 4.3+ runtime is recorded as unavailable evidence and never treated as a passing support result.
 
 ## Evidence and diagnostics

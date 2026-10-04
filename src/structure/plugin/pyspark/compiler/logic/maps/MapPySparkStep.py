@@ -45,6 +45,7 @@ from structure.plugin.pyspark.compiler.model.PySparkRelationSetRecipe import PyS
 from structure.plugin.pyspark.compiler.model.PySparkSelectedRowsRecipe import PySparkSelectedRowsRecipe
 from structure.plugin.pyspark.compiler.model.PySparkSqlRecipe import PySparkSqlRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStackRecipe import PySparkStackRecipe
+from structure.plugin.pyspark.compiler.model.PySparkStatefulTransformRecipe import PySparkStatefulTransformRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStepResultRecipe import PySparkStepResultRecipe
 from structure.plugin.pyspark.compiler.model.PySparkWatermarkRecipe import PySparkWatermarkRecipe
@@ -387,18 +388,44 @@ class MapPySparkStep:
                     )
                 )
             if operation.kind == "sql" and operation.sql is not None:
-                plan = operation.sql
+                sql_plan = operation.sql
                 recipes.append(
                     self._operation_modes(
                         PySparkOperationRecipe.sql_operation(
                             PySparkSqlRecipe(
-                                statement=plan.statement,
-                                relations=plan.relations,
-                                args=plan.args,
-                                schema=plan.schema,
-                                label=plan.label,
-                                scope=plan.scope,
+                                statement=sql_plan.statement,
+                                relations=sql_plan.relations,
+                                args=sql_plan.args,
+                                schema=sql_plan.schema,
+                                label=sql_plan.label,
+                                scope=sql_plan.scope,
                                 step=step_name,
+                            )
+                        ),
+                        operation,
+                    )
+                )
+            if operation.kind == "transform_with_state" and operation.stateful_transform is not None:
+                state_plan = operation.stateful_transform
+                recipes.append(
+                    self._operation_modes(
+                        PySparkOperationRecipe.transform_with_state_operation(
+                            PySparkStatefulTransformRecipe(
+                                key=self._expressions.map(state_plan.key, capabilities=capabilities),
+                                processor=state_plan.processor,
+                                processor_mode=state_plan.processor_mode,
+                                input_schema=state_plan.input_schema,
+                                key_schema=state_plan.key_schema,
+                                state_schema=(
+                                    getattr(state_plan.processor, "__structure_state_processor__")[2]
+                                    if state_plan.processor_mode == "typed"
+                                    else None
+                                ),
+                                output_schema=state_plan.output_schema,
+                                output_mode=state_plan.output_mode,
+                                time_mode=state_plan.time_mode,
+                                event_time_column=state_plan.event_time_column,
+                                initial_state=state_plan.initial_state,
                             )
                         ),
                         operation,

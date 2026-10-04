@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from structure.plugin.api.v1.model.StepSinkCapture import StepSinkCapture
+
 
 @dataclass(frozen=True)
 class StepAuthoringCapture:
@@ -7,3 +9,4 @@ class StepAuthoringCapture:
 
     body: object
     diagnostics: tuple[object, ...] = ()
+    sinks: tuple[StepSinkCapture, ...] = ()

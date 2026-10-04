@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 from pathlib import Path
 from typing import Mapping, cast, get_origin, get_type_hints
 
@@ -22,6 +23,13 @@ from structure.plugin.api.v1 import TransformMemberOrigin
 
 class AnalyzeTransform(CompileTransform):
     """Collect Core-owned transform structure without evaluating a plugin DSL."""
+
+    def _row_parameters(self, method, hints):
+        return tuple(
+            parameter.replace(annotation=hints[parameter.name])
+            for parameter in inspect.signature(method).parameters.values()
+            if parameter.name != "self" and self._is_schema(hints.get(parameter.name))
+        )
 
     def __call__(
         self,

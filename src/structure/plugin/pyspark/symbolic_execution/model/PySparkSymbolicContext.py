@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from structure.plugin.pyspark.dsl.Expression import Expression
     from structure.plugin.pyspark.dsl.joins.JoinPlan import JoinPlan
     from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
+    from structure.plugin.pyspark.symbolic_execution.model.PySparkForeachCapture import PySparkForeachCapture
 
 
 class PySparkSymbolicContext:
@@ -37,6 +38,7 @@ class PySparkSymbolicContext:
         self.projection: tuple[ProjectAssignment, ...] = ()
         self.aggregate: AggregatePlan | None = None
         self.results: tuple[object, ...] = ()
+        self.foreach: list[PySparkForeachCapture] = []
         self.default_project_source: object | None = None
         self.default_project_frame: str | None = None
         self.current_scopes: set[str] = set()

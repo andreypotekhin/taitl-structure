@@ -19,6 +19,7 @@ class SymbolicContext(Protocol):
     default_project_source: object | None
     current_scopes: set[str]
     relation_scopes: dict[str, object]
+    foreach: list[Any]
 
     def __enter__(self) -> SymbolicContext: ...
 

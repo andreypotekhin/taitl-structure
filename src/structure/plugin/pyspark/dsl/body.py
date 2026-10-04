@@ -11,6 +11,7 @@ from __future__ import annotations
 from re import fullmatch
 from typing import Any, Iterable, TypeVar, cast, overload
 
+from structure.core.dsl.model.transforms.SinkReference import SinkReference
 from structure.dsl import Schema
 from structure.plugin.api.v1.model import current_symbolic_context
 from structure.plugin.pyspark.dsl.Expression import Expression
@@ -19,9 +20,25 @@ from structure.plugin.pyspark.dsl.joins.JoinPlan import JoinPlan
 from structure.plugin.pyspark.dsl.model.Projection import Projection
 from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
 from structure.plugin.pyspark.dsl.operations.WatermarkPlan import WatermarkPlan
+from structure.plugin.pyspark.dsl.RowScope import RowScope
 from structure.plugin.pyspark.dsl.types import BooleanType, TimestampType
+from structure.plugin.pyspark.symbolic_execution.model.PySparkForeachCapture import PySparkForeachCapture
 
 Projected = TypeVar("Projected", bound=Schema)
+
+
+def foreach(row: object, sink: object) -> None:
+    """Associate a returned final row with a declared opaque sink.
+
+    This records compiler metadata only. It does not call the writer or start
+    a Spark action/query.
+    """
+    context = _context("foreach")
+    if not isinstance(sink, SinkReference):
+        raise TypeError("foreach(row, sink) requires a sink-typed step parameter")
+    if not isinstance(row, (Schema, RowScope, Projection)):
+        raise TypeError("foreach(row, sink) requires a Structure row or projection returned by this step")
+    context.foreach.append(PySparkForeachCapture(row=row, sink=sink))
 
 
 def where(*predicates: object) -> WhereChain:

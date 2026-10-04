@@ -550,6 +550,28 @@ class RenderPySparkStep:
                 )
             if operation.kind == "sql" and operation.sql is not None:
                 ordered_lines.extend(self._sql_operation(operation.sql, sources=sources, target=target))
+            if operation.kind == "transform_with_state" and operation.stateful_transform is not None:
+                state = operation.stateful_transform
+                processor = state.processor.processor if state.processor_mode == "native" else state.processor
+                processor_ref = f"{processor.__module__}:{processor.__qualname__}"
+                input_ref = f"{state.input_schema.__module__}:{state.input_schema.__qualname__}"
+                key_ref = f"{state.key_schema.__module__}:{state.key_schema.__qualname__}"
+                output_ref = f"{state.output_schema.__module__}:{state.output_schema.__qualname__}"
+                state_ref = (
+                    "None"
+                    if state.state_schema is None
+                    else repr(f"{state.state_schema.__module__}:{state.state_schema.__qualname__}")
+                )
+                key_expression = render_pyspark_expression(state.key, scope_aliases=self._scope_aliases(step))
+                ordered_lines.append(
+                    f"        {target} = apply_stateful_transform("
+                    f"{target}, key={key_expression}, processor={processor_ref!r}, "
+                    f"input_schema={input_ref!r}, key_schema={key_ref!r}, state_schema={state_ref}, "
+                    f"output_schema={output_ref!r}, processor_mode={state.processor_mode!r}, "
+                    f"output_mode={state.output_mode!r}, time_mode={state.time_mode!r}, "
+                    f"target_profile={backend_target!r}, event_time_column={state.event_time_column!r}, "
+                    f"initial_state=None)"
+                )
             if operation.kind == "ordered_timeline_scan" and operation.ordered_timeline_scan is not None:
                 ordered_lines.extend(
                     self._ordered_timeline_scan(

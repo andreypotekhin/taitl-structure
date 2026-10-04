@@ -56,6 +56,7 @@ def test_pyspark_endpoint_groups_commands_and_creates_fresh_actions() -> None:
 def test_pyspark_public_dsl_exports_are_static_for_editor_navigation() -> None:
     names = (
         "field",
+        "foreach",
         "types",
         "except_all",
         "intersect",

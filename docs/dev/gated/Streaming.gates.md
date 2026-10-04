@@ -30,11 +30,13 @@ aggregate over `window_time(...)`. Broader chains need ordered state-stage metad
 sources, grouping keys, retention, output mode, allowed following stages, diagnostics, generated form, and restart
 evidence. Keep the one-stateful-plus-stateless policy for other chains.
 
-### Row-Level `foreach` — `design-gated`
+### Row-Level `foreach` — `caller-owned-guided`
 
-Row callbacks require sink identity, idempotence, retry, security, checkpoint, and recovery contracts. Keep `foreach`
-outside transforms and generated modules. `foreachBatch` is `caller-owned-guided` through the adoption recipe and does
-not create a Structure-owned sink runtime.
+Structure supports an opt-in typed handoff for a declared final output. The caller constructs and attaches the writer,
+starts the query, and owns sink identity, idempotence, retry, security, checkpoints, and recovery. Each attached stream
+sink is an independent query. Classic PySpark 3.5 and 4.0 pass isolated callback and serialization checks; Spark Connect
+is not claimed without equivalent proof. The compile-time `foreach(row, sink)` marker is not
+rendered into generated modules, and `foreachBatch` remains caller-owned through the adoption recipe.
 
 ### Arbitrary State Processors — `design-gated`
 

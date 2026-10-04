@@ -71,6 +71,7 @@ class PySparkStepSession:
             return StepAuthoringCapture(
                 body=body,
                 diagnostics=(),
+                sinks=body.sinks,
             )
         finally:
             if self._capture_pending:

@@ -29,16 +29,20 @@ from structure.core.dsl.model.transforms.InputDeclaration import InputDeclaratio
 from structure.core.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.core.dsl.model.transforms.OutputDeclaration import OutputDeclaration
 from structure.core.dsl.model.transforms.SchemaMode import SchemaMode
+from structure.core.dsl.model.transforms.SinkDeclaration import SinkDeclaration
+from structure.core.dsl.model.transforms.SinkReference import SinkReference
 from structure.core.dsl.model.transforms.SpecialFunction import IgnoredCompilerCode, OpaqueCompilerCode
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
 from structure.plugin.api.v1 import (
     AuthoringAPI,
+    SinkPlan,
     StepAuthoringCapture,
     StepAuthoringInput,
     StepAuthoringRequest,
     StepAuthoringResult,
+    StepAuthoringSink,
     StepInputPlan,
     TransformMemberOrigin,
 )
@@ -171,11 +175,13 @@ class CompileTransform:
             capture_special_exprs="embed_exprs" in config.generated_code_options,
         )
         outputs = self._outputs(transform_class, lanes, explicit_outputs)
+        sinks = self._sink_plans(transform_class, steps, outputs)
         return TransformPlan(
             name=transform_class.__name__,
             inputs=tuple(inputs),
             steps=tuple(steps),
             outputs=tuple(outputs),
+            sinks=tuple(sinks),
             allow_stage_outputs=config.allow_stage_outputs,
             options=transform_class.effective_transform_options(),
             diagnostics=tuple(diagnostics),
@@ -248,16 +254,25 @@ class CompileTransform:
         if authoring_api is None:
             raise RuntimeError("Core authoring requires a selected platform authoring facet.")
         composition_config = self._composition_config(wrapper_class, config)
-        return self._composer(
+        stage_plans: list[TransformPlan] = []
+
+        def compile_stage(stage: type[Transform] | Transform) -> TransformPlan:
+            plan = self._compile(stage, config=composition_config)
+            stage_plans.append(plan)
+            return plan
+
+        plan = self._composer(
             pipeline,
             name=name,
-            compile_stage=lambda transform_class: self._compile(transform_class, config=composition_config),
+            compile_stage=compile_stage,
             rewrite_body=lambda body, frames: authoring_api.rewrite_body(body, frames=frames),
             wrapper_class=wrapper_class,
             allow_stream_to_batch=composition_config.allow_stream_to_batch,
             stream_to_batch_policy=composition_config.stream_to_batch_policy,
             allow_stage_outputs=composition_config.allow_stage_outputs,
         )
+        self._reject_composed_sinks(name, stage_plans)
+        return plan
 
     def _compose_graph(
         self, transform_class: type[Transform], *, config: StructureConfig, invocation: Transform | None = None
@@ -266,14 +281,42 @@ class CompileTransform:
         if authoring_api is None:
             raise RuntimeError("Core authoring requires a selected platform authoring facet.")
         composition_config = self._composition_config(transform_class, config)
-        return self._graph_composer(
+        stage_plans: list[TransformPlan] = []
+
+        def compile_stage(stage: type[Transform] | Transform) -> TransformPlan:
+            plan = self._compile(stage, config=composition_config)
+            stage_plans.append(plan)
+            return plan
+
+        plan = self._graph_composer(
             transform_class,
-            compile_stage=lambda stage: self._compile(stage, config=composition_config),
+            compile_stage=compile_stage,
             parameters=invocation._structure_bound_parameters if invocation is not None else None,
             rewrite_body=lambda body, frames: authoring_api.rewrite_body(body, frames=frames),
             allow_stream_to_batch=composition_config.allow_stream_to_batch,
             stream_to_batch_policy=composition_config.stream_to_batch_policy,
             allow_stage_outputs=composition_config.allow_stage_outputs,
+        )
+        self._reject_composed_sinks(transform_class.__name__, stage_plans, transform_class=transform_class)
+        return plan
+
+    def _reject_composed_sinks(
+        self,
+        name: str,
+        stage_plans: list[TransformPlan],
+        *,
+        transform_class: type[Transform] | None = None,
+    ) -> None:
+        sinks = [sink.name for plan in stage_plans for sink in plan.sinks]
+        if not sinks:
+            return
+        joined = ", ".join(sinks)
+        raise self._error(
+            "DSL-E0406",
+            transform_class=transform_class,
+            problem=f"Composed transform {name} contains row-level sink(s): {joined}.",
+            use="Run the sink-bearing transform directly so its final output handoff has an unambiguous owner.",
+            context={"sinks": joined},
         )
 
     @staticmethod
@@ -607,7 +650,7 @@ class CompileTransform:
                 )
             return None
         metadata = getattr(member, "_structure_output_method", None)
-        parameters = self._row_parameters(member, hints)
+        parameters, sink_bindings = self._step_parameters(transform_class, member, hints, metadata)
         bindings = self._input_bindings(
             transform_class,
             metadata,
@@ -616,6 +659,14 @@ class CompileTransform:
             parameters,
             member=name,
         )
+        if not bindings:
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=name,
+                problem=f"{transform_class.__name__}.{name} declares a sink but no schema row parameter.",
+                use="Add a Schema-annotated input parameter to drive the step and its foreach output.",
+            )
         output_lanes = self._output_lanes(
             transform_class,
             metadata,
@@ -663,17 +714,19 @@ class CompileTransform:
             ),
             plugin_options=plugin_options,
             effect=effect_schema is not None,
+            sinks=tuple(sink_bindings),
         )
         authoring_session = authoring_api.open_step(request)
-        arguments = authoring_session.arguments()
-        if len(arguments) != len(bindings):
+        authoring_arguments = authoring_session.arguments()
+        if len(authoring_arguments) != len(bindings):
             raise self._error(
                 "PLUGIN-E2708",
                 transform_class=transform_class,
                 member=name,
-                problem=f"Plugin {target!r} supplied {len(arguments)} symbolic arguments for {len(bindings)} bindings.",
+                problem=f"Plugin {target!r} supplied {len(authoring_arguments)} symbolic arguments for {len(bindings)} bindings.",
                 use="Update the plugin authoring facet to return one argument per step input.",
             )
+        arguments = self._ordered_step_arguments(member, bindings, authoring_arguments, sink_bindings)
         try:
             with self._step_call_guards(transform_class, members, active=item):
                 with self._parent_step_calls(
@@ -739,6 +792,24 @@ class CompileTransform:
         if not isinstance(capture, StepAuthoringCapture):
             raise TypeError("Plugin authoring capture must return StepAuthoringCapture")
         authoring_body = capture.body
+        invalid_captures = [item for item in capture.sinks if item.result_ordinal is None]
+        if invalid_captures:
+            invalid = invalid_captures[0]
+            output_names = ", ".join(result.lane for result in result_plans if result.lane in transform_class._structure_outputs) or "none"
+            raise self._error(
+                "DSL-E0406",
+                transform_class=transform_class,
+                member=name,
+                problem=(
+                    f"foreach({invalid.row_schema}, {invalid.sink}) in {transform_class.__name__}.{name} "
+                    "does not reference a value returned by this step."
+                ),
+                use=(
+                    f"Return the same row value as a declared final output ({output_names}), then bind the foreach "
+                    "call to that output. An intermediate row cannot receive a sink."
+                ),
+                context={"sink": invalid.sink, "schema": invalid.row_schema, "outputs": output_names},
+            )
         diagnostics.extend(cast(tuple[Diagnostic, ...], capture.diagnostics))
         steps.append(
             StepPlan(
@@ -758,6 +829,7 @@ class CompileTransform:
                 origin=TransformMemberOrigin.of(item.owner, name),
                 plugin_body=authoring_body,
                 effect=effect_schema is not None,
+                sinks=capture.sinks,
             )
         )
         streaming = self._source_streaming(driver.source, lanes, inputs)
@@ -1540,6 +1612,176 @@ class CompileTransform:
             )
         return outputs
 
+    def _sink_plans(self, transform_class: type[Transform], steps: list[StepPlan], outputs: list[OutputPlan]) -> list[SinkPlan]:
+        from structure.core.runtime.session.model.TransformResult import TransformResult
+
+        result: list[SinkPlan] = []
+        target = _authoring.get()[1]
+        if target and target != "pyspark" and any(step.sinks for step in steps):
+            names = ", ".join(capture.sink for step in steps for capture in step.sinks)
+            raise self._error(
+                "DSL-E0406",
+                transform_class=transform_class,
+                problem=f"Target {target!r} cannot compile row-level sink(s): {names}.",
+                use="Use the PySpark target for this sink or remove foreach(...) from the transform.",
+                context={"target": target, "sinks": names},
+            )
+        seen_sinks: set[str] = set()
+        output_by_name = {output.name: output for output in outputs}
+        reserved = set(dir(TransformResult)) | {"schema"}
+        reserved.update(alias for output in outputs for alias in output.aliases)
+        reserved.update(transform_class._structure_stages)
+        for declaration in transform_class._structure_sinks.values():
+            if declaration.name.startswith("_") or declaration.name in reserved:
+                raise self._error(
+                    "DSL-E0406",
+                    transform_class=transform_class,
+                    problem=f"Sink name {declaration.name!r} cannot be exposed on TransformResult.",
+                    use="Choose a name distinct from outputs, aliases, stages, and TransformResult members.",
+                    context={"sink": declaration.name},
+                )
+        for step in steps:
+            for capture in step.sinks:
+                sink_declaration = transform_class._structure_sinks.get(capture.sink)
+                if sink_declaration is None:
+                    raise self._error(
+                        "DSL-E0406",
+                        transform_class=transform_class,
+                        member=step.name,
+                        problem=f"Step {step.name} references undeclared sink {capture.sink!r}.",
+                        use="Declare the writer with sink(WriterClass) on this transform.",
+                    )
+                if capture.sink in seen_sinks:
+                    raise self._error(
+                        "DSL-E0406",
+                        transform_class=transform_class,
+                        member=step.name,
+                        problem=f"Sink {capture.sink!r} is attached more than once.",
+                        use="Attach each declared sink to exactly one final output in one step.",
+                    )
+                seen_sinks.add(capture.sink)
+                result_plan = step.results[capture.result_ordinal if capture.result_ordinal is not None else 0]
+                output = output_by_name.get(result_plan.lane)
+                if output is None:
+                    eligible = ", ".join(output_by_name) or "none"
+                    raise self._error(
+                        "DSL-E0406",
+                        transform_class=transform_class,
+                        member=step.name,
+                        problem=(
+                            f"foreach({capture.row_schema}, {capture.sink}) in {step.name} targets lane "
+                            f"{result_plan.lane!r}, which is not a declared final output."
+                        ),
+                        use=(
+                            f"Bind the step result to a declared final output ({eligible}) or move foreach(...) to "
+                            "the step that returns the final output row."
+                        ),
+                        context={"sink": capture.sink, "lane": result_plan.lane, "outputs": eligible},
+                    )
+                writer_type = sink_declaration.writer_type
+                module = writer_type.__module__
+                qualname = writer_type.__qualname__
+                self._validate_sink_writer(
+                    transform_class,
+                    step.name,
+                    capture.sink,
+                    writer_type,
+                    streaming=output.streaming,
+                )
+                if module in {"__main__", "builtins"} or "<locals>" in qualname:
+                    raise self._error(
+                        "DSL-E0406",
+                        transform_class=transform_class,
+                        member=step.name,
+                        problem=f"Sink writer {writer_type.__name__} is local to a function and cannot be imported by generated execution.",
+                        use="Move the @special(type=\"opaque\") writer class to module scope.",
+                        context={"sink": capture.sink, "writer": qualname},
+                    )
+                has_open = any("open" in owner.__dict__ for owner in writer_type.__mro__ if owner is not object)
+                has_close = any("close" in owner.__dict__ for owner in writer_type.__mro__ if owner is not object)
+                if output.streaming:
+                    callable_instance = any("__call__" in owner.__dict__ for owner in writer_type.__mro__ if owner is not object)
+                    if callable_instance:
+                        raise self._error(
+                            "DSL-E0406",
+                            transform_class=transform_class,
+                            member=step.name,
+                            problem=f"Streaming foreach writer {writer_type.__name__} is callable.",
+                            use="Remove __call__; PySpark must receive a noncallable object to invoke process/open/close.",
+                            context={"sink": capture.sink, "writer": writer_type.__name__},
+                        )
+                elif has_open or has_close:
+                    raise self._error(
+                        "DSL-E0406",
+                        transform_class=transform_class,
+                        member=step.name,
+                        problem=f"Batch foreach writer {writer_type.__name__} declares streaming open/close methods.",
+                        use="Use a separate batch processor whose process(row) manages its own resources.",
+                        context={"sink": capture.sink, "writer": writer_type.__name__},
+                    )
+                result.append(
+                    SinkPlan(
+                        name=capture.sink,
+                        output=output.name,
+                        writer_module=module,
+                        writer_qualname=qualname,
+                        streaming=output.streaming,
+                    )
+                )
+        return result
+
+    def _validate_sink_writer(
+        self,
+        transform_class: type[Transform],
+        step_name: str,
+        sink_name: str,
+        writer_type: type,
+        *,
+        streaming: bool,
+    ) -> None:
+        self._validate_sink_method(transform_class, step_name, sink_name, writer_type, "process", 1)
+        if streaming:
+            for method, arity in (("open", 2), ("close", 1)):
+                if callable(getattr(writer_type, method, None)):
+                    self._validate_sink_method(transform_class, step_name, sink_name, writer_type, method, arity)
+
+    def _validate_sink_method(
+        self,
+        transform_class: type[Transform],
+        step_name: str,
+        sink_name: str,
+        writer_type: type,
+        method_name: str,
+        expected_arity: int,
+    ) -> None:
+        method = getattr(writer_type, method_name, None)
+        try:
+            parameters = list(inspect.signature(method).parameters.values()) if callable(method) else []
+        except (TypeError, ValueError):
+            parameters = []
+        if parameters and parameters[0].name in {"self", "cls"}:
+            parameters.pop(0)
+        valid = len(parameters) == expected_arity and all(
+            parameter.kind in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD)
+            and parameter.default is inspect.Parameter.empty
+            for parameter in parameters
+        )
+        if valid:
+            return
+        expected = {
+            "process": "process(self, row)",
+            "open": "open(self, partition_id, epoch_id)",
+            "close": "close(self, error)",
+        }[method_name]
+        raise self._error(
+            "DSL-E0406",
+            transform_class=transform_class,
+            member=step_name,
+            problem=f"Sink {sink_name!r} writer {writer_type.__name__} has an invalid {method_name} signature.",
+            use=f"Define {expected} with the documented positional arguments.",
+            context={"sink": sink_name, "writer": writer_type.__name__, "method": method_name},
+        )
+
     def _implicit_output_lane(
         self,
         transform_class: type[Transform],
@@ -1794,7 +2036,13 @@ class CompileTransform:
             self._declared_output(transform_class, declaration, member=member, role=role)
             return
 
-    def _row_parameters(self, method, hints: dict[str, object]) -> tuple[inspect.Parameter, ...]:
+    def _step_parameters(
+        self,
+        transform_class: type[Transform],
+        method,
+        hints: dict[str, object],
+        metadata: dict[str, object] | None,
+    ) -> tuple[tuple[inspect.Parameter, ...], tuple[StepAuthoringSink, ...]]:
         parameters = list(inspect.signature(method).parameters.values())
         row_parameters = [parameter for parameter in parameters if parameter.name != "self"]
         if not row_parameters:
@@ -1802,24 +2050,111 @@ class CompileTransform:
                 "DSL-E0402",
                 transform_class=None,
                 member=method.__qualname__,
-                problem=f"{method.__qualname__} must declare at least one schema parameter.",
+                problem=f"{method.__qualname__} must declare a schema row parameter.",
                 use="Declare a non-self parameter annotated with the driving input or previous output schema.",
             )
 
-        resolved: list[inspect.Parameter] = []
-        for parameter in row_parameters:
+        schemas: list[inspect.Parameter] = []
+        sink_parameters: list[tuple[inspect.Parameter, type, int]] = []
+        for position, parameter in enumerate(row_parameters):
             annotation = hints.get(parameter.name)
-            if not self._is_schema(annotation):
+            if self._is_schema(annotation):
+                schemas.append(parameter.replace(annotation=annotation))
+                continue
+            if isinstance(annotation, type):
+                sink_parameters.append((parameter, annotation, position))
+                continue
+            else:
                 raise self._error(
                     "DSL-E0402",
                     transform_class=None,
                     member=method.__qualname__,
-                    problem=f"{method.__qualname__}.{parameter.name} must be annotated with a Schema.",
-                    use="Annotate every step method parameter with a Schema class.",
+                    problem=f"{method.__qualname__}.{parameter.name} must be annotated with a Schema or declared sink type.",
+                    use="Annotate relation parameters with a Schema and sink parameters with the class passed to sink(...).",
                     context={"parameter": parameter.name},
                 )
-            resolved.append(parameter.replace(annotation=annotation))
-        return tuple(resolved)
+
+        declared = transform_class._structure_sinks
+        explicit = tuple(cast(tuple[SinkDeclaration, ...], metadata.get("sinks", ()))) if metadata else ()
+        if explicit and len(explicit) != len(sink_parameters):
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=method.__name__,
+                problem=(
+                    f"@step(sink=...) selects {len(explicit)} sink(s), but {method.__name__} declares "
+                    f"{len(sink_parameters)} sink parameter(s)."
+                ),
+                use="Select one declared sink for each sink-typed step parameter.",
+            )
+
+        assigned: list[StepAuthoringSink] = []
+        remaining = list(declared.values())
+        for index, (parameter, annotation, position) in enumerate(sink_parameters):
+            if explicit:
+                candidates = [explicit[index]]
+            else:
+                candidates = [declaration for declaration in remaining if declaration.writer_type is annotation]
+            if len(candidates) != 1:
+                matched = ", ".join(declaration.name for declaration in candidates) or "none"
+                use = (
+                    "Add @step(sink=declaration) to select one sink."
+                    if len(candidates) > 1
+                    else "Declare sink(WriterClass) on the transform with a type matching this parameter."
+                )
+                raise self._error(
+                    "DSL-E0402",
+                    transform_class=transform_class,
+                    member=method.__name__,
+                    problem=(
+                        f"Cannot bind sink parameter {parameter.name!r} of type {annotation.__name__}; "
+                        f"matching declarations: {matched}."
+                    ),
+                    use=use,
+                    context={"parameter": parameter.name, "writer": annotation.__name__},
+                )
+            declaration = candidates[0]
+            if declared.get(declaration.name) is not declaration:
+                raise self._error(
+                    "DSL-E0402",
+                    transform_class=transform_class,
+                    member=method.__name__,
+                    problem=f"@step(sink=...) references undeclared sink {declaration.name!r}.",
+                    use="Pass the sink(...) declaration assigned on this transform class.",
+                )
+            if declaration.writer_type is not annotation:
+                raise self._error(
+                    "DSL-E0402",
+                    transform_class=transform_class,
+                    member=method.__name__,
+                    problem=(
+                        f"Sink parameter {parameter.name!r} has type {annotation.__name__}, but sink "
+                        f"{declaration.name!r} uses {declaration.writer_type.__name__}."
+                    ),
+                    use="Match the parameter annotation to the declared writer class.",
+                )
+            assigned.append(
+                StepAuthoringSink(
+                    parameter=parameter.name,
+                    name=declaration.name,
+                    writer_type=declaration.writer_type,
+                    ordinal=position,
+                )
+            )
+            if declaration in remaining:
+                remaining.remove(declaration)
+        return tuple(schemas), tuple(assigned)
+
+    @staticmethod
+    def _ordered_step_arguments(
+        method,
+        bindings: list[StepInputPlan],
+        arguments: tuple[object, ...],
+        sinks: tuple[StepAuthoringSink, ...],
+    ) -> tuple[object, ...]:
+        values = {binding.parameter: value for binding, value in zip(bindings, arguments, strict=True)}
+        values.update({binding.parameter: SinkReference(binding.name, binding.writer_type) for binding in sinks})
+        return tuple(values[parameter.name] for parameter in inspect.signature(method).parameters.values() if parameter.name != "self")
 
     def _input_for_schema(
         self,

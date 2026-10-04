@@ -6,6 +6,7 @@ _EXPORTS = {
     "InputDeclaration": "structure.core.dsl.model.transforms.InputDeclaration",
     "LaneDeclaration": "structure.core.dsl.model.transforms.LaneDeclaration",
     "OutputDeclaration": "structure.core.dsl.model.transforms.OutputDeclaration",
+    "SinkDeclaration": "structure.core.dsl.model.transforms.SinkDeclaration",
     "Schema": "structure.core.dsl.model.schemas.Schema",
     "SchemaMode": "structure.core.dsl.model.transforms.SchemaMode",
     "StageDeclaration": "structure.core.dsl.model.transforms.StageDeclaration",

@@ -3,9 +3,12 @@ from typing import Any, cast
 
 from structure.plugin.api.v1.model.StepAuthoringRequest import StepAuthoringRequest
 from structure.plugin.api.v1.model.StepResultPlan import StepResultPlan
+from structure.plugin.api.v1.model.StepSinkCapture import StepSinkCapture
 from structure.plugin.pyspark.dsl.Expression import Expression
+from structure.plugin.pyspark.dsl.model.Projection import Projection
 from structure.plugin.pyspark.dsl.operations.CacheOperations import cache_operation, reserved_operations
 from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
+from structure.plugin.pyspark.dsl.RowScope import RowScope
 from structure.plugin.pyspark.symbolic_execution.commands.ValidatePySparkAggregates import ValidatePySparkAggregates
 from structure.plugin.pyspark.symbolic_execution.commands.ValidatePySparkAggregationUse import (
     ValidatePySparkAggregationUse,
@@ -15,6 +18,9 @@ from structure.plugin.pyspark.symbolic_execution.commands.ValidatePySparkRelatio
     ValidatePySparkRelationReads,
 )
 from structure.plugin.pyspark.symbolic_execution.logic.results.BuildPySparkResultBodies import BuildPySparkResultBodies
+from structure.plugin.pyspark.symbolic_execution.logic.results.ValidatePySparkResultReturn import (
+    ValidatePySparkResultReturn,
+)
 from structure.plugin.pyspark.symbolic_execution.model.PySparkResultBody import PySparkResultBody
 from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 from structure.plugin.pyspark.symbolic_execution.model.PySparkSymbolicContext import PySparkSymbolicContext
@@ -40,10 +46,34 @@ class CapturePySparkStep:
             if any(mutation.target != request.results[0].lane for mutation in context.delta_mutations):
                 raise TypeError(f"Delta effect step {request.name} may mutate only its declared output")
             results = (PySparkResultBody(),)
+            if context.foreach:
+                raise TypeError("foreach(row, sink) cannot be used in a Delta effect step")
         else:
             if context.delta_mutations:
                 raise TypeError("Delta mutations require a None-returning @step bound to delta_output(...)")
-            results = BuildPySparkResultBodies(request)(value, context=context)
+            state_operations = [
+                operation.stateful_transform
+                for operation in context.operations
+                if operation.kind == "transform_with_state" and operation.stateful_transform is not None
+            ]
+            if state_operations:
+                if len(request.results) != 1 or len(state_operations) != 1:
+                    raise TypeError("transform_with_state(...) requires exactly one declared step output.")
+                state_plan = state_operations[0]
+                if request.results[0].schema is not state_plan.output_schema:
+                    raise TypeError(
+                        "transform_with_state processor output Schema must match the step's declared output Schema."
+                    )
+                if context.filters or context.joins or context.foreach or len(context.operations) != 1:
+                    raise TypeError("transform_with_state(...) must be the only operation in its step.")
+                from structure.plugin.pyspark.dsl.Stateful import StatefulResult
+
+                if not isinstance(value, StatefulResult) or value.output_schema is not state_plan.output_schema:
+                    raise TypeError("A transform_with_state step must return its StatefulResult directly.")
+                results = (PySparkResultBody(),)
+            else:
+                results = BuildPySparkResultBodies(request)(value, context=context)
+        sink_captures = self._sink_captures(value, context.foreach, request)
         first = results[0]
         if first.aggregate is not None:
             context.record_aggregate(first.aggregate)
@@ -64,6 +94,7 @@ class CapturePySparkStep:
             projection=first.projection,
             aggregate=first.aggregate,
             results=results,
+            sinks=sink_captures,
         )
         ValidatePySparkAggregationUse()(body, request=request)
         ValidatePySparkAggregates()(body, request=request)
@@ -71,12 +102,41 @@ class CapturePySparkStep:
         ValidatePySparkRelationReads()(body, request=request)
         return body
 
+    def _sink_captures(self, value: object, captures: list, request: StepAuthoringRequest) -> tuple[StepSinkCapture, ...]:
+        if not captures:
+            return ()
+        values = ValidatePySparkResultReturn(request, self._raise)(value)
+        declared = {sink.name for sink in request.sinks}
+        result: list[StepSinkCapture] = []
+        for capture in captures:
+            sink_name = getattr(capture.sink, "name", None)
+            if sink_name not in declared:
+                raise TypeError(f"foreach(row, sink) references undeclared sink {sink_name!r} in step {request.name}.")
+            ordinal = next((index for index, candidate in enumerate(values) if capture.row is candidate), None)
+            if isinstance(capture.row, RowScope):
+                row_schema = capture.row._structure_scope_schema.__name__
+            elif isinstance(capture.row, Projection):
+                row_schema = capture.row.target.__name__ if capture.row.target is not None else "projection"
+            else:
+                row_schema = type(capture.row).__name__
+            result.append(StepSinkCapture(sink=sink_name, result_ordinal=ordinal, row_schema=row_schema))
+        return tuple(result)
+
+    @staticmethod
+    def _raise(code: str, problem: str, use: str) -> None:
+        raise TypeError(f"{code}: {problem} {use}")
+
     def _expressions(self, body: PySparkStepBody) -> tuple[Expression, ...]:
         expressions: list[Expression] = [*body.filters, *(assignment.expression for assignment in body.projection)]
         expressions.extend(
             operation.posexplode_struct.expression
             for operation in body.operations
             if operation.posexplode_struct is not None
+        )
+        expressions.extend(
+            operation.stateful_transform.key
+            for operation in body.operations
+            if operation.stateful_transform is not None
         )
         expressions.extend(
             operation.json_tuple.expression for operation in body.operations if operation.json_tuple is not None
@@ -139,6 +199,9 @@ class CapturePySparkStep:
             )
             if result.aggregate.having is not None:
                 expressions.append(result.aggregate.having)
+        for operation in body.operations:
+            if operation.stateful_transform is not None:
+                expressions.append(operation.stateful_transform.key)
         return tuple(expressions)
 
     def _reserved_operations(self, request: StepAuthoringRequest) -> tuple[OperationPlan, ...]:

@@ -83,6 +83,7 @@ class LowerPySparkPlan:
             stage_outputs=stage_outputs,
             allow_stage_outputs=plan.allow_stage_outputs,
             delta_check_match=str((plan.options or {}).get("delta_check_match", delta_check_match)),
+            sinks=plan.sinks,
         )
 
     @staticmethod

@@ -70,6 +70,17 @@ diagnostic_registry = DiagnosticRegistry(
             use_template='Keep it outside compiled logic, or use @special(type="udf") or an explicit hook when execution is intentional.',
         ),
         DiagnosticEntry(
+            code="DSL-E0406",
+            severity="error",
+            title="Invalid row-level foreach sink",
+            owner="dsl",
+            status="active",
+            docs="docs/Diagnostics.md#dsl-e0406",
+            introduced="1.0.0",
+            problem_template="A foreach sink is undeclared, ambiguous, or does not target a declared final output.",
+            use_template="Declare sink(WriterClass), bind its typed step parameter, and call foreach(row, sink) on a returned final output row.",
+        ),
+        DiagnosticEntry(
             code="DSL-W0403",
             severity="warning",
             title="Python UDF is optimizer-opaque",

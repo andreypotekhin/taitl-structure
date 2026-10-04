@@ -73,6 +73,12 @@ are documented in the [Relations API](Relations.api.md).
 - `@special(type="opaque")` marks runtime functions or classes whose Python bodies Structure does not inspect. They run
   normally outside compilation; calling them from compiler-visible logic fails with `DSL-E0405`. This marker does not
   execute a side effect or make a callback usable inside a transform by itself.
+- A row sink combines an opaque writer class with a declared transform output. Declare it with `sink(WriterClass)`,
+  bind a typed step parameter, and call PySpark's `foreach(row, sink)` helper on the row returned from that step. The
+  caller receives a read-only `result.sink_name` handoff with `.dataframe` and `.writer`; the writer is a class, so the
+  caller supplies configuration and attaches it through native PySpark APIs. Structure never instantiates the writer
+  or starts a query. Streaming sink queries are independent and require caller-managed checkpoints and lifecycle; see
+  the [V11 row-level foreach contract](../dev/specifications/V11RetainedV9DesignGates.spec.md#row-level-foreach).
 - `SchemaMode.STRICT` is the default; `SchemaMode.ALLOW_EXTRA_COLUMNS` permits additional hook output columns.
 - `StructureCompileError` exposes a rendered diagnostic with remediation. See the
   [Transforms background](../background/Transform.back.md) and [Hooks reference](../background/HookSemantics.back.md).

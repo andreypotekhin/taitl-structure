@@ -20,6 +20,7 @@ class CompileContext:
         self.filters: list[Any] = []
         self.joins: list[Any] = []
         self.operations: list[Any] = []
+        self.foreach: list[Any] = []
         self.aggregate_keys: tuple[tuple[str, Any], ...] | None = None
         self.aggregate_requested = False
         self.aggregate_levels: tuple[tuple[str, ...], ...] = ()

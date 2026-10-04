@@ -97,9 +97,15 @@ joins and `exists(...)` filtering, event-time and session-window aggregation, bo
 stream-stream joins, and bounded left/right/full outer and semi stream-stream joins. The application controls
 `readStream`, `writeStream`, checkpoints, triggers, output-mode application, query lifecycle, and side effects.
 `foreachBatch` has application-controlled guidance through the streams adoption helper; generated
-Structure modules must not contain `foreachBatch`. Row-level `foreach` remains design-gated until a side-effect
-contract defines sink identity, idempotence, retry, and recovery behavior. Use `examples/streams/adoption.py` as the
-tested application-controlled shape. See
+Structure modules must not contain `foreachBatch`. A transform may declare a typed row-level sink on a final output,
+then return a read-only handoff on its result. For example, `result.publish_alerts.dataframe` is the output DataFrame
+and `result.publish_alerts.writer` is the opaque writer class. The caller configures the writer and attaches it with
+`DataFrame.foreach(...)` or `DataStreamWriter.foreach(...)`; Structure does not start a query or attach the sink to the
+existing output query. Streaming uses a separate query and checkpoint, and callback retries may repeat side effects.
+The caller owns idempotence, credentials, query handles, failure observation, checkpoints, and recovery. Streaming
+writer instances must be noncallable and expose `process(row: Row) -> None`; batch writers use the bound `process` method
+and may not define streaming `open` or `close` lifecycle methods. Live callback and online/generated handoff evidence
+covers classic PySpark 3.5 and 4.0; Spark Connect is not claimed. See
 [Spark Streaming](../dev/specifications/SparkStreaming.spec.md), and the
 [Execution reference](../background/Execution.back.md).
 

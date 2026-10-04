@@ -5,6 +5,7 @@ from typing import Mapping
 from structure.lib.cross.errors import SourceSpan
 from structure.plugin.api.v1.model.StepAuthoringInput import StepAuthoringInput
 from structure.plugin.api.v1.model.StepAuthoringResult import StepAuthoringResult
+from structure.plugin.api.v1.model.StepAuthoringSink import StepAuthoringSink
 
 
 @dataclass(frozen=True)
@@ -20,3 +21,4 @@ class StepAuthoringRequest:
     primary_span: SourceSpan | None = None
     plugin_options: Mapping[str, object] = field(default_factory=lambda: MappingProxyType({}))
     effect: bool = False
+    sinks: tuple[StepAuthoringSink, ...] = ()

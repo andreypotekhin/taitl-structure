@@ -5,6 +5,7 @@ from types import MappingProxyType
 from typing import Any
 
 from structure.core.runtime.schemas.model.TransformSchemas import ResultSchemas
+from structure.core.runtime.session.model.SinkResult import SinkResult
 from structure.core.runtime.session.model.StageResult import StageResult, build_stage_results
 
 
@@ -12,6 +13,7 @@ class TransformResult(Mapping[str, Any]):
     _structure_outputs: Mapping[str, Any]
     _structure_aliases: Mapping[str, str]
     _structure_output_aliases: Mapping[str, tuple[str, ...]]
+    _structure_sinks: Mapping[str, SinkResult]
     _structure_single: bool
     schema: ResultSchemas
 
@@ -24,6 +26,7 @@ class TransformResult(Mapping[str, Any]):
         aliases: Mapping[str, tuple[str, ...]] | None = None,
         stage_records: list[tuple[tuple[str, ...], Any, Any, tuple[str, ...]]] | None = None,
         stages: Mapping[str, StageResult] | None = None,
+        sinks: Mapping[str, SinkResult] | None = None,
         stage_outputs_enabled: bool = True,
         stage_names: tuple[str, ...] = (),
     ) -> None:
@@ -36,6 +39,14 @@ class TransformResult(Mapping[str, Any]):
         object.__setattr__(self, "_structure_outputs", MappingProxyType(values))
         object.__setattr__(self, "_structure_output_aliases", MappingProxyType(output_aliases))
         object.__setattr__(self, "_structure_aliases", MappingProxyType(self._alias_index(output_aliases)))
+        sink_values = dict(sinks or {})
+        collisions = set(sink_values) & (set(values) | set(output_aliases) | set(self._alias_index(output_aliases)))
+        if collisions:
+            raise ValueError(f"TransformResult sink names collide with outputs or aliases: {', '.join(sorted(collisions))}")
+        reserved = set(sink_values) & (set(dir(type(self))) | {"schema"})
+        if reserved:
+            raise ValueError(f"TransformResult sink names are reserved: {', '.join(sorted(reserved))}")
+        object.__setattr__(self, "_structure_sinks", MappingProxyType(sink_values))
         stage_values = build_stage_results(stage_records or []) if stage_records is not None else dict(stages or {})
         object.__setattr__(self, "_structure_stages", MappingProxyType(dict(stage_values)))
         object.__setattr__(self, "_structure_stage_outputs_enabled", stage_outputs_enabled)
@@ -60,6 +71,8 @@ class TransformResult(Mapping[str, Any]):
     def __getattr__(self, name: str) -> Any:
         if name in self._structure_outputs:
             return self._structure_outputs[name]
+        if name in self._structure_sinks:
+            return self._structure_sinks[name]
         if name in self._structure_aliases:
             return self._structure_outputs[self._structure_aliases[name]]
         if name in self._structure_stages:
@@ -86,6 +99,20 @@ class TransformResult(Mapping[str, Any]):
         object.__setattr__(self, "_structure_output_aliases", MappingProxyType(dict(output_aliases)))
         object.__setattr__(self, "_structure_aliases", MappingProxyType(self._alias_index(output_aliases)))
         object.__setattr__(self, "schema", ResultSchemas(schema, aliases=output_aliases))
+        return self
+
+    def _structure_with_sinks(self, sinks: Mapping[str, SinkResult]) -> TransformResult:
+        """Attach named sink handoffs without changing output mapping behavior."""
+        sink_values = dict(sinks)
+        collisions = set(sink_values) & (
+            set(self._structure_outputs) | set(self._structure_output_aliases) | set(self._structure_aliases)
+        )
+        if collisions:
+            raise ValueError(f"TransformResult sink names collide with outputs or aliases: {', '.join(sorted(collisions))}")
+        reserved = set(sink_values) & (set(dir(type(self))) | {"schema"})
+        if reserved:
+            raise ValueError(f"TransformResult sink names are reserved: {', '.join(sorted(reserved))}")
+        object.__setattr__(self, "_structure_sinks", MappingProxyType(sink_values))
         return self
 
     def _alias_index(self, aliases: Mapping[str, tuple[str, ...]]) -> dict[str, str]:

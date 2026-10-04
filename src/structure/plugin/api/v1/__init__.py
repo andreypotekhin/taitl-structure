@@ -6,9 +6,9 @@ from structure.plugin.api.v1.api import (
 from structure.plugin.api.v1.model import (
     OptimizationGraph, OptimizationStep, OptimizationDecision, OptimizationReport, OptimizationRequest,
     CompilationPurpose, CompileRequest, ExecutionRequest, ExplainRequest, GenerationRequest, GenerationResult, InputPlan, PluginCompilation,
-    SchemaInspectionRequest, SchemaValidationRequest, StepAuthoringCapture, StepAuthoringInput, StepAuthoringRequest, StepAuthoringResult,
+    SchemaInspectionRequest, SchemaValidationRequest, SinkPlan, SinkResult, StepAuthoringCapture, StepAuthoringInput, StepAuthoringRequest, StepAuthoringResult, StepAuthoringSink,
     StepAuthoringSession, StepInputPlan, StreamingAnalysisRequest, SymbolicContext, TraceabilityRequest,
-    StageResult, StreamingBoundaryPlan, StageOutputPlan, TransformMemberOrigin, TransformPlan, TransformResult, TransformSchemaRequest, current_symbolic_context,
+    StageResult, StreamingBoundaryPlan, StageOutputPlan, StepSinkCapture, TransformMemberOrigin, TransformPlan, TransformResult, TransformSchemaRequest, current_symbolic_context,
 )
 
 __all__ = [
@@ -30,6 +30,8 @@ __all__ = [
     "PluginAPI",
     "PluginCompilation",
     "SchemaAPI",
+    "SinkPlan",
+    "SinkResult",
     "SemanticDefaultsAPI",
     "SchemaInspectionRequest",
     "SchemaValidationRequest",
@@ -42,10 +44,12 @@ __all__ = [
     "TraceabilityRequest",
     "TransformSchemaRequest",
     "StepAuthoringInput",
+    "StepAuthoringSink",
     "StepAuthoringRequest",
     "StepAuthoringResult",
     "StepAuthoringSession",
     "StepInputPlan",
+    "StepSinkCapture",
     "SymbolicContext",
     "TransformMemberOrigin",
     "TransformPlan",

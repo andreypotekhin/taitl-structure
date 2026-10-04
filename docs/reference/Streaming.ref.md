@@ -462,8 +462,46 @@ query = (
 ```
 
 Before starting a side-effecting query, validate a stable sink identity, idempotence key, retry policy, and snapshot
-identity in application code. The callback must honor those declarations across retries. Row-level `foreach` remains
-design-gated.
+identity in application code. The callback must honor those declarations across retries.
+
+## Attach a transform-declared row-level sink
+
+For row-wise writes, declare an opaque writer on a transform and attach it to a declared final output:
+
+    @special(type="opaque")
+    class AlertWriter:
+        def __init__(self, destination: str) -> None:
+            self.destination = destination
+
+        def process(self, row: Row) -> None:
+            write_alert(self.destination, row)
+
+    class PublishAlerts(Transform):
+        events = input(Event, streaming=True)
+        alerts = output(Alert)
+        publish_alerts = sink(AlertWriter)
+
+        @step(output=alerts)
+        def publish(self, event: Event, sink: AlertWriter) -> Alert:
+            alert = Alert(id=event.id)
+            foreach(alert, sink)
+            return alert
+
+    result = PublishAlerts(events=events).run(session)
+    handoff = result.publish_alerts
+    query = handoff.dataframe.writeStream.foreach(
+        handoff.writer(destination="alert-service")
+    ).option("checkpointLocation", foreach_checkpoint).start()
+
+The caller starts and stops this query. The output DataFrame remains available as `result.alerts`; starting the
+additional row sink does not modify an output query that the caller already created. Each query advances and fails
+independently and needs its own checkpoint. PySpark serializes writer copies for tasks, task or epoch retries may repeat
+side effects, and `close(error)` is not guaranteed after worker failure. Make the external write idempotent and open
+connections in worker lifecycle methods. A streaming writer must not define `__call__`, because PySpark otherwise
+selects its plain callback branch instead of `process/open/close`. For batch outputs, call
+`handoff.dataframe.foreach(handoff.writer(destination="alert-service").process)`; batch processing does not invoke
+`open` or `close`, so a batch writer that defines those methods is rejected. The `row` passed to `process` is a
+`pyspark.sql.Row`, not an instance of the Structure `Alert` schema.
 
 ## Review an arbitrary-state boundary
 

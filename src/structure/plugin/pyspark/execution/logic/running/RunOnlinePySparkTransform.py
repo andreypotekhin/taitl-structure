@@ -444,6 +444,31 @@ class RunOnlinePySparkTransform:
                 df = self._sql_operation(
                     step, df, operation.sql, frames=prepared_frames, functions=functions, types=types
                 )
+            if operation.kind == "transform_with_state" and operation.stateful_transform is not None:
+                from structure.plugin.pyspark.execution.stateful import apply_stateful_transform
+
+                state = operation.stateful_transform
+                key = self._expressions.evaluate(
+                    state.key,
+                    functions=functions,
+                    aliases=self._scope_aliases(step),
+                    window=window,
+                )
+                df = apply_stateful_transform(
+                    df,
+                    key=key,
+                    processor=state.processor,
+                    input_schema=state.input_schema,
+                    key_schema=state.key_schema,
+                    state_schema=state.state_schema,
+                    output_schema=state.output_schema,
+                    processor_mode=state.processor_mode,
+                    output_mode=state.output_mode,
+                    time_mode=state.time_mode,
+                    target_profile=self._backend_target,
+                    event_time_column=state.event_time_column,
+                    initial_state=state.initial_state,
+                )
             if operation.kind == "ordered_timeline_scan" and operation.ordered_timeline_scan is not None:
                 df = self._ordered_timeline_scan(
                     step,

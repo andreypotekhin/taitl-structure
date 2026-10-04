@@ -13,6 +13,7 @@ _MODULES = (
     "operations_api",
     "InputScope",
     "body",
+    "Stateful",
     "TimeWindow",
     "Temporal",
     "Interval",
