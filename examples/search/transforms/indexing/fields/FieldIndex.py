@@ -24,7 +24,7 @@ class FieldIndex(Transform):
             profile.field_kind == "keyword",
             array(FieldText(term=field.field_value)),
         ).otherwise(arr_transform(split(field.field_value, pattern=r"\s+"), lambda value: FieldText(term=value)))
-        expanded = posexplode_struct(tokens, as_=ExpandedFieldText, ordinal="position", scope="field_term")
+        expanded = posexplode_struct(tokens, to=ExpandedFieldText, ordinal="position", scope="field_term")
         term = QueryToken.normalize(expanded.term)
         where(term != "")
         where((profile.field_kind == "keyword") | ~array_contains(policy.stop_words, term))

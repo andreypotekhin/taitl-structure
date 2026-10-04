@@ -40,4 +40,5 @@ class MapPySparkOutput:
             ),
             operations=(),
             aliases=output.aliases,
+            binding=output.binding,
         )

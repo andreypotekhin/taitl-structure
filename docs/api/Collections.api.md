@@ -124,9 +124,9 @@ Structure contract.
 
 | Structure API | PySpark parity | Example |
 | --- | --- | --- |
-| `stack(rows, *values, as_=Schema, scope=None)` | `functions.stack` | `stack(2, row.id, row.name, row.id, as_=StackRow)` |
+| `stack(rows, *values, to=Schema, scope=None)` | `functions.stack` | `stack(2, row.id, row.name, row.id, to=StackRow)` |
 
-`stack` groups scalar values row-major into a fixed number of generated rows per input row. `as_` declares exactly
+`stack` groups scalar values row-major into a fixed number of generated rows per input row. `to` declares exactly
 `ceil(len(values) / rows)` output fields; each field type is the common type of values in that output position. As in
 PySpark, a short final row is padded with NULL, so the corresponding field must be nullable. Input values that may be
 null also require a nullable output field. `rows` is a positive integer literal, and the generator is compatible with
@@ -137,16 +137,16 @@ streaming input as stateless row expansion. Classic and Connect batch parity is 
 
 | Structure API | PySpark parity | Example |
 | --- | --- | --- |
-| `explode_struct(...)` | `explode` | `item = explode_struct(order.items, as_=OrderItem)` |
-| `explode_outer_struct(...)` | `explode_outer` | `item = explode_outer_struct(order.items, as_=OrderItem)` |
-| `posexplode_struct(...)` | `posexplode` | `item = posexplode_struct(order.items, as_=PositionedItem)` |
-| `posexplode_outer_struct(...)` | `posexplode_outer` | `item = posexplode_outer_struct(order.items, as_=PositionedItem)` |
-| `inline_struct(...)` | `inline` | `item = inline_struct(order.items, as_=OrderItem)` |
-| `inline_outer_struct(...)` | `inline_outer` | `item = inline_outer_struct(order.items, as_=OrderItem)` |
+| `explode_struct(...)` | `explode` | `item = explode_struct(order.items, to=OrderItem)` |
+| `explode_outer_struct(...)` | `explode_outer` | `item = explode_outer_struct(order.items, to=OrderItem)` |
+| `posexplode_struct(...)` | `posexplode` | `item = posexplode_struct(order.items, to=PositionedItem)` |
+| `posexplode_outer_struct(...)` | `posexplode_outer` | `item = posexplode_outer_struct(order.items, to=PositionedItem)` |
+| `inline_struct(...)` | `inline` | `item = inline_struct(order.items, to=OrderItem)` |
+| `inline_outer_struct(...)` | `inline_outer` | `item = inline_outer_struct(order.items, to=OrderItem)` |
 
 **Details And Differences**
 
-- Each generator requires an `array<struct>` expression and an explicit `as_` Schema. `scope=` controls the generated
+- Each generator requires an `array<struct>` expression and an explicit `to` Schema. `scope=` controls the generated
   row scope used by later expressions.
 - Inner generators drop null or empty arrays. Outer generators preserve the input row with nullable generated fields.
 - `posexplode_struct(...)` and its outer form add a zero-based ordinal field, named `ordinal` by default.
@@ -157,13 +157,13 @@ streaming input as stateless row expansion. Classic and Connect batch parity is 
 
 | Structure API | PySpark parity | Example |
 | --- | --- | --- |
-| `explode_array(...)` | `explode` | `item = explode_array(document.lines, as_=Line, value_field="line")` |
-| `explode_outer_array(...)` | `explode_outer` | `item = explode_outer_array(document.lines, as_=NullableLine, value_field="line")` |
-| `posexplode_array(...)` | `posexplode` | `item = posexplode_array(document.lines, as_=PositionedLine, value_field="line")` |
-| `posexplode_outer_array(...)` | `posexplode_outer` | `item = posexplode_outer_array(document.lines, as_=NullablePositionedLine, value_field="line")` |
+| `explode_array(...)` | `explode` | `item = explode_array(document.lines, to=Line, value_field="line")` |
+| `explode_outer_array(...)` | `explode_outer` | `item = explode_outer_array(document.lines, to=NullableLine, value_field="line")` |
+| `posexplode_array(...)` | `posexplode` | `item = posexplode_array(document.lines, to=PositionedLine, value_field="line")` |
+| `posexplode_outer_array(...)` | `posexplode_outer` | `item = posexplode_outer_array(document.lines, to=NullablePositionedLine, value_field="line")` |
 
 Scalar-array generators accept primitive arrays only: strings, booleans, numeric values, dates, timestamps, and binary
-values. `as_` must declare exactly the named `value_field`; positional forms also declare a long `ordinal` field.
+values. `to` must declare exactly the named `value_field`; positional forms also declare a long `ordinal` field.
 Inner forms require a non-null array with non-null elements. Outer forms preserve Spark's null/empty input row and
 require nullable generated fields. Nested arrays, maps, structs, variants, and indexed callbacks are not admitted.
 
@@ -171,10 +171,10 @@ require nullable generated fields. Nested arrays, maps, structs, variants, and i
 
 | Structure API | PySpark parity | Example |
 | --- | --- | --- |
-| `explode_map(...)` | `explode` | `entry = explode_map(document.attributes, as_=Entry, key_field="key", value_field="value")` |
-| `explode_outer_map(...)` | `explode_outer` | `entry = explode_outer_map(document.attributes, as_=OuterEntry, key_field="key", value_field="value")` |
-| `posexplode_map(...)` | `posexplode` | `entry = posexplode_map(document.attributes, as_=PositionedEntry, key_field="key", value_field="value")` |
-| `posexplode_outer_map(...)` | `posexplode_outer` | `entry = posexplode_outer_map(document.attributes, as_=OuterPositionedEntry, key_field="key", value_field="value")` |
+| `explode_map(...)` | `explode` | `entry = explode_map(document.attributes, to=Entry, key_field="key", value_field="value")` |
+| `explode_outer_map(...)` | `explode_outer` | `entry = explode_outer_map(document.attributes, to=OuterEntry, key_field="key", value_field="value")` |
+| `posexplode_map(...)` | `posexplode` | `entry = posexplode_map(document.attributes, to=PositionedEntry, key_field="key", value_field="value")` |
+| `posexplode_outer_map(...)` | `posexplode_outer` | `entry = posexplode_outer_map(document.attributes, to=OuterPositionedEntry, key_field="key", value_field="value")` |
 
 Map generators admit primitive scalar keys and values. The generated Schema must declare the explicit `key_field` and
 `value_field`; positional forms additionally declare a long `ordinal`. Inner forms require a non-null map expression,

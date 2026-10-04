@@ -101,7 +101,7 @@ def test_histogram_numeric_preserves_input_type_and_requires_declared_foldable_b
         y = double(nullable=True)
 
     value = Expression(kind="value", type=DecimalType(8, 2), nullable=True)
-    histogram = histogram_numeric(value, 12, as_=DecimalBucket)
+    histogram = histogram_numeric(value, 12, to=DecimalBucket)
 
     assert isinstance(histogram.type, ArrayType)
     assert histogram.type.contains_null is True
@@ -109,12 +109,12 @@ def test_histogram_numeric_preserves_input_type_and_requires_declared_foldable_b
     assert histogram.type.element.schema is DecimalBucket
     assert histogram.nullable is True
     with pytest.raises(ValueError, match="from 2 through 2147483647"):
-        histogram_numeric(value, 1, as_=DecimalBucket)
+        histogram_numeric(value, 1, to=DecimalBucket)
     with pytest.raises(TypeError, match="foldable integer literal"):
-        histogram_numeric(value, Expression(kind="value", type=types.integer(), nullable=False), as_=DecimalBucket)
+        histogram_numeric(value, Expression(kind="value", type=types.integer(), nullable=False), to=DecimalBucket)
     wrong_bucket = type("WrongBucket", (Schema,), {"x": double(), "y": double(nullable=True)})
-    with pytest.raises(TypeError, match=r"as_\.x must be nullable and match"):
-        histogram_numeric(value, 12, as_=wrong_bucket)
+    with pytest.raises(TypeError, match=r"to\.x must be nullable and match"):
+        histogram_numeric(value, 12, to=wrong_bucket)
 
 
 def test_advanced_aggregate_helpers_preserve_result_contracts() -> None:

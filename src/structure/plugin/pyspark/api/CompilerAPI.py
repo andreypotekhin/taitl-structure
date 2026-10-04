@@ -39,6 +39,13 @@ class CompilerAPI(CompilerAPIV1):
                 diagnostics=diagnostics,
             )
         plugin_options = request.plugin_options
+        delta_check_match = plugin_options.get("delta_check_match", "expression")
+        if delta_check_match not in ("expression", "name", "off"):
+            raise ValueError("PySpark delta_check_match must be 'expression', 'name', or 'off'")
+        if any(step.effect for step in plan.steps) and (
+            any(input.streaming for input in plan.inputs) or bool((plan.options or {}).get("streaming"))
+        ):
+            raise ValueError("Delta mutation steps require batch inputs")
         capabilities = PySpark.capabilities.resolve()(
             profile=str(plugin_options.get("profile", "")), variant=str(plugin_options.get("variant", ""))
         )
@@ -51,6 +58,7 @@ class CompilerAPI(CompilerAPIV1):
             capabilities=capabilities,
             check_intermediate=check_intermediate,
             boundary_policy=boundary_policy,
+            delta_check_match=delta_check_match,
         )
         lowered = PySpark.compiler.optimize_projection_unions()(lowered)
         diagnostics = self._diagnostics(

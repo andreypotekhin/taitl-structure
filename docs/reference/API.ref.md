@@ -5,7 +5,9 @@ This describes Structure's public, compiler-visible API.
 If you are just starting using this library, see [QuickRef.md](../QuickRef.md) for an introduction.
 
 `supported` means the public contract is available now. `planned` needs a more complete type, cardinality, or
-determinism contract. `deferred` and `unsupported` deliberately stay outside the current scope.
+determinism contract. `design-gated` has a proposed boundary but lacks implementation or evidence. `caller-owned-guided`
+means the caller may use the upstream API around a Structure transform. `streaming-ineligible` excludes a streaming form;
+`unsupported` deliberately stays outside the current scope.
 Structure is not a one-to-one PySpark
 wrapper: admitted APIs remain typed, symbolic, capability-checked, explainable, and readable in generated code.
 
@@ -58,6 +60,20 @@ class Publish(Transform):
 ```
 
 The schema, transform, and expression remain visible to compile-time checking and generated output.
+
+## PySpark 4.1 Adoption (V11)
+
+V11 tracks the exact `>=4.1,<4.2` profile without widening the default `>=3.5,<4.1` target. See the
+[V11 charter](../dev/project-management/V11.md), [V11 parity specification](../dev/specifications/V11PySpark41Parity.spec.md),
+and [API tracker](../compatibility/APITracker.md) for the normative status and evidence rules.
+
+| API area | Status | Reference boundary |
+| --- | --- | --- |
+| Expressions and relational query operations | design-gated | Typed contracts, capability checks, and online/generated parity are required. |
+| Observations and sketches | design-gated | Metrics and opaque binary results need explicit retrieval, merge, dependency, and determinism contracts. |
+| Arrow UDF/UDTF and row-based state | caller-owned-guided | Worker Python, state, checkpoint, and retry ownership stays with the caller. |
+| Delta transform mutations | planned | Caller-bound Delta tables, optional `Schema` checks, and compiled delete/update/merge remain evidence-gated. |
+| Retained V9 gates | design-gated | Future Variant/state work is gated; XML and join reordering remain unsupported. |
 
 ## Analytical APIs
 

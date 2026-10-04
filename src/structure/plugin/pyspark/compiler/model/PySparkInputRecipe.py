@@ -16,3 +16,4 @@ class PySparkInputRecipe:
     optional: bool = False
     aliases: tuple[str, ...] = ()
     internal: bool = False
+    binding: str = "dataframe"

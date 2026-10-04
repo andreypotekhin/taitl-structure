@@ -142,8 +142,8 @@ def test_v7_binary_encoding_helpers_reject_wrong_types_and_invalid_charsets() ->
 
 
 def test_v7_schema_carrying_parsing_helpers_have_precise_types_and_options() -> None:
-    parsed_json = from_json('{"code":"paid","amount":2}', as_=ParsedPayload)
-    parsed_csv = from_csv("paid|2", as_=ParsedPayload, options=CsvOptions(delimiter="|", null_value=""))
+    parsed_json = from_json('{"code":"paid","amount":2}', to=ParsedPayload)
+    parsed_csv = from_csv("paid|2", to=ParsedPayload, options=CsvOptions(delimiter="|", null_value=""))
     rendered_json = to_json(parsed_json, options=JsonOptions(date_format="yyyy-MM-dd"))
     rendered_csv = to_csv(parsed_csv, options=CsvOptions(delimiter="|"))
 
@@ -164,18 +164,18 @@ def test_v7_schema_carrying_parsing_helpers_reject_untyped_options_and_schemas()
     class RequiredPayload(Schema):
         code = string(nullable=False)
 
-    with pytest.raises(TypeError, match="from_json\\(\\.\\.\\.\\) as_= must be a Schema class"):
-        from_json("{}", as_=object)
-    with pytest.raises(TypeError, match="from_json\\(\\.\\.\\.\\) as_= schema field RequiredPayload.code must be nullable"):
-        from_json("{}", as_=RequiredPayload)
+    with pytest.raises(TypeError, match="from_json\\(\\.\\.\\.\\) to= must be a Schema class"):
+        from_json("{}", to=object)
+    with pytest.raises(TypeError, match="from_json\\(\\.\\.\\.\\) to= schema field RequiredPayload.code must be nullable"):
+        from_json("{}", to=RequiredPayload)
     with pytest.raises(TypeError, match="JSON conversion options must be a JsonOptions value"):
-        from_json("{}", as_=ParsedPayload, options={})  # type: ignore[arg-type]
+        from_json("{}", to=ParsedPayload, options={})  # type: ignore[arg-type]
     with pytest.raises(TypeError, match="CSV conversion options must be a CsvOptions value"):
-        from_csv("paid,2", as_=ParsedPayload, options={})  # type: ignore[arg-type]
+        from_csv("paid,2", to=ParsedPayload, options={})  # type: ignore[arg-type]
     with pytest.raises(TypeError, match='CsvOptions.mode must be "PERMISSIVE"'):
-        from_csv("paid,2", as_=ParsedPayload, options=CsvOptions(mode="FAILFAST"))
+        from_csv("paid,2", to=ParsedPayload, options=CsvOptions(mode="FAILFAST"))
     with pytest.raises(TypeError, match="CsvOptions.delimiter must be a non-empty string or None"):
-        from_csv("paid,2", as_=ParsedPayload, options=CsvOptions(delimiter=""))
+        from_csv("paid,2", to=ParsedPayload, options=CsvOptions(delimiter=""))
     with pytest.raises(TypeError, match="to_json\\(\\.\\.\\.\\) requires a Struct Structure expression"):
         to_json("paid")
 

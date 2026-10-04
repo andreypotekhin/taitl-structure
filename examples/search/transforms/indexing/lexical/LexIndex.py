@@ -86,7 +86,7 @@ class LexIndex(Transform):
             split(sentence.content, pattern=r"\s+"),
             lambda value: TermText(term=value),
         )
-        expanded = posexplode_struct(terms, as_=ExpandedTermText, ordinal="position", scope="sentence_term")
+        expanded = posexplode_struct(terms, to=ExpandedTermText, ordinal="position", scope="sentence_term")
         term = QueryToken.normalize(expanded.term)
         where(term != "")
         return LexicalOccurrence.project(sentence)(

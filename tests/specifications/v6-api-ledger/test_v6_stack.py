@@ -25,7 +25,7 @@ class StackItems(Transform):
     expanded = output(StackOutput)
 
     def expand(self, row: StackInput) -> StackOutput:
-        return stack(2, row.item_id, row.label, row.item_id + 1, as_=StackOutput)
+        return stack(2, row.item_id, row.label, row.item_id + 1, to=StackOutput)
 
 
 @transform(streaming=True)
@@ -34,7 +34,7 @@ class StreamingStackItems(Transform):
     expanded = output(StackOutput)
 
     def expand(self, row: StackInput) -> StackOutput:
-        return stack(2, row.item_id, row.label, row.item_id + 1, as_=StackOutput)
+        return stack(2, row.item_id, row.label, row.item_id + 1, to=StackOutput)
 
 
 def test_stack_is_public_and_lowers_as_fixed_row_expansion() -> None:
@@ -61,7 +61,7 @@ def test_stack_requires_positive_rows_and_nullable_trailing_padding() -> None:
         expanded = output(StackOutput)
 
         def expand(self, row: StackInput) -> StackOutput:
-            return stack(0, row.item_id, as_=StackOutput)
+            return stack(0, row.item_id, to=StackOutput)
 
     class NonNullablePadding(Schema):
         item_id = integer(nullable=False)
@@ -72,7 +72,7 @@ def test_stack_requires_positive_rows_and_nullable_trailing_padding() -> None:
         expanded = output(NonNullablePadding)
 
         def expand(self, row: StackInput) -> NonNullablePadding:
-            return stack(2, row.item_id, row.label, row.item_id, as_=NonNullablePadding)
+            return stack(2, row.item_id, row.label, row.item_id, to=NonNullablePadding)
 
     with pytest.raises(TypeError, match="positive integer row count"):
         Compiler.frontend.compile()(InvalidRows, materialize_schemas=False)
@@ -90,7 +90,7 @@ def test_stack_requires_exact_output_shape_and_position_types() -> None:
         expanded = output(WrongType)
 
         def expand(self, row: StackInput) -> WrongType:
-            return stack(2, row.item_id, row.label, row.item_id + 1, as_=WrongType)
+            return stack(2, row.item_id, row.label, row.item_id + 1, to=WrongType)
 
     with pytest.raises(TypeError, match="must have type integer"):
         Compiler.frontend.compile()(InvalidSchema, materialize_schemas=False)

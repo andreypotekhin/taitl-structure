@@ -38,7 +38,7 @@ class ExpandTerms(Transform):
     terms = output(DocumentTerm)
 
     def expand(self, document: Document) -> DocumentTerm:
-        term = posexplode_struct(document.terms, as_=ExpandedTerm, scope="term")
+        term = posexplode_struct(document.terms, to=ExpandedTerm, scope="term")
         return DocumentTerm(
             doc_id=document.doc_id,
             ordinal=term.ordinal,
@@ -102,7 +102,7 @@ def test_posexplode_struct_rejects_scalar_arrays() -> None:
         terms = output(DocumentTerm)
 
         def expand(self, document: ScalarArrayDocument) -> DocumentTerm:
-            term = posexplode_struct(document.values, as_=ExpandedTerm, scope="term")
+            term = posexplode_struct(document.values, to=ExpandedTerm, scope="term")
             return DocumentTerm(doc_id="", ordinal=term.ordinal, token=term.token, weight=term.weight)
 
     with pytest.raises(TypeError, match="array<struct"):
@@ -118,7 +118,7 @@ def test_posexplode_struct_rejects_nullable_array_elements() -> None:
         terms = output(DocumentTerm)
 
         def expand(self, document: NullableTermDocument) -> DocumentTerm:
-            term = posexplode_struct(document.terms, as_=ExpandedTerm, scope="term")
+            term = posexplode_struct(document.terms, to=ExpandedTerm, scope="term")
             return DocumentTerm(doc_id="", ordinal=term.ordinal, token=term.token, weight=term.weight)
 
     with pytest.raises(TypeError, match="contains_null=False"):

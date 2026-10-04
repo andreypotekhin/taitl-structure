@@ -201,14 +201,14 @@ This is the compatibility companion to the [API reference](../api/Expressions.ap
 
 | Structure API | PySpark parity | Example | PySpark 3 | PySpark 4 | Details |
 | --- | --- | --- | --- | --- | --- |
-| `from_json(...)` | `from_json` | `from_json(o.payload_json, as_=Payload)` | yes | yes | Status: `caller-owned-guided`. explicit Structure Schema for Struct output and immutable JSON options; nullable result. PySpark's Array/Map root schemas are not modeled. Migration: Use the typed helper for Struct output; retain Array/Map root parsing in native PySpark. |
+| `from_json(...)` | `from_json` | `from_json(o.payload_json, to=Payload)` | yes | yes | Status: `caller-owned-guided`. explicit Structure Schema for Struct output and immutable JSON options; nullable result. PySpark's Array/Map root schemas are not modeled. Migration: Use the typed helper for Struct output; retain Array/Map root parsing in native PySpark. |
 | `to_json(...)` | `to_json` | `to_json(order.value)` | yes | yes | Accepts typed Struct, Array, or Map and returns nullable String. |
-| `from_csv(...)` | `from_csv` | `from_csv(o.payload_csv, as_=Payload)` | yes | yes | Explicit Structure Schema and immutable CSV options; nullable result. |
+| `from_csv(...)` | `from_csv` | `from_csv(o.payload_csv, to=Payload)` | yes | yes | Explicit Structure Schema and immutable CSV options; nullable result. |
 | `to_csv(...)` | `to_csv` | `to_csv(order.value)` | yes | yes | Accepts a typed Struct and returns nullable String. |
 | `get_json_object(...)` | `get_json_object` | `get_json_object(o.payload_json, "$.customer.id")` | yes | yes | Non-empty literal JSON path, nullable String output. |
 | `json_array_length(...)` | `json_array_length` | `json_array_length(o.payload_json)` | yes | yes | Nullable Integer count for the outermost JSON array. |
 | `json_object_keys(...)` | `json_object_keys` | `json_object_keys(o.payload_json)` | yes | yes | Nullable `Array[String]` for the outermost object keys. |
-| `json_tuple(...)` | `json_tuple` | `json_tuple(o.payload_json, as_=LegacyFields, fields={"customer_id": "customerId"})` | yes | yes | Declared nullable-String output schema, top-level keys, row-preserving scope. |
+| `json_tuple(...)` | `json_tuple` | `json_tuple(o.payload_json, to=LegacyFields, fields={"customer_id": "customerId"})` | yes | yes | Declared nullable-String output schema, top-level keys, row-preserving scope. |
 | `schema_of_json(...)` | `schema_of_json` | `schema_of_json('{"id": 1}')` | yes | yes | Non-empty text literal plus immutable options; non-null SQL-format String. |
 | `schema_of_csv(...)` | `schema_of_csv` | `schema_of_csv(order.value)` | yes | yes | Non-empty text literal plus immutable options; non-null SQL-format String. |
 
@@ -376,7 +376,7 @@ This is the compatibility companion to the [API reference](../api/Expressions.ap
 | `variant_set(...)` | Variant upsert | `variant_set(o.payload, "$.name", "spark")` | — | — | Sets or replaces the value at a literal Variant path and returns Variant. |
 | `try_variant_set(...)` | Variant upsert | `try_variant_set(order.value)` | — | — | Nullable Variant set; invalid paths or mutation failures produce null. |
 | `variant_delete(...)` | Variant path deletion | `variant_delete(o.payload, "$.name")` | — | — | Deletes the value at a literal Variant path and returns the updated Variant. |
-| `variant_explode(...)` | Variant TVF row expansion | `entry = variant_explode(o.payload, as_=VariantEntry)` | — | — | Variant row expansion uses typed `variant_explode(...)`/`variant_explode_outer(...)` generators and the PySpark 4 TVF/lateral-join API. Dynamic paths, implicit extraction types, and ordering are not part of the current typed contract. |
+| `variant_explode(...)` | Variant TVF row expansion | `entry = variant_explode(o.payload, to=VariantEntry)` | — | — | Variant row expansion uses typed `variant_explode(...)`/`variant_explode_outer(...)` generators and the PySpark 4 TVF/lateral-join API. Dynamic paths, implicit extraction types, and ordering are not part of the current typed contract. |
 | `variant_explode_outer(...)` | Variant TVF row expansion | `variant_explode_outer(order.value)` | — | — | Variant row expansion uses typed `variant_explode(...)`/`variant_explode_outer(...)` generators and the PySpark 4 TVF/lateral-join API. Dynamic paths, implicit extraction types, and ordering are not part of the current typed contract. |
 | `JsonOptions(...)` | JSON read/write options | `JsonOptions(date_format="...")` | yes | yes | Typed JSON options make parsing/serialization policy explicit, including null value, date/timestamp formats, and malformed-record mode. |
 | `CsvOptions(...)` | CSV read/write options | `CsvOptions(delimiter=";")` | yes | yes | Typed CSV options make delimiter, quote, escape, null value, date/timestamp formats, and malformed-record mode explicit. |

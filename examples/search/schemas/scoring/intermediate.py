@@ -41,7 +41,7 @@ class QueryToken(Schema):
                 arr_distinct(split(trim(query.content), pattern=r"\s+")),
                 lambda value: QueryToken(token=QueryToken.normalize(value)),
             ),
-            as_=ExpandedQueryToken,
+            to=ExpandedQueryToken,
             scope="query_token",
         )
 

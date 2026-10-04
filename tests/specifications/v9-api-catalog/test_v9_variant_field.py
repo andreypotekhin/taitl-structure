@@ -181,7 +181,7 @@ class UseVariantExplode(Transform):
     result = output(VariantExplodeOutput)
 
     def expand(self, row: VariantInput) -> VariantExplodeOutput:
-        entry = variant_explode(row.payload, as_=VariantEntry)
+        entry = variant_explode(row.payload, to=VariantEntry)
         return VariantExplodeOutput(pos=entry.pos, key=entry.key, value=entry.value)
 
 
@@ -190,7 +190,7 @@ class UseVariantExplodeOuter(Transform):
     result = output(VariantExplodeOuterOutput)
 
     def expand(self, row: VariantInput) -> VariantExplodeOuterOutput:
-        entry = variant_explode_outer(row.payload, as_=VariantOuterEntry)
+        entry = variant_explode_outer(row.payload, to=VariantOuterEntry)
         return VariantExplodeOuterOutput(pos=entry.pos, key=entry.key, value=entry.value)
 
 

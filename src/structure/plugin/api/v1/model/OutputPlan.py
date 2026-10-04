@@ -14,3 +14,4 @@ class OutputPlan:
     ordinal: int
     aliases: tuple[str, ...] = ()
     streaming: bool = False
+    binding: str = "dataframe"

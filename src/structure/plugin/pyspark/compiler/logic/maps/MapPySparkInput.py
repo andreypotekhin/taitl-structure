@@ -14,6 +14,7 @@ class MapPySparkInput:
         aliases: tuple[str, ...] = (),
         optional: bool = False,
         internal: bool = False,
+        binding: str = "dataframe",
     ) -> PySparkInputRecipe:
         return PySparkInputRecipe(
             name=name,
@@ -23,6 +24,7 @@ class MapPySparkInput:
             optional=optional,
             aliases=aliases,
             internal=internal,
+            binding=binding,
             validation=PySparkValidationRecipe(
                 target=name,
                 schema=schema,

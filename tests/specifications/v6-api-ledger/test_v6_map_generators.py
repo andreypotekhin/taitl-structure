@@ -45,7 +45,7 @@ class ExpandAttributes(Transform):
     def expand(self, document: Document) -> Result:
         attribute = posexplode_map(
             document.attributes,
-            as_=ExpandedAttribute,
+            to=ExpandedAttribute,
             key_field="key",
             value_field="value",
             scope="attribute",
@@ -73,7 +73,7 @@ def test_explode_map_renders_two_named_generated_fields() -> None:
         def expand(self, document: Document) -> Result:
             attribute = explode_map(
                 document.attributes,
-                as_=type("Expanded", (Schema,), {"key": string(nullable=False), "value": string(nullable=True)}),
+                to=type("Expanded", (Schema,), {"key": string(nullable=False), "value": string(nullable=True)}),
                 key_field="key",
                 value_field="value",
                 scope="attribute",
@@ -98,7 +98,7 @@ def test_posexplode_outer_map_records_outer_schema_and_traceability() -> None:
         def expand(self, document: Document) -> OuterResult:
             attribute = posexplode_outer_map(
                 document.attributes,
-                as_=OuterExpandedAttribute,
+                to=OuterExpandedAttribute,
                 key_field="key",
                 value_field="value",
                 ordinal="ordinal",
@@ -135,7 +135,7 @@ def test_posexplode_map_rejects_nested_map_values() -> None:
         def expand(self, document: BadDocument) -> Result:
             attribute = posexplode_map(
                 document.attributes,
-                as_=ExpandedAttribute,
+                to=ExpandedAttribute,
                 key_field="key",
                 value_field="value",
             )

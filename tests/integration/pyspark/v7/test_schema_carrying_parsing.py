@@ -44,8 +44,8 @@ class ParsePayloads(Transform):
     def publish(self, row: RawPayload) -> ParsedPayload:
         return ParsedPayload(
             id=row.id,
-            from_json_payload=from_json(row.payload_json, as_=Payload),
-            from_csv_payload=from_csv(row.payload_csv, as_=Payload, options=CsvOptions(delimiter="|")),
+            from_json_payload=from_json(row.payload_json, to=Payload),
+            from_csv_payload=from_csv(row.payload_csv, to=Payload, options=CsvOptions(delimiter="|")),
             payload_json=to_json(row.payload),
             payload_csv=to_csv(row.payload, options=CsvOptions(delimiter="|")),
         )

@@ -931,7 +931,7 @@ a narrower streaming rule proves otherwise.
 
 ## Schema-Carrying JSON and CSV
 
-`from_json(value, as_=Schema, options=...)` and `from_csv(value, as_=Schema, options=...)` return the exact declared
+`from_json(value, to=Schema, options=...)` and `from_csv(value, to=Schema, options=...)` return the exact declared
 struct shape. `to_json(value, options=...)` and `to_csv(value, options=...)` accept typed struct values and return
 nullable String. Parser schemas are never inferred; on supported permissive PySpark profiles, parsed fields are
 nullable, so parser schemas must declare each parsed field nullable.

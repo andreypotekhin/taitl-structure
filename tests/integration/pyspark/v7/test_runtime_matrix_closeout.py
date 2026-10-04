@@ -187,7 +187,7 @@ class StackRows(Transform):
     result = output(StackOutput)
 
     def expand(self, row: StackRangeInput) -> StackOutput:
-        return stack(2, row.item_id, row.label, row.item_id + 1, as_=StackOutput)
+        return stack(2, row.item_id, row.label, row.item_id + 1, to=StackOutput)
 
 
 @transform

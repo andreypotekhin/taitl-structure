@@ -14,6 +14,7 @@ class CompilerInputCollector:
                 optional=declaration.optional,
                 aliases=declaration.aliases,
                 streaming_declared=declaration.streaming_declared,
+                binding=declaration.binding,
             )
             for ordinal, declaration in enumerate(transform_class._structure_inputs.values())
         ]

@@ -100,7 +100,7 @@ class ResolveCohortBands(Transform):
         ancestors = hierarchy_closure(
             band.id,
             parent=band.parent_band_id,
-            as_=BandAncestor,
+            to=BandAncestor,
             node="band_id",
             ancestor="ancestor_band_id",
             max_depth=self.maximum_band_depth,
@@ -180,7 +180,7 @@ class ResolveCohortBands(Transform):
             band,
             parent_id=band.id,
             parent=band.parent_band_id,
-            as_=BandFallback,
+            to=BandFallback,
             max_depth=self.maximum_band_depth,
             scope="band_fallbacks",
         )

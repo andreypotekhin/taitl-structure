@@ -28,7 +28,7 @@ class ExpandValues(Transform):
     values = output(Result)
 
     def expand(self, document: Document) -> Result:
-        value = posexplode_array(document.values, as_=ExpandedValue, value_field="value", scope="value")
+        value = posexplode_array(document.values, to=ExpandedValue, value_field="value", scope="value")
         return Result(value=value.value, ordinal=value.ordinal)
 
 
@@ -52,7 +52,7 @@ def test_posexplode_array_rejects_struct_arrays() -> None:
         values = output(Result)
 
         def expand(self, document: BadDocument) -> Result:
-            value = posexplode_array(document.values, as_=ExpandedValue, value_field="value")
+            value = posexplode_array(document.values, to=ExpandedValue, value_field="value")
             return Result(value=value.value, ordinal=value.ordinal)
 
     with pytest.raises(TypeError, match="primitive scalar"):

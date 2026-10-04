@@ -40,7 +40,7 @@ class BuildQueryFeatures(Transform):
             split(trim(query.content), pattern=r"\s+"),
             lambda value: QueryFeatureToken(query_id=query.id, token=QueryToken.normalize(value)),
         )
-        token = posexplode_struct(tokens, as_=ExpandedQueryFeatureToken, scope="query_feature_token")
+        token = posexplode_struct(tokens, to=ExpandedQueryFeatureToken, scope="query_feature_token")
         where(token.token != "")
         return ExpandedQueryFeatureToken.base(token)(ordinal=token.ordinal)
 

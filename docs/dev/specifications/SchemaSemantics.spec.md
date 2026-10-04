@@ -239,7 +239,7 @@ traceability must carry Binary explicitly. Generated code uses public PySpark fu
 
 ## Schema-Carrying JSON and CSV Conversion
 
-`from_json(value, as_=Schema, options=...)` and `from_csv(value, as_=Schema, options=...)` return the exact declared
+`from_json(value, to=Schema, options=...)` and `from_csv(value, to=Schema, options=...)` return the exact declared
 Struct shape. `to_json(value, options=...)` and `to_csv(value, options=...)` accept typed Struct values and return
 nullable String. Parser schemas are never inferred. Because permissive parsing materializes parsed fields as nullable
 on the supported PySpark profiles, parser Schemas must declare every parsed field nullable.

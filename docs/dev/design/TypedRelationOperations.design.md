@@ -130,7 +130,7 @@ expand admitted primitive scalar arrays through an explicit value field and opti
 map keys and values through explicit key and value fields; inner forms preserve map-value nullability and outer forms
 make all generated fields nullable.
 
-Every generator requires a non-nullable element shape, a declared `as_` Schema, a non-empty unique symbolic scope, and
+Every generator requires a non-nullable element shape, a declared `to` Schema, a non-empty unique symbolic scope, and
 output names from that Schema rather than runtime data. The operation records kind, source expression, generated Schema,
 optional ordinal, scope, outer flag, cardinality, batch/streaming/Connect classification, capability, diagnostics, and
 provenance. Expansion invalidates any earlier relation-order claim. The admitted struct, scalar-array, and primitive-map

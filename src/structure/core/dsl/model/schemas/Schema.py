@@ -40,6 +40,7 @@ class Schema:
     _structure_fields: dict[str, FieldDefinition] = {}
     _structure_local_fields: dict[str, FieldDefinition] = {}
     _structure_schema_bases: tuple[type["Schema"], ...] = ()
+    _structure_constraints: tuple[object, ...] = ()
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
@@ -70,6 +71,13 @@ class Schema:
         cls._structure_schema_bases = tuple(
             base for base in cls.__bases__ if isinstance(base, type) and issubclass(base, Schema) and base is not Schema
         )
+        inherited = tuple(
+            constraint for base in cls._structure_schema_bases for constraint in base._structure_constraints
+        )
+        declared = cls.__dict__.get("constraints", ())
+        if not isinstance(declared, tuple):
+            raise TypeError(f"{cls.__name__}.constraints must be a tuple of check declarations")
+        cls._structure_constraints = (*inherited, *declared)
 
     def __init__(self, **values: object) -> None:
         unknown = set(values) - set(self._structure_fields)

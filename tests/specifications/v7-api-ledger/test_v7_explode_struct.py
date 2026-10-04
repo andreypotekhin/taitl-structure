@@ -71,7 +71,7 @@ class ExpandTerms(Transform):
     terms = output(DocumentTerm)
 
     def expand(self, document: Document) -> DocumentTerm:
-        term = explode_struct(document.terms, as_=ExplodedTerm, scope="term")
+        term = explode_struct(document.terms, to=ExplodedTerm, scope="term")
         return DocumentTerm(
             doc_id=document.doc_id,
             token=term.token,
@@ -84,7 +84,7 @@ class ExpandOuterTerms(Transform):
     terms = output(OuterDocumentTerm)
 
     def expand(self, document: Document) -> OuterDocumentTerm:
-        term = explode_outer_struct(document.terms, as_=OuterExplodedTerm, scope="term")
+        term = explode_outer_struct(document.terms, to=OuterExplodedTerm, scope="term")
         return OuterDocumentTerm(
             doc_id=document.doc_id,
             token=term.token,
@@ -97,7 +97,7 @@ class ExpandOuterPositionedTerms(Transform):
     terms = output(OuterPositionedDocumentTerm)
 
     def expand(self, document: Document) -> OuterPositionedDocumentTerm:
-        term = posexplode_outer_struct(document.terms, as_=OuterPositionedTerm, scope="term")
+        term = posexplode_outer_struct(document.terms, to=OuterPositionedTerm, scope="term")
         return OuterPositionedDocumentTerm(
             doc_id=document.doc_id,
             ordinal=term.ordinal,
@@ -111,7 +111,7 @@ class InlineTerms(Transform):
     terms = output(DocumentTerm)
 
     def expand(self, document: Document) -> DocumentTerm:
-        term = inline_struct(document.terms, as_=ExplodedTerm, scope="term")
+        term = inline_struct(document.terms, to=ExplodedTerm, scope="term")
         return DocumentTerm(
             doc_id=document.doc_id,
             token=term.token,
@@ -124,7 +124,7 @@ class InlineOuterTerms(Transform):
     terms = output(OuterDocumentTerm)
 
     def expand(self, document: Document) -> OuterDocumentTerm:
-        term = inline_outer_struct(document.terms, as_=OuterExplodedTerm, scope="term")
+        term = inline_outer_struct(document.terms, to=OuterExplodedTerm, scope="term")
         return OuterDocumentTerm(
             doc_id=document.doc_id,
             token=term.token,
@@ -186,7 +186,7 @@ def test_explode_struct_requires_exact_element_schema() -> None:
         terms = output(DocumentTerm)
 
         def expand(self, document: Document) -> DocumentTerm:
-            term = explode_struct(document.terms, as_=BadTerm, scope="term")
+            term = explode_struct(document.terms, to=BadTerm, scope="term")
             return DocumentTerm(doc_id="", token=term.token, weight=term.weight)
 
     with pytest.raises(TypeError, match="exactly the array element fields"):
@@ -243,7 +243,7 @@ def test_explode_outer_struct_requires_nullable_generated_fields() -> None:
         terms = output(DocumentTerm)
 
         def expand(self, document: Document) -> DocumentTerm:
-            term = explode_outer_struct(document.terms, as_=ExplodedTerm, scope="term")
+            term = explode_outer_struct(document.terms, to=ExplodedTerm, scope="term")
             return DocumentTerm(doc_id="", token=term.token, weight=term.weight)
 
     with pytest.raises(TypeError, match="must be nullable"):
@@ -311,7 +311,7 @@ def test_posexplode_outer_struct_requires_nullable_ordinal() -> None:
         terms = output(OuterPositionedDocumentTerm)
 
         def expand(self, document: Document) -> OuterPositionedDocumentTerm:
-            term = posexplode_outer_struct(document.terms, as_=BadTerm, scope="term")
+            term = posexplode_outer_struct(document.terms, to=BadTerm, scope="term")
             return OuterPositionedDocumentTerm(
                 doc_id="",
                 ordinal=term.ordinal,
@@ -382,7 +382,7 @@ def test_inline_outer_struct_requires_nullable_generated_fields() -> None:
         terms = output(DocumentTerm)
 
         def expand(self, document: Document) -> DocumentTerm:
-            term = inline_outer_struct(document.terms, as_=ExplodedTerm, scope="term")
+            term = inline_outer_struct(document.terms, to=ExplodedTerm, scope="term")
             return DocumentTerm(doc_id="", token=term.token, weight=term.weight)
 
     with pytest.raises(TypeError, match="must be nullable"):

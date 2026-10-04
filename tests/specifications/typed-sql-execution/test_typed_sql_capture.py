@@ -23,7 +23,7 @@ def test_sql_captures_typed_query_and_relation_binding() -> None:
         selected = output(Result)
 
         def select(self, order: Order) -> Result:
-            result = sql("SELECT id FROM {orders}", relations={"orders": order}, as_=Result)
+            result = sql("SELECT id FROM {orders}", relations={"orders": order}, to=Result)
             return Result(id=result.id)
 
     recipe = _recipe(SelectOrders)
@@ -58,7 +58,7 @@ def test_sql_captures_labeled_command_result_as_a_schema() -> None:
                 relations={"target": "catalog.sales.orders"},
                 args={"id": "A-1"},
                 label="delete-order",
-                as_=SqlCommandResult,
+                to=SqlCommandResult,
             )
 
     assert issubclass(SqlCommandResult, SqlResult)
@@ -118,11 +118,11 @@ def test_repeated_command_outputs_accumulate_in_generated_steps() -> None:
 
         @step(input=source, output=commands)
         def first(self, row: Source) -> SqlCommandResult:
-            return sql("DELETE FROM target", label="first", as_=SqlCommandResult)
+            return sql("DELETE FROM target", label="first", to=SqlCommandResult)
 
         @step(input=source, output=commands)
         def second(self, row: Source) -> SqlCommandResult:
-            return sql("DELETE FROM target", label="second", as_=SqlCommandResult)
+            return sql("DELETE FROM target", label="second", to=SqlCommandResult)
 
     recipe = _recipe(DeleteTwo)
     assert [step.results[0].frame for step in recipe.steps] == ["commands", "commands"]
@@ -158,7 +158,7 @@ def test_command_result_subclass_can_flow_to_base_output_schema() -> None:
 
         @step(input=source, output=commands)
         def run_command(self, row: Source) -> ProviderCommandResult:
-            return sql("DELETE FROM target", label="provider-delete", as_=ProviderCommandResult)
+            return sql("DELETE FROM target", label="provider-delete", to=ProviderCommandResult)
 
     recipe = _recipe(RunProviderCommand)
     assert recipe.outputs[0].input_schema is ProviderCommandResult
@@ -174,7 +174,7 @@ def test_command_result_subclass_can_flow_to_base_output_schema() -> None:
 
 def test_sql_requires_concrete_typed_results_and_allows_omitted_command_labels() -> None:
     with pytest.raises(TypeError, match="SqlResult.*abstract"):
-        sql("SELECT 1", as_=SqlResult)
+        sql("SELECT 1", to=SqlResult)
 
     class Source(Schema):
         id = string(nullable=False)
@@ -185,7 +185,7 @@ def test_sql_requires_concrete_typed_results_and_allows_omitted_command_labels()
         commands = output(SqlCommandResult)
 
         def delete(self, row: Source) -> SqlCommandResult:
-            return sql("DELETE FROM orders", as_=SqlCommandResult)
+            return sql("DELETE FROM orders", to=SqlCommandResult)
 
     assert SqlCommandResult._structure_fields["label"].nullable is True
     recipe = _recipe(DeleteOrders)

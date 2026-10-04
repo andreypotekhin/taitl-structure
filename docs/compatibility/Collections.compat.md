@@ -67,21 +67,21 @@ This is the compatibility companion to the [API reference](../api/Collections.ap
 
 | Structure API | PySpark parity | Example | PySpark 3 | PySpark 4 | Details |
 | --- | --- | --- | --- | --- | --- |
-| `stack(...)` | `stack` | `stack(2, order.id, order.name, order.id, as_=StackRow)` | yes | yes | Fixes row multiplication, position-wise common types, and trailing-NULL padding while keeping output schema explicit. Preserve output aliases, types, nullability, and streaming row expansion. |
-| `explode_struct(...)` | `explode` | `explode_struct(order.items, as_=Item)` | yes | yes | Array<struct> input; fields are declared by `as_`. The result schema is declared explicitly. |
-| `explode_array(...)` | `explode` | `explode_array(order.attributes, as_=MapEntry)` | yes | yes | Primitive scalar-array input; the element field is declared by `as_`. The result schema is declared explicitly. |
-| `explode_map(...)` | `explode` | `explode_map(order.attributes, as_=MapEntry)` | yes | yes | Primitive scalar-map input; key/value fields are declared by `as_`. The result schema is declared explicitly. |
-| `explode_outer_struct(...)` | `explode_outer` | `explode_outer_struct(order.items, as_=Item)` | yes | yes | Array<struct> input; preserves null/empty rows and requires nullable output fields. The result schema is declared explicitly. |
-| `explode_outer_array(...)` | `explode_outer` | `explode_outer_array(order.attributes, as_=MapEntry)` | yes | yes | Primitive scalar-array input; preserves null/empty rows and requires nullable output fields. The result schema is declared explicitly. |
-| `explode_outer_map(...)` | `explode_outer` | `explode_outer_map(order.attributes, as_=MapEntry)` | yes | yes | Primitive scalar-map input; preserves null/empty rows and requires nullable output fields. The result schema is declared explicitly. |
-| `posexplode_struct(...)` | `posexplode` | `posexplode_struct(order.items, as_=Item)` | yes | yes | Array<struct> input; adds a zero-based Long ordinal and declared fields. The result schema is declared explicitly. |
-| `posexplode_array(...)` | `posexplode` | `posexplode_array(order.attributes, as_=MapEntry)` | yes | yes | Primitive scalar-array input; adds a zero-based Long ordinal. The result schema is declared explicitly. |
-| `posexplode_map(...)` | `posexplode` | `posexplode_map(order.attributes, as_=MapEntry)` | yes | yes | Primitive scalar-map input; adds a zero-based Long ordinal and key/value fields. The result schema is declared explicitly. |
-| `posexplode_outer_struct(...)` | `posexplode_outer` | `posexplode_outer_struct(order.items, as_=Item)` | yes | yes | Array<struct> input; adds a nullable ordinal and preserves null/empty rows. The result schema is declared explicitly. |
-| `posexplode_outer_array(...)` | `posexplode_outer` | `posexplode_outer_array(order.attributes, as_=MapEntry)` | yes | yes | Primitive scalar-array input; adds a nullable ordinal and preserves null/empty rows. The result schema is declared explicitly. |
-| `posexplode_outer_map(...)` | `posexplode_outer` | `posexplode_outer_map(order.attributes, as_=MapEntry)` | yes | yes | Primitive scalar-map input; adds a nullable ordinal and preserves null/empty rows. The result schema is declared explicitly. |
-| `inline_struct(...)` | `inline` | `inline_struct(order.items, as_=Item)` | yes | yes | `inline_struct`; inlines declared fields from an `array<struct>` into the generated scope. |
-| `inline_outer_struct(...)` | `inline_outer` | `inline_outer_struct(order.items, as_=Item)` | yes | yes | `inline_outer_struct`; inlines `array<struct>` fields while retaining null/empty input rows. |
+| `stack(...)` | `stack` | `stack(2, order.id, order.name, order.id, to=StackRow)` | yes | yes | Fixes row multiplication, position-wise common types, and trailing-NULL padding while keeping output schema explicit. Preserve output aliases, types, nullability, and streaming row expansion. |
+| `explode_struct(...)` | `explode` | `explode_struct(order.items, to=Item)` | yes | yes | Array<struct> input; fields are declared by `to`. The result schema is declared explicitly. |
+| `explode_array(...)` | `explode` | `explode_array(order.attributes, to=MapEntry)` | yes | yes | Primitive scalar-array input; the element field is declared by `to`. The result schema is declared explicitly. |
+| `explode_map(...)` | `explode` | `explode_map(order.attributes, to=MapEntry)` | yes | yes | Primitive scalar-map input; key/value fields are declared by `to`. The result schema is declared explicitly. |
+| `explode_outer_struct(...)` | `explode_outer` | `explode_outer_struct(order.items, to=Item)` | yes | yes | Array<struct> input; preserves null/empty rows and requires nullable output fields. The result schema is declared explicitly. |
+| `explode_outer_array(...)` | `explode_outer` | `explode_outer_array(order.attributes, to=MapEntry)` | yes | yes | Primitive scalar-array input; preserves null/empty rows and requires nullable output fields. The result schema is declared explicitly. |
+| `explode_outer_map(...)` | `explode_outer` | `explode_outer_map(order.attributes, to=MapEntry)` | yes | yes | Primitive scalar-map input; preserves null/empty rows and requires nullable output fields. The result schema is declared explicitly. |
+| `posexplode_struct(...)` | `posexplode` | `posexplode_struct(order.items, to=Item)` | yes | yes | Array<struct> input; adds a zero-based Long ordinal and declared fields. The result schema is declared explicitly. |
+| `posexplode_array(...)` | `posexplode` | `posexplode_array(order.attributes, to=MapEntry)` | yes | yes | Primitive scalar-array input; adds a zero-based Long ordinal. The result schema is declared explicitly. |
+| `posexplode_map(...)` | `posexplode` | `posexplode_map(order.attributes, to=MapEntry)` | yes | yes | Primitive scalar-map input; adds a zero-based Long ordinal and key/value fields. The result schema is declared explicitly. |
+| `posexplode_outer_struct(...)` | `posexplode_outer` | `posexplode_outer_struct(order.items, to=Item)` | yes | yes | Array<struct> input; adds a nullable ordinal and preserves null/empty rows. The result schema is declared explicitly. |
+| `posexplode_outer_array(...)` | `posexplode_outer` | `posexplode_outer_array(order.attributes, to=MapEntry)` | yes | yes | Primitive scalar-array input; adds a nullable ordinal and preserves null/empty rows. The result schema is declared explicitly. |
+| `posexplode_outer_map(...)` | `posexplode_outer` | `posexplode_outer_map(order.attributes, to=MapEntry)` | yes | yes | Primitive scalar-map input; adds a nullable ordinal and preserves null/empty rows. The result schema is declared explicitly. |
+| `inline_struct(...)` | `inline` | `inline_struct(order.items, to=Item)` | yes | yes | `inline_struct`; inlines declared fields from an `array<struct>` into the generated scope. |
+| `inline_outer_struct(...)` | `inline_outer` | `inline_outer_struct(order.items, to=Item)` | yes | yes | `inline_outer_struct`; inlines `array<struct>` fields while retaining null/empty input rows. |
 
 ## Map and Struct Functions
 

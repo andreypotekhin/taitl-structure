@@ -35,7 +35,7 @@ class Fields(Transform):
     def flatten(self, document: Document) -> DocumentField:
         field = posexplode_struct(
             map_entries(document.fields),
-            as_=ExpandedDocumentField,
+            to=ExpandedDocumentField,
             ordinal="ordinal",
             scope="document_field",
         )

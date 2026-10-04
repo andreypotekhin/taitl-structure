@@ -27,6 +27,7 @@ class PySparkOutputRecipe:
     validation: PySparkValidationRecipe
     operations: tuple[PySparkOperationRecipe, ...] = ()
     aliases: tuple[str, ...] = ()
+    binding: str = "dataframe"
 
     @property
     def before_hooks(self) -> tuple[PySparkHookRecipe, ...]:

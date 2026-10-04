@@ -12,3 +12,4 @@ class InputPlan:
     optional: bool = False
     aliases: tuple[str, ...] = ()
     streaming_declared: bool = False
+    binding: str = "dataframe"

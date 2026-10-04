@@ -23,7 +23,7 @@ execution, generated source, diagnostics, explain, and traceability.
 
 ### First admitted shape: `posexplode` over `array<struct>`
 
-The initial helper, `posexplode_struct(value, as_=GeneratedScope, ordinal="ordinal", scope="...")`, expands one
+The initial helper, `posexplode_struct(value, to=GeneratedScope, ordinal="ordinal", scope="...")`, expands one
 array-of-struct field into zero or more rows. The author declares a generated scope schema that contains an ordinal
 Long field and the element struct fields. The final output schema can combine the original input fields with fields
 read from that generated scope through normal Structure projection.
@@ -142,13 +142,13 @@ preserving the current rowset on success. It requires declared id/parent fields,
 positive literal depth. Missing parent, cycle, depth-overrun, and non-increasing child order failures report
 `REL-E0706`. Implementation uses a finite chain of self joins and a lazy scalar aggregate guard retained in a filter. It does not collect the input relation, use a Python UDF, or require a recursive Spark extension.
 
-`hierarchy_closure(id, parent=..., as_=ClosureSchema, node="node_id", ancestor="ancestor_id", depth="depth",
+`hierarchy_closure(id, parent=..., to=ClosureSchema, node="node_id", ancestor="ancestor_id", depth="depth",
 max_depth=..., scope=...)` accepts declared id and parent fields plus a positive literal depth. It replaces the active
 rowset with typed closure rows, where each source node emits a depth-0 self row and one row for every discovered parent
 ancestor through `max_depth`. It is batch-only, finite, and uses public self-join expansion rather than recursion,
 driver collection, or a Python UDF. Invalid catalogs should be guarded first with `require_parent_hierarchy(...)`.
 
-`hierarchy_fallbacks(source_id, path, parents, parent_id=..., parent=..., as_=FallbackSchema, max_depth=...)`
+`hierarchy_fallbacks(source_id, path, parents, parent_id=..., parent=..., to=FallbackSchema, max_depth=...)`
 expands each declared ordered band path by replacing its final band with its parent until no parent remains, then emits
 one terminal empty/global path. It returns one row per input path and ordinal, hashes non-empty fallback paths into the
 nullable fallback-id field, and makes no implicit ordering claim beyond the explicit ordinal. `parents` must be an

@@ -82,7 +82,7 @@ class StreamingExplodeTerms(Transform):
     terms = output(DocumentTerm)
 
     def expand(self, document: Document) -> DocumentTerm:
-        term = explode_struct(document.terms, as_=GeneratedTerm, scope="term")
+        term = explode_struct(document.terms, to=GeneratedTerm, scope="term")
         return DocumentTerm(doc_id=document.doc_id, token=term.token, weight=term.weight)
 
 

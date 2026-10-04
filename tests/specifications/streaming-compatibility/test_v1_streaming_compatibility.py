@@ -271,7 +271,7 @@ class StreamingVariantExplode(Transform):
     expanded = output(StreamingVariantExplodeOutput)
 
     def expand(self, row: StreamingVariantInput) -> StreamingVariantExplodeOutput:
-        entry = variant_explode(row.payload, as_=StreamingVariantExplodeEntry)
+        entry = variant_explode(row.payload, to=StreamingVariantExplodeEntry)
         return StreamingVariantExplodeOutput(
             id=row.id,
             pos=entry.pos,
@@ -286,7 +286,7 @@ class StreamingVariantExplodeOuter(Transform):
     expanded = output(StreamingVariantExplodeOuterOutput)
 
     def expand(self, row: StreamingVariantInput) -> StreamingVariantExplodeOuterOutput:
-        entry = variant_explode_outer(row.payload, as_=StreamingVariantExplodeOuterEntry)
+        entry = variant_explode_outer(row.payload, to=StreamingVariantExplodeOuterEntry)
         return StreamingVariantExplodeOuterOutput(
             id=row.id,
             pos=entry.pos,
@@ -323,7 +323,7 @@ class StreamingStructGenerator(Transform):
     terms = output(StreamDocumentTerm)
 
     def expand(self, document: StreamDocument) -> StreamDocumentTerm:
-        term = explode_struct(document.terms, as_=StreamExplodedTerm, scope="term")
+        term = explode_struct(document.terms, to=StreamExplodedTerm, scope="term")
         return StreamDocumentTerm(id=document.id, token=term.token, weight=term.weight)
 
 

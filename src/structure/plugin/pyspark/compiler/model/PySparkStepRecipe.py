@@ -12,6 +12,7 @@ from structure.plugin.pyspark.compiler.model.PySparkOperationRecipe import PySpa
 from structure.plugin.pyspark.compiler.model.PySparkProjectionRecipe import PySparkProjectionRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStepResultRecipe import PySparkStepResultRecipe
 from structure.plugin.pyspark.compiler.model.PySparkValidationRecipe import PySparkValidationRecipe
+from structure.plugin.pyspark.delta.model import DeltaMutation
 
 
 @dataclass(frozen=True)
@@ -35,3 +36,6 @@ class PySparkStepRecipe:
     operations: tuple[PySparkOperationRecipe, ...] = ()
     input_sources: tuple[str, ...] = ()
     origin: TransformMemberOrigin | None = None
+    effect: bool = False
+    delta_mutations: tuple[DeltaMutation, ...] = ()
+    delta_check_match: str | None = None

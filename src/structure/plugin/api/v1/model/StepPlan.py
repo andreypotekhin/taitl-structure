@@ -26,6 +26,7 @@ class StepPlan:
     options: dict[str, object] | None = None
     origin: TransformMemberOrigin | None = None
     plugin_body: object | None = None
+    effect: bool = False
 
     if TYPE_CHECKING:
         # The transitional Core authorer returns Core-private subclasses.

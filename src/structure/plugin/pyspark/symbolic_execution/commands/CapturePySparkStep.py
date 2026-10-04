@@ -31,7 +31,19 @@ class CapturePySparkStep:
         request: StepAuthoringRequest,
     ) -> PySparkStepBody:
         context.operations.extend(self._reserved_operations(request))
-        results = BuildPySparkResultBodies(request)(value, context=context)
+        results: tuple[PySparkResultBody, ...]
+        if request.effect:
+            if value is not None:
+                raise TypeError(f"Delta effect step {request.name} must return None")
+            if context.operations or context.filters or context.joins or not context.delta_mutations:
+                raise TypeError(f"Delta effect step {request.name} must contain Delta mutations only")
+            if any(mutation.target != request.results[0].lane for mutation in context.delta_mutations):
+                raise TypeError(f"Delta effect step {request.name} may mutate only its declared output")
+            results = (PySparkResultBody(),)
+        else:
+            if context.delta_mutations:
+                raise TypeError("Delta mutations require a None-returning @step bound to delta_output(...)")
+            results = BuildPySparkResultBodies(request)(value, context=context)
         first = results[0]
         if first.aggregate is not None:
             context.record_aggregate(first.aggregate)
@@ -44,6 +56,7 @@ class CapturePySparkStep:
             filters=tuple(context.filters),
             joins=tuple(context.joins),
             operations=operations,
+            delta_mutations=tuple(context.delta_mutations),
             aggregate_keys=context.aggregate_keys,
             aggregate_levels=context.aggregate_levels,
             aggregate_grouping=context.aggregate_grouping,

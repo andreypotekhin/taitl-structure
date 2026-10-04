@@ -31,6 +31,7 @@ class LowerPySparkPlan:
         capabilities: BackendCapabilities | None = None,
         check_intermediate: bool = True,
         boundary_policy: str = "off",
+        delta_check_match: str = "expression",
     ) -> PySparkExecutionPlan:
         target = capabilities or self._capabilities
         if target is None:
@@ -46,6 +47,7 @@ class LowerPySparkPlan:
                 input.aliases,
                 input.optional,
                 internal,
+                input.binding,
             )
             for ordinal, (input, internal) in enumerate(
                 (*((input, False) for input in plan.inputs), *((input, True) for input in plan.internal_inputs))
@@ -80,6 +82,7 @@ class LowerPySparkPlan:
             requires_hook_inputs=False,
             stage_outputs=stage_outputs,
             allow_stage_outputs=plan.allow_stage_outputs,
+            delta_check_match=str((plan.options or {}).get("delta_check_match", delta_check_match)),
         )
 
     @staticmethod

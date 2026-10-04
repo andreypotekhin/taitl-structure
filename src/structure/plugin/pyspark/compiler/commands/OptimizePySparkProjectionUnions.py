@@ -65,7 +65,9 @@ class OptimizePySparkProjectionUnions:
         eliminated: set[str],
     ) -> tuple[int, PySparkStepRecipe] | None:
         if (
-            len(merge.results) != 1
+            merge.effect
+            or merge.delta_mutations
+            or len(merge.results) != 1
             or merge.filters
             or merge.joins
             or merge.aggregate is not None
@@ -87,7 +89,7 @@ class OptimizePySparkProjectionUnions:
         if relation_set.allow_missing_columns or relation_set.defaults:
             return None
         for index, projection in enumerate(steps):
-            if projection.name in eliminated or projection.results and len(projection.results) != 1:
+            if projection.name in eliminated or projection.effect or projection.results and len(projection.results) != 1:
                 continue
             if (
                 projection.source != merge.source

@@ -60,7 +60,7 @@ class NumericHistogram(Transform):
 
     def summarize(self, row: HistogramInput) -> HistogramOutput:
         group_by(row.group)
-        return HistogramOutput(group=row.group, buckets=histogram_numeric(row.value, 3, as_=HistogramBucket))
+        return HistogramOutput(group=row.group, buckets=histogram_numeric(row.value, 3, to=HistogramBucket))
 
 
 @transform
@@ -72,7 +72,7 @@ class DecimalHistogram(Transform):
         group_by(row.group)
         return DecimalHistogramOutput(
             group=row.group,
-            buckets=histogram_numeric(row.value, 3, as_=DecimalHistogramBucket),
+            buckets=histogram_numeric(row.value, 3, to=DecimalHistogramBucket),
         )
 
 

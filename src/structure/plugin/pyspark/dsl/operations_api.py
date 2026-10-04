@@ -605,7 +605,7 @@ def histogram_numeric(
     value: object,
     n_bins: object,
     *,
-    as_: type[Schema],
+    to: type[Schema],
     where: object | None = None,
 ) -> Expression:
     """Build Spark's numeric histogram with an explicit typed bucket schema."""
@@ -616,24 +616,24 @@ def histogram_numeric(
     bin_count = (bins.data or {}).get("value")
     if isinstance(bin_count, bool) or not isinstance(bin_count, int) or not 2 <= bin_count <= 2**31 - 1:
         raise ValueError("histogram_numeric(...) n_bins must be from 2 through 2147483647")
-    if not isinstance(as_, type) or not issubclass(as_, Schema):
-        raise TypeError("histogram_numeric(...) as_ must be a bucket Schema class")
-    bucket_fields = as_._structure_fields
+    if not isinstance(to, type) or not issubclass(to, Schema):
+        raise TypeError("histogram_numeric(...) to must be a bucket Schema class")
+    bucket_fields = to._structure_fields
     if set(bucket_fields) != {"x", "y"}:
-        raise TypeError("histogram_numeric(...) as_ must declare exactly x and y fields")
+        raise TypeError("histogram_numeric(...) to must declare exactly x and y fields")
     x_field, y_field = bucket_fields["x"], bucket_fields["y"]
     if x_field.column != "x" or y_field.column != "y":
-        raise TypeError("histogram_numeric(...) as_ must preserve the x and y field names without aliases")
+        raise TypeError("histogram_numeric(...) to must preserve the x and y field names without aliases")
     input_type = argument.type
     if input_type is None or not _same_type(x_field.type, input_type) or not x_field.nullable:
-        raise TypeError("histogram_numeric(...) as_.x must be nullable and match the numeric input type")
+        raise TypeError("histogram_numeric(...) to.x must be nullable and match the numeric input type")
     if not isinstance(y_field.type, DoubleType) or not y_field.nullable:
-        raise TypeError("histogram_numeric(...) as_.y must be a nullable double")
+        raise TypeError("histogram_numeric(...) to.y must be a nullable double")
     return _aggregate(
         "histogram_numeric",
         argument,
         bins,
-        type=ArrayType(StructType(as_), contains_null=True),
+        type=ArrayType(StructType(to), contains_null=True),
         nullable=True,
         where=where,
     )

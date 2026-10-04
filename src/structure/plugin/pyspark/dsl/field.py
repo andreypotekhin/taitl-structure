@@ -13,6 +13,7 @@ from datetime import date as python_date
 from typing import TYPE_CHECKING, Any, Mapping, cast
 
 from structure.dsl import FieldDeclaration, Schema
+from structure.plugin.pyspark.dsl.PySparkFieldDeclaration import PySparkFieldDeclaration
 from structure.plugin.pyspark.dsl.types import (
     Array,
     Binary,
@@ -242,7 +243,7 @@ def _declare(type: StructureType, options: Mapping[str, object]) -> FieldDeclara
         raise TypeError("field factory metadata must be a mapping or None")
     if description is not None and not isinstance(description, str):
         raise TypeError("field factory description must be a string or None")
-    return FieldDeclaration(
+    return PySparkFieldDeclaration(
         type,
         nullable=nullable,
         alias=cast(str | None, alias),

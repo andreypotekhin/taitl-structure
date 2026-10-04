@@ -33,7 +33,7 @@ class SentenceChunking(Transform):
     def chunk(self, paragraph: MaterializedParagraph) -> Sentence:
         sentence = posexplode_struct(
             self.default_sentence_spans(paragraph.content),
-            as_=ExpandedSentenceText,
+            to=ExpandedSentenceText,
             ordinal="position",
             scope="sentence_text",
         )

@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from structure.plugin.pyspark.delta.model import DeltaMutation
 from structure.plugin.pyspark.dsl.aggregation.AggregatePlan import AggregatePlan
 from structure.plugin.pyspark.dsl.aggregation.ProjectAssignment import ProjectAssignment
 from structure.plugin.pyspark.dsl.Expression import Expression
@@ -16,6 +17,7 @@ class PySparkStepBody:
     filters: tuple[Expression, ...] = ()
     joins: tuple[JoinPlan, ...] = ()
     operations: tuple[OperationPlan, ...] = ()
+    delta_mutations: tuple[DeltaMutation, ...] = ()
     aggregate_keys: tuple[tuple[str, Expression], ...] | None = None
     aggregate_levels: tuple[tuple[str, ...], ...] = ()
     aggregate_grouping: str = "group_by"

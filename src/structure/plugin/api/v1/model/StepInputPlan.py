@@ -12,3 +12,4 @@ class StepInputPlan:
     lane: str
     ordinal: int
     driving: bool
+    binding: str = "dataframe"

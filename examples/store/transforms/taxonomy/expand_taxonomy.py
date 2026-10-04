@@ -17,7 +17,7 @@ class ExpandProductTaxonomy(Transform):
         closure = hierarchy_closure(
             node.taxonomy_id,
             parent=node.parent_taxonomy_id,
-            as_=TaxonomyAncestor,
+            to=TaxonomyAncestor,
             node="node_id",
             ancestor="ancestor_id",
             max_depth=16,

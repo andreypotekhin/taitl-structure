@@ -48,6 +48,8 @@ class RemovalSafety:
     })
 
     def reason(self, step) -> str | None:
+        if step.effect:
+            return "it mutates a Delta table"
         hooks = (*step.before_hooks, *step.after_hooks, *(h for result in step.results for h in result.after_hooks))
         if hooks:
             return "it contains a hook"

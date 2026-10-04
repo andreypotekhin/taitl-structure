@@ -41,7 +41,7 @@ class BuildBandClosure(Transform):
         closure = hierarchy_closure(
             band.band_id,
             parent=band.parent_id,
-            as_=BandClosure,
+            to=BandClosure,
             max_depth=4,
             scope="closure",
         )
@@ -60,7 +60,7 @@ class BuildBandFallbacks(Transform):
             parent,
             parent_id=parent.band_id,
             parent=parent.parent_id,
-            as_=BandFallback,
+            to=BandFallback,
             max_depth=5,
             scope="fallbacks",
         )
@@ -235,7 +235,7 @@ def test_hierarchy_closure_rejects_invalid_arguments() -> None:
                 hierarchy_closure(
                     band.band_id,
                     parent=band.parent_id,
-                    as_=BandClosure,
+                    to=BandClosure,
                     max_depth=0,
                 )
             )
@@ -249,7 +249,7 @@ def test_hierarchy_closure_rejects_invalid_arguments() -> None:
                 hierarchy_closure(
                     band.band_id,
                     parent=band.parent_id,
-                    as_=BandClosure,
+                    to=BandClosure,
                     max_depth=4,
                 )
             )
@@ -263,7 +263,7 @@ def test_hierarchy_closure_rejects_invalid_arguments() -> None:
                 hierarchy_closure(
                     band.band_id,
                     parent=band.parent_id,
-                    as_=BadDepth,
+                    to=BadDepth,
                     max_depth=4,
                 )
             )
@@ -299,7 +299,7 @@ def test_hierarchy_fallbacks_rejects_invalid_arguments() -> None:
                     parent,
                     parent_id=parent.band_id,
                     parent=parent.parent_id,
-                    as_=BandFallback,
+                    to=BandFallback,
                     max_depth=0,
                 )
             )
@@ -317,7 +317,7 @@ def test_hierarchy_fallbacks_rejects_invalid_arguments() -> None:
                     parent,
                     parent_id=parent.band_id,
                     parent=parent.parent_id,
-                    as_=BandFallback,
+                    to=BandFallback,
                     max_depth=5,
                 )
             )
@@ -335,7 +335,7 @@ def test_hierarchy_fallbacks_rejects_invalid_arguments() -> None:
                     parent,
                     parent_id=parent.band_id,
                     parent=parent.parent_id,
-                    as_=BadFallback,
+                    to=BadFallback,
                     max_depth=5,
                 )
             )

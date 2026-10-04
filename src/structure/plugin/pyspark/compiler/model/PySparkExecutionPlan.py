@@ -24,6 +24,7 @@ class PySparkExecutionPlan:
     allow_stage_outputs: bool = True
     optimizations: tuple[PySparkOptimizationTrace, ...] = ()
     pruning: OptimizationReport | None = None
+    delta_check_match: str = "expression"
 
     @property
     def final_validation(self) -> PySparkValidationRecipe:

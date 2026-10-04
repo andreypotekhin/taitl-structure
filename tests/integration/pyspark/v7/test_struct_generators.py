@@ -92,7 +92,7 @@ class PosexplodeTerms(Transform):
     terms = output(PositionedDocumentTerm)
 
     def expand(self, document: Document) -> PositionedDocumentTerm:
-        term = posexplode_struct(document.terms, as_=ExpandedTerm, scope="term")
+        term = posexplode_struct(document.terms, to=ExpandedTerm, scope="term")
         return PositionedDocumentTerm(
             doc_id=document.doc_id,
             ordinal=term.ordinal,
@@ -107,7 +107,7 @@ class PosexplodeOuterTerms(Transform):
     terms = output(OuterPositionedDocumentTerm)
 
     def expand(self, document: Document) -> OuterPositionedDocumentTerm:
-        term = posexplode_outer_struct(document.terms, as_=OuterExpandedTerm, scope="term")
+        term = posexplode_outer_struct(document.terms, to=OuterExpandedTerm, scope="term")
         return OuterPositionedDocumentTerm(
             doc_id=document.doc_id,
             ordinal=term.ordinal,
@@ -122,7 +122,7 @@ class ExplodeTerms(Transform):
     terms = output(DocumentTerm)
 
     def expand(self, document: Document) -> DocumentTerm:
-        term = explode_struct(document.terms, as_=GeneratedTerm, scope="term")
+        term = explode_struct(document.terms, to=GeneratedTerm, scope="term")
         return DocumentTerm(doc_id=document.doc_id, token=term.token, weight=term.weight)
 
 
@@ -132,7 +132,7 @@ class ExplodeOuterTerms(Transform):
     terms = output(OuterDocumentTerm)
 
     def expand(self, document: Document) -> OuterDocumentTerm:
-        term = explode_outer_struct(document.terms, as_=OuterGeneratedTerm, scope="term")
+        term = explode_outer_struct(document.terms, to=OuterGeneratedTerm, scope="term")
         return OuterDocumentTerm(doc_id=document.doc_id, token=term.token, weight=term.weight)
 
 
@@ -142,7 +142,7 @@ class InlineTerms(Transform):
     terms = output(DocumentTerm)
 
     def expand(self, document: Document) -> DocumentTerm:
-        term = inline_struct(document.terms, as_=GeneratedTerm, scope="term")
+        term = inline_struct(document.terms, to=GeneratedTerm, scope="term")
         return DocumentTerm(doc_id=document.doc_id, token=term.token, weight=term.weight)
 
 
@@ -152,7 +152,7 @@ class InlineOuterTerms(Transform):
     terms = output(OuterDocumentTerm)
 
     def expand(self, document: Document) -> OuterDocumentTerm:
-        term = inline_outer_struct(document.terms, as_=OuterGeneratedTerm, scope="term")
+        term = inline_outer_struct(document.terms, to=OuterGeneratedTerm, scope="term")
         return OuterDocumentTerm(doc_id=document.doc_id, token=term.token, weight=term.weight)
 
 

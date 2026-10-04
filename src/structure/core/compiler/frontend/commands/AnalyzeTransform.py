@@ -154,12 +154,14 @@ class AnalyzeTransform(CompileTransform):
             steps.append(result)
             streaming = self._source_streaming(result.source, lanes, inputs)
             for item in result.results:
+                declaration = transform_class._structure_outputs.get(item.lane)
                 lanes[item.lane] = {
                     "kind": "lane" if item.lane in transform_class._structure_lanes else "output",
                     "schema": item.schema,
                     "source": item.frame,
                     "scope": item.schema.__name__,
                     "streaming": streaming,
+                    "binding": "delta_output" if declaration is not None and declaration.binding == "delta" else "dataframe",
                 }
             if pending_raw:
                 for raw in pending_raw:
@@ -193,6 +195,9 @@ class AnalyzeTransform(CompileTransform):
         member = item.member
         hints = get_type_hints(member)
         output_schemas = self._return_schemas(hints.get("return"))
+        effect_schema = self._delta_effect_schema(hints.get("return"), getattr(member, "_structure_output_method", None))
+        if effect_schema is not None:
+            output_schemas = (effect_schema,)
         if not output_schemas:
             if get_origin(hints.get("return")) is tuple:
                 raise self._error(
@@ -256,4 +261,5 @@ class AnalyzeTransform(CompileTransform):
             options=self._step_options(item.owner, metadata),
             origin=TransformMemberOrigin.of(item.owner, item.name),
             plugin_body=None,
+            effect=effect_schema is not None,
         )

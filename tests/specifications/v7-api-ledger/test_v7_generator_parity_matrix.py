@@ -98,7 +98,7 @@ class ExplodeArrayParity(Transform):
     values = output(ScalarValue)
 
     def expand(self, document: ArrayDocument) -> ScalarValue:
-        value = explode_array(document.values, as_=ScalarValue, value_field="value", scope="value")
+        value = explode_array(document.values, to=ScalarValue, value_field="value", scope="value")
         return ScalarValue(value=value.value)
 
 
@@ -108,7 +108,7 @@ class ExplodeOuterArrayParity(Transform):
     values = output(OuterScalarValue)
 
     def expand(self, document: OuterArrayDocument) -> OuterScalarValue:
-        value = explode_outer_array(document.values, as_=OuterScalarValue, value_field="value", scope="value")
+        value = explode_outer_array(document.values, to=OuterScalarValue, value_field="value", scope="value")
         return OuterScalarValue(value=value.value)
 
 
@@ -118,7 +118,7 @@ class PosexplodeArrayParity(Transform):
     values = output(PositionedScalarValue)
 
     def expand(self, document: ArrayDocument) -> PositionedScalarValue:
-        value = posexplode_array(document.values, as_=PositionedScalarValue, value_field="value", scope="value")
+        value = posexplode_array(document.values, to=PositionedScalarValue, value_field="value", scope="value")
         return PositionedScalarValue(ordinal=value.ordinal, value=value.value)
 
 
@@ -130,7 +130,7 @@ class PosexplodeOuterArrayParity(Transform):
     def expand(self, document: OuterArrayDocument) -> OuterPositionedScalarValue:
         value = posexplode_outer_array(
             document.values,
-            as_=OuterPositionedScalarValue,
+            to=OuterPositionedScalarValue,
             value_field="value",
             scope="value",
         )
@@ -145,7 +145,7 @@ class ExplodeMapParity(Transform):
     def expand(self, document: MapDocument) -> MapValue:
         value = explode_map(
             document.attributes,
-            as_=MapValue,
+            to=MapValue,
             key_field="key",
             value_field="value",
             scope="attribute",
@@ -161,7 +161,7 @@ class ExplodeOuterMapParity(Transform):
     def expand(self, document: OuterMapDocument) -> OuterMapValue:
         value = explode_outer_map(
             document.attributes,
-            as_=OuterMapValue,
+            to=OuterMapValue,
             key_field="key",
             value_field="value",
             scope="attribute",
@@ -177,7 +177,7 @@ class PosexplodeMapParity(Transform):
     def expand(self, document: MapDocument) -> PositionedMapValue:
         value = posexplode_map(
             document.attributes,
-            as_=PositionedMapValue,
+            to=PositionedMapValue,
             key_field="key",
             value_field="value",
             scope="attribute",
@@ -193,7 +193,7 @@ class PosexplodeOuterMapParity(Transform):
     def expand(self, document: OuterMapDocument) -> OuterPositionedMapValue:
         value = posexplode_outer_map(
             document.attributes,
-            as_=OuterPositionedMapValue,
+            to=OuterPositionedMapValue,
             key_field="key",
             value_field="value",
             scope="attribute",
@@ -295,7 +295,7 @@ def test_v7_generator_matrix_rejects_source_column_collisions_before_execution()
         values = output(ScalarValue)
 
         def expand(self, document: CollisionArrayDocument) -> ScalarValue:
-            value = explode_array(document.values, as_=ScalarValue, value_field="value")
+            value = explode_array(document.values, to=ScalarValue, value_field="value")
             return ScalarValue(value=value.value)
 
     class BadMapTransform(Transform):
@@ -305,7 +305,7 @@ def test_v7_generator_matrix_rejects_source_column_collisions_before_execution()
         def expand(self, document: CollisionMapDocument) -> MapValue:
             value = explode_map(
                 document.attributes,
-                as_=MapValue,
+                to=MapValue,
                 key_field="key",
                 value_field="value",
             )

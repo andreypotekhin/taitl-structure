@@ -28,8 +28,9 @@ _CLASS_OPTIONS = {
     "warn_on_lineage_growth",
     "disable",
     "allow_stream_to_batch",
+    "delta_check_match",
 }
-_STEP_METHOD_OPTIONS = {"target", "target_platform", "target_profile"}
+_STEP_METHOD_OPTIONS = {"target", "target_platform", "target_profile", "delta_check_match"}
 _METHOD_BINDING_OPTIONS = {"input", "output", "inout"}
 _METHOD_OPTIMIZATION_OPTIONS = {"cache"}
 
@@ -453,6 +454,10 @@ def _normalize_method_options(kwargs: dict[str, object]) -> dict[str, object]:
 def _normalize_transform_options(kwargs: dict[str, object]) -> dict[str, object]:
     options = dict(kwargs)
     for name in _CLASS_OPTIONS & set(options):
+        if name == "delta_check_match":
+            if options[name] not in ("expression", "name", "off"):
+                raise TypeError("delta_check_match must be 'expression', 'name', or 'off'")
+            continue
         if name == "target":
             if not isinstance(options[name], str) or not options[name]:
                 raise TypeError("target must be a non-empty string")
@@ -486,6 +491,10 @@ def _reserved_operations(kwargs: dict[str, object]) -> tuple[object, ...]:
 
 
 def _step_method_option(name: str, value: object) -> object:
+    if name == "delta_check_match":
+        if value not in ("expression", "name", "off"):
+            raise TypeError("delta_check_match must be 'expression', 'name', or 'off'")
+        return value
     if name in {"target", "target_platform", "target_profile"}:
         if not isinstance(value, str) or not value:
             raise TypeError(f"{name} must be a non-empty string")

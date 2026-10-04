@@ -123,11 +123,11 @@ regular transform output fields.
 
 The complete default-baseline implementation and documentation contract is maintained in
 [Sketches and Bitmaps design](SketchBitmap.design.md). It separates the supported HLL/Bitmap surface from
-the profile-gated KLL/Theta work without treating Spark Binary state as portable interchange data.
+the V11 design-gated KLL/Theta work without treating Spark Binary state as portable interchange data.
 
 ## Typed generators and relation distribution
 
-`stack(rows, *values, as_=StackRow, scope=...)` is the one additional typed generator shape. `StackRow` is a declared
+`stack(rows, *values, to=StackRow, scope=...)` is the one additional typed generator shape. `StackRow` is a declared
 Schema, not a runtime alias list: it fixes each output field's name, type, and nullability before Spark runs. The
 generator multiplies each input row by `rows`; values are arranged row-major and each output field uses the common
 Structure type of values in that position. As in PySpark, an incomplete final row is padded with NULL; therefore every

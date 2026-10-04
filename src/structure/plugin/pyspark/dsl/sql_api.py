@@ -24,7 +24,7 @@ def sql(
     *,
     relations: Mapping[str, object] | None = None,
     args: Mapping[str, object] | list[object] | None = None,
-    as_: type[Schema],
+    to: type[Schema],
     label: str | None = None,
 ) -> RowScope:
     """Record typed Spark SQL inside a compiled Transform method.
@@ -34,13 +34,13 @@ def sql(
     """
     if not isinstance(statement, str) or not statement.strip():
         raise TypeError("sql(statement, ...) requires non-empty SQL text")
-    if not isinstance(as_, type) or not issubclass(as_, Schema):
-        raise TypeError("sql(..., as_=...) requires a Structure Schema class")
-    if as_ is SqlResult:
-        raise TypeError("sql(..., as_=SqlResult) is abstract; choose a concrete result Schema")
-    if issubclass(as_, SqlResult) and not issubclass(as_, SqlCommandResult):
-        raise TypeError(f"sql(..., as_={as_.__name__}) requires a provider SQL result adapter")
-    is_command = issubclass(as_, SqlCommandResult)
+    if not isinstance(to, type) or not issubclass(to, Schema):
+        raise TypeError("sql(..., to=...) requires a Structure Schema class")
+    if to is SqlResult:
+        raise TypeError("sql(..., to=SqlResult) is abstract; choose a concrete result Schema")
+    if issubclass(to, SqlResult) and not issubclass(to, SqlCommandResult):
+        raise TypeError(f"sql(..., to={to.__name__}) requires a provider SQL result adapter")
+    is_command = issubclass(to, SqlCommandResult)
     if label is not None and (not isinstance(label, str) or not label.strip()):
         raise TypeError("sql(..., label=...) requires a non-empty string when supplied")
     if not is_command and label is not None:
@@ -83,8 +83,8 @@ def sql(
     scope = f"_sql_result_{next(_SCOPES)}"
     context.operations.append(
         OperationPlan.sql_operation(
-            SqlPlan(statement, tuple(sql_relations), args, as_, label if is_command else None, scope)
+            SqlPlan(statement, tuple(sql_relations), args, to, label if is_command else None, scope)
         )
     )
     context.register_current_scope(scope)
-    return RowScope(name=scope, schema=as_)
+    return RowScope(name=scope, schema=to)

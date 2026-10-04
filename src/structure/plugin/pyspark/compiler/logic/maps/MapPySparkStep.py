@@ -151,6 +151,9 @@ class MapPySparkStep:
             operations=operations,
             input_sources=tuple(binding.source for binding in step.inputs),
             origin=step.origin,
+            effect=step.effect,
+            delta_mutations=body.delta_mutations,
+            delta_check_match=cast(str | None, (step.options or {}).get("delta_check_match")),
         )
 
     @staticmethod

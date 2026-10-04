@@ -471,7 +471,7 @@ class PositionedItem(Schema):
 
 
 def expand_items(self, order: OrderWithItems) -> ExpandedItem:
-    item = posexplode_struct(order.items, as_=PositionedItem)
+    item = posexplode_struct(order.items, to=PositionedItem)
     return ExpandedItem(
         order_id=order.id,
         ordinal=item.ordinal,

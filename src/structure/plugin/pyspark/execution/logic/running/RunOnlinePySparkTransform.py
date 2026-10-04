@@ -8,6 +8,7 @@ from structure.plugin.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoi
 from structure.plugin.pyspark.compiler.model.PySparkOutputRecipe import PySparkOutputRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.plugin.pyspark.compiler.model.PySparkWatermarkRecipe import PySparkWatermarkRecipe
+from structure.plugin.pyspark.delta.runtime import execute_delta_mutation, fresh_delta_frame, validate_delta_table
 from structure.plugin.pyspark.dsl.joins.JoinMethod import JoinMethod
 from structure.plugin.pyspark.dsl.types import ArrayType, StructType
 from structure.plugin.pyspark.execution.logic.expressions.EvaluatePySparkExpression import EvaluatePySparkExpression
@@ -84,6 +85,7 @@ class RunOnlinePySparkTransform:
         from pyspark.sql import types as T  # type: ignore[import-not-found]
 
         inputs = dict(invocation._structure_bound_inputs)
+        delta_tables = {}
         self._backend_target = plan.backend.target
         for input in plan.inputs:
             if input.internal:
@@ -94,12 +96,36 @@ class RunOnlinePySparkTransform:
                     raise ValueError(f"Missing required input {input.name!r}.")
                 schema = self._schema.materialize()(input.schema, types=T)
                 inputs[input.name] = session.spark.createDataFrame([], schema)
-            self._validator.validate(inputs[input.name], input.validation, types=T)
+            if input.binding == "delta":
+                table = inputs[input.name]
+                modes = {
+                    step.delta_check_match or plan.delta_check_match
+                    for step in plan.steps if input.name in step.input_sources
+                } or {plan.delta_check_match}
+                for mode in modes:
+                    validate_delta_table(table, input.schema, mode=mode)
+                delta_tables[input.name] = table
+                inputs[input.name] = fresh_delta_frame(table)
+            else:
+                self._validator.validate(inputs[input.name], input.validation, types=T)
 
         frames = dict(inputs)
         frames.update({f"input:{name}": frame for name, frame in inputs.items()})
         command_result_frames: set[str] = set()
         for step in plan.steps:
+            if step.effect:
+                for mutation in step.delta_mutations:
+                    try:
+                        execute_delta_mutation(mutation, tables=delta_tables, frames=frames, functions=F)
+                    except Exception as error:
+                        error.add_note(f"Structure transform {plan.transform}, step {step.name}, Delta {mutation.kind}")
+                        raise
+                    refreshed = fresh_delta_frame(delta_tables[mutation.target])
+                    frames[mutation.target] = refreshed
+                    frames[f"input:{mutation.target}"] = refreshed
+                for result in step.results:
+                    frames[result.frame] = fresh_delta_frame(delta_tables[result.frame])
+                continue
             produced = self._step(
                 step,
                 current=frames[step.source],
@@ -116,7 +142,7 @@ class RunOnlinePySparkTransform:
 
         outputs = {}
         for output in plan.outputs:
-            outputs[output.name] = self._output(
+            outputs[output.name] = delta_tables[output.name] if output.binding == "delta" else self._output(
                 output,
                 source=frames[output.source],
                 inputs=inputs,

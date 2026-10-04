@@ -57,6 +57,10 @@ class RenderPySparkStep:
         backend_target: str = ">=3.5,<4.1",
         frame_mapping: str | None = None,
     ) -> str:
+        if isinstance(step, PySparkStepRecipe) and step.effect:
+            return self._delta_effect(step, sources or {})
+        if isinstance(step, PySparkOutputRecipe) and step.binding == "delta":
+            return f"        {step.name} = self._delta_tables[{step.name!r}]"
         if isinstance(step, PySparkStepRecipe) and len(step.results) > 1:
             return self._multiple(
                 step,
@@ -104,6 +108,87 @@ class RenderPySparkStep:
             for result in step.results:
                 lines.extend(self._command_result_accumulation(result, frame_mapping=frame_mapping))
         return "\n".join(lines)
+
+    def _delta_effect(self, step: PySparkStepRecipe, sources: Mapping[str, str]) -> str:
+        lines = [f"        # Delta effect: {step.name}"]
+        for index, mutation in enumerate(step.delta_mutations):
+            table = f"_delta_target_{index}"
+            lines.append(f"        {table} = self._delta_tables[{mutation.target!r}]")
+            aliases = {mutation.target_scope: ""}
+            predicate = render_pyspark_expression(
+                cast(PySparkExpressionRecipe, mutation.predicate), scope_aliases=aliases
+            )
+            if mutation.kind == "delete":
+                lines.append(f"        {table}.delete({predicate})")
+            elif mutation.kind == "update":
+                values = (
+                    "{"
+                    + ", ".join(
+                        f"{name!r}: {render_pyspark_expression(cast(PySparkExpressionRecipe, value), scope_aliases=aliases)}"
+                        for name, value in mutation.assignments
+                    )
+                    + "}"
+                )
+                lines.append(f"        {table}.update(condition={predicate}, set={values})")
+            elif mutation.kind == "merge":
+                assert mutation.source is not None and mutation.source_scope is not None
+                merged_aliases = {mutation.target_scope: "target", mutation.source_scope: "source"}
+                source = sources.get(mutation.source, mutation.source)
+                predicate = render_pyspark_expression(
+                    cast(PySparkExpressionRecipe, mutation.predicate), scope_aliases=merged_aliases
+                )
+                lines.append(
+                    f"        _delta_merge_{index} = {table}.alias('target').merge({source}.alias('source'), {predicate})"
+                )
+                methods = {
+                    "matched_update": ("whenMatchedUpdate", "set"),
+                    "matched_delete": ("whenMatchedDelete", None),
+                    "matched_update_all": ("whenMatchedUpdateAll", None),
+                    "unmatched_insert": ("whenNotMatchedInsert", "values"),
+                    "unmatched_insert_all": ("whenNotMatchedInsertAll", None),
+                    "source_update": ("whenNotMatchedBySourceUpdate", "set"),
+                    "source_delete": ("whenNotMatchedBySourceDelete", None),
+                }
+                for clause in mutation.clauses:
+                    method, parameter = methods[clause.action]
+                    arguments = []
+                    if clause.condition is not None:
+                        condition = render_pyspark_expression(
+                            cast(PySparkExpressionRecipe, clause.condition), scope_aliases=merged_aliases
+                        )
+                        arguments.append(f"condition={condition}")
+                    if parameter is not None:
+                        values = (
+                            "{"
+                            + ", ".join(
+                                f"{name!r}: {render_pyspark_expression(cast(PySparkExpressionRecipe, value), scope_aliases=merged_aliases)}"
+                                for name, value in clause.assignments
+                            )
+                            + "}"
+                        )
+                        arguments.append(f"{parameter}={values}")
+                    lines.append(
+                        f"        _delta_merge_{index} = _delta_merge_{index}.{method}({', '.join(arguments)})"
+                    )
+                lines.append(f"        _delta_merge_{index}.execute()")
+            else:
+                raise ValueError(f"Unknown Delta mutation {mutation.kind}")
+            for key in (mutation.target, f"input:{mutation.target}"):
+                variable = sources.get(key)
+                if variable is not None:
+                    lines.append(f"        {variable} = fresh_delta_frame({table})")
+        result = step.results[0].frame
+        lines.append(f"        {result} = fresh_delta_frame(self._delta_tables[{step.delta_mutations[-1].target!r}])")
+        return "\n".join(
+            [
+                lines[0],
+                "        try:",
+                *(f"    {line}" for line in lines[1:]),
+                "        except Exception as error:",
+                f"            error.add_note('Structure Delta effect step {step.name}')",
+                "            raise",
+            ]
+        )
 
     def _multiple(
         self,

@@ -583,6 +583,9 @@ class CompileTransform:
         member = item.member
         hints = get_type_hints(member)
         output_schemas = self._return_schemas(hints.get("return"))
+        effect_schema = self._delta_effect_schema(hints.get("return"), getattr(member, "_structure_output_method", None))
+        if effect_schema is not None:
+            output_schemas = (effect_schema,)
         if not output_schemas:
             if get_origin(hints.get("return")) is tuple:
                 raise self._error(
@@ -643,6 +646,7 @@ class CompileTransform:
                     lane=binding.lane,
                     ordinal=binding.ordinal,
                     driving=binding.driving,
+                    binding=binding.binding,
                 )
                 for binding in bindings
             ),
@@ -658,6 +662,7 @@ class CompileTransform:
                 project_root=_diagnostic_project_root.get(),
             ),
             plugin_options=plugin_options,
+            effect=effect_schema is not None,
         )
         authoring_session = authoring_api.open_step(request)
         arguments = authoring_session.arguments()
@@ -750,16 +755,19 @@ class CompileTransform:
                 options=options,
                 origin=TransformMemberOrigin.of(item.owner, name),
                 plugin_body=authoring_body,
+                effect=effect_schema is not None,
             )
         )
         streaming = self._source_streaming(driver.source, lanes, inputs)
         for result in result_plans:
+            declaration = transform_class._structure_outputs.get(result.lane)
             lanes[result.lane] = {
                 "kind": "lane" if result.lane in transform_class._structure_lanes else "output",
                 "schema": result.schema,
                 "source": result.frame,
                 "scope": result.schema.__name__,
                 "streaming": streaming,
+                "binding": "delta_output" if declaration is not None and declaration.binding == "delta" else "dataframe",
             }
         return tuple(result_plans)
 
@@ -782,6 +790,7 @@ class CompileTransform:
                 lane=str(source["lane"]),
                 ordinal=driver.ordinal,
                 driving=True,
+                binding=driver.binding,
             ),
             *bindings[1:],
         ]
@@ -920,6 +929,7 @@ class CompileTransform:
                     lane=lane,
                     ordinal=0,
                     driving=True,
+                    binding=str(source.get("binding", "dataframe")),
                 )
             ]
 
@@ -970,6 +980,7 @@ class CompileTransform:
                     lane=lane,
                     ordinal=ordinal,
                     driving=ordinal == 0,
+                    binding=str(source.get("binding", "dataframe")),
                 )
             )
         return bindings
@@ -1032,6 +1043,7 @@ class CompileTransform:
                 "source": source_name,
                 "scope": input_plan.name,
                 "streaming": input_plan.streaming,
+                "binding": "delta_output" if input_plan.name in transform_class._structure_outputs and input_plan.binding == "delta" else "delta_input" if input_plan.binding == "delta" else "dataframe",
             }
             if input_plan.schema is schema and (input_plan.name, source_name) not in used:
                 candidates.append((input_plan.name, source))
@@ -1140,6 +1152,15 @@ class CompileTransform:
         *,
         member: str,
     ) -> tuple[str, dict[str, object]]:
+        if declaration.binding == "delta" and declaration.name not in lanes:
+            return declaration.name, {
+                "kind": "input",
+                "schema": declaration.schema,
+                "source": declaration.name,
+                "scope": declaration.name,
+                "streaming": False,
+                "binding": "delta_output",
+            }
         allow, _ = self._output_policy()
         if not allow:
             raise self._error(
@@ -1194,6 +1215,7 @@ class CompileTransform:
                 "source": source,
                 "scope": declaration.name,
                 "streaming": declaration.streaming,
+                "binding": "delta_output" if declaration.name in transform_class._structure_outputs and declaration.binding == "delta" else "delta_input" if declaration.binding == "delta" else "dataframe",
             }
         if lane_source is not None:
             return declaration.name, lane_source
@@ -1368,6 +1390,16 @@ class CompileTransform:
             return ()
         return cast(tuple[type[Schema], ...], arguments)
 
+    def _delta_effect_schema(
+        self, annotation: object, metadata: dict[str, object] | None
+    ) -> type[Schema] | None:
+        if annotation is not type(None) or not isinstance(metadata, dict):
+            return None
+        outputs = tuple(cast(tuple[object, ...], metadata.get("outputs", ())))
+        if len(outputs) != 1 or not isinstance(outputs[0], OutputDeclaration):
+            return None
+        return outputs[0].schema if outputs[0].binding == "delta" else None
+
     def _input_lane(
         self,
         transform_class: type[Transform],
@@ -1424,6 +1456,7 @@ class CompileTransform:
             "source": input_plan.name,
             "scope": input_plan.name,
             "streaming": input_plan.streaming,
+            "binding": "delta_output" if input_plan.name in transform_class._structure_outputs and input_plan.binding == "delta" else "delta_input" if input_plan.binding == "delta" else "dataframe",
         }
 
     def _output_lane(
@@ -1461,6 +1494,8 @@ class CompileTransform:
     def _check_output_assignment(
         self, transform_class: type[Transform], declaration: WriteDeclaration, *, member: str
     ) -> None:
+        if isinstance(declaration, OutputDeclaration) and declaration.binding == "delta":
+            return
         if not self._writes_output(declaration) or declaration.name not in self._assigned_output_names():
             return
         _, allow_reassign = self._output_policy()
@@ -1572,6 +1607,7 @@ class CompileTransform:
             ordinal=ordinal,
             aliases=aliases,
             streaming=bool(source.get("streaming", False)),
+            binding=declaration.binding if (declaration := transform_class._structure_outputs.get(name)) else "dataframe",
         )
 
     def _source_streaming(

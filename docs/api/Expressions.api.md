@@ -264,12 +264,12 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
 | `date_part(...)` | `date_part` | `date_part("month", o.raw_at)` |
 | `datepart(...)` | `datepart` | `datepart("year", o.raw_at)` |
 | `extract(...)` | `extract` | `extract(Temporal.DAY_OF_YEAR, o.day)` |
-| `from_json(...)`, `to_json(...)` | `from_json`, `to_json` | `from_json(o.payload_json, as_=Payload)` |
-| `from_csv(...)`, `to_csv(...)` | `from_csv`, `to_csv` | `from_csv(o.payload_csv, as_=Payload)` |
+| `from_json(...)`, `to_json(...)` | `from_json`, `to_json` | `from_json(o.payload_json, to=Payload)` |
+| `from_csv(...)`, `to_csv(...)` | `from_csv`, `to_csv` | `from_csv(o.payload_csv, to=Payload)` |
 | `get_json_object(...)` | `get_json_object` | `get_json_object(o.payload_json, "$.customer.id")` |
 | `json_array_length(...)` | `json_array_length` | `json_array_length(o.payload_json)` |
 | `json_object_keys(...)` | `json_object_keys` | `json_object_keys(o.payload_json)` |
-| `json_tuple(...)` | `json_tuple` | `json_tuple(o.payload_json, as_=LegacyFields, fields={"customer_id": "customerId"})` |
+| `json_tuple(...)` | `json_tuple` | `json_tuple(o.payload_json, to=LegacyFields, fields={"customer_id": "customerId"})` |
 | `schema_of_json(...)`, `schema_of_csv(...)` | `schema_of_json`, `schema_of_csv` | `schema_of_json('{"id": 1}')` |
 | `parse_json(...)`, `try_parse_json(...)` | Variant JSON parsing | `parse_json(o.payload_json)` |
 | `variant_literal(...)` | Compile-time JSON Variant literal | `variant_literal('{"source":"migration"}')` |
@@ -277,7 +277,7 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
 | **Design-gated:** `variant_insert(...)`, `try_variant_insert(...)` | Variant object/array insertion | `variant_insert(o.payload, "$.name", "spark")` |
 | **Design-gated:** `variant_set(...)`, `try_variant_set(...)` | Variant upsert | `variant_set(o.payload, "$.name", "spark")` |
 | **Design-gated:** `variant_delete(...)` | Variant path deletion | `variant_delete(o.payload, "$.name")` |
-| `variant_explode(...)`, `variant_explode_outer(...)` | Variant TVF row expansion | `entry = variant_explode(o.payload, as_=VariantEntry)` |
+| `variant_explode(...)`, `variant_explode_outer(...)` | Variant TVF row expansion | `entry = variant_explode(o.payload, to=VariantEntry)` |
 | `schema_of_variant(...)` | Variant schema inspection | `schema_of_variant(o.payload)` |
 | `variant_get(...)`, `try_variant_get(...)` | Variant extraction | `try_variant_get(o.payload, "$.name", as_type=types.string())` |
 | `to_variant_object(...)` | Variant object conversion | `to_variant_object(o.attributes)` |

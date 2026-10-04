@@ -17,6 +17,7 @@ from math import isfinite
 from re import fullmatch
 from typing import TYPE_CHECKING, Any, Mapping, overload
 
+from structure.dsl import FieldDeclaration
 from structure.plugin.api.v1.model.CompilationSettings import current_compilation_settings
 from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.types import (
@@ -165,6 +166,9 @@ def literal(value: object) -> Expression:
     """
     if isinstance(value, Expression):
         return value
+
+    if isinstance(value, FieldDeclaration):
+        return value._structure_expression()
 
     if isinstance(value, WhenBuilder):
         raise TypeError("when(...) must end with .otherwise(...) before it can be used as an expression")
@@ -597,22 +601,22 @@ def _sketch_argument(value: object, expected: type[StructureType], call: str) ->
     return argument
 
 
-def from_json(value: object, *, as_: type, options: JsonOptions = JsonOptions()) -> Expression:
+def from_json(value: object, *, to: type, options: JsonOptions = JsonOptions()) -> Expression:
     """Parse JSON text into a declared Structure record, like PySpark ``from_json``.
 
     Args:
         value: String Structure expression or Python string literal containing JSON.
-        as_: ``Schema`` class that declares the parsed struct shape.
+        to: ``Schema`` class that declares the parsed struct shape.
         options: Immutable JSON parser options.
 
     Returns:
-        A nullable struct expression with the exact declared ``as_`` schema.
+        A nullable struct expression with the exact declared ``to`` schema.
 
     Example:
-        payload = from_json(raw.payload_json, as_=Payload)
+        payload = from_json(raw.payload_json, to=Payload)
     """
     argument = _string_argument(value, "from_json(...)")
-    schema = _parser_schema_argument(as_, "from_json(...)")
+    schema = _parser_schema_argument(to, "from_json(...)")
     return Expression(
         kind="call",
         type=StructType(schema),
@@ -645,22 +649,22 @@ def to_json(value: object, *, options: JsonOptions = JsonOptions()) -> Expressio
     )
 
 
-def from_csv(value: object, *, as_: type, options: CsvOptions = CsvOptions()) -> Expression:
+def from_csv(value: object, *, to: type, options: CsvOptions = CsvOptions()) -> Expression:
     """Parse CSV text into a declared Structure record, like PySpark ``from_csv``.
 
     Args:
         value: String Structure expression or Python string literal containing one CSV row.
-        as_: ``Schema`` class that declares the parsed struct shape.
+        to: ``Schema`` class that declares the parsed struct shape.
         options: Immutable CSV parser options.
 
     Returns:
-        A nullable struct expression with the exact declared ``as_`` schema.
+        A nullable struct expression with the exact declared ``to`` schema.
 
     Example:
-        payload = from_csv(raw.payload_csv, as_=Payload, options=CsvOptions(delimiter="|"))
+        payload = from_csv(raw.payload_csv, to=Payload, options=CsvOptions(delimiter="|"))
     """
     argument = _string_argument(value, "from_csv(...)")
-    schema = _parser_schema_argument(as_, "from_csv(...)")
+    schema = _parser_schema_argument(to, "from_csv(...)")
     return Expression(
         kind="call",
         type=StructType(schema),
@@ -2987,7 +2991,7 @@ def _schema_argument(value: object, call: str):
     from structure.dsl import Schema
 
     if not isinstance(value, type) or not issubclass(value, Schema):
-        raise TypeError(f"{call} as_= must be a Schema class")
+        raise TypeError(f"{call} to= must be a Schema class")
     return value
 
 
@@ -3001,7 +3005,7 @@ def _parser_nullable_schema(schema: Any, call: str, *, path: str) -> None:
     for field in schema._structure_fields.values():
         field_path = f"{path}.{field.name}"
         if not field.nullable:
-            raise TypeError(f"{call} as_= schema field {field_path} must be nullable for permissive parsing")
+            raise TypeError(f"{call} to= schema field {field_path} must be nullable for permissive parsing")
         if isinstance(field.type, StructType):
             _parser_nullable_schema(field.type.schema, call, path=field_path)
 

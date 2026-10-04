@@ -125,6 +125,9 @@ path is not a V10 streaming support claim.
 | Follow-up | Owner boundary | Acceptance command/evidence |
 | --- | --- | --- |
 | Broad Connect full-suite evidence, if required for a suite-level promotion | Release owner / Connect runtime | Both 2026-10-04 broad runs failed to produce summaries; focused family evidence passes and remains the supported claim boundary. |
+| V1/V2 order-hook schema failures (`promo-code` missing from generated relations) | V1/V2 order-hook compatibility owner; inherited by Sprint 55 | Reproduce the two failures, repair the physical-schema contract or record an accepted carry-forward decision; do not classify them as V11 feature evidence. |
+| Four V11 scalar-assertion generated-import failures | V11 generated-artifact/import owner; Sprint 55 | Reproduce the import-path failure, add a no-Spark regression check, and repair or explicitly carry the blocker with a next decision. |
+| Incomplete PySpark 4.0 and Spark Connect full-lane runs | V11 integration-matrix owner; Sprint 55 and Sprint 59 | Preserve unavailable evidence, publish bounded rerun commands, and keep focused results separate from suite-level promotion. |
 | Recheck whole-document cross-links after plan archival | Release closeout | Validate archived-plan links and `git diff --check`; no implementation work remains in the archived plans. |
 | Resume SearchDocuments streaming design | Separate Search design owner; not a V10 release blocker while explicitly gated | Bounded-state design, generated report, live restart fixture, and caller handoff recipe |
 | Broaden optional Geometry provider evidence | Optional-provider integration owner | Pinned Sedona WKT round-trip passes in all four selected lanes; add separate provider tests for CRS, measurements, joins, indexes, and collections |

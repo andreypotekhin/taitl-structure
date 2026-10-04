@@ -7,6 +7,7 @@ from typing import cast
 from structure.plugin.api.v1 import AuthoringAPI as AuthoringAPIV1
 from structure.plugin.api.v1 import StepAuthoringCapture, StepAuthoringRequest, StepAuthoringResult
 from structure.plugin.pyspark.api.PySpark import PySpark
+from structure.plugin.pyspark.delta.operations import DeltaScope
 from structure.plugin.pyspark.dsl.InputScope import InputScope
 from structure.plugin.pyspark.dsl.RowScope import RowScope
 from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
@@ -85,11 +86,16 @@ class PySparkStepSession:
             schema = binding.schema
             if not isinstance(schema, type):
                 raise TypeError(f"PLUGIN-E2708: PySpark step {self._request.name!r} has an invalid schema binding.")
-            argument = (
-                RowScope(name=binding.scope, schema=schema)
-                if binding.driving
-                else InputScope(name=binding.scope, schema=schema, source=binding.source)
-            )
+            argument: RowScope
+            if binding.binding in {"delta_input", "delta_output"}:
+                argument = DeltaScope(
+                    name=binding.scope, schema=schema, source=binding.source,
+                    mutable=binding.binding == "delta_output",
+                )
+            elif binding.driving:
+                argument = RowScope(name=binding.scope, schema=schema)
+            else:
+                argument = InputScope(name=binding.scope, schema=schema, source=binding.source)
             arguments.append(argument)
         if not arguments:
             return ()

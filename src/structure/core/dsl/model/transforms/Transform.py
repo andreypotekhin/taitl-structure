@@ -95,6 +95,8 @@ class Transform:
             if isinstance(value, OutputDeclaration):
                 outputs[value.name] = value
                 output_bindings.pop(value.name, None)
+                if value.binding == "delta":
+                    inputs[value.name] = InputDeclaration(schema=value.schema, name=value.name, binding="delta")
             if isinstance(value, ParameterDeclaration):
                 parameters[value.name] = value
             elif name in parameters:

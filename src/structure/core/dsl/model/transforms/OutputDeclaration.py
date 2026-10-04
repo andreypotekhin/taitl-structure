@@ -34,6 +34,7 @@ class OutputDeclaration:
     name: str = ""
     aliases: tuple[str, ...] = ()
     source: object | None = None
+    binding: str = "dataframe"
 
     def __set_name__(self, owner: type, name: str) -> None:
         object.__setattr__(self, "name", name)

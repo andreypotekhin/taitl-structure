@@ -259,7 +259,7 @@ the focused API reference for the operation's cardinality and target conditions.
 ### Typed Spark SQL
 
 Use `sql(...)` inside a Transform method when a complete relation is clearer as Spark SQL. Declare the output schema
-with required `as_`; Structure uses it to type later expressions and to validate the runtime relation when the
+with required `to`; Structure uses it to type later expressions and to validate the runtime relation when the
 configured validation phase is enabled. `relations` binds `{name}` placeholders to typed relation scopes or caller-
 supplied SQL table text. `args` supplies Spark's literal parameters. SQL text and table text remain caller-owned and
 are interpreted by Spark and the configured provider.
@@ -270,11 +270,11 @@ def select_orders(self, order: Order) -> OrderSummary:
         "SELECT id, total FROM {orders} WHERE total > :minimum",
         relations={"orders": order},
         args={"minimum": 100},
-        as_=OrderSummary,
+        to=OrderSummary,
     )
 ```
 
-The `as_` schema may be an ordinary Structure `Schema` for a query. Use `SqlCommandResult` for a mutation result;
+The `to` schema may be an ordinary Structure `Schema` for a query. Use `SqlCommandResult` for a mutation result;
 its optional `label` attributes each result row when supplied, while `num_affected_rows`, `num_updated_rows`, `num_inserted_rows`,
 and `num_deleted_rows` are nullable metrics. A metric is null when the backend does not return its column; null does
 not mean zero. Command-result schemas can be returned from steps and routed to command-result outputs or lanes.
@@ -295,7 +295,7 @@ class MergeOrders(Transform):
             "MERGE INTO {target} AS t USING {changes} AS s ON t.id = s.id "
             "WHEN MATCHED THEN UPDATE SET total = s.total",
             relations={"target": self.TARGET_TABLE, "changes": change},
-            as_=SqlCommandResult,
+            to=SqlCommandResult,
         )
 
 result = MergeOrders(changes=changes_df).run(session)

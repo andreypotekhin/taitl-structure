@@ -223,7 +223,7 @@ class StreamingVariantExplode(Transform):
     expanded = output(StreamVariantExplodeOutput)
 
     def expand(self, row: StreamVariantExplodeRaw) -> StreamVariantExplodeOutput:
-        entry = variant_explode(parse_json(row.payload_json), as_=StreamVariantExplodeEntry)
+        entry = variant_explode(parse_json(row.payload_json), to=StreamVariantExplodeEntry)
         return StreamVariantExplodeOutput(
             id=row.id,
             pos=entry.pos,
@@ -238,7 +238,7 @@ class StreamingVariantExplodeOuter(Transform):
     expanded = output(StreamVariantExplodeOuterOutput)
 
     def expand(self, row: StreamVariantExplodeRaw) -> StreamVariantExplodeOuterOutput:
-        entry = variant_explode_outer(parse_json(row.payload_json), as_=StreamVariantExplodeOuterEntry)
+        entry = variant_explode_outer(parse_json(row.payload_json), to=StreamVariantExplodeOuterEntry)
         return StreamVariantExplodeOuterOutput(
             id=row.id,
             pos=entry.pos,

@@ -12,6 +12,7 @@ from structure.plugin.api.v1.model.SymbolicContext import (
 )
 
 if TYPE_CHECKING:
+    from structure.plugin.pyspark.delta.model import DeltaMutation
     from structure.plugin.pyspark.dsl.aggregation.AggregatePlan import AggregatePlan
     from structure.plugin.pyspark.dsl.aggregation.ProjectAssignment import ProjectAssignment
     from structure.plugin.pyspark.dsl.Expression import Expression
@@ -27,6 +28,7 @@ class PySparkSymbolicContext:
         self.filters: list[Expression] = []
         self.joins: list[JoinPlan] = []
         self.operations: list[OperationPlan] = []
+        self.delta_mutations: list[DeltaMutation] = []
         self.aggregate_keys: tuple[tuple[str, Expression], ...] | None = None
         self.aggregate_requested = False
         self.aggregate_levels: tuple[tuple[str, ...], ...] = ()

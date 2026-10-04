@@ -56,7 +56,7 @@ class DocumentChunking(Transform):
     @step(input=documents, output=marked_lines)
     def mark_lines(self, document: Document) -> MarkedDocumentLine:
         lines = split(regexp_replace(document.content, pattern=r"\r\n?", replacement="\n"), pattern="\n")
-        line = posexplode_array(lines, as_=ExpandedDocumentLine, value_field="line", scope="document_line")
+        line = posexplode_array(lines, to=ExpandedDocumentLine, value_field="line", scope="document_line")
         span_window = window(
             partition_by=document.id,
             order_by=line.ordinal,

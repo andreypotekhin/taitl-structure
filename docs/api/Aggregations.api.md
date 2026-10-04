@@ -97,7 +97,7 @@ the current `order` row scope as `o`.
 | `std(...)` | `std` | `std(order.total)` |
 | `approx_count_distinct(...)` | `approx_count_distinct` | `approx_count_distinct(o.customer_id, relative_sd=0.05)` |
 | `approx_percentile(...)` | `approx_percentile` | `approx_percentile(order.total, 0.5, accuracy=100)` |
-| `histogram_numeric(value, n_bins, *, as_, where=None)` | `histogram_numeric` | `histogram_numeric(order.total, 20, as_=LatencyBucket)` |
+| `histogram_numeric(value, n_bins, *, to, where=None)` | `histogram_numeric` | `histogram_numeric(order.total, 20, to=LatencyBucket)` |
 | `percentile(...)` | `percentile` | `percentile(order.total, 0.5)` |
 | `schema_of_variant_agg(...)` | Variant schema aggregate | `schema_of_variant_agg(order.payload)` |
 | `mode(...)` | `mode` | `mode(order.category, deterministic=True)` |
@@ -113,7 +113,7 @@ the current `order` row scope as `o`.
 - Statistical metrics, including population covariance, return nullable doubles. `collect_list(...)` can preserve an explicit `order_by=` sequence;
   without it, and for `collect_set(...)`, collection order is Spark-dependent.
 - `histogram_numeric(...)` returns a nullable array of nullable `{x, y}` buckets; each bucket field is nullable, `x` keeps
-  the input numeric type, and `y` is Double. Declare `as_` as a Schema with exactly nullable `x` and nullable Double
+  the input numeric type, and `y` is Double. Declare `to` as a Schema with exactly nullable `x` and nullable Double
   `y`. The bin count must be a foldable Integer literal from 2 through 2,147,483,647. Decimal input is profile-gated
   to exact PySpark 4.0 because Spark 3.5.0 advertises the type but fails during histogram execution.
 - `count_if(...)` accepts a Boolean expression and returns a non-null Long. `median(...)` and the population/sample
@@ -144,11 +144,11 @@ final exact count, prefer `count_distinct(...)`; for an immediate approximate co
 | --- | --- | --- |
 | `hll_sketch(lg_config_k=12)` | Branded Binary HLL state | `customers = hll_sketch(lg_config_k=12)` |
 | `bitmap()` | Branded Binary Bitmap state | `features = bitmap()` |
-| `kll_sketch()`, `theta_sketch()` | Profile-gated Binary declarations | PySpark 4.1 profile only |
+| `kll_sketch()`, `theta_sketch()` | Design-gated Binary declarations | PySpark 4.1 profile only; merge, dependency, and consumer semantics remain open |
 
 `hll_sketch(...)` retains a literal precision from 4 through 21. HLL and Bitmap values cannot be cast to ordinary
-`binary()` or to each other. KLL and Theta declarations require the PySpark 4.1 profile; they do not add a baseline
-aggregate surface.
+`binary()` or to each other. KLL and Theta declarations require the PySpark 4.1 profile; they remain design-gated in
+V11 and do not add a baseline aggregate surface.
 
 ### Operations
 

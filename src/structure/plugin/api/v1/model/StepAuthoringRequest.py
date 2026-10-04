@@ -19,3 +19,4 @@ class StepAuthoringRequest:
     capture_special_exprs: bool = False
     primary_span: SourceSpan | None = None
     plugin_options: Mapping[str, object] = field(default_factory=lambda: MappingProxyType({}))
+    effect: bool = False

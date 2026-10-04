@@ -8,7 +8,7 @@ The design targets PySpark `>=3.5,<4.1` in ordinary PySpark and Spark Connect. I
 
 ## Public API
 
-The PySpark DSL adds one relation-level `sql(...)` operation for compiled Transform methods. `as_` is always required. A Structure `Schema` declares a query relation. `SqlResult` is the empty abstract `Schema` base for SQL-specific result contracts; `SqlCommandResult` is its standard normalized-command subclass, and provider result schemas may also derive from `SqlResult`.
+The PySpark DSL adds one relation-level `sql(...)` operation for compiled Transform methods. `to` is always required. A Structure `Schema` declares a query relation. `SqlResult` is the empty abstract `Schema` base for SQL-specific result contracts; `SqlCommandResult` is its standard normalized-command subclass, and provider result schemas may also derive from `SqlResult`.
 
 ```python
 class EnrichOrders(Transform):
@@ -23,7 +23,7 @@ class EnrichOrders(Transform):
             "FROM {orders} AS o JOIN " + self.CUSTOMER_TABLE + " AS c "
             "ON o.customer_id = c.id"
         )
-        return sql(statement, relations={"orders": order}, as_=EnrichedOrder)
+        return sql(statement, relations={"orders": order}, to=EnrichedOrder)
 ```
 
 Class constants, module constants, and Python string concatenation are valid when they produce deterministic SQL text while the Transform is compiled. Symbolic expressions, DataFrames, and Spark-derived values cannot contribute to SQL text. Structure treats supplied SQL as caller-owned dialect text and delegates interpretation to Spark and the configured provider.
@@ -38,11 +38,11 @@ return sql(
         "orders": order,
         "customer_table": self.CUSTOMER_TABLE,
     },
-    as_=Order,
+    to=Order,
 )
 ```
 
-There is no `TableId`, `identifiers=`, `tables=`, or direct `StructureSession.sql(...)` / `StructureSession.command(...)` API. The Transform author declares the result kind through `as_`. Query results are typed Structure relations and need no `SqlQueryResult` wrapper.
+There is no `TableId`, `identifiers=`, `tables=`, or direct `StructureSession.sql(...)` / `StructureSession.command(...)` API. The Transform author declares the result kind through `to`. Query results are typed Structure relations and need no `SqlQueryResult` wrapper.
 
 `SqlResult` inherits from `Schema` and declares no fields; it is an abstract marker and cannot itself be used as a concrete result schema. `SqlCommandResult` is a concrete subclass with an optional nullable `label` and four nullable Long metrics: `num_affected_rows`, `num_updated_rows`, `num_inserted_rows`, and `num_deleted_rows`. A supplied label is copied to the normalized result; when omitted, it is null. Structure uses a metric value when the command DataFrame supplies its matching column and uses null when it does not. Null means unavailable or unreported, not zero. PySpark's [`SparkSession.sql`](https://spark.apache.org/docs/latest/api/python/reference/pyspark.sql/api/pyspark.sql.SparkSession.sql.html) returns a DataFrame; the columns a mutation returns remain backend-dependent. Provider-specific subclasses may add further fields. A provider with a different result shape may define a separate concrete `SqlResult` subclass and adapter instead of claiming the standard command fields. A backend failure raises its native exception and does not produce a success row.
 
@@ -62,7 +62,7 @@ class UpdateOrders(Transform):
             "MERGE INTO {target} AS t USING {changes} AS s ON t.id = s.id "
             "WHEN MATCHED THEN UPDATE SET total = s.total",
             relations={"target": self.TARGET_TABLE, "changes": change},
-            as_=SqlCommandResult,
+            to=SqlCommandResult,
         )
 ```
 
@@ -73,7 +73,7 @@ Step methods may return command-result schemas alongside ordinary row schemas, i
 
 The returned `TransformResult` exposes each declared output as a named DataFrame, using the existing `result.output_name` or `result["output_name"]` access. There is no additional `.results` namespace.
 
-The standard v1 contracts are ordinary query `Schema` classes and `SqlCommandResult` (including its subclasses). `SqlResult` itself remains abstract. Provider-specific query or command contracts can derive directly from `SqlResult` and declare their own fields without claiming the standard command fields; they require an adapter that knows how to materialize that contract. Structure does not infer the contract from SQL text or parse provider dialects; `as_` is authoritative, and Spark/provider semantics determine whether the statement is valid for that result contract.
+The standard v1 contracts are ordinary query `Schema` classes and `SqlCommandResult` (including its subclasses). `SqlResult` itself remains abstract. Provider-specific query or command contracts can derive directly from `SqlResult` and declare their own fields without claiming the standard command fields; they require an adapter that knows how to materialize that contract. Structure does not infer the contract from SQL text or parse provider dialects; `to` is authoritative, and Spark/provider semantics determine whether the statement is valid for that result contract.
 
 ## Compilation and Execution
 
@@ -83,13 +83,13 @@ The PySpark runtime delegates SQL execution to native `SparkSession.sql`, using 
 
 Native DataFrame bindings are preferred. Structure may create uniquely named private temporary views when a backend or an existing plan-boundary mechanism requires them. Such views must not shadow caller names and must remain available for as long as a lazy plan may resolve them; existing relation-boundary lifecycle management is the model for cleanup. This is a fallback, not a requirement for every SQL relation binding.
 
-Runtime comparison against a declared query `Schema` or command-result schema uses the existing validation phases and modes. Intermediate query validation is controlled by `validate_intermediate`; final Transform output validation uses the existing output validation; `schema_only` checks schema shape without collecting rows. These inspections can add latency, so the existing validation configuration can disable the applicable phase. Disabling runtime validation does not remove the compile-time `as_` type contract.
+Runtime comparison against a declared query `Schema` or command-result schema uses the existing validation phases and modes. Intermediate query validation is controlled by `validate_intermediate`; final Transform output validation uses the existing output validation; `schema_only` checks schema shape without collecting rows. These inspections can add latency, so the existing validation configuration can disable the applicable phase. Disabling runtime validation does not remove the compile-time `to` type contract.
 
 SQL queries are not categorically batch-only. Structure allows queries over streaming relations and delegates legality to Spark and the selected provider. Commands follow the same backend capability boundary; Structure does not promise every mutation is legal in every streaming context. Commands are ordered runtime operations, are never retried by Structure, and remain subject to Spark/provider execution and failure semantics. A transport failure can leave a mutation's commit outcome unknown.
 
 ## Errors and Limits
 
-Structure diagnostics cover missing `as_`, unsupported result contracts, invalid supplied command labels, malformed or unbound relation placeholders, duplicate binding keys, non-string table-name values where a string is required, unsupported dynamic SQL text, and an enabled schema mismatch. An exception raised directly by `SparkSession.sql` gains a Python exception note naming the Transform step and any supplied command label, then is bare-reraised so callers retain its native type and can continue catching `AnalysisException`, `PySparkException`, or provider exceptions. Spark Connect may defer analysis or execution until a later DataFrame action; those errors surface at that action and also retain their native type.
+Structure diagnostics cover missing `to`, unsupported result contracts, invalid supplied command labels, malformed or unbound relation placeholders, duplicate binding keys, non-string table-name values where a string is required, unsupported dynamic SQL text, and an enabled schema mismatch. An exception raised directly by `SparkSession.sql` gains a Python exception note naming the Transform step and any supplied command label, then is bare-reraised so callers retain its native type and can continue catching `AnalysisException`, `PySparkException`, or provider exceptions. Spark Connect may defer analysis or execution until a later DataFrame action; those errors surface at that action and also retain their native type.
 
 A symbolic Transform method runs while Structure captures the recipe, so Python `try/except` inside that method cannot catch a later Spark analysis or execution error. Callers catch those errors around `session.run(...)` or a later action on a lazy query relation.
 

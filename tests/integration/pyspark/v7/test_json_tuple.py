@@ -40,7 +40,7 @@ class ExtractJsonTuple(Transform):
     def publish(self, document: Document) -> Published:
         extracted = json_tuple(
             document.payload,
-            as_=Extracted,
+            to=Extracted,
             fields={"customer_id": "customerId"},
             scope="payload_fields",
         )

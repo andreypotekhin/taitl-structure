@@ -158,6 +158,13 @@ class RenderPySparkTransformModule:
 
         for module, constants in self._schema_imports(plan, schema_modules).items():
             lines.append(f"from {module} import {', '.join(constants)}")
+        delta_inputs = [item for item in plan.inputs if item.binding == "delta"]
+        if delta_inputs:
+            lines.append("from structure.plugin.pyspark.delta.runtime import fresh_delta_frame, validate_delta_table")
+            for index, item in enumerate(delta_inputs):
+                lines.append(
+                    f"from {item.schema.__module__} import {item.schema.__name__} as _StructureDeltaSchema_{index}"
+                )
         return "\n".join(lines)
 
     def _unique(self, lines: list[str]) -> str:
@@ -285,11 +292,16 @@ class RenderPySparkTransformModule:
                 "        self._ran = True",
             ]
         )
+        if any(item.binding == "delta" for item in plan.inputs):
+            lines.append("        self._delta_tables = {}")
         for input in plan.inputs:
             current = fields[input.name]
             original = fields[f"input:{input.name}"]
             lines.append(f"        self.{current} = self.{original}")
-            lines.extend(self._validation(input.validation, target=f"self.{current}"))
+            if input.binding == "delta":
+                lines.extend(self._delta_input_lines(plan, input, variable=f"self.{current}"))
+            else:
+                lines.extend(self._validation(input.validation, target=f"self.{current}"))
         for step in plan.steps:
             lines.append(f"        self.{self._mirror_step_method(step)}()")
 
@@ -480,6 +492,8 @@ class RenderPySparkTransformModule:
                 else f"        {input.name}: DataFrame,"
             )
         lines.extend(["    ) -> TransformResult:"])
+        if any(item.binding == "delta" for item in plan.inputs):
+            lines.append("        self._delta_tables = {}")
         for input in plan.inputs:
             if input.internal:
                 lines.append(
@@ -490,7 +504,10 @@ class RenderPySparkTransformModule:
                     f"        {input.name} = self.spark.createDataFrame([], {self._schema.constant_name(input.schema)})"
                     f" if {input.name} is None else {input.name}"
                 )
-            lines.extend(self._validation(input.validation))
+            if input.binding == "delta":
+                lines.extend(self._delta_input_lines(plan, input, variable=input.name))
+            else:
+                lines.extend(self._validation(input.validation))
         for input in plan.inputs:
             lines.append(f"        {self._raw_input_name(input.name)} = {input.name}")
 
@@ -632,6 +649,8 @@ class RenderPySparkTransformModule:
                 else f"        {input.name}: DataFrame,"
             )
         lines.extend(["    ) -> TransformResult:"])
+        if any(item.binding == "delta" for item in plan.inputs):
+            lines.append("        self._delta_tables = {}")
         for input in plan.inputs:
             if input.internal:
                 lines.append(
@@ -642,7 +661,10 @@ class RenderPySparkTransformModule:
                     f"        {input.name} = self.spark.createDataFrame([], {self._schema.constant_name(input.schema)})"
                     f" if {input.name} is None else {input.name}"
                 )
-            lines.extend(self._validation(input.validation))
+            if input.binding == "delta":
+                lines.extend(self._delta_input_lines(plan, input, variable=input.name))
+            else:
+                lines.extend(self._validation(input.validation))
         for input in plan.inputs:
             lines.append(f"        {self._raw_input_name(input.name)} = {input.name}")
         lines.extend(self._frames(plan))
@@ -1124,6 +1146,18 @@ class RenderPySparkTransformModule:
 
     def _public_inputs(self, plan: PySparkExecutionPlan):
         return tuple(input for input in plan.inputs if not input.internal)
+
+    def _delta_input_lines(self, plan: PySparkExecutionPlan, item, *, variable: str) -> list[str]:
+        index = [source for source in plan.inputs if source.binding == "delta"].index(item)
+        modes = sorted(
+            {step.delta_check_match or plan.delta_check_match for step in plan.steps if item.name in step.input_sources}
+            or {plan.delta_check_match}
+        )
+        lines = [f"        self._delta_tables[{item.name!r}] = {variable}"]
+        for mode in modes:
+            lines.append(f"        validate_delta_table({variable}, _StructureDeltaSchema_{index}, mode={mode!r})")
+        lines.append(f"        {variable} = fresh_delta_frame({variable})")
+        return lines
 
     def _validation(self, validation: PySparkValidationRecipe, *, target: str | None = None) -> list[str]:
         schema = self._schema.constant_name(validation.schema)

@@ -445,7 +445,7 @@ Aggregate helpers include `count()`, `count_distinct(...)`, `sum(...)`, `min(...
 `approx_count_distinct(...)`, `approx_percentile(...)`, `histogram_numeric(...)`, `collect_list(...)`, `collect_set(...)`, `first_value(...)`,
 and `last_value(...)`. Aggregate helpers accept `where=...` for metric-local filters. Use trailing
 `having(lambda out: ...)` or chained `group_by(...).having(lambda out: ...)` to filter aggregate output rows.
-`histogram_numeric(value, n_bins, as_=BucketSchema)` requires a foldable bin-count literal and a Schema with nullable
+`histogram_numeric(value, n_bins, to=BucketSchema)` requires a foldable bin-count literal and a Schema with nullable
 `x` matching the input and nullable Double `y`; Decimal inputs require the exact PySpark 4.0 profile.
 
 Use `rollup(...)` for hierarchical subtotals, `cube(...)` for all grouping-key combinations, and

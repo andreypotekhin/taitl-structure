@@ -133,7 +133,7 @@ class InnerStructGenerator(Transform):
     values = output(InnerStructResult)
 
     def expand(self, document: InnerDocument) -> InnerStructResult:
-        value = posexplode_struct(document.terms, as_=InnerStructValue, scope="term")
+        value = posexplode_struct(document.terms, to=InnerStructValue, scope="term")
         return InnerStructResult(
             doc_id=document.doc_id,
             ordinal=value.ordinal,
@@ -148,7 +148,7 @@ class OuterStructGenerator(Transform):
     values = output(OuterStructResult)
 
     def expand(self, document: OuterDocument) -> OuterStructResult:
-        value = posexplode_outer_struct(document.terms, as_=OuterStructValue, scope="term")
+        value = posexplode_outer_struct(document.terms, to=OuterStructValue, scope="term")
         return OuterStructResult(
             doc_id=document.doc_id,
             ordinal=value.ordinal,
@@ -163,7 +163,7 @@ class InnerScalarGenerator(Transform):
     values = output(InnerScalarResult)
 
     def expand(self, document: InnerDocument) -> InnerScalarResult:
-        value = posexplode_array(document.values, as_=InnerScalarValue, value_field="value", scope="value")
+        value = posexplode_array(document.values, to=InnerScalarValue, value_field="value", scope="value")
         return InnerScalarResult(doc_id=document.doc_id, ordinal=value.ordinal, value=value.value)
 
 
@@ -175,7 +175,7 @@ class OuterScalarGenerator(Transform):
     def expand(self, document: OuterDocument) -> OuterScalarResult:
         value = posexplode_outer_array(
             document.values,
-            as_=OuterScalarValue,
+            to=OuterScalarValue,
             value_field="value",
             scope="value",
         )
@@ -190,7 +190,7 @@ class InnerMapGenerator(Transform):
     def expand(self, document: InnerDocument) -> InnerMapResult:
         value = posexplode_map(
             document.attributes,
-            as_=InnerMapValue,
+            to=InnerMapValue,
             key_field="key",
             value_field="value",
             scope="attribute",
@@ -211,7 +211,7 @@ class OuterMapGenerator(Transform):
     def expand(self, document: OuterDocument) -> OuterMapResult:
         value = posexplode_outer_map(
             document.attributes,
-            as_=OuterMapValue,
+            to=OuterMapValue,
             key_field="key",
             value_field="value",
             scope="attribute",

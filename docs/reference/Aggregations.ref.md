@@ -203,7 +203,8 @@ reduce the result precision.
 
 Spark's Binary representation is not a portable interchange format. Applications own compatibility testing whenever
 state is persisted or transferred. HLL and Bitmap are default-baseline features; KLL and Theta declarations require a
-PySpark 4.1 profile and do not imply baseline aggregate support. Count-Min and observations remain caller-owned.
+PySpark 4.1 profile and remain design-gated in V11; they do not imply baseline aggregate support. Count-Min and
+observations remain caller-owned.
 
 Scalar sketch consumers preserve rows. Construction and Bitmap OR follow the ordinary grouped-streaming watermark,
 state, and output-mode rules; a transform does not own the source, sink, checkpoint, or retention policy.
@@ -413,7 +414,7 @@ indexed callbacks retain distinct lexical bindings, including when both callback
 `arr_exists` and `arr_forall` retain Spark's three-valued predicate behavior when nulls prevent a decisive result.
 `arr_aggregate` returns null for a null input array; an empty array returns the initial accumulator unchanged. Typed
 generators such as `explode_struct`, `posexplode_struct`, and `inline_struct` require an `array<struct>` expression and
-an explicit `as_` Schema. Inner generators can remove null/empty arrays; outer generators preserve the input row with
+an explicit `to` Schema. Inner generators can remove null/empty arrays; outer generators preserve the input row with
 nullable generated fields.
 
 Map keys and values remain typed. `map_zip_with` requires identical key types rather than applying numeric key
@@ -525,7 +526,7 @@ Approximate metrics retain the supplied accuracy or relative-standard-deviation 
 not become exact metrics because a caller omits an option. `schema_of_variant_agg` returns a nullable SQL-format schema
 string and requires a Variant expression on a resolved PySpark 4 profile.
 
-`histogram_numeric(value, n_bins, as_=BucketSchema)` preserves the input type in the nullable bucket field `x` and
+`histogram_numeric(value, n_bins, to=BucketSchema)` preserves the input type in the nullable bucket field `x` and
 uses nullable Double `y`. Its result is a nullable array with nullable elements. `n_bins` must be a foldable Integer
 literal from 2 through 2,147,483,647, matching Spark's analysis requirement.
 Decimal input is available only under the exact PySpark 4.0 target profile; Spark 3.5.0 fails while executing its

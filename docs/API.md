@@ -4,9 +4,10 @@ This describes Structure's public, compiler-visible API.
 
 If you are just starting using this library, see [QuickRef.md](QuickRef.md) for an introduction.
 
-`supported` means the public contract is available now. `design-gated` means a contract exists but implementation or
-evidence is incomplete. `streaming-ineligible` means the batch operation requires materialization for streaming input;
-`unsupported` deliberately stays outside the current scope.
+`supported` means the public contract is available now. `planned` means implementation is intended but incomplete.
+`design-gated` means a contract exists but implementation or evidence is incomplete. `caller-owned-guided` means the
+caller may use the upstream API around a Structure transform. `streaming-ineligible` means the batch operation requires
+materialization for streaming input; `unsupported` deliberately stays outside the current scope.
 Structure is not a one-to-one PySpark
 wrapper: admitted APIs remain typed, symbolic, capability-checked, explainable, and readable in generated code.
 
@@ -50,6 +51,21 @@ Other orientation: [API compatibility overview](compatibility/APICompatibility.m
 - Transform source is compiler-visible. `@raw` remains the honest boundary for caller-owned PySpark behavior.
 - Expression truthiness, raw SQL strings, UDTFs, and arbitrary callback bodies are unsupported. Scalar
   `@special(type="udf")` remains an ordinary-PySpark row-local feature with its warning policy.
+
+## PySpark 4.1 Adoption (V11)
+
+These rows describe the planned `>=4.1,<4.2` target and do not widen the default `>=3.5,<4.1` baseline. The complete
+inventory and evidence boundary are maintained in the [V11 charter](dev/project-management/V11.md) and
+[API tracker](compatibility/APITracker.md).
+
+| API area | Status | Boundary |
+| --- | --- | --- |
+| 4.1 expressions and `Column.transform` | design-gated | Typed expressions require type, nullability, determinism, generated spelling, and target evidence. |
+| `exists`, IN-subqueries, and `lateralJoin` | design-gated | Relation scope, cardinality, aliases, null behavior, and online/generated parity must be specified. |
+| Observations, KLL, and Theta sketches | design-gated | Metric side channels and opaque sketch results require separate typed and dependency contracts. |
+| Arrow UDF/UDTF and `transformWithState` | caller-owned-guided | Python workers, state, retries, and lifecycle remain outside generated Structure transforms. |
+| Delta transform mutations | planned | Caller-bound `delta_input`/`delta_output`, `Schema.constraints`, and compiled delete/update/merge require isolated Delta evidence. |
+| Retained V9 gates | design-gated | See the retained-gates design/specification pair; XML and join reordering remain unsupported. |
 
 ## Analytical APIs
 

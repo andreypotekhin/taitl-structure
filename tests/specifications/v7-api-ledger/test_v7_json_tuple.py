@@ -39,7 +39,7 @@ class ExtractJsonTuple(Transform):
     def publish(self, document: Document) -> Published:
         extracted = json_tuple(
             document.payload,
-            as_=Extracted,
+            to=Extracted,
             fields={"customer_id": "customerId"},
             scope="payload_fields",
         )
@@ -83,7 +83,7 @@ def test_json_tuple_rejects_undeclared_output_shapes(schema: type[Schema], messa
         published = output(Published)
 
         def publish(self, document: Document) -> Published:
-            extracted = json_tuple(document.payload, as_=schema)
+            extracted = json_tuple(document.payload, to=schema)
             return Published(customer_id=extracted.value, tier=extracted.value)
 
     with pytest.raises(TypeError, match=message):
@@ -96,7 +96,7 @@ def test_json_tuple_rejects_generated_column_collisions() -> None:
         published = output(Published)
 
         def publish(self, document: CollisionDocument) -> Published:
-            extracted = json_tuple(document.payload, as_=Extracted)
+            extracted = json_tuple(document.payload, to=Extracted)
             return Published(customer_id=extracted.customer_id, tier=extracted.tier)
 
     with pytest.raises(TypeError, match="generated columns collide with current input"):
@@ -119,7 +119,7 @@ def test_json_tuple_rejects_invalid_member_mappings(fields: object, message: str
         def publish(self, document: Document) -> Published:
             extracted = json_tuple(
                 document.payload,
-                as_=Extracted,
+                to=Extracted,
                 fields=cast(Mapping[str, str], fields),
             )
             return Published(customer_id=extracted.customer_id, tier=extracted.tier)

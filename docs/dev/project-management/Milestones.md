@@ -524,6 +524,10 @@ Status: planned. V11 follows the V10 closeout and runs from Sprint 55 through Sp
   ordinary 4.1 evidence.
 - Complex observations, sketches, Arrow UDF/UDTFs, and row-based state have implemented contracts or stable gates with
   caller-owned remedies.
+- The Delta package has a normative transform design/specification, caller-bound Delta inputs/outputs, delete/update/merge
+  acceptance tests, native CHECK verification evidence, and an honest optional-runtime status.
+- Retained V9 gates have one normalized status each, explicit caller remedies and diagnostics, and evidence for available
+  target lanes; XML and cost-based join reordering remain unexported and outside V11.
 - The integration matrix runs PySpark 3.5, 4.0, and 4.1 in ordinary and Connect lanes without dropping regression
   coverage; generated artifacts are fresh; and `make build` passes.
 
@@ -531,6 +535,11 @@ Status: planned. V11 follows the V10 closeout and runs from Sprint 55 through Sp
 
 - `docs/dev/project-management/V11.md`
 - `docs/dev/planning/P08042601.V11-pyspark-4.1-adoption.plan.md`
+- `docs/dev/planning/P08042602.V11-delta-schema-bound-mutations.plan.md`
 - `docs/dev/planning/P08042603.V11-retained-v9-design-gates.plan.md`
 - `docs/dev/design/V11PySpark41Adoption.design.md`
 - `docs/dev/specifications/V11PySpark41Parity.spec.md`
+- `docs/dev/design/V11DeltaSchemaBoundMutations.design.md`
+- `docs/dev/specifications/V11DeltaSchemaBoundMutations.spec.md`
+- `docs/dev/design/V11RetainedV9DesignGates.design.md`
+- `docs/dev/specifications/V11RetainedV9DesignGates.spec.md`

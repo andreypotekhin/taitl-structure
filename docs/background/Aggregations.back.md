@@ -89,7 +89,7 @@ as ordinary Binary. Persisted sketch state is compatible only with the relevant 
 general interchange format. Grouped sketches in streaming follow the ordinary watermark and output-mode rules; callers
 remain responsible for sources, sinks, checkpoints, retention, and external exchange.
 
-KLL and Theta declarations are profile-gated for PySpark 4.1; they are not baseline aggregate support. Count-Min and
+KLL and Theta declarations are design-gated for V11 on PySpark 4.1; they are not baseline aggregate support. Count-Min and
 observation metrics remain caller-owned.
 
 ### Windowed Enrichment
@@ -282,7 +282,7 @@ Supported advanced aggregates:
 - `covar(left, right, where=None)`;
 - `approx_count_distinct(value, relative_sd=None, where=None)`;
 - `approx_percentile(value, percentage, accuracy=None, where=None)`;
-- `histogram_numeric(value, n_bins, as_=BucketSchema, where=None)`;
+- `histogram_numeric(value, n_bins, to=BucketSchema, where=None)`;
 - `collect_list(value, order_by=None, element_type=None, where=None)`;
 - `collect_set(value, element_type=None, where=None)`;
 - `first_value(value, order_by=..., where=None, ties="error")`;

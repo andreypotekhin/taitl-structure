@@ -2,7 +2,7 @@
 
 This is the function-level migration gap register for the ordinary PySpark `>=3.5,<4.1` baseline. The baseline is the
 intersection of the public PySpark 3.5.x and 4.0.x APIs. It complements the family summary in
-[APITracker](../../compatibility/APITracker.md) and the public compatibility summary in
+[APITracker.md](../../compatibility/APITracker.md) and the public compatibility summary in
 [APICompatibility.md](../../compatibility/APICompatibility.md).
 
 The register targets PySpark parity for migration: preserve the PySpark name and semantics where Structure can own a
@@ -91,7 +91,7 @@ migration remedy.
 | Scope | Status | Structure work | Migration requirement |
 | --- | --- | --- | --- |
 | Ordering descriptors | `implemented` | Harden validation across consumers. | Preserve direction and null placement. |
-| `stack` | `implemented` | `stack(rows, *values, as_=Schema, scope=None)` fixes row multiplication, position-wise common types, and trailing-NULL padding before execution. | Preserve output aliases, types, nullability, and streaming row expansion. |
+| `stack` | `implemented` | `stack(rows, *values, to=Schema, scope=None)` fixes row multiplication, position-wise common types, and trailing-NULL padding before execution. | Preserve output aliases, types, nullability, and streaming row expansion. |
 | Relation distribution | `implemented` | `coalesce(partitions=...)` and typed hash `repartition(count, *keys)` / `repartition(*keys)` preserve row/schema; range repartition remains batch-only. | Preserve the leading-integer count rule and avoid ordering or stable-partition promises. |
 | Binary conversion | `implemented` | Typed `to_binary` and `try_to_binary` with literal formats. | Preserve format and failure behavior. |
 | Unix-seconds formatting | `implemented` | Typed `from_unixtime` with numeric seconds and a literal format. | Preserve session-time-zone formatting. |
@@ -505,13 +505,13 @@ families.
 
 | PySpark function and signature | PySpark 3.5.6 | PySpark 4.0.0 | Structure equivalent | Status | Migration remedy |
 | --- | --- | --- | --- | --- | --- |
-| `stack(n, *cols)` | yes | yes | `stack(rows, *values, as_=Schema, scope=None)` fixes row multiplication, position-wise common types, and trailing-NULL padding while keeping output schema explicit. | `implemented` | Declare the output Schema and nullable fields wherever input values or trailing padding can be null. |
-| `explode(col)` | yes | yes | `explode_struct`, `explode_array`, or `explode_map`; array-of-struct, primitive scalar-array, or primitive scalar-map input with declared output `Schema`. | `implemented` | Choose the typed helper matching the input type and declare generated field names in `as_`. |
+| `stack(n, *cols)` | yes | yes | `stack(rows, *values, to=Schema, scope=None)` fixes row multiplication, position-wise common types, and trailing-NULL padding while keeping output schema explicit. | `implemented` | Declare the output Schema and nullable fields wherever input values or trailing padding can be null. |
+| `explode(col)` | yes | yes | `explode_struct`, `explode_array`, or `explode_map`; array-of-struct, primitive scalar-array, or primitive scalar-map input with declared output `Schema`. | `implemented` | Choose the typed helper matching the input type and declare generated field names in `to`. |
 | `explode_outer(col)` | yes | yes | `explode_outer_struct`, `explode_outer_array`, or `explode_outer_map`; preserves null/empty input rows and requires nullable generated fields. | `implemented` | Choose an outer typed helper and declare nullable output fields. |
 | `posexplode(col)` | yes | yes | `posexplode_struct`, `posexplode_array`, or `posexplode_map`; adds a zero-based Long ordinal field. | `implemented` | Choose the typed helper matching the input type and declare the ordinal/output Schema. |
 | `posexplode_outer(col)` | yes | yes | `posexplode_outer_struct`, `posexplode_outer_array`, or `posexplode_outer_map`; adds a nullable ordinal and preserves null/empty input rows. | `implemented` | Choose an outer typed helper and declare nullable ordinal/output fields. |
-| `inline(col)` | yes | yes | `inline_struct`; inlines declared fields from an `array<struct>` into the generated scope. | `implemented` | Use `inline_struct(..., as_=Schema)` to keep the output shape explicit. |
-| `inline_outer(col)` | yes | yes | `inline_outer_struct`; inlines `array<struct>` fields while retaining null/empty input rows. | `implemented` | Use `inline_outer_struct(..., as_=Schema)` with nullable generated fields. |
+| `inline(col)` | yes | yes | `inline_struct`; inlines declared fields from an `array<struct>` into the generated scope. | `implemented` | Use `inline_struct(..., to=Schema)` to keep the output shape explicit. |
+| `inline_outer(col)` | yes | yes | `inline_outer_struct`; inlines `array<struct>` fields while retaining null/empty input rows. | `implemented` | Use `inline_outer_struct(..., to=Schema)` with nullable generated fields. |
 
 The target indexes list these functions under Generator Functions: [PySpark 3.5.6](https://spark.apache.org/docs/3.5.6/api/python/reference/pyspark.sql/functions.html)
 and [PySpark 4.0.0](https://spark.apache.org/docs/4.0.0/api/python/reference/pyspark.sql/functions.html). The typed helper
@@ -525,14 +525,14 @@ all explicit rather than inferred during execution.
 
 | PySpark function and signature | PySpark 3.5.6 | PySpark 4.0.0 | Structure equivalent | Status | Migration remedy |
 | --- | --- | --- | --- | --- | --- |
-| `from_json(col, schema, options=None)` | yes | yes | `from_json(value, *, as_, options=None)`; explicit Structure Schema for Struct output and immutable JSON options; nullable result. PySpark's Array/Map root schemas are not modeled. | `caller-owned-guided` | Use the typed helper for Struct output; retain Array/Map root parsing in native PySpark. |
+| `from_json(col, schema, options=None)` | yes | yes | `from_json(value, *, to, options=None)`; explicit Structure Schema for Struct output and immutable JSON options; nullable result. PySpark's Array/Map root schemas are not modeled. | `caller-owned-guided` | Use the typed helper for Struct output; retain Array/Map root parsing in native PySpark. |
 | `to_json(col, options=None)` | yes | yes | `to_json(value, *, options=None)`; accepts typed Struct, Array, or Map and returns nullable String. | `implemented` | Use an expression with declared nested types and an immutable options record. |
-| `from_csv(col, schema, options=None)` | yes | yes | `from_csv(value, *, as_, options=None)`; explicit Structure Schema and immutable CSV options; nullable result. | `implemented` | Declare the parsed Struct schema and literal parser options. |
+| `from_csv(col, schema, options=None)` | yes | yes | `from_csv(value, *, to, options=None)`; explicit Structure Schema and immutable CSV options; nullable result. | `implemented` | Declare the parsed Struct schema and literal parser options. |
 | `to_csv(col, options=None)` | yes | yes | `to_csv(value, *, options=None)`; accepts a typed Struct and returns nullable String. | `implemented` | Use a declared Struct expression and immutable options. |
 | `get_json_object(col, path)` | yes | yes | `get_json_object(value, path)`; non-empty literal JSON path, nullable String output. | `implemented` | Use a literal path; declare a schema with `from_json` for typed nested access. |
 | `json_array_length(col)` | yes | yes | `json_array_length(value)`; nullable Integer count for the outermost JSON array. | `implemented` | Use for array-root JSON text; malformed or non-array input follows Spark's nullable behavior. |
 | `json_object_keys(col)` | yes | yes | `json_object_keys(value)`; nullable `Array[String]` for the outermost object keys. | `implemented` | Use for object-root JSON text; key order is not a contract. |
-| `json_tuple(col, *fields)` | yes | yes | `json_tuple(value, *, as_, fields=None)`; declared nullable-String output schema, top-level keys, row-preserving scope. | `implemented` | Declare the output field names and optional literal member mapping; use `from_json` for typed/nested data. |
+| `json_tuple(col, *fields)` | yes | yes | `json_tuple(value, *, to, fields=None)`; declared nullable-String output schema, top-level keys, row-preserving scope. | `implemented` | Declare the output field names and optional literal member mapping; use `from_json` for typed/nested data. |
 | `schema_of_json(json, options=None)` | yes | yes | `schema_of_json(value, options=None)`; non-empty text literal plus immutable options; non-null SQL-format String. | `implemented` | Supply a compile-time JSON example; use `from_json` with an explicit Schema for row-dependent data. |
 | `schema_of_csv(csv, options=None)` | yes | yes | `schema_of_csv(value, options=None)`; non-empty text literal plus immutable options; non-null SQL-format String. | `implemented` | Supply a compile-time CSV example; use `from_csv` with an explicit Schema for row-dependent data. |
 
@@ -706,7 +706,7 @@ specific caller-owned boundary and migration remedy; the aggregate slice has foc
 | `bitmap_count(col)` | yes | yes | `bitmap_count(value)` accepts branded Bitmap state and returns nullable Long. | `implemented` | Use a typed Bitmap rather than an unbranded Binary payload. |
 | `covar_pop(col1, col2)` | yes | yes | `covar_pop(left, right, *, where=None)`; nullable Double population covariance. | `implemented` | Use `covar_pop(...)`; use `covar(...)` for sample covariance. |
 | `covar_samp(col1, col2)` | yes | yes | `covar(left, right, *, where=None)` renders to PySpark `covar_samp`; nullable Double sample covariance. | `implemented` | Use `covar(...)` for Structure's sample-covariance spelling. |
-| `histogram_numeric(col, nBins)` | yes | yes | `histogram_numeric(value, n_bins, *, as_, where=None)` accepts Integer, Long, Float, and Double values on PySpark 3.5/4.0; Decimal input requires the exact `>=4.0,<4.1` profile because live Spark 3.5.0 execution fails with `ClassCastException`. `n_bins` is a foldable Integer literal from 2 through 2,147,483,647. `as_` declares exactly nullable `x` matching the input and nullable Double `y`; the result is a nullable array with nullable elements and fields. | `implemented` | Declare the bucket Schema explicitly. Cast Decimal to Double only when precision loss is acceptable on Spark 3.5; otherwise use the 4.0 target profile or native PySpark. |
+| `histogram_numeric(col, nBins)` | yes | yes | `histogram_numeric(value, n_bins, *, to, where=None)` accepts Integer, Long, Float, and Double values on PySpark 3.5/4.0; Decimal input requires the exact `>=4.0,<4.1` profile because live Spark 3.5.0 execution fails with `ClassCastException`. `n_bins` is a foldable Integer literal from 2 through 2,147,483,647. `to` declares exactly nullable `x` matching the input and nullable Double `y`; the result is a nullable array with nullable elements and fields. | `implemented` | Declare the bucket Schema explicitly. Cast Decimal to Double only when precision loss is acceptable on Spark 3.5; otherwise use the 4.0 target profile or native PySpark. |
 | `hll_union_agg(col, allowDifferentLgConfigK=False)` | yes | yes | `hll_union_agg(value, *, allow_different_lg_config_k=False, where=None)` accepts only branded HLL state and returns nullable HLL with the declared precision. The mixed-precision opt-in warns with `SKETCH-W0802`; Spark may reduce precision. | `implemented` | Use `hll_union_agg(...)`; pin compatible Spark profiles because serialized state is not portable Binary. |
 | `count_min_sketch(col, eps, confidence, seed)` / `(col, eps, confidence[, seed])` | yes | yes | Count-Min serialized bytes have no branded type, estimator, union operation, or interoperability contract in Structure. | `caller-owned-guided` | Keep this sketch at a native PySpark boundary; treat its Binary payload as Spark-specific opaque state. |
 | `mean(col)` | yes | yes | `mean(value, *, where=None)`; same Spark numeric widening as `avg`, preserving PySpark spelling. | `implemented` | Use `mean(...)` to preserve the PySpark name. |
@@ -856,7 +856,7 @@ missing contract or native-PySpark remedy before the status can change.
 | --- | --- | --- | --- |
 | `expr` / `call_function` | `unsupported` | Raw SQL removes typed ownership. | Use a native PySpark boundary. |
 | Dynamic JSON | `caller-owned-guided` | Runtime inference cannot alter Schema. | Use declared parsing or native code. |
-| Sketch/bitmap | `implemented` | Baseline HLL/Bitmap opaque types and consumers are implemented and live-verified; KLL/Theta remain profile-gated, with profile-specific runtime evidence pending. | Use native PySpark for unsupported profiles or Count-Min/observation metrics. |
+| Sketch/bitmap | `implemented` | Baseline HLL/Bitmap opaque types and consumers are implemented and live-verified; KLL/Theta remain design-gated for V11, with profile-specific runtime evidence pending. | Use native PySpark for unsupported profiles or Count-Min/observation metrics. |
 | Generic generators | `caller-owned-guided` | Only `stack` has a fixed typed result contract; raw generators lack static schema and cardinality. | Use native PySpark at a declared result boundary. |
 | Writer partition transforms | `caller-owned-guided` | Output file layout remains separate from relation distribution and caller-owned. | Use native PySpark writer partition transforms. |
 | Variant mutation | `target-gated` | Released profile plus classic, Connect, generated/online, and streaming evidence. | Use the profile or native PySpark. |
@@ -879,6 +879,6 @@ Structure may use a more explicit typed API, but the gap row must show how a PyS
 ## Ownership and Updates
 
 The owning ExecPlan is [P09302601](../planning/past/P09302601.PySpark-SQL-baseline-gap-closeout.plan.md). Update this table
-with [Parity](../../compatibility/APITracker.md), [Function Gates](../gated/Functions.gates.md),
+with [APITracker.md](../../compatibility/APITracker.md), [Function Gates](../gated/Functions.gates.md),
 [API Catalog Deferred Work](../deferred/ApiCatalog.deferred.md), the public catalog, capability ledgers, API references,
 and tests whenever a disposition changes.
