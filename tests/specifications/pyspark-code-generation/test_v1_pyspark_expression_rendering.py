@@ -6,6 +6,7 @@ from structure import *
 from structure.core.compiler.api import Compiler
 from structure.core.target.capabilities.api import BackendCapabilityError
 from structure.plugin.pyspark import *
+from structure.plugin.pyspark import bit_length, character_length, endswith, lcase, startswith, ucase
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.plugin.pyspark.dsl.expressions import replace as replace_text
 
@@ -237,7 +238,9 @@ def test_v4_expression_renderer_renders_remaining_null_control_helpers() -> None
     assert render(projection["branch_label"], scope_aliases={"rows": "orders"}) == (
         'F.nvl2(F.col("orders.label"), F.lit(\'known\'), F.lit(\'unknown\'))'
     )
-    assert render(projection["amount"], scope_aliases={"rows": "orders"}) == 'F.zeroifnull(F.col("orders.amount"))'
+    assert render(projection["amount"], scope_aliases={"rows": "orders"}) == (
+        'F.coalesce(F.col("orders.amount"), F.lit(0).cast(T.DecimalType(12, 2)))'
+    )
 
 
 def test_expression_renderer_renders_typed_scalar_assertion_guards() -> None:
@@ -496,13 +499,25 @@ def test_v4_expression_renderer_renders_deterministic_numeric_functions() -> Non
         == 'F.pow(F.col("orders.amount"), F.lit(2))'
     )
     assert render(projection["natural_log"], scope_aliases={"rows": "orders"}) == 'F.log(F.col("orders.amount"))'
-    assert render(projection["base_ten_log"], scope_aliases={"rows": "orders"}) == 'F.log(10, F.col("orders.amount"))'
+    assert render(projection["base_ten_log"], scope_aliases={"rows": "orders"}) == (
+        'F.log(10.0, F.col("orders.amount"))'
+    )
     assert render(projection["exponent"], scope_aliases={"rows": "orders"}) == 'F.exp(F.col("orders.amount"))'
     assert render(projection["sign"], scope_aliases={"rows": "orders"}) == 'F.signum(F.col("orders.amount"))'
     assert render(projection["arc_cosine"], scope_aliases={"rows": "orders"}) == 'F.acos(F.col("orders.amount"))'
     assert render(projection["hypotenuse"], scope_aliases={"rows": "orders"}) == (
         'F.hypot(F.col("orders.amount"), F.lit(2))'
     )
+
+
+def test_numeric_aliases_render_with_the_pyspark_function_names() -> None:
+    render = PySpark.render.expression()
+
+    assert render(cast(Any, ceiling(1.2))) == "F.ceiling(F.lit(1.2))"
+    assert render(cast(Any, negate(1))) == "F.negate(F.lit(1))"
+    assert render(cast(Any, negative(1))) == "F.negative(F.lit(1))"
+    assert render(cast(Any, positive(1))) == "F.positive(F.lit(1))"
+    assert render(cast(Any, power(2, 3))) == "F.power(F.lit(2), F.lit(3))"
 
 
 def test_v4_expression_renderer_renders_trigonometric_and_logarithmic_functions() -> None:
@@ -654,7 +669,7 @@ def test_v4_expression_renderer_renders_remaining_admitted_numeric_functions() -
         least_value = integer(nullable=True)
         pmod_value = integer(nullable=True)
         converted_value = string(nullable=True)
-        bucket_value = integer(nullable=True)
+        bucket_value = long(nullable=True)
 
     @transform
     class Publish(Transform):
@@ -879,6 +894,9 @@ def test_v4_expression_renderer_renders_string_position_and_slicing_helpers() ->
     class Published(Schema):
         ascii_code = integer(nullable=True)
         character_count = integer(nullable=True)
+        character_count_alias = integer(nullable=True)
+        lower_alias = string(nullable=True)
+        upper_alias = string(nullable=True)
         first_three = string(nullable=True)
         last_three = string(nullable=True)
         located = integer(nullable=True)
@@ -898,6 +916,9 @@ def test_v4_expression_renderer_renders_string_position_and_slicing_helpers() ->
             return Published(
                 ascii_code=ascii(row.label),
                 character_count=char_length(row.label),
+                character_count_alias=character_length(row.label),
+                lower_alias=lcase(row.label),
+                upper_alias=ucase(row.label),
                 first_three=left(row.label, length=3),
                 last_three=right(row.label, length=3),
                 located=locate(row.label, substring="Ada", position=2),
@@ -917,6 +938,11 @@ def test_v4_expression_renderer_renders_string_position_and_slicing_helpers() ->
     assert render(projection["character_count"], scope_aliases={"rows": "orders"}) == (
         'F.char_length(F.col("orders.label"))'
     )
+    assert render(projection["character_count_alias"], scope_aliases={"rows": "orders"}) == (
+        'F.character_length(F.col("orders.label"))'
+    )
+    assert render(projection["lower_alias"], scope_aliases={"rows": "orders"}) == 'F.lcase(F.col("orders.label"))'
+    assert render(projection["upper_alias"], scope_aliases={"rows": "orders"}) == 'F.ucase(F.col("orders.label"))'
     assert render(projection["first_three"], scope_aliases={"rows": "orders"}) == (
         'F.left(F.col("orders.label"), 3)'
     )
@@ -1210,6 +1236,39 @@ def test_v3_expression_renderer_renders_string_predicates() -> None:
         'F.col("orders.status").like(\'new%\')',
         'F.col("orders.status").ilike(\'NEW%\')',
         "F.col(\"orders.status\").rlike('release-[0-9]+')",
+    ]
+
+
+def test_v3_expression_renderer_renders_function_form_string_boundaries() -> None:
+    class Raw(Schema):
+        value = string(nullable=True)
+        prefix = string(nullable=False)
+
+    class Published(Schema):
+        bits = integer(nullable=True)
+        has_prefix = boolean(nullable=True)
+        has_suffix = boolean(nullable=True)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(
+                bits=bit_length(row.value),
+                has_prefix=startswith(row.value, row.prefix),
+                has_suffix=endswith(row.value, "tail"),
+            )
+
+    recipe = _recipe(Publish)
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    assert [render(expression, scope_aliases={"rows": "orders"}) for expression in projection.values()] == [
+        'F.bit_length(F.col("orders.value"))',
+        'F.startswith(F.col("orders.value"), F.col("orders.prefix"))',
+        'F.endswith(F.col("orders.value"), F.lit(\'tail\'))',
     ]
 
 
@@ -1570,11 +1629,13 @@ def test_v3_expression_renderer_renders_struct_get_field() -> None:
 def test_v4_expression_renderer_renders_extended_string_helpers() -> None:
     class Raw(Schema):
         label = string(nullable=True)
+        trim_chars = string(nullable=True)
         candidates = string(nullable=False)
         amount = decimal(12, 2, nullable=True)
 
     class Published(Schema):
         cleaned = string(nullable=True)
+        custom_cleaned = string(nullable=True)
         present = boolean(nullable=True)
         index = integer(nullable=True)
         formatted = string(nullable=True)
@@ -1589,6 +1650,7 @@ def test_v4_expression_renderer_renders_extended_string_helpers() -> None:
         def publish(self, row: Raw) -> Published:
             return Published(
                 cleaned=btrim(row.label, trim="0"),
+                custom_cleaned=btrim(row.label, trim=row.trim_chars),
                 present=contains(row.label, "Ada"),
                 index=find_in_set(row.label, row.candidates),
                 formatted=format_number(row.amount, decimals=2),
@@ -1602,6 +1664,9 @@ def test_v4_expression_renderer_renders_extended_string_helpers() -> None:
 
     assert render(projection["cleaned"], scope_aliases={"rows": "orders"}) == (
         'F.btrim(F.col("orders.label"), \'0\')'
+    )
+    assert render(projection["custom_cleaned"], scope_aliases={"rows": "orders"}) == (
+        'F.btrim(F.col("orders.label"), F.col("orders.trim_chars"))'
     )
     assert render(projection["present"], scope_aliases={"rows": "orders"}) == (
         'F.contains(F.col("orders.label"), F.lit(\'Ada\'))'
@@ -1679,6 +1744,7 @@ def test_v4_expression_renderer_renders_sql_bitwise_helpers() -> None:
 
     class Published(Schema):
         count = long(nullable=True)
+        inverted = long(nullable=True)
         selected = integer(nullable=True)
         selected_alias = integer(nullable=True)
         shifted_left = long(nullable=True)
@@ -1693,6 +1759,7 @@ def test_v4_expression_renderer_renders_sql_bitwise_helpers() -> None:
         def publish(self, row: Raw) -> Published:
             return Published(
                 count=bit_count(row.flags),
+                inverted=bitwise_not(row.flags),
                 selected=bit_get(row.flags, row.position),
                 selected_alias=getbit(row.flags, row.position),
                 shifted_left=shiftleft(row.flags, bits=2),
@@ -1706,6 +1773,9 @@ def test_v4_expression_renderer_renders_sql_bitwise_helpers() -> None:
 
     assert render(projection["count"], scope_aliases={"rows": "orders"}) == (
         'F.bit_count(F.col("orders.flags"))'
+    )
+    assert render(projection["inverted"], scope_aliases={"rows": "orders"}) == (
+        'F.bitwise_not(F.col("orders.flags"))'
     )
     assert render(projection["selected"], scope_aliases={"rows": "orders"}) == (
         'F.bit_get(F.col("orders.flags"), F.col("orders.position"))'

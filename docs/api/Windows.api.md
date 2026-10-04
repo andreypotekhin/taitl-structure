@@ -20,6 +20,7 @@ as `o`, its customer key as `p`, and its event-time order key as `t`.
   direction and null placement.
 - `lag(...)` and `lead(...)` default to `offset=1`; use a compatible Python scalar literal with `default=` for an
   explicit fallback, including date and timestamp literals. Expression, collection, and object defaults are unsupported.
+  PySpark accepts expression-valued defaults; keep those calls in native PySpark.
 - `descending=` requires a Boolean direction flag.
 
 ## Rolling Windows
@@ -86,6 +87,8 @@ as `o`, its customer key as `p`, and its event-time order key as `t`.
 
 - `ntile(...)` needs a positive bucket count; `nth_value(...)` indexes from one.
 - `first_value(...)`, `last_value(...)`, and `nth_value(...)` support a Boolean `ignore_nulls=` in reusable-window form.
+  PySpark also permits an expression-valued `ignoreNulls`; Structure requires a Python Boolean, so use native PySpark
+  when that option varies by row.
 - Aggregate window helpers require an explicit row or range frame. A bounded range frame requires exactly one numeric
   order key; a fully unbounded range frame permits multiple order keys of any orderable scalar type.
 - Window `collect_list(...)` and `collect_set(...)` skip null inputs and return empty non-null arrays for empty frames.

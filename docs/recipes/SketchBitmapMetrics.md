@@ -75,9 +75,10 @@ collection.
 
 ## Merge HLL values deliberately
 
-When two HLL fields have the same declared `lg_config_k`, use `hll_union(left, right)`. A mismatch fails by default.
-Use `allow_different_lg_config_k=True` only for an intentional external compatibility case; it emits `SKETCH-W0802`
-because Spark may reduce precision.
+When two HLL fields have the same declared `lg_config_k`, use `hll_union(left, right)` in a row-preserving projection,
+or `hll_union_agg(value)` to merge grouped HLL state. A mismatch fails by default for pairwise union; Spark validates
+aggregate inputs. Use `allow_different_lg_config_k=True` only for an intentional external compatibility case; either
+form emits `SKETCH-W0802` because Spark may reduce precision.
 
 Do not persist these fields as a generic cross-engine Binary interchange format. The data remains Spark/profile
 specific. For streaming summaries, also satisfy the ordinary grouped-aggregate watermark and output-mode requirements.

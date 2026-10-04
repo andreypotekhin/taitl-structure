@@ -30,6 +30,7 @@ The default PySpark `>=3.5,<4.1` surface contains:
 | Family | Structure surface | Result |
 | --- | --- | --- |
 | HLL construction | `hll_sketch_agg(value, lg_config_k=12, where=None)` | Nullable opaque HLL state |
+| HLL aggregate union | `hll_union_agg(value, allow_different_lg_config_k=False, where=None)` | Nullable HLL state retaining declared precision |
 | HLL composition | `hll_union(left, right, allow_different_lg_config_k=False)` | HLL state retaining precision |
 | HLL consumption | `hll_sketch_estimate(value)` | Nullable Long estimate |
 | Bitmap construction | `bitmap_construct_agg(value, where=None)` | Nullable opaque Bitmap state |
@@ -37,16 +38,17 @@ The default PySpark `>=3.5,<4.1` surface contains:
 | Bitmap consumption | `bitmap_count(value)` | Nullable Long count |
 | Bitmap position helpers | `bitmap_bit_position(value)`, `bitmap_bucket_number(value)` | Nullable Long values |
 
-The construction and Bitmap OR forms are grouped metrics, so they change row grain. HLL union, HLL estimate, Bitmap
-count, and position helpers are scalar expressions and preserve one input row. Bitmap construction accepts Integer or
+HLL construction, HLL aggregate union, and Bitmap construction/OR are grouped metrics, so they change row grain.
+Pairwise HLL union, HLL estimate, Bitmap count, and position helpers are scalar expressions and preserve one input row. Bitmap construction accepts Integer or
 Long positions. HLL construction accepts a typed scalar expression and records a literal `lg_config_k` from 4 through
 21.
 
 ## Precision and composition
 
-HLL union requires equal `lg_config_k` precision by default. Passing
+HLL pairwise and aggregate union require equal `lg_config_k` precision by default. Passing
 `allow_different_lg_config_k=True` is an explicit interoperability choice and emits `SKETCH-W0802`; Spark may reduce
-the resulting precision. Structure does not infer or repair a runtime precision mismatch.
+the resulting precision. Aggregate union retains the declared precision in Structure's result type, while Spark
+validates actual serialized inputs. Structure does not repair a runtime precision mismatch.
 
 Bitmap OR accepts only branded Bitmap values. It does not admit raw Binary, a Python byte string, or an HLL value as a
 substitute. HLL and Bitmap consumers similarly reject any value outside their declared opaque family.

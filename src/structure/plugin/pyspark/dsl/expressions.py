@@ -45,7 +45,7 @@ if TYPE_CHECKING:
     from structure.plugin.pyspark.dsl.RowScope import RowScope
 
 __all__ = [
-    "abs", "assert_true", "base64", "bin", "bround", "ceil", "coalesce", "concat_ws", "conv", "date_add", "date_sub", "date_trunc", "datediff",
+    "abs", "assert_true", "base64", "bit_length", "bin", "bround", "ceil", "coalesce", "concat_ws", "conv", "date_add", "date_sub", "date_trunc", "datediff",
     "dayofmonth", "dayofweek", "dayofyear", "event_time_between", "exp", "floor", "from_csv", "from_json", "hash", "hour", "ifnull", "initcap",
     "instr", "isnan", "isnotnull", "isnull", "CsvOptions", "JsonOptions", "length", "levenshtein", "literal", "log",
     "get_json_object", "json_array_length", "json_object_keys", "schema_of_csv", "schema_of_json",
@@ -53,7 +53,7 @@ __all__ = [
     "minute", "month", "nanvl", "nullif", "nvl", "nvl2", "pow", "regexp_extract", "regexp_replace", "repeat", "replace", "reverse",
     "round", "rpad", "rtrim", "sha1", "sha2", "second", "signum", "split", "sqrt", "substring", "to_csv", "to_date",
     "to_binary", "to_decimal", "to_json", "to_timestamp", "to_timestamp_ntz", "translate", "trim", "trunc", "unbase64", "decode", "encode", "try_to_binary", "from_unixtime", "unix_timestamp", "to_utc_timestamp", "from_utc_timestamp", "date_part", "datepart", "hex", "unhex", "upper", "ascii", "btrim", "char", "char_length", "date_format", "find_in_set", "format_number", "last_day", "left", "locate", "mask", "octet_length", "overlay", "position", "quarter", "right", "soundex", "split_part", "substring_index", "regexp_count", "regexp_extract_all", "regexp_instr", "regexp_substr", "weekofyear", "bit_count", "bit_get", "getbit",
-    "when", "width_bucket", "xxhash64", "year", "zeroifnull", "acos", "acosh", "asin", "asinh", "atan", "atan2", "atanh", "cbrt", "cos", "cosh", "cot", "csc", "degrees", "e", "expm1", "factorial", "greatest", "hypot", "least", "ln", "log10", "log1p", "log2", "pmod", "pi", "radians", "rint", "sec", "sign", "sin", "sinh", "tan", "tanh", "add_months", "months_between", "next_day", "rand", "randn", "equal_null", "like", "ilike", "regexp", "regexp_like", "rlike", "date_from_unix_date", "unix_date", "weekday", "shiftleft", "shiftright", "shiftrightunsigned", "is_valid_variant", "is_variant_null", "parse_json",
+    "when", "width_bucket", "xxhash64", "year", "zeroifnull", "acos", "acosh", "asin", "asinh", "atan", "atan2", "atanh", "cbrt", "cos", "cosh", "cot", "csc", "degrees", "e", "expm1", "factorial", "greatest", "hypot", "least", "ln", "log10", "log1p", "log2", "pmod", "pi", "radians", "rint", "sec", "sign", "sin", "sinh", "tan", "tanh", "ceiling", "negate", "negative", "positive", "power", "bitwise_not", "add_months", "months_between", "next_day", "rand", "randn", "equal_null", "like", "ilike", "regexp", "regexp_like", "rlike", "startswith", "endswith", "date_from_unix_date", "unix_date", "weekday", "shiftleft", "shiftright", "shiftrightunsigned", "is_valid_variant", "is_variant_null", "parse_json",
     "schema_of_variant", "to_variant_object", "try_parse_json", "try_variant_get", "variant_get", "variant_literal",
     "variant_array_append", "try_variant_array_append", "variant_insert", "try_variant_insert", "variant_set",
     "try_variant_set", "variant_delete",
@@ -234,6 +234,11 @@ def lower(value: object) -> Expression:
     return _string_call("lower", value)
 
 
+def lcase(value: object) -> Expression:
+    """Lowercase a string expression using PySpark's ``lcase`` spelling."""
+    return _string_call("lcase", value)
+
+
 def ltrim(value: object) -> Expression:
     """Trim leading whitespace from a string expression, like Spark ``ltrim``."""
     return _string_call("ltrim", value)
@@ -249,22 +254,37 @@ def trim(value: object) -> Expression:
     return _string_call("trim", value)
 
 
-def btrim(value: object, *, trim: str = " ") -> Expression:
-    """Trim literal characters from both ends of a string expression."""
+def btrim(value: object, *, trim: object = " ") -> Expression:
+    """Trim characters from both ends of a string expression.
+
+    ``trim`` may be a compiler-visible String expression, matching PySpark's
+    column-valued trim argument.
+    """
     argument = _string_argument(value, "btrim(...)")
-    _string_literal(trim, "btrim(...)", "trim")
+    trim_argument = _string_argument(trim, "btrim(...)")
+    data: dict[str, object] = {"function": "btrim"}
+    args = (argument, trim_argument)
+    if trim_argument.kind == "literal":
+        trim_value = (trim_argument.data or {}).get("value")
+        assert isinstance(trim_value, str)
+        data["trim"] = trim_value
     return Expression(
         kind="call",
         type=StringType(),
-        nullable=argument.nullable,
-        data={"function": "btrim", "trim": trim},
-        args=(argument,),
+        nullable=argument.nullable or trim_argument.nullable,
+        data=data,
+        args=args,
     )
 
 
 def upper(value: object) -> Expression:
     """Uppercase a string expression, like Spark ``upper``."""
     return _string_call("upper", value)
+
+
+def ucase(value: object) -> Expression:
+    """Uppercase a string expression using PySpark's ``ucase`` spelling."""
+    return _string_call("ucase", value)
 
 
 def url_encode(value: object) -> Expression:
@@ -1047,6 +1067,18 @@ def length(value: object) -> Expression:
     )
 
 
+def bit_length(value: object) -> Expression:
+    """Return the number of bits in a String or Binary expression."""
+    argument = _string_or_binary_argument(value, "bit_length(...)")
+    return Expression(
+        kind="call",
+        type=IntegerType(),
+        nullable=argument.nullable,
+        data={"function": "bit_length"},
+        args=(argument,),
+    )
+
+
 def ascii(value: object) -> Expression:
     """Return the numeric value of the first character in a string."""
     argument = _string_argument(value, "ascii(...)")
@@ -1066,6 +1098,18 @@ def char_length(value: object) -> Expression:
     argument = _string_argument(value, "char_length(...)")
     return Expression(
         kind="call", type=IntegerType(), nullable=argument.nullable, data={"function": "char_length"}, args=(argument,)
+    )
+
+
+def character_length(value: object) -> Expression:
+    """Return character length using PySpark's ``character_length`` spelling."""
+    argument = _string_argument(value, "character_length(...)")
+    return Expression(
+        kind="call",
+        type=IntegerType(),
+        nullable=argument.nullable,
+        data={"function": "character_length"},
+        args=(argument,),
     )
 
 
@@ -1174,6 +1218,16 @@ def regexp_like(value: object, pattern: object) -> Expression:
 def rlike(value: object, pattern: object) -> Expression:
     """Match a String expression against a regular expression."""
     return _string_match_call("rlike", value, pattern)
+
+
+def startswith(value: object, prefix: object) -> Expression:
+    """Return whether a String or Binary expression starts with ``prefix``."""
+    return _string_or_binary_match_call("startswith", value, prefix)
+
+
+def endswith(value: object, suffix: object) -> Expression:
+    """Return whether a String or Binary expression ends with ``suffix``."""
+    return _string_or_binary_match_call("endswith", value, suffix)
 
 
 def format_number(value: object, *, decimals: int) -> Expression:
@@ -1565,17 +1619,36 @@ def _interval_call(function: str, result_type: IntervalType, values: tuple[objec
                       data={"function": function}, args=arguments)
 
 
-def date_sub(value: object, *, days: int) -> Expression:
-    """Subtract whole days from a Date or Timestamp expression."""
+def date_sub(value: object, *, days: object) -> Expression:
+    """Subtract whole days from a Date or Timestamp expression.
+
+    Args:
+        value: Date or Timestamp expression.
+        days: Integer literal or integral Structure expression.
+
+    Returns:
+        A Date expression, following PySpark ``date_sub``.
+    """
     argument = _date_or_timestamp_argument(value, "date_sub(...)")
-    if isinstance(days, bool) or not isinstance(days, int):
-        raise TypeError("date_sub(...) days must be an integer")
+    if isinstance(days, bool):
+        raise TypeError("date_sub(...) days must be an integer or integral Structure expression")
+    if isinstance(days, int):
+        return Expression(
+            kind="call",
+            type=DateType(),
+            nullable=argument.nullable,
+            data={"function": "date_sub", "days": days},
+            args=(argument,),
+        )
+    day_count = literal(days)
+    if not isinstance(day_count.type, (IntegerType, LongType)):
+        raise TypeError("date_sub(...) days must be an integer or integral Structure expression")
     return Expression(
         kind="call",
         type=DateType(),
-        nullable=argument.nullable,
-        data={"function": "date_sub", "days": days},
-        args=(argument,),
+        nullable=argument.nullable or day_count.nullable,
+        data={"function": "date_sub"},
+        args=(argument, day_count),
     )
 
 
@@ -2092,6 +2165,12 @@ def bit_count(value: object) -> Expression:
     )
 
 
+def bitwise_not(value: object) -> Expression:
+    """Return the integral bitwise complement, preserving PySpark's function spelling."""
+    argument = _integral_argument(value, "bitwise_not(...)")
+    return Expression(kind="bitwise_not", type=argument.type, nullable=argument.nullable, args=(argument,))
+
+
 def bit_get(value: object, position: object) -> Expression:
     """Return the bit at an integral position in an integral expression."""
     return _bit_position_call("bit_get", value, position)
@@ -2312,6 +2391,18 @@ def ceil(value: object) -> Expression:
     )
 
 
+def ceiling(value: object) -> Expression:
+    """Return the ceiling of a numeric expression, preserving PySpark's name."""
+    argument = _numeric_argument(value, "ceiling(...)")
+    return Expression(
+        kind="call",
+        type=_ceiling_type(argument.type),
+        nullable=argument.nullable,
+        data={"function": "ceiling"},
+        args=(argument,),
+    )
+
+
 def floor(value: object) -> Expression:
     """Return the floor of a numeric expression."""
     argument = _numeric_argument(value, "floor(...)")
@@ -2342,6 +2433,34 @@ def pow(value: object, exponent: object) -> Expression:
     )
 
 
+def power(value: object, exponent: object) -> Expression:
+    """Raise a numeric expression to a power, preserving PySpark's name."""
+    base = _numeric_argument(value, "power(...)")
+    exponent_argument = _numeric_argument(exponent, "power(...)")
+    return Expression(
+        kind="call",
+        type=DoubleType(),
+        nullable=base.nullable or exponent_argument.nullable,
+        data={"function": "power"},
+        args=(base, exponent_argument),
+    )
+
+
+def negate(value: object) -> Expression:
+    """Negate a numeric expression using PySpark's ``negate`` function name."""
+    return _numeric_unary_call("negate", value)
+
+
+def negative(value: object) -> Expression:
+    """Negate a numeric expression using PySpark's ``negative`` function name."""
+    return _numeric_unary_call("negative", value)
+
+
+def positive(value: object) -> Expression:
+    """Return a numeric expression using PySpark's ``positive`` function name."""
+    return _numeric_unary_call("positive", value)
+
+
 def pi() -> Expression:
     """Return pi as a non-null Double expression."""
     return _constant_double_call("pi")
@@ -2354,7 +2473,7 @@ def unhex(value: object) -> Expression:
 
 
 def width_bucket(value: object, minimum: object, maximum: object, *, num_buckets: int) -> Expression:
-    """Return a nullable integer histogram bucket for compatible numeric values."""
+    """Return a nullable Long histogram bucket for compatible numeric values."""
     arguments = tuple(_numeric_argument(item, "width_bucket(...)") for item in (value, minimum, maximum))
     if any(argument.type is None for argument in arguments):
         raise AssertionError("numeric argument validation must reject untyped expressions")
@@ -2362,7 +2481,7 @@ def width_bucket(value: object, minimum: object, maximum: object, *, num_buckets
     _common_numeric_type("width_bucket(...)", tuple(argument.type for argument in arguments if argument.type is not None))
     return Expression(
         kind="call",
-        type=IntegerType(),
+        type=LongType(),
         nullable=True,
         data={"function": "width_bucket", "num_buckets": num_buckets},
         args=arguments,
@@ -2713,6 +2832,17 @@ def _string_match_call(function: str, value: object, pattern: object) -> Express
         _string_argument(argument, f"{function}(...)")
         for argument in (value, pattern)
     )
+    return Expression(
+        kind="call",
+        type=BooleanType(),
+        nullable=any(argument.nullable for argument in arguments),
+        data={"function": function},
+        args=arguments,
+    )
+
+
+def _string_or_binary_match_call(function: str, value: object, pattern: object) -> Expression:
+    arguments = tuple(_string_or_binary_argument(argument, f"{function}(...)") for argument in (value, pattern))
     return Expression(
         kind="call",
         type=BooleanType(),
@@ -3197,6 +3327,19 @@ def _numeric_argument(value: object, call: str) -> Expression:
     if argument.type is None or argument.type.name not in {"decimal", "double", "float", "integer", "long"}:
         raise TypeError(f"{call} requires a numeric Structure expression")
     return argument
+
+
+def _numeric_unary_call(function: str, value: object) -> Expression:
+    argument = _numeric_argument(value, f"{function}(...)")
+    if argument.type is None:
+        raise AssertionError("numeric argument validation must reject untyped expressions")
+    return Expression(
+        kind="call",
+        type=argument.type,
+        nullable=argument.nullable,
+        data={"function": function},
+        args=(argument,),
+    )
 
 
 def _double_numeric_call(function: str, value: object) -> Expression:

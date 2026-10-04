@@ -5,7 +5,7 @@ import pytest
 from structure import *
 from structure.plugin.pyspark import *
 from structure.plugin.pyspark.dsl.Expression import Expression
-from structure.plugin.pyspark.dsl.types import ArrayType, DecimalType
+from structure.plugin.pyspark.dsl.types import ArrayType, DecimalType, StructType
 from structure.plugin.pyspark.dsl.windows import WindowFrame
 
 
@@ -95,10 +95,33 @@ def test_mode_preserves_candidate_type_and_deterministic_tie_contract() -> None:
         mode(array("category"), deterministic=True)
 
 
+def test_histogram_numeric_preserves_input_type_and_requires_declared_foldable_buckets() -> None:
+    class DecimalBucket(Schema):
+        x = decimal(8, 2, nullable=True)
+        y = double(nullable=True)
+
+    value = Expression(kind="value", type=DecimalType(8, 2), nullable=True)
+    histogram = histogram_numeric(value, 12, as_=DecimalBucket)
+
+    assert isinstance(histogram.type, ArrayType)
+    assert histogram.type.contains_null is True
+    assert isinstance(histogram.type.element, StructType)
+    assert histogram.type.element.schema is DecimalBucket
+    assert histogram.nullable is True
+    with pytest.raises(ValueError, match="from 2 through 2147483647"):
+        histogram_numeric(value, 1, as_=DecimalBucket)
+    with pytest.raises(TypeError, match="foldable integer literal"):
+        histogram_numeric(value, Expression(kind="value", type=types.integer(), nullable=False), as_=DecimalBucket)
+    wrong_bucket = type("WrongBucket", (Schema,), {"x": double(), "y": double(nullable=True)})
+    with pytest.raises(TypeError, match=r"as_\.x must be nullable and match"):
+        histogram_numeric(value, 12, as_=wrong_bucket)
+
+
 def test_advanced_aggregate_helpers_preserve_result_contracts() -> None:
     required_text = Expression(kind="text", type=types.string(), nullable=False)
     nullable_text = Expression(kind="nullable_text", type=types.string(), nullable=True)
     required_number = Expression(kind="number", type=types.long(), nullable=False)
+    required_boolean = Expression(kind="predicate", type=types.boolean(), nullable=False)
 
     selected = any_value(nullable_text, ignore_nulls=True)
     collected = array_agg(required_text)
@@ -119,6 +142,10 @@ def test_advanced_aggregate_helpers_preserve_result_contracts() -> None:
         regr_sxy(required_number, required_number),
         regr_syy(required_number, required_number),
     )
+    population_covariance = covar_pop(required_number, required_number)
+    mean_alias = mean(required_number)
+    std_alias = std(required_number)
+    some_alias = some(required_boolean)
 
     assert selected.type is nullable_text.type
     assert selected.nullable is True
@@ -138,6 +165,11 @@ def test_advanced_aggregate_helpers_preserve_result_contracts() -> None:
     assert regression_results[2].type is not None and regression_results[2].type.name == "long"
     assert regression_results[2].nullable is False
     assert all(result.type is not None and result.type.name == "double" and result.nullable for result in regression_results[3:])
+    assert population_covariance.type is not None and population_covariance.type.name == "double"
+    assert population_covariance.nullable is True
+    assert mean_alias.type is not None and mean_alias.type.name == "double" and mean_alias.nullable is False
+    assert std_alias.type is not None and std_alias.type.name == "double" and std_alias.nullable is True
+    assert some_alias.type is not None and some_alias.type.name == "boolean" and some_alias.nullable is False
 
     with pytest.raises(TypeError, match="ignore_nulls must be a Boolean"):
         any_value(required_text, ignore_nulls=cast(bool, "yes"))

@@ -69,9 +69,12 @@ already typed Date/LTZ inputs warns, as does a generic NTZ constructor given a t
 `types.interval(...)` selects one exact qualifier via `type=` or `unit=`. `interval(...)` requires exactly the
 corresponding components and casts Spark's `make_ym_interval`/`make_dt_interval` result to that qualifier. The public
 Spark constructors remain available. YearMonth and DayTime qualifiers can appear in Schema. Mixed Calendar intervals
-remain expression-only on 3.5; 4.0 may declare them, subject to PySpark's Python Row conversion behavior. Arithmetic
-preserves interval families and types date/timestamp subtraction as DayTime or Calendar according to the legacy
-setting. Target-specific runtime evidence remains a release gate.
+remain expression-only on 3.5; 4.0 may declare them, subject to PySpark's Python Row conversion behavior. Live checks
+confirm interval arithmetic and date shifts across classic and Connect targets. Adding a Calendar interval to a Date
+returns Date. DayTime interval values convert to Python `timedelta`; YearMonth conversion varies by runtime (it failed
+in PySpark 4.0 classic and Spark Connect Arrow conversion), while Calendar values fail conversion in both tested 4.0
+paths. Keep interval values inside SQL expressions and collect a non-interval result. Arithmetic preserves interval
+families and types date/timestamp subtraction as DayTime or Calendar according to the legacy setting.
 
 ## AES-GCM equivalent
 

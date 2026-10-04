@@ -37,7 +37,9 @@ Schema declarations define Structure's typed row contract and materialize to Spa
 - `field.interval(...)` and `types.interval(...)` require exactly one of `type=` (a compound qualifier such as
   `Interval.YEAR_TO_MONTH`) or `unit=` (one field such as `Interval.DAY`). The qualifier is preserved in generated
   `YearMonthIntervalType` or `DayTimeIntervalType`. `Interval.CALENDAR` is expression-only on PySpark 3.5 and may be
-  declared in PySpark 4.0 schemas, where Python Row conversion remains governed by PySpark.
+  declared in PySpark 4.0 schemas. DayTime values convert to Python `timedelta`; YearMonth and Calendar Row
+  conversion is not portable (and fails in tested PySpark 4.0/Connect paths). Use interval fields in expressions and
+  select non-interval outputs for collection.
 - `variant(...)` declares Spark's opaque semi-structured `VariantType`. It preserves schema and field nullability only.
   A transform using it must resolve to a PySpark 4 profile, including when that profile comes from
   `[tool.structure.plugin.pyspark]`.

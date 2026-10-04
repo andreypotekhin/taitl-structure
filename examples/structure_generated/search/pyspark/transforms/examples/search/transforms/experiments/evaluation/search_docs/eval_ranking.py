@@ -249,7 +249,7 @@ class EvaluateDocumentRankingGenerated:
                         (F.col("evaluation_judgment.ideal_rank") <= F.lit(5)),
                         (
                             (F.pow(F.lit(2.0), F.col("evaluation_judgment.relevance_grade")) - F.lit(1.0))
-                            / F.log(2, (F.col("evaluation_judgment.ideal_rank") + F.lit(1.0)))
+                            / F.log(2.0, (F.col("evaluation_judgment.ideal_rank") + F.lit(1.0)))
                         ),
                     ).otherwise(F.lit(0.0))
                 )
@@ -260,7 +260,7 @@ class EvaluateDocumentRankingGenerated:
                         (F.col("evaluation_judgment.ideal_rank") <= F.lit(10)),
                         (
                             (F.pow(F.lit(2.0), F.col("evaluation_judgment.relevance_grade")) - F.lit(1.0))
-                            / F.log(2, (F.col("evaluation_judgment.ideal_rank") + F.lit(1.0)))
+                            / F.log(2.0, (F.col("evaluation_judgment.ideal_rank") + F.lit(1.0)))
                         ),
                     ).otherwise(F.lit(0.0))
                 )
@@ -271,7 +271,7 @@ class EvaluateDocumentRankingGenerated:
                         (F.col("evaluation_judgment.ideal_rank") <= F.lit(15)),
                         (
                             (F.pow(F.lit(2.0), F.col("evaluation_judgment.relevance_grade")) - F.lit(1.0))
-                            / F.log(2, (F.col("evaluation_judgment.ideal_rank") + F.lit(1.0)))
+                            / F.log(2.0, (F.col("evaluation_judgment.ideal_rank") + F.lit(1.0)))
                         ),
                     ).otherwise(F.lit(0.0))
                 )
@@ -405,7 +405,7 @@ class EvaluateDocumentRankingGenerated:
                                 F.pow(F.lit(2.0), F.coalesce(F.col("evaluation_result.relevance_grade"), F.lit(0)))
                                 - F.lit(1.0)
                             )
-                            / F.log(2, (F.col("evaluation_result.rank") + F.lit(1.0)))
+                            / F.log(2.0, (F.col("evaluation_result.rank") + F.lit(1.0)))
                         ),
                     ).otherwise(F.lit(0.0))
                 )
@@ -419,7 +419,7 @@ class EvaluateDocumentRankingGenerated:
                                 F.pow(F.lit(2.0), F.coalesce(F.col("evaluation_result.relevance_grade"), F.lit(0)))
                                 - F.lit(1.0)
                             )
-                            / F.log(2, (F.col("evaluation_result.rank") + F.lit(1.0)))
+                            / F.log(2.0, (F.col("evaluation_result.rank") + F.lit(1.0)))
                         ),
                     ).otherwise(F.lit(0.0))
                 )
@@ -433,7 +433,7 @@ class EvaluateDocumentRankingGenerated:
                                 F.pow(F.lit(2.0), F.coalesce(F.col("evaluation_result.relevance_grade"), F.lit(0)))
                                 - F.lit(1.0)
                             )
-                            / F.log(2, (F.col("evaluation_result.rank") + F.lit(1.0)))
+                            / F.log(2.0, (F.col("evaluation_result.rank") + F.lit(1.0)))
                         ),
                     ).otherwise(F.lit(0.0))
                 )

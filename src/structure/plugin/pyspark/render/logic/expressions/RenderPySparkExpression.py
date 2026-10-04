@@ -598,12 +598,19 @@ class RenderPySparkExpression:
     def _call(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:
         function = expression.data["function"]
         args = [self._render(argument, aliases) for argument in expression.args]
-        if function in {"lower", "ltrim", "rtrim", "trim", "upper", "url_encode", "url_decode", "try_url_decode"}:
+        if function in {"lower", "lcase", "ltrim", "rtrim", "trim", "upper", "ucase", "url_encode", "url_decode", "try_url_decode"}:
             return f"F.{function}({args[0]})"
         if function == "btrim":
-            return f"F.btrim({args[0]}, {expression.data['trim']!r})"
+            trim = expression.data.get("trim")
+            return (
+                f"F.btrim({args[0]}, {trim!r})"
+                if isinstance(trim, str)
+                else f"F.btrim({args[0]}, {args[1]})"
+            )
         if function == "contains":
             return f"F.contains({args[0]}, {args[1]})"
+        if function in {"startswith", "endswith"}:
+            return f"F.{function}({args[0]}, {args[1]})"
         if function in {"like", "ilike", "regexp", "regexp_like", "rlike"}:
             return f"F.{function}({args[0]}, {args[1]})"
         if function in {"base64", "unbase64"}:
@@ -696,7 +703,11 @@ class RenderPySparkExpression:
         if function == "nvl2":
             return f"F.nvl2({args[0]}, {args[1]}, {args[2]})"
         if function == "zeroifnull":
-            return f"F.zeroifnull({args[0]})"
+            argument_type = expression.args[0].type
+            if argument_type is None:
+                raise TypeError("zeroifnull(...) requires a typed numeric expression")
+            zero = f"F.lit(0).cast({self._inline_type(argument_type)})"
+            return f"F.coalesce({args[0]}, {zero})"
         if function == "nullif":
             return f"F.nullif({args[0]}, {args[1]})"
         if function == "nanvl":
@@ -739,7 +750,7 @@ class RenderPySparkExpression:
             return f"F.regexp_substr({args[0]}, {expression.data['pattern']!r})"
         if function in {"lpad", "rpad"}:
             return f"F.{function}({args[0]}, {expression.data['length']}, {expression.data['pad']!r})"
-        if function in {"ascii", "char", "char_length", "length", "octet_length", "soundex"}:
+        if function in {"ascii", "bit_length", "char", "char_length", "character_length", "length", "octet_length", "soundex"}:
             return f"F.{function}({args[0]})"
         if function in {"left", "right", "repeat"}:
             parameter = "length" if function in {"left", "right"} else "count"
@@ -794,7 +805,8 @@ class RenderPySparkExpression:
             source = f"F.{builder}({', '.join(args)})"
             return source if kind == "calendar" else f"{source}.cast({expression.type.sql!r})"
         if function == "date_sub":
-            return f"F.date_sub({args[0]}, {expression.data['days']})"
+            days = expression.data.get("days", args[1] if len(args) == 2 else None)
+            return f"F.date_sub({args[0]}, {days})"
         if function == "add_months":
             months = expression.data.get("months", args[1] if len(args) == 2 else None)
             return f"F.add_months({args[0]}, {months})"
@@ -891,15 +903,20 @@ class RenderPySparkExpression:
             return f"F.round({args[0]}, {expression.data['scale']})"
         if function == "bround":
             return f"F.bround({args[0]}, {expression.data['scale']})"
-        if function in {"ceil", "floor"}:
+        if function in {"ceil", "ceiling", "floor"}:
             return f"F.{function}({args[0]})"
-        if function in {"sqrt", "exp", "signum"}:
+        if function in {"sqrt", "exp", "signum", "negate", "negative", "positive"}:
             return f"F.{function}({args[0]})"
-        if function == "pow":
-            return f"F.pow({args[0]}, {args[1]})"
+        if function in {"pow", "power"}:
+            return f"F.{function}({args[0]}, {args[1]})"
         if function == "log":
+            base = expression.data.get("base")
+            if base is not None and (isinstance(base, bool) or not isinstance(base, (int, float))):
+                raise TypeError("log base metadata must be a numeric literal")
             return (
-                f"F.log({expression.data['base']!r}, {args[0]})" if "base" in expression.data else f"F.log({args[0]})"
+                f"F.log({float(base)!r}, {args[0]})"
+                if base is not None
+                else f"F.log({args[0]})"
             )
         raise TypeError(f"Unsupported PySpark helper call: {function}")
 

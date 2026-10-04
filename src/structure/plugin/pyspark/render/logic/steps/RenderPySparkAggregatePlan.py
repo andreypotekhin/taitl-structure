@@ -112,7 +112,7 @@ class RenderPySparkAggregatePlan:
                     )
             lines.append("        ).agg(")
             for assignment in aggregate.assignments:
-                if assignment.function not in {"key", "grouping_id", "is_grouped"}:
+                if assignment.function not in {"key", "grouping_id", "grouping", "is_grouped"}:
                     lines.append(
                         f"            {self._step._aggregate_assignment(assignment, step=step, aggregate=aggregate, key_columns=key_columns, backend_target=backend_target)},"
                     )

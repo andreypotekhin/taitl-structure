@@ -11,6 +11,7 @@ from structure.plugin.pyspark.dsl.expressions import (
     now,
 )
 from structure.plugin.pyspark.dsl.operations_api import bitmap_construct_agg, hll_sketch_agg
+from structure.plugin.pyspark.dsl.operations_api import hll_union_agg as merge_hll_agg
 from structure.plugin.pyspark.dsl.types import BitmapType, HllSketchType, LongType, StringType
 from structure.plugin.pyspark.render.logic.expressions.RenderPySparkExpression import RenderPySparkExpression
 
@@ -62,3 +63,21 @@ def test_opaque_sketch_contract_preserves_brands_and_precision_guard():
     union = hll_union(first, second, allow_different_lg_config_k=True)
     assert union.data is not None
     assert union.data["warnings"] == ("SKETCH-W0802",)
+
+
+def test_hll_aggregate_union_preserves_input_brand_and_warns_for_mixed_precision():
+    state = hll_sketch_agg(1, lg_config_k=12)
+    merged = merge_hll_agg(state)
+    assert merged.kind == "aggregate"
+    assert merged.type == state.type
+    assert merged.nullable is True
+    assert merged.data is not None
+    assert merged.data["allow_different_lg_config_k"] is False
+
+    mixed = merge_hll_agg(state, allow_different_lg_config_k=True)
+    assert mixed.type == state.type
+    assert mixed.data is not None
+    assert mixed.data["warnings"] == ("SKETCH-W0802",)
+
+    with pytest.raises(TypeError, match="opaque HLL"):
+        merge_hll_agg(1)

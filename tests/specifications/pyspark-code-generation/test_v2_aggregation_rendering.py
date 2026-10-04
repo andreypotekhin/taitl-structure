@@ -5,7 +5,9 @@ import pytest
 from structure import *
 from structure.core.cli.api import CliApp
 from structure.core.compiler.api import Compiler
+from structure.core.target.capabilities.api import BackendCapabilityError
 from structure.plugin.pyspark import *
+from structure.plugin.pyspark import hll_sketch
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.plugin.pyspark.dsl.expressions import literal
 from structure.plugin.pyspark.render.commands.RenderPySparkStep import render_pyspark_step
@@ -57,6 +59,7 @@ class AdvancedCustomerTotal(Schema):
     customer_id = string(nullable=True)
     paid_quantity = long(nullable=True)
     any_large = boolean(nullable=True)
+    all_positive = boolean(nullable=False)
     quantity_stddev = double(nullable=True)
     quantity_stddev_pop = double(nullable=True)
     quantity_stddev_samp = double(nullable=True)
@@ -95,6 +98,10 @@ class ExtendedAggregateTotal(Schema):
     regression_sxx = double(nullable=True)
     regression_sxy = double(nullable=True)
     regression_syy = double(nullable=True)
+    population_covariance = double(nullable=True)
+    average_alias = double(nullable=True)
+    sample_std_alias = double(nullable=True)
+    some_positive = boolean(nullable=False)
 
 
 class LabelEntry(Schema):
@@ -118,8 +125,50 @@ class GroupingSetTotal(Schema):
     customer_id = string(nullable=True)
     order_count = long(nullable=False)
     grouping_id = integer(nullable=False)
+    region_grouping = integer(nullable=False)
     region_grouped = boolean(nullable=False)
     customer_grouped = boolean(nullable=False)
+
+
+class HllStateInput(Schema):
+    tenant_id = string(nullable=False)
+    bucket_id = string(nullable=False)
+    state = hll_sketch(lg_config_k=12, nullable=True)
+
+
+class HllStateTotal(Schema):
+    tenant_id = string(nullable=False)
+    state = hll_sketch(lg_config_k=12, nullable=True)
+
+
+class HistogramBucket(Schema):
+    x = double(nullable=True)
+    y = double(nullable=True)
+
+
+class HistogramInput(Schema):
+    group = string(nullable=False)
+    value = double(nullable=True)
+
+
+class HistogramOutput(Schema):
+    group = string(nullable=False)
+    buckets = array(struct(HistogramBucket), contains_null=True, nullable=True)
+
+
+class DecimalHistogramBucket(Schema):
+    x = decimal(8, 2, nullable=True)
+    y = double(nullable=True)
+
+
+class DecimalHistogramInput(Schema):
+    group = string(nullable=False)
+    value = decimal(8, 2, nullable=True)
+
+
+class DecimalHistogramOutput(Schema):
+    group = string(nullable=False)
+    buckets = array(struct(DecimalHistogramBucket), contains_null=True, nullable=True)
 
 
 class GrandTotal(Schema):
@@ -178,6 +227,7 @@ class AdvancedCustomerTotals(Transform):
             customer_id=row.customer_id,
             paid_quantity=sum(row.quantity, where=literal(row.quantity) > 0),
             any_large=bool_or(literal(row.quantity) > 10),
+            all_positive=every(row.quantity > 0),
             quantity_stddev=stddev(row.quantity),
             quantity_stddev_pop=stddev_pop(row.quantity),
             quantity_stddev_samp=stddev_samp(row.quantity),
@@ -224,6 +274,10 @@ class ExtendedAggregateTotals(Transform):
             regression_sxx=regr_sxx(row.quantity, row.quantity),
             regression_sxy=regr_sxy(row.quantity, row.quantity),
             regression_syy=regr_syy(row.quantity, row.quantity),
+            population_covariance=covar_pop(row.quantity, row.quantity),
+            average_alias=mean(row.quantity),
+            sample_std_alias=std(row.quantity),
+            some_positive=some(row.quantity > 0),
         )
 
 
@@ -239,8 +293,42 @@ class SaleGroupingSets(Transform):
             customer_id=row.customer_id,
             order_count=count(),
             grouping_id=grouping_id(),
+            region_grouping=grouping(row.region),
             region_grouped=is_grouped(row.region),
             customer_grouped=is_grouped(row.customer_id),
+        )
+
+
+@transform
+class MergeHllStates(Transform):
+    rows = input(HllStateInput)
+    totals = output(HllStateTotal)
+
+    def summarize(self, row: HllStateInput) -> HllStateTotal:
+        group_by(row.tenant_id)
+        return HllStateTotal(tenant_id=row.tenant_id, state=hll_union_agg(row.state))
+
+
+@transform
+class NumericHistogram(Transform):
+    rows = input(HistogramInput)
+    totals = output(HistogramOutput)
+
+    def summarize(self, row: HistogramInput) -> HistogramOutput:
+        group_by(row.group)
+        return HistogramOutput(group=row.group, buckets=histogram_numeric(row.value, 3, as_=HistogramBucket))
+
+
+@transform
+class DecimalNumericHistogram(Transform):
+    rows = input(DecimalHistogramInput)
+    totals = output(DecimalHistogramOutput)
+
+    def summarize(self, row: DecimalHistogramInput) -> DecimalHistogramOutput:
+        group_by(row.group)
+        return DecimalHistogramOutput(
+            group=row.group,
+            buckets=histogram_numeric(row.value, 3, as_=DecimalHistogramBucket),
         )
 
 
@@ -408,6 +496,7 @@ def test_advanced_aggregate_helpers_render_spark_visible_rollup_and_metrics() ->
     assert ".rollup(" in text
     assert 'F.sum(F.when((F.col("raw_order.quantity") > F.lit(0)), F.col("raw_order.quantity")))' in text
     assert 'F.bool_or((F.col("raw_order.quantity") > F.lit(10))).cast(T.BooleanType()).alias("any_large")' in text
+    assert 'F.every((F.col("raw_order.quantity") > F.lit(0))).cast(T.BooleanType()).alias("all_positive")' in text
     assert 'F.stddev(F.col("raw_order.quantity")).cast(T.DoubleType()).alias("quantity_stddev")' in text
     assert 'F.stddev_pop(F.col("raw_order.quantity")).cast(T.DoubleType()).alias("quantity_stddev_pop")' in text
     assert 'F.stddev_samp(F.col("raw_order.quantity")).cast(T.DoubleType()).alias("quantity_stddev_samp")' in text
@@ -467,6 +556,37 @@ def test_extended_aggregate_helpers_render_spark_visible_functions() -> None:
         'F.regr_count(F.col("raw_order.quantity"), F.col("raw_order.quantity")).cast(T.LongType()).alias("regression_count")'
         in text
     )
+    assert (
+        'F.covar_pop(F.col("raw_order.quantity"), F.col("raw_order.quantity")).cast(T.DoubleType()).alias("population_covariance")'
+        in text
+    )
+    assert 'F.mean(F.col("raw_order.quantity")).cast(T.DoubleType()).alias("average_alias")' in text
+    assert 'F.std(F.col("raw_order.quantity")).cast(T.DoubleType()).alias("sample_std_alias")' in text
+    assert 'F.some(' in text and '.alias("some_positive")' in text
+
+
+def test_hll_aggregate_union_renders_py_spark_spelling_and_option() -> None:
+    plan = _recipe(MergeHllStates)
+    text = render_pyspark_step(plan.steps[0], current="rows", sources={"rows": "rows"})
+    assert (
+        'F.hll_union_agg(F.col("hll_state_input.state"), False).cast(T.BinaryType()).alias("state")'
+        in text
+    )
+
+
+def test_histogram_numeric_renders_py_spark_call_and_declared_nested_schema() -> None:
+    plan = _recipe(NumericHistogram)
+    text = render_pyspark_step(plan.steps[0], current="rows", sources={"rows": "rows"})
+    assert "F.histogram_numeric(" in text
+    assert 'F.col("histogram_input.value"), F.lit(3)' in text
+    assert ".cast(T.ArrayType(HISTOGRAM_BUCKET_SCHEMA, containsNull=True))" in text
+
+
+def test_decimal_histogram_requires_the_exact_pyspark_4_profile() -> None:
+    with pytest.raises(BackendCapabilityError):
+        _recipe(DecimalNumericHistogram)
+    plan = _recipe_profile(DecimalNumericHistogram, ">=4.0,<4.1")
+    assert plan.backend.target == ">=4.0,<4.1"
 
 
 def test_grouping_sets_lower_to_explicit_levels_and_render_union_branches() -> None:
@@ -489,6 +609,8 @@ def test_grouping_sets_lower_to_explicit_levels_and_render_union_branches() -> N
     assert 'F.lit(0).cast(T.IntegerType()).alias("grouping_id")' in text
     assert 'F.lit(1).cast(T.IntegerType()).alias("grouping_id")' in text
     assert 'F.lit(3).cast(T.IntegerType()).alias("grouping_id")' in text
+    assert 'F.lit(0).cast(T.IntegerType()).alias("region_grouping")' in text
+    assert 'F.lit(1).cast(T.IntegerType()).alias("region_grouping")' in text
     assert "rows = rows.unionByName(rows_grouping_set_2)" in text
     assert "rows = rows.unionByName(rows_grouping_set_3)" in text
     assert 'rows = rows.where((F.col("order_count") > F.lit(0)))' in text

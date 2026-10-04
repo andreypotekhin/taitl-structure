@@ -67,13 +67,16 @@ PySpark `Column` surface; functions such as `trim` and `lower` remain function-f
 | `bitwise_and(...)` | `Column.bitwiseAND` | `o.flags.bitwise_and(3)` |
 | `bitwise_or(...)` | `Column.bitwiseOR` | `o.flags.bitwise_or(o.mask)` |
 | `bitwise_xor(...)` | `Column.bitwiseXOR` | `o.flags.bitwise_xor(o.mask)` |
-| `bitwise_not()` | `functions.bitwise_not` | `o.flags.bitwise_not()` |
+| `bitwise_not()` | `Column.bitwiseNOT` | `o.flags.bitwise_not()` |
+| `bitwise_not(value)` | `functions.bitwise_not` | `bitwise_not(o.flags)` |
 | `expr[index]` | `getItem` | `o.tags[0]` |
 | `expr[key]` | `getItem` | `o.attributes["region"]` |
 | `substr(startPos, length)` | `Column.substr` | `o.name.substr(1, 10)` |
 | `contains(...)` | `contains` | `o.name.contains("A")` or `o.name.contains(o.prefix)` |
 | `startswith(...)` | `startswith` | `o.name.startswith("order-")` or `o.name.startswith(o.prefix)` |
 | `endswith(...)` | `endswith` | `o.name.endswith("-hold")` or `o.name.endswith(o.suffix)` |
+| `startswith(value, prefix)` | `functions.startswith` | `startswith(o.name, o.prefix)` |
+| `endswith(value, suffix)` | `functions.endswith` | `endswith(o.name, o.suffix)` |
 | `like(...)` | `like` | `o.name.like("A%")` |
 | `ilike(...)` | `ilike` | `o.name.ilike("a%")` |
 | `rlike(...)` | `rlike` | `o.name.rlike("^A")` |
@@ -94,16 +97,20 @@ PySpark `Column` surface; functions such as `trim` and `lower` remain function-f
 - Array and map lookup results are nullable. String predicates require String expressions; `contains(...)`,
   `startswith(...)`, and `endswith(...)` accept either a string literal or a String expression operand and become
   nullable when either operand is nullable. `rlike(...)` uses Java regex.
+  Function-form `startswith(...)` and `endswith(...)` accept String or Binary expressions; Spark's mixed-type coercion
+  is preserved when the two operands use different supported types.
   Function-form `like(...)`, `ilike(...)`, `regexp(...)`, `regexp_like(...)`, and `rlike(...)` accept typed String
   expressions for both the value and pattern.
 - `substr(...)` requires a String expression and integral start/length literals or expressions. Its result is nullable
   when the receiver or either bound is nullable. Generated method calls use `o.name.substr(...)`; the equivalent
   function form is `substr(o.name, start=1, length=10)`.
 - `try_cast(...)` is always nullable and needs target profile `>=4.0,<4.1`.
+- `bit_length(...)` accepts String or Binary and returns nullable Integer, counting UTF-8 bytes for String values.
 - Division, remainder, and negation require numeric expressions. Integral division returns Double; Decimal division uses
   Spark's bounded Decimal precision rules. Raw `Column.over(...)` remains unsupported.
 - Bitwise methods accept only `integer` and `long` expressions. A mixed pair returns `long`; nullability propagates
-  from either operand.
+  from either operand. The SQL-function helper `bitwise_not(value)` accepts an integral expression and preserves its
+  type and nullability; it is distinct from the zero-argument Column method `value.bitwise_not()`.
 
 String `+` accepts two String expressions or a String expression and a Python string literal, in either order.
 Chains such as `o.first_name + " " + o.last_name` concatenate in authored order. Numeric addition is unchanged.
@@ -126,7 +133,7 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
 | `ltrim(...)` | `ltrim` | `ltrim(o.name)` |
 | `rtrim(...)` | `rtrim` | `rtrim(o.name)` |
 | `trim(...)` | `trim` | `trim(o.name)` |
-| `btrim(...)` | `btrim` | `btrim(o.name, trim="0")` |
+| `btrim(...)` | `btrim` | `btrim(o.name, trim=o.trim_chars)` |
 | `char(...)` | `char` | `char(o.code_point)` |
 | `substring(...)` | `substring` | `substring(o.code, start=1, length=3)` |
 | `substr(...)` | `substr` | `substr(o.code, start=1, length=3)` |
@@ -142,7 +149,9 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
 | `lpad(...)`, `rpad(...)` | `lpad`, `rpad` | `lpad(o.code, length=8, pad="0")` |
 | `length(...)` | `length` | `length(o.name)` |
 | `concat_ws(...)` | `concat_ws` | `concat_ws("-", o.region, o.code)`; `concat_ws("\u001f", o.path_ids)` for `array<string>` |
-| `ascii(...)`, `char_length(...)` | `ascii`, `char_length` | `char_length(o.name)` |
+| `ascii(...)`, `char_length(...)`, `character_length(...)` | `ascii`, `char_length`, `character_length` | `character_length(o.name)` |
+| `lower(...)`, `lcase(...)` | `lower`, `lcase` | `lcase(o.name)` |
+| `upper(...)`, `ucase(...)` | `upper`, `ucase` | `ucase(o.name)` |
 | `left(...)`, `right(...)` | `left`, `right` | `left(o.name, length=3)` |
 | `locate(...)` | `locate` | `locate(o.name, substring="Ada", position=1)` |
 | `contains(...)` | `contains` | `contains(o.name, "Ada")` |
@@ -166,11 +175,12 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
 | `xxhash64(...)` | `xxhash64` | `xxhash64(o.tenant, o.id)` |
 | `crc32(...)` | `crc32` | `crc32(o.payload)` |
 | `md5(...)` | `md5` | `md5(o.name)` |
+| PySpark `sha(...)` | `sha1` | `sha1(o.name)` |
 | `sha1(...)` | `sha1` | `sha1(o.name)` |
 | `sha2(...)` | `sha2` | `sha2(o.name, bits=256)` |
 | `date_add(...)` | `date_add` | `date_add(o.day, days=1)` |
 | `dateadd(...)` | `dateadd` | `dateadd(o.day, days=1)` |
-| `date_sub(...)` | `date_sub` | `date_sub(o.day, days=1)` |
+| `date_sub(...)` | `date_sub` | `date_sub(o.day, days=o.day_offset)` |
 | `make_date(...)` | `make_date` | `make_date(o.year, o.month, o.day)` |
 | `add_months(...)` | `add_months` | `add_months(o.day, months=1)` |
 | `datediff(...)` | `datediff` | `datediff(o.end_day, o.start_day)` |
@@ -232,7 +242,7 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
 | `nvl(...)` | `functions.nvl` | `nvl(o.discount, 0)` |
 | `ifnull(...)` | `functions.ifnull` | `ifnull(o.discount, 0)` |
 | `nvl2(...)` | `functions.nvl2` | `nvl2(o.code, "known", "missing")` |
-| `zeroifnull(...)` | `functions.zeroifnull` | `zeroifnull(o.total)` |
+| `zeroifnull(...)` | typed `functions.coalesce` lowering | `zeroifnull(o.total)` |
 | `nullif(...)` | `functions.nullif` | `nullif(o.status, "unknown")` |
 | `nanvl(...)` | `functions.nanvl` | `nanvl(o.score, 0.0)` |
 | `when(...).otherwise(...)` | `when`, `otherwise` | `when(o.total > 0, "paid").otherwise("free")` |
@@ -280,6 +290,8 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
   expression directly; relation partition coalescing is a distinct keyword-only form, `coalesce(partitions=4)`.
 
 - Pattern, replacement, separator, and search arguments are explicit compiler-visible values.
+- `btrim(..., trim=...)` accepts a typed String expression or literal, matching PySpark's row-valued trim-string
+  argument. The ordinary `trim`, `ltrim`, and `rtrim` helpers retain their one-argument PySpark contracts.
 - `assert_true(...)` and `raise_error(...)` are typed Boolean guards. They lower to the matching native PySpark
   assertion followed by `.isNull()`, so a successful `assert_true(...)` can be used directly in `where(...)` without
   adding an output field. A false or null condition, or any evaluated `raise_error(...)`, raises Spark's error lazily.
@@ -289,7 +301,8 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
 - `nullif(value, other)` returns `value`'s type and is always nullable because a matching value becomes null.
 - `nanvl(value, fallback)` accepts Float/Double inputs, returns Double, and replaces only NaN—not null—values.
 - `nvl(...)` and `ifnull(...)` select a typed fallback; `nvl2(...)` selects between typed present/null branches;
-  `zeroifnull(...)` accepts numeric expressions and is never null.
+  `zeroifnull(...)` accepts numeric expressions and is never null. It lowers through a cast zero and `coalesce`, so it
+  remains available on PySpark 3.5 even though the named `pyspark.sql.functions.zeroifnull` wrapper was added in 4.0.
 - Decimal precision is an integer from 1 through 38; scale is an integer from 0 through that precision.
 - Arithmetic requires numeric operands, widens mixed numeric expressions, and propagates operand nullability.
 - `bround(...)` uses Spark's half-even rounding. `sqrt(...)`, `pow(...)`, `log(...)`, `exp(...)`, and `signum(...)`
@@ -297,8 +310,9 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
 - `trunc(...)` accepts Date values and `year`, `month`, `quarter`, or `week` units (including Spark aliases).
   Calendar extraction accepts Date or Timestamp values; time extraction requires Timestamp. String temporal parsing is
   nullable because invalid input becomes null, and its optional format is a compiler-visible literal.
-- `add_months(...)` accepts Date or Timestamp values and an integer literal or integral expression; the result is a
-  nullable Date when either input is nullable. `next_day(...)` accepts a Date or Timestamp and a weekday literal from
+- `date_add(...)`, `date_sub(...)`, and `add_months(...)` accept Date or Timestamp values and an integer literal or
+  integral expression for their offset; each returns Date and combines value/offset nullability. `next_day(...)`
+  accepts a Date or Timestamp and a weekday literal from
   Monday through Sunday (short names such as `Mon` are accepted) and returns a nullable Date.
 - `months_between(...)` accepts Date or Timestamp values and returns a nullable Double. Its `round_off` argument must
   be a Boolean literal and renders to Spark's `roundOff` parameter.
@@ -324,6 +338,9 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
 - `format_string(...)` and `printf(...)` require a literal format string and scalar arguments. Their String result is
   nullable when any candidate argument is nullable.
 - `acos(...)` and `hypot(...)` accept numeric expressions and return nullable Double results.
+- `ceiling(...)`, `power(...)`, `negate(...)`, `negative(...)`, and `positive(...)` preserve PySpark's exact function
+  names. The unary helpers preserve their input type and nullability; `power(...)` returns Double and propagates either
+  operand's nullability.
 - `e()` and `pi()` return non-null Double constants. `factorial(...)` accepts Integer/Long expressions and returns a
   nullable Long. `greatest(...)` and `least(...)` require at least two compatible values, preserve their common type,
   and return null only when all arguments are null. `pmod(...)` accepts two numeric expressions, preserves their common
@@ -332,7 +349,8 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
   nullable String; `unhex(...)` accepts String and returns nullable Binary because malformed input can decode to null.
 - `conv(...)` accepts a String expression and base literals from -36 through -2 or 2 through 36, returning nullable
   String. `width_bucket(...)` accepts compatible numeric value/minimum/maximum expressions and a positive integer
-  bucket-count literal, returning nullable Integer because invalid runtime ranges produce null.
+  bucket-count literal, returning nullable Long because Spark exposes bucket numbers as `LongType`; invalid runtime
+  ranges produce null.
 - `rand(...)` returns a non-null Double in `[0.0, 1.0)`. It requires an integer `seed` by default; omitting the seed
   requires `reproducible=False`. The seed makes the use auditable but does not promise identical random values across
   repartitioning, retries, Spark versions, or query restarts. Streaming support follows the target-specific coverage
@@ -374,7 +392,10 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
 - `interval(...)` requires exactly one of `type=` (compound qualifier) or `unit=` (single field), and exactly one
   named component per selected field. `types.interval(...)` declares matching Schema types. Spark's
   `make_ym_interval`, `make_dt_interval`, and mixed `make_interval` keep their public names. Calendar intervals are
-  expression-only on PySpark 3.5; PySpark 4.0 may materialize them in Schema, but Python Row conversion can fail.
+  expression-only on PySpark 3.5; PySpark 4.0 may materialize them in Schema. DayTime values convert to Python
+  `timedelta`, but YearMonth and Calendar values may fail Row conversion depending on the PySpark runtime or Connect
+  Arrow path. Keep interval values inside expressions and collect non-interval results. Adding a Calendar interval
+  to a Date produces a Date.
   Date/timestamp subtraction returns DayTimeInterval or CalendarInterval according to
   `spark.sql.legacy.interval.enabled`.
 - `make_date(...)` accepts Integer/Long year, month, and day expressions and returns a nullable Date. Invalid

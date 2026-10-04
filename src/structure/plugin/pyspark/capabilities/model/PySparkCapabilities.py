@@ -31,6 +31,7 @@ PYSPARK_4_CAPABILITIES = frozenset(
         ("schema", "sketches_profile_4_1"),
     }
 )
+PYSPARK_4_0_CAPABILITIES = frozenset({("aggregate", "histogram_numeric_decimal")})
 PYSPARK_4_2_CAPABILITIES = frozenset({("expression", "is_valid_variant")})
 MATERIALIZATION_CAPABILITIES = frozenset(
     {
@@ -110,15 +111,22 @@ COMMON_CAPABILITIES = frozenset(
         ("aggregate", "avg"),
         ("aggregate", "approx_count_distinct"),
         ("aggregate", "approx_percentile"),
+        ("aggregate", "histogram_numeric"),
         ("aggregate", "hll_sketch_agg"),
+        ("aggregate", "hll_union_agg"),
         ("aggregate", "bitmap_construct_agg"),
         ("aggregate", "bitmap_or_agg"),
         ("aggregate", "bool_and"),
         ("aggregate", "bool_or"),
+        ("aggregate", "every"),
         ("aggregate", "collect_list"),
         ("aggregate", "collect_set"),
         ("aggregate", "corr"),
         ("aggregate", "covar"),
+        ("aggregate", "covar_pop"),
+        ("aggregate", "mean"),
+        ("aggregate", "some"),
+        ("aggregate", "std"),
         ("aggregate", "regr_avgx"),
         ("aggregate", "regr_avgy"),
         ("aggregate", "regr_count"),
@@ -132,6 +140,7 @@ COMMON_CAPABILITIES = frozenset(
         ("aggregate", "first"),
         ("aggregate", "last"),
         ("aggregate", "first_value"),
+        ("aggregate", "grouping"),
         ("aggregate", "grouping_id"),
         ("aggregate", "is_grouped"),
         ("aggregate", "last_value"),
@@ -337,7 +346,7 @@ class PySparkCapabilities:
         if explicit is not None:
             return base_capabilities
         if target_profile == ">=4.0,<4.1":
-            base_capabilities = base_capabilities | PYSPARK_4_CAPABILITIES
+            base_capabilities = base_capabilities | PYSPARK_4_CAPABILITIES | PYSPARK_4_0_CAPABILITIES
         elif target_profile == ">=4.2,<4.3":
             base_capabilities = base_capabilities | PYSPARK_4_CAPABILITIES | PYSPARK_4_2_CAPABILITIES
         if self.id.variant == "ordinary" and target_profile in MATERIALIZATION_PROFILES:

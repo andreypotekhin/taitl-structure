@@ -826,12 +826,14 @@ class EvaluatePySparkExpression:
         args = [
             self.evaluate(argument, functions=functions, aliases=aliases, window=window) for argument in expression.args
         ]
-        if function in {"lower", "ltrim", "rtrim", "trim", "upper", "url_encode", "url_decode", "try_url_decode"}:
+        if function in {"lower", "lcase", "ltrim", "rtrim", "trim", "upper", "ucase", "url_encode", "url_decode", "try_url_decode"}:
             return getattr(functions, function)(args[0])
         if function == "btrim":
-            return functions.btrim(args[0], expression.data["trim"])
+            return functions.btrim(args[0], expression.data.get("trim", args[1]))
         if function == "contains":
             return functions.contains(args[0], args[1])
+        if function in {"startswith", "endswith"}:
+            return getattr(functions, function)(args[0], args[1])
         if function == "create_map":
             return functions.create_map(*args)
         if function == "map_from_arrays":
@@ -928,7 +930,11 @@ class EvaluatePySparkExpression:
         if function == "nvl2":
             return functions.nvl2(args[0], args[1], args[2])
         if function == "zeroifnull":
-            return functions.zeroifnull(args[0])
+            argument_type = expression.args[0].type
+            if argument_type is None:
+                raise TypeError("zeroifnull(...) requires a typed numeric expression")
+            zero = functions.lit(0).cast(self._ddl_type(argument_type))
+            return functions.coalesce(args[0], zero)
         if function == "nullif":
             return functions.nullif(args[0], args[1])
         if function == "nanvl":
@@ -969,7 +975,7 @@ class EvaluatePySparkExpression:
             return functions.regexp_substr(args[0], expression.data["pattern"])
         if function in {"lpad", "rpad"}:
             return getattr(functions, function)(args[0], expression.data["length"], expression.data["pad"])
-        if function in {"ascii", "char", "char_length", "length", "octet_length", "soundex"}:
+        if function in {"ascii", "bit_length", "char", "char_length", "character_length", "length", "octet_length", "soundex"}:
             return getattr(functions, function)(args[0])
         if function in {"left", "right", "repeat"}:
             parameter = "length" if function in {"left", "right"} else "count"
@@ -1024,7 +1030,8 @@ class EvaluatePySparkExpression:
             source = getattr(functions, builder)(*args)
             return source if kind == "calendar" else source.cast(expression.type.sql)
         if function == "date_sub":
-            return functions.date_sub(args[0], expression.data["days"])
+            days = expression.data.get("days", args[1] if len(args) == 2 else None)
+            return functions.date_sub(args[0], days)
         if function == "add_months":
             months = expression.data.get("months", args[1] if len(args) == 2 else None)
             return functions.add_months(args[0], months)
@@ -1119,15 +1126,20 @@ class EvaluatePySparkExpression:
             return functions.round(args[0], expression.data["scale"])
         if function == "bround":
             return functions.bround(args[0], expression.data["scale"])
-        if function in {"ceil", "floor"}:
+        if function in {"ceil", "ceiling", "floor"}:
             return getattr(functions, function)(args[0])
-        if function in {"sqrt", "exp", "signum"}:
+        if function in {"sqrt", "exp", "signum", "negate", "negative", "positive"}:
             return getattr(functions, function)(args[0])
-        if function == "pow":
-            return functions.pow(args[0], args[1])
+        if function in {"pow", "power"}:
+            return getattr(functions, function)(args[0], args[1])
         if function == "log":
+            base = expression.data.get("base")
+            if base is not None and (isinstance(base, bool) or not isinstance(base, (int, float))):
+                raise TypeError("log base metadata must be a numeric literal")
             return (
-                functions.log(expression.data["base"], args[0]) if "base" in expression.data else functions.log(args[0])
+                functions.log(float(base), args[0])
+                if base is not None
+                else functions.log(args[0])
             )
         raise TypeError(f"Unsupported PySpark helper call: {function}")
 

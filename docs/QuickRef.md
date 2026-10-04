@@ -342,7 +342,8 @@ Supported expression forms are:
 - Type casts: `cast(...)`, `astype(...)`, `try_cast(...)` (PySpark 4), 
 - Predicate helpers: `isnull(...)`, `isnotnull(...)`, and `isnan(...)`; Float/Double columns also support chained
   `order.score.isnan()`.
-- String helpers:  `contains(...)`, `like(...)`, `ilike(...)`, `rlike(...)`,
+- String helpers: `bit_length(...)`, `contains(...)`, function-form `startswith(...)` and `endswith(...)`,
+  `like(...)`, `ilike(...)`, `rlike(...)`,
   array/map indexing, `lower(...)`, `upper(...)`, `trim(...)`, `to_decimal(...)`, `coalesce(...)`, and
   `substring(...)`, `substr(...)`, `split(...)`,
   `regexp_replace(...)`, `regexp_extract(...)`, `url_encode(...)`, strict `url_decode(...)`,
@@ -359,7 +360,8 @@ Supported expression forms are:
   Generic timestamps follow `spark.sql.timestampType`; `_ltz`/`_ntz` helpers keep fixed types. Declare qualified
   interval fields with `field.interval(...)` or `types.interval(...)`. `convert_timezone(...)` accepts NTZ input and
   typed String zones; `None` for the source zone uses Spark's session timezone.
-- Numeric helpers: `abs(...)`, `round(...)`, `ceil(...)`, and `floor(...)`.
+- Numeric helpers: `abs(...)`, `round(...)`, `ceil(...)`/`ceiling(...)`, `floor(...)`, `pow(...)`/`power(...)`, and the
+  PySpark-name-preserving `negate(...)`, `negative(...)`, and `positive(...)`.
 
 Reference: [expressions API](api/Expressions.api.md), [Transform expressions](background/Transform.back.md), and
 [nullability and type coercion](reference/Schema.ref.md).
@@ -439,14 +441,17 @@ def product_daily_summary(self, order: OrderFulfillment) -> ProductDailySummary:
 ```
 
 Aggregate helpers include `count()`, `count_distinct(...)`, `sum(...)`, `min(...)`, `max(...)`,  `avg(...)`.
- and more: `bool_and(...)`, `bool_or(...)`, `stddev(...)`, `variance(...)`, `corr(...)`, `covar(...)`,
-`approx_count_distinct(...)`, `approx_percentile(...)`, `collect_list(...)`, `collect_set(...)`, `first_value(...)`,
+ and more: `bool_and(...)`, `bool_or(...)`, `some(...)`, `every(...)`, `mean(...)`, `std(...)`, `stddev(...)`, `variance(...)`, `corr(...)`, `covar(...)`, `covar_pop(...)`,
+`approx_count_distinct(...)`, `approx_percentile(...)`, `histogram_numeric(...)`, `collect_list(...)`, `collect_set(...)`, `first_value(...)`,
 and `last_value(...)`. Aggregate helpers accept `where=...` for metric-local filters. Use trailing
 `having(lambda out: ...)` or chained `group_by(...).having(lambda out: ...)` to filter aggregate output rows.
+`histogram_numeric(value, n_bins, as_=BucketSchema)` requires a foldable bin-count literal and a Schema with nullable
+`x` matching the input and nullable Double `y`; Decimal inputs require the exact PySpark 4.0 profile.
 
 Use `rollup(...)` for hierarchical subtotals, `cube(...)` for all grouping-key combinations, and
 `grouping_sets(...)` for exact subtotal layouts. Subtotal rows may omit some grouping keys, so nullable subtotal fields
 or explicit labels are required.
+Use `grouping(key)` when migration needs PySpark's non-null Integer 1/0 flag; use `is_grouped(key)` for its Boolean form.
 
 ```python
 def revenue_rollup(self, order: OrderFulfillment) -> OrderRevenueRollup:
@@ -467,7 +472,7 @@ def revenue_rollup(self, order: OrderFulfillment) -> OrderRevenueRollup:
         large_units=sum(order.quantity, where=order.is_large),
         any_large_order=bool_or(order.is_large),
         quantity_stddev=stddev(order.quantity),
-        quantity_median=approx_percentile(order.quantity, 0.5, accuracy=100),
+    quantity_median=approx_percentile(order.quantity, 0.5, accuracy=100),
         estimated_customers=approx_count_distinct(order.customer_id),
         first_customer_id=first_value(order.customer_id, order_by=order.quantity),
         customer_ids=collect_set(order.customer_id),
@@ -533,9 +538,9 @@ Reference: [aggregations API](api/Aggregations.api.md),
 
 ## Sketches and Bitmaps
 
-Use `hll_sketch_agg(...)` or `bitmap_construct_agg(...)` when a grouped summary must publish reusable opaque state,
-rather than only an immediate count. Declare the output as `hll_sketch(lg_config_k=...)` or `bitmap()` so later
-operations remain type-safe.
+Use `hll_sketch_agg(...)`, `hll_union_agg(...)`, or `bitmap_construct_agg(...)` when a grouped summary must publish
+reusable opaque state, rather than only an immediate count. Declare the output as `hll_sketch(lg_config_k=...)` or
+`bitmap()` so later operations remain type-safe.
 
 ```python
 group_by(tenant_id=event.tenant_id)
@@ -547,7 +552,7 @@ return TenantSketches(
 ```
 
 `hll_sketch_estimate(...)` and `bitmap_count(...)` are row-preserving consumers. `hll_union(...)` accepts matching HLL
-precision by default; a mixed-precision union requires an explicit opt-in and emits `SKETCH-W0802`. Opaque sketch
+precision by default; mixed-precision pairwise or aggregate union requires an explicit opt-in and emits `SKETCH-W0802`. Opaque sketch
 state is Spark/profile specific, not generic Binary interchange. Grouped sketch operations in streaming follow normal
 watermark and output-mode rules.
 

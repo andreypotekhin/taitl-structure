@@ -1487,6 +1487,10 @@ class RenderPySparkStep:
         if assignment.function == "grouping_id":
             mask = self._grouping_id(aggregate, level=level)
             return f"F.lit({mask}).cast({self._schema.type(assignment.field.type)}).alias({alias})"
+        if assignment.function == "grouping":
+            key = self._grouping_set_expression_key(assignment, aggregate=aggregate)
+            flag = 1 if key not in level else 0
+            return f"F.lit({flag}).cast({self._schema.type(assignment.field.type)}).alias({alias})"
         if assignment.function == "is_grouped":
             key = self._grouping_set_expression_key(assignment, aggregate=aggregate)
             grouped = "True" if key not in level else "False"
@@ -1590,6 +1594,8 @@ class RenderPySparkStep:
                 rendered_arguments.append(repr(options["ignore_nulls"]))
             if assignment.function == "hll_sketch_agg":
                 rendered_arguments.append(repr(options["lg_config_k"]))
+            if assignment.function == "hll_union_agg":
+                rendered_arguments.append(repr(options["allow_different_lg_config_k"]))
             expression = f"{function}({', '.join(rendered_arguments)})"
             if not self._keeps_struct_collection_type(assignment, backend_target=backend_target):
                 expression = f"{expression}.cast({self._schema.type(assignment.field.type)})"
@@ -1670,15 +1676,19 @@ class RenderPySparkStep:
             "any_value",
             "array_agg",
             "avg",
+            "mean",
             "bit_and",
             "bit_or",
             "bit_xor",
             "bool_and",
             "bool_or",
+            "some",
+            "every",
             "collect_list",
             "collect_set",
             "corr",
             "covar",
+            "covar_pop",
             "regr_avgx",
             "regr_avgy",
             "regr_count",
@@ -1702,6 +1712,7 @@ class RenderPySparkStep:
             "schema_of_variant_agg",
             "skewness",
             "stddev",
+            "std",
             "stddev_pop",
             "stddev_samp",
             "sum",
@@ -1710,6 +1721,8 @@ class RenderPySparkStep:
             "var_samp",
             "variance",
             "hll_sketch_agg",
+            "hll_union_agg",
+            "histogram_numeric",
             "bitmap_construct_agg",
             "bitmap_or_agg",
         }
@@ -1721,15 +1734,19 @@ class RenderPySparkStep:
             "any_value": "F.any_value",
             "array_agg": "F.array_agg",
             "avg": "F.avg",
+            "mean": "F.mean",
             "bit_and": "F.bit_and",
             "bit_or": "F.bit_or",
             "bit_xor": "F.bit_xor",
             "bool_and": "F.bool_and",
             "bool_or": "F.bool_or",
+            "some": "F.some",
+            "every": "F.every",
             "collect_list": "F.collect_list",
             "collect_set": "F.collect_set",
             "corr": "F.corr",
             "covar": "F.covar_samp",
+            "covar_pop": "F.covar_pop",
             "regr_avgx": "F.regr_avgx",
             "regr_avgy": "F.regr_avgy",
             "regr_count": "F.regr_count",
@@ -1753,6 +1770,7 @@ class RenderPySparkStep:
             "schema_of_variant_agg": "F.schema_of_variant_agg",
             "skewness": "F.skewness",
             "stddev": "F.stddev",
+            "std": "F.std",
             "stddev_pop": "F.stddev_pop",
             "stddev_samp": "F.stddev_samp",
             "sum": "F.sum",
@@ -1761,6 +1779,8 @@ class RenderPySparkStep:
             "var_samp": "F.var_samp",
             "variance": "F.variance",
             "hll_sketch_agg": "F.hll_sketch_agg",
+            "hll_union_agg": "F.hll_union_agg",
+            "histogram_numeric": "F.histogram_numeric",
             "bitmap_construct_agg": "F.bitmap_construct_agg",
             "bitmap_or_agg": "F.bitmap_or_agg",
         }[function]

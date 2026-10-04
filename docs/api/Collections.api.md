@@ -130,7 +130,8 @@ Structure contract.
 `ceil(len(values) / rows)` output fields; each field type is the common type of values in that output position. As in
 PySpark, a short final row is padded with NULL, so the corresponding field must be nullable. Input values that may be
 null also require a nullable output field. `rows` is a positive integer literal, and the generator is compatible with
-streaming input as stateless row expansion; ordinary and Connect runtime evidence remains a release check.
+streaming input as stateless row expansion. Classic and Connect batch parity is verified on PySpark 3.5 and 4.0 in the
+[runtime matrix](../../tests/integration/pyspark/v7/test_runtime_matrix_closeout.py).
 
 ## Typed Struct Generators
 

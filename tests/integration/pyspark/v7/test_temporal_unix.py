@@ -1,24 +1,38 @@
 from __future__ import annotations
 
 import importlib
+from datetime import date, timedelta
 
 import pytest
-from integration.pyspark.support.backend_matrix import generated_project, render_generated_project, session
+from integration.pyspark.support.backend_matrix import (
+    backend_name,
+    generated_project,
+    render_generated_project,
+    session,
+)
 from integration.pyspark.support.rows import rows
 
 from structure import Schema, Transform, input, output, transform
 from structure.lib.testing import assert_online_generated_parity
 from structure.plugin.pyspark import (
+    Interval,
     date_part,
+    date_sub,
     from_unixtime,
     integer,
     long,
+    make_dt_interval,
+    make_interval,
     make_timestamp,
+    make_ym_interval,
     string,
+    timestamp,
     timestamp_ntz,
     to_timestamp,
     unix_timestamp,
 )
+from structure.plugin.pyspark.dsl.field import date as date_field
+from structure.plugin.pyspark.dsl.field import interval as interval_field
 
 pytestmark = pytest.mark.integration
 
@@ -38,6 +52,17 @@ class EpochOutput(Schema):
     month = integer(nullable=True)
 
 
+class DayOffsetInput(Schema):
+    id = string(nullable=False)
+    base_date = date_field(nullable=False)
+    days = integer(nullable=False)
+
+
+class DayOffsetOutput(Schema):
+    id = string(nullable=False)
+    previous_date = date_field(nullable=False)
+
+
 @transform
 class FormatEpoch(Transform):
     rows = input(EpochInput)
@@ -54,6 +79,15 @@ class FormatEpoch(Transform):
         )
 
 
+@transform
+class SubtractRowDayCount(Transform):
+    rows = input(DayOffsetInput)
+    result = output(DayOffsetOutput)
+
+    def publish(self, row: DayOffsetInput) -> DayOffsetOutput:
+        return DayOffsetOutput(id=row.id, previous_date=date_sub(row.base_date, days=row.days))
+
+
 def test_v7_from_unixtime_matches_generated_execution_on_live_backend(spark, tmp_path) -> None:
     files = render_generated_project(
         FormatEpoch,
@@ -63,8 +97,8 @@ def test_v7_from_unixtime_matches_generated_execution_on_live_backend(spark, tmp
     )
     transform_path = f"{PACKAGE}/pyspark/transforms/integration/pyspark/v7/test_temporal_unix.py"
     assert "F.from_unixtime(" in files[transform_path]
-    assert "F.unix_timestamp(" in files[transform_path]
-    assert "F.date_part(F.lit('month')," in files[transform_path]
+    assert "unix_timestamp(" in files[transform_path]
+    assert "date_part(" in files[transform_path]
 
     with generated_project(tmp_path, PACKAGE, files):
         generated_schemas = importlib.import_module(f"{PACKAGE}.pyspark.schemas.test_temporal_unix")
@@ -83,6 +117,37 @@ def test_v7_from_unixtime_matches_generated_execution_on_live_backend(spark, tmp
     assert actual == [
         {"id": "row-1", "day": "1970-01-01", "seconds_round_trip": 0, "month": 1},
         {"id": "row-2", "day": None, "seconds_round_trip": None, "month": None},
+    ]
+
+
+def test_v7_date_sub_accepts_row_dependent_days_on_live_backend(spark, tmp_path) -> None:
+    files = render_generated_project(
+        SubtractRowDayCount,
+        source_transform=f"{SOURCE_MODULE}.SubtractRowDayCount",
+        generated_package=PACKAGE,
+        source_schema_modules={SOURCE_MODULE: [DayOffsetInput, DayOffsetOutput]},
+    )
+    transform_path = f"{PACKAGE}/pyspark/transforms/integration/pyspark/v7/test_temporal_unix.py"
+    generated_source = files[transform_path]
+    assert "F.date_sub(" in generated_source
+    assert "days" in generated_source
+
+    with generated_project(tmp_path, PACKAGE, files):
+        generated_schemas = importlib.import_module(f"{PACKAGE}.pyspark.schemas.test_temporal_unix")
+        source = spark.createDataFrame(
+            [("row-1", date(2026, 10, 2), 2), ("row-2", date(2026, 10, 2), 0)],
+            generated_schemas.DAY_OFFSET_INPUT_SCHEMA,
+        )
+        online = SubtractRowDayCount(rows=source).run(session(spark, execution_mode="online"))
+        generated = SubtractRowDayCount(rows=source).run(
+            session(spark, execution_mode="generated", generated_package=PACKAGE)
+        )
+        assert_online_generated_parity(lambda: online, lambda: generated)
+        actual = rows(generated.result, "id", "previous_date")
+
+    assert actual == [
+        {"id": "row-1", "previous_date": date(2026, 9, 30)},
+        {"id": "row-2", "previous_date": date(2026, 10, 2)},
     ]
 
 
@@ -153,3 +218,135 @@ def test_explicit_timestamp_parser_ansi_behavior_matches_spark(spark) -> None:
             spark.range(1).select(F.to_timestamp_ntz(F.lit("not-a-timestamp"))).first()
     finally:
         spark.conf.set("spark.sql.ansi.enabled", previous)
+
+
+class IntervalInput(Schema):
+    base_day = date_field(nullable=False)
+
+
+class IntervalOutput(Schema):
+    year_month = interval_field(type=Interval.YEAR_TO_MONTH, nullable=False)
+    day_time = interval_field(type=Interval.DAY_TO_SECOND, nullable=False)
+    month_shift = date_field(nullable=False)
+    day_shift = timestamp(nullable=False)
+    scaled_day_shift = timestamp(nullable=False)
+
+
+@transform
+class IntervalArithmetic(Transform):
+    rows = input(IntervalInput)
+    result = output(IntervalOutput)
+
+    def publish(self, row: IntervalInput) -> IntervalOutput:
+        year_month = make_ym_interval(months=14)
+        day_time = make_dt_interval(days=1, secs=2)
+        scaled_day_time = make_dt_interval(days=1) * 2
+        return IntervalOutput(
+            year_month=year_month,
+            day_time=day_time,
+            month_shift=row.base_day + year_month,
+            day_shift=row.base_day + day_time,
+            scaled_day_shift=row.base_day + scaled_day_time,
+        )
+
+
+def test_year_month_and_day_time_schema_and_arithmetic_match_generated_execution(spark, tmp_path) -> None:
+    files = render_generated_project(
+        IntervalArithmetic,
+        source_transform=f"{SOURCE_MODULE}.IntervalArithmetic",
+        generated_package=PACKAGE,
+        source_schema_modules={SOURCE_MODULE: [IntervalInput, IntervalOutput]},
+    )
+    transform_path = f"{PACKAGE}/pyspark/transforms/integration/pyspark/v7/test_temporal_unix.py"
+    assert "F.make_ym_interval(" in files[transform_path]
+    assert "F.make_dt_interval(" in files[transform_path]
+
+    with generated_project(tmp_path, PACKAGE, files):
+        generated_schemas = importlib.import_module(f"{PACKAGE}.pyspark.schemas.test_temporal_unix")
+        source = spark.createDataFrame(
+            [(date(2026, 10, 2),)],
+            generated_schemas.INTERVAL_INPUT_SCHEMA,
+        )
+        online = IntervalArithmetic(rows=source).run(session(spark, execution_mode="online"))
+        generated = IntervalArithmetic(rows=source).run(
+            session(spark, execution_mode="generated", generated_package=PACKAGE)
+        )
+        assert online.result.schema["year_month"].dataType.simpleString() == "interval year to month"
+        assert online.result.schema["day_time"].dataType.simpleString() == "interval day to second"
+        selected = ("month_shift", "day_shift", "scaled_day_shift")
+        assert_online_generated_parity(
+            lambda: online.result.select(*selected),
+            lambda: generated.result.select(*selected),
+        )
+        actual = rows(generated.result.select(*selected), *selected)[0]
+        if backend_name().startswith("spark-connect"):
+            with pytest.raises(Exception):
+                online.result.select("year_month").collect()
+        elif backend_name().endswith("40"):
+            with pytest.raises(Exception, match="YearMonthIntervalType.fromInternal is not implemented"):
+                online.result.select("year_month").collect()
+        else:
+            assert online.result.select("year_month").first()[0] is not None
+        assert online.result.select("day_time").first()[0] == timedelta(days=1, seconds=2)
+
+    assert actual["month_shift"] == date(2027, 12, 2)
+    assert str(actual["day_shift"]) == "2026-10-03 00:00:02"
+    assert str(actual["scaled_day_shift"]) == "2026-10-04 00:00:00"
+
+
+class CalendarIntervalOutput(Schema):
+    calendar = interval_field(type=Interval.CALENDAR, nullable=False)
+    shifted = date_field(nullable=False)
+
+
+@transform
+class CalendarIntervalTransform(Transform):
+    rows = input(IntervalInput)
+    result = output(CalendarIntervalOutput)
+
+    def publish(self, row: IntervalInput) -> CalendarIntervalOutput:
+        calendar = make_interval(months=1, days=1)
+        return CalendarIntervalOutput(calendar=calendar, shifted=row.base_day + calendar)
+
+
+@pytest.mark.skipif(not backend_name().endswith("35"), reason="CalendarIntervalType Schema support requires PySpark 4.0")
+def test_calendar_interval_schema_is_rejected_on_spark_35(spark) -> None:
+    source = spark.createDataFrame([(date(2026, 10, 2),)], "base_day date")
+    with pytest.raises(TypeError, match="CalendarIntervalType is unavailable"):
+        CalendarIntervalTransform(rows=source).run(session(spark, execution_mode="online"))
+
+
+@pytest.mark.skipif(backend_name().endswith("35"), reason="CalendarIntervalType Schema support requires PySpark 4.0")
+def test_calendar_interval_schema_is_available_on_spark_40(spark, tmp_path) -> None:
+    files = render_generated_project(
+        CalendarIntervalTransform,
+        source_transform=f"{SOURCE_MODULE}.CalendarIntervalTransform",
+        generated_package=PACKAGE,
+        source_schema_modules={SOURCE_MODULE: [IntervalInput, CalendarIntervalOutput]},
+    )
+    assert "T.CalendarIntervalType()" in files[f"{PACKAGE}/pyspark/schemas/test_temporal_unix.py"]
+
+    with generated_project(tmp_path, PACKAGE, files):
+        generated_schemas = importlib.import_module(f"{PACKAGE}.pyspark.schemas.test_temporal_unix")
+        source = spark.createDataFrame(
+            [(date(2026, 10, 2),)],
+            generated_schemas.INTERVAL_INPUT_SCHEMA,
+        )
+        online = CalendarIntervalTransform(rows=source).run(session(spark, execution_mode="online"))
+        generated = CalendarIntervalTransform(rows=source).run(
+            session(spark, execution_mode="generated", generated_package=PACKAGE)
+        )
+        assert online.result.schema["calendar"].dataType.typeName() == "interval"
+        assert_online_generated_parity(
+            lambda: online.result.select("shifted"),
+            lambda: generated.result.select("shifted"),
+        )
+        actual = rows(generated.result.select("shifted"), "shifted")[0]["shifted"]
+        if backend_name().startswith("spark-connect"):
+            with pytest.raises(Exception, match="not supported in conversion to Arrow"):
+                online.result.select("calendar").collect()
+        else:
+            with pytest.raises(Exception, match="CalendarIntervalType.fromInternal is not implemented"):
+                online.result.select("calendar").collect()
+
+    assert actual == date(2026, 11, 3)

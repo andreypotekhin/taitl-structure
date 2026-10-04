@@ -170,7 +170,9 @@ The choice is part of the contract. Structure does not infer a field type from l
 not compared or assigned interchangeably. Python `datetime.datetime` annotations continue to infer `timestamp()`.
 Qualified intervals use `field.interval(...)` in a Schema and `types.interval(...)` where a standalone Structure type
 is needed. Both require exactly one of `type=` or `unit=`. Calendar interval fields require PySpark 4.0; on 3.5,
-calendar intervals remain expression-only. PySpark may reject Python Row conversion for CalendarIntervalType.
+calendar intervals remain expression-only. Interval Row conversion is target-sensitive: DayTime values convert to
+`datetime.timedelta`, while YearMonth and Calendar values fail on tested PySpark 4.0 and/or Spark Connect paths. Keep
+these intervals inside SQL expressions and collect a non-interval output column.
 
 ### Decimal
 

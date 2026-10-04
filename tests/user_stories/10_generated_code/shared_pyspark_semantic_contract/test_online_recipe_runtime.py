@@ -1,3 +1,4 @@
+import builtins
 import sys
 from dataclasses import dataclass
 from dataclasses import replace as dataclass_replace
@@ -365,13 +366,16 @@ def test_online_expression_evaluator_preserves_pyspark_column_semantics() -> Non
             _call("nvl2", _field(RawOrder, "status"), _literal("known"), _literal("unknown")),
             "nvl2(col(orders.status),lit('known'),lit('unknown'))",
         ),
-        (_call("zeroifnull", _field(RawOrder, "status")), "zeroifnull(col(orders.status))"),
+        (
+            _call("zeroifnull", _field(RawOrder, "status")),
+            "coalesce(col(orders.status),cast(lit(0) as STRING))",
+        ),
         (_call("nanvl", _field(RawOrder, "status"), _literal(0.0)), "nanvl(col(orders.status),lit(0.0))"),
         (_call("bround", _field(RawOrder, "status"), scale=1), "bround(col(orders.status),1)"),
         (_call("sqrt", _field(RawOrder, "status")), "sqrt(col(orders.status))"),
         (_call("pow", _field(RawOrder, "status"), _literal(2)), "pow(col(orders.status),lit(2))"),
         (_call("log", _field(RawOrder, "status")), "log(col(orders.status))"),
-        (_call("log", _field(RawOrder, "status"), base=10), "log(10,col(orders.status))"),
+        (_call("log", _field(RawOrder, "status"), base=10), "log(10.0,col(orders.status))"),
         (_call("exp", _field(RawOrder, "status")), "exp(col(orders.status))"),
         (_call("signum", _field(RawOrder, "status")), "signum(col(orders.status))"),
         (_call("ltrim", _field(RawOrder, "status")), "ltrim(col(orders.status))"),
@@ -4009,7 +4013,10 @@ class FakeFunctions(ModuleType):
     def log(self, *arguments):
         return FakeColumn(
             "log("
-            + ",".join(str(argument) if isinstance(argument, int) else argument.expression for argument in arguments)
+            + ",".join(
+                str(argument) if isinstance(argument, (builtins.int, builtins.float)) else argument.expression
+                for argument in arguments
+            )
             + ")"
         )
 
@@ -4036,9 +4043,6 @@ class FakeFunctions(ModuleType):
 
     def nvl2(self, value, present, missing):
         return FakeColumn(f"nvl2({value.expression},{present.expression},{missing.expression})")
-
-    def zeroifnull(self, value):
-        return FakeColumn(f"zeroifnull({value.expression})")
 
     def nullif(self, left, right):
         return FakeColumn(f"nullif({left.expression},{right.expression})")

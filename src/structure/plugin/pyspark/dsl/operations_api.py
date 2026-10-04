@@ -157,6 +157,11 @@ def grouping_id() -> Expression:
     return _aggregate("grouping_id", type=IntegerType(), nullable=False)
 
 
+def grouping(value: object) -> Expression:
+    """Return Spark's integer subtotal flag for a grouping-set key."""
+    return _aggregate("grouping", literal(value), type=IntegerType(), nullable=False)
+
+
 def is_grouped(value: object) -> Expression:
     """Return whether a grouping-set key is omitted from the current aggregate row."""
     return _aggregate("is_grouped", literal(value), type=BooleanType(), nullable=False)
@@ -344,6 +349,18 @@ def avg(value: object, *, where: object | None = None) -> Expression:
     )
 
 
+def mean(value: object, *, where: object | None = None) -> Expression:
+    """Return the PySpark ``mean`` spelling with Spark numeric widening."""
+    argument = literal(value)
+    return _aggregate(
+        "mean",
+        argument,
+        type=_avg_type(argument),
+        nullable=argument.nullable or where is not None,
+        where=where,
+    )
+
+
 def sum(value: object, *, where: object | None = None) -> Expression:
     """Return a sum aggregate with Spark numeric widening."""
     argument = literal(value)
@@ -380,9 +397,26 @@ def bool_or(value: object, *, where: object | None = None) -> Expression:
     )
 
 
+def some(value: object, *, where: object | None = None) -> Expression:
+    """Return the PySpark ``some`` spelling for whether any Boolean is true."""
+    argument = literal(value)
+    return _aggregate("some", argument, type=BooleanType(), nullable=argument.nullable or where is not None, where=where)
+
+
+def every(value: object, *, where: object | None = None) -> Expression:
+    """Return whether every boolean value in the group is true."""
+    argument = literal(value)
+    return _aggregate("every", argument, type=BooleanType(), nullable=argument.nullable or where is not None, where=where)
+
+
 def stddev(value: object, *, where: object | None = None) -> Expression:
     """Return the sample standard deviation aggregate."""
     return _aggregate("stddev", literal(value), type=DoubleType(), nullable=True, where=where)
+
+
+def std(value: object, *, where: object | None = None) -> Expression:
+    """Return the PySpark ``std`` spelling for sample standard deviation."""
+    return _aggregate("std", literal(value), type=DoubleType(), nullable=True, where=where)
 
 
 def variance(value: object, *, where: object | None = None) -> Expression:
@@ -431,6 +465,11 @@ def corr(left: object, right: object, *, where: object | None = None) -> Express
 def covar(left: object, right: object, *, where: object | None = None) -> Expression:
     """Return sample covariance for two numeric expressions."""
     return _aggregate("covar", literal(left), literal(right), type=DoubleType(), nullable=True, where=where)
+
+
+def covar_pop(left: object, right: object, *, where: object | None = None) -> Expression:
+    """Return population covariance for two numeric expressions."""
+    return _aggregate("covar_pop", literal(left), literal(right), type=DoubleType(), nullable=True, where=where)
 
 
 def regr_avgx(y: object, x: object, *, where: object | None = None) -> Expression:
@@ -526,6 +565,77 @@ def hll_sketch_agg(
         nullable=True,
         where=where,
         options=(("lg_config_k", lg_config_k),),
+    )
+
+
+def hll_union_agg(
+    value: object,
+    *,
+    allow_different_lg_config_k: bool = False,
+    where: object | None = None,
+) -> Expression:
+    """Merge typed HLL state within each aggregate group."""
+    if not isinstance(allow_different_lg_config_k, bool):
+        raise TypeError("hll_union_agg(...) allow_different_lg_config_k must be a Boolean")
+    argument = literal(value)
+    if not isinstance(argument.type, HllSketchType):
+        raise TypeError("hll_union_agg(...) requires an opaque HLL Structure expression")
+    aggregate = _aggregate(
+        "hll_union_agg",
+        argument,
+        type=argument.type,
+        nullable=True,
+        where=where,
+        options=(("allow_different_lg_config_k", allow_different_lg_config_k),),
+    )
+    if not allow_different_lg_config_k:
+        return aggregate
+    data = dict(aggregate.data or {})
+    data["warnings"] = ("SKETCH-W0802",)
+    return Expression(
+        kind=aggregate.kind,
+        type=aggregate.type,
+        nullable=aggregate.nullable,
+        data=data,
+        args=aggregate.args,
+    )
+
+
+def histogram_numeric(
+    value: object,
+    n_bins: object,
+    *,
+    as_: type[Schema],
+    where: object | None = None,
+) -> Expression:
+    """Build Spark's numeric histogram with an explicit typed bucket schema."""
+    argument = _numeric_expression(value, "histogram_numeric(...)")
+    bins = literal(n_bins)
+    if bins.kind != "literal" or not isinstance(bins.type, (IntegerType, LongType)):
+        raise TypeError("histogram_numeric(...) n_bins must be a foldable integer literal")
+    bin_count = (bins.data or {}).get("value")
+    if isinstance(bin_count, bool) or not isinstance(bin_count, int) or not 2 <= bin_count <= 2**31 - 1:
+        raise ValueError("histogram_numeric(...) n_bins must be from 2 through 2147483647")
+    if not isinstance(as_, type) or not issubclass(as_, Schema):
+        raise TypeError("histogram_numeric(...) as_ must be a bucket Schema class")
+    bucket_fields = as_._structure_fields
+    if set(bucket_fields) != {"x", "y"}:
+        raise TypeError("histogram_numeric(...) as_ must declare exactly x and y fields")
+    x_field, y_field = bucket_fields["x"], bucket_fields["y"]
+    if x_field.column != "x" or y_field.column != "y":
+        raise TypeError("histogram_numeric(...) as_ must preserve the x and y field names without aliases")
+    input_type = argument.type
+    if input_type is None or not _same_type(x_field.type, input_type) or not x_field.nullable:
+        raise TypeError("histogram_numeric(...) as_.x must be nullable and match the numeric input type")
+    if not isinstance(y_field.type, DoubleType) or not y_field.nullable:
+        raise TypeError("histogram_numeric(...) as_.y must be a nullable double")
+    return _aggregate(
+        "histogram_numeric",
+        argument,
+        bins,
+        type=ArrayType(StructType(as_), contains_null=True),
+        nullable=True,
+        where=where,
     )
 
 

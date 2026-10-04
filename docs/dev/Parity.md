@@ -53,13 +53,21 @@ gaps. PySpark 4.1 adoption has a separate ledger in [APICatalog.md](../APICatalo
 
 ## Current Baseline
 
-This register is current as of 2026-09-25. The default target remains PySpark `>=3.5,<4.1`, ordinary PySpark, with
+This register is current as of 2026-10-03. The default target remains PySpark `>=3.5,<4.1`, ordinary PySpark, with
 Spark Connect claims only for completed compiler-visible batch features. The authoritative inventory is the intersection
 of the PySpark 3.5.x and 4.0.x public APIs, not the newest Spark documentation.
 
 Full SQL-function coverage means that every baseline function has exactly one disposition: implemented with evidence,
 planned for a typed Structure contract, design-gated, caller-owned-guided, streaming-ineligible, or unsupported. It does
 not mean that every function must be exposed under the same spelling or that arbitrary SQL strings become acceptable.
+
+The official function-name census is reconciled against the pinned PySpark 3.5.6 and 4.0.0 indexes: 420 and 448
+documented names, with 409 shared. The machine-readable
+[source crosswalk](../../src/structure/plugin/pyspark/resources/pyspark-function-index-crosswalk.json) records those
+snapshots, while the [transformation inventory](../../src/structure/plugin/pyspark/resources/pyspark-transformation-inventory.json)
+classifies selected functions, explicit exclusions, target-only additions, and the `partitioning` namespace. This
+closes name-scope accounting only; the [function-level gap register](gaps/PySpark-SQL-baseline.gaps.md), runtime
+evidence, and profile-specific semantic contracts remain authoritative for parity.
 
 The eight examples raised during the audit resolve as follows: `hour` and `exp` were already implemented; the PySpark
 spelling is `add_months` rather than `add_month`; and the implementation slices now cover `add_months`, `next_day`,
@@ -115,6 +123,16 @@ expansion, not generated-result contract failures. Connect Search failures occur
 identifies the unsupported helper as `array`. Exact Search vector retrieval, Search generated/online comparison, full
 Connect Search proving, and broader streaming state/lifecycle claims remain gated or deferred.
 
+### Focused P09302601 runtime evidence (2026-10-03)
+
+These targeted lanes close the specific `btrim` and admitted-numeric checks tracked by the SQL baseline closeout. They
+do not change the broader full-suite failures or promote unrelated functions.
+
+| Contract | Runtime lanes | Test | Result |
+| --- | --- | --- | --- |
+| Row-valued trim set for `btrim` | Classic and Connect, PySpark 3.5.0 and 4.0.0 | [`test_string_functions_match_generated_execution_on_live_backend`](../../tests/integration/pyspark/v7/test_string_function_parity.py) | 1 passed / 231 deselected per lane; compares native `F.btrim` with generated Structure output and checks online/generated parity. |
+| Admitted numeric functions | Classic and Connect, PySpark 3.5.0 and 4.0.0 | [`test_numeric_functions_match_native_and_generated_execution`](../../tests/integration/pyspark/v7/test_numeric_function_parity.py) | 1 passed / 231 deselected per lane; compares native, online, and generated results. |
+
 ## SQL Function Family Register
 
 The table records the current family-level gaps. “Covered” includes a typed equivalent where the Structure API is
@@ -122,18 +140,18 @@ intentionally more explicit; “open” names the remaining PySpark functions or
 
 | Family | Status | Covered now | Open gaps / boundary |
 | --- | --- | --- | --- |
-| Normal, conditional, predicate, and sort | partial | `literal`, `when`, null-control helpers, `isnull`, `isnotnull`, `isnan`, `equal_null`, function-form `like`/`ilike`/`regexp`/`regexp_like`/`rlike` | Null-ordering sort helpers remain open. `expr` and `call_function` remain unsupported. |
-| String | partial | `ascii`, `btrim`, `char`, `char_length`, `contains`, `elt`, `find_in_set`, `format_number`, `format_string`, `printf`, `lower`, `upper`, trim variants, `lpad`, `rpad`, `left`, `right`, `substring`, `substr`, `substring_index`, `split`, regex extraction/count/instruction/substr variants, `regexp_extract_all`, `concat_ws`, `length`, `locate`, `mask`, `octet_length`, `overlay`, `position`, `repeat`, `replace`, `initcap`, `reverse`, `soundex`, `translate`, `instr`, `levenshtein`, `split_part` | UTF-8 validation is PySpark 4.0-only and target-gated; `randstr` belongs to the 4.1 ledger. Regex patterns and capture-group indexes use the current literal-argument policy. |
-| Numeric and mathematical | implemented | `abs`, `acos`, `acosh`, `asin`, `asinh`, `atan`, `atan2`, `atanh`, `bin`, `bround`, `cbrt`, `ceil`, `conv`, `cos`, `cosh`, `cot`, `csc`, `degrees`, `e`, `exp`, `expm1`, `factorial`, `floor`, `greatest`, `hex`, `hypot`, `least`, `ln`, `log`, `log10`, `log1p`, `log2`, `pmod`, `pi`, `pow`, `radians`, `rint`, `round`, `sec`, `sign`, `signum`, `sin`, `sinh`, `sqrt`, `tan`, `tanh`, `unhex`, `width_bucket` | All currently reviewed baseline numeric functions have typed contracts; `width_bucket` uses a positive bucket-count literal. |
-| Random and seeded | partial | `rand`, `randn` with explicit seed/reproducibility policy | `uniform`, `randstr`, and other random helpers need separate contracts; streaming support is target-evidence driven. |
-| Date and timestamp | partial | Typed date arithmetic, formatting, truncation, extraction, epoch-day conversion, query clocks, `convert_timezone`, `make_date`, `to_timestamp_ntz`, Unix-seconds helpers, and UTC conversion helpers. | Newly reconciled baseline names and their per-function candidate/design gates are in the [baseline gap register](gaps/PySpark-SQL-baseline.gaps.md); timestamp configuration and interval contracts remain unresolved. |
-| Bitwise and binary | partial | typed Column bitwise methods, SQL `bit_count`, `bit_get`, `getbit`, `shiftleft`, `shiftright`, `shiftrightunsigned`, `base64`, `unbase64`, `encode`, `decode`, `to_binary`, `try_to_binary`, `hex`, `unhex`, and typed AES-GCM helpers | UTF-8 validation is PySpark 4.0-only and target-gated; non-GCM/key-management helpers remain caller-owned. |
-| Hash | implemented | `hash`, `xxhash64`, `crc32`, `md5`, `sha1`, `sha2` | Hashes remain non-identity and non-password-storage primitives; CRC-32 is a checksum rather than a cryptographic digest. |
+| Normal, conditional, predicate, and sort | partial | `literal`, `when`, null-control helpers, `isnull`, `isnotnull`, `isnan`, `equal_null`, function-form `like`/`ilike`/`regexp`/`regexp_like`/`rlike`; typed ascending/descending descriptors with null placement | Typed sort descriptors are implemented; `expr` and `call_function` remain unsupported because they erase the typed expression boundary. |
+| String | partial | `ascii`, `btrim`, `char`, `char_length`, `contains`, `elt`, `find_in_set`, `format_number`, `format_string`, `printf`, `lower`, `upper`, trim variants, `lpad`, `rpad`, `left`, `right`, `substring`, `substr`, `substring_index`, `split`, regex extraction/count/instruction/substr variants, `regexp_extract_all`, `concat_ws`, `length`, `locate`, `mask`, `octet_length`, `overlay`, `position`, `repeat`, `replace`, `initcap`, `reverse`, `soundex`, `translate`, `instr`, `levenshtein`, `split_part` | UTF-8 validation and `randstr` are PySpark 4.0-only and target-gated. Regex patterns and capture-group indexes use the current literal-argument policy. |
+| Numeric and mathematical | partial | `abs`, `acos`, `acosh`, `asin`, `asinh`, `atan`, `atan2`, `atanh`, `bin`, `bround`, `cbrt`, `ceil`, `ceiling`, `conv`, `cos`, `cosh`, `cot`, `csc`, `degrees`, `e`, `exp`, `expm1`, `factorial`, `floor`, `greatest`, `hex`, `hypot`, `least`, `ln`, `log`, `log10`, `log1p`, `log2`, `negate`, `negative`, `positive`, `power`, `pmod`, `pi`, `pow`, `radians`, `rint`, `round`, `sec`, `sign`, `signum`, `sin`, `sinh`, `sqrt`, `tan`, `tanh`, `unhex`, `width_bucket` | Exact-name aliases are implemented; `try_add`, `try_divide`, `try_multiply`, `try_subtract`, `try_avg`, and `try_sum` remain design-gated pending overflow, ANSI, and aggregate contracts. |
+| Random and seeded | partial | `rand`, `randn` with explicit seed/reproducibility policy | PySpark 4.0 `randstr` and `uniform` are target-gated; newer random helpers need separate contracts; streaming support is target-evidence driven. |
+| Date and timestamp | partial | Typed date arithmetic, formatting, truncation, extraction, epoch-day/epoch-unit conversion, query clocks, timezone conversion, timestamp construction/parsing, and qualified intervals. | All 59 inventoried temporal/query-clock names have per-function contracts. The official 3.5.6/4.0.0 function-index census is reconciled; semantic parity remains function- and profile-specific. Calendar Schema/Row materialization retains documented target-specific limits. See the [baseline gap register](gaps/PySpark-SQL-baseline.gaps.md). |
+| Bitwise and binary | partial | typed Column bitwise methods, SQL `bitwise_not`, `bit_count`, `bit_get`, `getbit`, `shiftleft`, `shiftright`, `shiftrightunsigned`, `base64`, `unbase64`, `encode`, `decode`, `to_binary`, `try_to_binary`, `hex`, `unhex`, and typed AES-GCM helpers | UTF-8 validation is PySpark 4.0-only and target-gated; non-GCM/key-management helpers remain caller-owned. |
+| Hash | implemented | `hash`, `xxhash64`, `crc32`, `md5`, `sha`, `sha1`, `sha2` | PySpark `sha` maps to Structure `sha1`; hashes remain non-identity and non-password-storage primitives, and CRC-32 is a checksum rather than a cryptographic digest. |
 | JSON and CSV | partial | Schema-carrying `from_json`, `to_json`, `from_csv`, `to_csv`, typed `get_json_object`, `json_array_length`, `json_object_keys`, declared-schema `json_tuple`, and literal `schema_of_json`/`schema_of_csv` | `json_tuple` is top-level and nullable-string-only; dynamic schema inference remains unsupported. |
-| Arrays and higher-order functions | implemented | Typed array construction, lookup, mutation, set, concatenation, size, join, extrema, overlap, sort, shuffle, `sequence`, `slice`, `reduce`, `arrays_zip`, and symbolic callbacks through `arr_*`/`array_*` | Remaining baseline callback/array aliases require only a parity decision; stable `array_N` field names keep `arrays_zip` schema-visible. |
+| Arrays and higher-order functions | implemented | Typed array construction, lookup, mutation, set, concatenation, size, join, extrema, overlap, sort, shuffle, `sequence`, `slice`, `reduce`, `arrays_zip`, and symbolic callbacks through `arr_*`/`array_*` | The per-function register records exact alias coverage and narrower contracts, including numeric-only `sequence`, literal-only `array_remove` items, typed-key `array_sort`, and stable `array_N` fields for `arrays_zip`; use native PySpark for the cases each row marks caller-owned. |
 | Struct and map | implemented | Typed `create_map`, `map_from_arrays`, `str_to_map`, `named_struct`, map lookup/entries/callbacks; schema constructors own declared struct shape | Map keys are non-null, `str_to_map` delimiters are non-empty literals, and `named_struct` field names are unique non-empty literals. |
-| Aggregates | partial | Core, boolean, statistical, `count_if`, `median`, population/sample standard-deviation and variance aliases, percentile, collection, deterministic `mode`, `any_value`, `array_agg`, bitwise, `first`/`last`, `max_by`/`min_by`, `product`, `sum_distinct`, regression aggregates, and opaque HLL/Bitmap aggregates | String aggregation is PySpark 4.0-only and target-gated; KLL/Theta are profile-gated and Count-Min remains caller-owned. |
-| Windows | partial | Typed ranking, lag/lead, value selection, and aggregate-window helpers | Raw `Column.over`, complete null-ordering options, and any aggregate/window form not admitted through typed `WindowSpec`. |
+| Aggregates | partial | Core, boolean/statistical aliases including `some`, `mean`, `std`, population covariance, `count_if`, `median`, population/sample standard-deviation and variance aliases, subtotal metadata (`grouping`, `grouping_id`), percentile and typed `histogram_numeric`, collection, deterministic `mode`, `any_value`, `array_agg`, bitwise, `first`/`last`, `max_by`/`min_by`, `product`, `sum_distinct`, regression aggregates, and opaque HLL/Bitmap aggregates including typed `hll_union_agg` | PySpark 4.0 string-aggregation names are target-gated; KLL/Theta are profile-gated and Count-Min remains caller-owned. |
+| Windows | partial | Per-function typed ranking/distribution, lag/lead, value selection, and aggregate-window forms | Raw `Column.over` remains unsupported; expression-valued `lag`/`lead` defaults and value-function `ignoreNulls` controls remain caller-owned. |
 | Generators and partition transforms | partial | Typed array/map/struct generators, Variant TVFs, and `stack` | `stack` has a fixed Schema/cardinality contract; generic generators and writer partition transforms remain caller-owned. |
 | Relation distribution | implemented | `coalesce(partitions=...)`, hash `repartition(count, *keys)` / `repartition(*keys)`, and `repartition_by_range(...)` | Hash distribution is streaming-compatible with an advisory; range repartitioning remains batch-only. Writer partition transforms remain caller-owned. |
 | Variant | partial | Released-profile parsing, extraction, validation, schema inspection, conversion, and TVF expansion | `is_valid_variant` and Variant mutations remain target-gated until a released profile has complete evidence. |

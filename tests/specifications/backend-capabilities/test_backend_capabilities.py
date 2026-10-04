@@ -100,10 +100,15 @@ def test_supported_v2_join_requirement_passes(name: str) -> None:
         "count",
         "count_distinct",
         "covar",
+        "covar_pop",
+        "mean",
+        "some",
+        "std",
         "cube",
         "filtered_metric",
         "first_value",
         "group_by",
+        "grouping",
         "grouping_id",
         "grouping_sets",
         "having",
@@ -501,6 +506,15 @@ def test_try_url_decode_requires_the_pyspark_4_profile() -> None:
     assert MapPySparkExpression().map(
         try_url_decode("x"), capabilities=PySparkCapabilities(target_profile=">=4.0,<4.1")
     ).data["function"] == "try_url_decode"
+
+
+def test_decimal_histogram_requires_the_pyspark_4_profile() -> None:
+    requirement = CapabilityRequirement(group="aggregate", name="histogram_numeric_decimal")
+
+    assert not PySparkCapabilities().supports(requirement).supported
+    assert not PySparkCapabilities(target_profile=">=3.5,<4.0").supports(requirement).supported
+    assert PySparkCapabilities(target_profile=">=4.0,<4.1").supports(requirement).supported
+    assert not PySparkCapabilities(target_profile=">=4.2,<4.3").supports(requirement).supported
 
 
 def test_variant_schema_requires_the_pyspark_4_profile() -> None:

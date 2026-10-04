@@ -25,6 +25,7 @@ PySpark 4.1 profile capability and remain outside this baseline function surface
 | Function | Input contract | Result contract |
 | --- | --- | --- |
 | `hll_sketch_agg` | Scalar; literal `lg_config_k` 4--21; optional `where` | Nullable HLL preserving precision |
+| `hll_union_agg` | HLL value; optional `allow_different_lg_config_k` and `where` | Nullable HLL preserving declared precision; mixed-precision opt-in warns that Spark may reduce precision |
 | `hll_union` | Two HLL values | Nullable HLL; equal precision by default |
 | `hll_sketch_estimate` | HLL value | Nullable Long |
 | `bitmap_construct_agg` | Integer or Long expression; optional Boolean `where` | Nullable Bitmap |
@@ -32,8 +33,10 @@ PySpark 4.1 profile capability and remain outside this baseline function surface
 | `bitmap_count` | Bitmap value | Nullable Long |
 | `bitmap_bit_position`, `bitmap_bucket_number` | Integer or Long expression | Nullable Long |
 
-`hll_union(..., allow_different_lg_config_k=True)` is the sole mixed-precision exception. It emits `SKETCH-W0802` and
-records the opt-in in the expression metadata. Any other HLL precision mismatch fails during symbolic authoring.
+`hll_union(..., allow_different_lg_config_k=True)` and
+`hll_union_agg(..., allow_different_lg_config_k=True)` are mixed-precision exceptions. Each emits `SKETCH-W0802` and
+records the opt-in in expression metadata. Pairwise mismatches fail during symbolic authoring by default; the
+aggregate form retains the declared input precision and Spark validates runtime sketch compatibility.
 
 ## Lowering and diagnostics
 
@@ -56,7 +59,7 @@ The implementation is acceptable when focused tests prove all of the following:
 
 - HLL and Bitmap types preserve their brands and materialize as Binary;
 - invalid precision, raw Binary, opposite-family state, and non-integral Bitmap inputs fail before Spark runs;
-- HLL construction, union, estimate, Bitmap construction/OR/count, and position helpers render to the public PySpark
+- HLL construction, pairwise/aggregate union, estimate, Bitmap construction/OR/count, and position helpers render to the public PySpark
   calls and agree in online execution;
 - mixed HLL precision rejects by default and emits `SKETCH-W0802` when explicitly permitted;
 - schema/profile capability checks reject KLL/Theta outside their target profile; and

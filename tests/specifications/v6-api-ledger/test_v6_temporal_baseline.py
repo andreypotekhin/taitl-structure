@@ -7,6 +7,7 @@ from structure.plugin.pyspark import (
     Interval,
     Temporal,
     date_diff,
+    date_sub,
     dateadd,
     day,
     extract,
@@ -64,6 +65,13 @@ def test_temporal_aliases_preserve_pyspark_spelling_and_types():
     assert _render(date_diff(date_value, date_value)).startswith("F.date_diff(")
     assert _render(dateadd(date_value, days=1)).startswith("F.dateadd(")
     assert _render(day(date_value)).startswith("F.day(")
+
+
+def test_date_sub_accepts_a_typed_row_dependent_day_count():
+    previous = date_sub(literal(date(2026, 10, 2)), days=literal(2))
+    assert isinstance(previous.type, DateType)
+    assert _render(previous).startswith("F.date_sub(")
+    assert "F.lit(2)" in _render(previous)
 
 
 def test_localtimestamp_is_ntz_query_clock():
@@ -130,3 +138,8 @@ def test_interval_subtraction_type_tracks_legacy_setting():
     assert (left - right).type == types.interval(type=Interval.DAY_TO_SECOND)
     with compilation_settings({"spark.sql.legacy.interval.enabled": True}):
         assert (left - right).type == types.interval(type=Interval.CALENDAR)
+
+
+def test_calendar_interval_date_addition_preserves_spark_date_type():
+    value = literal(date(2026, 10, 2))
+    assert isinstance((value + make_interval(months=1, days=1)).type, DateType)

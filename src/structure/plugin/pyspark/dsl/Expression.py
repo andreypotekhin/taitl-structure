@@ -623,11 +623,11 @@ class Expression:
             return right
         if kind in {"add", "sub"} and isinstance(left, temporal) and isinstance(right, IntervalType):
             if isinstance(left, DateType):
-                return DateType() if right.kind == "year_month" else TimestampType()
+                return DateType() if right.kind in {"year_month", "calendar"} else TimestampType()
             return left
         if kind == "add" and isinstance(left, IntervalType) and isinstance(right, temporal):
             if isinstance(right, DateType):
-                return DateType() if left.kind == "year_month" else TimestampType()
+                return DateType() if left.kind in {"year_month", "calendar"} else TimestampType()
             return right
         raise TypeError("Unsupported interval arithmetic; combine compatible intervals, scale by a number, or add to a date/timestamp")
 

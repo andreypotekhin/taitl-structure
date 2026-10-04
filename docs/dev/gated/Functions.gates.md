@@ -25,7 +25,7 @@ the gate register searchable without duplicating the full PySpark inventory.
 | AES-GCM helpers | `implemented` | Typed GCM calls and explicit-IV warning are implemented; ordinary target evidence remains a release check. |
 | Dynamic JSON schemas | `caller-owned-guided` | Runtime inference cannot alter a compiled Schema. |
 | Sketch and bitmap aggregates | `implemented` | Baseline HLL/Bitmap opaque types and merge consumers are implemented; KLL/Theta remain profile-gated and evidence-bound. |
-| `stack` | `implemented` | Fixed row multiplication and trailing-NULL padding use an explicit result Schema; ordinary and Connect runtime evidence remains a release check. |
+| `stack` | `implemented` | Fixed row multiplication and trailing-NULL padding use an explicit result Schema; classic and Connect batch parity is verified on PySpark 3.5 and 4.0. |
 | Generic generators and writer partition transforms | `caller-owned-guided` | No compiler-visible schema/cardinality or output-layout contract. |
 | Relation distribution | `implemented` | `coalesce(partitions=...)`, typed hash repartitioning, and batch-only range repartitioning are implemented. Writer partition transforms remain caller-owned; scalar `coalesce(...)` requires at least two values. |
 | Variant mutation helpers | `target-gated` | Released target profile plus classic, Connect, generated/online, and streaming evidence. |

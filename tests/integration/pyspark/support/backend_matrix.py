@@ -69,7 +69,10 @@ def spark(pytestconfig, monkeypatch):
         builder = builder.config("spark.sql.extensions", "org.apache.sedona.sql.SedonaSqlExtensions")
     if not remote:
         builder = (
-            builder.config("spark.sql.artifact.dir", "/tmp/spark-artifacts")
+            builder.config(
+                "spark.sql.artifact.dir",
+                os.environ.get("STRUCTURE_SPARK_ARTIFACT_DIR", "/tmp/spark-artifacts"),
+            )
             .config("spark.ui.enabled", "false")
             .config("spark.default.parallelism", "2")
         )

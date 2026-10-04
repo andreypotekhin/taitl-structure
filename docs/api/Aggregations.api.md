@@ -58,6 +58,7 @@ the current `order` row scope as `o`.
 | `cube(...)` | `cube` | `cube(order.region, order.channel)` |
 | `grouping_sets(...)` | Explicit grouping sets | `grouping_sets((order.region,), ())` |
 | `grouping_id()` | `grouping_id` | `grouping_id()` |
+| `grouping(key)` | `grouping(col)` | Integer subtotal flag: 1 when the key is omitted, otherwise 0 |
 | `is_grouped(...)` | Grouping metadata | `is_grouped(order.region)` |
 | `having(...)` | Post-aggregate filter | `group_by(order.id).having(lambda out: out.n > 1)` |
 
@@ -65,8 +66,9 @@ the current `order` row scope as `o`.
 
 - `grouping_sets(...)` renders explicit grouped branches and `unionByName`; `grouping_sets(())` is a single global
   aggregate branch.
-- `grouping_id()` and `is_grouped(...)` describe subtotal rows, whose grouping fields can be null.
+- `grouping_id()`, `grouping(key)`, and `is_grouped(...)` describe subtotal rows, whose grouping fields can be null.
   `is_grouped(key)` is true when the level omits that key; an actual null detail key has a false flag.
+  `grouping(key)` preserves PySpark's integer 1/0 result, while `is_grouped(key)` returns a Boolean.
 
 - Ordered first/last aggregates and latest/earliest row selection check winning ties lazily in both execution modes.
   Construction launches no validation jobs. Evaluated guards reject identical winning duplicates and conflicting
@@ -81,6 +83,7 @@ the current `order` row scope as `o`.
 | --- | --- | --- |
 | `bool_and(...)` | `bool_and` | `bool_and(order.is_verified)` |
 | `bool_or(...)` | `bool_or` | `bool_or(order.is_priority)` |
+| `every(...)` | `every` | `every(order.is_verified)` |
 | `stddev(...)` | `stddev` | `stddev(order.total)` |
 | `stddev_pop(...)`, `stddev_samp(...)` | `stddev_pop`, `stddev_samp` | `stddev_pop(order.total)` |
 | `variance(...)` | `variance` | `variance(order.total)` |
@@ -88,8 +91,13 @@ the current `order` row scope as `o`.
 | `median(...)` | `median` | `median(order.total)` |
 | `corr(...)` | `corr` | `corr(order.price, order.quantity)` |
 | `covar(...)` | `covar` | `covar(order.price, order.quantity)` |
+| `covar_pop(...)` | `covar_pop` | `covar_pop(order.price, order.quantity)` |
+| `mean(...)` | `mean` | `mean(order.total)` |
+| `some(...)` | `some` | `some(order.is_verified)` |
+| `std(...)` | `std` | `std(order.total)` |
 | `approx_count_distinct(...)` | `approx_count_distinct` | `approx_count_distinct(o.customer_id, relative_sd=0.05)` |
 | `approx_percentile(...)` | `approx_percentile` | `approx_percentile(order.total, 0.5, accuracy=100)` |
+| `histogram_numeric(value, n_bins, *, as_, where=None)` | `histogram_numeric` | `histogram_numeric(order.total, 20, as_=LatencyBucket)` |
 | `percentile(...)` | `percentile` | `percentile(order.total, 0.5)` |
 | `schema_of_variant_agg(...)` | Variant schema aggregate | `schema_of_variant_agg(order.payload)` |
 | `mode(...)` | `mode` | `mode(order.category, deterministic=True)` |
@@ -102,8 +110,12 @@ the current `order` row scope as `o`.
 
 **Details And Differences**
 
-- Statistical metrics return nullable doubles. `collect_list(...)` can preserve an explicit `order_by=` sequence;
+- Statistical metrics, including population covariance, return nullable doubles. `collect_list(...)` can preserve an explicit `order_by=` sequence;
   without it, and for `collect_set(...)`, collection order is Spark-dependent.
+- `histogram_numeric(...)` returns a nullable array of nullable `{x, y}` buckets; each bucket field is nullable, `x` keeps
+  the input numeric type, and `y` is Double. Declare `as_` as a Schema with exactly nullable `x` and nullable Double
+  `y`. The bin count must be a foldable Integer literal from 2 through 2,147,483,647. Decimal input is profile-gated
+  to exact PySpark 4.0 because Spark 3.5.0 advertises the type but fails during histogram execution.
 - `count_if(...)` accepts a Boolean expression and returns a non-null Long. `median(...)` and the population/sample
   standard-deviation and variance aliases return nullable Double values.
 - `collect_list(...)` and `collect_set(...)` skip null inputs and return an empty non-null array when no values qualify.
@@ -143,6 +155,7 @@ aggregate surface.
 | Structure API | PySpark parity | Example |
 | --- | --- | --- |
 | `hll_sketch_agg(value, lg_config_k=12, where=None)` | HLL construction | `hll_sketch_agg(order.customer_id)` |
+| `hll_union_agg(value, allow_different_lg_config_k=False, where=None)` | HLL aggregate union | `hll_union_agg(order.sketch)` |
 | `hll_union(left, right, allow_different_lg_config_k=False)` | `hll_union` | `hll_union(order.left_hll, order.right_hll)` |
 | `hll_sketch_estimate(value)` | `hll_sketch_estimate` | `hll_sketch_estimate(order.customer_hll)` |
 | `bitmap_construct_agg(value, where=None)` | Bitmap construction | `bitmap_construct_agg(order.position)` |
@@ -152,10 +165,12 @@ aggregate surface.
 
 **Details And Differences**
 
-- HLL construction, Bitmap construction, and Bitmap OR are grouped aggregates. HLL union, estimate, Bitmap count,
+- HLL construction, HLL aggregate union, Bitmap construction, and Bitmap OR are grouped aggregates. Pairwise HLL union, estimate, Bitmap count,
   and position helpers preserve the current row.
 - HLL union requires matching `lg_config_k` by default. Deliberately setting
-  `allow_different_lg_config_k=True` emits `SKETCH-W0802`, because Spark may reduce the result precision.
+  `allow_different_lg_config_k=True` on pairwise or aggregate union emits `SKETCH-W0802`, because Spark may reduce the
+  result precision. Aggregate union carries the declared HLL precision in its result type; Spark remains responsible
+  for validating serialized input sketches.
 - Bitmap construction and position helpers require Integer or Long input. Sketch consumers reject raw Binary and the
   wrong opaque family before execution.
 - Sketch state is compatible only with the appropriate Spark/profile implementation; it is not a portable Binary

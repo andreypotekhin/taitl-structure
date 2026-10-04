@@ -8,6 +8,7 @@ import pytest
 from structure import *
 from structure.core.compiler.api import Compiler
 from structure.plugin.pyspark import *
+from structure.plugin.pyspark import bit_length, character_length, endswith, lcase, startswith, ucase
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.expressions import literal
@@ -556,6 +557,27 @@ def test_deterministic_numeric_helpers_return_typed_null_propagating_expressions
     assert atan2(nullable_decimal, required_integer).nullable is True
 
 
+def test_numeric_aliases_preserve_pyspark_names_and_numeric_contracts() -> None:
+    nullable_decimal = _expression(types.decimal(12, 2), nullable=True)
+    required_integer = _expression(types.integer(), nullable=False)
+
+    for function, arguments, expected_name in (
+        (ceiling, (nullable_decimal,), "ceiling"),
+        (negate, (nullable_decimal,), "negate"),
+        (negative, (nullable_decimal,), "negative"),
+        (positive, (nullable_decimal,), "positive"),
+        (power, (nullable_decimal, required_integer), "power"),
+    ):
+        result = function(*arguments)
+        assert result.data is not None and result.data["function"] == expected_name
+        assert result.nullable is True
+        assert result.type is not None
+        if expected_name == "power":
+            assert result.type.name == "double"
+        else:
+            assert result.type.name == "decimal"
+
+
 def test_remaining_admitted_numeric_helpers_have_typed_contracts() -> None:
     nullable_decimal = _expression(types.decimal(12, 2), nullable=True)
     required_integer = _expression(types.integer(), nullable=False)
@@ -592,7 +614,7 @@ def test_remaining_admitted_numeric_helpers_have_typed_contracts() -> None:
     assert isinstance(converted.type, StringType)
     assert converted.nullable is True
     bucket = width_bucket(nullable_decimal, 0, 100, num_buckets=10)
-    assert bucket.type is not None and bucket.type.name == "integer"
+    assert bucket.type is not None and bucket.type.name == "long"
     assert bucket.nullable is True
 
     with pytest.raises(TypeError, match=r"factorial\(\.\.\.\) requires an integer or long"):
@@ -881,12 +903,16 @@ def test_string_slicing_position_and_byte_helpers_preserve_types() -> None:
     for expression in (
         ascii(nullable_text),
         char_length(nullable_text),
+        character_length(nullable_text),
         locate(nullable_text, substring="a"),
         octet_length(nullable_text),
     ):
         assert expression.type is not None and expression.type.name == "integer"
         assert expression.nullable is True
     assert octet_length(required_binary).nullable is False
+    for expression in (lcase(nullable_text), ucase(nullable_text)):
+        assert expression.type is not None and expression.type.name == "string"
+        assert expression.nullable is True
     for expression in (
         left(nullable_text, length=2),
         repeat(nullable_text, count=2),
@@ -901,9 +927,16 @@ def test_string_slicing_position_and_byte_helpers_preserve_types() -> None:
 def test_extended_string_helpers_preserve_types_and_nullability() -> None:
     nullable_text = _expression(types.string(), nullable=True)
     required_text = _expression(types.string(), nullable=False)
+    nullable_binary = _expression(types.binary(), nullable=True)
     nullable_number = _expression(types.decimal(12, 2), nullable=True)
 
+    text_bits = bit_length(nullable_text)
+    assert text_bits.type is not None and text_bits.type.name == "integer"
+    assert bit_length(nullable_binary).nullable is True
+    assert startswith(nullable_text, required_text).nullable is True
+    assert endswith(_expression(types.binary(), nullable=False), b"0x").nullable is False
     assert btrim(nullable_text, trim="0").nullable is True
+    assert btrim(required_text, trim=nullable_text).nullable is True
     contains_expression = contains(required_text, "Ada")
     assert contains_expression.type is not None and contains_expression.type.name == "boolean"
     assert find_in_set(nullable_text, required_text).nullable is True
@@ -913,6 +946,18 @@ def test_extended_string_helpers_preserve_types_and_nullability() -> None:
     assert mask(nullable_text).nullable is True
     assert overlay(nullable_text, "X", pos=2).nullable is True
     assert overlay(_expression(types.binary(), nullable=False), b"X", pos=2).type is not None
+
+
+def test_string_bit_length_and_boundary_predicates_validate_operand_types() -> None:
+    nullable_text = _expression(types.string(), nullable=True)
+    nullable_binary = _expression(types.binary(), nullable=True)
+
+    with pytest.raises(TypeError, match="bit_length.*String or Binary"):
+        bit_length(_expression(types.integer(), nullable=False))
+    assert startswith(nullable_text, nullable_binary).nullable is True
+    assert endswith(nullable_binary, nullable_text).nullable is True
+    with pytest.raises(TypeError, match="String or Binary"):
+        startswith(nullable_text, _expression(types.integer(), nullable=False))
 
 
 def test_function_predicates_preserve_string_types_and_nullability() -> None:
@@ -935,7 +980,7 @@ def test_function_predicates_require_string_operands() -> None:
 def test_extended_string_helpers_require_valid_arguments() -> None:
     with pytest.raises(TypeError, match=r"btrim\(\.\.\.\) requires a String"):
         btrim(1)
-    with pytest.raises(TypeError, match=r"trim must be a string literal"):
+    with pytest.raises(TypeError, match=r"requires a String Structure expression"):
         btrim("value", trim=cast(str, 1))
     with pytest.raises(TypeError, match=r"format_number\(\.\.\.\) requires a numeric"):
         format_number("value", decimals=2)
@@ -978,8 +1023,12 @@ def test_sql_bitwise_helpers_preserve_integral_contracts() -> None:
     required_position = _expression(types.integer(), nullable=False)
 
     bit_count_expression = bit_count(nullable_value)
+    bitwise_not_expression = bitwise_not(nullable_value)
     assert bit_count_expression.type is not None and bit_count_expression.type.name == "long"
     assert bit_count_expression.nullable is True
+    assert bitwise_not_expression.kind == "bitwise_not"
+    assert bitwise_not_expression.type is not None and bitwise_not_expression.type.name == "long"
+    assert bitwise_not_expression.nullable is True
     for function in (bit_get, getbit):
         expression = function(nullable_value, required_position)
         assert expression.type is not None and expression.type.name == "integer"
@@ -989,6 +1038,11 @@ def test_sql_bitwise_helpers_preserve_integral_contracts() -> None:
 def test_bit_count_requires_an_integral_operand() -> None:
     with pytest.raises(TypeError, match=r"requires an integer or long Structure expression"):
         bit_count(_expression(types.string(), nullable=False))
+
+
+def test_sql_bitwise_not_requires_an_integral_operand() -> None:
+    with pytest.raises(TypeError, match=r"requires an integer or long Structure expression"):
+        bitwise_not(_expression(types.string(), nullable=False))
 
 
 @pytest.mark.parametrize("function", [bit_get, getbit])
@@ -1209,7 +1263,7 @@ def test_round_preserves_non_decimal_numeric_type() -> None:
     assert expression.nullable is True
 
 
-@pytest.mark.parametrize("helper", [bool_and, bool_or])
+@pytest.mark.parametrize("helper", [bool_and, bool_or, every])
 def test_boolean_aggregates_are_required_for_required_unfiltered_values(helper) -> None:
     required = helper(_expression(types.boolean(), nullable=False))
     nullable = helper(_expression(types.boolean(), nullable=True))
@@ -1218,6 +1272,7 @@ def test_boolean_aggregates_are_required_for_required_unfiltered_values(helper) 
     assert required.nullable is False
     assert nullable.nullable is True
     assert filtered.nullable is True
+    assert required.data["function"] == helper.__name__
 
 
 def test_arithmetic_widens_numeric_types_and_propagates_nullability() -> None:

@@ -70,6 +70,7 @@ class CustomerTotals(Transform):
 | `cube(*keys, **named_keys)` | All grouping-key combinations |
 | `grouping_sets(*levels)` | Explicit grouping levels, including `()` for a global branch |
 | `grouping_id()` | Spark grouping bit mask |
+| `grouping(key)` | PySpark-compatible integer subtotal flag (1 omitted, 0 present) |
 | `is_grouped(value)` | True when a dimension is omitted from the subtotal level |
 | `having(predicate)` | Filter aggregate output rather than input rows |
 
@@ -79,9 +80,10 @@ Named grouping keys determine output names. `having(...)` reads the aggregate-ou
 group_by(region=order.region).having(lambda result: result.order_count > 10)
 ```
 
-Subtotal rows can contain null grouping fields even when the source field is non-null. Use `grouping_id()` or
-`is_grouped(...)` before treating such a null as a missing source value. A genuine null key in a detail row has
-`is_grouped(key) == False`; an omitted subtotal dimension has `True`.
+Subtotal rows can contain null grouping fields even when the source field is non-null. Use `grouping_id()`,
+`grouping(key)`, or `is_grouped(...)` before treating such a null as a missing source value. PySpark's `grouping(key)`
+returns Integer 0/1; a genuine null key in a detail row has `is_grouped(key) == False`, while an omitted subtotal
+dimension has `True`.
 
 ### Grouping contracts
 
@@ -148,9 +150,9 @@ return CustomerTotal(
 
 | Family | Operations |
 | --- | --- |
-| Boolean | `bool_and`, `bool_or` |
-| Statistics | `stddev`, `variance`, `corr`, `covar`, `skewness`, `kurtosis` |
-| Approximate | `approx_count_distinct`, `approx_percentile`, `percentile` |
+| Boolean | `bool_and`, `bool_or`, `some`, `every` |
+| Statistics | `std`, `stddev`, `variance`, `corr`, `covar` (sample), `covar_pop` (population), `skewness`, `kurtosis` |
+| Approximate | `approx_count_distinct`, `approx_percentile`, `histogram_numeric`, `percentile` |
 | Collections | `collect_list`, `collect_set` |
 | Mode and Variant | `mode`, `schema_of_variant_agg` |
 
@@ -159,7 +161,10 @@ Spark-dependent order. Both collection aggregates skip null inputs and return an
 qualify. A filtered `first_value(...)` or `last_value(...)` cannot select a row excluded by its own filter.
 
 `sum` and `avg` retain Spark-compatible widening: integral sums widen to Long, Float sums to Double, and Decimal
-precision/scale grow within Spark's bounds. Statistical results are nullable doubles. `mode(..., deterministic=True)`
+precision/scale grow within Spark's bounds. Statistical results, including `covar_pop(...)`, are nullable doubles.
+`mean(...)` has the same numeric widening as `avg(...)`; `std(...)` is sample standard deviation. `covar(...)` is
+sample covariance and `covar_pop(...)` is population covariance. `some(...)` and `bool_or(...)` return true when any
+input is true; `bool_and(...)` and `every(...)` require all inputs to be true. `mode(..., deterministic=True)`
 requires grouped keys and uses the lowest orderable candidate for ties. Variant aggregates require a resolved PySpark 4
 profile.
 
@@ -190,10 +195,11 @@ return TenantSketches(
 )
 ```
 
-`hll_sketch_agg(...)`, `bitmap_construct_agg(...)`, and `bitmap_or_agg(...)` are grouped metrics. Their resulting
+`hll_sketch_agg(...)`, `hll_union_agg(...)`, `bitmap_construct_agg(...)`, and `bitmap_or_agg(...)` are grouped metrics. Their resulting
 state can be read in a later row-preserving projection with `hll_sketch_estimate(...)` or `bitmap_count(...)`.
-`hll_union(left, right)` requires matching HLL precision by default. An external compatibility case may explicitly
-set `allow_different_lg_config_k=True`; it emits `SKETCH-W0802` because Spark can reduce the result precision.
+`hll_union(left, right)` and `hll_union_agg(value)` require matching HLL precision by default. An external
+compatibility case may explicitly set `allow_different_lg_config_k=True`; it emits `SKETCH-W0802` because Spark can
+reduce the result precision.
 
 Spark's Binary representation is not a portable interchange format. Applications own compatibility testing whenever
 state is persisted or transferred. HLL and Bitmap are default-baseline features; KLL and Theta declarations require a
@@ -506,10 +512,10 @@ The grouped metric families are compiler-visible and typed:
 | Family | Operations |
 | --- | --- |
 | Counts | `count`, `count_distinct` |
-| Numeric summary | `sum`, `min`, `max`, `avg` |
-| Boolean | `bool_and`, `bool_or` |
-| Distribution | `stddev`, `variance`, `skewness`, `kurtosis` |
-| Relationship | `corr`, `covar` |
+| Numeric summary | `sum`, `min`, `max`, `avg`, `mean` |
+| Boolean | `bool_and`, `bool_or`, `some`, `every` |
+| Distribution | `std`, `stddev`, `variance`, `skewness`, `kurtosis` |
+| Relationship | `corr`, `covar`, `covar_pop` |
 | Approximate | `approx_count_distinct`, `approx_percentile`, `percentile` |
 | Ordered selection | `first_value`, `last_value` |
 | Collection | `collect_list`, `collect_set` |
@@ -518,6 +524,12 @@ The grouped metric families are compiler-visible and typed:
 Approximate metrics retain the supplied accuracy or relative-standard-deviation option in the compiled plan. They do
 not become exact metrics because a caller omits an option. `schema_of_variant_agg` returns a nullable SQL-format schema
 string and requires a Variant expression on a resolved PySpark 4 profile.
+
+`histogram_numeric(value, n_bins, as_=BucketSchema)` preserves the input type in the nullable bucket field `x` and
+uses nullable Double `y`. Its result is a nullable array with nullable elements. `n_bins` must be a foldable Integer
+literal from 2 through 2,147,483,647, matching Spark's analysis requirement.
+Decimal input is available only under the exact PySpark 4.0 target profile; Spark 3.5.0 fails while executing its
+advertised Decimal form.
 
 ```python
 return MetricSummary(

@@ -27,7 +27,7 @@ class ValidatePySparkAggregates:
             # user-facing ``first_value`` operation it deliberately supports
             # every PySpark field type, including structs.
             if function in {"key", "count", "grouping_id", "first"} or (
-                function == "is_grouped" and argument is not None
+                function in {"grouping", "is_grouped"} and argument is not None
             ):
                 continue
             if argument is None:
@@ -35,11 +35,14 @@ class ValidatePySparkAggregates:
                 continue
             numeric = {
                 "avg",
+                "mean",
                 "sum",
                 "stddev",
+                "std",
                 "variance",
                 "corr",
                 "covar",
+                "covar_pop",
                 "approx_percentile",
                 "percentile",
                 "skewness",
@@ -54,7 +57,7 @@ class ValidatePySparkAggregates:
                 self._error(request, schema_name, assignment.field.name, function, "an orderable scalar expression")
             if function in {"count_distinct", "approx_count_distinct"} and not self._scalar(argument.type):
                 self._error(request, schema_name, assignment.field.name, function, "a scalar expression")
-            if function in {"bool_and", "bool_or"} and not isinstance(argument.type, BooleanType):
+            if function in {"bool_and", "bool_or", "some", "every"} and not isinstance(argument.type, BooleanType):
                 self._error(request, schema_name, assignment.field.name, function, "a Boolean expression")
 
     def _grouping_sets(self, aggregate: AggregatePlan, *, schema_name: str, request: StepAuthoringRequest) -> None:

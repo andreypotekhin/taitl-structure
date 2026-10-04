@@ -52,6 +52,7 @@ from structure.plugin.pyspark.dsl.aggregation import AggregatePlan, ProjectAssig
 from structure.plugin.pyspark.dsl.joins.JoinMethod import JoinMethod
 from structure.plugin.pyspark.dsl.joins.JoinPlan import JoinPlan
 from structure.plugin.pyspark.dsl.operations.OperationCapability import OperationCapability
+from structure.plugin.pyspark.dsl.types import DecimalType
 from structure.plugin.pyspark.symbolic_execution.model.PySparkResultBody import PySparkResultBody
 from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 
@@ -762,6 +763,10 @@ class MapPySparkStep:
         for assignment in aggregate.assignments:
             if assignment.function != "key":
                 capabilities.require(CapabilityRequirement(group="aggregate", name=assignment.function))
+            if assignment.function == "histogram_numeric":
+                value_argument = assignment.arguments[0] if assignment.arguments else assignment.expression
+                if value_argument is not None and isinstance(value_argument.type, DecimalType):
+                    capabilities.require(CapabilityRequirement(group="aggregate", name="histogram_numeric_decimal"))
             if assignment.filter is not None:
                 capabilities.require(CapabilityRequirement(group="aggregate", name="filtered_metric"))
             assignments.append(

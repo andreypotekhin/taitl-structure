@@ -77,10 +77,12 @@ return TenantSketches(
 )
 ```
 
-Construction and Bitmap OR change row grain like any grouped aggregate. `hll_sketch_estimate(...)` and
+HLL construction/aggregate union and Bitmap construction/OR change row grain like any grouped aggregate.
+`hll_sketch_estimate(...)` and
 `bitmap_count(...)` read one opaque value and preserve the current row. Keep a common `lg_config_k` for HLL values
 that will be unioned; a mismatch fails unless the caller explicitly permits it with
-`allow_different_lg_config_k=True`, which emits `SKETCH-W0802` because Spark can reduce precision.
+`allow_different_lg_config_k=True`, which emits `SKETCH-W0802` because Spark can reduce precision. Both pairwise and
+aggregate HLL union preserve the declared output precision in Structure's schema.
 
 Spark stores these values as Binary, but Structure retains their algorithm brand. An HLL cannot be used as a Bitmap or
 as ordinary Binary. Persisted sketch state is compatible only with the relevant Spark/profile implementation, not a
@@ -280,6 +282,7 @@ Supported advanced aggregates:
 - `covar(left, right, where=None)`;
 - `approx_count_distinct(value, relative_sd=None, where=None)`;
 - `approx_percentile(value, percentage, accuracy=None, where=None)`;
+- `histogram_numeric(value, n_bins, as_=BucketSchema, where=None)`;
 - `collect_list(value, order_by=None, element_type=None, where=None)`;
 - `collect_set(value, element_type=None, where=None)`;
 - `first_value(value, order_by=..., where=None, ties="error")`;
@@ -297,6 +300,9 @@ Rules:
   ordering is not guaranteed.
 - `element_type=...` is required when Structure cannot infer the collection aggregate element type.
 - Approximate metrics stay visibly approximate in generated PySpark.
+- `histogram_numeric(...)` requires a foldable Integer literal bin count in `[2, 2_147_483_647]` and a bucket Schema
+  with exactly nullable `x` matching the numeric input and nullable Double `y`; Spark validates the histogram itself.
+  Decimal input is admitted only on the exact PySpark 4.0 profile, because Spark 3.5.0 fails at execution.
 - `having(...)` predicates can reference grouped keys and aggregate output metrics through the callback argument; input
   row fields are unavailable after aggregation.
 

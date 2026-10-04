@@ -1428,7 +1428,7 @@ class RunOnlinePySparkTransform:
                         types=types,
                     )
                     for assignment in aggregate.assignments
-                    if assignment.function not in {"key", "grouping_id", "is_grouped"}
+                    if assignment.function not in {"key", "grouping_id", "grouping", "is_grouped"}
                 ),
                 *(guard for _, guard in guards),
             )
@@ -1475,6 +1475,13 @@ class RunOnlinePySparkTransform:
         if assignment.function == "grouping_id":
             return (
                 functions.lit(self._grouping_id(aggregate, level=level))
+                .cast(self._spark_type(assignment.field.type, types))
+                .alias(assignment.field.column)
+            )
+        if assignment.function == "grouping":
+            key = self._grouping_set_expression_key(assignment, aggregate=aggregate)
+            return (
+                functions.lit(1 if key not in level else 0)
                 .cast(self._spark_type(assignment.field.type, types))
                 .alias(assignment.field.column)
             )
@@ -1594,6 +1601,8 @@ class RunOnlinePySparkTransform:
                 columns.append(options["ignore_nulls"])
             if assignment.function == "hll_sketch_agg":
                 columns.append(options["lg_config_k"])
+            if assignment.function == "hll_union_agg":
+                columns.append(options["allow_different_lg_config_k"])
             result = self._aggregate_function(functions, assignment.function)(*columns)
             if not self._keeps_struct_collection_type(assignment):
                 result = result.cast(self._spark_type(assignment.field.type, types))
@@ -1705,15 +1714,19 @@ class RunOnlinePySparkTransform:
             "any_value",
             "array_agg",
             "avg",
+            "mean",
             "bit_and",
             "bit_or",
             "bit_xor",
             "bool_and",
             "bool_or",
+            "some",
+            "every",
             "collect_list",
             "collect_set",
             "corr",
             "covar",
+            "covar_pop",
             "regr_avgx",
             "regr_avgy",
             "regr_count",
@@ -1737,6 +1750,7 @@ class RunOnlinePySparkTransform:
             "schema_of_variant_agg",
             "skewness",
             "stddev",
+            "std",
             "stddev_pop",
             "stddev_samp",
             "sum",
@@ -1745,6 +1759,8 @@ class RunOnlinePySparkTransform:
             "var_samp",
             "variance",
             "hll_sketch_agg",
+            "hll_union_agg",
+            "histogram_numeric",
             "bitmap_construct_agg",
             "bitmap_or_agg",
         }
@@ -1756,15 +1772,19 @@ class RunOnlinePySparkTransform:
             "any_value": "any_value",
             "array_agg": "array_agg",
             "avg": "avg",
+            "mean": "mean",
             "bit_and": "bit_and",
             "bit_or": "bit_or",
             "bit_xor": "bit_xor",
             "bool_and": "bool_and",
             "bool_or": "bool_or",
+            "some": "some",
+            "every": "every",
             "collect_list": "collect_list",
             "collect_set": "collect_set",
             "corr": "corr",
             "covar": "covar_samp",
+            "covar_pop": "covar_pop",
             "regr_avgx": "regr_avgx",
             "regr_avgy": "regr_avgy",
             "regr_count": "regr_count",
@@ -1788,6 +1808,7 @@ class RunOnlinePySparkTransform:
             "schema_of_variant_agg": "schema_of_variant_agg",
             "skewness": "skewness",
             "stddev": "stddev",
+            "std": "std",
             "stddev_pop": "stddev_pop",
             "stddev_samp": "stddev_samp",
             "sum": "sum",
@@ -1796,6 +1817,8 @@ class RunOnlinePySparkTransform:
             "var_samp": "var_samp",
             "variance": "variance",
             "hll_sketch_agg": "hll_sketch_agg",
+            "hll_union_agg": "hll_union_agg",
+            "histogram_numeric": "histogram_numeric",
             "bitmap_construct_agg": "bitmap_construct_agg",
             "bitmap_or_agg": "bitmap_or_agg",
         }[function]
