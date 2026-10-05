@@ -32,7 +32,7 @@ class PySparkTraceabilityReport:
             source_transform=source_transform,
             transform_module=transform_module,
         )
-        data = {
+        data: dict[str, object] = {
             "backend": {"name": plan.backend.name, "target": plan.backend.target},
             "generated_transform_class": f"{plan.transform}Generated",
             "inputs": [
@@ -70,7 +70,12 @@ class PySparkTraceabilityReport:
         }
 
     def _step(self, step: PySparkStepRecipe) -> dict[str, object]:
-        return {
+        stateful = [
+            operation.stateful_transform
+            for operation in step.operations
+            if operation.stateful_transform is not None
+        ]
+        data: dict[str, object] = {
             "after_hooks": [hook.name for hook in step.after_hooks],
             "before_hooks": [hook.name for hook in step.before_hooks],
             "input_alias": step.input_alias,
@@ -97,6 +102,22 @@ class PySparkTraceabilityReport:
                 for validation in step.validations
             ],
         }
+        if stateful:
+            data["stateful_operations"] = [
+                {
+                    "input_schema": state.input_schema.__name__,
+                    "key": (state.key.data or {}).get("name", (state.key.data or {}).get("field", "expression")),
+                    "key_schema": state.key_schema.__name__,
+                    "mode": state.processor_mode,
+                    "operation": "transform_with_state",
+                    "output_mode": state.output_mode,
+                    "output_schema": state.output_schema.__name__,
+                    "state_schemas": [schema.__name__ for schema in state.state_schemas],
+                    "time_mode": state.time_mode,
+                }
+                for state in stateful
+            ]
+        return data
 
     def _join(self, join) -> dict[str, str]:
         data = {

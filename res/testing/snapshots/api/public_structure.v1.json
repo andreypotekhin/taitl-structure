@@ -164,6 +164,17 @@
       "qualname": "SchemaMode",
       "signature": "(*values)"
     },
+    "SinkResult": {
+      "dataclass_fields": [
+        "dataframe",
+        "writer"
+      ],
+      "enum_members": [],
+      "kind": "class",
+      "module": "structure.core.runtime.session.model.SinkResult",
+      "qualname": "SinkResult",
+      "signature": "(dataframe: object, writer: type) -> None"
+    },
     "SourceTransformAddress": {
       "dataclass_fields": [
         "module",
@@ -283,7 +294,7 @@
       "kind": "class",
       "module": "structure.core.runtime.session.model.TransformResult",
       "qualname": "TransformResult",
-      "signature": "(outputs: 'Mapping[str, Any]', *, single: 'bool' = False, schema: 'Mapping[str, Any] | None' = None, aliases: 'Mapping[str, tuple[str, ...]] | None' = None, stage_records: 'list[tuple[tuple[str, ...], Any, Any, tuple[str, ...]]] | None' = None, stages: 'Mapping[str, StageResult] | None' = None, stage_outputs_enabled: 'bool' = True, stage_names: 'tuple[str, ...]' = ()) -> 'None'"
+      "signature": "(outputs: 'Mapping[str, Any]', *, single: 'bool' = False, schema: 'Mapping[str, Any] | None' = None, aliases: 'Mapping[str, tuple[str, ...]] | None' = None, stage_records: 'list[tuple[tuple[str, ...], Any, Any, tuple[str, ...]]] | None' = None, stages: 'Mapping[str, StageResult] | None' = None, sinks: 'Mapping[str, SinkResult] | None' = None, stage_outputs_enabled: 'bool' = True, stage_names: 'tuple[str, ...]' = ()) -> 'None'"
     },
     "TransformSchemas": {
       "dataclass_fields": [
@@ -337,6 +348,14 @@
       "module": "structure.core.dsl.model.transforms.transform_api",
       "qualname": "raw",
       "signature": "(function: 'Callable | None' = None, *, input: 'object | None' = None, output: 'object | None' = None, inout: 'object | None' = None, schema_mode: 'SchemaMode' = <SchemaMode.STRICT: 'strict'>, project_output: 'bool' = False, streaming: 'bool' = False, target: 'str | Iterable[str] | None' = None, target_platform: 'str | None' = None)"
+    },
+    "sink": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.core.dsl.model.transforms.transform_api",
+      "qualname": "sink",
+      "signature": "(writer_type: 'type') -> 'SinkDeclaration'"
     },
     "special": {
       "dataclass_fields": [],

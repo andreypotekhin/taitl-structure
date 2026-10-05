@@ -563,6 +563,16 @@ class RenderPySparkStep:
                     else repr(f"{state.state_schema.__module__}:{state.state_schema.__qualname__}")
                 )
                 key_expression = render_pyspark_expression(state.key, scope_aliases=self._scope_aliases(step))
+                if state.initial_state is None:
+                    initial_state = "None"
+                else:
+                    initial_source = cast(str, getattr(state.initial_state, "_structure_source", None))
+                    if initial_source not in sources:
+                        raise ValueError(
+                            "transform_with_state initial_state input "
+                            f"{initial_source!r} is unavailable while rendering the transform."
+                        )
+                    initial_state = sources[initial_source]
                 ordered_lines.append(
                     f"        {target} = apply_stateful_transform("
                     f"{target}, key={key_expression}, processor={processor_ref!r}, "
@@ -570,7 +580,7 @@ class RenderPySparkStep:
                     f"output_schema={output_ref!r}, processor_mode={state.processor_mode!r}, "
                     f"output_mode={state.output_mode!r}, time_mode={state.time_mode!r}, "
                     f"target_profile={backend_target!r}, event_time_column={state.event_time_column!r}, "
-                    f"initial_state=None)"
+                    f"initial_state={initial_state})"
                 )
             if operation.kind == "ordered_timeline_scan" and operation.ordered_timeline_scan is not None:
                 ordered_lines.extend(

@@ -28,7 +28,8 @@ helpers, or join reordering.
 | `is_valid_variant(...)` | `design-gated` | Require the PySpark 4.2 capability; report unavailable live evidence separately from rejection evidence. |
 | Chained stateful operators | `design-gated` | Name the prior and requested state stages, then report the missing state budget, watermark, retention, output, or restart rule. |
 | Row-level `foreach` | `caller-owned-guided` | A transform may declare a typed sink and capture `foreach(row, sink)` on a final output. The caller constructs the writer, attaches it to the returned DataFrame, and owns query lifecycle, checkpoints, identity, retries, and recovery. |
-| Arbitrary state and `transformWithState` | `design-gated` | Reject generated state ownership and point to native Structured Streaming state APIs. |
+| Row-based `transformWithState` | `design-gated` | Gate positive support on ordinary PySpark 4.1 parity and restart evidence; reject this row operation on PySpark 4.0, where the Python API is Pandas-based. |
+| `transformWithStateInPandas` | `design-gated` | Track in the separate Pandas plan for ordinary PySpark 4.0/4.1; require its dependency, callback, parity, and restart evidence. |
 | XML helpers | `unsupported` | Do not export or lower XML helpers. |
 | Cost-based join reordering | `unsupported` | Do not export `join_order(...)` or reorder source-authored joins. |
 

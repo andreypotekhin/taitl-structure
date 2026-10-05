@@ -37,3 +37,32 @@ class JsonLinesAlertWriter:
             raise RuntimeError("open(...) must set the foreach partition file before process(...) or close(...)")
         with self._path.open("a", encoding="utf-8") as stream:
             stream.write(json.dumps(value, sort_keys=True) + "\n")
+
+
+@special(type="opaque")
+class FailWhileMarkedAlertWriter:
+    """Append rows and fail while a caller-owned marker exists, for retry proofs."""
+
+    def __init__(self, destination: str | Path, failure_marker: str | Path) -> None:
+        self.destination = Path(destination)
+        self.failure_marker = Path(failure_marker)
+        self._path: Path | None = None
+
+    def open(self, partition_id: int, epoch_id: int) -> bool:
+        self.destination.mkdir(parents=True, exist_ok=True)
+        self._path = self.destination / f"partition-{partition_id}-epoch-{epoch_id}.jsonl"
+        return True
+
+    def process(self, row: Row) -> None:
+        self._append({"event": "process", "row": row.asDict(recursive=True)})
+        if self.failure_marker.exists():
+            raise RuntimeError("intentional foreach failure while failure marker exists")
+
+    def close(self, error: Exception | None) -> None:
+        self._append({"event": "close", "error": str(error) if error is not None else None})
+
+    def _append(self, value: dict[str, object]) -> None:
+        if self._path is None:
+            raise RuntimeError("open(...) must set the foreach partition file before process(...) or close(...)")
+        with self._path.open("a", encoding="utf-8") as stream:
+            stream.write(json.dumps(value, sort_keys=True) + "\n")

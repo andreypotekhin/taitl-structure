@@ -139,7 +139,7 @@ def transform_with_state(
     time_mode: str,
     event_time_column: str | None = None,
     initial_state: object | None = None,
-) -> StatefulResult:
+) -> Any:
     """Capture a row-based stateful stage in the active PySpark step."""
 
     from structure.plugin.pyspark.dsl.Expression import Expression
@@ -175,6 +175,14 @@ def transform_with_state(
         raise TypeError("transform_with_state currently requires one key Schema field matching the grouping expression.")
     if initial_state is not None and mode != "native":
         raise TypeError("initial_state is available only with external_state_processor(...).")
+    if initial_state is not None:
+        from structure.plugin.pyspark.dsl.InputScope import InputScope
+
+        if not isinstance(initial_state, InputScope):
+            raise TypeError("initial_state must be a declared transform input relation.")
+        initial_fields = initial_state._structure_input_schema._structure_fields
+        if not set(key_schema._structure_fields).issubset(initial_fields):
+            raise TypeError("initial_state input must include every field declared by the processor key Schema.")
     if context.operations:
         raise TypeError("transform_with_state(...) must be the only relational operation in its step.")
     plan = OperationPlan.transform_with_state_operation(

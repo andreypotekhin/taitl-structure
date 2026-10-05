@@ -313,6 +313,16 @@ class RenderPySparkExplainReport:
             )
         if operation.watermark is not None:
             return f"watermark({operation.watermark.column} {operation.watermark.delay})"
+        if operation.stateful_transform is not None:
+            state = operation.stateful_transform
+            key_data = state.key.data or {}
+            key_name = key_data.get("name", key_data.get("field", "expression"))
+            state_names = "|".join(schema.__name__ for schema in state.state_schemas)
+            return (
+                f"transform_with_state(mode={state.processor_mode} key={key_name} "
+                f"input={state.input_schema.__name__} state={state_names} output={state.output_schema.__name__} "
+                f"output_mode={state.output_mode} time_mode={state.time_mode})"
+            )
         if operation.persist is not None:
             level = "default" if operation.persist.storage_level is None else repr(operation.persist.storage_level)
             return f"persist(row_preserving storage_level={level})"

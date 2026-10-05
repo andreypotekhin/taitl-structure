@@ -11,7 +11,6 @@ from __future__ import annotations
 from re import fullmatch
 from typing import Any, Iterable, TypeVar, cast, overload
 
-from structure.core.dsl.model.transforms.SinkReference import SinkReference
 from structure.dsl import Schema
 from structure.plugin.api.v1.model import current_symbolic_context
 from structure.plugin.pyspark.dsl.Expression import Expression
@@ -34,7 +33,7 @@ def foreach(row: object, sink: object) -> None:
     a Spark action/query.
     """
     context = _context("foreach")
-    if not isinstance(sink, SinkReference):
+    if not _is_sink_reference(sink):
         raise TypeError("foreach(row, sink) requires a sink-typed step parameter")
     if not isinstance(row, (Schema, RowScope, Projection)):
         raise TypeError("foreach(row, sink) requires a Structure row or projection returned by this step")
@@ -199,3 +198,12 @@ def _project_fields(value: object) -> tuple[str, ...]:
     if len(set(fields)) != len(fields):
         raise TypeError("project(source, fields) cannot repeat field names")
     return cast(tuple[str, ...], fields)
+
+
+def _is_sink_reference(value: object) -> bool:
+    """Recognize the public sink-reference shape without importing Core types."""
+    return (
+        type(value).__name__ == "SinkReference"
+        and isinstance(getattr(value, "name", None), str)
+        and isinstance(getattr(value, "writer_type", None), type)
+    )

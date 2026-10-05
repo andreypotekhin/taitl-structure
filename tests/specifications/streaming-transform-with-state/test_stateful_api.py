@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+from typing import cast
 
 import pytest
 
@@ -11,8 +12,12 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from structure import Schema, Transform, input, output, step
-from structure.plugin.api.v1.model import CapabilityRequirement
+from structure.core.compiler.api import Compiler
+from structure.plugin.api.v1.model import BackendCapabilityError, CapabilityRequirement
+from structure.plugin.pyspark.api.PySpark import PySpark
 from structure.plugin.pyspark.capabilities.model.PySparkCapabilities import PySparkCapabilities
+from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
+from structure.plugin.pyspark.dsl.field import string
 from structure.plugin.pyspark.dsl.Stateful import (
     ExternalStateProcessor,
     StateProcessor,
@@ -20,9 +25,6 @@ from structure.plugin.pyspark.dsl.Stateful import (
     state_processor,
     transform_with_state,
 )
-from structure.plugin.pyspark.dsl.field import string
-from structure.core.compiler.api import Compiler
-from structure.plugin.pyspark.api.PySpark import PySpark
 
 
 class Input(Schema):
@@ -64,14 +66,15 @@ def test_typed_processor_schema_hints_are_the_source_of_truth() -> None:
     assert Counter.__structure_state_processor__ == (Input, Key, State, Output)
 
 
-@pytest.mark.parametrize("profile", [">=4.0,<4.1", ">=4.1,<4.2"])
-def test_transform_with_state_lowers_for_each_spark_4_python_profile(profile: str) -> None:
+def test_transform_with_state_lowers_for_spark_4_1() -> None:
+    profile = ">=4.1,<4.2"
     compiled = Compiler.frontend.compile()(
         StreamingTotals,
         materialize_schemas=False,
         plugin={"pyspark": {"profile": profile, "variant": "ordinary"}},
     )
-    lowered = compiled.lowered.steps[0].operations[0].stateful_transform
+    lowered = cast(PySparkExecutionPlan, compiled.lowered).steps[0].operations[0].stateful_transform
+    assert lowered is not None
 
     assert lowered.processor_mode == "typed"
     assert lowered.key_schema is Key
@@ -79,16 +82,26 @@ def test_transform_with_state_lowers_for_each_spark_4_python_profile(profile: st
     assert lowered.output_schema is Output
     assert lowered.output_mode == "Update"
 
-    generated = "\n".join(
-        PySpark.render.project()(
-            compiled.lowered,
-            source_transform=f"{__name__}.StreamingTotals",
-            generated_package="stateful_generated",
-            source_schema_modules={__name__: [Input, Output]},
-        ).values()
+    generated_modules = PySpark.render.project()(
+        cast(PySparkExecutionPlan, compiled.lowered),
+        source_transform=f"{__name__}.StreamingTotals",
+        generated_package="stateful_generated",
+        source_schema_modules={__name__: [Input, Output]},
     )
+    generated = "\n".join(generated_modules.values())
     assert "apply_stateful_transform(" in generated
     assert f"{__name__}:Counter" in generated
+    for module in generated_modules.values():
+        compile(module, "<generated-transform-with-state>", "exec")
+
+
+def test_row_transform_with_state_is_rejected_for_spark_4_0() -> None:
+    with pytest.raises(BackendCapabilityError):
+        Compiler.frontend.compile()(
+            StreamingTotals,
+            materialize_schemas=False,
+            plugin={"pyspark": {"profile": ">=4.0,<4.1", "variant": "ordinary"}},
+        )
 
 
 def test_typed_processor_requires_explicit_schema_type_parameters() -> None:
@@ -114,13 +127,15 @@ def test_external_processor_requires_explicit_schema_bindings() -> None:
     assert binding == ExternalStateProcessor(NativeProcessor, Input, Key, (State,), Output)
 
 
-@pytest.mark.parametrize("profile", [">=4.0,<4.1", ">=4.1,<4.2"])
-def test_transform_with_state_capability_is_profiled_for_spark_4(profile: str) -> None:
+@pytest.mark.parametrize(
+    "profile, supported",
+    [(">=4.0,<4.1", False), (">=4.1,<4.2", True)],
+)
+def test_row_transform_with_state_capability_matches_pinned_python_api(profile: str, supported: bool) -> None:
     capabilities = PySparkCapabilities(target_profile=profile)
 
-    assert capabilities.require(
-        CapabilityRequirement(group="streaming", name="transform_with_state")
-    ).supported
+    decision = capabilities.supports(CapabilityRequirement(group="streaming", name="transform_with_state"))
+    assert decision.supported is supported
 
 
 def test_spark_free_state_api_import_does_not_load_pyspark() -> None:

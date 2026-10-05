@@ -35,14 +35,19 @@ evidence. Keep the one-stateful-plus-stateless policy for other chains.
 Structure supports an opt-in typed handoff for a declared final output. The caller constructs and attaches the writer,
 starts the query, and owns sink identity, idempotence, retry, security, checkpoints, and recovery. Each attached stream
 sink is an independent query. Classic PySpark 3.5 and 4.0 pass isolated callback and serialization checks; Spark Connect
-is not claimed without equivalent proof. The compile-time `foreach(row, sink)` marker is not
-rendered into generated modules, and `foreachBatch` remains caller-owned through the adoption recipe.
+is not claimed without equivalent proof. A failed writer query restarted from its checkpoint may replay rows and repeat
+external effects; the local-file restart fixture passes online and generated on both claimed classic profiles. The
+compile-time `foreach(row, sink)` marker is not rendered into generated modules, and `foreachBatch` remains caller-owned
+through the adoption recipe.
 
 ### Arbitrary State Processors — `design-gated`
 
-`applyInPandasWithState` and `transformWithState` need typed input, state, and output schemas; timeout and clock policy;
-initialization and cleanup; target profiles; generated boundaries; and restart evidence. `ArbitraryStateContract`
-validates adoption metadata only; callers own the state runtime.
+Positive support for row-based `transformWithState` is tracked by
+[the row processor plan](../planning/P10042603.V11-transform-with-state.plan.md) for ordinary PySpark 4.1. PySpark 4.0's
+Python API is `transformWithStateInPandas`, tracked separately by
+[the Pandas processor plan](../planning/P10042604.V11-transform-with-state-in-pandas.plan.md) for ordinary PySpark 4.0
+and 4.1. Both support claims remain gated on online/generated parity and restart evidence. `applyInPandasWithState`
+remains outside these plans. `ArbitraryStateContract` validates adoption metadata only; it is not a state runtime.
 
 The SearchDocuments proving lane and streaming-ineligible selected-row/window shapes are recorded in
 [Streaming Deferred Work](../deferred/Streaming.deferred.md).
@@ -51,8 +56,8 @@ The SearchDocuments proving lane and streaming-ineligible selected-row/window sh
 
 Every admitted stateful feature records its event-time source, watermark, grouping or partition key, state family,
 caller-required output mode, allowed following state stage, generated public PySpark form, and corrective diagnostic.
-Target evidence must cover PySpark 3.5 and 4.0 online/generated parity and isolated file-stream restart behavior where
-the feature claims runtime support.
+Target evidence must cover the exact ordinary PySpark profiles each feature claims, online/generated parity, and
+isolated file-stream restart behavior. A runtime unavailable for testing is unavailable evidence.
 
 ## Permanent Boundaries
 

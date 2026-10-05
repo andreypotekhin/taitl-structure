@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 from structure import Schema
 from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
@@ -9,11 +10,12 @@ from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySp
 @dataclass(frozen=True)
 class PySparkStatefulTransformRecipe:
     key: PySparkExpressionRecipe
-    processor: object
+    processor: Any
     processor_mode: str
     input_schema: type[Schema]
     key_schema: type[Schema]
     state_schema: type[Schema] | None
+    state_schemas: tuple[type[Schema], ...]
     output_schema: type[Schema]
     output_mode: str
     time_mode: str

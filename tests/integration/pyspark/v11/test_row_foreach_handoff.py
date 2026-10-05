@@ -13,7 +13,7 @@ from integration.pyspark.support.backend_matrix import (
     session,
 )
 
-from examples.streams.foreach_sinks import JsonLinesAlertWriter
+from examples.streams.foreach_sinks import FailWhileMarkedAlertWriter, JsonLinesAlertWriter
 from structure import Schema, Transform, input, output, sink, special, step
 from structure.plugin.pyspark import foreach, string
 
@@ -42,6 +42,18 @@ class PublishStream(Transform):
 
     @step(output=published)
     def publish(self, event: StreamEvent, sink: JsonLinesAlertWriter) -> PublishedEvent:
+        published = PublishedEvent(event_id=event.event_id)
+        foreach(published, sink)
+        return published
+
+
+class RetryPublishStream(Transform):
+    events = input(StreamEvent, streaming=True)
+    published = output(PublishedEvent)
+    row_sink = sink(FailWhileMarkedAlertWriter)
+
+    @step(output=published)
+    def publish(self, event: StreamEvent, sink: FailWhileMarkedAlertWriter) -> PublishedEvent:
         published = PublishedEvent(event_id=event.event_id)
         foreach(published, sink)
         return published
@@ -115,3 +127,59 @@ def test_batch_foreach_receives_rows_only_after_the_caller_runs_the_action(spark
     dataframe.foreach(BatchWriter(count).process)
 
     assert count.value == 2
+
+
+def test_row_foreach_can_repeat_side_effects_when_a_failed_query_restarts(spark, tmp_path) -> None:
+    files = render_generated_projects(
+        ((RetryPublishStream, f"{SOURCE_MODULE}.RetryPublishStream"),),
+        generated_package=GENERATED_PACKAGE,
+        source_schema_modules={SOURCE_MODULE: [StreamEvent, PublishedEvent]},
+    )
+    root = Path(__file__).resolve().parents[4] / ".pytest-workspace-tmp" / "integration" / f"v11-retry-{uuid4().hex}"
+    try:
+        with generated_project(tmp_path, GENERATED_PACKAGE, files):
+            for mode in ("online", "generated"):
+                source = root / mode / "source"
+                source.mkdir(parents=True)
+                (source / "events.json").write_text(json.dumps({"event_id": "retry-me"}) + "\n", encoding="utf-8")
+                destination = root / mode / "foreach-data"
+                failure_marker = root / mode / "fail-process"
+                failure_marker.touch()
+                checkpoint = root / mode / "checkpoint"
+
+                def build_result():
+                    events = spark.readStream.schema("event_id STRING NOT NULL").json(str(source))
+                    return RetryPublishStream(events=events).run(
+                        session(spark, execution_mode=mode, generated_package=GENERATED_PACKAGE)
+                    )
+
+                failed_result = build_result()
+                failed_query = failed_result.row_sink.dataframe.writeStream.foreach(
+                    failed_result.row_sink.writer(destination=str(destination), failure_marker=str(failure_marker))
+                ).option("checkpointLocation", str(checkpoint)).trigger(availableNow=True).start()
+                try:
+                    with pytest.raises(Exception):
+                        failed_query.awaitTermination(120)
+                finally:
+                    failed_query.stop()
+
+                failure_marker.unlink()
+                resumed_result = build_result()
+                resumed_query = resumed_result.row_sink.dataframe.writeStream.foreach(
+                    resumed_result.row_sink.writer(destination=str(destination), failure_marker=str(failure_marker))
+                ).option("checkpointLocation", str(checkpoint)).trigger(availableNow=True).start()
+                try:
+                    assert resumed_query.awaitTermination(120), "foreach query did not finish after restart"
+                finally:
+                    resumed_query.stop()
+
+                records = [
+                    json.loads(line)
+                    for path in destination.glob("*.jsonl")
+                    for line in path.read_text(encoding="utf-8").splitlines()
+                ]
+                attempts = [record for record in records if record["event"] == "process"]
+                assert len(attempts) >= 2
+                assert all(record["row"]["event_id"] == "retry-me" for record in attempts)
+    finally:
+        shutil.rmtree(root, ignore_errors=True)

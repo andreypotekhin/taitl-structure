@@ -122,7 +122,9 @@ the declared key, handling retries, and ensuring that the checkpoint and snapsho
 ## Typed Arbitrary-State Contract
 
 Arbitrary state remains design-gated; `ArbitraryStateContract` is a metadata completeness guard, not a state processor
-runtime. Before reviewing native `applyInPandasWithState`, `transformWithState`, or a related state API, the contract
+runtime. Row-based `transformWithState` targets ordinary PySpark 4.1 and is tracked separately from
+`transformWithStateInPandas`, which targets ordinary PySpark 4.0 and 4.1. Both remain gated until their respective
+online/generated parity and restart evidence passes. Before reviewing native `applyInPandasWithState` or a related state API, the contract
 records typed input, key, state, and output Schemas; grouping fields; timeout policy, clock, and duration;
 initialization, update, and removal behavior; target PySpark profile; hook boundary; checkpoint identity; serialized
 state version; and restart policy. `contract.validate()` rejects missing or inconsistent declarations with

@@ -39,16 +39,18 @@ def apply_stateful_transform(
     state_schema = None if state_schema is None else _resolve_type(state_schema)
     output_schema = _resolve_type(output_schema)
     processor = _resolve_object(processor)
-    pandas_mode = target_profile == ">=4.0,<4.1"
+    if target_profile != ">=4.1,<4.2":
+        raise RuntimeError(f"Row-based transform_with_state requires PySpark >=4.1,<4.2, not {target_profile!r}.")
     stateful_processor = _processor_instance(
         processor,
         input_schema=input_schema,
         key_schema=key_schema,
         state_schema=state_schema,
-        pandas_mode=pandas_mode,
         processor_mode=processor_mode,
     )
     grouped = frame.groupBy(key)
+    if initial_state is not None and hasattr(initial_state, "groupBy"):
+        initial_state = initial_state.groupBy(*(field.column for field in key_schema._structure_fields.values()))
     arguments = {
         "statefulProcessor": stateful_processor,
         "outputStructType": _spark_schema(output_schema),
@@ -57,7 +59,7 @@ def apply_stateful_transform(
         "initialState": initial_state,
         "eventTimeColumnName": event_time_column or "",
     }
-    method_name = "transformWithStateInPandas" if pandas_mode else "transformWithState"
+    method_name = "transformWithState"
     method = getattr(grouped, method_name, None)
     if method is None:
         raise RuntimeError(f"The installed PySpark runtime lacks {method_name} for target {target_profile!r}.")
@@ -80,7 +82,7 @@ def _resolve_object(value):
     return resolved
 
 
-def _processor_instance(processor, *, input_schema, key_schema, state_schema, pandas_mode: bool, processor_mode: str):
+def _processor_instance(processor, *, input_schema, key_schema, state_schema, processor_mode: str):
     if isinstance(processor, ExternalStateProcessor):
         return processor.processor()
     if processor_mode == "native":
@@ -88,7 +90,7 @@ def _processor_instance(processor, *, input_schema, key_schema, state_schema, pa
     if state_schema is None:
         raise TypeError("Typed state processor is missing its ValueState schema.")
     from pyspark.sql import Row
-    from pyspark.sql.streaming import StatefulProcessor
+    from pyspark.sql.streaming.stateful_processor import StatefulProcessor
 
     class StructureStateProcessorAdapter(StatefulProcessor):
         def init(self, handle) -> None:
@@ -97,14 +99,13 @@ def _processor_instance(processor, *, input_schema, key_schema, state_schema, pa
             self._timers = TimerContext(handle)
 
         def handleInputRows(self, key, rows, timerValues):
-            typed_rows = _input_rows(rows, input_schema, pandas_mode=pandas_mode, row_type=Row)
             values = self._user.on_rows(
                 _schema_instance(key_schema, key),
-                typed_rows,
+                (_schema_instance(input_schema, row) for row in rows),
                 ValueState(self._state, state_schema),
                 self._timers,
             )
-            yield from _output_batches(values, pandas_mode=pandas_mode, row_type=Row)
+            yield from _output_rows(values, row_type=Row)
 
         def handleExpiredTimer(self, key, timerValues, expiredTimerInfo):
             callback = getattr(self._user, "on_timer", None)
@@ -116,31 +117,12 @@ def _processor_instance(processor, *, input_schema, key_schema, state_schema, pa
                 ValueState(self._state, state_schema),
                 self._timers,
             )
-            yield from _output_batches(values, pandas_mode=pandas_mode, row_type=Row)
+            yield from _output_rows(values, row_type=Row)
 
     return StructureStateProcessorAdapter()
 
 
-def _input_rows(rows, schema: type[Schema], *, pandas_mode: bool, row_type):
-    if not pandas_mode:
-        return (_schema_instance(schema, row) for row in rows)
-
-    def iterate():
-        for batch in rows:
-            for record in batch.to_dict(orient="records"):
-                yield _schema_instance(schema, row_type(**record))
-
-    return iterate()
-
-
-def _output_batches(values, *, pandas_mode: bool, row_type):
-    if pandas_mode:
-        import pandas as pd  # type: ignore[import-untyped]
-
-        rows = [_output_mapping(value) for value in values]
-        if rows:
-            yield pd.DataFrame(rows)
-        return
+def _output_rows(values, *, row_type):
     for value in values:
         mapping = _output_mapping(value)
         yield row_type(**mapping)

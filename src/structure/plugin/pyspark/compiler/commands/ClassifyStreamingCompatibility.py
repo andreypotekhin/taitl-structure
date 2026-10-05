@@ -88,7 +88,7 @@ class ClassifyStreamingCompatibility:
                                 step=step.name,
                                 operation=f"transform_with_state ({state.processor_mode})",
                                 keys=(self._expression_label(state.key),),
-                                retention=(state.state_schema.__name__,) if state.state_schema is not None else (),
+                                retention=tuple(schema.__name__ for schema in state.state_schemas),
                                 output_modes=(state.output_mode,),
                                 allows_later_stateful=False,
                             )

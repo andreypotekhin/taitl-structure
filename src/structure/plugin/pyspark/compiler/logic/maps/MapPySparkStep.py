@@ -421,6 +421,11 @@ class MapPySparkStep:
                                     if state_plan.processor_mode == "typed"
                                     else None
                                 ),
+                                state_schemas=(
+                                    (getattr(state_plan.processor, "__structure_state_processor__")[2],)
+                                    if state_plan.processor_mode == "typed"
+                                    else state_plan.processor.state_schemas
+                                ),
                                 output_schema=state_plan.output_schema,
                                 output_mode=state_plan.output_mode,
                                 time_mode=state_plan.time_mode,

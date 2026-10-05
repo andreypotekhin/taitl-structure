@@ -454,6 +454,12 @@ class RunOnlinePySparkTransform:
                     aliases=self._scope_aliases(step),
                     window=window,
                 )
+                initial_state = state.initial_state
+                if initial_state is not None:
+                    initial_source = getattr(initial_state, "_structure_source", None)
+                    initial_state = prepared_frames.get(initial_source, frames.get(initial_source))
+                    if initial_state is None:
+                        raise ValueError("transform_with_state initial_state input is unavailable at runtime.")
                 df = apply_stateful_transform(
                     df,
                     key=key,
@@ -467,7 +473,7 @@ class RunOnlinePySparkTransform:
                     time_mode=state.time_mode,
                     target_profile=self._backend_target,
                     event_time_column=state.event_time_column,
-                    initial_state=state.initial_state,
+                    initial_state=initial_state,
                 )
             if operation.kind == "ordered_timeline_scan" and operation.ordered_timeline_scan is not None:
                 df = self._ordered_timeline_scan(

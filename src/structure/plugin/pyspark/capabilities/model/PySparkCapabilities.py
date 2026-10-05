@@ -33,11 +33,9 @@ PYSPARK_4_CAPABILITIES = frozenset(
     }
 )
 PYSPARK_4_0_CAPABILITIES = frozenset(
-    {
-        ("aggregate", "histogram_numeric_decimal"),
-        ("streaming", "transform_with_state"),
-    }
+    {("aggregate", "histogram_numeric_decimal")}
 )
+PYSPARK_4_1_CAPABILITIES = frozenset({("streaming", "transform_with_state")})
 PYSPARK_4_2_CAPABILITIES = frozenset({("expression", "is_valid_variant")})
 MATERIALIZATION_CAPABILITIES = frozenset(
     {
@@ -354,7 +352,9 @@ class PySparkCapabilities:
         if target_profile == ">=4.0,<4.1":
             base_capabilities = base_capabilities | PYSPARK_4_CAPABILITIES | PYSPARK_4_0_CAPABILITIES
         elif target_profile == ">=4.1,<4.2":
-            base_capabilities = base_capabilities | PYSPARK_4_CAPABILITIES | PYSPARK_4_0_CAPABILITIES
+            base_capabilities = (
+                base_capabilities | PYSPARK_4_CAPABILITIES | PYSPARK_4_0_CAPABILITIES | PYSPARK_4_1_CAPABILITIES
+            )
         elif target_profile == ">=4.2,<4.3":
             base_capabilities = base_capabilities | PYSPARK_4_CAPABILITIES | PYSPARK_4_2_CAPABILITIES
         if self.id.variant == "ordinary" and target_profile in MATERIALIZATION_PROFILES | {">=4.1,<4.2"}:
