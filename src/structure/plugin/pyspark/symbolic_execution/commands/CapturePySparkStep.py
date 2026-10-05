@@ -23,6 +23,7 @@ from structure.plugin.pyspark.symbolic_execution.logic.results.ValidatePySparkRe
     ValidatePySparkResultReturn,
 )
 from structure.plugin.pyspark.symbolic_execution.model.PySparkResultBody import PySparkResultBody
+from structure.plugin.pyspark.symbolic_execution.model.PySparkSinkEffect import PySparkSinkEffect
 from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 from structure.plugin.pyspark.symbolic_execution.model.PySparkSymbolicContext import PySparkSymbolicContext
 
@@ -39,7 +40,13 @@ class CapturePySparkStep:
     ) -> PySparkStepBody:
         context.operations.extend(self._reserved_operations(request))
         results: tuple[PySparkResultBody, ...]
-        if request.effect:
+        if request.sink_effect:
+            if context.operations or context.filters or context.joins or len(context.foreach) != 1:
+                raise TypeError("A sink-effect step must contain exactly one foreach(row, sink) call.")
+            if not isinstance(value, PySparkSinkEffect) or value.capture is not context.foreach[0]:
+                raise TypeError("A sink-effect step must return foreach(row, sink) directly.")
+            results = (PySparkResultBody(),)
+        elif request.effect:
             if context.operations or context.filters or context.joins or not context.delta_mutations:
                 raise TypeError(f"Delta effect step {request.name} must contain Delta mutations only")
             if value is None:
@@ -123,8 +130,9 @@ class CapturePySparkStep:
             results=results,
             sinks=sink_captures,
         )
-        ValidatePySparkAggregationUse()(body, request=request)
-        ValidatePySparkAggregates()(body, request=request)
+        if not request.sink_effect:
+            ValidatePySparkAggregationUse()(body, request=request)
+            ValidatePySparkAggregates()(body, request=request)
         ValidatePySparkComparisons()(self._expressions(body), request=request)
         ValidatePySparkRelationReads()(body, request=request)
         return body
@@ -132,7 +140,7 @@ class CapturePySparkStep:
     def _sink_captures(self, value: object, captures: list, request: StepAuthoringRequest) -> tuple[StepSinkCapture, ...]:
         if not captures:
             return ()
-        values = ValidatePySparkResultReturn(request, self._raise)(value)
+        values = () if request.sink_effect else ValidatePySparkResultReturn(request, self._raise)(value)
         declared = {sink.name for sink in request.sinks}
         result: list[StepSinkCapture] = []
         for capture in captures:
@@ -140,13 +148,32 @@ class CapturePySparkStep:
             if sink_name not in declared:
                 raise TypeError(f"foreach(row, sink) references undeclared sink {sink_name!r} in step {request.name}.")
             ordinal = next((index for index, candidate in enumerate(values) if capture.row is candidate), None)
+            input_ordinal = None
+            if request.sink_effect and isinstance(capture.row, RowScope):
+                input_ordinal = next(
+                    (
+                        index
+                        for index, binding in enumerate(request.inputs)
+                        if binding.scope == capture.row._structure_scope_name
+                        and binding.schema is capture.row._structure_scope_schema
+                    ),
+                    None,
+                )
             if isinstance(capture.row, RowScope):
                 row_schema = capture.row._structure_scope_schema.__name__
             elif isinstance(capture.row, Projection):
                 row_schema = capture.row.target.__name__ if capture.row.target is not None else "projection"
             else:
                 row_schema = type(capture.row).__name__
-            result.append(StepSinkCapture(sink=sink_name, result_ordinal=ordinal, row_schema=row_schema))
+            result.append(
+                StepSinkCapture(
+                    sink=sink_name,
+                    result_ordinal=ordinal,
+                    row_schema=row_schema,
+                    input_ordinal=input_ordinal,
+                    kind=capture.kind,
+                )
+            )
         return tuple(result)
 
     @staticmethod

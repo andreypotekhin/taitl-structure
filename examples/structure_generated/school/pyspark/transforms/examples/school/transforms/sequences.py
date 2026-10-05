@@ -23,7 +23,7 @@ class FibonacciGenerated:
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,
@@ -151,7 +151,7 @@ class FibonacciGenerated:
             F.col("previous").alias("value"),
         )
         if not ticks.isStreaming:
-            ticks = apply_plan_boundary(ticks, self.spark)
+            ticks = apply_plan_boundary(ticks, ticks.sparkSession, owner=self)
 
         # Step method: result
         result = ticks.alias("fibonacci_number")
@@ -166,7 +166,7 @@ class PrimeNumbersGenerated:
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,
@@ -332,7 +332,7 @@ class PrimeNumbersGenerated:
             F.col("current").alias("prime"),
         )
         if not ticks.isStreaming:
-            ticks = apply_plan_boundary(ticks, self.spark)
+            ticks = apply_plan_boundary(ticks, ticks.sparkSession, owner=self)
 
         # Step method: result
         result = ticks.alias("prime_number")

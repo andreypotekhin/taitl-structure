@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from importlib import import_module
+from inspect import signature
 
 from structure import Schema
 from structure.plugin.pyspark.dsl.Stateful import (
@@ -110,29 +111,31 @@ def _processor_instance(
         return processor()
     if state_schema is None:
         raise TypeError("Typed state processor is missing its ValueState schema.")
+    _validate_typed_callbacks(processor, interface)
     from pyspark.sql import Row
     from pyspark.sql.streaming.stateful_processor import StatefulProcessor
 
     class StructureStateProcessorAdapter(StatefulProcessor):
         def init(self, handle) -> None:
             self._user = processor()
+            self._handle = handle
             self._state = handle.getValueState("structure_value_state", _spark_schema(state_schema))
-            self._timers = TimerContext(handle)
 
         def handleInputRows(self, key, rows, timerValues):
             wrapped_key = _schema_instance(key_schema, key)
             value_state: ValueState[Schema] = ValueState(self._state, state_schema)
+            timers = TimerContext(self._handle, timerValues)
             if interface == "row":
                 values = self._user.on_rows(
                     wrapped_key,
                     (_schema_instance(input_schema, row) for row in rows),
                     value_state,
-                    self._timers,
+                    timers,
                 )
-                yield from _output_rows(values, row_type=Row)
+                yield from _output_rows(values, output_schema=output_schema, row_type=Row)
             else:
                 yield from _output_pandas_frames(
-                    self._user.on_batches(wrapped_key, rows, value_state, self._timers),
+                    self._user.on_batches(wrapped_key, rows, value_state, timers),
                     output_schema,
                 )
 
@@ -140,23 +143,74 @@ def _processor_instance(
             callback = getattr(self._user, "on_timer", None)
             if callback is None:
                 return
+            timers = TimerContext(self._handle, timerValues)
             values = callback(
                 _schema_instance(key_schema, key),
                 Timer(expiredTimerInfo.getExpiryTimeInMs()),
                 ValueState(self._state, state_schema),
-                self._timers,
+                timers,
             )
             if interface == "row":
-                yield from _output_rows(values, row_type=Row)
+                yield from _output_rows(values, output_schema=output_schema, row_type=Row)
             else:
                 yield from _output_pandas_frames(values, output_schema)
 
     return StructureStateProcessorAdapter()
 
 
-def _output_rows(values, *, row_type):
-    for value in values:
+def _validate_typed_callbacks(processor: type, interface: str) -> None:
+    input_callback = "on_rows" if interface == "row" else "on_batches"
+    callbacks = ((input_callback, True), ("on_timer", False))
+    for name, required in callbacks:
+        callback = getattr(processor, name, None)
+        if callback is None and not required:
+            continue
+        if not callable(callback):
+            requirement = "required" if required else "optional when defined"
+            raise TypeError(f"Typed state processor callback {name!r} is {requirement} and must be callable.")
+        try:
+            callback_signature = signature(callback)
+        except (TypeError, ValueError) as error:
+            raise TypeError(f"Cannot inspect typed state processor callback {name!r}.") from error
+        try:
+            callback_signature.bind(*([object()] * 5))
+        except TypeError as error:
+            expected = "(self, key, rows, state, timers)" if name == "on_rows" else None
+            if name == "on_batches":
+                expected = "(self, key, batches, state, timers)"
+            elif name == "on_timer":
+                expected = "(self, key, timer, state, timers)"
+            raise TypeError(
+                f"Typed state processor callback {name!r} must accept {expected}; "
+                f"received signature {callback_signature}."
+            ) from error
+
+
+def _output_rows(values, *, output_schema: type[Schema], row_type):
+    try:
+        iterator = iter(values)
+    except TypeError as error:
+        raise TypeError(f"Typed state processor must return an iterable of {output_schema.__name__} values.") from error
+
+    fields = tuple(output_schema._structure_fields.values())
+    expected = [field.column for field in fields]
+    for value in iterator:
+        if not isinstance(value, output_schema):
+            raise TypeError(
+                f"Typed state processor must yield {output_schema.__name__} values; received {type(value).__name__}."
+            )
         mapping = _output_mapping(value)
+        actual = list(mapping)
+        if actual != expected:
+            raise ValueError(
+                "Typed state processor output fields must match the declared Structure output Schema: "
+                f"expected {expected!r}, received {actual!r}."
+            )
+        for field in fields:
+            if not field.nullable and mapping[field.column] is None:
+                raise ValueError(
+                    f"Typed state processor output field {field.column!r} is non-nullable but received None."
+                )
         yield row_type(**mapping)
 
 
@@ -199,7 +253,8 @@ def _require_pandas_runtime() -> None:
 
 def _output_mapping(value):
     if isinstance(value, Schema):
-        return {field.column: getattr(value, field.name) for field in value.__class__._structure_fields.values()}
+        values = getattr(value, "_structure_values", {})
+        return {field.column: values[field.name] for field in value.__class__._structure_fields.values()}
     return value
 
 

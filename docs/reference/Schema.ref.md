@@ -437,8 +437,10 @@ authoritative; input and final-output validation stay enabled.
 Schemas describe row shape. Accepted values, ranges, patterns, uniqueness, referential checks, freshness, and row-count
 rules are data-quality constraints and are not silently enabled by a schema declaration.
 
-`schema_and_constraints` is explicit opt-in for declared constraints at eligible phases. Generated schemas remain
-shape-only, and storage orchestration remains application-controlled.
+`schema_and_constraints` is explicit opt-in for declared constraints at eligible DataFrame validation phases.
+Caller-bound Delta tables have a separate `Schema.constraints = (check(...),)` metadata check before mutation; it does
+not depend on this validation mode. See the [Delta tables API](../api/DeltaTables.api.md). Generated schemas remain
+shape-only, and table setup remains application-controlled.
 
 ## Diagnostics
 

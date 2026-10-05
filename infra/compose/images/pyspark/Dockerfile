@@ -1,6 +1,7 @@
 FROM python:3.11-slim-bookworm
 
 ARG PYSPARK_VERSION
+ARG PROTOBUF_VERSION=5.29.3
 ARG SEDONA_VERSION=1.9.0
 
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -16,14 +17,14 @@ RUN apt-get update \
 
 ENV JAVA_HOME=/usr/local/openjdk-17
 
-RUN pip install --no-cache-dir \
+RUN pip install --no-cache-dir --timeout=120 --retries=5 \
     click==8.1.8 \
     pytest==8.4.2 \
     rich==13.9.4 \
     toml==0.10.2 \
     pandas==2.2.3 \
     pyarrow==19.0.1 \
-    protobuf==5.29.3 \
+    "protobuf==${PROTOBUF_VERSION}" \
     "pyspark[connect]==${PYSPARK_VERSION}" \
     "apache-sedona==${SEDONA_VERSION}"
 

@@ -14,6 +14,7 @@ _MODULES = (
     "InputScope",
     "body",
     "Stateful",
+    "SinkRole",
     "TimeWindow",
     "Temporal",
     "Interval",

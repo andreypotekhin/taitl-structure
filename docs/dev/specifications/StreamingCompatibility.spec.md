@@ -10,9 +10,9 @@ streaming operations, actions, stateful streaming features, or streaming lifecyc
 The contract keeps lifecycle ownership with the caller. Row-local projection,
 row-local filtering, schema-only validation, stream-static joins, transform-scoped watermarks, Spark-valid grouped
 aggregations with caller-owned output modes, watermarked dedupe, and bounded inner stream-stream joins are in scope.
-Triggers, checkpoints, streaming
-sources, streaming sinks, query start, query stop, deployment, and recovery are outside this compatibility contract and
-remain caller-owned.
+Triggers, checkpoints, streaming sources, query start, query stop, deployment, and recovery remain caller-owned. A
+separate row-sink handoff permits the caller to attach a writer to a declared final output without adding sink lifecycle
+to the generated transform.
 
 ## Definition
 
@@ -188,6 +188,21 @@ These operations are not streaming-compatible:
 - Pandas UDFs, RDD operations, `mapInPandas`, and `foreachPartition`;
 - local Spark actions such as `collect()`, `count()`, `toPandas()`, `show()`, and `take()`;
 - arbitrary hooks unless marked streaming-safe.
+
+## Declared row-level sinks
+
+`sink(WriterClass)` requires a PySpark `Sink` subclass; `foreach(returned_row, sink_parameter)` declares a side-effect
+association on a transform's exact returned final output. This is not a streaming transformation operation: symbolic
+execution records metadata only, and
+the result exposes the matching output DataFrame and writer class. The caller constructs and attaches the writer using
+ordinary PySpark. Batch uses `DataFrame.foreach(writer.process)`; streaming uses a noncallable writer instance with
+`process(row)` passed to `DataStreamWriter.foreach`. A batch writer cannot declare streaming `open` or `close` methods.
+
+The caller starts the streaming sink as a separate query with a separate checkpoint. Queries progress and fail
+independently, and a failed/restarted query may replay rows and duplicate external effects. The caller owns idempotence,
+writer configuration, credentials, failure observation, query handles, and recovery. Composed or staged transforms with
+sinks are rejected until their output handoff mapping is defined. This surface is supported by live evidence on classic
+PySpark 3.5 and 4.0; Spark Connect is unclaimed. See the [V11 row-level foreach contract](V11RetainedV9DesignGates.spec.md#row-level-foreach).
 
 Some of these operations are supported by Spark Structured Streaming under specific watermarks, output modes, or state
 policies. Structure admits only the shapes whose transformation policy is compiler-visible.

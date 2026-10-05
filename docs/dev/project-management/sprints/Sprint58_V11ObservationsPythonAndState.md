@@ -20,6 +20,7 @@ API; no gated state or worker-Python API is generated accidentally.
   row-based `transformWithState` for PySpark 4.1 and `transformWithStateInPandas` for PySpark 4.0/4.1 according to
   their separate ExecPlans; keep support claims gated on target evidence.
 - Add streaming classification and caller-owned examples where needed.
+- The typed row subset uses one `ValueState` and callback-scoped timer values; keep additional Spark state types, TTL, typed initial state, processor cleanup, and state-schema evolution explicitly scoped in the row design/spec before admitting them.
 
 ## Acceptance
 

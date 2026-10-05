@@ -52,7 +52,9 @@ class VectorizeSimilarityQueriesGenerated:
             vectorized__vector_queries, DOCUMENT_VECTOR_QUERY_SCHEMA, name="DocumentVectorQuery", mode="strict"
         )
         if not vectorized__vector_queries.isStreaming:
-            vectorized__vector_queries = apply_plan_boundary(vectorized__vector_queries, self.spark)
+            vectorized__vector_queries = apply_plan_boundary(
+                vectorized__vector_queries, vectorized__vector_queries.sparkSession, owner=self
+            )
         return {
             "vectorized__vector_queries": vectorized__vector_queries,
         }
@@ -318,7 +320,9 @@ class ScoreDocumentVectorsGenerated:
         )
         assert_schema(scored__document_scores, DOCUMENT_VECTOR_SCORE_SCHEMA, name="DocumentVectorScore", mode="strict")
         if not scored__document_scores.isStreaming:
-            scored__document_scores = apply_plan_boundary(scored__document_scores, self.spark)
+            scored__document_scores = apply_plan_boundary(
+                scored__document_scores, scored__document_scores.sparkSession, owner=self
+            )
         return {
             "scored__document_scores": scored__document_scores,
         }
@@ -373,7 +377,9 @@ class RankVectorsGenerated:
         )
         assert_schema(ranked__valid_policy, VECTOR_INDEX_POLICY_SCHEMA, name="VectorIndexPolicy", mode="strict")
         if not ranked__valid_policy.isStreaming:
-            ranked__valid_policy = apply_plan_boundary(ranked__valid_policy, self.spark)
+            ranked__valid_policy = apply_plan_boundary(
+                ranked__valid_policy, ranked__valid_policy.sparkSession, owner=self
+            )
         return {
             "ranked__valid_policy": ranked__valid_policy,
         }
@@ -453,7 +459,9 @@ class RankVectorsGenerated:
             ranked__document_candidates, DOCUMENT_VECTOR_CANDIDATE_SCHEMA, name="DocumentVectorCandidate", mode="strict"
         )
         if not ranked__document_candidates.isStreaming:
-            ranked__document_candidates = apply_plan_boundary(ranked__document_candidates, self.spark)
+            ranked__document_candidates = apply_plan_boundary(
+                ranked__document_candidates, ranked__document_candidates.sparkSession, owner=self
+            )
         return {
             "ranked__document_candidates": ranked__document_candidates,
         }
@@ -555,7 +563,7 @@ class ExactSimilarityCandidatesGenerated(
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     @reuse_policy_checks
     def run(

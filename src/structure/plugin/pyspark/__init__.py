@@ -122,9 +122,14 @@ def variant_explode_outer(*args: object, **kwargs: object) -> Any:
     return cast(Any, _variant_explode_outer)(*args, **kwargs)
 
 
-def foreach(row: object, sink: object) -> None:
+def foreach(row: object, sink: object) -> Any:
     callback = getattr(import_module("structure.plugin.pyspark.dsl.body"), "foreach")
-    callback(row, sink)
+    return callback(row, sink)
+
+
+def foreach_batch(row: object, sink: object) -> Any:
+    callback = getattr(import_module("structure.plugin.pyspark.dsl.body"), "foreach_batch")
+    return callback(row, sink)
 
 
 if TYPE_CHECKING:
@@ -223,6 +228,7 @@ __all__ = [  # noqa: F405
     "JsonOptions",
     "OverlapPolicy",
     "StreamingOutputMode",
+    "Sink",
     "StateProcessor",
     "PandasStateProcessor",
     "ValueState",
@@ -623,6 +629,7 @@ __all__ = [  # noqa: F405
     "xxhash64",
     "zeroifnull",
     "foreach",
+    "foreach_batch",
     "where",
     "watermark",
     "width_bucket",

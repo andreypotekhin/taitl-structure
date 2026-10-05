@@ -22,11 +22,12 @@ from structure.plugin.pyspark.dsl.operations.WatermarkPlan import WatermarkPlan
 from structure.plugin.pyspark.dsl.RowScope import RowScope
 from structure.plugin.pyspark.dsl.types import BooleanType, TimestampType
 from structure.plugin.pyspark.symbolic_execution.model.PySparkForeachCapture import PySparkForeachCapture
+from structure.plugin.pyspark.symbolic_execution.model.PySparkSinkEffect import PySparkSinkEffect
 
 Projected = TypeVar("Projected", bound=Schema)
 
 
-def foreach(row: object, sink: object) -> None:
+def foreach(row: object, sink: object) -> Any:
     """Associate a returned final row with a declared opaque sink.
 
     This records compiler metadata only. It does not call the writer or start
@@ -35,9 +36,31 @@ def foreach(row: object, sink: object) -> None:
     context = _context("foreach")
     if not _is_sink_reference(sink):
         raise TypeError("foreach(row, sink) requires a sink-typed step parameter")
+    if getattr(sink, "kind", None) != "row":
+        raise TypeError("foreach(row, sink) requires a sink(WriterClass) declaration")
     if not isinstance(row, (Schema, RowScope, Projection)):
         raise TypeError("foreach(row, sink) requires a Structure row or projection returned by this step")
-    context.foreach.append(PySparkForeachCapture(row=row, sink=sink))
+    capture = PySparkForeachCapture(row=row, sink=sink, kind="row")
+    context.foreach.append(capture)
+    return PySparkSinkEffect(capture)
+
+
+def foreach_batch(row: object, sink: object) -> Any:
+    """Associate a final streaming row with a caller-owned batch processor.
+
+    The named sink declares the processor output schema. Spark callback and
+    batch execution remain caller-owned; this records compiler metadata only.
+    """
+    context = _context("foreach_batch")
+    if not _is_sink_reference(sink):
+        raise TypeError("foreach_batch(row, sink) requires a sink-typed step parameter")
+    if getattr(sink, "kind", None) != "batch":
+        raise TypeError("foreach_batch(row, sink) requires a sink(AlertMessage) declaration")
+    if not isinstance(row, (Schema, RowScope, Projection)):
+        raise TypeError("foreach_batch(row, sink) requires a Structure row or projection")
+    capture = PySparkForeachCapture(row=row, sink=sink, kind="batch")
+    context.foreach.append(capture)
+    return PySparkSinkEffect(capture)
 
 
 def where(*predicates: object) -> WhereChain:
@@ -205,5 +228,5 @@ def _is_sink_reference(value: object) -> bool:
     return (
         type(value).__name__ == "SinkReference"
         and isinstance(getattr(value, "name", None), str)
-        and isinstance(getattr(value, "writer_type", None), type)
+        and isinstance(getattr(value, "sink_type", None), type)
     )

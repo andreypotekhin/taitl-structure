@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 from dataclasses import dataclass
-from typing import Any, ClassVar, Generic, TypeVar, cast, get_args
+from typing import Any, ClassVar, Generic, TypeVar, cast, get_args, get_origin
 
 from structure import Schema
 
@@ -57,10 +57,27 @@ class Timer:
 
 
 class TimerContext:
-    """Typed timer operations exposed to a Structure state processor."""
+    """Timer operations and current trigger times exposed to a typed processor."""
 
-    def __init__(self, handle: Any) -> None:
+    def __init__(self, handle: Any, timer_values: Any | None = None) -> None:
         self._handle = handle
+        self._timer_values = timer_values
+
+    @property
+    def current_processing_time_ms(self) -> int | None:
+        """Return this callback's processing time, or ``None`` during initialization."""
+
+        if self._timer_values is None:
+            return None
+        return self._timer_values.getCurrentProcessingTimeInMs()
+
+    @property
+    def current_watermark_ms(self) -> int | None:
+        """Return this callback's watermark, or ``None`` during initialization."""
+
+        if self._timer_values is None:
+            return None
+        return self._timer_values.getCurrentWatermarkInMs()
 
     def register(self, timestamp_ms: int) -> None:
         self._handle.registerTimer(timestamp_ms)
@@ -125,7 +142,7 @@ def _mark_processor(processor: type, origin: type, attribute: str, label: str) -
     arguments = _processor_schemas(processor, origin)
     if len(arguments) != 4 or not all(isinstance(argument, type) and issubclass(argument, Schema) for argument in arguments):
         raise TypeError(
-            f"Processor decorator requires {processor.__name__} to inherit "
+            f"Processor declaration requires {processor.__name__} to inherit "
             f"{label}[InputSchema, KeySchema, StateSchema, OutputSchema]."
         )
     _require_importable(processor)
@@ -134,23 +151,94 @@ def _mark_processor(processor: type, origin: type, attribute: str, label: str) -
 
 
 def _processor_schemas(processor: type, origin: type) -> tuple[object, ...]:
-    for base in getattr(processor, "__orig_bases__", ()):
-        if getattr(base, "__origin__", None) is origin:
-            return get_args(base)
-    return ()
+    """Resolve a processor's schema arguments through specialized generic bases."""
+    resolved: list[tuple[object, ...]] = []
+
+    def visit(current: type, bindings: dict[TypeVar, object], ancestry: frozenset[type]) -> None:
+        if current in ancestry:
+            return
+        next_ancestry = ancestry | {current}
+        declared_bases = vars(current).get("__orig_bases__", ())
+        aliases = {get_origin(base) or base: base for base in declared_bases}
+        for base_class in current.__bases__:
+            if base_class is object:
+                continue
+            alias = aliases.get(base_class)
+            raw_arguments = get_args(alias) if alias is not None else ()
+            arguments = tuple(_resolve_typevar(argument, bindings) for argument in raw_arguments)
+            if base_class is origin:
+                resolved.append(arguments)
+                continue
+            if not issubclass(base_class, origin):
+                continue
+            parameters = getattr(base_class, "__parameters__", ())
+            if alias is None:
+                arguments = tuple(bindings.get(parameter, parameter) for parameter in parameters)
+            visit(
+                base_class,
+                {parameter: argument for parameter, argument in zip(parameters, arguments, strict=False)},
+                next_ancestry,
+            )
+
+    visit(processor, {}, frozenset())
+    unique = tuple(dict.fromkeys(resolved))
+    if len(unique) > 1:
+        raise TypeError(
+            f"{processor.__name__} has conflicting {origin.__name__} schema specializations: {unique!r}."
+        )
+    return unique[0] if unique else ()
+
+
+def _resolve_typevar(argument: object, bindings: dict[TypeVar, object]) -> object:
+    seen: set[TypeVar] = set()
+    while isinstance(argument, TypeVar) and argument in bindings and argument not in seen:
+        seen.add(argument)
+        argument = bindings[argument]
+    return argument
 
 
 def _schema_values(schema: type[Schema], value: object) -> tuple[object, ...]:
-    return tuple(getattr(value, field.name) for field in schema._structure_fields.values())
+    if not isinstance(value, schema):
+        raise TypeError(f"State value must be an instance of {schema.__name__}; received {type(value).__name__}.")
+    values = getattr(value, "_structure_values", {})
+    _validate_schema_values(schema, values)
+    return tuple(values[field.name] for field in schema._structure_fields.values())
 
 
 def _schema_instance(schema: type[Schema], value: object) -> Schema:
     values = value.asDict(recursive=True) if hasattr(value, "asDict") else value
     if isinstance(values, dict):
-        return schema(**{field.name: values[field.column] for field in schema._structure_fields.values()})
-    if isinstance(values, (tuple, list)):
-        return schema(**dict(zip(schema._structure_fields, values, strict=True)))
-    raise TypeError(f"State value for {schema.__name__} must be a row or tuple.")
+        columns = {field.column: field.name for field in schema._structure_fields.values()}
+        missing = set(columns) - set(values)
+        extra = set(values) - set(columns)
+        if missing or extra:
+            raise ValueError(
+                f"Row fields for {schema.__name__} must match its Structure Schema; "
+                f"missing={sorted(missing)!r}, extra={sorted(extra)!r}."
+            )
+        field_values = {field.name: values[field.column] for field in schema._structure_fields.values()}
+    elif isinstance(values, (tuple, list)):
+        field_values = dict(zip(schema._structure_fields, values, strict=True))
+    else:
+        raise TypeError(f"State value for {schema.__name__} must be a row or tuple.")
+    _validate_schema_values(schema, field_values)
+    instance = schema(**field_values)
+    for name, field_value in field_values.items():
+        setattr(instance, name, field_value)
+    return instance
+
+
+def _validate_schema_values(schema: type[Schema], values: dict[str, object]) -> None:
+    expected = set(schema._structure_fields)
+    actual = set(values)
+    if actual != expected:
+        raise ValueError(
+            f"Values for {schema.__name__} must match its Structure Schema; "
+            f"missing={sorted(expected - actual)!r}, extra={sorted(actual - expected)!r}."
+        )
+    for field in schema._structure_fields.values():
+        if not field.nullable and values[field.name] is None:
+            raise ValueError(f"Value for non-nullable field {field.column!r} in {schema.__name__} is None.")
 
 
 def transform_with_state(
@@ -168,7 +256,6 @@ def transform_with_state(
         "row",
         "transform_with_state",
         StateProcessor,
-        "__structure_state_processor__",
         key=key,
         processor=processor,
         output_mode=output_mode,
@@ -193,7 +280,6 @@ def transform_with_state_in_pandas(
         "pandas",
         "transform_with_state_in_pandas",
         PandasStateProcessor,
-        "__structure_pandas_state_processor__",
         key=key,
         processor=processor,
         output_mode=output_mode,
@@ -207,7 +293,6 @@ def _capture_stateful_transform(
     interface: str,
     operation_name: str,
     processor_type: type,
-    processor_attribute: str,
     *,
     key: object,
     processor: type | ExternalStateProcessor,
@@ -234,16 +319,34 @@ def _capture_stateful_transform(
         _require_importable(processor.processor)
         input_schema, key_schema, output_schema = processor.input_schema, processor.key_schema, processor.output_schema
         mode = "native"
+        state_schema = None
     else:
-        schemas = getattr(processor, processor_attribute, None)
-        if not isinstance(schemas, tuple) or len(schemas) != 4:
-            decorator = "@state_processor" if interface == "row" else "@pandas_state_processor"
-            raise TypeError(f"processor must be decorated with {decorator}.")
-        if not isinstance(processor, type) or not issubclass(processor, processor_type):
-            other_interface = "PandasStateProcessor" if interface == "row" else "StateProcessor"
+        other_processor_type = PandasStateProcessor if interface == "row" else StateProcessor
+        other_interface = other_processor_type.__name__
+        if not isinstance(processor, type):
+            raise TypeError(
+                f"processor must inherit {processor_type.__name__}"
+                "[InputSchema, KeySchema, StateSchema, OutputSchema]."
+            )
+        if issubclass(processor, other_processor_type):
             raise TypeError(f"{operation_name}(...) requires {processor_type.__name__}; received {other_interface}.")
+        if not issubclass(processor, processor_type):
+            raise TypeError(
+                f"processor must inherit {processor_type.__name__}"
+                "[InputSchema, KeySchema, StateSchema, OutputSchema]."
+            )
+        schemas = _processor_schemas(processor, processor_type)
+        if len(schemas) != 4 or not all(
+            isinstance(argument, type) and issubclass(argument, Schema) for argument in schemas
+        ):
+            raise TypeError(
+                f"processor must inherit {processor_type.__name__}"
+                "[InputSchema, KeySchema, StateSchema, OutputSchema] with concrete Structure Schema classes."
+            )
         _require_importable(processor)
-        input_schema, key_schema, _state_schema, output_schema = schemas
+        input_schema, key_schema, state_schema, output_schema = (
+            cast(type[Schema], schema) for schema in schemas
+        )
         mode = "typed"
     input_row = context.default_project_source
     input_schema_for_step = getattr(input_row, "_structure_scope_schema", None)
@@ -271,6 +374,7 @@ def _capture_stateful_transform(
         processor_mode=mode,
         input_schema=input_schema,
         key_schema=key_schema,
+        state_schema=state_schema,
         output_schema=output_schema,
         output_mode=output_mode,
         time_mode=time_mode,

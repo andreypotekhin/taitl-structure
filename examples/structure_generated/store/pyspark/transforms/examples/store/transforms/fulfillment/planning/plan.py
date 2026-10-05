@@ -40,7 +40,7 @@ class PlanFulfillmentGenerated:
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,
@@ -249,7 +249,7 @@ class PlanFulfillmentGenerated:
             preferred_options, FULFILLMENT_PREFERRED_OPTION_SCHEMA, name="FulfillmentPreferredOption", mode="strict"
         )
         if not preferred_options.isStreaming:
-            preferred_options = apply_plan_boundary(preferred_options, self.spark)
+            preferred_options = apply_plan_boundary(preferred_options, preferred_options.sparkSession, owner=self)
 
         # Step method: allocate
         allocations = preferred_options.alias("fulfillment_preferred_option")

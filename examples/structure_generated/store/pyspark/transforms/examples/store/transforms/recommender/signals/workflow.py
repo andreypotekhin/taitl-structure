@@ -74,7 +74,7 @@ class BuildSessionSignalsGenerated:
         )
         assert_schema(session__events, SESSION_FEATURE_SCHEMA, name="SessionFeature", mode="strict")
         if not session__events.isStreaming:
-            session__events = apply_plan_boundary(session__events, self.spark)
+            session__events = apply_plan_boundary(session__events, session__events.sparkSession, owner=self)
         return {
             "session__events": session__events,
         }
@@ -138,7 +138,9 @@ class BuildPurchaseSignalsGenerated:
             purchases__fulfilled_orders, RECOMMENDATION_PURCHASE_SCHEMA, name="RecommendationPurchase", mode="strict"
         )
         if not purchases__fulfilled_orders.isStreaming:
-            purchases__fulfilled_orders = apply_plan_boundary(purchases__fulfilled_orders, self.spark)
+            purchases__fulfilled_orders = apply_plan_boundary(
+                purchases__fulfilled_orders, purchases__fulfilled_orders.sparkSession, owner=self
+            )
         return {
             "purchases__fulfilled_orders": purchases__fulfilled_orders,
         }
@@ -185,7 +187,9 @@ class BuildProductSignalsGenerated:
             mode="strict",
         )
         if not recommendation__daily_impressions.isStreaming:
-            recommendation__daily_impressions = apply_plan_boundary(recommendation__daily_impressions, self.spark)
+            recommendation__daily_impressions = apply_plan_boundary(
+                recommendation__daily_impressions, recommendation__daily_impressions.sparkSession, owner=self
+            )
         return {
             "recommendation__daily_impressions": recommendation__daily_impressions,
         }
@@ -256,7 +260,9 @@ class BuildProductSignalsGenerated:
             mode="strict",
         )
         if not recommendation__daily_clicks.isStreaming:
-            recommendation__daily_clicks = apply_plan_boundary(recommendation__daily_clicks, self.spark)
+            recommendation__daily_clicks = apply_plan_boundary(
+                recommendation__daily_clicks, recommendation__daily_clicks.sparkSession, owner=self
+            )
         return {
             "recommendation__daily_clicks": recommendation__daily_clicks,
         }
@@ -419,7 +425,9 @@ class BuildProductSignalsGenerated:
             .alias("conversion_rate"),
         )
         if not recommendation__signals.isStreaming:
-            recommendation__signals = apply_plan_boundary(recommendation__signals, self.spark)
+            recommendation__signals = apply_plan_boundary(
+                recommendation__signals, recommendation__signals.sparkSession, owner=self
+            )
         return {
             "recommendation__signals": recommendation__signals,
         }
@@ -434,7 +442,7 @@ class BuildRecommendationSignalsGenerated(
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,

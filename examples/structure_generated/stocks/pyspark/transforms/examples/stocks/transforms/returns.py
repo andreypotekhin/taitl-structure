@@ -23,7 +23,7 @@ class PrepareReturnsGenerated:
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,
@@ -173,7 +173,7 @@ class PrepareReturnsGenerated:
             .alias("signed_volume"),
         )
         if not bars.isStreaming:
-            bars = apply_plan_boundary(bars, self.spark)
+            bars = apply_plan_boundary(bars, bars.sparkSession, owner=self)
 
         # Step method: returns
         returns = bars.alias("daily_return")

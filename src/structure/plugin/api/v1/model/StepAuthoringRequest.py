@@ -22,3 +22,4 @@ class StepAuthoringRequest:
     plugin_options: Mapping[str, object] = field(default_factory=lambda: MappingProxyType({}))
     effect: bool = False
     sinks: tuple[StepAuthoringSink, ...] = ()
+    sink_effect: bool = False

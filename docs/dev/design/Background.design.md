@@ -4,9 +4,11 @@ Structure began as a way to express schema-driven PySpark transformations in ord
 DataFrame operations Spark can optimize. It provides two equivalent delivery paths: direct execution against a
 caller-owned runtime and optional generated source that projects the same checked transformation behavior.
 
-The project deliberately does not own data loading, storage writes, orchestration, Spark session lifecycle, or
-streaming query lifecycle. It concentrates on typed schemas, transform structure, compiler-visible operations,
-diagnostics, and generated-code reviewability.
+The project leaves data loading, general storage writing, orchestration, Spark session lifecycle, and streaming query
+lifecycle to callers. The PySpark plugin has one explicit mutation surface: compiled operations on caller-owned Delta
+tables. Callers still create tables and provision native constraints. See the
+[Delta design](V11DeltaSchemaBoundMutations.design.md) and
+[Delta specification](../specifications/V11DeltaSchemaBoundMutations.spec.md).
 
 ## Target Architecture
 

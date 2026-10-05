@@ -11,6 +11,14 @@ Companion streaming state, side-effect, and evidence plans are linked from the
 [streaming project plan](../dev/project-management/V10.md). An open or gated row is not a support claim;
 each entry must name its owner boundary, evidence, and caller remedy.
 
+## Delta Tables
+
+Typed Delta table mutations are implemented with isolated ordinary PySpark 4.1.0 / Delta 4.1.0 evidence and remain
+release-gated pending V11's wider admission matrix. They are separate from the default PySpark `>=3.5,<4.1`
+DataFrame API baseline. See the [Delta API](../api/DeltaTables.api.md) and
+[Delta compatibility ledger](DeltaTables.compat.md) for the precise operations, schema evolution rules, and target
+limits.
+
 ## Validation and selection timing
 
 Relation assertions and ambiguity checks are lazy in online and generated execution. Constructing a result
@@ -193,7 +201,7 @@ lifecycle recipe.
 | Typed struct generators | implemented | `stack`, `explode`, `posexplode`, `inline` | Fixed `stack` and typed array-of-struct generators are stateless row expansion with schema/cardinality contracts | [Collections API](../api/Collections.api.md) |
 | Caller-owned lifecycle APIs | caller-owned-guided | Sources, sinks, triggers, checkpoints, query start/stop | Structure only transforms supplied DataFrames; executable recipes keep lifecycle outside generated modules | [Streaming API](../api/Streaming.api.md) |
 | `foreachBatch` side-effect sinks | caller-owned-guided | `DataStreamWriter.foreachBatch` | Use `examples.streams.adoption.start_foreach_batch_query(...)` with `ForeachBatchSafety` after Structure returns a transformed DataFrame; the helper validates sink identity, idempotence key, retry policy, and snapshot identity before start | [Streaming API](../api/Streaming.api.md) |
-| Row-level `foreach` sinks | design-gated | `DataStreamWriter.foreach` | Needs sink identity, idempotence, retry, and recovery contracts before any Structure-owned support | [Spark Streaming](../dev/specifications/SparkStreaming.spec.md) |
+| Row-level `foreach` sinks | caller-owned-guided | `DataFrame.foreach`, `DataStreamWriter.foreach` | A declared final output can be handed off with its writer class; the caller constructs the writer, attaches it, and owns query lifecycle, checkpointing, retries, identity, and idempotence. Classic PySpark 3.5 and 4.0 have live online/generated evidence; Spark Connect is unclaimed. | [Streaming API](../api/Streaming.api.md) |
 
 ## API Coverage
 

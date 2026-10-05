@@ -165,6 +165,7 @@ def test_online_and_rendered_boundary_guard(streaming, checkpointed):
     frame.alias.return_value = frame
     frame.checkpoint.return_value = frame
     spark = Mock()
+    frame.sparkSession = spark
     invocation = Fork(rows=frame)
     runner = RunOnlinePySparkTransform()
     online = runner._step(
@@ -228,7 +229,9 @@ def test_connect_checkpoint_stages_before_operations_and_preserves_alias(streami
     source = render_pyspark_step(recipe, current="frame")
     namespace = {"frame": frame, "self": SimpleNamespace(spark=spark), "apply_plan_boundary": apply_plan_boundary}
     calls = [
-        lambda: runner._operations(recipe, frame, frames={}, functions=Mock(), window=Mock(), types=Mock()),
+        lambda: runner._operations(
+            recipe, frame, frames={}, functions=Mock(), window=Mock(), types=Mock(), session=None
+        ),
         lambda: exec("\n".join(line[8:] for line in source.splitlines()), namespace),
     ]
     for call in calls:

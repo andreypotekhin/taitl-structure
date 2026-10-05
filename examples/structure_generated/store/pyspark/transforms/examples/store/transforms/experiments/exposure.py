@@ -29,7 +29,7 @@ class RecordRecommendationExposuresGenerated:
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,
@@ -81,7 +81,7 @@ class RecordRecommendationExposuresGenerated:
             F.col("recommendation_request.requested_at").alias("exposed_at"),
         )
         if not requests.isStreaming:
-            requests = apply_plan_boundary(requests, self.spark)
+            requests = apply_plan_boundary(requests, requests.sparkSession, owner=self)
 
         # Step method: exposures
         exposures = requests.alias("recommendation_exposure")

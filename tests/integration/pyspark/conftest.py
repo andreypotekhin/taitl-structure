@@ -63,6 +63,14 @@ def runtime_sessions(compiled_artifacts):
 
 
 @pytest.fixture
+def integration_shared_dir(pytestconfig) -> Path:
+    """Storage mounted into both the integration runner and Spark workers."""
+    shared = Path(pytestconfig.rootpath) / ".pytest-workspace-tmp" / "integration"
+    shared.mkdir(parents=True, exist_ok=True)
+    return shared
+
+
+@pytest.fixture
 def snapshots(spark, pytestconfig) -> Iterator[Snapshots]:
     shared = Path(pytestconfig.rootpath) / ".pytest-workspace-tmp" / "integration"
     shared.mkdir(parents=True, exist_ok=True)

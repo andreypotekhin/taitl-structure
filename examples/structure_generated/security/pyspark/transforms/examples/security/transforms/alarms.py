@@ -27,7 +27,7 @@ class VulnerabilityAlarmsGenerated:
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,
@@ -94,7 +94,7 @@ class VulnerabilityAlarmsGenerated:
             F.col("vulnerability_workflow_exposure.instructions"),
         )
         if not exposures.isStreaming:
-            exposures = apply_plan_boundary(exposures, self.spark)
+            exposures = apply_plan_boundary(exposures, exposures.sparkSession, owner=self)
 
         # Step method: overdue_alarms
         overdue_alarms = exposures.alias("team_vulnerability_alarm")

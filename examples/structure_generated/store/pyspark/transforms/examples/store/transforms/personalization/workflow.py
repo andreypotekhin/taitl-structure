@@ -50,7 +50,7 @@ class BuildProductFeaturesGenerated:
         )
         assert_schema(featured__catalog, CATALOG_PRODUCT_SCHEMA, name="CatalogProduct", mode="strict")
         if not featured__catalog.isStreaming:
-            featured__catalog = apply_plan_boundary(featured__catalog, self.spark)
+            featured__catalog = apply_plan_boundary(featured__catalog, featured__catalog.sparkSession, owner=self)
         return {
             "featured__catalog": featured__catalog,
         }
@@ -156,7 +156,7 @@ class BuildPersonalizationHistoryGenerated:
         )
         assert_schema(history__history, PERSONALIZATION_HISTORY_SCHEMA, name="PersonalizationHistory", mode="strict")
         if not history__history.isStreaming:
-            history__history = apply_plan_boundary(history__history, self.spark)
+            history__history = apply_plan_boundary(history__history, history__history.sparkSession, owner=self)
         return {
             "history__history": history__history,
         }
@@ -314,7 +314,7 @@ class ScorePersonalizedRecommendationsGenerated:
             F.lit('v1').alias("algorithm_version"),
         )
         if not scored__requests.isStreaming:
-            scored__requests = apply_plan_boundary(scored__requests, self.spark)
+            scored__requests = apply_plan_boundary(scored__requests, scored__requests.sparkSession, owner=self)
         return {
             "scored__requests": scored__requests,
         }
@@ -329,7 +329,7 @@ class BuildPersonalizedRecommendationsGenerated(
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,

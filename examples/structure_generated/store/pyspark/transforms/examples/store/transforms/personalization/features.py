@@ -22,7 +22,7 @@ class BuildProductFeaturesGenerated:
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,
@@ -55,7 +55,7 @@ class BuildProductFeaturesGenerated:
             F.col("catalog_product.eligible"),
         )
         if not catalog.isStreaming:
-            catalog = apply_plan_boundary(catalog, self.spark)
+            catalog = apply_plan_boundary(catalog, catalog.sparkSession, owner=self)
 
         # Step method: featured
         featured = catalog.alias("catalog_product")

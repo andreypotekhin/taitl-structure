@@ -56,16 +56,41 @@ Their support status remains `design-gated` until the exact profile passes live 
 parity, and same-checkpoint restart tests. Spark Connect remains unclaimed. This gate records missing runtime evidence;
 it does not mean the compiler surfaces are unimplemented.
 
+In typed mode, `on_rows(key, rows, state, timers)` is required and `on_timer(key, timer, state, timers)` is optional.
+The callback context exposes current processing time and current watermark in milliseconds along with timer management;
+reading the watermark requires a watermarked input. Callback signatures are checked before constructing the Spark
+operator. Converted input and state values expose the declared Structure fields, and yielded values must match the
+declared output Schema, including non-null constraints. A callback may yield zero or many rows.
+
+The typed state surface is deliberately a subset. The first release slice types one `ValueState`; the opaque native path
+preserves Spark's additional state kinds and processor methods. Typed `ListState`, `MapState`, multiple named variables,
+TTL, composite keys, and initial state need separate schema and checkpoint contracts and remain follow-up design items.
+Typed `close` callbacks and schema evolution are deferred because cleanup is not guaranteed after worker failure and
+checkpoint migration needs its own contract.
+
+The ordinary `pyspark41` integration lane initially runs the runtime-version assertion and the V11 test directory only.
+Its image uses Protobuf 6.33.0 for PySpark 4.1's generated state protocol; 3.5 and 4.0 retain Protobuf 5.29.3. The Spark
+test session uses RocksDB because the default HDFS-backed state store rejects TransformWithState's multiple column
+families. Both 4.1 state processor APIs also require pandas, PyArrow, and Protobuf on the driver and workers; the Pandas
+API requires those packages on PySpark 4.0 as well.
+The row API's 4.1 fixture and the Pandas API's profile-specific fixtures are the relevant positive evidence; unrelated
+pre-V11 integration and concept tests are not run on 4.1. The lane is not evidence of full upstream processor parity:
+typed Structure callbacks cover the documented subset, while opaque native processors must be exercised for additional
+native capabilities claimed by their profile.
+
 ## Feature 5: target and evidence matrix
 
-The matrix has six backends: `pyspark35`, `pyspark40`, `pyspark41`, `spark-connect35`, `spark-connect40`, and
-`spark-connect41`. Each backend reports the exact PySpark and Spark version, target profile, target variant, image digest
-or pinned package version, and test selection. The 4.1 profile is `>=4.1,<4.2`. Ordinary 4.1 is release-blocking for
-every supported row; Connect 4.1 is release-blocking only for rows whose catalog entry claims Connect support.
+The eventual release matrix has six backends: `pyspark35`, `pyspark40`, `pyspark41`, `spark-connect35`,
+`spark-connect40`, and `spark-connect41`. The currently configured matrix has five; Connect 4.1 remains deferred. Each
+configured backend reports the exact PySpark and Spark version, target profile, target variant, image digest or pinned
+package version, and test selection. The 4.1 profile is `>=4.1,<4.2`. The initial ordinary 4.1 selection is limited to
+the backend version check and V11 integration tests. Ordinary 4.1 is release-blocking for every supported row after its
+profile-specific evidence is complete; Connect 4.1 is release-blocking only for rows whose catalog entry claims Connect
+support.
 
-The complete matrix runs through `make integration`; a selected lane runs through
-`make integration BACKEND=pyspark41` or `make integration BACKEND=spark-connect41`. The Spark-free `make build` remains
-mandatory and must not require Docker, Java, or an installed PySpark package.
+The staged matrix runs through `make integration`; the configured 4.1 lane runs through
+`make integration BACKEND=pyspark41`. Add Connect 4.1 only after a separate API and test selection is reviewed. The
+Spark-free `make build` remains mandatory and must not require Docker, Java, or an installed PySpark package.
 
 ## Cross-cutting requirements
 

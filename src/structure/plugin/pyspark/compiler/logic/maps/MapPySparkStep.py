@@ -408,16 +408,7 @@ class MapPySparkStep:
                 )
             if operation.kind == "transform_with_state" and operation.stateful_transform is not None:
                 state_plan = operation.stateful_transform
-                processor_schema_attribute = (
-                    "__structure_pandas_state_processor__"
-                    if state_plan.interface == "pandas"
-                    else "__structure_state_processor__"
-                )
-                typed_state_schema = (
-                    cast(type[Schema], getattr(state_plan.processor, processor_schema_attribute)[2])
-                    if state_plan.processor_mode == "typed"
-                    else None
-                )
+                typed_state_schema = state_plan.state_schema
                 recipes.append(
                     self._operation_modes(
                         PySparkOperationRecipe.transform_with_state_operation(

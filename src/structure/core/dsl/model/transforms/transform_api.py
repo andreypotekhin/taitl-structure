@@ -15,7 +15,12 @@ from structure.core.dsl.model.transforms.OutputDeclaration import OutputBindings
 from structure.core.dsl.model.transforms.ParameterDeclaration import ParameterDeclaration
 from structure.core.dsl.model.transforms.SchemaMode import SchemaMode
 from structure.core.dsl.model.transforms.SinkDeclaration import SinkDeclaration
-from structure.core.dsl.model.transforms.SpecialFunction import IgnoredCompilerCode, OpaqueCompilerCode, SpecialFunction
+from structure.core.dsl.model.transforms.SpecialFunction import (
+    IgnoredCompilerCode,
+    OpaqueCompilerCode,
+    SpecialFunction,
+    guard_excluded_class,
+)
 from structure.core.dsl.model.transforms.StageDeclaration import StageDeclaration
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.plugin.api.v1.model import current_symbolic_context
@@ -166,9 +171,9 @@ def output(
     return replace(declaration, source=source)
 
 
-def sink(writer_type: type) -> SinkDeclaration:
-    """Declare an opaque row writer that a compiled step may reference."""
-    return SinkDeclaration(writer_type=writer_type)
+def sink(sink_type: type) -> SinkDeclaration:
+    """Declare a row writer or batch output schema that a compiled step may reference."""
+    return SinkDeclaration(sink_type=sink_type)
 
 
 @overload
@@ -363,22 +368,7 @@ def special(function: Callable | None = None, *, type: str, **kwargs):
 
 def _guard_excluded_class(cls: type, *, mode: str) -> None:
     """Reject callable access on a runtime-only class during compilation."""
-    original = getattr(cls, "__getattribute__", object.__getattribute__)
-    if getattr(original, "_structure_excluded_guard", False):
-        return
-
-    def guarded(instance, name):
-        value = original(instance, name)
-        if current_symbolic_context() is not None and not name.startswith("_") and callable(value):
-            error_type = OpaqueCompilerCode if mode == "opaque" else IgnoredCompilerCode
-            raise error_type(
-                f"{cls.__qualname__}.{name} is marked @special(type=\"{mode}\") and cannot be used in "
-                "compiler-visible logic"
-            )
-        return value
-
-    setattr(guarded, "_structure_excluded_guard", True)
-    setattr(cls, "__getattribute__", cast(Any, guarded))
+    guard_excluded_class(cls, mode=mode, role=f'@special(type="{mode}")')
 
 
 def _decorate_transform_class(cls, kwargs):

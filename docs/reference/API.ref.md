@@ -5,7 +5,9 @@ This describes Structure's public, compiler-visible API.
 If you are just starting using this library, see [QuickRef.md](../QuickRef.md) for an introduction.
 
 `supported` means the public contract is available now. `planned` needs a more complete type, cardinality, or
-determinism contract. `design-gated` has a proposed boundary but lacks implementation or evidence. `caller-owned-guided`
+determinism contract. `design-gated` has a proposed boundary but lacks implementation or evidence. `implemented;
+release-gated` means an implementation and isolated evidence exist, but broader release admission remains pending.
+`caller-owned-guided`
 means the caller may use the upstream API around a Structure transform. `streaming-ineligible` excludes a streaming form;
 `unsupported` deliberately stays outside the current scope.
 Structure is not a one-to-one PySpark
@@ -72,7 +74,7 @@ and [API tracker](../compatibility/APITracker.md) for the normative status and e
 | Expressions and relational query operations | design-gated | Typed contracts, capability checks, and online/generated parity are required. |
 | Observations and sketches | design-gated | Metrics and opaque binary results need explicit retrieval, merge, dependency, and determinism contracts. |
 | Arrow UDF/UDTF and row-based state | caller-owned-guided | Worker Python, state, checkpoint, and retry ownership stays with the caller. |
-| Delta transform mutations | planned | Caller-bound Delta tables, optional `Schema` checks, and compiled delete/update/merge remain evidence-gated. |
+| Delta transform mutations | implemented; release-gated | Caller-bound Delta relations, typed delete/update/merge/append, and opt-in return-typed schema evolution. See the [Delta tables API](../api/DeltaTables.api.md). |
 | Retained V9 gates | design-gated | Future Variant/state work is gated; XML and join reordering remain unsupported. |
 
 ## Analytical APIs

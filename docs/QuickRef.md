@@ -5,7 +5,8 @@ For exhaustive reference on supported APIs, PySpark parity, examples and semanti
 [expressions](api/Expressions.api.md), [joins](api/Joins.api.md), [aggregations](api/Aggregations.api.md),
 [sketches and bitmaps](api/Aggregations.api.md#sketches-and-bitmaps), [windows](api/Windows.api.md),
 [collections](api/Collections.api.md),
-[relations](api/Relations.api.md), and [streaming](api/Streaming.api.md).
+[relations](api/Relations.api.md), [streaming](api/Streaming.api.md), and
+[Delta tables](api/DeltaTables.api.md) (implemented; release-gated).
 Target-gated spatial provider guidance is in the [Geospatial reference](reference/Geospatial.ref.md).
 
 ## Schema Classes

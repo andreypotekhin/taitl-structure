@@ -94,10 +94,19 @@ state assumptions visible in explain output; it does not make Structure control 
   proven.
 - Arbitrary state APIs remain design-gated pending profile-specific live evidence. The compiler surface includes
   `transform_with_state(...)` for ordinary PySpark 4.1 and `transform_with_state_in_pandas(...)` for ordinary PySpark
-  4.0 and 4.1; the Pandas form requires pandas, PyArrow, and protobuf on the driver and workers. Neither API currently
-  carries a Structure support claim. `applyInPandasWithState` remains outside the implementation. See the
+  4.0 and 4.1; both 4.1 forms require pandas, PyArrow, and protobuf on the driver and workers. Neither API currently
+  carries a Structure support claim. The initial 4.1 integration lane runs V11 tests only; the row operation still
+  requires typed/native timer, online/generated parity, and same-checkpoint restart evidence. `applyInPandasWithState`
+  remains outside the implementation. See the
   [arbitrary-state contract](../dev/specifications/V9StreamingDesignGatedFeatures.spec.md#arbitrary-state-apis) and
   the [state gate](../dev/gated/Streaming.gates.md#arbitrary-state-processors--design-gated).
+- Typed state schemas come from the specialized `StateProcessor[Input, Key, State, Output]` or
+  `PandasStateProcessor[Input, Key, State, Output]` base, including specialized intermediate classes. The
+  `@state_processor` and `@pandas_state_processor` decorators remain optional compatibility validators.
+- The typed row processor uses one `ValueState`; `TimerContext` exposes timer registration, deletion, listing, current
+  processing time, and the current watermark in milliseconds. The watermark property requires a watermarked input. Use
+  `external_state_processor(...)` when the Spark processor needs additional state types, multiple named states, TTL, or
+  initial-state handling. These typed callbacks remain behind the live evidence gate above.
 - General Pandas, RDD, and `mapInPandas` boundaries remain unsupported because they are not part of these typed state
   processor surfaces.
 
@@ -107,16 +116,53 @@ Supported transform shapes include row-local projection/filter (including scalar
 joins and `exists(...)` filtering, event-time and session-window aggregation, bounded dedupe, bounded inner
 stream-stream joins, and bounded left/right/full outer and semi stream-stream joins. The application controls
 `readStream`, `writeStream`, checkpoints, triggers, output-mode application, query lifecycle, and side effects.
-`foreachBatch` has application-controlled guidance through the streams adoption helper; generated
-Structure modules must not contain `foreachBatch`. A transform may declare a typed row-level sink on a final output,
-then return a read-only handoff on its result. For example, `result.publish_alerts.dataframe` is the output DataFrame
-and `result.publish_alerts.writer` is the opaque writer class. The caller configures the writer and attaches it with
-`DataFrame.foreach(...)` or `DataStreamWriter.foreach(...)`; Structure does not start a query or attach the sink to the
-existing output query. Streaming uses a separate query and checkpoint, and callback retries may repeat side effects.
-The caller owns idempotence, credentials, query handles, failure observation, checkpoints, and recovery. Streaming
-writer instances must be noncallable and expose `process(row: Row) -> None`; batch writers use the bound `process` method
-and may not define streaming `open` or `close` lifecycle methods. Live callback and online/generated handoff evidence
-covers classic PySpark 3.5 and 4.0; Spark Connect is not claimed. See
+`foreachBatch` has application-controlled guidance through the streams adoption helper; generated Structure modules
+must not emit `foreachBatch`. A transform may declare a typed row-level sink on a final output, then return a read-only
+handoff on its result:
+
+```python
+from structure.plugin.pyspark import Sink
+
+
+class AlertWriter(Sink):
+    def __init__(self, destination: str) -> None:
+        self.destination = destination
+
+    def process(self, row: Row) -> None:
+        write_alert(self.destination, row)
+
+
+class PublishAlerts(Transform):
+    events = input(Event, streaming=True)
+    alerts = output(Alert)
+    publish_alerts = sink(AlertWriter)
+
+    @step(output=alerts)
+    def publish(self, event: Event, sink: AlertWriter) -> Alert:
+        alert = Alert(id=event.id)
+        foreach(alert, sink)
+        return alert
+
+
+result = PublishAlerts(events=events).run(session)
+handoff = result.publish_alerts
+assert handoff.dataframe is result.alerts
+query = handoff.dataframe.writeStream.foreach(
+    handoff.writer(destination="alerts-service")
+).option("checkpointLocation", foreach_checkpoint).start()
+```
+
+`Sink` is imported from `structure.plugin.pyspark`. Its subclasses are opaque during compilation and implement
+`process(row: Row) -> None`; no `@special(type="opaque")` decorator is needed. `foreach(row, sink)` records a binding
+to the exact row returned by the step; it does not execute the writer or start a query. The sink must resolve to a
+declared final output; intermediate rows and sink-bearing composed or staged
+transforms fail with `DSL-E0406`. The handoff keeps the writer class so the caller can supply application settings.
+Batch callers invoke `handoff.dataframe.foreach(handoff.writer(...).process)`; batch writers may not define streaming
+`open` or `close` methods. Streaming writers must be noncallable and define `process(row)`; optional `open` and `close`
+follow PySpark's partition/epoch lifecycle. The caller starts and stops each query. An added streaming sink is a second,
+independent query with its own checkpoint and progress. Retries and checkpoint restarts may repeat external writes, so
+the caller owns idempotence, credentials, failure observation, and recovery. Live evidence covers classic PySpark 3.5
+and 4.0; Spark Connect is unclaimed. See the [row-level foreach contract](../dev/specifications/V11RetainedV9DesignGates.spec.md#row-level-foreach),
 [Spark Streaming](../dev/specifications/SparkStreaming.spec.md), and the
 [Execution reference](../background/Execution.back.md).
 

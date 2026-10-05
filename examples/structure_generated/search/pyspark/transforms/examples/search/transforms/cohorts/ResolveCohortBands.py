@@ -35,7 +35,7 @@ class ResolveCohortBandsGenerated:
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,
@@ -414,7 +414,7 @@ class ResolveCohortBandsGenerated:
         )
         assert_schema(valid_bands, BAND_SCHEMA, name="Band", mode="strict")
         if not valid_bands.isStreaming:
-            valid_bands = apply_plan_boundary(valid_bands, self.spark)
+            valid_bands = apply_plan_boundary(valid_bands, valid_bands.sparkSession, owner=self)
 
         # Step method: match_bands
         matches = users.alias("user")
@@ -494,7 +494,7 @@ class ResolveCohortBandsGenerated:
         )
         assert_schema(leaf_matches, BAND_MATCH_SCHEMA, name="BandMatch", mode="strict")
         if not leaf_matches.isStreaming:
-            leaf_matches = apply_plan_boundary(leaf_matches, self.spark)
+            leaf_matches = apply_plan_boundary(leaf_matches, leaf_matches.sparkSession, owner=self)
 
         # Step method: expand_band_ancestors
         band_ancestors = valid_bands.alias("band")
@@ -753,7 +753,7 @@ class ResolveCohortBandsGenerated:
         )
         assert_schema(user_band_paths, USER_BAND_PATH_SCHEMA, name="UserBandPath", mode="strict")
         if not user_band_paths.isStreaming:
-            user_band_paths = apply_plan_boundary(user_band_paths, self.spark)
+            user_band_paths = apply_plan_boundary(user_band_paths, user_band_paths.sparkSession, owner=self)
 
         # Step method: build_resolved_user_bands
         resolved_user_bands = user_band_paths.alias("user_band_path")
@@ -776,7 +776,9 @@ class ResolveCohortBandsGenerated:
         )
         assert_schema(singleton_user_bands, SINGLETON_USER_BAND_SCHEMA, name="SingletonUserBand", mode="strict")
         if not singleton_user_bands.isStreaming:
-            singleton_user_bands = apply_plan_boundary(singleton_user_bands, self.spark)
+            singleton_user_bands = apply_plan_boundary(
+                singleton_user_bands, singleton_user_bands.sparkSession, owner=self
+            )
 
         # Step method: publish_singleton_user_bands
         singleton_catalog = singleton_user_bands.alias("singleton_user_band")
@@ -800,7 +802,7 @@ class ResolveCohortBandsGenerated:
         )
         assert_schema(user_bands, USER_BAND_SCHEMA, name="UserBand", mode="strict")
         if not user_bands.isStreaming:
-            user_bands = apply_plan_boundary(user_bands, self.spark)
+            user_bands = apply_plan_boundary(user_bands, user_bands.sparkSession, owner=self)
 
         # Step method: build_user_band_memberships
         user_band_memberships = users.alias("user")
@@ -821,7 +823,9 @@ class ResolveCohortBandsGenerated:
         )
         assert_schema(user_band_memberships, USER_BAND_MEMBERSHIP_SCHEMA, name="UserBandMembership", mode="strict")
         if not user_band_memberships.isStreaming:
-            user_band_memberships = apply_plan_boundary(user_band_memberships, self.spark)
+            user_band_memberships = apply_plan_boundary(
+                user_band_memberships, user_band_memberships.sparkSession, owner=self
+            )
 
         # Step method: build_direct_band_memberships
         direct_band_memberships = leaf_matches.alias("band_match")

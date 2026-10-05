@@ -9,6 +9,9 @@ aggregation helpers come from `structure.plugin.pyspark`.
 The DSL is not a general wrapper around PySpark. A feature is compiler-visible only when Structure can capture
 it, represent it in IR, check it, and lower it to optimizer-visible target operations.
 
+The [Delta tables API](api/DeltaTables.api.md) also permits explicit, compiler-visible mutation of caller-supplied
+Delta tables. It is implemented with isolated evidence and remains release-gated.
+
 Example source shape:
 
 ```python

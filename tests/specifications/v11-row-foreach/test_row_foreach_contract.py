@@ -4,12 +4,12 @@ from typing import cast
 
 import pytest
 
-from structure import Schema, Transform, input, output, sink, special, step
+from structure import Schema, Transform, input, output, sink, step
 from structure.core.compiler.api import Compiler
 from structure.core.compiler.diagnostics.api import StructureCompileError
 from structure.core.runtime.session.model.SinkResult import SinkResult
 from structure.core.runtime.session.model.TransformResult import TransformResult
-from structure.plugin.pyspark import foreach, string
+from structure.plugin.pyspark import Sink, foreach, string
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 
 
@@ -21,20 +21,17 @@ class Alert(Schema):
     id = string(nullable=False)
 
 
-@special(type="opaque")
-class AlertWriter:
+class AlertWriter(Sink):
     def process(self, row: object) -> None:
         pass
 
 
-@special(type="opaque")
-class OtherWriter:
+class OtherWriter(Sink):
     def process(self, row: object) -> None:
         pass
 
 
-@special(type="opaque")
-class StreamingWriter:
+class StreamingWriter(Sink):
     def process(self, row: object) -> None:
         pass
 
@@ -45,8 +42,7 @@ class StreamingWriter:
         pass
 
 
-@special(type="opaque")
-class CallableWriter:
+class CallableWriter(Sink):
     def process(self, row: object) -> None:
         pass
 
@@ -159,6 +155,46 @@ def test_sink_parameter_requires_a_matching_declaration() -> None:
     with pytest.raises(StructureCompileError) as raised:
         _compile(MissingSink)
     assert "Declare sink(WriterClass)" in raised.value.diagnostic.use_text()
+
+
+def test_sink_requires_the_sink_role_base() -> None:
+    class PlainWriter:
+        def process(self, row: object) -> None:
+            pass
+
+    with pytest.raises(TypeError, match=r"subclass of structure\.plugin\.pyspark\.Sink"):
+        sink(PlainWriter)
+
+
+def test_sink_requires_a_concrete_process_implementation() -> None:
+    with pytest.raises(TypeError, match="concrete Sink subclass"):
+        sink(Sink)
+
+
+def test_sink_is_exported_without_importing_pyspark() -> None:
+    import sys
+
+    before = {name for name in sys.modules if name.startswith("pyspark")}
+    from structure.plugin.pyspark import Sink as PublicSink
+
+    assert PublicSink is Sink
+    assert {name for name in sys.modules if name.startswith("pyspark")} == before
+
+
+def test_sink_writer_method_calls_are_opaque_during_step_compilation() -> None:
+    class CallWriterInStep(Transform):
+        events = input(Event)
+        alerts = output(Alert)
+        publish_alerts = sink(AlertWriter)
+
+        @step(output=alerts)
+        def publish(self, event: Event, sink: AlertWriter) -> Alert:
+            AlertWriter().process(event)
+            return Alert(id=event.id)
+
+    with pytest.raises(StructureCompileError) as raised:
+        _compile(CallWriterInStep)
+    assert raised.value.diagnostic.code == "DSL-E0405"
 
 
 def test_sink_parameter_rejects_a_wrong_writer_type() -> None:

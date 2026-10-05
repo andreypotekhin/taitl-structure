@@ -24,7 +24,7 @@ class VolumeGenerated:
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,
@@ -118,7 +118,7 @@ class VolumeGenerated:
             .alias("typical_price_vwap_20"),
         )
         if not returns.isStreaming:
-            returns = apply_plan_boundary(returns, self.spark)
+            returns = apply_plan_boundary(returns, returns.sparkSession, owner=self)
 
         # Step method: indicators
         indicators = returns.alias("volume_indicator")

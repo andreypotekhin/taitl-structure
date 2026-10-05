@@ -858,8 +858,9 @@ from structure_generated.store.pyspark.schemas.customer import *
 customers = spark.read.schema(CUSTOMER_SCHEMA).parquet(customer_source_path)
 ```
 
-Structure validates and projects DataFrames, but callers own reads, writes, table creation, partitioning, checkpoints,
-output modes, and storage-specific options. Execution materializes equivalent schemas from `SchemaDef.fields` and
+Structure validates and projects DataFrames, but callers own reads, general writes, table creation, partitioning,
+checkpoints, output modes, and storage-specific options. The explicit
+[Delta mutation API](../api/DeltaTables.api.md) can commit to a caller-owned table. Execution materializes equivalent schemas from `SchemaDef.fields` and
 exposes them after `run(session)` without requiring generated files.
 
 Generated schemas are shape-only artifacts. Callers may reuse them for their own reads, validation, or pre-write
@@ -917,8 +918,9 @@ intermediate_validation_mode = "schema_and_constraints"
 output_validation_mode = "schema_and_constraints"
 ```
 
-Until concrete constraint families are available, the mode may report that only schema checks exist. Generated schemas
-remain shape-only; future constraint metadata must use separate artifacts unless a later design changes this contract.
+This DataFrame validation mode may report that only schema checks exist. Delta table CHECK declarations use a
+separate metadata verification path before mutation, independent of `schema_and_constraints`; see
+[Delta tables](DeltaTables.back.md). Generated Spark schemas remain shape-only.
 
 Potential field-local families are accepted values, numeric and temporal ranges, patterns, length limits, and decimal
 domains. Schema-level families are unique keys, composite unique keys, cross-field conditions, row-count bounds, and

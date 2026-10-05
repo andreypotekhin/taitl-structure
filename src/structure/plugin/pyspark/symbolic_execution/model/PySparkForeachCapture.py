@@ -5,3 +5,4 @@ from dataclasses import dataclass
 class PySparkForeachCapture:
     row: object
     sink: object
+    kind: str = "row"

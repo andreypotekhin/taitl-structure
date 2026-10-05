@@ -41,7 +41,7 @@ class SecurityPostureGenerated:
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,
@@ -167,7 +167,7 @@ class SecurityPostureGenerated:
             vulnerabilities, VULNERABILITY_POSTURE_CANDIDATE_SCHEMA, name="VulnerabilityPostureCandidate", mode="strict"
         )
         if not vulnerabilities.isStreaming:
-            vulnerabilities = apply_plan_boundary(vulnerabilities, self.spark)
+            vulnerabilities = apply_plan_boundary(vulnerabilities, vulnerabilities.sparkSession, owner=self)
 
         # Step method: expose
         vulnerabilities = vulnerabilities.alias("vulnerability_posture_candidate")
@@ -223,7 +223,7 @@ class SecurityPostureGenerated:
             F.col("vulnerability_posture_candidate.org_name"),
         )
         if not vulnerabilities.isStreaming:
-            vulnerabilities = apply_plan_boundary(vulnerabilities, self.spark)
+            vulnerabilities = apply_plan_boundary(vulnerabilities, vulnerabilities.sparkSession, owner=self)
 
         # Step method: exposures
         exposures = vulnerabilities.alias("vulnerability_exposure")

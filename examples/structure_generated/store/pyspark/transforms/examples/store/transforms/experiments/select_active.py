@@ -22,7 +22,7 @@ class SelectActiveRecommendationExperimentsGenerated:
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,
@@ -47,7 +47,7 @@ class SelectActiveRecommendationExperimentsGenerated:
             F.col("recommendation_experiment.maximum_zero_result_rate"),
         )
         if not experiments.isStreaming:
-            experiments = apply_plan_boundary(experiments, self.spark)
+            experiments = apply_plan_boundary(experiments, experiments.sparkSession, owner=self)
 
         # Step method: active_experiments
         active_experiments = experiments.alias("recommendation_experiment")

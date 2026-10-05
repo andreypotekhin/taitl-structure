@@ -4,7 +4,8 @@ Transforms are Structure's compiler-visible units of DataFrame work. A transform
 outputs, expresses rowset operations in ordinary Python, and can run directly or produce generated PySpark. One checked
 meaning feeds execution, generation, diagnostics, explain output, traceability, and streaming compatibility analysis.
 
-The [Transforms API](../api/Transforms.api.md) and related API tables provide the callable inventory. This page gathers
+The [Transforms API](../api/Transforms.api.md) and related API tables provide the callable inventory. The
+[Delta tables API](../api/DeltaTables.api.md) describes effect steps against caller-owned persistent tables. This page gathers
 authoring, composition, and compiler-visible rules in reader order: declaration, invocation, operations, reuse, and
 compilation boundaries.
 The normative sources are [DSL](../dev/specifications/DSL.spec.md),
@@ -30,7 +31,8 @@ an explicit hook boundary and is outside the compiler-visible portability promis
 Importing a transform module records declarations and metadata only. It must not create a `SparkSession`, inspect a
 live DataFrame, read or write storage, contact a service, start a streaming query, or perform a Spark action. Compiler
 commands later discover the source, symbolically execute step methods, check capabilities, and build a deterministic
-plan. Runtime invocation supplies the caller-owned session and DataFrames to that checked plan.
+plan. Runtime invocation supplies the caller-owned session, DataFrames, and any declared Delta table bindings to that
+checked plan.
 
 The same plan is the source of truth for online execution and generated PySpark. The two modes may differ in Python
 representation and generated formatting, but not in input binding, step order, projection order, filters, joins, hooks,
@@ -835,8 +837,10 @@ compatibility policy.
 
 Direct execution and generated PySpark consume the same checked plan and schema model. Generated code is deterministic,
 reviewable, and free of implicit RDD conversion or lifecycle ownership. Explicit relation assertions and ambiguity
-policies can launch validation jobs during `run()`; ordinary transformations remain lazy. Structure does not load data, write
-storage, create Spark sessions, start streaming queries, set checkpoints, or stop caller-owned queries.
+policies can launch validation jobs during `run()`; ordinary transformations remain lazy. Structure does not load data,
+create Spark sessions, or manage streaming queries and checkpoints. Explicit
+[Delta mutation steps](DeltaTables.back.md) commit to caller-owned tables during `run()`; general storage publishing
+remains with the caller.
 
 Streaming compatibility is a separate analysis of concrete input lineage and operation support. A transform marker such
 as `streaming=True` is a compatibility contract, not a switch that starts streaming execution.
@@ -902,6 +906,13 @@ query = (
 `streaming=True` makes known incompatible or unknown operations errors when compatibility checks are enabled. It does
 not create `readStream` or `writeStream`, start or stop the query, set checkpoints, select output modes, or provide
 recovery logic. Watermarks and event-time bounds must be declared before the stateful operation they support.
+
+A transform may also declare `sink(WriterClass)` and use `foreach(returned_row, sink_parameter)` to expose a named
+handoff such as `result.publish_alerts`. The handoff contains the exact declared output DataFrame and writer class; it is
+not part of the result mapping's output keys. The caller constructs the writer and attaches it with native PySpark. For
+streaming, that creates an independent query with a separate checkpoint, so retries can repeat side effects. Structure
+does not start or coordinate either query. See the [Streaming API](../api/Streaming.api.md#lifecycle-boundaries) for
+batch and streaming examples.
 
 
 ## Diagnostics

@@ -41,9 +41,10 @@ contract, focused negative tests, online/generated parity, and live evidence for
 
 ## Row-level `foreach`
 
-`@special(type="opaque")` may mark a module-level writer class whose Python implementation Structure does not inspect
-or execute during compilation. Declare a named writer on a transform with `sink(WriterClass)`. A step takes the writer
-as a typed parameter; a unique declared writer type binds automatically, while `@step(sink=declaration)` disambiguates
+Subclass `structure.plugin.pyspark.Sink` for a module-level writer whose Python implementation Structure does not inspect
+or execute during compilation. The inherited role also guards calls to writer methods during step compilation. Declare
+a named writer on a transform with `sink(WriterClass)`. A step takes the writer as a typed parameter; a unique declared
+writer type binds automatically, while `@step(sink=declaration)` disambiguates
 multiple declarations of the same class. The step calls `foreach(returned_row, writer_parameter)` and returns that same
 row value. The row must map to a declared final output of that transform. Intermediate rows and rows created after the
 sink call are rejected with `DSL-E0406`.

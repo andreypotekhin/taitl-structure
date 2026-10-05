@@ -6,7 +6,7 @@ and runtime.
 
 The [Transform background](../background/Transform.back.md) explains the source model and composition rules. The
 [Transforms API](../api/Transforms.api.md) and the [Relations API](../api/Relations.api.md) provide the complete
-operation inventories.
+operation inventories. For persistent table mutation steps, see the [Delta tables API](../api/DeltaTables.api.md).
 
 Examples use the `OrderRaw`, `OrderNormalized`, and related schemas introduced in the [Schema reference](Schema.ref.md).
 Replace them with the schemas in your own application.
@@ -43,6 +43,8 @@ class NormalizeOrders(Transform):
 | `input(schema, streaming=True)` | Streaming input declaration | `events = input(Event, streaming=True)` |
 | `lane(schema)` | Named intermediate rowset | `clean = lane(OrderClean)` |
 | `output(schema)` | Named final result | `published = output(OrderPublished)` |
+| `delta_input(schema)` | Caller-bound read-only Delta relation | `current = delta_input(OrderV1)` |
+| `delta_output(schema)` | Caller-bound Delta mutation target and named result | `orders = delta_output(OrderV2)` |
 | `output(schema).alias(name)` | Additional result lookup name | `output(OrderPublished).alias("orders")` |
 | `stage(invocation)` | Explicit composed stage boundary | `clean = stage(Normalize(orders=orders))` |
 
@@ -56,7 +58,8 @@ result = NormalizeOrders(orders=orders_df).run(session)
 published = result.normalized
 ```
 
-Unknown or missing input names are errors. The constructor stores DataFrames and does not start a Spark action; see
+Unknown or missing input names are errors. The constructor stores DataFrames or declared Delta table handles and does
+not start a Spark action; see
 the [Execution reference](Execution.ref.md) for the runtime boundary.
 
 ## Steps and bindings

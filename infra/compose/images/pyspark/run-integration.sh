@@ -7,7 +7,7 @@ connect_log=""
 connect_checkpoints=""
 
 # Include source modules used by pickled UDFs, including with older cached images.
-export PYTHONPATH="/workspace:/workspace/src:/workspace/res${PYTHONPATH:+:${PYTHONPATH}}"
+export PYTHONPATH="/workspace:/workspace/src:/workspace/res:/workspace/tests${PYTHONPATH:+:${PYTHONPATH}}"
 
 if [[ "${backend}" != spark-connect* && -n "${STRUCTURE_SPARK_DRIVER_MEMORY:-}" ]]; then
     export PYSPARK_SUBMIT_ARGS="--driver-memory ${STRUCTURE_SPARK_DRIVER_MEMORY} pyspark-shell"

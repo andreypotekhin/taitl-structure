@@ -7,5 +7,11 @@ class StepAuthoringSink:
 
     parameter: str
     name: str
-    writer_type: type
+    sink_type: type
     ordinal: int
+    kind: str = "row"
+
+    @property
+    def writer_type(self) -> type:
+        """Compatibility alias for row-sink plugin implementations."""
+        return self.sink_type

@@ -162,6 +162,7 @@ class RunOnlinePySparkTransform:
                 output,
                 source=frames[output.source],
                 inputs=inputs,
+                session=session,
                 functions=F,
                 window=Window,
                 types=T,
@@ -177,6 +178,7 @@ class RunOnlinePySparkTransform:
                             output,
                             source=frames[output.source],
                             inputs=inputs,
+                            session=session,
                             functions=F,
                             window=Window,
                             types=T,
@@ -224,7 +226,9 @@ class RunOnlinePySparkTransform:
             active = frames[step.source]
 
         df = active.alias(step.input_alias)
-        df = self._operations(step, df, frames=frames, functions=functions, window=window, types=types)
+        df = self._operations(
+            step, df, frames=frames, functions=functions, window=window, types=types, session=session
+        )
 
         if len(step.results) > 1:
             produced = {}
@@ -256,7 +260,7 @@ class RunOnlinePySparkTransform:
                     if validation.project:
                         projected = self._validator.project(projected, validation, types=types, functions=functions)
                     if validation.boundary and not projected.isStreaming:
-                        projected = apply_plan_boundary(projected, session.spark)
+                        projected = apply_plan_boundary(projected, projected.sparkSession, owner=session)
                 projected = self._post_operations(step, projected)
                 projected = self._append_command_result(
                     result, projected, frames=frames, command_result_frames=command_result_frames
@@ -289,7 +293,7 @@ class RunOnlinePySparkTransform:
             if validation.project:
                 df = self._validator.project(df, validation, types=types, functions=functions)
             if validation.boundary and not df.isStreaming:
-                df = apply_plan_boundary(df, session.spark)
+                df = apply_plan_boundary(df, df.sparkSession, owner=session)
         df = self._post_operations(step, df)
         result = step.results[0]
         df = self._append_command_result(result, df, frames=frames, command_result_frames=command_result_frames)
@@ -315,9 +319,12 @@ class RunOnlinePySparkTransform:
         functions,
         window,
         types,
+        session,
     ):
         df = source.alias(output.input_alias)
-        df = self._operations(output, df, frames=inputs, functions=functions, window=window, types=types)
+        df = self._operations(
+            output, df, frames=inputs, functions=functions, window=window, types=types, session=session
+        )
 
         if output.input_schema is not output.output_schema:
             df = df.select(
@@ -338,11 +345,11 @@ class RunOnlinePySparkTransform:
         df = self._post_operations(output, df)
         return df
 
-    def _operations(self, step: PySparkStepRecipe | PySparkOutputRecipe, df, *, frames, functions, window, types):
+    def _operations(self, step: PySparkStepRecipe | PySparkOutputRecipe, df, *, frames, functions, window, types, session):
         if any(operation.checkpoint and operation.checkpoint.stage_input for operation in step.operations):
             if not df.isStreaming:
                 # Stage before joins introduce additional qualifiers; keep checkpoint submission shallow.
-                df = apply_plan_boundary(df, df.sparkSession).alias(step.input_alias)
+                df = apply_plan_boundary(df, df.sparkSession, owner=session).alias(step.input_alias)
         streaming_step = self._is_streaming_step(step, frames)
         if not step.operations:
             for join in step.joins:

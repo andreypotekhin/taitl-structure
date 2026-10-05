@@ -1,6 +1,7 @@
 # Execution Reference
 
-Execution is the default way to run a transform. The caller supplies a Spark session and input DataFrames;
+Execution is the default way to run a transform. The caller supplies a Spark session and input DataFrames or declared
+Delta table handles;
 `StructureSession` checks the transform, invokes the selected target runtime, and returns named DataFrame results.
 
 The [Execution background](../background/Execution.back.md) defines lifecycle and parity rules. The
@@ -71,7 +72,8 @@ automatic `df` alias unless an output is explicitly named `df`.
 | `result.schema["output_name"]` | Equivalent schema lookup |
 | `list(result)` | Canonical output names, in declaration order |
 
-The result is read-only. Structure does not write, cache, publish, collect, or convert a returned DataFrame. A caller
+The result is read-only. Structure does not write, cache, publish, collect, or convert a returned DataFrame. Declared
+[Delta mutation steps](../api/DeltaTables.api.md) commit to a caller-owned table during `run()`. A caller
 may persist a result, start a streaming sink, or pass it to another transform after `run(...)` returns.
 
 An output boundary alias is a synonym:
@@ -176,6 +178,18 @@ checkpoints, output modes, and orchestration. A session does not silently change
 
 Repeated compatible runs reuse the checked plan but never reuse live DataFrames or suppress input diagnostics. Sessions
 are isolated by default; applications may deliberately share a compiled-artifact pool.
+
+Use `session.spawn()` when a streaming callback repeatedly runs a batch transform. The child shares the parent's
+resolved runtime and configuration, while its `close()` releases only temporary views owned by that child:
+
+```python
+with session.spawn() as batch_session:
+    prepared = PrepareAlertBatch(alerts=batch_df).run_batch(batch_session, handoff)
+```
+
+`run_batch` requires a batch transform invocation with one input matching the streaming handoff's output and one
+result matching the sink's declared schema. It returns an ordinary `TransformResult`. Keep the parent session open
+until the streaming query has stopped. Closing a child or parent Structure session does not stop Spark.
 
 `StructureSession.close()` releases Structure-owned remote plan boundaries or temporary views where the selected target
 uses them. Closing the session does not stop or reconfigure the caller's Spark session. Close a generated transform's
@@ -304,7 +318,8 @@ tuple or a default `df` attribute.
 
 ## Input binding and lane flow
 
-`Transform.__init__(**inputs)` stores DataFrames using declared Structure input names. Positional arguments, unknown
+`Transform.__init__(**inputs)` stores DataFrames or declared Delta table handles using Structure binding names.
+Positional arguments, unknown
 names, and custom runtime parameters are rejected. Runtime context belongs in `StructureSession(ctx=...)`; it should
 not be smuggled into a transform constructor.
 

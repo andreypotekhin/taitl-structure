@@ -101,7 +101,9 @@ class ScoreBaseGenerated:
         )
         assert_schema(overlap__expanded_query_terms, QUERY_TERM_SCHEMA, name="QueryTerm", mode="strict")
         if not overlap__expanded_query_terms.isStreaming:
-            overlap__expanded_query_terms = apply_plan_boundary(overlap__expanded_query_terms, self.spark)
+            overlap__expanded_query_terms = apply_plan_boundary(
+                overlap__expanded_query_terms, overlap__expanded_query_terms.sparkSession, owner=self
+            )
         return {
             "overlap__expanded_query_terms": overlap__expanded_query_terms,
         }
@@ -159,7 +161,9 @@ class ScoreBaseGenerated:
         )
         assert_schema(bm25__expanded_query_terms, QUERY_TERM_SCHEMA, name="QueryTerm", mode="strict")
         if not bm25__expanded_query_terms.isStreaming:
-            bm25__expanded_query_terms = apply_plan_boundary(bm25__expanded_query_terms, self.spark)
+            bm25__expanded_query_terms = apply_plan_boundary(
+                bm25__expanded_query_terms, bm25__expanded_query_terms.sparkSession, owner=self
+            )
         return {
             "bm25__expanded_query_terms": bm25__expanded_query_terms,
         }
@@ -310,7 +314,9 @@ class ScoreOverlapGenerated:
         )
         assert_schema(overlap__document_query_idfs, QUERY_TERM_IDF_SCHEMA, name="QueryTermIdf", mode="strict")
         if not overlap__document_query_idfs.isStreaming:
-            overlap__document_query_idfs = apply_plan_boundary(overlap__document_query_idfs, self.spark)
+            overlap__document_query_idfs = apply_plan_boundary(
+                overlap__document_query_idfs, overlap__document_query_idfs.sparkSession, owner=self
+            )
         return {
             "overlap__document_query_idfs": overlap__document_query_idfs,
         }
@@ -347,7 +353,9 @@ class ScoreOverlapGenerated:
         )
         assert_schema(overlap__section_query_idfs, QUERY_TERM_IDF_SCHEMA, name="QueryTermIdf", mode="strict")
         if not overlap__section_query_idfs.isStreaming:
-            overlap__section_query_idfs = apply_plan_boundary(overlap__section_query_idfs, self.spark)
+            overlap__section_query_idfs = apply_plan_boundary(
+                overlap__section_query_idfs, overlap__section_query_idfs.sparkSession, owner=self
+            )
         return {
             "overlap__section_query_idfs": overlap__section_query_idfs,
         }
@@ -386,7 +394,9 @@ class ScoreOverlapGenerated:
         )
         assert_schema(overlap__paragraph_query_idfs, QUERY_TERM_IDF_SCHEMA, name="QueryTermIdf", mode="strict")
         if not overlap__paragraph_query_idfs.isStreaming:
-            overlap__paragraph_query_idfs = apply_plan_boundary(overlap__paragraph_query_idfs, self.spark)
+            overlap__paragraph_query_idfs = apply_plan_boundary(
+                overlap__paragraph_query_idfs, overlap__paragraph_query_idfs.sparkSession, owner=self
+            )
         return {
             "overlap__paragraph_query_idfs": overlap__paragraph_query_idfs,
         }
@@ -425,7 +435,9 @@ class ScoreOverlapGenerated:
         )
         assert_schema(overlap__sentence_query_idfs, QUERY_TERM_IDF_SCHEMA, name="QueryTermIdf", mode="strict")
         if not overlap__sentence_query_idfs.isStreaming:
-            overlap__sentence_query_idfs = apply_plan_boundary(overlap__sentence_query_idfs, self.spark)
+            overlap__sentence_query_idfs = apply_plan_boundary(
+                overlap__sentence_query_idfs, overlap__sentence_query_idfs.sparkSession, owner=self
+            )
         return {
             "overlap__sentence_query_idfs": overlap__sentence_query_idfs,
         }
@@ -811,7 +823,9 @@ class ScoreOverlapGenerated:
             overlap__document_overlap_scores, DOCUMENT_OVERLAP_SCORE_SCHEMA, name="DocumentOverlapScore", mode="strict"
         )
         if not overlap__document_overlap_scores.isStreaming:
-            overlap__document_overlap_scores = apply_plan_boundary(overlap__document_overlap_scores, self.spark)
+            overlap__document_overlap_scores = apply_plan_boundary(
+                overlap__document_overlap_scores, overlap__document_overlap_scores.sparkSession, owner=self
+            )
         return {
             "overlap__document_overlap_scores": overlap__document_overlap_scores,
         }
@@ -855,7 +869,9 @@ class ScoreOverlapGenerated:
             overlap__section_overlap_scores, SECTION_OVERLAP_SCORE_SCHEMA, name="SectionOverlapScore", mode="strict"
         )
         if not overlap__section_overlap_scores.isStreaming:
-            overlap__section_overlap_scores = apply_plan_boundary(overlap__section_overlap_scores, self.spark)
+            overlap__section_overlap_scores = apply_plan_boundary(
+                overlap__section_overlap_scores, overlap__section_overlap_scores.sparkSession, owner=self
+            )
         return {
             "overlap__section_overlap_scores": overlap__section_overlap_scores,
         }
@@ -905,7 +921,9 @@ class ScoreOverlapGenerated:
             mode="strict",
         )
         if not overlap__paragraph_overlap_scores.isStreaming:
-            overlap__paragraph_overlap_scores = apply_plan_boundary(overlap__paragraph_overlap_scores, self.spark)
+            overlap__paragraph_overlap_scores = apply_plan_boundary(
+                overlap__paragraph_overlap_scores, overlap__paragraph_overlap_scores.sparkSession, owner=self
+            )
         return {
             "overlap__paragraph_overlap_scores": overlap__paragraph_overlap_scores,
         }
@@ -951,7 +969,9 @@ class ScoreOverlapGenerated:
             overlap__sentence_overlap_scores, SENTENCE_OVERLAP_SCORE_SCHEMA, name="SentenceOverlapScore", mode="strict"
         )
         if not overlap__sentence_overlap_scores.isStreaming:
-            overlap__sentence_overlap_scores = apply_plan_boundary(overlap__sentence_overlap_scores, self.spark)
+            overlap__sentence_overlap_scores = apply_plan_boundary(
+                overlap__sentence_overlap_scores, overlap__sentence_overlap_scores.sparkSession, owner=self
+            )
         return {
             "overlap__sentence_overlap_scores": overlap__sentence_overlap_scores,
         }
@@ -1035,7 +1055,9 @@ class ScoreBm25Generated:
         )
         assert_schema(bm25__document_bm25_scores, DOCUMENT_BM25_SCORE_SCHEMA, name="DocumentBm25Score", mode="strict")
         if not bm25__document_bm25_scores.isStreaming:
-            bm25__document_bm25_scores = apply_plan_boundary(bm25__document_bm25_scores, self.spark)
+            bm25__document_bm25_scores = apply_plan_boundary(
+                bm25__document_bm25_scores, bm25__document_bm25_scores.sparkSession, owner=self
+            )
         return {
             "bm25__document_bm25_scores": bm25__document_bm25_scores,
         }
@@ -1119,7 +1141,9 @@ class ScoreBm25Generated:
         )
         assert_schema(bm25__section_bm25_scores, SECTION_BM25_SCORE_SCHEMA, name="SectionBm25Score", mode="strict")
         if not bm25__section_bm25_scores.isStreaming:
-            bm25__section_bm25_scores = apply_plan_boundary(bm25__section_bm25_scores, self.spark)
+            bm25__section_bm25_scores = apply_plan_boundary(
+                bm25__section_bm25_scores, bm25__section_bm25_scores.sparkSession, owner=self
+            )
         return {
             "bm25__section_bm25_scores": bm25__section_bm25_scores,
         }
@@ -1207,7 +1231,9 @@ class ScoreBm25Generated:
             bm25__paragraph_bm25_scores, PARAGRAPH_BM25_SCORE_SCHEMA, name="ParagraphBm25Score", mode="strict"
         )
         if not bm25__paragraph_bm25_scores.isStreaming:
-            bm25__paragraph_bm25_scores = apply_plan_boundary(bm25__paragraph_bm25_scores, self.spark)
+            bm25__paragraph_bm25_scores = apply_plan_boundary(
+                bm25__paragraph_bm25_scores, bm25__paragraph_bm25_scores.sparkSession, owner=self
+            )
         return {
             "bm25__paragraph_bm25_scores": bm25__paragraph_bm25_scores,
         }
@@ -1295,7 +1321,9 @@ class ScoreBm25Generated:
         )
         assert_schema(bm25__sentence_bm25_scores, SENTENCE_BM25_SCORE_SCHEMA, name="SentenceBm25Score", mode="strict")
         if not bm25__sentence_bm25_scores.isStreaming:
-            bm25__sentence_bm25_scores = apply_plan_boundary(bm25__sentence_bm25_scores, self.spark)
+            bm25__sentence_bm25_scores = apply_plan_boundary(
+                bm25__sentence_bm25_scores, bm25__sentence_bm25_scores.sparkSession, owner=self
+            )
         return {
             "bm25__sentence_bm25_scores": bm25__sentence_bm25_scores,
         }
@@ -1367,7 +1395,9 @@ class SelectScoresGenerated:
         )
         assert_schema(selected__document_scores, DOCUMENT_SCORE_SCHEMA, name="DocumentScore", mode="strict")
         if not selected__document_scores.isStreaming:
-            selected__document_scores = apply_plan_boundary(selected__document_scores, self.spark)
+            selected__document_scores = apply_plan_boundary(
+                selected__document_scores, selected__document_scores.sparkSession, owner=self
+            )
         return {
             "selected__document_scores": selected__document_scores,
         }
@@ -1444,7 +1474,9 @@ class SelectScoresGenerated:
         )
         assert_schema(selected__section_scores, SECTION_SCORE_SCHEMA, name="SectionScore", mode="strict")
         if not selected__section_scores.isStreaming:
-            selected__section_scores = apply_plan_boundary(selected__section_scores, self.spark)
+            selected__section_scores = apply_plan_boundary(
+                selected__section_scores, selected__section_scores.sparkSession, owner=self
+            )
         return {
             "selected__section_scores": selected__section_scores,
         }
@@ -1524,7 +1556,9 @@ class SelectScoresGenerated:
         )
         assert_schema(selected__paragraph_scores, PARAGRAPH_SCORE_SCHEMA, name="ParagraphScore", mode="strict")
         if not selected__paragraph_scores.isStreaming:
-            selected__paragraph_scores = apply_plan_boundary(selected__paragraph_scores, self.spark)
+            selected__paragraph_scores = apply_plan_boundary(
+                selected__paragraph_scores, selected__paragraph_scores.sparkSession, owner=self
+            )
         return {
             "selected__paragraph_scores": selected__paragraph_scores,
         }
@@ -1607,7 +1641,9 @@ class SelectScoresGenerated:
         )
         assert_schema(selected__sentence_scores, SENTENCE_SCORE_SCHEMA, name="SentenceScore", mode="strict")
         if not selected__sentence_scores.isStreaming:
-            selected__sentence_scores = apply_plan_boundary(selected__sentence_scores, self.spark)
+            selected__sentence_scores = apply_plan_boundary(
+                selected__sentence_scores, selected__sentence_scores.sparkSession, owner=self
+            )
         return {
             "selected__sentence_scores": selected__sentence_scores,
         }
@@ -1662,7 +1698,9 @@ class ScoreVectorsGenerated:
         )
         assert_schema(vector__valid_policy, VECTOR_INDEX_POLICY_SCHEMA, name="VectorIndexPolicy", mode="strict")
         if not vector__valid_policy.isStreaming:
-            vector__valid_policy = apply_plan_boundary(vector__valid_policy, self.spark)
+            vector__valid_policy = apply_plan_boundary(
+                vector__valid_policy, vector__valid_policy.sparkSession, owner=self
+            )
         return {
             "vector__valid_policy": vector__valid_policy,
         }
@@ -1885,7 +1923,9 @@ class ScoreVectorsGenerated:
         )
         assert_schema(vector__document_scores, DOCUMENT_VECTOR_SCORE_SCHEMA, name="DocumentVectorScore", mode="strict")
         if not vector__document_scores.isStreaming:
-            vector__document_scores = apply_plan_boundary(vector__document_scores, self.spark)
+            vector__document_scores = apply_plan_boundary(
+                vector__document_scores, vector__document_scores.sparkSession, owner=self
+            )
         return {
             "vector__document_scores": vector__document_scores,
         }
@@ -2114,7 +2154,9 @@ class ScoreVectorsGenerated:
             F.col("score_policy_2.scored_at"),
         )
         if not vector__paragraph_scores.isStreaming:
-            vector__paragraph_scores = apply_plan_boundary(vector__paragraph_scores, self.spark)
+            vector__paragraph_scores = apply_plan_boundary(
+                vector__paragraph_scores, vector__paragraph_scores.sparkSession, owner=self
+            )
         return {
             "vector__paragraph_scores": vector__paragraph_scores,
         }
@@ -2129,7 +2171,7 @@ class Scoring001AdjustBmGenerated(
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     @reuse_policy_checks
     def run(

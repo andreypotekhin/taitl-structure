@@ -1,5 +1,8 @@
 # V11 Delta Transform Mutations Design
 
+Public usage and target status: [Delta tables API](../../api/DeltaTables.api.md) and
+[Delta compatibility](../../compatibility/DeltaTables.compat.md).
+
 ## Purpose
 
 Delta tables participate in Structure's normal compile-and-run workflow. A caller supplies an existing native

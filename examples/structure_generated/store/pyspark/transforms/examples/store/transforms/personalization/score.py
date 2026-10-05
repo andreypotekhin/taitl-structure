@@ -28,7 +28,7 @@ class ScorePersonalizedRecommendationsGenerated:
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,
@@ -191,7 +191,7 @@ class ScorePersonalizedRecommendationsGenerated:
             F.lit('v1').alias("algorithm_version"),
         )
         if not requests.isStreaming:
-            requests = apply_plan_boundary(requests, self.spark)
+            requests = apply_plan_boundary(requests, requests.sparkSession, owner=self)
 
         # Step method: recommendations
         recommendations = requests.alias("personalized_recommendation")

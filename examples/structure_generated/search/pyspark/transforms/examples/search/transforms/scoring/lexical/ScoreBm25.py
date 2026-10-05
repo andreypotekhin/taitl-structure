@@ -72,7 +72,9 @@ class ScoreBaseGenerated:
         )
         assert_schema(expanded_query_terms, QUERY_TERM_SCHEMA, name="QueryTerm", mode="strict")
         if not expanded_query_terms.isStreaming:
-            expanded_query_terms = apply_plan_boundary(expanded_query_terms, self.spark)
+            expanded_query_terms = apply_plan_boundary(
+                expanded_query_terms, expanded_query_terms.sparkSession, owner=self
+            )
         return {
             "expanded_query_terms": expanded_query_terms,
         }
@@ -435,7 +437,7 @@ class ScoreBm25Generated(ScoreBaseGenerated):
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,

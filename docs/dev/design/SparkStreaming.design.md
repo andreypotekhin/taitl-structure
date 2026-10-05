@@ -149,6 +149,14 @@ Full streaming orchestration should build on this slice later by adding explicit
 output mode, watermark, and state-policy models. Those are designed separately in
 `docs/dev/deferred/Streaming.deferred.md`.
 
+Row-level side effects use a narrower caller-owned handoff rather than streaming orchestration. A direct transform may
+declare `sink(WriterClass)` and capture `foreach(returned_row, sink_parameter)` on a declared final output. Its result
+exposes the exact output DataFrame and writer class; the caller constructs the writer and attaches it with native
+PySpark. Structure does not start a query or modify an existing output query. Each streaming sink is an independent
+query with a caller-owned checkpoint, and retries can repeat side effects. Generated transform modules contain only
+the DataFrame transformation. See the [V11 retained-gates specification](../specifications/V11RetainedV9DesignGates.spec.md#row-level-foreach)
+for writer lifecycle, compatibility profiles, evidence, and composition limits.
+
 ## Caller-Owned Streaming Migration
 
 The next streaming transformation slice keeps the same ownership boundary while admitting compiler-visible state. A

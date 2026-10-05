@@ -81,7 +81,9 @@ class AdoptLexicalSimilarityGenerated:
             mode="strict",
         )
         if not lexical__document_candidates.isStreaming:
-            lexical__document_candidates = apply_plan_boundary(lexical__document_candidates, self.spark)
+            lexical__document_candidates = apply_plan_boundary(
+                lexical__document_candidates, lexical__document_candidates.sparkSession, owner=self
+            )
         return {
             "lexical__document_candidates": lexical__document_candidates,
         }
@@ -157,7 +159,9 @@ class AdoptVectorSimilarityGenerated:
             mode="strict",
         )
         if not vector__adopted_document_candidates.isStreaming:
-            vector__adopted_document_candidates = apply_plan_boundary(vector__adopted_document_candidates, self.spark)
+            vector__adopted_document_candidates = apply_plan_boundary(
+                vector__adopted_document_candidates, vector__adopted_document_candidates.sparkSession, owner=self
+            )
         return {
             "vector__adopted_document_candidates": vector__adopted_document_candidates,
         }
@@ -207,7 +211,7 @@ class FuseSimilarityGenerated:
             fused__valid_policy, SIMILARITY_FUSION_POLICY_SCHEMA, name="SimilarityFusionPolicy", mode="strict"
         )
         if not fused__valid_policy.isStreaming:
-            fused__valid_policy = apply_plan_boundary(fused__valid_policy, self.spark)
+            fused__valid_policy = apply_plan_boundary(fused__valid_policy, fused__valid_policy.sparkSession, owner=self)
         return {
             "fused__valid_policy": fused__valid_policy,
         }
@@ -576,7 +580,9 @@ class FuseSimilarityGenerated:
             mode="strict",
         )
         if not fused__document_candidates.isStreaming:
-            fused__document_candidates = apply_plan_boundary(fused__document_candidates, self.spark)
+            fused__document_candidates = apply_plan_boundary(
+                fused__document_candidates, fused__document_candidates.sparkSession, owner=self
+            )
         return {
             "fused__document_candidates": fused__document_candidates,
         }
@@ -694,7 +700,9 @@ class RerankSimilarityGenerated:
             F.col("indexed_similar_document.rank"),
         )
         if not reranked__similar_documents.isStreaming:
-            reranked__similar_documents = apply_plan_boundary(reranked__similar_documents, self.spark)
+            reranked__similar_documents = apply_plan_boundary(
+                reranked__similar_documents, reranked__similar_documents.sparkSession, owner=self
+            )
         return {
             "reranked__similar_documents": reranked__similar_documents,
         }
@@ -709,7 +717,7 @@ class SearchSimilarityGenerated(
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     @reuse_policy_checks
     def run(

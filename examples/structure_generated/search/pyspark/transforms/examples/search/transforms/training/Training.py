@@ -47,7 +47,9 @@ class BuildDocumentFeaturesGenerated:
         )
         if not features__documents_built__document_features.isStreaming:
             features__documents_built__document_features = apply_plan_boundary(
-                features__documents_built__document_features, self.spark
+                features__documents_built__document_features,
+                features__documents_built__document_features.sparkSession,
+                owner=self,
             )
         return {
             "features__documents_built__document_features": features__documents_built__document_features,
@@ -178,7 +180,9 @@ class BuildQueryFeaturesGenerated:
         )
         if not features__queries_built__query_features.isStreaming:
             features__queries_built__query_features = apply_plan_boundary(
-                features__queries_built__query_features, self.spark
+                features__queries_built__query_features,
+                features__queries_built__query_features.sparkSession,
+                owner=self,
             )
         return {
             "features__queries_built__query_features": features__queries_built__query_features,
@@ -228,7 +232,7 @@ class BuildTrainingDataGenerated:
             F.col("features__documents_built__document_features_2.url_is_https").alias("document_url_is_https"),
         )
         if not data__training_data.isStreaming:
-            data__training_data = apply_plan_boundary(data__training_data, self.spark)
+            data__training_data = apply_plan_boundary(data__training_data, data__training_data.sparkSession, owner=self)
         return {
             "data__training_data": data__training_data,
         }
@@ -241,7 +245,7 @@ class TrainingGenerated(BuildDocumentFeaturesGenerated, BuildQueryFeaturesGenera
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,

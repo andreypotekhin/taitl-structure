@@ -13,8 +13,9 @@ Structure supports a transform with a streaming input when all of these are true
 - joined side inputs are static DataFrames;
 - every compiler-visible operation is classified as streaming-compatible;
 - opaque hooks are absent or explicitly marked `streaming=True`;
-- generated-code execution and execution do not emit or call streaming lifecycle APIs, Spark actions, RDD conversion, Pandas
-  conversion, Python UDFs, or local collection.
+- generated-code execution and execution do not emit or call streaming lifecycle APIs, Spark actions, RDD conversion,
+  Pandas conversion, Python UDFs, or local collection as part of a transform. The declared row-sink handoff is metadata;
+  the caller attaches and runs it after the transform returns.
 
 The support claim covers returned DataFrame plans only. Streaming sources, sinks, query start/stop behavior, triggers,
 checkpoints, query names, deployment, and recovery remain caller-owned.
@@ -218,12 +219,25 @@ effects, arbitrary state, RDD/Pandas boundaries, and Spark Connect streaming. Li
 Structure transformation support.
 
 `foreachBatch` is caller-owned-guided: the caller receives Structure's transformed DataFrame and applies the writer
-chain, checkpoint, trigger, output mode, and lifecycle in caller code. `foreach` remains design-gated. Structure has
-explicit row `transform_with_state(...)` and Pandas `transform_with_state_in_pandas(...)` compiler surfaces with typed
+chain, checkpoint, trigger, output mode, and lifecycle in caller code. Row-level `foreach` is also caller-owned-guided:
+the transform declares `sink(WriterClass)`, captures `foreach(returned_row, sink_parameter)`, and returns a named handoff
+for a declared final output. The caller creates the writer and attaches it using native `DataFrame.foreach` or
+`DataStreamWriter.foreach`; each streaming sink is an independent query with its own checkpoint. The generated transform
+must not include the callback or query lifecycle. Classic PySpark 3.5 and 4.0 pass batch, streaming, restart, and
+online/generated evidence; Spark Connect is unclaimed. See the [V11 row sink contract](V11RetainedV9DesignGates.spec.md#row-level-foreach).
+Structure has explicit row `transform_with_state(...)` and Pandas `transform_with_state_in_pandas(...)` compiler surfaces with typed
 and opaque-native processor modes. Row execution targets ordinary PySpark 4.1; Pandas execution targets ordinary 4.0
 and 4.1. Both remain design-gated as support claims until profile-specific live behavior, timer, online/generated parity,
-and checkpoint-restart evidence passes. `applyInPandasWithState` remains caller-owned. The
+and checkpoint-restart evidence passes. The initial ordinary 4.1 Compose lane selects the runtime-version check and V11
+tests; live execution is required before either API's 4.1 support claim can change. `applyInPandasWithState` remains
+caller-owned. The
 `ArbitraryStateContract` validates adoption metadata and does not implement any runtime.
+
+The typed row processor requires `on_rows(key, rows, state, timers)` and permits `on_timer(key, timer, state, timers)`.
+`TimerContext` exposes timer management and callback-scoped processing time and watermark values in milliseconds. It
+converts input/state rows through their declared Schemas, validates yielded output Schemas and non-null fields, and lets
+callbacks yield zero or many output rows. The typed contract currently declares one `ValueState`; callers use an opaque
+native processor for Spark's additional state types and initial-state callback.
 
 ## Chained Event-Time Windows
 
@@ -248,10 +262,12 @@ must not silently change meaning for streaming callers.
 
 ## Side Effects and State
 
-`foreach` and `foreachBatch` are not callable from Structure transform methods. A future Structure-owned side-effect API
-would require sink identity, idempotence key, retry behavior, checkpoint and recovery policy, callback security review,
-and live restart evidence. The generated transform module must remain free of `foreach`, `foreachBatch`, `writeStream`,
-`start`, checkpoint, trigger, and sink calls.
+Direct PySpark `foreach`, `foreachBatch`, `writeStream`, and query lifecycle calls remain unavailable inside transform
+methods. The compile-time `foreach(row, sink)` helper is the supported exception: it captures only a typed association
+with the exact returned final output row and produces no callback or action. The caller attaches the returned writer
+class to an ordinary PySpark DataFrame or streaming writer. A failed or retried streaming batch may repeat the external
+write; idempotence and recovery remain caller responsibilities. Generated transform modules remain free of
+`foreach`, `foreachBatch`, `writeStream`, `start`, checkpoint, trigger, writer construction, and sink-method calls.
 
 ## Final Acceptance
 

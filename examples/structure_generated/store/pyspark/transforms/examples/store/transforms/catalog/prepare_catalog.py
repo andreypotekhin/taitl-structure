@@ -24,7 +24,7 @@ class PrepareCatalogGenerated:
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,
@@ -86,7 +86,7 @@ class PrepareCatalogGenerated:
         )
         assert_schema(products, CATALOG_PRODUCT_SCHEMA, name="CatalogProduct", mode="strict")
         if not products.isStreaming:
-            products = apply_plan_boundary(products, self.spark)
+            products = apply_plan_boundary(products, products.sparkSession, owner=self)
 
         # Step method: normalize
         products = products.alias("catalog_product")
@@ -109,7 +109,7 @@ class PrepareCatalogGenerated:
             F.col("catalog_product.eligible"),
         )
         if not products.isStreaming:
-            products = apply_plan_boundary(products, self.spark)
+            products = apply_plan_boundary(products, products.sparkSession, owner=self)
 
         # Step method: catalog
         catalog = products.alias("catalog_product")

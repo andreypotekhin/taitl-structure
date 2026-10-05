@@ -33,6 +33,14 @@ The retained-gates package uses the V11 status vocabulary:
 | XML helpers | `unsupported` | No V11 admission | No XML parser or XML source/writer API is exported | Use native Spark XML/provider APIs in caller-owned code |
 | Cost-based join reordering | `unsupported` | Separate optimizer design required | Source-authored join order remains authoritative | Arrange joins explicitly in caller code |
 
+## Inheritance role declarations
+
+PySpark row writers subclass `Sink`; the role base applies the opaque-call guard while `sink(WriterClass)` continues to
+name the effect and result handoff. Typed row and Pandas state processors are discovered through their specialized
+`StateProcessor[...]` and `PandasStateProcessor[...]` ancestry, including generic intermediate bases. The existing state
+decorators remain optional validators for compatibility. Schema resolution rejects unresolved or conflicting generic
+bindings and records the resolved state schema in the captured plan, so lowering does not depend on those decorators.
+
 ## Invariants
 
 Generated Structure modules must contain no `foreach`, `foreachBatch`, `writeStream`, `start`, checkpoint, trigger,

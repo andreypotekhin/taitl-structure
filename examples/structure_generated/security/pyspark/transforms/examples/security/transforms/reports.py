@@ -38,7 +38,7 @@ class VulnerabilityStatisticsGenerated:
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,
@@ -163,7 +163,7 @@ class VulnerabilityStatisticsGenerated:
             activities, VULNERABILITY_PERIOD_ACTIVITY_SCHEMA, name="VulnerabilityPeriodActivity", mode="strict"
         )
         if not activities.isStreaming:
-            activities = apply_plan_boundary(activities, self.spark)
+            activities = apply_plan_boundary(activities, activities.sparkSession, owner=self)
 
         # Step method: person_periods
         person_statistics = people.alias("person")

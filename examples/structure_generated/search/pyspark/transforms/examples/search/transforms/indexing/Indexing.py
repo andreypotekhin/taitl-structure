@@ -109,7 +109,9 @@ class LexIndexGenerated:
         )
         assert_schema(lexical__occurrences, LEXICAL_OCCURRENCE_SCHEMA, name="LexicalOccurrence", mode="strict")
         if not lexical__occurrences.isStreaming:
-            lexical__occurrences = apply_plan_boundary(lexical__occurrences, self.spark)
+            lexical__occurrences = apply_plan_boundary(
+                lexical__occurrences, lexical__occurrences.sparkSession, owner=self
+            )
         return {
             "lexical__occurrences": lexical__occurrences,
         }
@@ -135,7 +137,9 @@ class LexIndexGenerated:
             lexical__document_term_counts, DOCUMENT_TERM_COUNT_SCHEMA, name="DocumentTermCount", mode="strict"
         )
         if not lexical__document_term_counts.isStreaming:
-            lexical__document_term_counts = apply_plan_boundary(lexical__document_term_counts, self.spark)
+            lexical__document_term_counts = apply_plan_boundary(
+                lexical__document_term_counts, lexical__document_term_counts.sparkSession, owner=self
+            )
         return {
             "lexical__document_term_counts": lexical__document_term_counts,
         }
@@ -170,7 +174,9 @@ class LexIndexGenerated:
             mode="strict",
         )
         if not lexical__document_target_stats.isStreaming:
-            lexical__document_target_stats = apply_plan_boundary(lexical__document_target_stats, self.spark)
+            lexical__document_target_stats = apply_plan_boundary(
+                lexical__document_target_stats, lexical__document_target_stats.sparkSession, owner=self
+            )
         return {
             "lexical__document_target_stats": lexical__document_target_stats,
         }
@@ -230,7 +236,9 @@ class LexIndexGenerated:
         )
         assert_schema(lexical__document_terms, DOCUMENT_TERM_SCHEMA, name="DocumentTerm", mode="strict")
         if not lexical__document_terms.isStreaming:
-            lexical__document_terms = apply_plan_boundary(lexical__document_terms, self.spark)
+            lexical__document_terms = apply_plan_boundary(
+                lexical__document_terms, lexical__document_terms.sparkSession, owner=self
+            )
         return {
             "lexical__document_terms": lexical__document_terms,
         }
@@ -251,7 +259,9 @@ class LexIndexGenerated:
             lexical__document_summary, DOCUMENT_INDEX_SUMMARY_SCHEMA, name="DocumentIndexSummary", mode="strict"
         )
         if not lexical__document_summary.isStreaming:
-            lexical__document_summary = apply_plan_boundary(lexical__document_summary, self.spark)
+            lexical__document_summary = apply_plan_boundary(
+                lexical__document_summary, lexical__document_summary.sparkSession, owner=self
+            )
         return {
             "lexical__document_summary": lexical__document_summary,
         }
@@ -277,7 +287,9 @@ class LexIndexGenerated:
         )
         assert_schema(lexical__section_term_counts, SECTION_TERM_COUNT_SCHEMA, name="SectionTermCount", mode="strict")
         if not lexical__section_term_counts.isStreaming:
-            lexical__section_term_counts = apply_plan_boundary(lexical__section_term_counts, self.spark)
+            lexical__section_term_counts = apply_plan_boundary(
+                lexical__section_term_counts, lexical__section_term_counts.sparkSession, owner=self
+            )
         return {
             "lexical__section_term_counts": lexical__section_term_counts,
         }
@@ -314,7 +326,9 @@ class LexIndexGenerated:
             mode="strict",
         )
         if not lexical__section_target_stats.isStreaming:
-            lexical__section_target_stats = apply_plan_boundary(lexical__section_target_stats, self.spark)
+            lexical__section_target_stats = apply_plan_boundary(
+                lexical__section_target_stats, lexical__section_target_stats.sparkSession, owner=self
+            )
         return {
             "lexical__section_target_stats": lexical__section_target_stats,
         }
@@ -378,7 +392,9 @@ class LexIndexGenerated:
         )
         assert_schema(lexical__section_terms, SECTION_TERM_SCHEMA, name="SectionTerm", mode="strict")
         if not lexical__section_terms.isStreaming:
-            lexical__section_terms = apply_plan_boundary(lexical__section_terms, self.spark)
+            lexical__section_terms = apply_plan_boundary(
+                lexical__section_terms, lexical__section_terms.sparkSession, owner=self
+            )
         return {
             "lexical__section_terms": lexical__section_terms,
         }
@@ -397,7 +413,9 @@ class LexIndexGenerated:
         )
         assert_schema(lexical__section_summary, SECTION_INDEX_SUMMARY_SCHEMA, name="SectionIndexSummary", mode="strict")
         if not lexical__section_summary.isStreaming:
-            lexical__section_summary = apply_plan_boundary(lexical__section_summary, self.spark)
+            lexical__section_summary = apply_plan_boundary(
+                lexical__section_summary, lexical__section_summary.sparkSession, owner=self
+            )
         return {
             "lexical__section_summary": lexical__section_summary,
         }
@@ -427,7 +445,9 @@ class LexIndexGenerated:
             lexical__paragraph_term_counts, PARAGRAPH_TERM_COUNT_SCHEMA, name="ParagraphTermCount", mode="strict"
         )
         if not lexical__paragraph_term_counts.isStreaming:
-            lexical__paragraph_term_counts = apply_plan_boundary(lexical__paragraph_term_counts, self.spark)
+            lexical__paragraph_term_counts = apply_plan_boundary(
+                lexical__paragraph_term_counts, lexical__paragraph_term_counts.sparkSession, owner=self
+            )
         return {
             "lexical__paragraph_term_counts": lexical__paragraph_term_counts,
         }
@@ -466,7 +486,9 @@ class LexIndexGenerated:
             mode="strict",
         )
         if not lexical__paragraph_target_stats.isStreaming:
-            lexical__paragraph_target_stats = apply_plan_boundary(lexical__paragraph_target_stats, self.spark)
+            lexical__paragraph_target_stats = apply_plan_boundary(
+                lexical__paragraph_target_stats, lexical__paragraph_target_stats.sparkSession, owner=self
+            )
         return {
             "lexical__paragraph_target_stats": lexical__paragraph_target_stats,
         }
@@ -534,7 +556,9 @@ class LexIndexGenerated:
         )
         assert_schema(lexical__paragraph_terms, PARAGRAPH_TERM_SCHEMA, name="ParagraphTerm", mode="strict")
         if not lexical__paragraph_terms.isStreaming:
-            lexical__paragraph_terms = apply_plan_boundary(lexical__paragraph_terms, self.spark)
+            lexical__paragraph_terms = apply_plan_boundary(
+                lexical__paragraph_terms, lexical__paragraph_terms.sparkSession, owner=self
+            )
         return {
             "lexical__paragraph_terms": lexical__paragraph_terms,
         }
@@ -555,7 +579,9 @@ class LexIndexGenerated:
             lexical__paragraph_summary, PARAGRAPH_INDEX_SUMMARY_SCHEMA, name="ParagraphIndexSummary", mode="strict"
         )
         if not lexical__paragraph_summary.isStreaming:
-            lexical__paragraph_summary = apply_plan_boundary(lexical__paragraph_summary, self.spark)
+            lexical__paragraph_summary = apply_plan_boundary(
+                lexical__paragraph_summary, lexical__paragraph_summary.sparkSession, owner=self
+            )
         return {
             "lexical__paragraph_summary": lexical__paragraph_summary,
         }
@@ -587,7 +613,9 @@ class LexIndexGenerated:
             lexical__sentence_term_counts, SENTENCE_TERM_COUNT_SCHEMA, name="SentenceTermCount", mode="strict"
         )
         if not lexical__sentence_term_counts.isStreaming:
-            lexical__sentence_term_counts = apply_plan_boundary(lexical__sentence_term_counts, self.spark)
+            lexical__sentence_term_counts = apply_plan_boundary(
+                lexical__sentence_term_counts, lexical__sentence_term_counts.sparkSession, owner=self
+            )
         return {
             "lexical__sentence_term_counts": lexical__sentence_term_counts,
         }
@@ -628,7 +656,9 @@ class LexIndexGenerated:
             mode="strict",
         )
         if not lexical__sentence_target_stats.isStreaming:
-            lexical__sentence_target_stats = apply_plan_boundary(lexical__sentence_target_stats, self.spark)
+            lexical__sentence_target_stats = apply_plan_boundary(
+                lexical__sentence_target_stats, lexical__sentence_target_stats.sparkSession, owner=self
+            )
         return {
             "lexical__sentence_target_stats": lexical__sentence_target_stats,
         }
@@ -709,7 +739,9 @@ class LexIndexGenerated:
         )
         assert_schema(lexical__sentence_terms, SENTENCE_TERM_SCHEMA, name="SentenceTerm", mode="strict")
         if not lexical__sentence_terms.isStreaming:
-            lexical__sentence_terms = apply_plan_boundary(lexical__sentence_terms, self.spark)
+            lexical__sentence_terms = apply_plan_boundary(
+                lexical__sentence_terms, lexical__sentence_terms.sparkSession, owner=self
+            )
         return {
             "lexical__sentence_terms": lexical__sentence_terms,
         }
@@ -730,7 +762,9 @@ class LexIndexGenerated:
             lexical__sentence_summary, SENTENCE_INDEX_SUMMARY_SCHEMA, name="SentenceIndexSummary", mode="strict"
         )
         if not lexical__sentence_summary.isStreaming:
-            lexical__sentence_summary = apply_plan_boundary(lexical__sentence_summary, self.spark)
+            lexical__sentence_summary = apply_plan_boundary(
+                lexical__sentence_summary, lexical__sentence_summary.sparkSession, owner=self
+            )
         return {
             "lexical__sentence_summary": lexical__sentence_summary,
         }
@@ -802,7 +836,7 @@ class FieldIndexGenerated:
             F.col("field_profiles.phrase_enabled"),
         )
         if not fields__terms.isStreaming:
-            fields__terms = apply_plan_boundary(fields__terms, self.spark)
+            fields__terms = apply_plan_boundary(fields__terms, fields__terms.sparkSession, owner=self)
         return {
             "fields__terms": fields__terms,
         }
@@ -816,7 +850,7 @@ class IndexingGenerated(LexIndexGenerated, FieldIndexGenerated):
         self._structure_udf_examples_search_transforms_lib_text_text_span = F.udf(self.span, returnType=T.StringType())
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,

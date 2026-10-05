@@ -132,6 +132,40 @@ Give the two queries distinct checkpoints and manage both query handles. They ca
 sample writer uses `open/process/close` on streaming workers; a batch sink instead passes the configured writer's
 `process` method to `DataFrame.foreach` and does not use streaming lifecycle methods.
 
+## Prepare and send alerts in each micro-batch
+
+The foreachBatch handoff names the expected batch output with a schema sink. `PublishAlerts` still returns the
+streaming `Alert` relation. The caller chooses `PrepareAlertBatch`, which runs once for each callback DataFrame and
+produces `AlertMessage` rows. See [foreach_batch_alerts.py](transforms/foreach_batch_alerts.py) for the complete
+transform declarations.
+
+```python
+from examples.streams.transforms.foreach_batch_alerts import PrepareAlertBatch, PublishAlerts
+
+with StructureSession(spark=spark, config=config) as session:
+    result = PublishAlerts(events=events).run(session)
+    handoff = result.send_alerts
+
+    def send_batch(batch_df, batch_id: int) -> None:
+        with session.spawn() as batch_session:
+            prepared = PrepareAlertBatch(alerts=batch_df).run_batch(batch_session, handoff)
+            alert_writer.write(prepared.messages, stream_id="alerts-v1", batch_id=batch_id)
+
+    query = handoff.dataframe.writeStream.foreachBatch(send_batch).option(
+        "checkpointLocation", checkpoint
+    ).start()
+    try:
+        query.awaitTermination()
+    finally:
+        query.stop()
+```
+
+The application writer should atomically deduplicate using a stable stream identity and `batch_id` when retries must
+not send duplicate alerts. Spark can invoke a batch callback again after a failure, so Structure does not promise
+exactly-once delivery to an external destination. `session.spawn()` gives each callback its own Structure temporary
+view cleanup scope while sharing the parent's runtime and resolved configuration. The parent session must stay open
+until the query stops. The caller starts and stops the query; neither transform code nor generated transform code does.
+
 Arbitrary state is also design-gated. Callers can use `ArbitraryStateContract` to review the typed boundary before
 writing native `applyInPandasWithState` or `transformWithState` code, but validation does not provide a state runtime:
 

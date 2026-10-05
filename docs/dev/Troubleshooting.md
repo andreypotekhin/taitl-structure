@@ -106,8 +106,9 @@ If the port is still occupied, edit the corresponding port in `infra/compose/.en
 When: Running `make integration` for the first time or after changing PySpark versions.
 Error: Docker build fails while installing Java, pytest, or PySpark.
 Cause: The Docker build needs network access to operating-system and Python package repositories.
-Fix: Confirm network access for Docker, then rerun `make integration`. If a PySpark patch version is unavailable,
-update `infra/compose/.env` and `infra/compose/.env_example` together and record the change in the active ExecPlan.
+Fix: Confirm network access for Docker, then rerun `make integration`; the image build retries package downloads with a
+two-minute timeout. If a PySpark patch version is unavailable, update `infra/compose/.env` and
+`infra/compose/.env_example` together and record the change in the active ExecPlan.
 
 ### Problem (integration): Docker VM runs out of space while building a backend
 
@@ -115,11 +116,40 @@ When: Running `make integration-rebuild BACKEND=pyspark41` or another image buil
 Error: Docker reports `no space left on device`; a later `apt-get update` can also report invalid repository signatures
 when it cannot write downloaded metadata.
 Cause: Docker's VM filesystem is full, even if the host filesystem has free space. Long-running Spark worker writable
-layers can occupy most of it.
+layers can occupy most of it. Spark retains stopped application work directories for seven days by default, so repeated
+test runs can accumulate several gigabytes before those directories expire.
 Fix: Inspect `docker system df -v` and check free space inside a running container with `docker exec <container> df -h /`.
 Finish any active integration jobs before stopping their workers. Remove only unused images or stale containers whose
 owners are known, or increase Docker Desktop's disk allocation, then rerun the build. Do not interpret the APT error as a
-package signing problem until the VM has free space.
+package signing problem until the VM has free space. Compose workers now retain stopped application data for one hour;
+the setting takes effect when each worker is next created. When no integration lane is running, `make integration-down`
+is the simplest cleanup: it removes worker containers and their writable layers while preserving the named Spark
+Connect dependency caches. If the worker must stay up, inspect the Spark master UI/API first and remove old
+`$SPARK_HOME/work/app-*` directories only when the master reports no active applications and the worker has zero cores
+in use. Those directories contain executor-local files for completed applications. Do not remove work directories
+from an active application. `docker system prune` can reclaim unused build cache and images, but it does not reclaim a
+running worker's writable layer; increasing Docker Desktop's disk allocation is the durable option when concurrent
+active workloads themselves exceed the VM limit.
+
+### Problem (integration): PySpark 4.0/4.1 state processor rejects the protocol runtime or state store
+
+When: Running the V11 state processor tests on ordinary PySpark 4.0 or 4.1.
+Error: Protobuf reports a generated/runtime major-version mismatch, or Spark reports
+`STATE_STORE_MULTIPLE_COLUMN_FAMILIES` from the HDFS-backed state store.
+Cause: PySpark 4.1's generated state protocol uses Protobuf 6.33.0. Both profiles' TransformWithState state layouts
+use multiple column families, which the default HDFS-backed provider does not support.
+Fix: Rebuild the affected image with `make integration-rebuild BACKEND=pyspark40` or `BACKEND=pyspark41`. The Compose
+build selects Protobuf 6.33.0 for 4.1, leaves the 4.0 Protobuf 5.29.3 pin unchanged, and the V11 fixture selects
+`RocksDBStateStoreProvider` for both profiles.
+
+### Problem (integration): PySpark 4.0 cannot import a test processor in the state driver worker
+
+When: Running `transformWithStateInPandas` in the ordinary PySpark 4.0 Compose lane.
+Error: The state driver worker fails while unpickling the processor with `ModuleNotFoundError: No module named 'integration'`.
+Cause: Spark's state driver worker inherits the integration runner's `PYTHONPATH`; executor `PYTHONPATH` settings and
+`SparkContext.addPyFile` do not populate this special worker's import path.
+Fix: Use the Compose launcher, which adds `/workspace/tests` to `PYTHONPATH`. Rebuild the runner image after editing
+`run-integration.sh` because the launcher script is copied into the image.
 
 ### Problem (integration): Spark did not become ready
 

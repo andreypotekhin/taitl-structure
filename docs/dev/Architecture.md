@@ -80,7 +80,10 @@ PySpark, Java, SparkSession, and cluster startup; runtime execution receives a c
 
 Online and generated execution consume one PySpark-owned lowered semantic contract, preserving parity in expression
 lowering, validation placement, hooks, aliases, and projection shape. Structure never takes ownership of Spark session
-creation or termination, reads, writes, streaming queries, checkpoints, triggers, or orchestration.
+creation or termination, general data loading and publishing, streaming queries, checkpoints, triggers, or
+orchestration. The PySpark plugin can execute explicit, compiled Delta mutations on caller-supplied tables. It
+validates the declared shape and CHECK metadata, and returns the original handle. Table creation and native constraint
+installation remain caller-owned; see the [Delta design](design/V11DeltaSchemaBoundMutations.design.md).
 
 ## Extension Boundary
 

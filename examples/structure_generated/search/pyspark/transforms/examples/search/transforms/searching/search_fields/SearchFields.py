@@ -217,7 +217,9 @@ class FieldSearchGenerated:
             mode="strict",
         )
         if not resolved__document_matches.isStreaming:
-            resolved__document_matches = apply_plan_boundary(resolved__document_matches, self.spark)
+            resolved__document_matches = apply_plan_boundary(
+                resolved__document_matches, resolved__document_matches.sparkSession, owner=self
+            )
         return {
             "resolved__document_matches": resolved__document_matches,
         }
@@ -312,7 +314,9 @@ class FieldSearchGenerated:
         )
         assert_schema(resolved__delegatable_queries, FIELD_SEARCH_QUERY_SCHEMA, name="FieldSearchQuery", mode="strict")
         if not resolved__delegatable_queries.isStreaming:
-            resolved__delegatable_queries = apply_plan_boundary(resolved__delegatable_queries, self.spark)
+            resolved__delegatable_queries = apply_plan_boundary(
+                resolved__delegatable_queries, resolved__delegatable_queries.sparkSession, owner=self
+            )
         return {
             "resolved__delegatable_queries": resolved__delegatable_queries,
         }
@@ -338,7 +342,9 @@ class BuildDelegationsGenerated:
             delegation__delegations, FIELD_SEARCH_DELEGATION_SCHEMA, name="FieldSearchDelegation", mode="strict"
         )
         if not delegation__delegations.isStreaming:
-            delegation__delegations = apply_plan_boundary(delegation__delegations, self.spark)
+            delegation__delegations = apply_plan_boundary(
+                delegation__delegations, delegation__delegations.sparkSession, owner=self
+            )
         return {
             "delegation__delegations": delegation__delegations,
         }
@@ -364,7 +370,9 @@ class BuildDelegationsGenerated:
         )
         assert_schema(delegation__body_queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
         if not delegation__body_queries.isStreaming:
-            delegation__body_queries = apply_plan_boundary(delegation__body_queries, self.spark)
+            delegation__body_queries = apply_plan_boundary(
+                delegation__body_queries, delegation__body_queries.sparkSession, owner=self
+            )
         return {
             "delegation__body_queries": delegation__body_queries,
         }
@@ -395,7 +403,9 @@ class BuildDelegationsGenerated:
         )
         assert_schema(delegation__delegated_requests, SEARCH_REQUEST_SCHEMA, name="SearchRequest", mode="strict")
         if not delegation__delegated_requests.isStreaming:
-            delegation__delegated_requests = apply_plan_boundary(delegation__delegated_requests, self.spark)
+            delegation__delegated_requests = apply_plan_boundary(
+                delegation__delegated_requests, delegation__delegated_requests.sparkSession, owner=self
+            )
         return {
             "delegation__delegated_requests": delegation__delegated_requests,
         }
@@ -445,7 +455,9 @@ class BuildDelegationsGenerated:
             mode="strict",
         )
         if not delegation__document_filter_targets.isStreaming:
-            delegation__document_filter_targets = apply_plan_boundary(delegation__document_filter_targets, self.spark)
+            delegation__document_filter_targets = apply_plan_boundary(
+                delegation__document_filter_targets, delegation__document_filter_targets.sparkSession, owner=self
+            )
         return {
             "delegation__document_filter_targets": delegation__document_filter_targets,
         }
@@ -571,7 +583,7 @@ class SelectGapQueries__examples_search_transforms_online_filtering_SelectGapQue
         assert_schema(delegated__filtered__gap__gap_queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
         if not delegated__filtered__gap__gap_queries.isStreaming:
             delegated__filtered__gap__gap_queries = apply_plan_boundary(
-                delegated__filtered__gap__gap_queries, self.spark
+                delegated__filtered__gap__gap_queries, delegated__filtered__gap__gap_queries.sparkSession, owner=self
             )
         return {
             "delegated__filtered__gap__gap_queries": delegated__filtered__gap__gap_queries,
@@ -741,7 +753,9 @@ class FilterOverlapGenerated:
         )
         if not delegated__filtered__filtering__overlap__document_filter_scores.isStreaming:
             delegated__filtered__filtering__overlap__document_filter_scores = apply_plan_boundary(
-                delegated__filtered__filtering__overlap__document_filter_scores, self.spark
+                delegated__filtered__filtering__overlap__document_filter_scores,
+                delegated__filtered__filtering__overlap__document_filter_scores.sparkSession,
+                owner=self,
             )
         return {
             "delegated__filtered__filtering__overlap__document_filter_scores": delegated__filtered__filtering__overlap__document_filter_scores,
@@ -889,7 +903,7 @@ class SelectFilterTargetsGenerated:
         )
         if not delegated__filtered__selected__targets.isStreaming:
             delegated__filtered__selected__targets = apply_plan_boundary(
-                delegated__filtered__selected__targets, self.spark
+                delegated__filtered__selected__targets, delegated__filtered__selected__targets.sparkSession, owner=self
             )
         return {
             "delegated__filtered__selected__targets": delegated__filtered__selected__targets,
@@ -957,7 +971,9 @@ class SelectQueryGapsGenerated:
         assert_schema(delegated__vectorized__query_gaps__gaps, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
         if not delegated__vectorized__query_gaps__gaps.isStreaming:
             delegated__vectorized__query_gaps__gaps = apply_plan_boundary(
-                delegated__vectorized__query_gaps__gaps, self.spark
+                delegated__vectorized__query_gaps__gaps,
+                delegated__vectorized__query_gaps__gaps.sparkSession,
+                owner=self,
             )
         return {
             "delegated__vectorized__query_gaps__gaps": delegated__vectorized__query_gaps__gaps,
@@ -1129,7 +1145,9 @@ class SelectDocumentGapsGenerated:
         assert_schema(delegated__vectorized__document_gaps__gaps, DOCUMENT_SCHEMA, name="Document", mode="strict")
         if not delegated__vectorized__document_gaps__gaps.isStreaming:
             delegated__vectorized__document_gaps__gaps = apply_plan_boundary(
-                delegated__vectorized__document_gaps__gaps, self.spark
+                delegated__vectorized__document_gaps__gaps,
+                delegated__vectorized__document_gaps__gaps.sparkSession,
+                owner=self,
             )
         return {
             "delegated__vectorized__document_gaps__gaps": delegated__vectorized__document_gaps__gaps,
@@ -1197,7 +1215,9 @@ class ValidateInferencePolicyGenerated:
         )
         if not delegated__vectorized__vectorized__inferred__validated__valid_policy.isStreaming:
             delegated__vectorized__vectorized__inferred__validated__valid_policy = apply_plan_boundary(
-                delegated__vectorized__vectorized__inferred__validated__valid_policy, self.spark
+                delegated__vectorized__vectorized__inferred__validated__valid_policy,
+                delegated__vectorized__vectorized__inferred__validated__valid_policy.sparkSession,
+                owner=self,
             )
         return {
             "delegated__vectorized__vectorized__inferred__validated__valid_policy": delegated__vectorized__vectorized__inferred__validated__valid_policy,
@@ -1288,7 +1308,9 @@ class InferQueriesGenerated:
         )
         if not delegated__vectorized__vectorized__inferred__inferred_queries__results.isStreaming:
             delegated__vectorized__vectorized__inferred__inferred_queries__results = apply_plan_boundary(
-                delegated__vectorized__vectorized__inferred__inferred_queries__results, self.spark
+                delegated__vectorized__vectorized__inferred__inferred_queries__results,
+                delegated__vectorized__vectorized__inferred__inferred_queries__results.sparkSession,
+                owner=self,
             )
         return {
             "delegated__vectorized__vectorized__inferred__inferred_queries__results": delegated__vectorized__vectorized__inferred__inferred_queries__results,
@@ -1379,7 +1401,9 @@ class InferDocumentsGenerated:
         )
         if not delegated__vectorized__vectorized__inferred__inferred_documents__results.isStreaming:
             delegated__vectorized__vectorized__inferred__inferred_documents__results = apply_plan_boundary(
-                delegated__vectorized__vectorized__inferred__inferred_documents__results, self.spark
+                delegated__vectorized__vectorized__inferred__inferred_documents__results,
+                delegated__vectorized__vectorized__inferred__inferred_documents__results.sparkSession,
+                owner=self,
             )
         return {
             "delegated__vectorized__vectorized__inferred__inferred_documents__results": delegated__vectorized__vectorized__inferred__inferred_documents__results,
@@ -1504,7 +1528,9 @@ class PublishQueryInferenceGenerated:
         )
         if not delegated__vectorized__vectorized__inferred__published_queries__embeddings.isStreaming:
             delegated__vectorized__vectorized__inferred__published_queries__embeddings = apply_plan_boundary(
-                delegated__vectorized__vectorized__inferred__published_queries__embeddings, self.spark
+                delegated__vectorized__vectorized__inferred__published_queries__embeddings,
+                delegated__vectorized__vectorized__inferred__published_queries__embeddings.sparkSession,
+                owner=self,
             )
         return {
             "delegated__vectorized__vectorized__inferred__published_queries__embeddings": delegated__vectorized__vectorized__inferred__published_queries__embeddings,
@@ -1556,7 +1582,9 @@ class PublishQueryInferenceGenerated:
         )
         if not delegated__vectorized__vectorized__inferred__published_queries__statuses.isStreaming:
             delegated__vectorized__vectorized__inferred__published_queries__statuses = apply_plan_boundary(
-                delegated__vectorized__vectorized__inferred__published_queries__statuses, self.spark
+                delegated__vectorized__vectorized__inferred__published_queries__statuses,
+                delegated__vectorized__vectorized__inferred__published_queries__statuses.sparkSession,
+                owner=self,
             )
         return {
             "delegated__vectorized__vectorized__inferred__published_queries__statuses": delegated__vectorized__vectorized__inferred__published_queries__statuses,
@@ -1681,7 +1709,9 @@ class PublishDocumentInferenceGenerated:
         )
         if not delegated__vectorized__vectorized__inferred__published_documents__embeddings.isStreaming:
             delegated__vectorized__vectorized__inferred__published_documents__embeddings = apply_plan_boundary(
-                delegated__vectorized__vectorized__inferred__published_documents__embeddings, self.spark
+                delegated__vectorized__vectorized__inferred__published_documents__embeddings,
+                delegated__vectorized__vectorized__inferred__published_documents__embeddings.sparkSession,
+                owner=self,
             )
         return {
             "delegated__vectorized__vectorized__inferred__published_documents__embeddings": delegated__vectorized__vectorized__inferred__published_documents__embeddings,
@@ -1733,7 +1763,9 @@ class PublishDocumentInferenceGenerated:
         )
         if not delegated__vectorized__vectorized__inferred__published_documents__statuses.isStreaming:
             delegated__vectorized__vectorized__inferred__published_documents__statuses = apply_plan_boundary(
-                delegated__vectorized__vectorized__inferred__published_documents__statuses, self.spark
+                delegated__vectorized__vectorized__inferred__published_documents__statuses,
+                delegated__vectorized__vectorized__inferred__published_documents__statuses.sparkSession,
+                owner=self,
             )
         return {
             "delegated__vectorized__vectorized__inferred__published_documents__statuses": delegated__vectorized__vectorized__inferred__published_documents__statuses,
@@ -1805,7 +1837,9 @@ class MergeQueryEmbeddingsGenerated:
         )
         if not delegated__vectorized__merged_queries__embeddings.isStreaming:
             delegated__vectorized__merged_queries__embeddings = apply_plan_boundary(
-                delegated__vectorized__merged_queries__embeddings, self.spark
+                delegated__vectorized__merged_queries__embeddings,
+                delegated__vectorized__merged_queries__embeddings.sparkSession,
+                owner=self,
             )
         return {
             "delegated__vectorized__merged_queries__embeddings": delegated__vectorized__merged_queries__embeddings,
@@ -1914,7 +1948,9 @@ class MergeDocumentVectorsGenerated:
         )
         if not delegated__vectorized__merged_documents__embeddings.isStreaming:
             delegated__vectorized__merged_documents__embeddings = apply_plan_boundary(
-                delegated__vectorized__merged_documents__embeddings, self.spark
+                delegated__vectorized__merged_documents__embeddings,
+                delegated__vectorized__merged_documents__embeddings.sparkSession,
+                owner=self,
             )
         return {
             "delegated__vectorized__merged_documents__embeddings": delegated__vectorized__merged_documents__embeddings,
@@ -1954,7 +1990,9 @@ class VectorizeSearchQueriesGenerated:
         )
         if not delegated__vectorized__query_vectors__vector_queries.isStreaming:
             delegated__vectorized__query_vectors__vector_queries = apply_plan_boundary(
-                delegated__vectorized__query_vectors__vector_queries, self.spark
+                delegated__vectorized__query_vectors__vector_queries,
+                delegated__vectorized__query_vectors__vector_queries.sparkSession,
+                owner=self,
             )
         return {
             "delegated__vectorized__query_vectors__vector_queries": delegated__vectorized__query_vectors__vector_queries,
@@ -2549,7 +2587,9 @@ class SelectGapQueries__examples_search_transforms_online_scoring_lexical_Select
         )
         assert_schema(delegated__scored__gap__gap_queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
         if not delegated__scored__gap__gap_queries.isStreaming:
-            delegated__scored__gap__gap_queries = apply_plan_boundary(delegated__scored__gap__gap_queries, self.spark)
+            delegated__scored__gap__gap_queries = apply_plan_boundary(
+                delegated__scored__gap__gap_queries, delegated__scored__gap__gap_queries.sparkSession, owner=self
+            )
         return {
             "delegated__scored__gap__gap_queries": delegated__scored__gap__gap_queries,
         }
@@ -2611,7 +2651,9 @@ class ScoreBaseGenerated:
         )
         if not delegated__scored__scoring__overlap__expanded_query_terms.isStreaming:
             delegated__scored__scoring__overlap__expanded_query_terms = apply_plan_boundary(
-                delegated__scored__scoring__overlap__expanded_query_terms, self.spark
+                delegated__scored__scoring__overlap__expanded_query_terms,
+                delegated__scored__scoring__overlap__expanded_query_terms.sparkSession,
+                owner=self,
             )
         return {
             "delegated__scored__scoring__overlap__expanded_query_terms": delegated__scored__scoring__overlap__expanded_query_terms,
@@ -2696,7 +2738,9 @@ class ScoreBaseGenerated:
         )
         if not delegated__scored__scoring__bm25__expanded_query_terms.isStreaming:
             delegated__scored__scoring__bm25__expanded_query_terms = apply_plan_boundary(
-                delegated__scored__scoring__bm25__expanded_query_terms, self.spark
+                delegated__scored__scoring__bm25__expanded_query_terms,
+                delegated__scored__scoring__bm25__expanded_query_terms.sparkSession,
+                owner=self,
             )
         return {
             "delegated__scored__scoring__bm25__expanded_query_terms": delegated__scored__scoring__bm25__expanded_query_terms,
@@ -2927,7 +2971,9 @@ class ScoreOverlapGenerated:
         )
         if not delegated__scored__scoring__overlap__document_query_idfs.isStreaming:
             delegated__scored__scoring__overlap__document_query_idfs = apply_plan_boundary(
-                delegated__scored__scoring__overlap__document_query_idfs, self.spark
+                delegated__scored__scoring__overlap__document_query_idfs,
+                delegated__scored__scoring__overlap__document_query_idfs.sparkSession,
+                owner=self,
             )
         return {
             "delegated__scored__scoring__overlap__document_query_idfs": delegated__scored__scoring__overlap__document_query_idfs,
@@ -2996,7 +3042,9 @@ class ScoreOverlapGenerated:
         )
         if not delegated__scored__scoring__overlap__section_query_idfs.isStreaming:
             delegated__scored__scoring__overlap__section_query_idfs = apply_plan_boundary(
-                delegated__scored__scoring__overlap__section_query_idfs, self.spark
+                delegated__scored__scoring__overlap__section_query_idfs,
+                delegated__scored__scoring__overlap__section_query_idfs.sparkSession,
+                owner=self,
             )
         return {
             "delegated__scored__scoring__overlap__section_query_idfs": delegated__scored__scoring__overlap__section_query_idfs,
@@ -3065,7 +3113,9 @@ class ScoreOverlapGenerated:
         )
         if not delegated__scored__scoring__overlap__paragraph_query_idfs.isStreaming:
             delegated__scored__scoring__overlap__paragraph_query_idfs = apply_plan_boundary(
-                delegated__scored__scoring__overlap__paragraph_query_idfs, self.spark
+                delegated__scored__scoring__overlap__paragraph_query_idfs,
+                delegated__scored__scoring__overlap__paragraph_query_idfs.sparkSession,
+                owner=self,
             )
         return {
             "delegated__scored__scoring__overlap__paragraph_query_idfs": delegated__scored__scoring__overlap__paragraph_query_idfs,
@@ -3134,7 +3184,9 @@ class ScoreOverlapGenerated:
         )
         if not delegated__scored__scoring__overlap__sentence_query_idfs.isStreaming:
             delegated__scored__scoring__overlap__sentence_query_idfs = apply_plan_boundary(
-                delegated__scored__scoring__overlap__sentence_query_idfs, self.spark
+                delegated__scored__scoring__overlap__sentence_query_idfs,
+                delegated__scored__scoring__overlap__sentence_query_idfs.sparkSession,
+                owner=self,
             )
         return {
             "delegated__scored__scoring__overlap__sentence_query_idfs": delegated__scored__scoring__overlap__sentence_query_idfs,
@@ -3688,7 +3740,9 @@ class ScoreOverlapGenerated:
         )
         if not delegated__scored__scoring__overlap__document_overlap_scores.isStreaming:
             delegated__scored__scoring__overlap__document_overlap_scores = apply_plan_boundary(
-                delegated__scored__scoring__overlap__document_overlap_scores, self.spark
+                delegated__scored__scoring__overlap__document_overlap_scores,
+                delegated__scored__scoring__overlap__document_overlap_scores.sparkSession,
+                owner=self,
             )
         return {
             "delegated__scored__scoring__overlap__document_overlap_scores": delegated__scored__scoring__overlap__document_overlap_scores,
@@ -3753,7 +3807,9 @@ class ScoreOverlapGenerated:
         )
         if not delegated__scored__scoring__overlap__section_overlap_scores.isStreaming:
             delegated__scored__scoring__overlap__section_overlap_scores = apply_plan_boundary(
-                delegated__scored__scoring__overlap__section_overlap_scores, self.spark
+                delegated__scored__scoring__overlap__section_overlap_scores,
+                delegated__scored__scoring__overlap__section_overlap_scores.sparkSession,
+                owner=self,
             )
         return {
             "delegated__scored__scoring__overlap__section_overlap_scores": delegated__scored__scoring__overlap__section_overlap_scores,
@@ -3819,7 +3875,9 @@ class ScoreOverlapGenerated:
         )
         if not delegated__scored__scoring__overlap__paragraph_overlap_scores.isStreaming:
             delegated__scored__scoring__overlap__paragraph_overlap_scores = apply_plan_boundary(
-                delegated__scored__scoring__overlap__paragraph_overlap_scores, self.spark
+                delegated__scored__scoring__overlap__paragraph_overlap_scores,
+                delegated__scored__scoring__overlap__paragraph_overlap_scores.sparkSession,
+                owner=self,
             )
         return {
             "delegated__scored__scoring__overlap__paragraph_overlap_scores": delegated__scored__scoring__overlap__paragraph_overlap_scores,
@@ -3886,7 +3944,9 @@ class ScoreOverlapGenerated:
         )
         if not delegated__scored__scoring__overlap__sentence_overlap_scores.isStreaming:
             delegated__scored__scoring__overlap__sentence_overlap_scores = apply_plan_boundary(
-                delegated__scored__scoring__overlap__sentence_overlap_scores, self.spark
+                delegated__scored__scoring__overlap__sentence_overlap_scores,
+                delegated__scored__scoring__overlap__sentence_overlap_scores.sparkSession,
+                owner=self,
             )
         return {
             "delegated__scored__scoring__overlap__sentence_overlap_scores": delegated__scored__scoring__overlap__sentence_overlap_scores,
@@ -3990,7 +4050,9 @@ class ScoreBm25Generated:
         )
         if not delegated__scored__scoring__bm25__document_bm25_scores.isStreaming:
             delegated__scored__scoring__bm25__document_bm25_scores = apply_plan_boundary(
-                delegated__scored__scoring__bm25__document_bm25_scores, self.spark
+                delegated__scored__scoring__bm25__document_bm25_scores,
+                delegated__scored__scoring__bm25__document_bm25_scores.sparkSession,
+                owner=self,
             )
         return {
             "delegated__scored__scoring__bm25__document_bm25_scores": delegated__scored__scoring__bm25__document_bm25_scores,
@@ -4098,7 +4160,9 @@ class ScoreBm25Generated:
         )
         if not delegated__scored__scoring__bm25__section_bm25_scores.isStreaming:
             delegated__scored__scoring__bm25__section_bm25_scores = apply_plan_boundary(
-                delegated__scored__scoring__bm25__section_bm25_scores, self.spark
+                delegated__scored__scoring__bm25__section_bm25_scores,
+                delegated__scored__scoring__bm25__section_bm25_scores.sparkSession,
+                owner=self,
             )
         return {
             "delegated__scored__scoring__bm25__section_bm25_scores": delegated__scored__scoring__bm25__section_bm25_scores,
@@ -4210,7 +4274,9 @@ class ScoreBm25Generated:
         )
         if not delegated__scored__scoring__bm25__paragraph_bm25_scores.isStreaming:
             delegated__scored__scoring__bm25__paragraph_bm25_scores = apply_plan_boundary(
-                delegated__scored__scoring__bm25__paragraph_bm25_scores, self.spark
+                delegated__scored__scoring__bm25__paragraph_bm25_scores,
+                delegated__scored__scoring__bm25__paragraph_bm25_scores.sparkSession,
+                owner=self,
             )
         return {
             "delegated__scored__scoring__bm25__paragraph_bm25_scores": delegated__scored__scoring__bm25__paragraph_bm25_scores,
@@ -4324,7 +4390,9 @@ class ScoreBm25Generated:
         )
         if not delegated__scored__scoring__bm25__sentence_bm25_scores.isStreaming:
             delegated__scored__scoring__bm25__sentence_bm25_scores = apply_plan_boundary(
-                delegated__scored__scoring__bm25__sentence_bm25_scores, self.spark
+                delegated__scored__scoring__bm25__sentence_bm25_scores,
+                delegated__scored__scoring__bm25__sentence_bm25_scores.sparkSession,
+                owner=self,
             )
         return {
             "delegated__scored__scoring__bm25__sentence_bm25_scores": delegated__scored__scoring__bm25__sentence_bm25_scores,
@@ -4443,7 +4511,9 @@ class SelectScoresGenerated:
         )
         if not delegated__scored__scoring__selected__document_scores.isStreaming:
             delegated__scored__scoring__selected__document_scores = apply_plan_boundary(
-                delegated__scored__scoring__selected__document_scores, self.spark
+                delegated__scored__scoring__selected__document_scores,
+                delegated__scored__scoring__selected__document_scores.sparkSession,
+                owner=self,
             )
         return {
             "delegated__scored__scoring__selected__document_scores": delegated__scored__scoring__selected__document_scores,
@@ -4557,7 +4627,9 @@ class SelectScoresGenerated:
         )
         if not delegated__scored__scoring__selected__section_scores.isStreaming:
             delegated__scored__scoring__selected__section_scores = apply_plan_boundary(
-                delegated__scored__scoring__selected__section_scores, self.spark
+                delegated__scored__scoring__selected__section_scores,
+                delegated__scored__scoring__selected__section_scores.sparkSession,
+                owner=self,
             )
         return {
             "delegated__scored__scoring__selected__section_scores": delegated__scored__scoring__selected__section_scores,
@@ -4683,7 +4755,9 @@ class SelectScoresGenerated:
         )
         if not delegated__scored__scoring__selected__paragraph_scores.isStreaming:
             delegated__scored__scoring__selected__paragraph_scores = apply_plan_boundary(
-                delegated__scored__scoring__selected__paragraph_scores, self.spark
+                delegated__scored__scoring__selected__paragraph_scores,
+                delegated__scored__scoring__selected__paragraph_scores.sparkSession,
+                owner=self,
             )
         return {
             "delegated__scored__scoring__selected__paragraph_scores": delegated__scored__scoring__selected__paragraph_scores,
@@ -4809,7 +4883,9 @@ class SelectScoresGenerated:
         )
         if not delegated__scored__scoring__selected__sentence_scores.isStreaming:
             delegated__scored__scoring__selected__sentence_scores = apply_plan_boundary(
-                delegated__scored__scoring__selected__sentence_scores, self.spark
+                delegated__scored__scoring__selected__sentence_scores,
+                delegated__scored__scoring__selected__sentence_scores.sparkSession,
+                owner=self,
             )
         return {
             "delegated__scored__scoring__selected__sentence_scores": delegated__scored__scoring__selected__sentence_scores,
@@ -4872,7 +4948,9 @@ class ScoreVectorsGenerated:
         )
         if not delegated__scored__scoring__vector__valid_policy.isStreaming:
             delegated__scored__scoring__vector__valid_policy = apply_plan_boundary(
-                delegated__scored__scoring__vector__valid_policy, self.spark
+                delegated__scored__scoring__vector__valid_policy,
+                delegated__scored__scoring__vector__valid_policy.sparkSession,
+                owner=self,
             )
         return {
             "delegated__scored__scoring__vector__valid_policy": delegated__scored__scoring__vector__valid_policy,
@@ -5148,7 +5226,9 @@ class ScoreVectorsGenerated:
         )
         if not delegated__scored__scoring__vector__document_scores.isStreaming:
             delegated__scored__scoring__vector__document_scores = apply_plan_boundary(
-                delegated__scored__scoring__vector__document_scores, self.spark
+                delegated__scored__scoring__vector__document_scores,
+                delegated__scored__scoring__vector__document_scores.sparkSession,
+                owner=self,
             )
         return {
             "delegated__scored__scoring__vector__document_scores": delegated__scored__scoring__vector__document_scores,
@@ -5439,7 +5519,9 @@ class ScoreVectorsGenerated:
         )
         if not delegated__scored__scoring__vector__paragraph_scores.isStreaming:
             delegated__scored__scoring__vector__paragraph_scores = apply_plan_boundary(
-                delegated__scored__scoring__vector__paragraph_scores, self.spark
+                delegated__scored__scoring__vector__paragraph_scores,
+                delegated__scored__scoring__vector__paragraph_scores.sparkSession,
+                owner=self,
             )
         return {
             "delegated__scored__scoring__vector__paragraph_scores": delegated__scored__scoring__vector__paragraph_scores,
@@ -5547,7 +5629,9 @@ class MergeDocumentScoresGenerated:
         )
         assert_schema(delegated__scored__merged__scores, DOCUMENT_SCORE_SCHEMA, name="DocumentScore", mode="strict")
         if not delegated__scored__merged__scores.isStreaming:
-            delegated__scored__merged__scores = apply_plan_boundary(delegated__scored__merged__scores, self.spark)
+            delegated__scored__merged__scores = apply_plan_boundary(
+                delegated__scored__merged__scores, delegated__scored__merged__scores.sparkSession, owner=self
+            )
         return {
             "delegated__scored__merged__scores": delegated__scored__merged__scores,
         }
@@ -5927,7 +6011,9 @@ class MergeDocumentVectorScoresGenerated:
         )
         if not delegated__scored__merged_vectors__scores.isStreaming:
             delegated__scored__merged_vectors__scores = apply_plan_boundary(
-                delegated__scored__merged_vectors__scores, self.spark
+                delegated__scored__merged_vectors__scores,
+                delegated__scored__merged_vectors__scores.sparkSession,
+                owner=self,
             )
         return {
             "delegated__scored__merged_vectors__scores": delegated__scored__merged_vectors__scores,
@@ -6337,7 +6423,9 @@ class MergeParagraphVectorScoresGenerated:
         )
         if not delegated__scored__merged_paragraph_vectors__scores.isStreaming:
             delegated__scored__merged_paragraph_vectors__scores = apply_plan_boundary(
-                delegated__scored__merged_paragraph_vectors__scores, self.spark
+                delegated__scored__merged_paragraph_vectors__scores,
+                delegated__scored__merged_paragraph_vectors__scores.sparkSession,
+                owner=self,
             )
         return {
             "delegated__scored__merged_paragraph_vectors__scores": delegated__scored__merged_paragraph_vectors__scores,
@@ -6602,7 +6690,9 @@ class RetrieveDocumentsGenerated:
             mode="strict",
         )
         if not delegated__retrieved__candidates.isStreaming:
-            delegated__retrieved__candidates = apply_plan_boundary(delegated__retrieved__candidates, self.spark)
+            delegated__retrieved__candidates = apply_plan_boundary(
+                delegated__retrieved__candidates, delegated__retrieved__candidates.sparkSession, owner=self
+            )
         return {
             "delegated__retrieved__candidates": delegated__retrieved__candidates,
         }
@@ -6724,7 +6814,9 @@ class RetrieveDocumentsGenerated:
         )
         if not delegated__retrieved__vector_candidates.isStreaming:
             delegated__retrieved__vector_candidates = apply_plan_boundary(
-                delegated__retrieved__vector_candidates, self.spark
+                delegated__retrieved__vector_candidates,
+                delegated__retrieved__vector_candidates.sparkSession,
+                owner=self,
             )
         return {
             "delegated__retrieved__vector_candidates": delegated__retrieved__vector_candidates,
@@ -7401,7 +7493,9 @@ class FuseDocumentsGenerated:
             mode="strict",
         )
         if not delegated__fused__candidates.isStreaming:
-            delegated__fused__candidates = apply_plan_boundary(delegated__fused__candidates, self.spark)
+            delegated__fused__candidates = apply_plan_boundary(
+                delegated__fused__candidates, delegated__fused__candidates.sparkSession, owner=self
+            )
         return {
             "delegated__fused__candidates": delegated__fused__candidates,
         }
@@ -7474,7 +7568,7 @@ class RerankDocumentsGenerated:
         )
         if not delegated__reranked__feedback_options.isStreaming:
             delegated__reranked__feedback_options = apply_plan_boundary(
-                delegated__reranked__feedback_options, self.spark
+                delegated__reranked__feedback_options, delegated__reranked__feedback_options.sparkSession, owner=self
             )
         return {
             "delegated__reranked__feedback_options": delegated__reranked__feedback_options,
@@ -8017,7 +8111,9 @@ class RerankDocumentsGenerated:
             delegated__reranked__results, DOCUMENT_SEARCH_RESULT_SCHEMA, name="DocumentSearchResult", mode="strict"
         )
         if not delegated__reranked__results.isStreaming:
-            delegated__reranked__results = apply_plan_boundary(delegated__reranked__results, self.spark)
+            delegated__reranked__results = apply_plan_boundary(
+                delegated__reranked__results, delegated__reranked__results.sparkSession, owner=self
+            )
         return {
             "delegated__reranked__results": delegated__reranked__results,
         }
@@ -8053,7 +8149,7 @@ class PublishFieldSearchResultsGenerated:
         )
         assert_schema(published__results, FIELD_SEARCH_RESULT_SCHEMA, name="FieldSearchResult", mode="strict")
         if not published__results.isStreaming:
-            published__results = apply_plan_boundary(published__results, self.spark)
+            published__results = apply_plan_boundary(published__results, published__results.sparkSession, owner=self)
         return {
             "published__results": published__results,
         }
@@ -8107,7 +8203,7 @@ class PublishFieldSearchResultsGenerated:
         )
         assert_schema(published__results, FIELD_SEARCH_RESULT_SCHEMA, name="FieldSearchResult", mode="strict")
         if not published__results.isStreaming:
-            published__results = apply_plan_boundary(published__results, self.spark)
+            published__results = apply_plan_boundary(published__results, published__results.sparkSession, owner=self)
         return {
             "published__results": published__results,
         }
@@ -8183,7 +8279,7 @@ class PublishFieldSearchResultsGenerated:
             ).alias("document_result"),
         )
         if not published__results.isStreaming:
-            published__results = apply_plan_boundary(published__results, self.spark)
+            published__results = apply_plan_boundary(published__results, published__results.sparkSession, owner=self)
         return {
             "published__results": published__results,
         }
@@ -8225,7 +8321,7 @@ class SearchFieldsGenerated(
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     @reuse_policy_checks
     def run(

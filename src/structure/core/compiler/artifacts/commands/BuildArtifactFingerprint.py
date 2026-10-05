@@ -29,6 +29,16 @@ class BuildArtifactFingerprint:
             return (f"{type(value).__module__}.{type(value).__qualname__}", value.value)
         if isinstance(value, type):
             return (value.__module__, value.__qualname__)
+        attributes = getattr(value, "__dict__", {})
+        input_schema = attributes.get("_structure_input_schema") if isinstance(attributes, dict) else None
+        input_source = attributes.get("_structure_source") if isinstance(attributes, dict) else None
+        if input_schema is not None and input_source is not None:
+            return (
+                f"{type(value).__module__}.{type(value).__qualname__}",
+                "input-scope",
+                input_source,
+                (input_schema.__module__, input_schema.__qualname__),
+            )
         if isinstance(value, dict):
             return tuple(sorted((self._value(key), self._value(item)) for key, item in value.items()))
         if isinstance(value, (list, tuple)):

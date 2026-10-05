@@ -36,7 +36,7 @@ class VulnerabilityDeadlineReportsGenerated:
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,
@@ -108,7 +108,7 @@ class VulnerabilityDeadlineReportsGenerated:
             activities, VULNERABILITY_DEADLINE_ACTIVITY_SCHEMA, name="VulnerabilityDeadlineActivity", mode="strict"
         )
         if not activities.isStreaming:
-            activities = apply_plan_boundary(activities, self.spark)
+            activities = apply_plan_boundary(activities, activities.sparkSession, owner=self)
 
         # Step method: summarize_people
         person_summaries = people.alias("person")

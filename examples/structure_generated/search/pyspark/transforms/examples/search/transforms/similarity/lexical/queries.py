@@ -48,7 +48,7 @@ class CreateSimilarityQueriesGenerated:
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     @reuse_policy_checks
     def run(
@@ -116,7 +116,7 @@ class CreateSimilarityQueriesGenerated:
         )
         assert_schema(valid_policy, SIMILARITY_POLICY_SCHEMA, name="SimilarityPolicy", mode="strict")
         if not valid_policy.isStreaming:
-            valid_policy = apply_plan_boundary(valid_policy, self.spark)
+            valid_policy = apply_plan_boundary(valid_policy, valid_policy.sparkSession, owner=self)
 
         # Step method: build_document_queries
         document_query_text = document_terms.alias("document_term")
@@ -176,7 +176,7 @@ class CreateSimilarityQueriesGenerated:
             mode="strict",
         )
         if not document_query_text.isStreaming:
-            document_query_text = apply_plan_boundary(document_query_text, self.spark)
+            document_query_text = apply_plan_boundary(document_query_text, document_query_text.sparkSession, owner=self)
 
         # Step method: build_section_queries
         section_query_text = section_terms.alias("section_term")
@@ -235,7 +235,7 @@ class CreateSimilarityQueriesGenerated:
             section_query_text, SECTION_SIMILARITY_QUERY_TEXT_SCHEMA, name="SectionSimilarityQueryText", mode="strict"
         )
         if not section_query_text.isStreaming:
-            section_query_text = apply_plan_boundary(section_query_text, self.spark)
+            section_query_text = apply_plan_boundary(section_query_text, section_query_text.sparkSession, owner=self)
 
         # Step method: build_paragraph_queries
         paragraph_query_text = paragraph_terms.alias("paragraph_term")
@@ -299,7 +299,9 @@ class CreateSimilarityQueriesGenerated:
             mode="strict",
         )
         if not paragraph_query_text.isStreaming:
-            paragraph_query_text = apply_plan_boundary(paragraph_query_text, self.spark)
+            paragraph_query_text = apply_plan_boundary(
+                paragraph_query_text, paragraph_query_text.sparkSession, owner=self
+            )
 
         # Step method: build_sentence_queries
         sentence_query_text = sentence_terms.alias("sentence_term")
@@ -365,7 +367,7 @@ class CreateSimilarityQueriesGenerated:
             mode="strict",
         )
         if not sentence_query_text.isStreaming:
-            sentence_query_text = apply_plan_boundary(sentence_query_text, self.spark)
+            sentence_query_text = apply_plan_boundary(sentence_query_text, sentence_query_text.sparkSession, owner=self)
 
         # Step method: publish_document_search_queries
         document_search_queries = document_query_text.alias("document_similarity_query_text")

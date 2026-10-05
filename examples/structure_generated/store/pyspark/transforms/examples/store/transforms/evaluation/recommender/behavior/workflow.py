@@ -64,7 +64,9 @@ class SelectEvaluationRequestsGenerated:
             mode="strict",
         )
         if not selected__selected_requests.isStreaming:
-            selected__selected_requests = apply_plan_boundary(selected__selected_requests, self.spark)
+            selected__selected_requests = apply_plan_boundary(
+                selected__selected_requests, selected__selected_requests.sparkSession, owner=self
+            )
         return {
             "selected__selected_requests": selected__selected_requests,
         }
@@ -103,7 +105,9 @@ class MeasureRecommendationImpressionsGenerated:
             mode="strict",
         )
         if not impressions_measured__displayed.isStreaming:
-            impressions_measured__displayed = apply_plan_boundary(impressions_measured__displayed, self.spark)
+            impressions_measured__displayed = apply_plan_boundary(
+                impressions_measured__displayed, impressions_measured__displayed.sparkSession, owner=self
+            )
         return {
             "impressions_measured__displayed": impressions_measured__displayed,
         }
@@ -208,7 +212,9 @@ class MeasureRecommendationImpressionsGenerated:
             mode="strict",
         )
         if not impressions_measured__measured.isStreaming:
-            impressions_measured__measured = apply_plan_boundary(impressions_measured__measured, self.spark)
+            impressions_measured__measured = apply_plan_boundary(
+                impressions_measured__measured, impressions_measured__measured.sparkSession, owner=self
+            )
         return {
             "impressions_measured__measured": impressions_measured__measured,
         }
@@ -296,7 +302,9 @@ class MeasureRecommendationRequestsGenerated:
             mode="strict",
         )
         if not requests_measured__request_behaviors.isStreaming:
-            requests_measured__request_behaviors = apply_plan_boundary(requests_measured__request_behaviors, self.spark)
+            requests_measured__request_behaviors = apply_plan_boundary(
+                requests_measured__request_behaviors, requests_measured__request_behaviors.sparkSession, owner=self
+            )
         return {
             "requests_measured__request_behaviors": requests_measured__request_behaviors,
         }
@@ -477,7 +485,9 @@ class SummarizeRecommendationBehaviorGenerated:
             .alias("exposure_adjusted_click_rate"),
         )
         if not summarized__daily_behavior.isStreaming:
-            summarized__daily_behavior = apply_plan_boundary(summarized__daily_behavior, self.spark)
+            summarized__daily_behavior = apply_plan_boundary(
+                summarized__daily_behavior, summarized__daily_behavior.sparkSession, owner=self
+            )
         return {
             "summarized__daily_behavior": summarized__daily_behavior,
         }
@@ -495,7 +505,7 @@ class EvaluateRecommendationsGenerated(
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,

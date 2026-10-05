@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from uuid import uuid4
 
 import pytest
@@ -79,7 +80,9 @@ class AccumulateCustomerTotals(Transform):
         )
 
 
-def test_pandas_state_runs_online_and_generated_and_resumes_checkpoint(spark, tmp_path) -> None:
+def test_pandas_state_runs_online_and_generated_and_resumes_checkpoint(
+    spark, tmp_path, integration_shared_dir
+) -> None:
     files = render_generated_projects(
         ((AccumulateCustomerTotals, f"{SOURCE_MODULE}.AccumulateCustomerTotals"),),
         generated_package=GENERATED_PACKAGE,
@@ -91,46 +94,47 @@ def test_pandas_state_runs_online_and_generated_and_resumes_checkpoint(spark, tm
     for token in ("readStream", "writeStream", "checkpointLocation", "toPandas(", ".rdd"):
         assert token not in generated_source
 
-    root = tmp_path / f"pandas-state-{uuid4().hex}"
-    with generated_project(tmp_path, GENERATED_PACKAGE, files):
-        for mode in ("online", "generated"):
-            source = root / mode / "source"
-            source.mkdir(parents=True)
-            checkpoint = root / mode / "checkpoint"
-            emitted: list[tuple[str, int]] = []
+    with TemporaryDirectory(prefix=f"pandas-state-{uuid4().hex}-", dir=integration_shared_dir) as shared_root:
+        root = Path(shared_root)
+        with generated_project(tmp_path, GENERATED_PACKAGE, files):
+            for mode in ("online", "generated"):
+                source = root / mode / "source"
+                source.mkdir(parents=True)
+                checkpoint = root / mode / "checkpoint"
+                emitted: list[tuple[str, int]] = []
 
-            def build_transform():
-                events = spark.readStream.schema("customer_id STRING NOT NULL, amount INT NOT NULL").json(str(source))
-                return AccumulateCustomerTotals(events=events).run(
-                    session(spark, execution_mode=mode, generated_package=GENERATED_PACKAGE)
+                def build_transform():
+                    events = spark.readStream.schema("customer_id STRING NOT NULL, amount INT NOT NULL").json(str(source))
+                    return AccumulateCustomerTotals(events=events).run(
+                        session(spark, execution_mode=mode, generated_package=GENERATED_PACKAGE)
+                    )
+
+                def run_available_now() -> None:
+                    result = build_transform()
+
+                    def collect_batch(frame, _batch_id: int) -> None:
+                        emitted.extend((row.customer_id, row.total) for row in frame.collect())
+
+                    query = result.totals.writeStream.foreachBatch(collect_batch).outputMode("update").option(
+                        "checkpointLocation", str(checkpoint)
+                    ).trigger(once=True).start()
+                    try:
+                        assert query.awaitTermination(120), "Pandas state query did not complete"
+                    finally:
+                        query.stop()
+
+                (source / "first.json").write_text(
+                    json.dumps({"customer_id": "c-1", "amount": 2})
+                    + "\n"
+                    + json.dumps({"customer_id": "c-1", "amount": 1})
+                    + "\n",
+                    encoding="utf-8",
                 )
+                run_available_now()
+                (source / "second.json").write_text(
+                    json.dumps({"customer_id": "c-1", "amount": 4}) + "\n",
+                    encoding="utf-8",
+                )
+                run_available_now()
 
-            def run_available_now() -> None:
-                result = build_transform()
-
-                def collect_batch(frame, _batch_id: int) -> None:
-                    emitted.extend((row.customer_id, row.total) for row in frame.collect())
-
-                query = result.totals.writeStream.foreachBatch(collect_batch).outputMode("update").option(
-                    "checkpointLocation", str(checkpoint)
-                ).trigger(availableNow=True).start()
-                try:
-                    assert query.awaitTermination(120), "Pandas state query did not complete"
-                finally:
-                    query.stop()
-
-            (source / "first.json").write_text(
-                json.dumps({"customer_id": "c-1", "amount": 2})
-                + "\n"
-                + json.dumps({"customer_id": "c-1", "amount": 1})
-                + "\n",
-                encoding="utf-8",
-            )
-            run_available_now()
-            (source / "second.json").write_text(
-                json.dumps({"customer_id": "c-1", "amount": 4}) + "\n",
-                encoding="utf-8",
-            )
-            run_available_now()
-
-            assert emitted == [("c-1", 3), ("c-1", 7)]
+                assert emitted == [("c-1", 3), ("c-1", 7)]

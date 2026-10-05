@@ -5,14 +5,11 @@ from __future__ import annotations
 from typing import Callable
 
 from structure.plugin.api.v1.model import current_symbolic_context
-
-
-class IgnoredCompilerCode(TypeError):
-    """Signal that deliberately non-compiler code was reached symbolically."""
-
-
-class OpaqueCompilerCode(TypeError):
-    """Signal that opaque runtime code was called during symbolic compilation."""
+from structure.plugin.api.v1.model.CompilerCodeBoundary import (
+    IgnoredCompilerCode,
+    OpaqueCompilerCode,
+    guard_excluded_class,
+)
 
 
 class SpecialFunction:

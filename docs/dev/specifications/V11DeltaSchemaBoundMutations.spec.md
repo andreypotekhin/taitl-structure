@@ -1,5 +1,8 @@
 # V11 Delta Transform Mutations Specification
 
+Public usage and target status: [Delta tables API](../../api/DeltaTables.api.md) and
+[Delta compatibility](../../compatibility/DeltaTables.compat.md).
+
 ## Status and contract
 
 The following surfaces are implemented and have isolated ordinary PySpark 4.1.0 / Delta 4.1.0 evidence. Public support

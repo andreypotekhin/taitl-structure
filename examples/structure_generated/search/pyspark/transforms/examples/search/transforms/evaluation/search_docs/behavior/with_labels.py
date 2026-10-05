@@ -42,7 +42,7 @@ class EvaluateDocSearchBehaviorGenerated:
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     @reuse_policy_checks
     def run(
@@ -127,7 +127,7 @@ class EvaluateDocSearchBehaviorGenerated:
         )
         assert_schema(selected_requests, BEHAVIOR_REQUEST_SCHEMA, name="BehaviorRequest", mode="strict")
         if not selected_requests.isStreaming:
-            selected_requests = apply_plan_boundary(selected_requests, self.spark)
+            selected_requests = apply_plan_boundary(selected_requests, selected_requests.sparkSession, owner=self)
 
         # Step method: select_impressions
         displayed = selected_requests.alias("behavior_request")
@@ -156,7 +156,7 @@ class EvaluateDocSearchBehaviorGenerated:
         )
         assert_schema(displayed, BEHAVIOR_IMPRESSION_SCHEMA, name="BehaviorImpression", mode="strict")
         if not displayed.isStreaming:
-            displayed = apply_plan_boundary(displayed, self.spark)
+            displayed = apply_plan_boundary(displayed, displayed.sparkSession, owner=self)
 
         # Step method: count_clicks
         clicked = displayed.alias("behavior_impression")
@@ -274,7 +274,7 @@ class EvaluateDocSearchBehaviorGenerated:
         )
         assert_schema(measured, BEHAVIOR_IMPRESSION_SCHEMA, name="BehaviorImpression", mode="strict")
         if not measured.isStreaming:
-            measured = apply_plan_boundary(measured, self.spark)
+            measured = apply_plan_boundary(measured, measured.sparkSession, owner=self)
 
         # Step method: measure_requests
         request_totals = selected_requests.alias("behavior_request")
@@ -371,7 +371,7 @@ class EvaluateDocSearchBehaviorGenerated:
         )
         assert_schema(request_metrics, BEHAVIOR_REQUEST_METRICS_SCHEMA, name="BehaviorRequestMetrics", mode="strict")
         if not request_metrics.isStreaming:
-            request_metrics = apply_plan_boundary(request_metrics, self.spark)
+            request_metrics = apply_plan_boundary(request_metrics, request_metrics.sparkSession, owner=self)
 
         # Step method: publish_requests
         request_behaviors = request_metrics.alias("behavior_request_metrics")

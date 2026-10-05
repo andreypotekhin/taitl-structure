@@ -30,7 +30,10 @@ Run one backend's test selection:
 The ordinary PySpark 4.1 runner executes only the backend version check and `tests/integration/pyspark/v11`. It does
 not run the 3.5/4.0 regression tree or the concept tests. `spark-connect41` is not configured yet. The tracked
 environment template pins PySpark 4.1.0 and separate 4.1 ports; Compose uses those values as defaults if an existing
-untracked `.env` predates this lane.
+untracked `.env` predates this lane. The 4.1 image also uses Protobuf 6.33.0 to match the generated state protocol
+bundled with PySpark 4.1; 3.5 and 4.0 keep the shared Protobuf 5.29.3 pin. The PySpark 4.0 Pandas state API and both
+4.1 state processor APIs require pandas, PyArrow, and Protobuf in the driver and worker environments. The 4.0/4.1
+state test sessions use Spark's RocksDB state store because these APIs create multiple state column families.
 
 The Spark Connect lanes are experimental. They start the Spark Connect gateway inside the test runner container and do
 not add separate Connect services to the Compose stack. The gateway defaults to a 3 GiB driver heap, which can be
@@ -47,6 +50,12 @@ caches are retained locally. This avoids repeat image builds, Spark startup, and
 Use `make integration-rebuild` after changing a Compose image, and `make integration-down` to stop the retained
 services without deleting the dependency caches. Docker's normal `docker compose ... down -v` removes those caches and
 forces the Spark Connect dependencies to download again.
+
+Spark standalone workers clean stopped-application directories every 15 minutes and retain them for one hour. Spark's
+default retention is seven days, which allowed repeated integration runs to fill the Docker VM before cleanup began.
+After changing this worker setting, recreate an idle worker with `docker compose --env-file infra/compose/.env -f
+infra/compose/docker-compose.yaml up -d --force-recreate spark40-worker` (substitute the backend worker). Do not
+recreate a worker while it has active executors.
 
 Include integration tests after the ordinary build:
 

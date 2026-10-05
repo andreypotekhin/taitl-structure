@@ -28,7 +28,7 @@ class DiversifyRecommendationsGenerated:
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,
@@ -116,7 +116,7 @@ class DiversifyRecommendationsGenerated:
         )
         assert_schema(decisions, DIVERSIFICATION_DECISION_SCHEMA, name="DiversificationDecision", mode="strict")
         if not decisions.isStreaming:
-            decisions = apply_plan_boundary(decisions, self.spark)
+            decisions = apply_plan_boundary(decisions, decisions.sparkSession, owner=self)
 
         # Step method: publish
         diversified = ranked.alias("ranked_recommendation_candidate")

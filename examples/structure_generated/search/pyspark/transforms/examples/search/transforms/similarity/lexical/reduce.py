@@ -54,7 +54,7 @@ class ReduceSimilarityScoresGenerated:
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,
@@ -177,7 +177,9 @@ class ReduceSimilarityScoresGenerated:
             document_canonical_pairs, DOCUMENT_SIMILARITY_PAIR_SCHEMA, name="DocumentSimilarityPair", mode="strict"
         )
         if not document_canonical_pairs.isStreaming:
-            document_canonical_pairs = apply_plan_boundary(document_canonical_pairs, self.spark)
+            document_canonical_pairs = apply_plan_boundary(
+                document_canonical_pairs, document_canonical_pairs.sparkSession, owner=self
+            )
 
         # Step method: reverse_document_pairs
         document_reversed_pairs = document_canonical_pairs.alias("document_similarity_pair")
@@ -331,7 +333,9 @@ class ReduceSimilarityScoresGenerated:
             section_canonical_pairs, SECTION_SIMILARITY_PAIR_SCHEMA, name="SectionSimilarityPair", mode="strict"
         )
         if not section_canonical_pairs.isStreaming:
-            section_canonical_pairs = apply_plan_boundary(section_canonical_pairs, self.spark)
+            section_canonical_pairs = apply_plan_boundary(
+                section_canonical_pairs, section_canonical_pairs.sparkSession, owner=self
+            )
 
         # Step method: reverse_section_pairs
         section_reversed_pairs = section_canonical_pairs.alias("section_similarity_pair")
@@ -524,7 +528,9 @@ class ReduceSimilarityScoresGenerated:
             paragraph_canonical_pairs, PARAGRAPH_SIMILARITY_PAIR_SCHEMA, name="ParagraphSimilarityPair", mode="strict"
         )
         if not paragraph_canonical_pairs.isStreaming:
-            paragraph_canonical_pairs = apply_plan_boundary(paragraph_canonical_pairs, self.spark)
+            paragraph_canonical_pairs = apply_plan_boundary(
+                paragraph_canonical_pairs, paragraph_canonical_pairs.sparkSession, owner=self
+            )
 
         # Step method: reverse_paragraph_pairs
         paragraph_reversed_pairs = paragraph_canonical_pairs.alias("paragraph_similarity_pair")
@@ -744,7 +750,9 @@ class ReduceSimilarityScoresGenerated:
             sentence_canonical_pairs, SENTENCE_SIMILARITY_PAIR_SCHEMA, name="SentenceSimilarityPair", mode="strict"
         )
         if not sentence_canonical_pairs.isStreaming:
-            sentence_canonical_pairs = apply_plan_boundary(sentence_canonical_pairs, self.spark)
+            sentence_canonical_pairs = apply_plan_boundary(
+                sentence_canonical_pairs, sentence_canonical_pairs.sparkSession, owner=self
+            )
 
         # Step method: reverse_sentence_pairs
         sentence_reversed_pairs = sentence_canonical_pairs.alias("sentence_similarity_pair")

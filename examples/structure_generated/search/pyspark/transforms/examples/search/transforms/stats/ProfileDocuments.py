@@ -24,7 +24,7 @@ class ProfileDocumentsGenerated:
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,
@@ -85,7 +85,7 @@ class ProfileDocumentsGenerated:
             .alias("source_recency_rank"),
         )
         if not documents.isStreaming:
-            documents = apply_plan_boundary(documents, self.spark)
+            documents = apply_plan_boundary(documents, documents.sparkSession, owner=self)
 
         # Step method: features
         features = documents.alias("document_profile")

@@ -25,7 +25,7 @@ class GenerateRecommendationCandidatesGenerated:
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,
@@ -122,7 +122,7 @@ class GenerateRecommendationCandidatesGenerated:
             F.lit('retrieved').alias("eligibility_status"),
         )
         if not admitted.isStreaming:
-            admitted = apply_plan_boundary(admitted, self.spark)
+            admitted = apply_plan_boundary(admitted, admitted.sparkSession, owner=self)
 
         # Step method: candidates
         candidates = admitted.alias("recommendation_candidate")

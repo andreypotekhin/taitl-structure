@@ -32,7 +32,7 @@ class DocumentChunkingGenerated:
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,
@@ -147,7 +147,7 @@ class DocumentChunkingGenerated:
         )
         assert_schema(marked_lines, MARKED_DOCUMENT_LINE_SCHEMA, name="MarkedDocumentLine", mode="strict")
         if not marked_lines.isStreaming:
-            marked_lines = apply_plan_boundary(marked_lines, self.spark)
+            marked_lines = apply_plan_boundary(marked_lines, marked_lines.sparkSession, owner=self)
 
         # Step method: select_paragraph_lines
         paragraph_lines = marked_lines.alias("marked_document_line")
@@ -241,7 +241,7 @@ class DocumentChunkingGenerated:
         )
         assert_schema(paragraph_drafts, PARAGRAPH_DRAFT_SCHEMA, name="ParagraphDraft", mode="strict")
         if not paragraph_drafts.isStreaming:
-            paragraph_drafts = apply_plan_boundary(paragraph_drafts, self.spark)
+            paragraph_drafts = apply_plan_boundary(paragraph_drafts, paragraph_drafts.sparkSession, owner=self)
 
         # Step method: publish_paragraphs
         paragraphs = paragraph_drafts.alias("paragraph_draft")

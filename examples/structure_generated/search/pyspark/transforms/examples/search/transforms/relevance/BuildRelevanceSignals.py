@@ -41,7 +41,7 @@ class BuildRelevanceSignalsGenerated:
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     @reuse_policy_checks
     def run(
@@ -161,7 +161,7 @@ class BuildRelevanceSignalsGenerated:
             context_impressions, CONTEXT_DAILY_IMPRESSIONS_SCHEMA, name="ContextDailyImpressions", mode="strict"
         )
         if not context_impressions.isStreaming:
-            context_impressions = apply_plan_boundary(context_impressions, self.spark)
+            context_impressions = apply_plan_boundary(context_impressions, context_impressions.sparkSession, owner=self)
 
         # Step method: global_clicks
         global_context_clicks = daily_clicks.alias("daily_clicks")
@@ -262,7 +262,7 @@ class BuildRelevanceSignalsGenerated:
         )
         assert_schema(context_clicks, CONTEXT_DAILY_CLICKS_SCHEMA, name="ContextDailyClicks", mode="strict")
         if not context_clicks.isStreaming:
-            context_clicks = apply_plan_boundary(context_clicks, self.spark)
+            context_clicks = apply_plan_boundary(context_clicks, context_clicks.sparkSession, owner=self)
 
         # Step method: summarize_query
         query_signal_totals = context_impressions.alias("context_daily_impressions")

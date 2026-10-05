@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import replace
 from importlib import import_module
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from structure.core.compiler.artifacts.api.Artifacts import Artifacts
 from structure.core.compiler.artifacts.model import CompiledArtifactPool, CompiledTransform, CompilerOptions
@@ -26,9 +26,25 @@ from structure.plugin.api.v1.model import ExecutionRequest
 
 
 class StructureSession:
+    runtime: Any
+    spark: Any
+    ctx: Any
+    config: StructureConfig
+    execution_mode: str
+    target: str
+    plugin_options: Mapping[str, object]
+    generated_package: str
+    schema_types: Any
+    online_executor: Callable[..., object] | None
+    storage: Any
+    compiler_options: CompilerOptions
+    artifacts: CompiledArtifactPool
+    _source_transforms: dict[SourceTransformAddress, list[type[Transform]]]
+    _closed: bool
 
     def __init__(
         self,
+        parent: StructureSession | None = None,
         *,
         spark=None,
         runtime=None,
@@ -38,11 +54,48 @@ class StructureSession:
         execution_mode: str | None = None,
         target: str | None = None,
         generated_package: str | None = None,
-        schema_types=None,
+        schema_types: Any = None,
         online_executor: Callable[..., object] | None = None,
-        storage=None,
+        storage: Any = None,
         artifacts: CompiledArtifactPool | None = None,
     ) -> None:
+        if parent is not None:
+            if parent._closed:
+                raise ValueError("Cannot spawn a StructureSession from a closed parent session.")
+            if any(
+                value is not None
+                for value in (
+                    spark,
+                    runtime,
+                    ctx,
+                    config,
+                    project_root,
+                    execution_mode,
+                    target,
+                    generated_package,
+                    schema_types,
+                    online_executor,
+                    storage,
+                    artifacts,
+                )
+            ):
+                raise ValueError("StructureSession(parent) cannot be combined with constructor overrides.")
+            self.runtime = parent.runtime
+            self.spark = parent.spark
+            self.ctx = parent.ctx
+            self.config = parent.config
+            self.execution_mode = parent.execution_mode
+            self.target = parent.target
+            self.plugin_options = dict(parent.plugin_options)
+            self.generated_package = parent.generated_package
+            self.schema_types = parent.schema_types
+            self.online_executor = parent.online_executor
+            self.storage = parent.storage
+            self.compiler_options = parent.compiler_options
+            self.artifacts = parent.artifacts
+            self._source_transforms = {address: list(transforms) for address, transforms in parent._source_transforms.items()}
+            self._closed = False
+            return
         if spark is not None and runtime is not None:
             raise ValueError("Pass either runtime= or the legacy spark= argument, not both.")
         overrides: dict[str, object] = {
@@ -66,7 +119,7 @@ class StructureSession:
         self.config = resolved
         self.execution_mode = resolved.execution_mode
         self.target = resolved.target
-        self.plugin_options = resolved.plugin_options.get(self.target, {})
+        self.plugin_options = dict(resolved.plugin_options.get(self.target, {}))
         self.generated_package = resolved.generated_package
         self.schema_types = schema_types
         self.online_executor = online_executor
@@ -74,6 +127,7 @@ class StructureSession:
         self.compiler_options = CompilerOptions.from_config(resolved, schema_types=schema_types)
         self.artifacts = artifacts or CompiledArtifactPool()
         self._source_transforms: dict[SourceTransformAddress, list[type[Transform]]] = {}
+        self._closed = False
 
     def __enter__(self) -> StructureSession:
         return self
@@ -84,14 +138,20 @@ class StructureSession:
 
     def close(self) -> None:
         """Drop temporary views created by Structure without stopping Spark."""
-        if self.runtime is None:
+        if self.runtime is None or self._closed:
             return
         try:
             from structure.plugin.pyspark.execution.logic.PlanBoundary import close_plan_boundaries
 
-            close_plan_boundaries(self.runtime)
+            close_plan_boundaries(self.runtime, owner=self)
         except ImportError:
             return
+        finally:
+            self._closed = True
+
+    def spawn(self) -> StructureSession:
+        """Create a child session with this session's runtime configuration."""
+        return StructureSession(self)
 
     def run(self, invocation: Transform | None = None, *, transform=None, **inputs) -> TransformResult:
         if transform is not None:
@@ -129,13 +189,78 @@ class StructureSession:
         if artifact.transform_plan.sinks:
             sink_results = {}
             for sink in artifact.transform_plan.sinks:
-                writer: object = import_module(sink.writer_module)
-                for part in sink.writer_qualname.split("."):
-                    writer = getattr(writer, part)
-                if not isinstance(writer, type):
-                    raise TypeError(f"Declared sink writer {sink.writer_qualname!r} is no longer a class.")
-                sink_results[sink.name] = SinkResult(dataframe=result[sink.output], writer=writer)
+                if sink.sink_module is None or sink.sink_qualname is None:
+                    raise TypeError(f"Sink plan {sink.name!r} is missing its importable sink type.")
+                sink_type: object = import_module(sink.sink_module)
+                for part in sink.sink_qualname.split("."):
+                    sink_type = getattr(sink_type, part)
+                if not isinstance(sink_type, type):
+                    raise TypeError(f"Declared sink type {sink.sink_qualname!r} is no longer a class.")
+                if sink.kind == "batch":
+                    source_schema = next(
+                        (output.schema for output in artifact.transform_plan.outputs if output.name == sink.output),
+                        None,
+                    )
+                    if source_schema is None:
+                        raise TypeError(f"Batch sink {sink.name!r} refers to missing output {sink.output!r}.")
+                    sink_results[sink.name] = SinkResult(
+                        dataframe=result[sink.output],
+                        schema=sink_type,
+                        output=sink.output,
+                        input_schema=source_schema,
+                    )
+                else:
+                    sink_results[sink.name] = SinkResult(
+                        dataframe=result[sink.output], writer=sink_type, output=sink.output
+                    )
             result._structure_with_sinks(sink_results)
+        return result
+
+    def run_batch(self, handoff: SinkResult, invocation: Transform) -> TransformResult:
+        """Run a fully constructed batch transform for a declared batch sink."""
+        if not isinstance(handoff, SinkResult) or handoff.kind != "batch" or handoff.schema is None:
+            raise TypeError("run_batch(handoff, invocation) requires a schema-declared foreachBatch handoff.")
+        if not isinstance(invocation, Transform):
+            raise TypeError("run_batch(handoff, invocation) requires a constructed Transform invocation.")
+        handoff_frame = handoff.dataframe
+        if not bool(getattr(handoff_frame, "isStreaming", False)):
+            raise ValueError("run_batch requires a handoff from a streaming output.")
+
+        artifact = self._compiled(invocation)
+        if artifact.schemas is None:
+            raise RuntimeError("Batch transform execution requires materialized transform schemas.")
+        inputs = artifact.transform_plan.inputs
+        if any(input.streaming for input in inputs):
+            raise ValueError("run_batch requires batch transform inputs; remove streaming=True from the invocation.")
+        matching_inputs = [input for input in inputs if input.schema is handoff.input_schema]
+        if len(matching_inputs) != 1:
+            raise ValueError(
+                "run_batch requires exactly one batch input whose Structure Schema matches the sink handoff output."
+            )
+        batch_input = matching_inputs[0]
+        batch_frame = invocation._structure_bound_inputs.get(batch_input.name)
+        if batch_frame is None:
+            raise ValueError(f"Batch transform input {batch_input.name!r} is not bound.")
+        if bool(getattr(batch_frame, "isStreaming", False)):
+            raise ValueError(f"Batch transform input {batch_input.name!r} is a streaming DataFrame.")
+        source_schema = getattr(handoff_frame, "schema", None)
+        batch_schema = getattr(batch_frame, "schema", None)
+        if source_schema is not None and batch_schema is not None and source_schema != batch_schema:
+            raise ValueError(
+                f"Batch input {batch_input.name!r} has a different Spark schema from the sink handoff output."
+            )
+        for input in inputs:
+            frame = invocation._structure_bound_inputs.get(input.name)
+            if frame is not None and bool(getattr(frame, "isStreaming", False)):
+                raise ValueError(f"Batch transform input {input.name!r} is a streaming DataFrame.")
+
+        result = self.run(invocation)
+        matching_outputs = [output.name for output in artifact.transform_plan.outputs if output.schema is handoff.schema]
+        if len(matching_outputs) != 1:
+            raise ValueError(
+                f"Batch transform must expose exactly one output with schema {handoff.schema.__name__}; "
+                f"matched: {', '.join(matching_outputs) or 'none'}."
+            )
         return result
 
     def state_budget_guard(self, result: TransformResult) -> StateBudgetGuard:

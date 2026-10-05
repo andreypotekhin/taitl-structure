@@ -49,7 +49,9 @@ class CustomerDailyTotalsGenerated:
         )
         assert_schema(customer__customer_totals, CUSTOMER_DAILY_TOTAL_SCHEMA, name="CustomerDailyTotal", mode="strict")
         if not customer__customer_totals.isStreaming:
-            customer__customer_totals = apply_plan_boundary(customer__customer_totals, self.spark)
+            customer__customer_totals = apply_plan_boundary(
+                customer__customer_totals, customer__customer_totals.sparkSession, owner=self
+            )
         return {
             "customer__customer_totals": customer__customer_totals,
         }
@@ -90,7 +92,9 @@ class ProductDailySummariesGenerated:
         )
         assert_schema(product__product_summary, PRODUCT_DAILY_SUMMARY_SCHEMA, name="ProductDailySummary", mode="strict")
         if not product__product_summary.isStreaming:
-            product__product_summary = apply_plan_boundary(product__product_summary, self.spark)
+            product__product_summary = apply_plan_boundary(
+                product__product_summary, product__product_summary.sparkSession, owner=self
+            )
         return {
             "product__product_summary": product__product_summary,
         }
@@ -203,7 +207,9 @@ class CustomerEventRanksGenerated:
             .alias("rolling_max_units"),
         )
         if not ranks__customer_event_rank.isStreaming:
-            ranks__customer_event_rank = apply_plan_boundary(ranks__customer_event_rank, self.spark)
+            ranks__customer_event_rank = apply_plan_boundary(
+                ranks__customer_event_rank, ranks__customer_event_rank.sparkSession, owner=self
+            )
         return {
             "ranks__customer_event_rank": ranks__customer_event_rank,
         }
@@ -218,7 +224,7 @@ class OrderAnalyticsGenerated(
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,

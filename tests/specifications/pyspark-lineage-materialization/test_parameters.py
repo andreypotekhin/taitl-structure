@@ -120,7 +120,7 @@ def test_checkpoint_rejects_actual_streaming_frames_before_starting_an_action() 
     frame = Mock(isStreaming=True)
     with pytest.raises(ValueError, match="requires a batch DataFrame"):
         RunOnlinePySparkTransform()._operations(
-            plan.steps[0], frame, frames={}, functions=None, window=None, types=None
+            plan.steps[0], frame, frames={}, functions=None, window=None, types=None, session=None
         )
     frame.checkpoint.assert_not_called()
     source = render_pyspark_step(plan.steps[0], current="df")

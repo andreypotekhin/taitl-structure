@@ -296,7 +296,7 @@ class RenderPySparkTransformModule:
             )
         )
 
-        lines.extend(["", "    def close(self) -> None:", "        close_plan_boundaries(self.spark)"])
+        lines.extend(["", "    def close(self) -> None:", "        close_plan_boundaries(self.spark, owner=self)"])
 
         methods = self._mirror_step_methods(plan, source_transform=source_transform, fields=fields)
         if methods:
@@ -503,7 +503,7 @@ class RenderPySparkTransformModule:
                 plan, source_transform=source_transform, generated_code_options=generated_code_options
             )
         )
-        lines.extend(["", "    def close(self) -> None:", "        close_plan_boundaries(self.spark)"])
+        lines.extend(["", "    def close(self) -> None:", "        close_plan_boundaries(self.spark, owner=self)"])
         lines.extend(self._policy_scope(plan))
         lines.extend(["    def run(", "        self,", "        *,"])
         for input in self._public_inputs(plan):
@@ -661,7 +661,7 @@ class RenderPySparkTransformModule:
                 plan, source_transform=source_transform, generated_code_options=generated_code_options
             )
         )
-        lines.extend(["", "    def close(self) -> None:", "        close_plan_boundaries(self.spark)"])
+        lines.extend(["", "    def close(self) -> None:", "        close_plan_boundaries(self.spark, owner=self)"])
         lines.extend(self._policy_scope(plan))
         lines.extend(["    def run(", "        self,", "        *,"])
         for input in self._public_inputs(plan):
@@ -1196,7 +1196,7 @@ class RenderPySparkTransformModule:
                 lines.extend(
                     [
                         f"        if not {frame}.isStreaming:",
-                        f"            {frame} = apply_plan_boundary({frame}, self.spark)",
+                        f"            {frame} = apply_plan_boundary({frame}, {frame}.sparkSession, owner=self)",
                     ]
                 )
         return lines

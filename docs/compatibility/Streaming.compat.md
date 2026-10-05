@@ -19,6 +19,17 @@ This is the compatibility companion to the [API reference](../api/Streaming.api.
 | `event_time_between(...)` | Stream-stream time-range predicate | `event_time_between(o.at, c.at, upper="1 hour")` | yes | yes | `event_time_between(...)` supplies the bounded event-time relation required by supported stream-stream joins. |
 | `@raw(...)` | Streaming-safe hook | `@raw(streaming=True)` | yes | yes | Runs caller-authored PySpark outside the symbolic compiler contract; streaming hooks declare `streaming=True` for streaming-plan checks. |
 
+## Row-level side sinks
+
+Row-level `foreach` is a `caller-owned-guided` handoff for direct transforms. The Structure step associates a returned
+final output row with a declared writer; the caller receives its output DataFrame and writer class and uses native
+PySpark to run the batch action or start a second streaming query. This does not modify a query the caller has already
+started.
+
+| Structure API | PySpark parity | Example | PySpark 3 | PySpark 4 | Details |
+| --- | --- | --- | --- | --- | --- |
+| `sink(WriterClass)` + `foreach(row, sink)` | `DataFrame.foreach`, `DataStreamWriter.foreach` | `result.publish_alerts.dataframe.writeStream.foreach(writer).start()` | 3.5 only | 4.0 only | Live batch, writer lifecycle, independent-query, checkpoint-restart, and online/generated evidence covers classic PySpark 3.5 and 4.0. The writer subclasses `structure.plugin.pyspark.Sink`; the streaming instance must be noncallable and provide `process(row)`. Batch writers use `process` and cannot define `open` or `close`. Spark Connect is unclaimed. The caller owns writer construction, query lifecycle, separate checkpoints, retries, credentials, and idempotence. Composed or staged transforms with sinks are rejected with `DSL-E0406`. See the [row-level foreach contract](../dev/specifications/V11RetainedV9DesignGates.spec.md#row-level-foreach). |
+
 ## Stateful processor operations
 
 These Structure compiler surfaces are separate from the shared PySpark 3.5/4.0 compatibility baseline. Their support
@@ -28,6 +39,6 @@ the application.
 
 | Structure API | PySpark parity | Example | PySpark 3 | PySpark 4 | Details |
 | --- | --- | --- | --- | --- | --- |
-| `transform_with_state(...)` | `GroupedData.transformWithState` | `transform_with_state(key=event.account_id, processor=Counter, output_mode="Update", time_mode="ProcessingTime")` | no | no | Status: `design-gated`. Implemented for ordinary PySpark `>=4.1,<4.2`; supports a typed `StateProcessor` with one `ValueState` and timers, or an opaque native processor. PySpark 4.0's Python API has no row-based entry point. See the [row processor plan](../dev/planning/P10042603.V11-transform-with-state.plan.md). |
-| `transform_with_state_in_pandas(...)` | `GroupedData.transformWithStateInPandas` | `transform_with_state_in_pandas(key=event.account_id, processor=Counter, output_mode="Update", time_mode="ProcessingTime")` | no | no | Status: `design-gated`. Implemented for ordinary PySpark `>=4.0,<4.1` and `>=4.1,<4.2`; uses Pandas batches and requires pandas, PyArrow, and protobuf on the driver and workers. See the [Pandas processor plan](../dev/planning/P10042604.V11-transform-with-state-in-pandas.plan.md). |
+| `transform_with_state(...)` | `GroupedData.transformWithState` | `transform_with_state(key=event.account_id, processor=Counter, output_mode="Update", time_mode="ProcessingTime")` | no | 4.1 only | Status: `design-gated`. Implemented for ordinary PySpark `>=4.1,<4.2`; typed callbacks have one `ValueState`, timer management and callback-scoped time values; opaque native processors retain additional Spark state features. PySpark 4.1 requires pandas, PyArrow, and Protobuf on the driver and workers. The 4.1 image pins Protobuf 6.33.0 and its test session uses RocksDB for Spark's state protocol and multiple column families. PySpark 4.0's Python API has no row-based entry point. The initial 4.1 lane runs V11 tests only. See the [row processor plan](../dev/planning/P10042603.V11-transform-with-state.plan.md). |
+| `transform_with_state_in_pandas(...)` | `GroupedData.transformWithStateInPandas` | `transform_with_state_in_pandas(key=event.account_id, processor=Counter, output_mode="Update", time_mode="ProcessingTime")` | no | 4.0 and 4.1 | Status: `design-gated`. Implemented for ordinary PySpark `>=4.0,<4.1` and `>=4.1,<4.2`; uses Pandas batches and requires pandas, PyArrow, and protobuf on the driver and workers. See the [Pandas processor plan](../dev/planning/P10042604.V11-transform-with-state-in-pandas.plan.md). |
 | `applyInPandasWithState` | `GroupedData.applyInPandasWithState` | — | no | no | Status: `caller-owned-guided`. No Structure compiler operation is implemented for this legacy API; use native PySpark around a Structure transform. |

@@ -22,7 +22,7 @@ class PiAsSeriesGenerated:
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,
@@ -171,7 +171,7 @@ class PiAsSeriesGenerated:
             F.col("total").alias("value"),
         )
         if not ticks.isStreaming:
-            ticks = apply_plan_boundary(ticks, self.spark)
+            ticks = apply_plan_boundary(ticks, ticks.sparkSession, owner=self)
 
         # Step method: result
         result = ticks.alias("series_approximation")
@@ -186,7 +186,7 @@ class EAsSeriesGenerated:
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,
@@ -326,7 +326,7 @@ class EAsSeriesGenerated:
             F.col("total").alias("value"),
         )
         if not ticks.isStreaming:
-            ticks = apply_plan_boundary(ticks, self.spark)
+            ticks = apply_plan_boundary(ticks, ticks.sparkSession, owner=self)
 
         # Step method: result
         result = ticks.alias("series_approximation")
@@ -341,7 +341,7 @@ class Ln2AsSeriesGenerated:
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,
@@ -490,7 +490,7 @@ class Ln2AsSeriesGenerated:
             F.col("total").alias("value"),
         )
         if not ticks.isStreaming:
-            ticks = apply_plan_boundary(ticks, self.spark)
+            ticks = apply_plan_boundary(ticks, ticks.sparkSession, owner=self)
 
         # Step method: result
         result = ticks.alias("series_approximation")

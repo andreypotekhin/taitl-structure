@@ -94,7 +94,9 @@ class CreateQueryLabelsGenerated:
         )
         assert_schema(created__valid_intents, INTENT_SCHEMA, name="Intent", mode="strict")
         if not created__valid_intents.isStreaming:
-            created__valid_intents = apply_plan_boundary(created__valid_intents, self.spark)
+            created__valid_intents = apply_plan_boundary(
+                created__valid_intents, created__valid_intents.sparkSession, owner=self
+            )
         return {
             "created__valid_intents": created__valid_intents,
         }
@@ -275,7 +277,7 @@ class CreateQueryLabelsGenerated:
         )
         assert_schema(created__labels, QUERY_LABEL_ASSIGNMENTS_SCHEMA, name="QueryLabelAssignments", mode="strict")
         if not created__labels.isStreaming:
-            created__labels = apply_plan_boundary(created__labels, self.spark)
+            created__labels = apply_plan_boundary(created__labels, created__labels.sparkSession, owner=self)
         return {
             "created__labels": created__labels,
         }
@@ -531,7 +533,9 @@ class MergeQueryLabelsGenerated:
             F.col("search_query.language"),
         )
         if not merged__labeled_queries.isStreaming:
-            merged__labeled_queries = apply_plan_boundary(merged__labeled_queries, self.spark)
+            merged__labeled_queries = apply_plan_boundary(
+                merged__labeled_queries, merged__labeled_queries.sparkSession, owner=self
+            )
         return {
             "merged__labeled_queries": merged__labeled_queries,
         }
@@ -546,7 +550,7 @@ class LabelingGenerated(CreateQueryLabelsGenerated, MergeQueryLabelsGenerated):
         self._impl_created_CreateQueryLabels = CreateQueryLabels()
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,

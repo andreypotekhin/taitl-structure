@@ -25,6 +25,9 @@ Schema declarations define Structure's typed row contract and materialize to Spa
 | `hll_sketch(lg_config_k=...)` | Branded opaque Binary HLL state | `customers = hll_sketch(lg_config_k=12)` |
 | `bitmap()` | Branded opaque Binary Bitmap state | `features = bitmap()` |
 
+For a caller-bound Delta table, `Schema.constraints = (check(predicate, name=...),)` declares expected native CHECK
+metadata. See the [Delta tables API](DeltaTables.api.md). This is separate from ordinary DataFrame validation modes.
+
 **Details And Differences**
 
 - Field factories are the declaration boundary: raw PySpark `StructField` objects and implicit source-type inference are

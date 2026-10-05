@@ -81,7 +81,9 @@ class ScoreBaseGenerated:
         )
         assert_schema(expanded_query_terms, QUERY_TERM_SCHEMA, name="QueryTerm", mode="strict")
         if not expanded_query_terms.isStreaming:
-            expanded_query_terms = apply_plan_boundary(expanded_query_terms, self.spark)
+            expanded_query_terms = apply_plan_boundary(
+                expanded_query_terms, expanded_query_terms.sparkSession, owner=self
+            )
         return {
             "expanded_query_terms": expanded_query_terms,
         }
@@ -230,7 +232,7 @@ class ScoreOverlapGenerated(ScoreBaseGenerated):
         )
         assert_schema(document_query_idfs, QUERY_TERM_IDF_SCHEMA, name="QueryTermIdf", mode="strict")
         if not document_query_idfs.isStreaming:
-            document_query_idfs = apply_plan_boundary(document_query_idfs, self.spark)
+            document_query_idfs = apply_plan_boundary(document_query_idfs, document_query_idfs.sparkSession, owner=self)
         return {
             "document_query_idfs": document_query_idfs,
         }
@@ -267,7 +269,7 @@ class ScoreOverlapGenerated(ScoreBaseGenerated):
         )
         assert_schema(section_query_idfs, QUERY_TERM_IDF_SCHEMA, name="QueryTermIdf", mode="strict")
         if not section_query_idfs.isStreaming:
-            section_query_idfs = apply_plan_boundary(section_query_idfs, self.spark)
+            section_query_idfs = apply_plan_boundary(section_query_idfs, section_query_idfs.sparkSession, owner=self)
         return {
             "section_query_idfs": section_query_idfs,
         }
@@ -304,7 +306,9 @@ class ScoreOverlapGenerated(ScoreBaseGenerated):
         )
         assert_schema(paragraph_query_idfs, QUERY_TERM_IDF_SCHEMA, name="QueryTermIdf", mode="strict")
         if not paragraph_query_idfs.isStreaming:
-            paragraph_query_idfs = apply_plan_boundary(paragraph_query_idfs, self.spark)
+            paragraph_query_idfs = apply_plan_boundary(
+                paragraph_query_idfs, paragraph_query_idfs.sparkSession, owner=self
+            )
         return {
             "paragraph_query_idfs": paragraph_query_idfs,
         }
@@ -341,7 +345,7 @@ class ScoreOverlapGenerated(ScoreBaseGenerated):
         )
         assert_schema(sentence_query_idfs, QUERY_TERM_IDF_SCHEMA, name="QueryTermIdf", mode="strict")
         if not sentence_query_idfs.isStreaming:
-            sentence_query_idfs = apply_plan_boundary(sentence_query_idfs, self.spark)
+            sentence_query_idfs = apply_plan_boundary(sentence_query_idfs, sentence_query_idfs.sparkSession, owner=self)
         return {
             "sentence_query_idfs": sentence_query_idfs,
         }
@@ -838,7 +842,7 @@ class ScoreOverlapGenerated(ScoreBaseGenerated):
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     @reuse_policy_checks
     def run(

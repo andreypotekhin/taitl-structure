@@ -63,6 +63,13 @@ def spark(pytestconfig, monkeypatch):
         .config("spark.sql.maxPlanStringLength", "8192")
         .config("spark.sql.ui.explainMode", "simple")
     )
+    if backend in {"pyspark40", "pyspark41"} and not remote:
+        # TransformWithState uses multiple state column families, which the
+        # HDFS-backed provider does not support.
+        builder = builder.config(
+            "spark.sql.streaming.stateStore.providerClass",
+            "org.apache.spark.sql.execution.streaming.state.RocksDBStateStoreProvider",
+        )
     packages = os.environ.get("STRUCTURE_SPARK_JARS_PACKAGES")
     if packages and not remote:
         builder = builder.config("spark.jars.packages", packages)
@@ -76,6 +83,9 @@ def spark(pytestconfig, monkeypatch):
             .config("spark.ui.enabled", "false")
             .config("spark.default.parallelism", "2")
         )
+        python_path = os.environ.get("PYTHONPATH")
+        if python_path:
+            builder = builder.config("spark.executorEnv.PYTHONPATH", python_path)
 
     session = None
     last_error = None

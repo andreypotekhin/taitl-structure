@@ -14,9 +14,11 @@ are documented in the [Relations API](Relations.api.md).
 | `input(...)` | DataFrame input | `orders = input(OrderRaw)` |
 | `output(...)` | DataFrame result | `published = output(OrderPublished)` |
 | `lane(...)` | Intermediate DataFrame | `clean = lane(OrderClean)` |
+| `sink(WriterClass)` | Declared row-writer handoff | `publish_alerts = sink(AlertWriter)` |
 | `stage(...)` | Explicit composed-stage compatibility API | `normalized = NormalizeOrders(orders=orders)` |
 | `@transform(...)` | Pipeline declaration | `@transform\nclass Publish(Transform): pass` |
 | `@step(...)` | Named pipeline step | `@step(inout=lane(clean) \| output(published))` |
+| `foreach(row, sink)` | Captured final-output side sink | `foreach(alert, sink)` |
 
 **Details And Differences**
 
@@ -27,6 +29,9 @@ are documented in the [Relations API](Relations.api.md).
   with `normalized.output`; ordinary Python assignments are ignored. The explicit `stage(...)` form remains supported.
 - Undecorated public methods with schema input/return annotations are also steps; `@step(...)` disambiguates bindings.
 - `@transform(...)` accepts transform-level target and streaming options.
+- A sink declaration binds to a typed step parameter; the step must call `foreach(...)` with the exact row it returns to a
+  declared final output. The caller receives the named read-only handoff and attaches it with PySpark. See
+  [Hooks And Diagnostics](#hooks-and-diagnostics) for writer configuration and lifecycle boundaries.
 
 ## General Step Operations
 
@@ -73,7 +78,8 @@ are documented in the [Relations API](Relations.api.md).
 - `@special(type="opaque")` marks runtime functions or classes whose Python bodies Structure does not inspect. They run
   normally outside compilation; calling them from compiler-visible logic fails with `DSL-E0405`. This marker does not
   execute a side effect or make a callback usable inside a transform by itself.
-- A row sink combines an opaque writer class with a declared transform output. Declare it with `sink(WriterClass)`,
+- A row sink combines a `Sink` subclass with a declared transform output. Import `Sink` from
+  `structure.plugin.pyspark`; declare it with `sink(WriterClass)`,
   bind a typed step parameter, and call PySpark's `foreach(row, sink)` helper on the row returned from that step. The
   caller receives a read-only `result.sink_name` handoff with `.dataframe` and `.writer`; the writer is a class, so the
   caller supplies configuration and attaches it through native PySpark APIs. Structure never instantiates the writer

@@ -27,7 +27,7 @@ class FilterRecommendationCandidatesGenerated:
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,
@@ -109,7 +109,7 @@ class FilterRecommendationCandidatesGenerated:
             evaluated, RECOMMENDATION_CANDIDATE_DECISION_SCHEMA, name="RecommendationCandidateDecision", mode="strict"
         )
         if not evaluated.isStreaming:
-            evaluated = apply_plan_boundary(evaluated, self.spark)
+            evaluated = apply_plan_boundary(evaluated, evaluated.sparkSession, owner=self)
 
         # Step method: publish
         filtered = candidates.alias("recommendation_candidate")

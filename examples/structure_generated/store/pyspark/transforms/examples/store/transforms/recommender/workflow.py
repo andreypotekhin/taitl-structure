@@ -99,7 +99,9 @@ class BuildSessionSignalsGenerated:
         )
         assert_schema(signals__session__events, SESSION_FEATURE_SCHEMA, name="SessionFeature", mode="strict")
         if not signals__session__events.isStreaming:
-            signals__session__events = apply_plan_boundary(signals__session__events, self.spark)
+            signals__session__events = apply_plan_boundary(
+                signals__session__events, signals__session__events.sparkSession, owner=self
+            )
         return {
             "signals__session__events": signals__session__events,
         }
@@ -166,7 +168,9 @@ class BuildPurchaseSignalsGenerated:
             mode="strict",
         )
         if not signals__purchases__fulfilled_orders.isStreaming:
-            signals__purchases__fulfilled_orders = apply_plan_boundary(signals__purchases__fulfilled_orders, self.spark)
+            signals__purchases__fulfilled_orders = apply_plan_boundary(
+                signals__purchases__fulfilled_orders, signals__purchases__fulfilled_orders.sparkSession, owner=self
+            )
         return {
             "signals__purchases__fulfilled_orders": signals__purchases__fulfilled_orders,
         }
@@ -220,7 +224,9 @@ class BuildProductSignalsGenerated:
         )
         if not signals__recommendation__daily_impressions.isStreaming:
             signals__recommendation__daily_impressions = apply_plan_boundary(
-                signals__recommendation__daily_impressions, self.spark
+                signals__recommendation__daily_impressions,
+                signals__recommendation__daily_impressions.sparkSession,
+                owner=self,
             )
         return {
             "signals__recommendation__daily_impressions": signals__recommendation__daily_impressions,
@@ -301,7 +307,7 @@ class BuildProductSignalsGenerated:
         )
         if not signals__recommendation__daily_clicks.isStreaming:
             signals__recommendation__daily_clicks = apply_plan_boundary(
-                signals__recommendation__daily_clicks, self.spark
+                signals__recommendation__daily_clicks, signals__recommendation__daily_clicks.sparkSession, owner=self
             )
         return {
             "signals__recommendation__daily_clicks": signals__recommendation__daily_clicks,
@@ -476,7 +482,9 @@ class BuildProductSignalsGenerated:
             mode="strict",
         )
         if not signals__recommendation__signals.isStreaming:
-            signals__recommendation__signals = apply_plan_boundary(signals__recommendation__signals, self.spark)
+            signals__recommendation__signals = apply_plan_boundary(
+                signals__recommendation__signals, signals__recommendation__signals.sparkSession, owner=self
+            )
         return {
             "signals__recommendation__signals": signals__recommendation__signals,
         }
@@ -508,7 +516,9 @@ class BuildProductFeaturesGenerated:
         )
         assert_schema(personalized__featured__catalog, CATALOG_PRODUCT_SCHEMA, name="CatalogProduct", mode="strict")
         if not personalized__featured__catalog.isStreaming:
-            personalized__featured__catalog = apply_plan_boundary(personalized__featured__catalog, self.spark)
+            personalized__featured__catalog = apply_plan_boundary(
+                personalized__featured__catalog, personalized__featured__catalog.sparkSession, owner=self
+            )
         return {
             "personalized__featured__catalog": personalized__featured__catalog,
         }
@@ -628,7 +638,9 @@ class BuildPersonalizationHistoryGenerated:
             personalized__history__history, PERSONALIZATION_HISTORY_SCHEMA, name="PersonalizationHistory", mode="strict"
         )
         if not personalized__history__history.isStreaming:
-            personalized__history__history = apply_plan_boundary(personalized__history__history, self.spark)
+            personalized__history__history = apply_plan_boundary(
+                personalized__history__history, personalized__history__history.sparkSession, owner=self
+            )
         return {
             "personalized__history__history": personalized__history__history,
         }
@@ -815,7 +827,9 @@ class ScorePersonalizedRecommendationsGenerated:
             mode="strict",
         )
         if not personalized__scored__requests.isStreaming:
-            personalized__scored__requests = apply_plan_boundary(personalized__scored__requests, self.spark)
+            personalized__scored__requests = apply_plan_boundary(
+                personalized__scored__requests, personalized__scored__requests.sparkSession, owner=self
+            )
         return {
             "personalized__scored__requests": personalized__scored__requests,
         }
@@ -875,7 +889,9 @@ class SelectRecommendationCandidatesGenerated:
             mode="strict",
         )
         if not candidates__admitted__requests.isStreaming:
-            candidates__admitted__requests = apply_plan_boundary(candidates__admitted__requests, self.spark)
+            candidates__admitted__requests = apply_plan_boundary(
+                candidates__admitted__requests, candidates__admitted__requests.sparkSession, owner=self
+            )
         return {
             "candidates__admitted__requests": candidates__admitted__requests,
         }
@@ -987,7 +1003,9 @@ class GenerateRecommendationCandidatesGenerated:
             mode="strict",
         )
         if not candidates__retrieved__admitted.isStreaming:
-            candidates__retrieved__admitted = apply_plan_boundary(candidates__retrieved__admitted, self.spark)
+            candidates__retrieved__admitted = apply_plan_boundary(
+                candidates__retrieved__admitted, candidates__retrieved__admitted.sparkSession, owner=self
+            )
         return {
             "candidates__retrieved__admitted": candidates__retrieved__admitted,
         }
@@ -1066,7 +1084,9 @@ class FilterRecommendationCandidatesGenerated:
             mode="strict",
         )
         if not candidates__filtered__evaluated.isStreaming:
-            candidates__filtered__evaluated = apply_plan_boundary(candidates__filtered__evaluated, self.spark)
+            candidates__filtered__evaluated = apply_plan_boundary(
+                candidates__filtered__evaluated, candidates__filtered__evaluated.sparkSession, owner=self
+            )
         return {
             "candidates__filtered__evaluated": candidates__filtered__evaluated,
         }
@@ -1132,7 +1152,9 @@ class FilterRecommendationCandidatesGenerated:
             mode="strict",
         )
         if not candidates__filtered__filtered.isStreaming:
-            candidates__filtered__filtered = apply_plan_boundary(candidates__filtered__filtered, self.spark)
+            candidates__filtered__filtered = apply_plan_boundary(
+                candidates__filtered__filtered, candidates__filtered__filtered.sparkSession, owner=self
+            )
         return {
             "candidates__filtered__filtered": candidates__filtered__filtered,
         }
@@ -1389,7 +1411,7 @@ class RankRecommendationCandidatesGenerated:
             mode="strict",
         )
         if not ranked__candidates.isStreaming:
-            ranked__candidates = apply_plan_boundary(ranked__candidates, self.spark)
+            ranked__candidates = apply_plan_boundary(ranked__candidates, ranked__candidates.sparkSession, owner=self)
         return {
             "ranked__candidates": ranked__candidates,
         }
@@ -1472,7 +1494,9 @@ class DiversifyRecommendationsGenerated:
             diversified__decisions, DIVERSIFICATION_DECISION_SCHEMA, name="DiversificationDecision", mode="strict"
         )
         if not diversified__decisions.isStreaming:
-            diversified__decisions = apply_plan_boundary(diversified__decisions, self.spark)
+            diversified__decisions = apply_plan_boundary(
+                diversified__decisions, diversified__decisions.sparkSession, owner=self
+            )
         return {
             "diversified__decisions": diversified__decisions,
         }
@@ -1552,7 +1576,9 @@ class DiversifyRecommendationsGenerated:
             mode="strict",
         )
         if not diversified__diversified.isStreaming:
-            diversified__diversified = apply_plan_boundary(diversified__diversified, self.spark)
+            diversified__diversified = apply_plan_boundary(
+                diversified__diversified, diversified__diversified.sparkSession, owner=self
+            )
         return {
             "diversified__diversified": diversified__diversified,
         }
@@ -1610,7 +1636,9 @@ class SelectRecommendedProductsGenerated:
             published__ranked_candidates, RECOMMENDED_PRODUCT_SCHEMA, name="RecommendedProduct", mode="strict"
         )
         if not published__ranked_candidates.isStreaming:
-            published__ranked_candidates = apply_plan_boundary(published__ranked_candidates, self.spark)
+            published__ranked_candidates = apply_plan_boundary(
+                published__ranked_candidates, published__ranked_candidates.sparkSession, owner=self
+            )
         return {
             "published__ranked_candidates": published__ranked_candidates,
         }
@@ -1683,7 +1711,9 @@ class SummarizeRecommendationRunsGenerated:
             )
         )
         if not summarized__requests.isStreaming:
-            summarized__requests = apply_plan_boundary(summarized__requests, self.spark)
+            summarized__requests = apply_plan_boundary(
+                summarized__requests, summarized__requests.sparkSession, owner=self
+            )
         return {
             "summarized__requests": summarized__requests,
         }
@@ -1710,7 +1740,7 @@ class RecommenderGenerated(
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,

@@ -205,11 +205,12 @@ class AnalyzeTransform(CompileTransform):
     def _structural_step(self, transform_class, item, lanes, inputs, explicit_outputs, *, ordinal: int):
         member = item.member
         hints = get_type_hints(member)
-        output_schemas = self._return_schemas(hints.get("return"))
+        return_annotation = hints.get("return")
+        output_schemas = self._return_schemas(return_annotation)
         effect_schema = self._delta_effect_schema(hints.get("return"), getattr(member, "_structure_output_method", None))
         if effect_schema is not None:
             output_schemas = (effect_schema,)
-        if not output_schemas:
+        if not output_schemas and not self._is_sink_class(return_annotation):
             if get_origin(hints.get("return")) is tuple:
                 raise self._error(
                     "DSL-E0402",
@@ -219,8 +220,12 @@ class AnalyzeTransform(CompileTransform):
                     use="Use a fixed tuple of Schema classes, such as tuple[Accepted, Audited].",
                 )
             return None
-        parameters = self._row_parameters(member, hints)
         metadata = getattr(member, "_structure_output_method", None)
+        parameters, sink_bindings = self._step_parameters(transform_class, member, hints, metadata)
+        if any(binding.sink_type is return_annotation for binding in sink_bindings):
+            return None
+        if not output_schemas:
+            return None
         try:
             bindings = self._input_bindings(transform_class, metadata, lanes, inputs, parameters, member=item.name)
         except StructureCompileError:

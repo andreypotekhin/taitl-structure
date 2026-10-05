@@ -313,7 +313,9 @@ class DocumentChunkingGenerated:
         )
         if not chunked__documents_chunked__marked_lines.isStreaming:
             chunked__documents_chunked__marked_lines = apply_plan_boundary(
-                chunked__documents_chunked__marked_lines, self.spark
+                chunked__documents_chunked__marked_lines,
+                chunked__documents_chunked__marked_lines.sparkSession,
+                owner=self,
             )
         return {
             "chunked__documents_chunked__marked_lines": chunked__documents_chunked__marked_lines,
@@ -457,7 +459,9 @@ class DocumentChunkingGenerated:
         )
         if not chunked__documents_chunked__paragraph_drafts.isStreaming:
             chunked__documents_chunked__paragraph_drafts = apply_plan_boundary(
-                chunked__documents_chunked__paragraph_drafts, self.spark
+                chunked__documents_chunked__paragraph_drafts,
+                chunked__documents_chunked__paragraph_drafts.sparkSession,
+                owner=self,
             )
         return {
             "chunked__documents_chunked__paragraph_drafts": chunked__documents_chunked__paragraph_drafts,
@@ -479,7 +483,7 @@ class DocumentChunkingGenerated:
         assert_schema(chunked__documents_chunked__paragraphs, PARAGRAPH_SCHEMA, name="Paragraph", mode="strict")
         if not chunked__documents_chunked__paragraphs.isStreaming:
             chunked__documents_chunked__paragraphs = apply_plan_boundary(
-                chunked__documents_chunked__paragraphs, self.spark
+                chunked__documents_chunked__paragraphs, chunked__documents_chunked__paragraphs.sparkSession, owner=self
             )
         return {
             "chunked__documents_chunked__paragraphs": chunked__documents_chunked__paragraphs,
@@ -543,7 +547,9 @@ class DocumentChunkingGenerated:
         )
         assert_schema(chunked__documents_chunked__sections, SECTION_SCHEMA, name="Section", mode="strict")
         if not chunked__documents_chunked__sections.isStreaming:
-            chunked__documents_chunked__sections = apply_plan_boundary(chunked__documents_chunked__sections, self.spark)
+            chunked__documents_chunked__sections = apply_plan_boundary(
+                chunked__documents_chunked__sections, chunked__documents_chunked__sections.sparkSession, owner=self
+            )
         return {
             "chunked__documents_chunked__sections": chunked__documents_chunked__sections,
         }
@@ -636,7 +642,7 @@ class SentenceChunkingGenerated:
         assert_schema(chunked__sentences_chunked__sentences, SENTENCE_SCHEMA, name="Sentence", mode="strict")
         if not chunked__sentences_chunked__sentences.isStreaming:
             chunked__sentences_chunked__sentences = apply_plan_boundary(
-                chunked__sentences_chunked__sentences, self.spark
+                chunked__sentences_chunked__sentences, chunked__sentences_chunked__sentences.sparkSession, owner=self
             )
         return {
             "chunked__sentences_chunked__sentences": chunked__sentences_chunked__sentences,
@@ -3569,7 +3575,9 @@ class FieldsGenerated:
         )
         assert_schema(extracted__documents, DOCUMENT_SCHEMA, name="Document", mode="strict")
         if not extracted__documents.isStreaming:
-            extracted__documents = apply_plan_boundary(extracted__documents, self.spark)
+            extracted__documents = apply_plan_boundary(
+                extracted__documents, extracted__documents.sparkSession, owner=self
+            )
         return {
             "extracted__documents": extracted__documents,
         }
@@ -3609,7 +3617,9 @@ class FieldsGenerated:
         )
         assert_schema(extracted__document_fields, DOCUMENT_FIELD_SCHEMA, name="DocumentField", mode="strict")
         if not extracted__document_fields.isStreaming:
-            extracted__document_fields = apply_plan_boundary(extracted__document_fields, self.spark)
+            extracted__document_fields = apply_plan_boundary(
+                extracted__document_fields, extracted__document_fields.sparkSession, owner=self
+            )
         return {
             "extracted__document_fields": extracted__document_fields,
         }
@@ -3669,7 +3679,7 @@ class ProfileDocumentsGenerated:
         )
         assert_schema(profiled__documents, DOCUMENT_PROFILE_SCHEMA, name="DocumentProfile", mode="strict")
         if not profiled__documents.isStreaming:
-            profiled__documents = apply_plan_boundary(profiled__documents, self.spark)
+            profiled__documents = apply_plan_boundary(profiled__documents, profiled__documents.sparkSession, owner=self)
         return {
             "profiled__documents": profiled__documents,
         }
@@ -3747,7 +3757,9 @@ class LexIndexGenerated:
         )
         assert_schema(indexed__lexical__occurrences, LEXICAL_OCCURRENCE_SCHEMA, name="LexicalOccurrence", mode="strict")
         if not indexed__lexical__occurrences.isStreaming:
-            indexed__lexical__occurrences = apply_plan_boundary(indexed__lexical__occurrences, self.spark)
+            indexed__lexical__occurrences = apply_plan_boundary(
+                indexed__lexical__occurrences, indexed__lexical__occurrences.sparkSession, owner=self
+            )
         return {
             "indexed__lexical__occurrences": indexed__lexical__occurrences,
         }
@@ -3774,7 +3786,7 @@ class LexIndexGenerated:
         )
         if not indexed__lexical__document_term_counts.isStreaming:
             indexed__lexical__document_term_counts = apply_plan_boundary(
-                indexed__lexical__document_term_counts, self.spark
+                indexed__lexical__document_term_counts, indexed__lexical__document_term_counts.sparkSession, owner=self
             )
         return {
             "indexed__lexical__document_term_counts": indexed__lexical__document_term_counts,
@@ -3811,7 +3823,9 @@ class LexIndexGenerated:
         )
         if not indexed__lexical__document_target_stats.isStreaming:
             indexed__lexical__document_target_stats = apply_plan_boundary(
-                indexed__lexical__document_target_stats, self.spark
+                indexed__lexical__document_target_stats,
+                indexed__lexical__document_target_stats.sparkSession,
+                owner=self,
             )
         return {
             "indexed__lexical__document_target_stats": indexed__lexical__document_target_stats,
@@ -3874,7 +3888,9 @@ class LexIndexGenerated:
         )
         assert_schema(indexed__lexical__document_terms, DOCUMENT_TERM_SCHEMA, name="DocumentTerm", mode="strict")
         if not indexed__lexical__document_terms.isStreaming:
-            indexed__lexical__document_terms = apply_plan_boundary(indexed__lexical__document_terms, self.spark)
+            indexed__lexical__document_terms = apply_plan_boundary(
+                indexed__lexical__document_terms, indexed__lexical__document_terms.sparkSession, owner=self
+            )
         return {
             "indexed__lexical__document_terms": indexed__lexical__document_terms,
         }
@@ -3900,7 +3916,9 @@ class LexIndexGenerated:
             mode="strict",
         )
         if not indexed__lexical__document_summary.isStreaming:
-            indexed__lexical__document_summary = apply_plan_boundary(indexed__lexical__document_summary, self.spark)
+            indexed__lexical__document_summary = apply_plan_boundary(
+                indexed__lexical__document_summary, indexed__lexical__document_summary.sparkSession, owner=self
+            )
         return {
             "indexed__lexical__document_summary": indexed__lexical__document_summary,
         }
@@ -3929,7 +3947,7 @@ class LexIndexGenerated:
         )
         if not indexed__lexical__section_term_counts.isStreaming:
             indexed__lexical__section_term_counts = apply_plan_boundary(
-                indexed__lexical__section_term_counts, self.spark
+                indexed__lexical__section_term_counts, indexed__lexical__section_term_counts.sparkSession, owner=self
             )
         return {
             "indexed__lexical__section_term_counts": indexed__lexical__section_term_counts,
@@ -3968,7 +3986,7 @@ class LexIndexGenerated:
         )
         if not indexed__lexical__section_target_stats.isStreaming:
             indexed__lexical__section_target_stats = apply_plan_boundary(
-                indexed__lexical__section_target_stats, self.spark
+                indexed__lexical__section_target_stats, indexed__lexical__section_target_stats.sparkSession, owner=self
             )
         return {
             "indexed__lexical__section_target_stats": indexed__lexical__section_target_stats,
@@ -4035,7 +4053,9 @@ class LexIndexGenerated:
         )
         assert_schema(indexed__lexical__section_terms, SECTION_TERM_SCHEMA, name="SectionTerm", mode="strict")
         if not indexed__lexical__section_terms.isStreaming:
-            indexed__lexical__section_terms = apply_plan_boundary(indexed__lexical__section_terms, self.spark)
+            indexed__lexical__section_terms = apply_plan_boundary(
+                indexed__lexical__section_terms, indexed__lexical__section_terms.sparkSession, owner=self
+            )
         return {
             "indexed__lexical__section_terms": indexed__lexical__section_terms,
         }
@@ -4058,7 +4078,9 @@ class LexIndexGenerated:
             indexed__lexical__section_summary, SECTION_INDEX_SUMMARY_SCHEMA, name="SectionIndexSummary", mode="strict"
         )
         if not indexed__lexical__section_summary.isStreaming:
-            indexed__lexical__section_summary = apply_plan_boundary(indexed__lexical__section_summary, self.spark)
+            indexed__lexical__section_summary = apply_plan_boundary(
+                indexed__lexical__section_summary, indexed__lexical__section_summary.sparkSession, owner=self
+            )
         return {
             "indexed__lexical__section_summary": indexed__lexical__section_summary,
         }
@@ -4092,7 +4114,9 @@ class LexIndexGenerated:
         )
         if not indexed__lexical__paragraph_term_counts.isStreaming:
             indexed__lexical__paragraph_term_counts = apply_plan_boundary(
-                indexed__lexical__paragraph_term_counts, self.spark
+                indexed__lexical__paragraph_term_counts,
+                indexed__lexical__paragraph_term_counts.sparkSession,
+                owner=self,
             )
         return {
             "indexed__lexical__paragraph_term_counts": indexed__lexical__paragraph_term_counts,
@@ -4133,7 +4157,9 @@ class LexIndexGenerated:
         )
         if not indexed__lexical__paragraph_target_stats.isStreaming:
             indexed__lexical__paragraph_target_stats = apply_plan_boundary(
-                indexed__lexical__paragraph_target_stats, self.spark
+                indexed__lexical__paragraph_target_stats,
+                indexed__lexical__paragraph_target_stats.sparkSession,
+                owner=self,
             )
         return {
             "indexed__lexical__paragraph_target_stats": indexed__lexical__paragraph_target_stats,
@@ -4215,7 +4241,9 @@ class LexIndexGenerated:
         )
         assert_schema(indexed__lexical__paragraph_terms, PARAGRAPH_TERM_SCHEMA, name="ParagraphTerm", mode="strict")
         if not indexed__lexical__paragraph_terms.isStreaming:
-            indexed__lexical__paragraph_terms = apply_plan_boundary(indexed__lexical__paragraph_terms, self.spark)
+            indexed__lexical__paragraph_terms = apply_plan_boundary(
+                indexed__lexical__paragraph_terms, indexed__lexical__paragraph_terms.sparkSession, owner=self
+            )
         return {
             "indexed__lexical__paragraph_terms": indexed__lexical__paragraph_terms,
         }
@@ -4241,7 +4269,9 @@ class LexIndexGenerated:
             mode="strict",
         )
         if not indexed__lexical__paragraph_summary.isStreaming:
-            indexed__lexical__paragraph_summary = apply_plan_boundary(indexed__lexical__paragraph_summary, self.spark)
+            indexed__lexical__paragraph_summary = apply_plan_boundary(
+                indexed__lexical__paragraph_summary, indexed__lexical__paragraph_summary.sparkSession, owner=self
+            )
         return {
             "indexed__lexical__paragraph_summary": indexed__lexical__paragraph_summary,
         }
@@ -4274,7 +4304,7 @@ class LexIndexGenerated:
         )
         if not indexed__lexical__sentence_term_counts.isStreaming:
             indexed__lexical__sentence_term_counts = apply_plan_boundary(
-                indexed__lexical__sentence_term_counts, self.spark
+                indexed__lexical__sentence_term_counts, indexed__lexical__sentence_term_counts.sparkSession, owner=self
             )
         return {
             "indexed__lexical__sentence_term_counts": indexed__lexical__sentence_term_counts,
@@ -4317,7 +4347,9 @@ class LexIndexGenerated:
         )
         if not indexed__lexical__sentence_target_stats.isStreaming:
             indexed__lexical__sentence_target_stats = apply_plan_boundary(
-                indexed__lexical__sentence_target_stats, self.spark
+                indexed__lexical__sentence_target_stats,
+                indexed__lexical__sentence_target_stats.sparkSession,
+                owner=self,
             )
         return {
             "indexed__lexical__sentence_target_stats": indexed__lexical__sentence_target_stats,
@@ -4404,7 +4436,9 @@ class LexIndexGenerated:
         )
         assert_schema(indexed__lexical__sentence_terms, SENTENCE_TERM_SCHEMA, name="SentenceTerm", mode="strict")
         if not indexed__lexical__sentence_terms.isStreaming:
-            indexed__lexical__sentence_terms = apply_plan_boundary(indexed__lexical__sentence_terms, self.spark)
+            indexed__lexical__sentence_terms = apply_plan_boundary(
+                indexed__lexical__sentence_terms, indexed__lexical__sentence_terms.sparkSession, owner=self
+            )
         return {
             "indexed__lexical__sentence_terms": indexed__lexical__sentence_terms,
         }
@@ -4430,7 +4464,9 @@ class LexIndexGenerated:
             mode="strict",
         )
         if not indexed__lexical__sentence_summary.isStreaming:
-            indexed__lexical__sentence_summary = apply_plan_boundary(indexed__lexical__sentence_summary, self.spark)
+            indexed__lexical__sentence_summary = apply_plan_boundary(
+                indexed__lexical__sentence_summary, indexed__lexical__sentence_summary.sparkSession, owner=self
+            )
         return {
             "indexed__lexical__sentence_summary": indexed__lexical__sentence_summary,
         }
@@ -4505,7 +4541,9 @@ class FieldIndexGenerated:
         )
         assert_schema(indexed__fields__terms, FIELD_TERM_SCHEMA, name="FieldTerm", mode="strict")
         if not indexed__fields__terms.isStreaming:
-            indexed__fields__terms = apply_plan_boundary(indexed__fields__terms, self.spark)
+            indexed__fields__terms = apply_plan_boundary(
+                indexed__fields__terms, indexed__fields__terms.sparkSession, owner=self
+            )
         return {
             "indexed__fields__terms": indexed__fields__terms,
         }
@@ -4545,7 +4583,9 @@ class CreateSimilarityQueriesGenerated:
             similarities__queries__valid_policy, SIMILARITY_POLICY_SCHEMA, name="SimilarityPolicy", mode="strict"
         )
         if not similarities__queries__valid_policy.isStreaming:
-            similarities__queries__valid_policy = apply_plan_boundary(similarities__queries__valid_policy, self.spark)
+            similarities__queries__valid_policy = apply_plan_boundary(
+                similarities__queries__valid_policy, similarities__queries__valid_policy.sparkSession, owner=self
+            )
         return {
             "similarities__queries__valid_policy": similarities__queries__valid_policy,
         }
@@ -4625,7 +4665,9 @@ class CreateSimilarityQueriesGenerated:
         )
         if not similarities__queries__document_query_text.isStreaming:
             similarities__queries__document_query_text = apply_plan_boundary(
-                similarities__queries__document_query_text, self.spark
+                similarities__queries__document_query_text,
+                similarities__queries__document_query_text.sparkSession,
+                owner=self,
             )
         return {
             "similarities__queries__document_query_text": similarities__queries__document_query_text,
@@ -4708,7 +4750,9 @@ class CreateSimilarityQueriesGenerated:
         )
         if not similarities__queries__section_query_text.isStreaming:
             similarities__queries__section_query_text = apply_plan_boundary(
-                similarities__queries__section_query_text, self.spark
+                similarities__queries__section_query_text,
+                similarities__queries__section_query_text.sparkSession,
+                owner=self,
             )
         return {
             "similarities__queries__section_query_text": similarities__queries__section_query_text,
@@ -4795,7 +4839,9 @@ class CreateSimilarityQueriesGenerated:
         )
         if not similarities__queries__paragraph_query_text.isStreaming:
             similarities__queries__paragraph_query_text = apply_plan_boundary(
-                similarities__queries__paragraph_query_text, self.spark
+                similarities__queries__paragraph_query_text,
+                similarities__queries__paragraph_query_text.sparkSession,
+                owner=self,
             )
         return {
             "similarities__queries__paragraph_query_text": similarities__queries__paragraph_query_text,
@@ -4882,7 +4928,9 @@ class CreateSimilarityQueriesGenerated:
         )
         if not similarities__queries__sentence_query_text.isStreaming:
             similarities__queries__sentence_query_text = apply_plan_boundary(
-                similarities__queries__sentence_query_text, self.spark
+                similarities__queries__sentence_query_text,
+                similarities__queries__sentence_query_text.sparkSession,
+                owner=self,
             )
         return {
             "similarities__queries__sentence_query_text": similarities__queries__sentence_query_text,
@@ -5053,7 +5101,9 @@ class CreateSimilarityQueriesGenerated:
         )
         if not similarities__queries__document_queries.isStreaming:
             similarities__queries__document_queries = apply_plan_boundary(
-                similarities__queries__document_queries, self.spark
+                similarities__queries__document_queries,
+                similarities__queries__document_queries.sparkSession,
+                owner=self,
             )
         return {
             "similarities__queries__document_queries": similarities__queries__document_queries,
@@ -5077,7 +5127,7 @@ class CreateSimilarityQueriesGenerated:
         )
         if not similarities__queries__section_queries.isStreaming:
             similarities__queries__section_queries = apply_plan_boundary(
-                similarities__queries__section_queries, self.spark
+                similarities__queries__section_queries, similarities__queries__section_queries.sparkSession, owner=self
             )
         return {
             "similarities__queries__section_queries": similarities__queries__section_queries,
@@ -5102,7 +5152,9 @@ class CreateSimilarityQueriesGenerated:
         )
         if not similarities__queries__paragraph_queries.isStreaming:
             similarities__queries__paragraph_queries = apply_plan_boundary(
-                similarities__queries__paragraph_queries, self.spark
+                similarities__queries__paragraph_queries,
+                similarities__queries__paragraph_queries.sparkSession,
+                owner=self,
             )
         return {
             "similarities__queries__paragraph_queries": similarities__queries__paragraph_queries,
@@ -5128,7 +5180,9 @@ class CreateSimilarityQueriesGenerated:
         )
         if not similarities__queries__sentence_queries.isStreaming:
             similarities__queries__sentence_queries = apply_plan_boundary(
-                similarities__queries__sentence_queries, self.spark
+                similarities__queries__sentence_queries,
+                similarities__queries__sentence_queries.sparkSession,
+                owner=self,
             )
         return {
             "similarities__queries__sentence_queries": similarities__queries__sentence_queries,
@@ -5161,7 +5215,9 @@ class CreateSimilarityQueriesGenerated:
         )
         assert_schema(similarities__queries__queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
         if not similarities__queries__queries.isStreaming:
-            similarities__queries__queries = apply_plan_boundary(similarities__queries__queries, self.spark)
+            similarities__queries__queries = apply_plan_boundary(
+                similarities__queries__queries, similarities__queries__queries.sparkSession, owner=self
+            )
         return {
             "similarities__queries__queries": similarities__queries__queries,
         }
@@ -5221,7 +5277,7 @@ class AllScoringTargetsGenerated:
         )
         if not similarities__scoring_targets__targets.isStreaming:
             similarities__scoring_targets__targets = apply_plan_boundary(
-                similarities__scoring_targets__targets, self.spark
+                similarities__scoring_targets__targets, similarities__scoring_targets__targets.sparkSession, owner=self
             )
         return {
             "similarities__scoring_targets__targets": similarities__scoring_targets__targets,
@@ -5267,7 +5323,9 @@ class ScoreBaseGenerated:
         assert_schema(similarities__overlap__expanded_query_terms, QUERY_TERM_SCHEMA, name="QueryTerm", mode="strict")
         if not similarities__overlap__expanded_query_terms.isStreaming:
             similarities__overlap__expanded_query_terms = apply_plan_boundary(
-                similarities__overlap__expanded_query_terms, self.spark
+                similarities__overlap__expanded_query_terms,
+                similarities__overlap__expanded_query_terms.sparkSession,
+                owner=self,
             )
         return {
             "similarities__overlap__expanded_query_terms": similarities__overlap__expanded_query_terms,
@@ -5331,7 +5389,9 @@ class ScoreBaseGenerated:
         assert_schema(similarities__bm25__expanded_query_terms, QUERY_TERM_SCHEMA, name="QueryTerm", mode="strict")
         if not similarities__bm25__expanded_query_terms.isStreaming:
             similarities__bm25__expanded_query_terms = apply_plan_boundary(
-                similarities__bm25__expanded_query_terms, self.spark
+                similarities__bm25__expanded_query_terms,
+                similarities__bm25__expanded_query_terms.sparkSession,
+                owner=self,
             )
         return {
             "similarities__bm25__expanded_query_terms": similarities__bm25__expanded_query_terms,
@@ -5395,7 +5455,9 @@ class ScoreBaseGenerated:
         assert_schema(scored__scored__overlap__expanded_query_terms, QUERY_TERM_SCHEMA, name="QueryTerm", mode="strict")
         if not scored__scored__overlap__expanded_query_terms.isStreaming:
             scored__scored__overlap__expanded_query_terms = apply_plan_boundary(
-                scored__scored__overlap__expanded_query_terms, self.spark
+                scored__scored__overlap__expanded_query_terms,
+                scored__scored__overlap__expanded_query_terms.sparkSession,
+                owner=self,
             )
         return {
             "scored__scored__overlap__expanded_query_terms": scored__scored__overlap__expanded_query_terms,
@@ -5463,7 +5525,9 @@ class ScoreBaseGenerated:
         assert_schema(scored__scored__bm25__expanded_query_terms, QUERY_TERM_SCHEMA, name="QueryTerm", mode="strict")
         if not scored__scored__bm25__expanded_query_terms.isStreaming:
             scored__scored__bm25__expanded_query_terms = apply_plan_boundary(
-                scored__scored__bm25__expanded_query_terms, self.spark
+                scored__scored__bm25__expanded_query_terms,
+                scored__scored__bm25__expanded_query_terms.sparkSession,
+                owner=self,
             )
         return {
             "scored__scored__bm25__expanded_query_terms": scored__scored__bm25__expanded_query_terms,
@@ -5653,7 +5717,9 @@ class ScoreOverlapGenerated:
         )
         if not similarities__overlap__document_query_idfs.isStreaming:
             similarities__overlap__document_query_idfs = apply_plan_boundary(
-                similarities__overlap__document_query_idfs, self.spark
+                similarities__overlap__document_query_idfs,
+                similarities__overlap__document_query_idfs.sparkSession,
+                owner=self,
             )
         return {
             "similarities__overlap__document_query_idfs": similarities__overlap__document_query_idfs,
@@ -5707,7 +5773,9 @@ class ScoreOverlapGenerated:
         )
         if not similarities__overlap__section_query_idfs.isStreaming:
             similarities__overlap__section_query_idfs = apply_plan_boundary(
-                similarities__overlap__section_query_idfs, self.spark
+                similarities__overlap__section_query_idfs,
+                similarities__overlap__section_query_idfs.sparkSession,
+                owner=self,
             )
         return {
             "similarities__overlap__section_query_idfs": similarities__overlap__section_query_idfs,
@@ -5761,7 +5829,9 @@ class ScoreOverlapGenerated:
         )
         if not similarities__overlap__paragraph_query_idfs.isStreaming:
             similarities__overlap__paragraph_query_idfs = apply_plan_boundary(
-                similarities__overlap__paragraph_query_idfs, self.spark
+                similarities__overlap__paragraph_query_idfs,
+                similarities__overlap__paragraph_query_idfs.sparkSession,
+                owner=self,
             )
         return {
             "similarities__overlap__paragraph_query_idfs": similarities__overlap__paragraph_query_idfs,
@@ -5815,7 +5885,9 @@ class ScoreOverlapGenerated:
         )
         if not similarities__overlap__sentence_query_idfs.isStreaming:
             similarities__overlap__sentence_query_idfs = apply_plan_boundary(
-                similarities__overlap__sentence_query_idfs, self.spark
+                similarities__overlap__sentence_query_idfs,
+                similarities__overlap__sentence_query_idfs.sparkSession,
+                owner=self,
             )
         return {
             "similarities__overlap__sentence_query_idfs": similarities__overlap__sentence_query_idfs,
@@ -6284,7 +6356,9 @@ class ScoreOverlapGenerated:
         )
         if not similarities__overlap__document_overlap_scores.isStreaming:
             similarities__overlap__document_overlap_scores = apply_plan_boundary(
-                similarities__overlap__document_overlap_scores, self.spark
+                similarities__overlap__document_overlap_scores,
+                similarities__overlap__document_overlap_scores.sparkSession,
+                owner=self,
             )
         return {
             "similarities__overlap__document_overlap_scores": similarities__overlap__document_overlap_scores,
@@ -6342,7 +6416,9 @@ class ScoreOverlapGenerated:
         )
         if not similarities__overlap__section_overlap_scores.isStreaming:
             similarities__overlap__section_overlap_scores = apply_plan_boundary(
-                similarities__overlap__section_overlap_scores, self.spark
+                similarities__overlap__section_overlap_scores,
+                similarities__overlap__section_overlap_scores.sparkSession,
+                owner=self,
             )
         return {
             "similarities__overlap__section_overlap_scores": similarities__overlap__section_overlap_scores,
@@ -6401,7 +6477,9 @@ class ScoreOverlapGenerated:
         )
         if not similarities__overlap__paragraph_overlap_scores.isStreaming:
             similarities__overlap__paragraph_overlap_scores = apply_plan_boundary(
-                similarities__overlap__paragraph_overlap_scores, self.spark
+                similarities__overlap__paragraph_overlap_scores,
+                similarities__overlap__paragraph_overlap_scores.sparkSession,
+                owner=self,
             )
         return {
             "similarities__overlap__paragraph_overlap_scores": similarities__overlap__paragraph_overlap_scores,
@@ -6461,7 +6539,9 @@ class ScoreOverlapGenerated:
         )
         if not similarities__overlap__sentence_overlap_scores.isStreaming:
             similarities__overlap__sentence_overlap_scores = apply_plan_boundary(
-                similarities__overlap__sentence_overlap_scores, self.spark
+                similarities__overlap__sentence_overlap_scores,
+                similarities__overlap__sentence_overlap_scores.sparkSession,
+                owner=self,
             )
         return {
             "similarities__overlap__sentence_overlap_scores": similarities__overlap__sentence_overlap_scores,
@@ -6631,7 +6711,9 @@ class ScoreOverlapGenerated:
         )
         if not scored__scored__overlap__document_query_idfs.isStreaming:
             scored__scored__overlap__document_query_idfs = apply_plan_boundary(
-                scored__scored__overlap__document_query_idfs, self.spark
+                scored__scored__overlap__document_query_idfs,
+                scored__scored__overlap__document_query_idfs.sparkSession,
+                owner=self,
             )
         return {
             "scored__scored__overlap__document_query_idfs": scored__scored__overlap__document_query_idfs,
@@ -6685,7 +6767,9 @@ class ScoreOverlapGenerated:
         )
         if not scored__scored__overlap__section_query_idfs.isStreaming:
             scored__scored__overlap__section_query_idfs = apply_plan_boundary(
-                scored__scored__overlap__section_query_idfs, self.spark
+                scored__scored__overlap__section_query_idfs,
+                scored__scored__overlap__section_query_idfs.sparkSession,
+                owner=self,
             )
         return {
             "scored__scored__overlap__section_query_idfs": scored__scored__overlap__section_query_idfs,
@@ -6741,7 +6825,9 @@ class ScoreOverlapGenerated:
         )
         if not scored__scored__overlap__paragraph_query_idfs.isStreaming:
             scored__scored__overlap__paragraph_query_idfs = apply_plan_boundary(
-                scored__scored__overlap__paragraph_query_idfs, self.spark
+                scored__scored__overlap__paragraph_query_idfs,
+                scored__scored__overlap__paragraph_query_idfs.sparkSession,
+                owner=self,
             )
         return {
             "scored__scored__overlap__paragraph_query_idfs": scored__scored__overlap__paragraph_query_idfs,
@@ -6795,7 +6881,9 @@ class ScoreOverlapGenerated:
         )
         if not scored__scored__overlap__sentence_query_idfs.isStreaming:
             scored__scored__overlap__sentence_query_idfs = apply_plan_boundary(
-                scored__scored__overlap__sentence_query_idfs, self.spark
+                scored__scored__overlap__sentence_query_idfs,
+                scored__scored__overlap__sentence_query_idfs.sparkSession,
+                owner=self,
             )
         return {
             "scored__scored__overlap__sentence_query_idfs": scored__scored__overlap__sentence_query_idfs,
@@ -7259,7 +7347,9 @@ class ScoreOverlapGenerated:
         )
         if not scored__scored__overlap__document_overlap_scores.isStreaming:
             scored__scored__overlap__document_overlap_scores = apply_plan_boundary(
-                scored__scored__overlap__document_overlap_scores, self.spark
+                scored__scored__overlap__document_overlap_scores,
+                scored__scored__overlap__document_overlap_scores.sparkSession,
+                owner=self,
             )
         return {
             "scored__scored__overlap__document_overlap_scores": scored__scored__overlap__document_overlap_scores,
@@ -7312,7 +7402,9 @@ class ScoreOverlapGenerated:
         )
         if not scored__scored__overlap__section_overlap_scores.isStreaming:
             scored__scored__overlap__section_overlap_scores = apply_plan_boundary(
-                scored__scored__overlap__section_overlap_scores, self.spark
+                scored__scored__overlap__section_overlap_scores,
+                scored__scored__overlap__section_overlap_scores.sparkSession,
+                owner=self,
             )
         return {
             "scored__scored__overlap__section_overlap_scores": scored__scored__overlap__section_overlap_scores,
@@ -7366,7 +7458,9 @@ class ScoreOverlapGenerated:
         )
         if not scored__scored__overlap__paragraph_overlap_scores.isStreaming:
             scored__scored__overlap__paragraph_overlap_scores = apply_plan_boundary(
-                scored__scored__overlap__paragraph_overlap_scores, self.spark
+                scored__scored__overlap__paragraph_overlap_scores,
+                scored__scored__overlap__paragraph_overlap_scores.sparkSession,
+                owner=self,
             )
         return {
             "scored__scored__overlap__paragraph_overlap_scores": scored__scored__overlap__paragraph_overlap_scores,
@@ -7421,7 +7515,9 @@ class ScoreOverlapGenerated:
         )
         if not scored__scored__overlap__sentence_overlap_scores.isStreaming:
             scored__scored__overlap__sentence_overlap_scores = apply_plan_boundary(
-                scored__scored__overlap__sentence_overlap_scores, self.spark
+                scored__scored__overlap__sentence_overlap_scores,
+                scored__scored__overlap__sentence_overlap_scores.sparkSession,
+                owner=self,
             )
         return {
             "scored__scored__overlap__sentence_overlap_scores": scored__scored__overlap__sentence_overlap_scores,
@@ -7525,7 +7621,9 @@ class ScoreBm25Generated:
         )
         if not similarities__bm25__document_bm25_scores.isStreaming:
             similarities__bm25__document_bm25_scores = apply_plan_boundary(
-                similarities__bm25__document_bm25_scores, self.spark
+                similarities__bm25__document_bm25_scores,
+                similarities__bm25__document_bm25_scores.sparkSession,
+                owner=self,
             )
         return {
             "similarities__bm25__document_bm25_scores": similarities__bm25__document_bm25_scores,
@@ -7624,7 +7722,9 @@ class ScoreBm25Generated:
         )
         if not similarities__bm25__section_bm25_scores.isStreaming:
             similarities__bm25__section_bm25_scores = apply_plan_boundary(
-                similarities__bm25__section_bm25_scores, self.spark
+                similarities__bm25__section_bm25_scores,
+                similarities__bm25__section_bm25_scores.sparkSession,
+                owner=self,
             )
         return {
             "similarities__bm25__section_bm25_scores": similarities__bm25__section_bm25_scores,
@@ -7730,7 +7830,9 @@ class ScoreBm25Generated:
         )
         if not similarities__bm25__paragraph_bm25_scores.isStreaming:
             similarities__bm25__paragraph_bm25_scores = apply_plan_boundary(
-                similarities__bm25__paragraph_bm25_scores, self.spark
+                similarities__bm25__paragraph_bm25_scores,
+                similarities__bm25__paragraph_bm25_scores.sparkSession,
+                owner=self,
             )
         return {
             "similarities__bm25__paragraph_bm25_scores": similarities__bm25__paragraph_bm25_scores,
@@ -7838,7 +7940,9 @@ class ScoreBm25Generated:
         )
         if not similarities__bm25__sentence_bm25_scores.isStreaming:
             similarities__bm25__sentence_bm25_scores = apply_plan_boundary(
-                similarities__bm25__sentence_bm25_scores, self.spark
+                similarities__bm25__sentence_bm25_scores,
+                similarities__bm25__sentence_bm25_scores.sparkSession,
+                owner=self,
             )
         return {
             "similarities__bm25__sentence_bm25_scores": similarities__bm25__sentence_bm25_scores,
@@ -7940,7 +8044,9 @@ class ScoreBm25Generated:
         )
         if not scored__scored__bm25__document_bm25_scores.isStreaming:
             scored__scored__bm25__document_bm25_scores = apply_plan_boundary(
-                scored__scored__bm25__document_bm25_scores, self.spark
+                scored__scored__bm25__document_bm25_scores,
+                scored__scored__bm25__document_bm25_scores.sparkSession,
+                owner=self,
             )
         return {
             "scored__scored__bm25__document_bm25_scores": scored__scored__bm25__document_bm25_scores,
@@ -8041,7 +8147,9 @@ class ScoreBm25Generated:
         )
         if not scored__scored__bm25__section_bm25_scores.isStreaming:
             scored__scored__bm25__section_bm25_scores = apply_plan_boundary(
-                scored__scored__bm25__section_bm25_scores, self.spark
+                scored__scored__bm25__section_bm25_scores,
+                scored__scored__bm25__section_bm25_scores.sparkSession,
+                owner=self,
             )
         return {
             "scored__scored__bm25__section_bm25_scores": scored__scored__bm25__section_bm25_scores,
@@ -8147,7 +8255,9 @@ class ScoreBm25Generated:
         )
         if not scored__scored__bm25__paragraph_bm25_scores.isStreaming:
             scored__scored__bm25__paragraph_bm25_scores = apply_plan_boundary(
-                scored__scored__bm25__paragraph_bm25_scores, self.spark
+                scored__scored__bm25__paragraph_bm25_scores,
+                scored__scored__bm25__paragraph_bm25_scores.sparkSession,
+                owner=self,
             )
         return {
             "scored__scored__bm25__paragraph_bm25_scores": scored__scored__bm25__paragraph_bm25_scores,
@@ -8255,7 +8365,9 @@ class ScoreBm25Generated:
         )
         if not scored__scored__bm25__sentence_bm25_scores.isStreaming:
             scored__scored__bm25__sentence_bm25_scores = apply_plan_boundary(
-                scored__scored__bm25__sentence_bm25_scores, self.spark
+                scored__scored__bm25__sentence_bm25_scores,
+                scored__scored__bm25__sentence_bm25_scores.sparkSession,
+                owner=self,
             )
         return {
             "scored__scored__bm25__sentence_bm25_scores": scored__scored__bm25__sentence_bm25_scores,
@@ -8358,7 +8470,9 @@ class ReduceSimilarityScoresGenerated:
         )
         if not similarities__reduced__document_canonical_pairs.isStreaming:
             similarities__reduced__document_canonical_pairs = apply_plan_boundary(
-                similarities__reduced__document_canonical_pairs, self.spark
+                similarities__reduced__document_canonical_pairs,
+                similarities__reduced__document_canonical_pairs.sparkSession,
+                owner=self,
             )
         return {
             "similarities__reduced__document_canonical_pairs": similarities__reduced__document_canonical_pairs,
@@ -8472,7 +8586,9 @@ class ReduceSimilarityScoresGenerated:
         )
         if not similarities__reduced__document_similarities.isStreaming:
             similarities__reduced__document_similarities = apply_plan_boundary(
-                similarities__reduced__document_similarities, self.spark
+                similarities__reduced__document_similarities,
+                similarities__reduced__document_similarities.sparkSession,
+                owner=self,
             )
         return {
             "similarities__reduced__document_similarities": similarities__reduced__document_similarities,
@@ -8595,7 +8711,9 @@ class ReduceSimilarityScoresGenerated:
         )
         if not similarities__reduced__section_canonical_pairs.isStreaming:
             similarities__reduced__section_canonical_pairs = apply_plan_boundary(
-                similarities__reduced__section_canonical_pairs, self.spark
+                similarities__reduced__section_canonical_pairs,
+                similarities__reduced__section_canonical_pairs.sparkSession,
+                owner=self,
             )
         return {
             "similarities__reduced__section_canonical_pairs": similarities__reduced__section_canonical_pairs,
@@ -8720,7 +8838,9 @@ class ReduceSimilarityScoresGenerated:
         )
         if not similarities__reduced__section_similarities.isStreaming:
             similarities__reduced__section_similarities = apply_plan_boundary(
-                similarities__reduced__section_similarities, self.spark
+                similarities__reduced__section_similarities,
+                similarities__reduced__section_similarities.sparkSession,
+                owner=self,
             )
         return {
             "similarities__reduced__section_similarities": similarities__reduced__section_similarities,
@@ -8871,7 +8991,9 @@ class ReduceSimilarityScoresGenerated:
         )
         if not similarities__reduced__paragraph_canonical_pairs.isStreaming:
             similarities__reduced__paragraph_canonical_pairs = apply_plan_boundary(
-                similarities__reduced__paragraph_canonical_pairs, self.spark
+                similarities__reduced__paragraph_canonical_pairs,
+                similarities__reduced__paragraph_canonical_pairs.sparkSession,
+                owner=self,
             )
         return {
             "similarities__reduced__paragraph_canonical_pairs": similarities__reduced__paragraph_canonical_pairs,
@@ -9009,7 +9131,9 @@ class ReduceSimilarityScoresGenerated:
         )
         if not similarities__reduced__paragraph_similarities.isStreaming:
             similarities__reduced__paragraph_similarities = apply_plan_boundary(
-                similarities__reduced__paragraph_similarities, self.spark
+                similarities__reduced__paragraph_similarities,
+                similarities__reduced__paragraph_similarities.sparkSession,
+                owner=self,
             )
         return {
             "similarities__reduced__paragraph_similarities": similarities__reduced__paragraph_similarities,
@@ -9182,7 +9306,9 @@ class ReduceSimilarityScoresGenerated:
         )
         if not similarities__reduced__sentence_canonical_pairs.isStreaming:
             similarities__reduced__sentence_canonical_pairs = apply_plan_boundary(
-                similarities__reduced__sentence_canonical_pairs, self.spark
+                similarities__reduced__sentence_canonical_pairs,
+                similarities__reduced__sentence_canonical_pairs.sparkSession,
+                owner=self,
             )
         return {
             "similarities__reduced__sentence_canonical_pairs": similarities__reduced__sentence_canonical_pairs,
@@ -9328,7 +9454,9 @@ class ReduceSimilarityScoresGenerated:
         )
         if not similarities__reduced__sentence_similarities.isStreaming:
             similarities__reduced__sentence_similarities = apply_plan_boundary(
-                similarities__reduced__sentence_similarities, self.spark
+                similarities__reduced__sentence_similarities,
+                similarities__reduced__sentence_similarities.sparkSession,
+                owner=self,
             )
         return {
             "similarities__reduced__sentence_similarities": similarities__reduced__sentence_similarities,
@@ -9407,7 +9535,9 @@ class CreateQueryLabelsGenerated:
         )
         assert_schema(labeled__created__valid_intents, INTENT_SCHEMA, name="Intent", mode="strict")
         if not labeled__created__valid_intents.isStreaming:
-            labeled__created__valid_intents = apply_plan_boundary(labeled__created__valid_intents, self.spark)
+            labeled__created__valid_intents = apply_plan_boundary(
+                labeled__created__valid_intents, labeled__created__valid_intents.sparkSession, owner=self
+            )
         return {
             "labeled__created__valid_intents": labeled__created__valid_intents,
         }
@@ -9592,7 +9722,9 @@ class CreateQueryLabelsGenerated:
             labeled__created__labels, QUERY_LABEL_ASSIGNMENTS_SCHEMA, name="QueryLabelAssignments", mode="strict"
         )
         if not labeled__created__labels.isStreaming:
-            labeled__created__labels = apply_plan_boundary(labeled__created__labels, self.spark)
+            labeled__created__labels = apply_plan_boundary(
+                labeled__created__labels, labeled__created__labels.sparkSession, owner=self
+            )
         return {
             "labeled__created__labels": labeled__created__labels,
         }
@@ -9861,7 +9993,9 @@ class MergeQueryLabelsGenerated:
         )
         assert_schema(labeled__merged__labeled_queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
         if not labeled__merged__labeled_queries.isStreaming:
-            labeled__merged__labeled_queries = apply_plan_boundary(labeled__merged__labeled_queries, self.spark)
+            labeled__merged__labeled_queries = apply_plan_boundary(
+                labeled__merged__labeled_queries, labeled__merged__labeled_queries.sparkSession, owner=self
+            )
         return {
             "labeled__merged__labeled_queries": labeled__merged__labeled_queries,
         }
@@ -10018,7 +10152,9 @@ class FilterOverlapGenerated:
         )
         if not filtered__filtering__overlap__document_filter_scores.isStreaming:
             filtered__filtering__overlap__document_filter_scores = apply_plan_boundary(
-                filtered__filtering__overlap__document_filter_scores, self.spark
+                filtered__filtering__overlap__document_filter_scores,
+                filtered__filtering__overlap__document_filter_scores.sparkSession,
+                owner=self,
             )
         return {
             "filtered__filtering__overlap__document_filter_scores": filtered__filtering__overlap__document_filter_scores,
@@ -10052,7 +10188,9 @@ class SelectOfflineFilterTargetsGenerated:
             filtered__selected__targets, DOCUMENT_SEARCH_TARGET_SCHEMA, name="DocumentSearchTarget", mode="strict"
         )
         if not filtered__selected__targets.isStreaming:
-            filtered__selected__targets = apply_plan_boundary(filtered__selected__targets, self.spark)
+            filtered__selected__targets = apply_plan_boundary(
+                filtered__selected__targets, filtered__selected__targets.sparkSession, owner=self
+            )
         return {
             "filtered__selected__targets": filtered__selected__targets,
         }
@@ -10071,7 +10209,9 @@ class AllDocumentTargetsGenerated:
             vectorized__targets__documents, DOCUMENT_SEARCH_TARGET_SCHEMA, name="DocumentSearchTarget", mode="strict"
         )
         if not vectorized__targets__documents.isStreaming:
-            vectorized__targets__documents = apply_plan_boundary(vectorized__targets__documents, self.spark)
+            vectorized__targets__documents = apply_plan_boundary(
+                vectorized__targets__documents, vectorized__targets__documents.sparkSession, owner=self
+            )
         return {
             "vectorized__targets__documents": vectorized__targets__documents,
         }
@@ -10136,7 +10276,9 @@ class ValidateInferencePolicyGenerated:
         )
         if not vectorized__vectorized__inferred__validated__valid_policy.isStreaming:
             vectorized__vectorized__inferred__validated__valid_policy = apply_plan_boundary(
-                vectorized__vectorized__inferred__validated__valid_policy, self.spark
+                vectorized__vectorized__inferred__validated__valid_policy,
+                vectorized__vectorized__inferred__validated__valid_policy.sparkSession,
+                owner=self,
             )
         return {
             "vectorized__vectorized__inferred__validated__valid_policy": vectorized__vectorized__inferred__validated__valid_policy,
@@ -10218,7 +10360,9 @@ class InferQueriesGenerated:
         )
         if not vectorized__vectorized__inferred__inferred_queries__results.isStreaming:
             vectorized__vectorized__inferred__inferred_queries__results = apply_plan_boundary(
-                vectorized__vectorized__inferred__inferred_queries__results, self.spark
+                vectorized__vectorized__inferred__inferred_queries__results,
+                vectorized__vectorized__inferred__inferred_queries__results.sparkSession,
+                owner=self,
             )
         return {
             "vectorized__vectorized__inferred__inferred_queries__results": vectorized__vectorized__inferred__inferred_queries__results,
@@ -10298,7 +10442,9 @@ class InferDocumentsGenerated:
         )
         if not vectorized__vectorized__inferred__inferred_documents__results.isStreaming:
             vectorized__vectorized__inferred__inferred_documents__results = apply_plan_boundary(
-                vectorized__vectorized__inferred__inferred_documents__results, self.spark
+                vectorized__vectorized__inferred__inferred_documents__results,
+                vectorized__vectorized__inferred__inferred_documents__results.sparkSession,
+                owner=self,
             )
         return {
             "vectorized__vectorized__inferred__inferred_documents__results": vectorized__vectorized__inferred__inferred_documents__results,
@@ -10419,7 +10565,9 @@ class PublishQueryInferenceGenerated:
         )
         if not vectorized__vectorized__inferred__published_queries__embeddings.isStreaming:
             vectorized__vectorized__inferred__published_queries__embeddings = apply_plan_boundary(
-                vectorized__vectorized__inferred__published_queries__embeddings, self.spark
+                vectorized__vectorized__inferred__published_queries__embeddings,
+                vectorized__vectorized__inferred__published_queries__embeddings.sparkSession,
+                owner=self,
             )
         return {
             "vectorized__vectorized__inferred__published_queries__embeddings": vectorized__vectorized__inferred__published_queries__embeddings,
@@ -10471,7 +10619,9 @@ class PublishQueryInferenceGenerated:
         )
         if not vectorized__vectorized__inferred__published_queries__statuses.isStreaming:
             vectorized__vectorized__inferred__published_queries__statuses = apply_plan_boundary(
-                vectorized__vectorized__inferred__published_queries__statuses, self.spark
+                vectorized__vectorized__inferred__published_queries__statuses,
+                vectorized__vectorized__inferred__published_queries__statuses.sparkSession,
+                owner=self,
             )
         return {
             "vectorized__vectorized__inferred__published_queries__statuses": vectorized__vectorized__inferred__published_queries__statuses,
@@ -10592,7 +10742,9 @@ class PublishDocumentInferenceGenerated:
         )
         if not vectorized__vectorized__inferred__published_documents__embeddings.isStreaming:
             vectorized__vectorized__inferred__published_documents__embeddings = apply_plan_boundary(
-                vectorized__vectorized__inferred__published_documents__embeddings, self.spark
+                vectorized__vectorized__inferred__published_documents__embeddings,
+                vectorized__vectorized__inferred__published_documents__embeddings.sparkSession,
+                owner=self,
             )
         return {
             "vectorized__vectorized__inferred__published_documents__embeddings": vectorized__vectorized__inferred__published_documents__embeddings,
@@ -10644,7 +10796,9 @@ class PublishDocumentInferenceGenerated:
         )
         if not vectorized__vectorized__inferred__published_documents__statuses.isStreaming:
             vectorized__vectorized__inferred__published_documents__statuses = apply_plan_boundary(
-                vectorized__vectorized__inferred__published_documents__statuses, self.spark
+                vectorized__vectorized__inferred__published_documents__statuses,
+                vectorized__vectorized__inferred__published_documents__statuses.sparkSession,
+                owner=self,
             )
         return {
             "vectorized__vectorized__inferred__published_documents__statuses": vectorized__vectorized__inferred__published_documents__statuses,
@@ -10714,7 +10868,7 @@ class MergeQueryEmbeddingsGenerated:
         )
         if not vectorized__merged_queries__embeddings.isStreaming:
             vectorized__merged_queries__embeddings = apply_plan_boundary(
-                vectorized__merged_queries__embeddings, self.spark
+                vectorized__merged_queries__embeddings, vectorized__merged_queries__embeddings.sparkSession, owner=self
             )
         return {
             "vectorized__merged_queries__embeddings": vectorized__merged_queries__embeddings,
@@ -10819,7 +10973,9 @@ class MergeDocumentVectorsGenerated:
         )
         if not vectorized__merged_documents__embeddings.isStreaming:
             vectorized__merged_documents__embeddings = apply_plan_boundary(
-                vectorized__merged_documents__embeddings, self.spark
+                vectorized__merged_documents__embeddings,
+                vectorized__merged_documents__embeddings.sparkSession,
+                owner=self,
             )
         return {
             "vectorized__merged_documents__embeddings": vectorized__merged_documents__embeddings,
@@ -10857,7 +11013,9 @@ class VectorizeSearchQueriesGenerated:
         )
         if not vectorized__vectorized_queries__vector_queries.isStreaming:
             vectorized__vectorized_queries__vector_queries = apply_plan_boundary(
-                vectorized__vectorized_queries__vector_queries, self.spark
+                vectorized__vectorized_queries__vector_queries,
+                vectorized__vectorized_queries__vector_queries.sparkSession,
+                owner=self,
             )
         return {
             "vectorized__vectorized_queries__vector_queries": vectorized__vectorized_queries__vector_queries,
@@ -10945,7 +11103,9 @@ class SelectPopularQueriesGenerated:
         )
         assert_schema(scored__popular__selected_queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
         if not scored__popular__selected_queries.isStreaming:
-            scored__popular__selected_queries = apply_plan_boundary(scored__popular__selected_queries, self.spark)
+            scored__popular__selected_queries = apply_plan_boundary(
+                scored__popular__selected_queries, scored__popular__selected_queries.sparkSession, owner=self
+            )
         return {
             "scored__popular__selected_queries": scored__popular__selected_queries,
         }
@@ -11000,7 +11160,9 @@ class SelectRecentQueriesGenerated:
         )
         assert_schema(scored__recent__recent_queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
         if not scored__recent__recent_queries.isStreaming:
-            scored__recent__recent_queries = apply_plan_boundary(scored__recent__recent_queries, self.spark)
+            scored__recent__recent_queries = apply_plan_boundary(
+                scored__recent__recent_queries, scored__recent__recent_queries.sparkSession, owner=self
+            )
         return {
             "scored__recent__recent_queries": scored__recent__recent_queries,
         }
@@ -11030,7 +11192,9 @@ class MergeOfflineQueriesGenerated:
         )
         assert_schema(scored__offline__offline_queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
         if not scored__offline__offline_queries.isStreaming:
-            scored__offline__offline_queries = apply_plan_boundary(scored__offline__offline_queries, self.spark)
+            scored__offline__offline_queries = apply_plan_boundary(
+                scored__offline__offline_queries, scored__offline__offline_queries.sparkSession, owner=self
+            )
         return {
             "scored__offline__offline_queries": scored__offline__offline_queries,
         }
@@ -11119,7 +11283,9 @@ class SelectScoresGenerated:
         )
         if not scored__scored__selected__document_scores.isStreaming:
             scored__scored__selected__document_scores = apply_plan_boundary(
-                scored__scored__selected__document_scores, self.spark
+                scored__scored__selected__document_scores,
+                scored__scored__selected__document_scores.sparkSession,
+                owner=self,
             )
         return {
             "scored__scored__selected__document_scores": scored__scored__selected__document_scores,
@@ -11214,7 +11380,9 @@ class SelectScoresGenerated:
         )
         if not scored__scored__selected__section_scores.isStreaming:
             scored__scored__selected__section_scores = apply_plan_boundary(
-                scored__scored__selected__section_scores, self.spark
+                scored__scored__selected__section_scores,
+                scored__scored__selected__section_scores.sparkSession,
+                owner=self,
             )
         return {
             "scored__scored__selected__section_scores": scored__scored__selected__section_scores,
@@ -11312,7 +11480,9 @@ class SelectScoresGenerated:
         )
         if not scored__scored__selected__paragraph_scores.isStreaming:
             scored__scored__selected__paragraph_scores = apply_plan_boundary(
-                scored__scored__selected__paragraph_scores, self.spark
+                scored__scored__selected__paragraph_scores,
+                scored__scored__selected__paragraph_scores.sparkSession,
+                owner=self,
             )
         return {
             "scored__scored__selected__paragraph_scores": scored__scored__selected__paragraph_scores,
@@ -11413,7 +11583,9 @@ class SelectScoresGenerated:
         )
         if not scored__scored__selected__sentence_scores.isStreaming:
             scored__scored__selected__sentence_scores = apply_plan_boundary(
-                scored__scored__selected__sentence_scores, self.spark
+                scored__scored__selected__sentence_scores,
+                scored__scored__selected__sentence_scores.sparkSession,
+                owner=self,
             )
         return {
             "scored__scored__selected__sentence_scores": scored__scored__selected__sentence_scores,
@@ -11468,7 +11640,9 @@ class ScoreVectorsGenerated:
             scored__scored__vector__valid_policy, VECTOR_INDEX_POLICY_SCHEMA, name="VectorIndexPolicy", mode="strict"
         )
         if not scored__scored__vector__valid_policy.isStreaming:
-            scored__scored__vector__valid_policy = apply_plan_boundary(scored__scored__vector__valid_policy, self.spark)
+            scored__scored__vector__valid_policy = apply_plan_boundary(
+                scored__scored__vector__valid_policy, scored__scored__vector__valid_policy.sparkSession, owner=self
+            )
         return {
             "scored__scored__vector__valid_policy": scored__scored__vector__valid_policy,
         }
@@ -11720,7 +11894,9 @@ class ScoreVectorsGenerated:
         )
         if not scored__scored__vector__document_scores.isStreaming:
             scored__scored__vector__document_scores = apply_plan_boundary(
-                scored__scored__vector__document_scores, self.spark
+                scored__scored__vector__document_scores,
+                scored__scored__vector__document_scores.sparkSession,
+                owner=self,
             )
         return {
             "scored__scored__vector__document_scores": scored__scored__vector__document_scores,
@@ -11970,7 +12146,9 @@ class ScoreVectorsGenerated:
         )
         if not scored__scored__vector__paragraph_scores.isStreaming:
             scored__scored__vector__paragraph_scores = apply_plan_boundary(
-                scored__scored__vector__paragraph_scores, self.spark
+                scored__scored__vector__paragraph_scores,
+                scored__scored__vector__paragraph_scores.sparkSession,
+                owner=self,
             )
         return {
             "scored__scored__vector__paragraph_scores": scored__scored__vector__paragraph_scores,
@@ -12023,7 +12201,9 @@ class RankVectorsGenerated:
         )
         assert_schema(ranked__valid_policy, VECTOR_INDEX_POLICY_SCHEMA, name="VectorIndexPolicy", mode="strict")
         if not ranked__valid_policy.isStreaming:
-            ranked__valid_policy = apply_plan_boundary(ranked__valid_policy, self.spark)
+            ranked__valid_policy = apply_plan_boundary(
+                ranked__valid_policy, ranked__valid_policy.sparkSession, owner=self
+            )
         return {
             "ranked__valid_policy": ranked__valid_policy,
         }
@@ -12105,7 +12285,9 @@ class RankVectorsGenerated:
             ranked__document_candidates, DOCUMENT_VECTOR_CANDIDATE_SCHEMA, name="DocumentVectorCandidate", mode="strict"
         )
         if not ranked__document_candidates.isStreaming:
-            ranked__document_candidates = apply_plan_boundary(ranked__document_candidates, self.spark)
+            ranked__document_candidates = apply_plan_boundary(
+                ranked__document_candidates, ranked__document_candidates.sparkSession, owner=self
+            )
         return {
             "ranked__document_candidates": ranked__document_candidates,
         }
@@ -12200,7 +12382,9 @@ class RankVectorsGenerated:
             mode="strict",
         )
         if not ranked__paragraph_candidates.isStreaming:
-            ranked__paragraph_candidates = apply_plan_boundary(ranked__paragraph_candidates, self.spark)
+            ranked__paragraph_candidates = apply_plan_boundary(
+                ranked__paragraph_candidates, ranked__paragraph_candidates.sparkSession, owner=self
+            )
         return {
             "ranked__paragraph_candidates": ranked__paragraph_candidates,
         }
@@ -12630,7 +12814,9 @@ class ResolveCohortBandsGenerated:
         )
         assert_schema(cohorts__valid_bands, BAND_SCHEMA, name="Band", mode="strict")
         if not cohorts__valid_bands.isStreaming:
-            cohorts__valid_bands = apply_plan_boundary(cohorts__valid_bands, self.spark)
+            cohorts__valid_bands = apply_plan_boundary(
+                cohorts__valid_bands, cohorts__valid_bands.sparkSession, owner=self
+            )
         return {
             "cohorts__valid_bands": cohorts__valid_bands,
         }
@@ -12731,7 +12917,9 @@ class ResolveCohortBandsGenerated:
         )
         assert_schema(cohorts__leaf_matches, BAND_MATCH_SCHEMA, name="BandMatch", mode="strict")
         if not cohorts__leaf_matches.isStreaming:
-            cohorts__leaf_matches = apply_plan_boundary(cohorts__leaf_matches, self.spark)
+            cohorts__leaf_matches = apply_plan_boundary(
+                cohorts__leaf_matches, cohorts__leaf_matches.sparkSession, owner=self
+            )
         return {
             "cohorts__leaf_matches": cohorts__leaf_matches,
         }
@@ -13046,7 +13234,9 @@ class ResolveCohortBandsGenerated:
         )
         assert_schema(cohorts__user_band_paths, USER_BAND_PATH_SCHEMA, name="UserBandPath", mode="strict")
         if not cohorts__user_band_paths.isStreaming:
-            cohorts__user_band_paths = apply_plan_boundary(cohorts__user_band_paths, self.spark)
+            cohorts__user_band_paths = apply_plan_boundary(
+                cohorts__user_band_paths, cohorts__user_band_paths.sparkSession, owner=self
+            )
         return {
             "cohorts__user_band_paths": cohorts__user_band_paths,
         }
@@ -13079,7 +13269,9 @@ class ResolveCohortBandsGenerated:
             cohorts__singleton_user_bands, SINGLETON_USER_BAND_SCHEMA, name="SingletonUserBand", mode="strict"
         )
         if not cohorts__singleton_user_bands.isStreaming:
-            cohorts__singleton_user_bands = apply_plan_boundary(cohorts__singleton_user_bands, self.spark)
+            cohorts__singleton_user_bands = apply_plan_boundary(
+                cohorts__singleton_user_bands, cohorts__singleton_user_bands.sparkSession, owner=self
+            )
         return {
             "cohorts__singleton_user_bands": cohorts__singleton_user_bands,
         }
@@ -13111,7 +13303,7 @@ class ResolveCohortBandsGenerated:
         )
         assert_schema(cohorts__user_bands, USER_BAND_SCHEMA, name="UserBand", mode="strict")
         if not cohorts__user_bands.isStreaming:
-            cohorts__user_bands = apply_plan_boundary(cohorts__user_bands, self.spark)
+            cohorts__user_bands = apply_plan_boundary(cohorts__user_bands, cohorts__user_bands.sparkSession, owner=self)
         return {
             "cohorts__user_bands": cohorts__user_bands,
         }
@@ -13138,7 +13330,9 @@ class ResolveCohortBandsGenerated:
             cohorts__user_band_memberships, USER_BAND_MEMBERSHIP_SCHEMA, name="UserBandMembership", mode="strict"
         )
         if not cohorts__user_band_memberships.isStreaming:
-            cohorts__user_band_memberships = apply_plan_boundary(cohorts__user_band_memberships, self.spark)
+            cohorts__user_band_memberships = apply_plan_boundary(
+                cohorts__user_band_memberships, cohorts__user_band_memberships.sparkSession, owner=self
+            )
         return {
             "cohorts__user_band_memberships": cohorts__user_band_memberships,
         }
@@ -13198,7 +13392,9 @@ class ResolveCohortBandsGenerated:
         )
         assert_schema(cohorts__band_memberships, BAND_MEMBERSHIP_SCHEMA, name="BandMembership", mode="strict")
         if not cohorts__band_memberships.isStreaming:
-            cohorts__band_memberships = apply_plan_boundary(cohorts__band_memberships, self.spark)
+            cohorts__band_memberships = apply_plan_boundary(
+                cohorts__band_memberships, cohorts__band_memberships.sparkSession, owner=self
+            )
         return {
             "cohorts__band_memberships": cohorts__band_memberships,
         }
@@ -13757,7 +13953,9 @@ class ResolveCohortBandsGenerated:
         )
         assert_schema(cohorts__band_fallbacks, BAND_FALLBACK_SCHEMA, name="BandFallback", mode="strict")
         if not cohorts__band_fallbacks.isStreaming:
-            cohorts__band_fallbacks = apply_plan_boundary(cohorts__band_fallbacks, self.spark)
+            cohorts__band_fallbacks = apply_plan_boundary(
+                cohorts__band_fallbacks, cohorts__band_fallbacks.sparkSession, owner=self
+            )
         return {
             "cohorts__band_fallbacks": cohorts__band_fallbacks,
         }
@@ -13890,7 +14088,9 @@ class BuildRelevanceSignalsGenerated:
             mode="strict",
         )
         if not relevance__context_impressions.isStreaming:
-            relevance__context_impressions = apply_plan_boundary(relevance__context_impressions, self.spark)
+            relevance__context_impressions = apply_plan_boundary(
+                relevance__context_impressions, relevance__context_impressions.sparkSession, owner=self
+            )
         return {
             "relevance__context_impressions": relevance__context_impressions,
         }
@@ -14017,7 +14217,9 @@ class BuildRelevanceSignalsGenerated:
         )
         assert_schema(relevance__context_clicks, CONTEXT_DAILY_CLICKS_SCHEMA, name="ContextDailyClicks", mode="strict")
         if not relevance__context_clicks.isStreaming:
-            relevance__context_clicks = apply_plan_boundary(relevance__context_clicks, self.spark)
+            relevance__context_clicks = apply_plan_boundary(
+                relevance__context_clicks, relevance__context_clicks.sparkSession, owner=self
+            )
         return {
             "relevance__context_clicks": relevance__context_clicks,
         }
@@ -14598,7 +14800,9 @@ class BuildRelevanceSignalsGenerated:
             relevance__query_document_signals, QUERY_DOCUMENT_SIGNALS_SCHEMA, name="QueryDocumentSignals", mode="strict"
         )
         if not relevance__query_document_signals.isStreaming:
-            relevance__query_document_signals = apply_plan_boundary(relevance__query_document_signals, self.spark)
+            relevance__query_document_signals = apply_plan_boundary(
+                relevance__query_document_signals, relevance__query_document_signals.sparkSession, owner=self
+            )
         return {
             "relevance__query_document_signals": relevance__query_document_signals,
         }
@@ -14702,7 +14906,9 @@ class BuildRelevanceSignalsGenerated:
             relevance__document_popularity, DOCUMENT_POPULARITY_SCHEMA, name="DocumentPopularity", mode="strict"
         )
         if not relevance__document_popularity.isStreaming:
-            relevance__document_popularity = apply_plan_boundary(relevance__document_popularity, self.spark)
+            relevance__document_popularity = apply_plan_boundary(
+                relevance__document_popularity, relevance__document_popularity.sparkSession, owner=self
+            )
         return {
             "relevance__document_popularity": relevance__document_popularity,
         }
@@ -14788,7 +14994,9 @@ class AnalyzeTextGenerated:
             analyzed__sentence_statistics, SENTENCE_STATISTICS_SCHEMA, name="SentenceStatistics", mode="strict"
         )
         if not analyzed__sentence_statistics.isStreaming:
-            analyzed__sentence_statistics = apply_plan_boundary(analyzed__sentence_statistics, self.spark)
+            analyzed__sentence_statistics = apply_plan_boundary(
+                analyzed__sentence_statistics, analyzed__sentence_statistics.sparkSession, owner=self
+            )
         return {
             "analyzed__sentence_statistics": analyzed__sentence_statistics,
         }
@@ -14863,7 +15071,9 @@ class AnalyzeTextGenerated:
             analyzed__paragraph_statistics, PARAGRAPH_STATISTICS_SCHEMA, name="ParagraphStatistics", mode="strict"
         )
         if not analyzed__paragraph_statistics.isStreaming:
-            analyzed__paragraph_statistics = apply_plan_boundary(analyzed__paragraph_statistics, self.spark)
+            analyzed__paragraph_statistics = apply_plan_boundary(
+                analyzed__paragraph_statistics, analyzed__paragraph_statistics.sparkSession, owner=self
+            )
         return {
             "analyzed__paragraph_statistics": analyzed__paragraph_statistics,
         }
@@ -14956,7 +15166,9 @@ class AnalyzeTextGenerated:
         )
         assert_schema(analyzed__section_statistics, SECTION_STATISTICS_SCHEMA, name="SectionStatistics", mode="strict")
         if not analyzed__section_statistics.isStreaming:
-            analyzed__section_statistics = apply_plan_boundary(analyzed__section_statistics, self.spark)
+            analyzed__section_statistics = apply_plan_boundary(
+                analyzed__section_statistics, analyzed__section_statistics.sparkSession, owner=self
+            )
         return {
             "analyzed__section_statistics": analyzed__section_statistics,
         }
@@ -15035,7 +15247,9 @@ class AnalyzeTextGenerated:
             analyzed__document_statistics, DOCUMENT_STATISTICS_SCHEMA, name="DocumentStatistics", mode="strict"
         )
         if not analyzed__document_statistics.isStreaming:
-            analyzed__document_statistics = apply_plan_boundary(analyzed__document_statistics, self.spark)
+            analyzed__document_statistics = apply_plan_boundary(
+                analyzed__document_statistics, analyzed__document_statistics.sparkSession, owner=self
+            )
         return {
             "analyzed__document_statistics": analyzed__document_statistics,
         }
@@ -15071,7 +15285,9 @@ class AnalyzeTextGenerated:
         )
         assert_schema(analyzed__similar_documents, SIMILAR_DOCUMENT_SCHEMA, name="SimilarDocument", mode="strict")
         if not analyzed__similar_documents.isStreaming:
-            analyzed__similar_documents = apply_plan_boundary(analyzed__similar_documents, self.spark)
+            analyzed__similar_documents = apply_plan_boundary(
+                analyzed__similar_documents, analyzed__similar_documents.sparkSession, owner=self
+            )
         return {
             "analyzed__similar_documents": analyzed__similar_documents,
         }
@@ -15125,7 +15341,9 @@ class CorpusTextGenerated:
         )
         assert_schema(corpus__corpus_statistics, CORPUS_STATISTICS_SCHEMA, name="CorpusStatistics", mode="strict")
         if not corpus__corpus_statistics.isStreaming:
-            corpus__corpus_statistics = apply_plan_boundary(corpus__corpus_statistics, self.spark)
+            corpus__corpus_statistics = apply_plan_boundary(
+                corpus__corpus_statistics, corpus__corpus_statistics.sparkSession, owner=self
+            )
         return {
             "corpus__corpus_statistics": corpus__corpus_statistics,
         }
@@ -15148,7 +15366,9 @@ class CorpusTextGenerated:
             )
         )
         if not corpus__corpus_vocabulary.isStreaming:
-            corpus__corpus_vocabulary = apply_plan_boundary(corpus__corpus_vocabulary, self.spark)
+            corpus__corpus_vocabulary = apply_plan_boundary(
+                corpus__corpus_vocabulary, corpus__corpus_vocabulary.sparkSession, owner=self
+            )
         return {
             "corpus__corpus_vocabulary": corpus__corpus_vocabulary,
         }
@@ -15205,7 +15425,7 @@ class AllGenerated(
         self._structure_udf_examples_search_transforms_lib_text_text_span = F.udf(self.span, returnType=T.StringType())
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     @reuse_policy_checks
     def run(

@@ -37,6 +37,66 @@ Structure does not generate or call `readStream`, `writeStream`, `outputMode`, `
 `awaitTermination()`, checkpoint, trigger, or sink APIs inside a transform. A streaming-compatible result is still a
 DataFrame plan; it is not a running query.
 
+## Attach a batch transform to a foreachBatch sink
+
+Declare a schema sink for the rows that the caller intends to send. The sink handoff points to the selected final
+streaming output, while its `schema` names the expected output from the caller-selected batch transform:
+
+```python
+class PublishAlerts(Transform):
+    events = input(Event, streaming=True)
+    alerts = output(Alert)
+    send_alerts = sink(AlertMessage)
+
+    @step(output=alerts)
+    def publish(self, event: Event, sink: AlertMessage) -> Alert:
+        alert = Alert(event_id=event.event_id, message=event.message)
+        foreach_batch(alert, sink)
+        return alert
+
+
+class PrepareAlertBatch(Transform):
+    alerts = input(Alert)
+    messages = output(AlertMessage)
+
+    def prepare(self, alert: Alert) -> AlertMessage:
+        return AlertMessage(event_id=alert.event_id, payload=alert.message)
+```
+
+The sink parameter is an effect dependency selected by its declared schema type. `foreach_batch` requires both the
+symbolic row and that parameter. The helper records the handoff during compilation; it does not create a DataFrame,
+write data, or start a query. A separate sink-effect step may return `AlertMessage` while taking `sink: AlertMessage`
+and returning `foreach_batch(alert, sink)`. That return marks an effect, not another relation. Both forms require a
+class-level `sink(AlertMessage)` declaration.
+
+At runtime, the caller selects and constructs the batch transform. Its input must match the streaming output schema,
+and its one selected result must match the sink schema:
+
+```python
+with StructureSession(spark=spark, config=config) as session:
+    result = PublishAlerts(events=events).run(session)
+    handoff = result.send_alerts
+
+    def send_batch(batch_df, batch_id: int) -> None:
+        with session.spawn() as batch_session:
+            prepared = PrepareAlertBatch(alerts=batch_df).run_batch(batch_session, handoff)
+            alert_writer.write(prepared.messages, stream_id="alerts-v1", batch_id=batch_id)
+
+    query = handoff.dataframe.writeStream.foreachBatch(send_batch).option(
+        "checkpointLocation", checkpoint
+    ).start()
+    try:
+        query.awaitTermination()
+    finally:
+        query.stop()
+```
+
+The caller owns callback selection, write configuration, checkpoints, query lifecycle, and retry policy. A durable
+destination should deduplicate atomically by a stable stream identity and `batch_id`; Spark may retry a batch after a
+failure. Keep the parent session open until the query stops. `session.spawn()` creates a child with the parent's
+runtime and resolved configuration and scopes Structure temporary-view cleanup to that callback. See the complete
+[alert example](../../examples/streams/transforms/foreach_batch_alerts.py).
+
 ## Declare streaming inputs
 
 An input declared with `streaming=True` tells the compiler that the relation may carry streaming lineage. An input
@@ -500,8 +560,9 @@ identity in application code. The callback must honor those declarations across 
 
 For row-wise writes, declare an opaque writer on a transform and attach it to a declared final output:
 
-    @special(type="opaque")
-    class AlertWriter:
+    from structure.plugin.pyspark import Sink
+
+    class AlertWriter(Sink):
         def __init__(self, destination: str) -> None:
             self.destination = destination
 
@@ -525,7 +586,9 @@ For row-wise writes, declare an opaque writer on a transform and attach it to a 
         handoff.writer(destination="alert-service")
     ).option("checkpointLocation", foreach_checkpoint).start()
 
-The caller starts and stops this query. The output DataFrame remains available as `result.alerts`; starting the
+For row-wise writes, import `Sink` from `structure.plugin.pyspark`; subclasses receive the compiler call guard through
+inheritance and implement `process(row: Row) -> None` without an opaque decorator. The caller starts and stops this
+query. The output DataFrame remains available as `result.alerts`; starting the
 additional row sink does not modify an output query that the caller already created. Each query advances and fails
 independently and needs its own checkpoint. PySpark serializes writer copies for tasks, task or epoch retries may repeat
 side effects, and `close(error)` is not guaranteed after worker failure. Make the external write idempotent and open
@@ -539,10 +602,19 @@ selects its plain callback branch instead of `process/open/close`. For batch out
 
 `transform_with_state(...)` and `transform_with_state_in_pandas(...)` have typed and native compiler paths for ordinary
 PySpark 4.1 and 4.0/4.1 respectively. They remain design-gated until each claimed profile passes live processor,
-timer, online/generated parity, and same-checkpoint restart evidence. The Pandas API requires pandas, PyArrow, and
-protobuf on the driver and workers. `applyInPandasWithState` remains outside Structure's state APIs.
+timer, online/generated parity, and same-checkpoint restart evidence. PySpark 4.1 requires pandas, PyArrow, and protobuf
+on the driver and workers for both state processor APIs; the Pandas API also requires those packages on PySpark 4.0.
+`applyInPandasWithState` remains outside Structure's state APIs.
 `ArbitraryStateContract` records the typed state boundary, timeout policy, checkpoint identity, and restart policy for
 caller-owned state code; it does not implement a processor runtime:
+
+Typed `StateProcessor` callbacks receive a `TimerContext`. It manages timer registration, deletion, and listing, and
+exposes `current_processing_time_ms` and `current_watermark_ms` for the current callback. The watermark property requires
+a watermark earlier in the streaming plan. The typed contract currently provides one `ValueState`; use an opaque native
+processor for Spark's additional state types, TTL, or initial-state callback. These APIs remain design-gated until live
+profile evidence passes. Input, key, state, and output schemas are resolved from the specialized
+`StateProcessor[Input, Key, State, Output]` or `PandasStateProcessor[Input, Key, State, Output]` base, including
+specialized intermediate bases. The matching state decorators remain optional validators.
 
 ```python
 state_review = {

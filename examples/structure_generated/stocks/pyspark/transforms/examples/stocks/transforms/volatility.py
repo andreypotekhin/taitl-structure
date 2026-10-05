@@ -24,7 +24,7 @@ class VolatilityGenerated:
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,
@@ -146,7 +146,7 @@ class VolatilityGenerated:
             .alias("bollinger_lower"),
         )
         if not returns.isStreaming:
-            returns = apply_plan_boundary(returns, self.spark)
+            returns = apply_plan_boundary(returns, returns.sparkSession, owner=self)
 
         # Step method: indicators
         indicators = returns.alias("volatility_indicator")

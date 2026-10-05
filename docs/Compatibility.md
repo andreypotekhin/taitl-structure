@@ -56,7 +56,8 @@ Unknown plugin targets use `BACKEND-E2401`; unsupported target features use `BAC
 
 The public API compatibility surface is the compiler-visible Structure DSL plus the admitted PySpark plugin API listed
 in [APICompatibility.md](compatibility/APICompatibility.md). A catalog row marked `supported` or `implemented` is part of the current public
-contract for its stated target profile. Rows marked `planned`, `scheduled`, `partial`, `deferred`, `unsupported`, or
+contract for its stated target profile. `implemented; release-gated` records working code and isolated evidence but
+is not yet a support claim. Rows marked `planned`, `scheduled`, `partial`, `deferred`, `unsupported`, or
 `intentional raw` are not compatibility promises beyond the exact boundary stated in the catalog.
 
 Compatible API additions may appear in minor releases when they preserve existing source behavior and pass backend
@@ -78,6 +79,7 @@ examples, per-version availability, and Structure contract or migration boundary
 | --- | --- |
 | Aggregations and sketches | [Aggregations](compatibility/Aggregations.compat.md) |
 | Collections | [Collections](compatibility/Collections.compat.md) |
+| Delta tables | [Delta tables](compatibility/DeltaTables.compat.md) |
 | Expressions and SQL functions | [Expressions](compatibility/Expressions.compat.md) |
 | Joins | [Joins](compatibility/Joins.compat.md) |
 | Relations | [Relations](compatibility/Relations.compat.md) |
@@ -85,6 +87,13 @@ examples, per-version availability, and Structure contract or migration boundary
 | Streaming | [Streaming](compatibility/Streaming.compat.md) |
 | Transforms and hooks | [Transforms](compatibility/Transforms.compat.md) |
 | Windows | [Windows](compatibility/Windows.compat.md) |
+
+## Delta Tables
+
+The typed Delta mutation API has isolated live evidence on ordinary PySpark 4.1.0 with `delta-spark` 4.1.0. It is
+implemented but release-gated while V11's wider profile and integration matrix are pending. Delta remains an optional
+runtime dependency; this evidence does not change the default PySpark profile or establish Spark Connect support.
+See the [Delta API](api/DeltaTables.api.md) and [Delta compatibility ledger](compatibility/DeltaTables.compat.md).
 
 ## Spark Connect
 

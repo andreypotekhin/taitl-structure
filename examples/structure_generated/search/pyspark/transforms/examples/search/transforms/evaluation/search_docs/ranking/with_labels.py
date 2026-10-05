@@ -42,7 +42,7 @@ class EvaluateDocumentRankingGenerated:
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     @reuse_policy_checks
     def run(
@@ -111,7 +111,7 @@ class EvaluateDocumentRankingGenerated:
         )
         assert_schema(evaluated_queries, EVALUATION_QUERY_SCHEMA, name="EvaluationQuery", mode="strict")
         if not evaluated_queries.isStreaming:
-            evaluated_queries = apply_plan_boundary(evaluated_queries, self.spark)
+            evaluated_queries = apply_plan_boundary(evaluated_queries, evaluated_queries.sparkSession, owner=self)
 
         # Step method: select_results
         evaluated_results = evaluated_queries.alias("evaluation_query")
@@ -176,7 +176,7 @@ class EvaluateDocumentRankingGenerated:
         )
         assert_schema(ranked_judgments, EVALUATION_JUDGMENT_SCHEMA, name="EvaluationJudgment", mode="strict")
         if not ranked_judgments.isStreaming:
-            ranked_judgments = apply_plan_boundary(ranked_judgments, self.spark)
+            ranked_judgments = apply_plan_boundary(ranked_judgments, ranked_judgments.sparkSession, owner=self)
 
         # Step method: count_judgments
         judgment_totals = ranked_judgments.alias("evaluation_judgment")
@@ -625,7 +625,7 @@ class EvaluateDocumentRankingGenerated:
             query_evaluations, DOCUMENT_QUERY_EVALUATION_SCHEMA, name="DocumentQueryEvaluation", mode="strict"
         )
         if not query_evaluations.isStreaming:
-            query_evaluations = apply_plan_boundary(query_evaluations, self.spark)
+            query_evaluations = apply_plan_boundary(query_evaluations, query_evaluations.sparkSession, owner=self)
 
         # Step method: summarize
         summary = query_evaluations.alias("document_query_evaluation")

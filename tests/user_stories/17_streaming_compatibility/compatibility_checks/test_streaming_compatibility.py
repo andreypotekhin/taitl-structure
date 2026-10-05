@@ -4,6 +4,7 @@ from typing import Any, cast
 import pytest
 
 from examples.streams.adoption import ArbitraryStateContract, ForeachBatchSafety, start_foreach_batch_query
+from examples.streams.transforms.foreach_batch_alerts import Alert, AlertMessage, PrepareAlertBatch, PublishAlerts
 from structure import *
 from structure.core.compiler.api import Compiler
 from structure.core.compiler.compileability.streaming_compatibility.api import StreamingSupport
@@ -138,6 +139,19 @@ def test_foreach_batch_recipe_is_caller_owned_and_executable_without_spark() -> 
         "trigger:availableNow=True",
         "start",
     )
+
+
+def test_schema_declared_foreach_batch_sink_connects_stream_output_to_batch_transform() -> None:
+    """I can declare a batch sink and choose its processor at the callback boundary."""
+
+    main = Compiler.frontend.compile()(PublishAlerts, materialize_schemas=False)
+    main_plan = cast(PySparkExecutionPlan, main.lowered)
+    batch = Compiler.frontend.compile()(PrepareAlertBatch, materialize_schemas=False)
+    batch_plan = cast(TransformPlan, batch.analysis)
+
+    assert [(output.name, output.schema) for output in cast(TransformPlan, main.analysis).outputs] == [("alerts", Alert)]
+    assert [(sink.name, sink.kind, sink.output) for sink in main_plan.sinks] == [("send_alerts", "batch", "alerts")]
+    assert [(output.name, output.schema) for output in batch_plan.outputs] == [("messages", AlertMessage)]
 
 
 def test_foreach_batch_recipe_rejects_missing_safety_declarations() -> None:

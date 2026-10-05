@@ -75,7 +75,7 @@ class SelectRecommendationCandidatesGenerated:
             admitted__requests, RECOMMENDATION_CANDIDATE_SCHEMA, name="RecommendationCandidate", mode="strict"
         )
         if not admitted__requests.isStreaming:
-            admitted__requests = apply_plan_boundary(admitted__requests, self.spark)
+            admitted__requests = apply_plan_boundary(admitted__requests, admitted__requests.sparkSession, owner=self)
         return {
             "admitted__requests": admitted__requests,
         }
@@ -164,7 +164,7 @@ class GenerateRecommendationCandidatesGenerated:
             retrieved__admitted, RECOMMENDATION_CANDIDATE_SCHEMA, name="RecommendationCandidate", mode="strict"
         )
         if not retrieved__admitted.isStreaming:
-            retrieved__admitted = apply_plan_boundary(retrieved__admitted, self.spark)
+            retrieved__admitted = apply_plan_boundary(retrieved__admitted, retrieved__admitted.sparkSession, owner=self)
         return {
             "retrieved__admitted": retrieved__admitted,
         }
@@ -241,7 +241,7 @@ class FilterRecommendationCandidatesGenerated:
             mode="strict",
         )
         if not filtered__evaluated.isStreaming:
-            filtered__evaluated = apply_plan_boundary(filtered__evaluated, self.spark)
+            filtered__evaluated = apply_plan_boundary(filtered__evaluated, filtered__evaluated.sparkSession, owner=self)
         return {
             "filtered__evaluated": filtered__evaluated,
         }
@@ -294,7 +294,7 @@ class FilterRecommendationCandidatesGenerated:
             F.lit('eligible').alias("eligibility_status"),
         )
         if not filtered__filtered.isStreaming:
-            filtered__filtered = apply_plan_boundary(filtered__filtered, self.spark)
+            filtered__filtered = apply_plan_boundary(filtered__filtered, filtered__filtered.sparkSession, owner=self)
         return {
             "filtered__filtered": filtered__filtered,
         }
@@ -311,7 +311,7 @@ class BuildRecommendationCandidatesGenerated(
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,

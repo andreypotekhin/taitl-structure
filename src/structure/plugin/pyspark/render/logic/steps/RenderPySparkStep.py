@@ -381,7 +381,7 @@ class RenderPySparkStep:
             ordered_lines.extend(
                 [
                     f"        if not {target}.isStreaming:",
-                    f"            {target} = apply_plan_boundary({target}, self.spark).alias({step.input_alias!r})",
+                    f"            {target} = apply_plan_boundary({target}, {target}.sparkSession, owner=self).alias({step.input_alias!r})",
                 ]
             )
         if any(
@@ -2266,7 +2266,7 @@ class RenderPySparkStep:
                 lines.extend(
                     [
                         f"        if not {target}.isStreaming:",
-                        f"            {target} = apply_plan_boundary({target}, self.spark)",
+                        f"            {target} = apply_plan_boundary({target}, {target}.sparkSession, owner=self)",
                     ]
                 )
         return lines

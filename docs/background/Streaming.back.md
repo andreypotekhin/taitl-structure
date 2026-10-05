@@ -13,7 +13,8 @@ The normative sources are [Spark Streaming](../dev/specifications/SparkStreaming
 
 ## Runtime Ownership Boundary
 
-The supported shape is one streaming current pipeline input plus optional static side inputs:
+The supported transform shape is one streaming current pipeline input plus optional static side inputs. A transform
+returns its ordinary output DataFrame plans and may also expose a named row-sink handoff for a declared final output:
 
 ```python
 orders = spark.readStream.table("orders")
@@ -27,8 +28,10 @@ result = EnrichOrdersGenerated(spark=spark).run(
 query = result.writeStream.option("checkpointLocation", checkpoint).toTable("orders_enriched")
 ```
 
-Structure maintains the checked transformation plan and returns a DataFrame plan. It does not generate `readStream` or
-`writeStream`, start or stop queries, set checkpoints or triggers, apply output modes, or perform external side effects.
+Structure maintains the checked transformation plan and returns DataFrame plans. It does not generate `readStream` or
+`writeStream`, start or stop queries, set checkpoints or triggers, apply output modes, or perform external side effects
+while compiling or executing a transform. A declared row-sink handoff makes the output DataFrame and writer class
+available to caller code; the caller must explicitly attach and start that sink.
 
 Streaming compatibility means the generated or online transformation can accept the concrete streaming DataFrame shape,
 and every operation on streaming data is admitted by the compiler-visible policy. It does not mean Structure starts a
@@ -408,6 +411,60 @@ The callback remains responsible for honoring a stable sink identity, idempotenc
 identity. These declarations are application safeguards; they do not turn `foreachBatch` into a Structure transform
 operation.
 
+### Attach a row-level sink
+
+A row sink adds a separately configured writer to one declared final output. The transform records the relationship but
+does not construct the writer or run callbacks:
+
+```python
+from structure.plugin.pyspark import Sink
+
+
+class AlertWriter(Sink):
+    def __init__(self, destination: str) -> None:
+        self.destination = destination
+
+    def process(self, row: Row) -> None:
+        write_alert(self.destination, row)
+
+
+class PublishAlerts(Transform):
+    events = input(Event, streaming=True)
+    alerts = output(Alert)
+    publish_alerts = sink(AlertWriter)
+
+    @step(output=alerts)
+    def publish(self, event: Event, sink: AlertWriter) -> Alert:
+        alert = Alert(id=event.id)
+        foreach(alert, sink)
+        return alert
+
+
+result = PublishAlerts(events=events).run(session)
+handoff = result.publish_alerts
+assert handoff.dataframe is result.alerts
+query = handoff.dataframe.writeStream.foreach(
+    handoff.writer(destination="alerts-service")
+).option("checkpointLocation", foreach_checkpoint).start()
+```
+
+Import `Sink` from `structure.plugin.pyspark`; its subclasses are opaque during compilation and implement
+`process(row: Row) -> None` without an `@special(type="opaque")` decorator. `foreach(row, sink)` must capture the exact
+row returned by the step and attached to a declared final output. It cannot
+attach an intermediate projection or a row created after the capture. Sink-bearing composed or staged transform graphs
+are currently rejected because they do not have a defined child-output-to-handoff mapping. Generated modules contain
+only the compiled DataFrame transformation; they do not contain `foreach`, `writeStream`, writer construction, or
+`.start()` calls.
+
+For batch output, invoke the callback explicitly with
+`handoff.dataframe.foreach(handoff.writer(...).process)`. Batch processing calls `process(Row)` without streaming
+`open` or `close`; a batch writer that defines either lifecycle method is rejected. A streaming writer instance must
+be noncallable and expose `process(Row)`, with optional `open(partition_id, epoch_id)` and `close(error)` methods. The
+caller starts the added sink as a second `StreamingQuery`, using a distinct checkpoint from any existing output query.
+The queries can progress, fail, and restart independently. Task retries and checkpoint restarts can repeat external
+writes; `close` is not guaranteed after worker failure. The caller owns idempotence, credentials, handles, failure
+observation, and recovery. The tested live profiles are classic PySpark 3.5 and 4.0; Spark Connect is unclaimed.
+
 
 ## Compile-Time And IR Contract
 
@@ -443,7 +500,8 @@ The following remain batch-only or deferred for streaming inputs:
 - cross, anti, or unbounded stream-stream joins;
 - Pandas UDFs, RDD operations, `mapInPandas`, `foreachPartition`, and local Spark actions;
 - arbitrary hooks without an explicit streaming-safe declaration;
-- generated lifecycle, custom sinks, `foreachBatch`, `foreach`, and arbitrary state APIs.
+- generated lifecycle calls and direct PySpark lifecycle or callback calls inside transform methods;
+- custom streaming sinks outside the declared `sink(...)`/`foreach(...)` handoff and arbitrary state APIs.
 
 Finite grouped `first_value(...)` and `last_value(...)` remain possible inside a watermarked event-time window. They are
 aggregate expressions, not a streaming reinterpretation of batch selected-row or analytic-window helpers.

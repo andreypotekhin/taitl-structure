@@ -5,7 +5,9 @@ This describes Structure's public, compiler-visible API.
 If you are just starting using this library, see [QuickRef.md](QuickRef.md) for an introduction.
 
 `supported` means the public contract is available now. `planned` means implementation is intended but incomplete.
-`design-gated` means a contract exists but implementation or evidence is incomplete. `caller-owned-guided` means the
+`design-gated` means a contract exists but implementation or evidence is incomplete. `implemented; release-gated`
+means the implementation and isolated evidence exist, but the release's wider admission matrix is incomplete.
+`caller-owned-guided` means the
 caller may use the upstream API around a Structure transform. `streaming-ineligible` means the batch operation requires
 materialization for streaming input; `unsupported` deliberately stays outside the current scope.
 Structure is not a one-to-one PySpark
@@ -25,6 +27,7 @@ PySpark correspondence and boundary details.
 | --- | --- | --- |
 | Aggregations and sketches | [Aggregations API](api/Aggregations.api.md) | [Aggregations compatibility](compatibility/Aggregations.compat.md) |
 | Collections | [Collections API](api/Collections.api.md) | [Collections compatibility](compatibility/Collections.compat.md) |
+| Delta tables | [Delta tables API](api/DeltaTables.api.md) | [Delta tables compatibility](compatibility/DeltaTables.compat.md) |
 | Expressions and SQL functions | [Expressions API](api/Expressions.api.md) | [Expressions compatibility](compatibility/Expressions.compat.md) |
 | Joins | [Joins API](api/Joins.api.md) | [Joins compatibility](compatibility/Joins.compat.md) |
 | Relations | [Relations API](api/Relations.api.md) | [Relations compatibility](compatibility/Relations.compat.md) |
@@ -65,7 +68,7 @@ inventory and evidence boundary are maintained in the [V11 charter](dev/project-
 | Observations, KLL, and Theta sketches | design-gated | Metric side channels and opaque sketch results require separate typed and dependency contracts. |
 | Arrow UDF/UDTF | caller-owned-guided | Python workers and callback-defined row cardinality remain outside generated Structure transforms. |
 | Row and Pandas `transformWithState` | design-gated | Typed and opaque-native Structure compiler surfaces are implemented; live profile-specific parity and checkpoint-restart evidence is still required before support is claimed. See the [Streaming API](api/Streaming.api.md). |
-| Delta transform mutations | planned | Caller-bound `delta_input`/`delta_output`, `Schema.constraints`, and compiled delete/update/merge require isolated Delta evidence. |
+| Delta transform mutations | implemented; release-gated | Caller-bound Delta relations, typed delete/update/merge/append, and explicitly declared per-operation schema evolution; see the [Delta tables API](api/DeltaTables.api.md). |
 | Retained V9 gates | design-gated | See the retained-gates design/specification pair; XML and join reordering remain unsupported. |
 
 ## Analytical APIs
@@ -107,8 +110,8 @@ inventory and evidence boundary are maintained in the [V11 charter](dev/project-
 
 The [API compatibility overview](compatibility/APICompatibility.md) classifies the current PySpark transformation
 baseline, with detailed family contracts in the linked compatibility ledgers. The rows below remain a compact
-orientation aid. Loading, storage, actions, and orchestration are not transformation APIs and stay outside Structure's
-scope.
+orientation aid. General loading, storage publishing, actions, and orchestration stay outside the transform API;
+declared [Delta mutation steps](api/DeltaTables.api.md) are its explicit persistent-table exception.
 
 | API Area | Status | PySpark Parity | Details |
 | --- | --- | --- | --- |

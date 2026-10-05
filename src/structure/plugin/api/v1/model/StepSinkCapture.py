@@ -8,3 +8,5 @@ class StepSinkCapture:
     sink: str
     result_ordinal: int | None
     row_schema: str
+    input_ordinal: int | None = None
+    kind: str = "row"

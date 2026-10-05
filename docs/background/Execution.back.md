@@ -1,7 +1,7 @@
 # Execution
 
 Execution runs Structure transforms through a caller-owned Spark session and `StructureSession`. The caller supplies
-input DataFrames and does not need to commit generated PySpark code to the repository.
+input DataFrames or declared Delta table bindings and does not need to commit generated PySpark code to the repository.
 
 Generated PySpark remains available for provenance, review, debugging, CI diff checks, and projects that choose
 generated-code execution.
@@ -30,8 +30,9 @@ schema representations, profile, and variant remain opaque to Core.
 
 Core retains structural ordering, bindings, lanes, hook placement, artifact identity, result wrapping, and diagnostic
 presentation. PySpark retains expression semantics, target validation, lowering, schema materialization, online
-execution, generated rendering, and Spark Connect behavior. The caller retains Spark lifecycle, reads, writes,
-streaming queries, triggers, checkpoints, sinks, and orchestration.
+execution, generated rendering, and Spark Connect behavior. The caller retains Spark lifecycle, data loading and
+general output publishing, streaming queries, triggers, checkpoints, sinks, and orchestration. The explicit
+[Delta mutation API](../api/DeltaTables.api.md) lets a compiled step commit to a caller-owned table.
 
 The detailed execution semantics below apply through this boundary. Target selection and target behavior follow the
 plugin model above and [Plugin API](../dev/specifications/PluginAPI.spec.md).
@@ -56,7 +57,8 @@ result = EnrichOrders(
 enriched_df = result.enriched
 ```
 
-The transform instance is a deferred invocation. Its constructor stores named input DataFrames and performs no Spark
+The transform instance is a deferred invocation. Its constructor stores named input DataFrames or declared Delta
+table handles and performs no Spark
 work. Calling `run(session)` delegates to the session:
 
 ```python
@@ -139,8 +141,9 @@ shortages = result["shortages"]
 assert result.schema.plans == plans.schema
 ```
 
-The result object is read-only. Structure does not write, cache, or publish any output unless the caller performs those
-operations on the returned DataFrames.
+The result object is read-only. For ordinary DataFrame outputs, the caller decides when to write, cache, or publish
+them. A declared [Delta mutation step](DeltaTables.back.md) is an explicit effect during `run()` and returns the
+caller's table handle as its named result.
 
 If an output declaration has a transform boundary alias, the alias is an additional lookup name, not an extra mapping
 key:
@@ -324,7 +327,8 @@ shared PySpark recipe already defines them.
 
 ## Transform Input Binding
 
-`Transform.__init__(**inputs)` stores DataFrame inputs by declared Structure input name. Positional arguments are not
+`Transform.__init__(**inputs)` stores DataFrame inputs and declared Delta table handles by Structure binding name.
+Positional arguments are not
 allowed. Unknown input names are errors. Missing declared inputs must be reported no later than `run(session)`.
 
 Custom transform construction parameters should not be mixed into the transform constructor. Runtime context
@@ -371,8 +375,8 @@ Shared invariants include:
 - identical hook order, selected inputs, schema mode, and validation boundaries;
 - deterministic output for identical source, configuration, target profile, and Structure version;
 - identical branch and lane selection, output wrapping, and semantic fingerprints;
-- no hidden actions, local row loops, RDD or Pandas fallback, implicit Python UDF fallback, storage writes, or
-  streaming lifecycle ownership.
+- no hidden actions, local row loops, RDD or Pandas fallback, implicit Python UDF fallback, undeclared storage writes,
+  or streaming lifecycle ownership. Declared Delta mutations are explicit effects.
 
 An operation is admitted only when its checked IR and selected backend capabilities can describe its runtime behavior.
 Unknown or unsupported required capabilities fail before execution or generation. Source-text formatting, imports, file

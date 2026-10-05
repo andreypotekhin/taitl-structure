@@ -30,7 +30,7 @@ class EvaluateFulfillmentGenerated:
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,
@@ -262,7 +262,7 @@ class EvaluateFulfillmentGenerated:
             evaluations, FULFILLMENT_SERVICE_EVALUATION_SCHEMA, name="FulfillmentServiceEvaluation", mode="strict"
         )
         if not evaluations.isStreaming:
-            evaluations = apply_plan_boundary(evaluations, self.spark)
+            evaluations = apply_plan_boundary(evaluations, evaluations.sparkSession, owner=self)
 
         # Step method: summarize
         summary_totals = evaluations.alias("fulfillment_service_evaluation")

@@ -143,7 +143,9 @@ class DocumentChunkingGenerated:
             documents_chunked__marked_lines, MARKED_DOCUMENT_LINE_SCHEMA, name="MarkedDocumentLine", mode="strict"
         )
         if not documents_chunked__marked_lines.isStreaming:
-            documents_chunked__marked_lines = apply_plan_boundary(documents_chunked__marked_lines, self.spark)
+            documents_chunked__marked_lines = apply_plan_boundary(
+                documents_chunked__marked_lines, documents_chunked__marked_lines.sparkSession, owner=self
+            )
         return {
             "documents_chunked__marked_lines": documents_chunked__marked_lines,
         }
@@ -268,7 +270,9 @@ class DocumentChunkingGenerated:
         )
         assert_schema(documents_chunked__paragraph_drafts, PARAGRAPH_DRAFT_SCHEMA, name="ParagraphDraft", mode="strict")
         if not documents_chunked__paragraph_drafts.isStreaming:
-            documents_chunked__paragraph_drafts = apply_plan_boundary(documents_chunked__paragraph_drafts, self.spark)
+            documents_chunked__paragraph_drafts = apply_plan_boundary(
+                documents_chunked__paragraph_drafts, documents_chunked__paragraph_drafts.sparkSession, owner=self
+            )
         return {
             "documents_chunked__paragraph_drafts": documents_chunked__paragraph_drafts,
         }
@@ -286,7 +290,9 @@ class DocumentChunkingGenerated:
         )
         assert_schema(documents_chunked__paragraphs, PARAGRAPH_SCHEMA, name="Paragraph", mode="strict")
         if not documents_chunked__paragraphs.isStreaming:
-            documents_chunked__paragraphs = apply_plan_boundary(documents_chunked__paragraphs, self.spark)
+            documents_chunked__paragraphs = apply_plan_boundary(
+                documents_chunked__paragraphs, documents_chunked__paragraphs.sparkSession, owner=self
+            )
         return {
             "documents_chunked__paragraphs": documents_chunked__paragraphs,
         }
@@ -344,7 +350,9 @@ class DocumentChunkingGenerated:
         )
         assert_schema(documents_chunked__sections, SECTION_SCHEMA, name="Section", mode="strict")
         if not documents_chunked__sections.isStreaming:
-            documents_chunked__sections = apply_plan_boundary(documents_chunked__sections, self.spark)
+            documents_chunked__sections = apply_plan_boundary(
+                documents_chunked__sections, documents_chunked__sections.sparkSession, owner=self
+            )
         return {
             "documents_chunked__sections": documents_chunked__sections,
         }
@@ -438,7 +446,9 @@ class SentenceChunkingGenerated:
             (F.col("materialized_paragraph.span_start") + F.col("local_end")).alias("span_end"),
         )
         if not sentences_chunked__sentences.isStreaming:
-            sentences_chunked__sentences = apply_plan_boundary(sentences_chunked__sentences, self.spark)
+            sentences_chunked__sentences = apply_plan_boundary(
+                sentences_chunked__sentences, sentences_chunked__sentences.sparkSession, owner=self
+            )
         return {
             "sentences_chunked__sentences": sentences_chunked__sentences,
         }
@@ -462,7 +472,7 @@ class ChunkingGenerated(DocumentChunkingGenerated, SentenceChunkingGenerated):
         self._structure_udf_examples_search_transforms_lib_text_text_span = F.udf(self.span, returnType=T.StringType())
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,

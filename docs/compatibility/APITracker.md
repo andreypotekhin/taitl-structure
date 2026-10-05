@@ -95,6 +95,7 @@ and [V11 project tracker](../dev/project-management/V11.md).
 | Arrow-optimized Python UDF/UDTF APIs | caller-owned-guided | Worker Python and callback-defined UDTF cardinality remain outside the symbolic compiler contract. | Use explicit raw/caller-owned hooks; no generated UDF/UDTF claim. |
 | Row-based `transformWithState` | design-gated | `transform_with_state(...)` is implemented for ordinary PySpark `>=4.1,<4.2`; live timer, parity, and checkpoint-restart evidence is pending. | Use caller-owned Structured Streaming state code until the profile's support gate passes. |
 | Pandas `transformWithStateInPandas` | design-gated | `transform_with_state_in_pandas(...)` is implemented for ordinary PySpark 4.0 and 4.1; Pandas dependencies and live parity/restart evidence are pending. | Use caller-owned Structured Streaming state code until the profile's support gate passes. |
+| Delta table mutations | implemented; release-gated | Typed caller-bound delete/update/merge/append and explicit return-typed schema evolution. | Isolated ordinary PySpark 4.1.0 / Delta 4.1.0 online/generated evidence exists; wider V11 matrix pending. See [Delta compatibility](DeltaTables.compat.md). |
 | Declarative Pipelines, SQL Scripting, Python Data Sources, readers/writers, and catalog/session APIs | unsupported | These are not compiler-visible DataFrame transformations. | Use native PySpark/Spark orchestration around Structure. |
 
 ## Column Method Register

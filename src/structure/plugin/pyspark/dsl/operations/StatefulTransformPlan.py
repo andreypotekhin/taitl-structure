@@ -14,6 +14,7 @@ class StatefulTransformPlan:
     processor_mode: str
     input_schema: type[Schema]
     key_schema: type[Schema]
+    state_schema: type[Schema] | None
     output_schema: type[Schema]
     output_mode: str
     time_mode: str

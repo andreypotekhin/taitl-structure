@@ -112,7 +112,7 @@ class PrepareOrderDemandGenerated:
         )
         assert_schema(prepared__orders, ORDER_NORMALIZED_SCHEMA, name="OrderNormalized", mode="strict")
         if not prepared__orders.isStreaming:
-            prepared__orders = apply_plan_boundary(prepared__orders, self.spark)
+            prepared__orders = apply_plan_boundary(prepared__orders, prepared__orders.sparkSession, owner=self)
         return {
             "prepared__orders": prepared__orders,
         }
@@ -141,7 +141,7 @@ class PrepareOrderDemandGenerated:
         )
         assert_schema(prepared__orders, ORDER_NORMALIZED_SCHEMA, name="OrderNormalized", mode="strict")
         if not prepared__orders.isStreaming:
-            prepared__orders = apply_plan_boundary(prepared__orders, self.spark)
+            prepared__orders = apply_plan_boundary(prepared__orders, prepared__orders.sparkSession, owner=self)
         return {
             "prepared__orders": prepared__orders,
         }
@@ -181,7 +181,7 @@ class PrepareOrderDemandGenerated:
         )
         assert_schema(prepared__orders, ORDER_WITH_CUSTOMER_SCHEMA, name="OrderWithCustomer", mode="strict")
         if not prepared__orders.isStreaming:
-            prepared__orders = apply_plan_boundary(prepared__orders, self.spark)
+            prepared__orders = apply_plan_boundary(prepared__orders, prepared__orders.sparkSession, owner=self)
         return {
             "prepared__orders": prepared__orders,
         }
@@ -275,7 +275,7 @@ class PrepareOrderDemandGenerated:
         )
         assert_schema(prepared__orders, ORDER_WITH_PRODUCT_SCHEMA, name="OrderWithProduct", mode="strict")
         if not prepared__orders.isStreaming:
-            prepared__orders = apply_plan_boundary(prepared__orders, self.spark)
+            prepared__orders = apply_plan_boundary(prepared__orders, prepared__orders.sparkSession, owner=self)
         return {
             "prepared__orders": prepared__orders,
         }
@@ -350,7 +350,7 @@ class PrepareOrderDemandGenerated:
         )
         assert_schema(prepared__orders, ORDER_WITH_PROMOTION_SCHEMA, name="OrderWithPromotion", mode="strict")
         if not prepared__orders.isStreaming:
-            prepared__orders = apply_plan_boundary(prepared__orders, self.spark)
+            prepared__orders = apply_plan_boundary(prepared__orders, prepared__orders.sparkSession, owner=self)
         return {
             "prepared__orders": prepared__orders,
         }
@@ -381,7 +381,7 @@ class PrepareOrderDemandGenerated:
         )
         assert_schema(prepared__demand, ORDER_SCHEMA, name="Order", mode="strict")
         if not prepared__demand.isStreaming:
-            prepared__demand = apply_plan_boundary(prepared__demand, self.spark)
+            prepared__demand = apply_plan_boundary(prepared__demand, prepared__demand.sparkSession, owner=self)
         return {
             "prepared__demand": prepared__demand,
         }
@@ -601,7 +601,9 @@ class PlanFulfillmentGenerated:
             mode="strict",
         )
         if not planned__preferred_options.isStreaming:
-            planned__preferred_options = apply_plan_boundary(planned__preferred_options, self.spark)
+            planned__preferred_options = apply_plan_boundary(
+                planned__preferred_options, planned__preferred_options.sparkSession, owner=self
+            )
         return {
             "planned__preferred_options": planned__preferred_options,
         }
@@ -634,7 +636,9 @@ class PlanFulfillmentGenerated:
         )
         assert_schema(planned__allocations, FULFILLMENT_ALLOCATION_SCHEMA, name="FulfillmentAllocation", mode="strict")
         if not planned__allocations.isStreaming:
-            planned__allocations = apply_plan_boundary(planned__allocations, self.spark)
+            planned__allocations = apply_plan_boundary(
+                planned__allocations, planned__allocations.sparkSession, owner=self
+            )
         return {
             "planned__allocations": planned__allocations,
         }
@@ -692,7 +696,7 @@ class PlanFulfillmentGenerated:
         )
         assert_schema(planned__backorders, FULFILLMENT_BACKORDER_SCHEMA, name="FulfillmentBackorder", mode="strict")
         if not planned__backorders.isStreaming:
-            planned__backorders = apply_plan_boundary(planned__backorders, self.spark)
+            planned__backorders = apply_plan_boundary(planned__backorders, planned__backorders.sparkSession, owner=self)
         return {
             "planned__backorders": planned__backorders,
         }
@@ -843,7 +847,7 @@ class PlanFulfillmentGenerated:
         )
         assert_schema(planned__plans, FULFILLMENT_PLAN_SCHEMA, name="FulfillmentPlan", mode="strict")
         if not planned__plans.isStreaming:
-            planned__plans = apply_plan_boundary(planned__plans, self.spark)
+            planned__plans = apply_plan_boundary(planned__plans, planned__plans.sparkSession, owner=self)
         return {
             "planned__plans": planned__plans,
         }
@@ -916,7 +920,9 @@ class PlanFulfillmentGenerated:
             mode="strict",
         )
         if not planned__replenishment_suggestions.isStreaming:
-            planned__replenishment_suggestions = apply_plan_boundary(planned__replenishment_suggestions, self.spark)
+            planned__replenishment_suggestions = apply_plan_boundary(
+                planned__replenishment_suggestions, planned__replenishment_suggestions.sparkSession, owner=self
+            )
         return {
             "planned__replenishment_suggestions": planned__replenishment_suggestions,
         }
@@ -950,7 +956,7 @@ class BuildDemandWindowsGenerated:
         )
         assert_schema(windows__windows, DEMAND_WINDOW_SCHEMA, name="DemandWindow", mode="strict")
         if not windows__windows.isStreaming:
-            windows__windows = apply_plan_boundary(windows__windows, self.spark)
+            windows__windows = apply_plan_boundary(windows__windows, windows__windows.sparkSession, owner=self)
         return {
             "windows__windows": windows__windows,
         }
@@ -1086,7 +1092,9 @@ class ProjectInventoryGenerated:
             inventory_projection__projections, INVENTORY_PROJECTION_SCHEMA, name="InventoryProjection", mode="strict"
         )
         if not inventory_projection__projections.isStreaming:
-            inventory_projection__projections = apply_plan_boundary(inventory_projection__projections, self.spark)
+            inventory_projection__projections = apply_plan_boundary(
+                inventory_projection__projections, inventory_projection__projections.sparkSession, owner=self
+            )
         return {
             "inventory_projection__projections": inventory_projection__projections,
         }
@@ -1152,7 +1160,9 @@ class DetectShortagesGenerated:
         )
         assert_schema(shortage_stage__shortages, FULFILLMENT_SHORTAGE_SCHEMA, name="FulfillmentShortage", mode="strict")
         if not shortage_stage__shortages.isStreaming:
-            shortage_stage__shortages = apply_plan_boundary(shortage_stage__shortages, self.spark)
+            shortage_stage__shortages = apply_plan_boundary(
+                shortage_stage__shortages, shortage_stage__shortages.sparkSession, owner=self
+            )
         return {
             "shortage_stage__shortages": shortage_stage__shortages,
         }
@@ -1276,7 +1286,9 @@ class FindSubstitutionsGenerated:
             mode="strict",
         )
         if not substitution_stage__options.isStreaming:
-            substitution_stage__options = apply_plan_boundary(substitution_stage__options, self.spark)
+            substitution_stage__options = apply_plan_boundary(
+                substitution_stage__options, substitution_stage__options.sparkSession, owner=self
+            )
         return {
             "substitution_stage__options": substitution_stage__options,
         }
@@ -1544,7 +1556,9 @@ class PrioritizeExceptionsGenerated:
             exception_stage__exceptions, FULFILLMENT_EXCEPTION_SCHEMA, name="FulfillmentException", mode="strict"
         )
         if not exception_stage__exceptions.isStreaming:
-            exception_stage__exceptions = apply_plan_boundary(exception_stage__exceptions, self.spark)
+            exception_stage__exceptions = apply_plan_boundary(
+                exception_stage__exceptions, exception_stage__exceptions.sparkSession, owner=self
+            )
         return {
             "exception_stage__exceptions": exception_stage__exceptions,
         }
@@ -1610,7 +1624,9 @@ class ReconcileFulfillmentPlanGenerated:
             mode="strict",
         )
         if not reconciled__reconciliation.isStreaming:
-            reconciled__reconciliation = apply_plan_boundary(reconciled__reconciliation, self.spark)
+            reconciled__reconciliation = apply_plan_boundary(
+                reconciled__reconciliation, reconciled__reconciliation.sparkSession, owner=self
+            )
         return {
             "reconciled__reconciliation": reconciled__reconciliation,
         }
@@ -1710,7 +1726,9 @@ class FulfillmentAnalyticsGenerated:
             summarized__daily_summary, DAILY_FULFILLMENT_SUMMARY_SCHEMA, name="DailyFulfillmentSummary", mode="strict"
         )
         if not summarized__daily_summary.isStreaming:
-            summarized__daily_summary = apply_plan_boundary(summarized__daily_summary, self.spark)
+            summarized__daily_summary = apply_plan_boundary(
+                summarized__daily_summary, summarized__daily_summary.sparkSession, owner=self
+            )
         return {
             "summarized__daily_summary": summarized__daily_summary,
         }
@@ -1750,7 +1768,9 @@ class FulfillmentAnalyticsGenerated:
             mode="strict",
         )
         if not summarized__warehouse_load_summary.isStreaming:
-            summarized__warehouse_load_summary = apply_plan_boundary(summarized__warehouse_load_summary, self.spark)
+            summarized__warehouse_load_summary = apply_plan_boundary(
+                summarized__warehouse_load_summary, summarized__warehouse_load_summary.sparkSession, owner=self
+            )
         return {
             "summarized__warehouse_load_summary": summarized__warehouse_load_summary,
         }
@@ -1983,7 +2003,9 @@ class EvaluateFulfillmentGenerated:
             mode="strict",
         )
         if not evaluated__evaluations.isStreaming:
-            evaluated__evaluations = apply_plan_boundary(evaluated__evaluations, self.spark)
+            evaluated__evaluations = apply_plan_boundary(
+                evaluated__evaluations, evaluated__evaluations.sparkSession, owner=self
+            )
         return {
             "evaluated__evaluations": evaluated__evaluations,
         }
@@ -2091,7 +2113,9 @@ class EvaluateFulfillmentGenerated:
             .alias("target_attained"),
         )
         if not evaluated__daily_summary.isStreaming:
-            evaluated__daily_summary = apply_plan_boundary(evaluated__daily_summary, self.spark)
+            evaluated__daily_summary = apply_plan_boundary(
+                evaluated__daily_summary, evaluated__daily_summary.sparkSession, owner=self
+            )
         return {
             "evaluated__daily_summary": evaluated__daily_summary,
         }
@@ -2115,7 +2139,7 @@ class FulfillmentGenerated(
         self.ctx = ctx
 
     def close(self) -> None:
-        close_plan_boundaries(self.spark)
+        close_plan_boundaries(self.spark, owner=self)
 
     def run(
         self,

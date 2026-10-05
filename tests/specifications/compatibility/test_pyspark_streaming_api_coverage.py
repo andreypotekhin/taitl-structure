@@ -153,7 +153,7 @@ def test_public_streaming_catalog_uses_v9_status_language() -> None:
     assert "| Global ordering, limits, and offsets | streaming-ineligible |" in streaming
     assert "| Analytic windows and selected-row helpers | streaming-ineligible |" in streaming
     assert "| `foreachBatch` side-effect sinks | caller-owned-guided |" in streaming
-    assert "| Row-level `foreach` sinks | design-gated |" in streaming
+    assert "| Row-level `foreach` sinks | caller-owned-guided |" in streaming
 
 
 def _v9_entries() -> list[dict[str, Any]]:

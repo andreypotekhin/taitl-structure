@@ -214,6 +214,10 @@ class Transform:
         """Run this transform invocation through a Structure session."""
         return session.run(self)
 
+    def run_batch(self, session, handoff):
+        """Run this batch transform invocation for a declared foreachBatch handoff."""
+        return session.run_batch(handoff, self)
+
     @classmethod
     def effective_transform_options(cls) -> dict[str, object]:
         """Resolve explicit class options without inferring transform streaming."""
