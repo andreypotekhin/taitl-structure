@@ -15,6 +15,7 @@ class TransformResult(Mapping[str, Any]):
     _structure_output_aliases: Mapping[str, tuple[str, ...]]
     _structure_sinks: Mapping[str, SinkResult]
     _structure_single: bool
+    state_budget: Mapping[str, object]
     schema: ResultSchemas
 
     def __init__(
@@ -29,6 +30,7 @@ class TransformResult(Mapping[str, Any]):
         sinks: Mapping[str, SinkResult] | None = None,
         stage_outputs_enabled: bool = True,
         stage_names: tuple[str, ...] = (),
+        state_budget: Mapping[str, object] | None = None,
     ) -> None:
         values = dict(outputs)
         output_aliases = dict(aliases or {})
@@ -51,6 +53,7 @@ class TransformResult(Mapping[str, Any]):
         object.__setattr__(self, "_structure_stages", MappingProxyType(dict(stage_values)))
         object.__setattr__(self, "_structure_stage_outputs_enabled", stage_outputs_enabled)
         object.__setattr__(self, "_structure_stage_names", frozenset(stage_names))
+        object.__setattr__(self, "state_budget", MappingProxyType(dict(state_budget or {})))
         object.__setattr__(self, "schema", ResultSchemas(schema, aliases=output_aliases))
 
     @property
@@ -113,6 +116,10 @@ class TransformResult(Mapping[str, Any]):
         if reserved:
             raise ValueError(f"TransformResult sink names are reserved: {', '.join(sorted(reserved))}")
         object.__setattr__(self, "_structure_sinks", MappingProxyType(sink_values))
+        return self
+
+    def _structure_with_state_budget(self, state_budget: Mapping[str, object]) -> TransformResult:
+        object.__setattr__(self, "state_budget", MappingProxyType(dict(state_budget)))
         return self
 
     def _alias_index(self, aliases: Mapping[str, tuple[str, ...]]) -> dict[str, str]:

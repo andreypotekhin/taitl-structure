@@ -15,6 +15,7 @@ from structure.core.plugins.api.Plugin import Plugin
 from structure.core.plugins.model.PluginConfiguration import PluginConfiguration
 from structure.core.runtime.session.model.RuntimeDiagnostic import RuntimeDiagnostic
 from structure.core.runtime.session.model.SinkResult import SinkResult
+from structure.core.runtime.session.model.StateBudgetGuard import StateBudgetGuard
 from structure.core.runtime.session.model.StructureRuntimeError import StructureRuntimeError
 from structure.core.runtime.session.model.TransformResult import TransformResult
 from structure.core.sources.api import Sources
@@ -124,6 +125,7 @@ class StructureSession:
         if not isinstance(result, TransformResult):
             raise TypeError(f"Plugin {self.target!r} returned an invalid execution result.")
         result._structure_with_schema(schemas.outputs, aliases=schemas.output_aliases)
+        result._structure_with_state_budget(self._state_budget_policy(artifact.payload))
         if artifact.transform_plan.sinks:
             sink_results = {}
             for sink in artifact.transform_plan.sinks:
@@ -135,6 +137,104 @@ class StructureSession:
                 sink_results[sink.name] = SinkResult(dataframe=result[sink.output], writer=writer)
             result._structure_with_sinks(sink_results)
         return result
+
+    def state_budget_guard(self, result: TransformResult) -> StateBudgetGuard:
+        """Create a guard that the caller may attach to its own streaming query."""
+        if not isinstance(result, TransformResult):
+            raise TypeError("state_budget_guard(result) requires a Structure TransformResult")
+        return StateBudgetGuard(runtime=self.runtime, policy=result.state_budget)
+
+    def _state_budget_policy(self, payload: object) -> dict[str, object]:
+        from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
+
+        if not isinstance(payload, PySparkExecutionPlan):
+            return {}
+        memory = payload.transform_memory_budget
+        source = getattr(memory, "memory_source", None) or payload.state_budget_memory_source
+        fallback = getattr(memory, "fallback_mb", None)
+        if fallback is None:
+            fallback = payload.state_budget_fallback_mb
+        active_mb = self._active_rocksdb_limit()
+        warning = None
+        resolved_mb = None
+        resolved_source = None
+        if source == "spark":
+            if active_mb is None:
+                raise RuntimeError(
+                    "State memory budget requested memory_source='spark', but no active bounded RocksDB pool is "
+                    "configured. Set the RocksDB provider, enable spark.sql.streaming.stateStore.rocksdb.boundedMemoryUsage, "
+                    "and set spark.sql.streaming.stateStore.rocksdb.maxMemoryUsageMB before compiling the query."
+                )
+            resolved_mb = active_mb
+            resolved_source = "spark"
+        elif source == "prefer_spark":
+            if active_mb is not None:
+                resolved_mb = active_mb
+                resolved_source = "spark"
+            else:
+                resolved_mb = fallback
+                resolved_source = "fallback"
+                warning = "Fallback memory is a declaration only; Spark runtime memory enforcement is not active."
+        operators = []
+        for step in payload.steps:
+            for index, operation in enumerate(step.operations):
+                stateful = (
+                    operation.kind == "drop_duplicates"
+                    or operation.aggregate is not None
+                    or operation.stateful_transform is not None
+                    or operation.join is not None
+                )
+                if not stateful:
+                    continue
+                budget = operation.state_budget
+                operators.append(
+                    {
+                        "id": f"{step.ordinal}:{index}",
+                        "step": step.name,
+                        "operation": operation.kind,
+                        "max_rows": None if budget is None else budget.max_rows,
+                        "max_state_bytes": None if budget is None else budget.max_state_bytes,
+                    }
+                )
+        return {
+            "checking": payload.state_budget_checking,
+            "memory_source": resolved_source or source,
+            "memory_mb": resolved_mb,
+            "warning": warning,
+            "track_rows": self._track_state_rows(),
+            "operators": tuple(operators),
+        }
+
+    def _active_rocksdb_limit(self) -> int | None:
+        conf = getattr(self.runtime, "conf", None)
+        if conf is None:
+            return None
+        provider = self._conf_value(conf, "spark.sql.streaming.stateStore.providerClass")
+        bounded = self._conf_value(conf, "spark.sql.streaming.stateStore.rocksdb.boundedMemoryUsage")
+        limit = self._conf_value(conf, "spark.sql.streaming.stateStore.rocksdb.maxMemoryUsageMB")
+        if "rocksdb" not in str(provider or "").lower() or str(bounded).lower() != "true":
+            return None
+        try:
+            parsed = int(limit)
+        except (TypeError, ValueError):
+            return None
+        return parsed if parsed > 0 else None
+
+    def _track_state_rows(self) -> bool | None:
+        conf = getattr(self.runtime, "conf", None)
+        if conf is None:
+            return None
+        value = self._conf_value(conf, "spark.sql.streaming.stateStore.rocksdb.trackTotalNumberOfRows")
+        if value is None:
+            return True
+        return str(value).lower() != "false"
+
+    @staticmethod
+    def _conf_value(conf, key: str):
+        try:
+            return conf.get(key)
+        except Exception:
+            return None
 
     def _run_plugin(self, invocation: Transform) -> TransformResult:
         configuration = self._plugin_configuration()
@@ -259,10 +359,7 @@ class StructureSession:
         return self.run(candidates[0](**inputs))
 
     def _validate_inputs(self, invocation: Transform, artifact: CompiledTransform) -> None:
-        if isinstance(invocation, TransformPipeline):
-            declared = set(input.name for input in artifact.transform_plan.inputs)
-        else:
-            declared = set(type(invocation)._structure_inputs)
+        declared = {input.name for input in artifact.transform_plan.inputs}
         bound = set(invocation._structure_bound_inputs)
         optional = {input.name for input in artifact.transform_plan.inputs if input.optional}
         missing = sorted(declared - bound - optional)

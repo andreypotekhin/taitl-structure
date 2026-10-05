@@ -17,3 +17,5 @@ class StreamingStateStage:
     completion_window: str | None = None
     output_modes: tuple[str, ...] = ()
     allows_later_stateful: bool = False
+    max_rows: int | None = None
+    max_state_bytes: int | None = None

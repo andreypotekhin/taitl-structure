@@ -4,6 +4,7 @@ from typing import Any, cast
 from structure.plugin.api.v1.model.StepAuthoringRequest import StepAuthoringRequest
 from structure.plugin.api.v1.model.StepResultPlan import StepResultPlan
 from structure.plugin.api.v1.model.StepSinkCapture import StepSinkCapture
+from structure.plugin.pyspark.delta.model import DeltaMutationResult
 from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.model.Projection import Projection
 from structure.plugin.pyspark.dsl.operations.CacheOperations import cache_operation, reserved_operations
@@ -39,12 +40,36 @@ class CapturePySparkStep:
         context.operations.extend(self._reserved_operations(request))
         results: tuple[PySparkResultBody, ...]
         if request.effect:
-            if value is not None:
-                raise TypeError(f"Delta effect step {request.name} must return None")
             if context.operations or context.filters or context.joins or not context.delta_mutations:
                 raise TypeError(f"Delta effect step {request.name} must contain Delta mutations only")
-            if any(mutation.target != request.results[0].lane for mutation in context.delta_mutations):
-                raise TypeError(f"Delta effect step {request.name} may mutate only its declared output")
+            if value is None:
+                if any(mutation.target != request.results[0].lane for mutation in context.delta_mutations):
+                    raise TypeError(
+                        f"Delta effect step {request.name} must target its declared delta_output(...) relation"
+                    )
+            elif isinstance(value, DeltaMutationResult):
+                if len(context.delta_mutations) != 1 or value.mutation is not context.delta_mutations[0]:
+                    raise TypeError("A schema-evolving Delta step must return its sole mutation result directly")
+                result = request.results[0]
+                if result.binding != "delta":
+                    raise TypeError("A schema-evolving Delta step must resolve to a delta_output(...) result")
+                target = next(
+                    (
+                        item
+                        for item in request.inputs
+                        if item.source == value.mutation.target and item.binding == "delta_input"
+                    ),
+                    None,
+                )
+                if target is None or not value.mutation.schema_evolution:
+                    raise TypeError("Schema evolution must target a declared delta_input(...) relation")
+                if target.schema is result.schema:
+                    raise TypeError("Schema evolution requires different input and output Structure Schemas")
+                mutation = replace(value.mutation, output=result.lane, output_schema=cast(type, result.schema))
+                context.delta_mutations[0] = mutation
+                value = DeltaMutationResult(mutation)
+            else:
+                raise TypeError(f"Delta effect step {request.name} must return None or a Delta mutation result")
             results = (PySparkResultBody(),)
             if context.foreach:
                 raise TypeError("foreach(row, sink) cannot be used in a Delta effect step")
@@ -76,7 +101,9 @@ class CapturePySparkStep:
         sink_captures = self._sink_captures(value, context.foreach, request)
         first = results[0]
         if first.aggregate is not None:
-            context.record_aggregate(first.aggregate)
+            context.record_aggregate(first.aggregate, context.aggregate_state_budget)
+        elif context.aggregate_state_budget is not None:
+            raise TypeError("budget(...) after group_by(...) requires an aggregate result in the same step")
         operations = tuple(
             replace(operation, source_span=request.primary_span) if request.primary_span is not None else operation
             for operation in context.operations

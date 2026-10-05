@@ -14,6 +14,7 @@ from structure.core.compiler.frontend.logic.CompilerTransformMember import Compi
 from structure.core.compiler.frontend.logic.CompilerTransformMemberCollector import CompilerTransformMemberCollector
 from structure.core.compiler.frontend.logic.ComposeTransformGraph import ComposeTransformGraph
 from structure.core.compiler.frontend.logic.ComposeTransformPlans import ComposeTransformPlans
+from structure.core.compiler.frontend.logic.DeltaEvolution import evolving_delta_outputs
 from structure.core.compiler.frontend.logic.GuardTransformStepCalls import GuardTransformStepCalls
 from structure.core.compiler.frontend.logic.PatchParentStepCalls import ParentStepInvocation, PatchParentStepCalls
 from structure.core.compiler.ir.model.HookPlan import HookPlan
@@ -161,6 +162,8 @@ class CompileTransform:
             )
 
         inputs = self._input_collector.collect(transform_class)
+        evolving_outputs = evolving_delta_outputs(transform_class)
+        inputs = [item for item in inputs if item.name not in evolving_outputs]
         if not inputs:
             raise self._error(
                 "DSL-E0402",
@@ -676,6 +679,13 @@ class CompileTransform:
             explicit_outputs=explicit_outputs,
             default_lane=bindings[0].lane,
         )
+        delta_result = len(output_lanes) == 1 and (
+            (declaration := transform_class._structure_outputs.get(output_lanes[0])) is not None
+            and declaration.binding == "delta"
+        )
+        effect_candidate = effect_schema is not None or (
+            delta_result and any(binding.binding in {"delta", "delta_input", "delta_output"} for binding in bindings)
+        )
         options = self._step_options(item.owner, metadata)
         parent_call: dict[str, object] = {}
         authoring_body: object | None = None
@@ -702,7 +712,18 @@ class CompileTransform:
                 for binding in bindings
             ),
             results=tuple(
-                StepAuthoringResult(schema=schema, lane=lane, frame=lane, ordinal=ordinal)
+                StepAuthoringResult(
+                    schema=schema,
+                    lane=lane,
+                    frame=lane,
+                    ordinal=ordinal,
+                    binding=(
+                        "delta"
+                        if transform_class._structure_outputs.get(lane) is not None
+                        and transform_class._structure_outputs[lane].binding == "delta"
+                        else "dataframe"
+                    ),
+                )
                 for ordinal, (schema, lane) in enumerate(zip(output_schemas, output_lanes, strict=True))
             ),
             options=options,
@@ -713,7 +734,7 @@ class CompileTransform:
                 project_root=_diagnostic_project_root.get(),
             ),
             plugin_options=plugin_options,
-            effect=effect_schema is not None,
+            effect=effect_candidate,
             sinks=tuple(sink_bindings),
         )
         authoring_session = authoring_api.open_step(request)
@@ -828,7 +849,7 @@ class CompileTransform:
                 options=options,
                 origin=TransformMemberOrigin.of(item.owner, name),
                 plugin_body=authoring_body,
-                effect=effect_schema is not None,
+                effect=bool(capture.effect or effect_candidate),
                 sinks=capture.sinks,
             )
         )
@@ -1399,6 +1420,14 @@ class CompileTransform:
             )
         if len(output_schemas) == 1:
             declaration = declarations[0] if declarations else None
+            if declaration is None:
+                delta_matches = [
+                    item
+                    for item in transform_class._structure_outputs.values()
+                    if item.binding == "delta" and item.schema is output_schemas[0]
+                ]
+                if len(delta_matches) == 1:
+                    declaration = delta_matches[0]
             return (
                 self._output_lane(
                     transform_class,

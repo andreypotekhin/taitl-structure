@@ -157,8 +157,10 @@ For release verification, use the Compose matrix rather than a locally installed
 
     make integration BACKEND=pyspark35
     make integration BACKEND=pyspark40
+    make integration BACKEND=pyspark41
 
-Run `spark-connect35` and `spark-connect40` only for a feature family whose capability profile claims Spark Connect
+The initial `pyspark41` lane selects the runtime-version check and V11 integration tests only. Run
+`spark-connect35` and `spark-connect40` only for a feature family whose capability profile claims Spark Connect
 support. Record the exact commands, runtime versions, and passed/skipped totals in the hardening plan's
 `Outcomes & Retrospective`; this concise evidence record replaces a formal sign-off or scorecard.
 
@@ -343,9 +345,14 @@ Run one backend's test selection:
 ```text
 make integration BACKEND=pyspark35
 make integration BACKEND=pyspark40
+make integration BACKEND=pyspark41
 make integration BACKEND=spark-connect35
 make integration BACKEND=spark-connect40
 ```
+
+The ordinary PySpark 4.1 lane currently runs `tests/integration/pyspark/backend/test_runtime_versions.py` and
+`tests/integration/pyspark/v11` only. Other integration tests continue to run on their existing backends; Connect 4.1
+is a later, separate lane.
 
 Integration runs retain the selected local Spark master/worker services and the versioned Spark Connect dependency
 caches; only the disposable test runner is removed. This makes repeated focused runs fast without sharing test process

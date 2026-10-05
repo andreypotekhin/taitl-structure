@@ -222,14 +222,18 @@ This matrix maps early sprints to specification sections and major deliverables.
 
 ## V11
 
+- As a developer, I can chain watermarked deduplication with a watermarked event-time window aggregate on proven
+  ordinary PySpark 3.5/4.0 profiles, declare a budget beside each operation, and retain dedupe state across a caller-owned
+  checkpoint restart. Evidence: `tests/user_stories/23_streaming_transformation_roadmap/chained_dedupe_window/` and
+  `tests/integration/pyspark/v11/test_chained_stateful_operators.py`.
 - As a developer, I can select the exact PySpark `>=4.1,<4.2` profile and see whether ordinary or Spark Connect is the
   supported variant for an operation.
 - As a developer, I can look up every reviewed PySpark 4.1 addition and find one status, typed contract or boundary,
   diagnostic, test, and evidence path.
 - As a developer, I can use admitted 4.1 expressions and relational query operations with online/generated parity,
   declared schema/cardinality, and explainable dependencies.
-- As a developer, I receive an actionable caller-owned remedy for observations, sketches, Arrow UDF/UDTFs, and
-  row-based `transformWithState` when they remain outside Structure's compiler-visible contract.
+- As a developer, I can inspect the explicit typed/native compiler surfaces and remaining runtime gates for row and
+  Pandas `transformWithState`, while observations, sketches, and Arrow UDF/UDTFs retain their documented boundaries.
 - As a maintainer, I can run six version/variant integration lanes for PySpark 3.5, 4.0, and 4.1 without dropping
   regression coverage.
 - As a maintainer, I can close V11 only after the API Catalog, API Reference, capability ledgers, diagnostics, generated

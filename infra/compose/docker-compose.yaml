@@ -77,6 +77,45 @@ services:
       - type: bind
         source: ${STRUCTURE_ROOT:-../..}/.pytest-workspace-tmp/integration
         target: /workspace/.pytest-workspace-tmp/integration
+  spark41-master:
+    image: structure-integration-pyspark41
+    build:
+      context: ${STRUCTURE_ROOT:-../..}
+      dockerfile: infra/compose/images/pyspark/Dockerfile
+      args:
+        PYSPARK_VERSION: ${PYSPARK41_VERSION:-4.1.0}
+    command: >
+      spark-class org.apache.spark.deploy.master.Master --host 0.0.0.0 --port 7077 --webui-port 8080
+    ports:
+      - "${SPARK41_MASTER_PORT:-57077}:7077"
+      - "${SPARK41_MASTER_UI_PORT:-58080}:8080"
+    volumes:
+      - type: bind
+        source: ${STRUCTURE_ROOT:-../..}/.pytest-workspace-tmp/integration
+        target: /workspace/.pytest-workspace-tmp/integration
+  spark41-worker:
+    image: structure-integration-pyspark41
+    environment:
+      PYTHONPATH: /workspace:/workspace/src:/workspace/res
+    build:
+      context: ${STRUCTURE_ROOT:-../..}
+      dockerfile: infra/compose/images/pyspark/Dockerfile
+      args:
+        PYSPARK_VERSION: ${PYSPARK41_VERSION:-4.1.0}
+    command: >
+      spark-class org.apache.spark.deploy.worker.Worker spark://spark41-master:7077 --webui-port 8081
+    depends_on:
+      - spark41-master
+    ports:
+      - "${SPARK41_WORKER_UI_PORT:-58081}:8081"
+    volumes:
+      - type: bind
+        source: ${STRUCTURE_ROOT:-../..}
+        target: /workspace
+        read_only: true
+      - type: bind
+        source: ${STRUCTURE_ROOT:-../..}/.pytest-workspace-tmp/integration
+        target: /workspace/.pytest-workspace-tmp/integration
   structure-integration-pyspark35:
     image: structure-integration-pyspark35
     build:
@@ -126,6 +165,33 @@ services:
       STRUCTURE_SPARK35_MASTER: spark://spark35-master:7077
       STRUCTURE_SPARK40_MASTER: spark://spark40-master:7077
       STRUCTURE_SPARK_JARS_PACKAGES: org.apache.sedona:sedona-spark-shaded-4.0_2.13:1.9.0,org.datasyslab:geotools-wrapper:1.9.0-33.5
+    volumes:
+      - type: bind
+        source: ${STRUCTURE_ROOT:-../..}
+        target: /workspace
+        read_only: true
+      - type: bind
+        source: ${STRUCTURE_ROOT:-../..}/.pytest-workspace-tmp/integration
+        target: /workspace/.pytest-workspace-tmp/integration
+
+  structure-integration-pyspark41:
+    image: structure-integration-pyspark41
+    build:
+      context: ${STRUCTURE_ROOT:-../..}
+      dockerfile: infra/compose/images/pyspark/Dockerfile
+      args:
+        PYSPARK_VERSION: ${PYSPARK41_VERSION:-4.1.0}
+    command: run-integration pyspark41
+    depends_on:
+      - spark41-master
+      - spark41-worker
+    environment:
+      STRUCTURE_EXPECTED_PYSPARK: ${PYSPARK41_VERSION:-4.1.0}
+      STRUCTURE_EXPECTED_SPARK: ${PYSPARK41_VERSION:-4.1.0}
+      STRUCTURE_INTEGRATION_BACKEND: pyspark41
+      STRUCTURE_SPARK_DRIVER_MEMORY: ${STRUCTURE_SPARK_DRIVER_MEMORY:-}
+      STRUCTURE_SPARK_MASTER: spark://spark41-master:7077
+      STRUCTURE_SPARK41_MASTER: spark://spark41-master:7077
     volumes:
       - type: bind
         source: ${STRUCTURE_ROOT:-../..}

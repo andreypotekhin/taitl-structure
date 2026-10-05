@@ -23,8 +23,14 @@ Run one backend's test selection:
 
     make integration BACKEND=pyspark35
     make integration BACKEND=pyspark40
+    make integration BACKEND=pyspark41
     make integration BACKEND=spark-connect35
     make integration BACKEND=spark-connect40
+
+The ordinary PySpark 4.1 runner executes only the backend version check and `tests/integration/pyspark/v11`. It does
+not run the 3.5/4.0 regression tree or the concept tests. `spark-connect41` is not configured yet. The tracked
+environment template pins PySpark 4.1.0 and separate 4.1 ports; Compose uses those values as defaults if an existing
+untracked `.env` predates this lane.
 
 The Spark Connect lanes are experimental. They start the Spark Connect gateway inside the test runner container and do
 not add separate Connect services to the Compose stack. The gateway defaults to a 3 GiB driver heap, which can be

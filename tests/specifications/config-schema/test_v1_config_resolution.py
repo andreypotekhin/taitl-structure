@@ -46,6 +46,9 @@ def test_v1_config_uses_defaults_and_tracks_sources() -> None:
         assert config.allow_output_to_input is True
         assert config.allow_to_reassign_output is True
         assert config.allow_stage_outputs is True
+        assert config.state_budget_checking == "compile_time_check"
+        assert config.state_budget_memory_source is None
+        assert config.state_budget_fallback_mb is None
         assert config.execution_mode == "online"
         assert dict(config.plugin_options["pyspark"])["profile"] == ">=3.5,<4.1"
         assert dict(config.plugin_options["pyspark"])["variant"] == "ordinary"
@@ -72,6 +75,34 @@ def test_v1_output_policies_accept_independent_overrides_and_fingerprint_them() 
         StructureConfig.create(allow_output_to_input=True, allow_to_reassign_output=True)
     )
     assert options.fingerprint() != changed.fingerprint()
+
+
+def test_v11_state_budget_policy_is_validated_and_fingerprinted() -> None:
+    config = StructureConfig.create(
+        state_budget_checking="declaration_and_runtime",
+        state_budget_memory_source="prefer_spark",
+        state_budget_fallback_mb=768,
+    )
+    options = CompilerArtifactOptions.from_config(config)
+
+    assert options.state_budget_checking == "declaration_and_runtime"
+    assert options.state_budget_memory_source == "prefer_spark"
+    assert options.state_budget_fallback_mb == 768
+    assert options.fingerprint() != CompilerArtifactOptions.from_config(StructureConfig.create()).fingerprint()
+
+
+@pytest.mark.parametrize(
+    "settings",
+    [
+        {"state_budget_checking": "observe"},
+        {"state_budget_memory_source": "prefer_spark"},
+        {"state_budget_memory_source": "spark", "state_budget_fallback_mb": 768},
+        {"state_budget_memory_source": "prefer_spark", "state_budget_fallback_mb": True},
+    ],
+)
+def test_v11_state_budget_policy_rejects_invalid_settings(settings) -> None:
+    with pytest.raises(ConfigError):
+        StructureConfig.create(**settings)
 
 
 def test_v1_disable_warning_codes_are_fingerprinted_and_filtered() -> None:

@@ -7,6 +7,8 @@ from structure.core.runtime.session.api import (
     SinkResult,
     StructureRuntimeError,
     StructureSession,
+    StateBudgetExceeded,
+    StateBudgetGuard,
     TransformResult,
 )
 
@@ -20,6 +22,8 @@ __all__ = [
     "Schemas",
     "StructureRuntimeError",
     "StructureSession",
+    "StateBudgetExceeded",
+    "StateBudgetGuard",
     "TransformResult",
     "TransformSchemas",
 ]

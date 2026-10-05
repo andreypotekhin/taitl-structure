@@ -33,6 +33,9 @@ class CompilerOptions:
     allow_output_to_input: bool
     allow_to_reassign_output: bool
     allow_stage_outputs: bool
+    state_budget_checking: str
+    state_budget_memory_source: str | None
+    state_budget_fallback_mb: int | None
     prune_unused_steps: bool
     schema_types_key: str | None = None
     plugin_options: Mapping[str, Mapping[str, object]] = field(default_factory=lambda: MappingProxyType({}))
@@ -84,6 +87,9 @@ class CompilerOptions:
             allow_output_to_input=config.allow_output_to_input,
             allow_to_reassign_output=config.allow_to_reassign_output,
             allow_stage_outputs=config.allow_stage_outputs,
+            state_budget_checking=config.state_budget_checking,
+            state_budget_memory_source=config.state_budget_memory_source,
+            state_budget_fallback_mb=config.state_budget_fallback_mb,
             prune_unused_steps=config.prune_unused_steps,
             plugin_options=config.plugin_options,
             spark_sql=config.spark_sql,
@@ -112,6 +118,9 @@ class CompilerOptions:
             self.allow_output_to_input,
             self.allow_to_reassign_output,
             self.allow_stage_outputs,
+            self.state_budget_checking,
+            self.state_budget_memory_source,
+            self.state_budget_fallback_mb,
             self.prune_unused_steps,
             self._plugin_options_key(),
             tuple(sorted(self.spark_sql.items())),

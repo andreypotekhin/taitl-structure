@@ -13,13 +13,20 @@ narrow typed contract must specify input/output schemas, nullability, batching, 
 
 ## Row-based transformWithState
 
-`transformWithState` owns user-defined state, initialization, timers or timeouts, checkpoint recovery, and output
-cardinality. It is not admitted by the existing one-stateful-operation policy. V11 documents a design gate, the
-caller-owned recipe boundary, and the evidence required for a future promotion; it does not generate state stores or
-streaming lifecycle code.
+Structure implements `transform_with_state(...)` for ordinary PySpark `>=4.1,<4.2`. It captures a typed processor
+declared with `StateProcessor[Input, Key, State, Output]` and `@state_processor`, or an opaque native PySpark processor
+bound with `external_state_processor(...)`. Typed callbacks use one `ValueState` and timer operations; processor bodies
+remain ordinary worker Python. The compiler lowers the operation to a shared recipe used by online and generated
+execution and classifies it as one stateful stage.
+
+The row operation is not a general callback or query-lifecycle escape hatch. It has explicit composition and schema rules;
+Spark Connect and PySpark 4.0 row execution are not claimed. Positive support remains gated until the ordinary 4.1 runtime
+proves typed and native behavior, timers, online/generated parity, and same-checkpoint restart. The separate
+`transform_with_state_in_pandas(...)` operation covers the Pandas API on ordinary PySpark 4.0 and 4.1 and has its own
+dependency and runtime evidence gate. `applyInPandasWithState` remains outside the Structure compiler surface.
 
 ## Acceptance
 
-Unsupported use produces a stable capability/diagnostic message naming the API family, why it is outside the current
-contract, and the caller-owned PySpark alternative. Generated-source scans prove that no gated Python or state API is
-emitted accidentally.
+Unsupported profiles and compositions produce stable diagnostics naming the required target or state-stage constraint.
+Generated-source scans verify that only the explicit state operations are emitted and that generated transforms do not
+own sources, sinks, checkpoints, or query lifecycle.

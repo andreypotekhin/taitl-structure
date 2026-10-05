@@ -117,14 +117,30 @@ class RunOnlinePySparkTransform:
                 for mutation in step.delta_mutations:
                     try:
                         execute_delta_mutation(mutation, tables=delta_tables, frames=frames, functions=F)
+                        if mutation.output is not None:
+                            if mutation.output_schema is None:
+                                raise ValueError("Delta schema evolution is missing its declared output schema")
+                            validate_delta_table(
+                                delta_tables[mutation.target],
+                                mutation.output_schema,
+                                mode=step.delta_check_match or plan.delta_check_match,
+                            )
+                            delta_tables[mutation.output] = delta_tables[mutation.target]
                     except Exception as error:
                         error.add_note(f"Structure transform {plan.transform}, step {step.name}, Delta {mutation.kind}")
                         raise
                     refreshed = fresh_delta_frame(delta_tables[mutation.target])
                     frames[mutation.target] = refreshed
                     frames[f"input:{mutation.target}"] = refreshed
+                    if mutation.output is not None:
+                        frames[mutation.output] = refreshed
+                        frames[f"input:{mutation.output}"] = refreshed
                 for result in step.results:
-                    frames[result.frame] = fresh_delta_frame(delta_tables[result.frame])
+                    table_name = next(
+                        (mutation.output for mutation in step.delta_mutations if mutation.output == result.frame),
+                        step.delta_mutations[-1].target,
+                    )
+                    frames[result.frame] = fresh_delta_frame(delta_tables[table_name])
                 continue
             produced = self._step(
                 step,

@@ -27,6 +27,10 @@ class PySparkExecutionPlan:
     pruning: OptimizationReport | None = None
     delta_check_match: str = "expression"
     sinks: tuple[SinkPlan, ...] = ()
+    state_budget_checking: str = "compile_time_check"
+    state_budget_memory_source: str | None = None
+    state_budget_fallback_mb: int | None = None
+    transform_memory_budget: object | None = None
 
     @property
     def final_validation(self) -> PySparkValidationRecipe:

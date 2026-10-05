@@ -73,22 +73,35 @@ def execute_delta_mutation(mutation, *, tables, frames, functions):
         return evaluator.evaluate(expression, functions=functions, aliases=mapping)
 
     if mutation.kind == "delete":
+        assert mutation.predicate is not None
         table.delete(column(mutation.predicate))
         return
     if mutation.kind == "update":
+        assert mutation.predicate is not None
         table.update(
             condition=column(mutation.predicate), set={name: column(value) for name, value in mutation.assignments}
         )
         return
-    if mutation.kind != "merge" or mutation.source is None or mutation.source_scope is None:
+    if mutation.kind not in {"merge", "append"} or mutation.source is None:
         raise ValueError(f"Unknown Delta mutation {mutation.kind!r}")
     source = frames[mutation.source]
+    if mutation.kind == "append":
+        location = table.detail().select("location").first()["location"]
+        writer = source.write.format("delta").mode("append")
+        if mutation.schema_evolution:
+            writer = writer.option("mergeSchema", "true")
+        writer.save(location)
+        return
+    if mutation.source_scope is None or mutation.predicate is None:
+        raise ValueError("Delta merge mutation is missing its source scope or match predicate")
     mapping = {mutation.target_scope: "target", mutation.source_scope: "source"}
 
     def merged(expression):
         return column(expression, mapping)
 
     builder = table.alias("target").merge(source.alias("source"), merged(mutation.predicate))
+    if mutation.schema_evolution:
+        builder = builder.withSchemaEvolution()
     for clause in mutation.clauses:
         condition = None if clause.condition is None else merged(clause.condition)
         values = {name: merged(value) for name, value in clause.assignments}

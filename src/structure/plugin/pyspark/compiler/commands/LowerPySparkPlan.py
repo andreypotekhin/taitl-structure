@@ -12,6 +12,7 @@ from structure.plugin.pyspark.compiler.logic.maps.MapPySparkOutput import MapPyS
 from structure.plugin.pyspark.compiler.logic.maps.MapPySparkStep import MapPySparkStep
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.plugin.pyspark.compiler.model.PySparkStageOutputRecipe import PySparkStageOutputRecipe
+from structure.plugin.pyspark.dsl.operations.StateBudgetPlan import StateBudgetPlan
 
 
 class LowerPySparkPlan:
@@ -84,6 +85,10 @@ class LowerPySparkPlan:
             allow_stage_outputs=plan.allow_stage_outputs,
             delta_check_match=str((plan.options or {}).get("delta_check_match", delta_check_match)),
             sinks=plan.sinks,
+            state_budget_checking=str((plan.options or {}).get("state_budget_checking", "compile_time_check")),
+            state_budget_memory_source=cast(str | None, (plan.options or {}).get("state_budget_memory_source")),
+            state_budget_fallback_mb=cast(int | None, (plan.options or {}).get("state_budget_fallback_mb")),
+            transform_memory_budget=cast(StateBudgetPlan | None, (plan.options or {}).get("memory_budget")),
         )
 
     @staticmethod

@@ -70,6 +70,9 @@ class StructureConfigBuilder:
             allow_output_to_input=semantic_bool("allow_output_to_input"),
             allow_to_reassign_output=semantic_bool("allow_to_reassign_output"),
             allow_stage_outputs=bool(values["allow_stage_outputs"]),
+            state_budget_checking=str(values["state_budget_checking"]),
+            state_budget_memory_source=cast(str | None, values["state_budget_memory_source"]),
+            state_budget_fallback_mb=cast(int | None, values["state_budget_fallback_mb"]),
             prune_unused_steps=bool(values["prune_unused_steps"]),
             fail_on_diff=bool(values["fail_on_diff"]),
             spark_sql={

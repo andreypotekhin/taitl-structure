@@ -469,6 +469,17 @@ diagnostic_registry = DiagnosticRegistry(
             use_template="Treat the partition count as deployment tuning, not stable partition identity.",
         ),
         DiagnosticEntry(
+            code="STREAM-W0805",
+            severity="warning",
+            title="Streaming state budget is undeclared",
+            owner="streaming",
+            status="active",
+            docs="docs/Diagnostics.md#stream-w0805",
+            introduced="1.0.0",
+            problem_template="A stateful streaming operation has no explicit state budget declaration.",
+            use_template="Add budget(max_rows=..., max_state_bytes=...) after the operation or declare a transform memory budget.",
+        ),
+        DiagnosticEntry(
             code="STREAM-W0804",
             severity="warning",
             title="Streaming repartitioning is caller-tuned",

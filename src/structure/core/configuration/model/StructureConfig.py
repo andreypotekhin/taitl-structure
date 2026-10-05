@@ -35,6 +35,9 @@ class StructureConfig:
     allow_output_to_input: bool
     allow_to_reassign_output: bool
     allow_stage_outputs: bool
+    state_budget_checking: str
+    state_budget_memory_source: str | None
+    state_budget_fallback_mb: int | None
     prune_unused_steps: bool
     fail_on_diff: bool
     spark_sql: Mapping[str, object]

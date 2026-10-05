@@ -34,6 +34,11 @@ class PySparkStepSession:
         self._context = PySpark.symbolic_execution.open()(
             step=request.name,
             capture_special_exprs=request.capture_special_exprs,
+            delta_output_schema=(
+                request.results[0].schema
+                if len(request.results) == 1 and request.results[0].binding == "delta"
+                else None
+            ),
         )
         self._capture_pending = False
 
@@ -72,6 +77,7 @@ class PySparkStepSession:
                 body=body,
                 diagnostics=(),
                 sinks=body.sinks,
+                effect=bool(self._request.effect),
             )
         finally:
             if self._capture_pending:

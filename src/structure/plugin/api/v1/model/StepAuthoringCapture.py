@@ -10,3 +10,4 @@ class StepAuthoringCapture:
     body: object
     diagnostics: tuple[object, ...] = ()
     sinks: tuple[StepSinkCapture, ...] = ()
+    effect: bool = False

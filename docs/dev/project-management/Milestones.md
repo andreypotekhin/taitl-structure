@@ -459,8 +459,9 @@ The governing completed plan is
 The released PySpark 4.0/4.2 Variant implementation slice is complete; the repository has no PySpark 4.2 live lane,
 so `is_valid_variant(...)` retains capability-only evidence without a positive runtime claim. PySpark 4.3+ mutation
 helpers remain design-gated until released profiles exist. Global selected-row and broad analytic-window helpers are
-streaming-ineligible; finite grouped selected-value aggregates are admitted. Arbitrary state remains design-gated
-under the typed model specification.
+streaming-ineligible; finite grouped selected-value aggregates are admitted. The row `transform_with_state(...)` and
+Pandas `transform_with_state_in_pandas(...)` compiler surfaces are implemented; their support claims remain
+design-gated pending profile-specific runtime evidence.
 The dated execution schedule is
 `docs/dev/planning/P07302603.V9-closeout-and-release.plan.md`.
 - Diagnostics and explain output tell users whether a streaming issue should be fixed in Structure source,
@@ -528,6 +529,9 @@ Status: planned. V11 follows the V10 closeout and runs from Sprint 55 through Sp
   acceptance tests, native CHECK verification evidence, and an honest optional-runtime status.
 - Retained V9 gates have one normalized status each, explicit caller remedies and diagnostics, and evidence for available
   target lanes; XML and cost-based join reordering remain unexported and outside V11.
+- The retained-V9 stateful-chain gate admits only the two documented finite pairs; watermarked dedupe followed by an
+  event-time window aggregate has PySpark 3.5.0/4.0.0 parity, progress-guard, and checkpoint-restart evidence. Other
+  chains and profiles without live evidence remain gated.
 - The integration matrix runs PySpark 3.5, 4.0, and 4.1 in ordinary and Connect lanes without dropping regression
   coverage; generated artifacts are fresh; and `make build` passes.
 

@@ -109,6 +109,18 @@ Cause: The Docker build needs network access to operating-system and Python pack
 Fix: Confirm network access for Docker, then rerun `make integration`. If a PySpark patch version is unavailable,
 update `infra/compose/.env` and `infra/compose/.env_example` together and record the change in the active ExecPlan.
 
+### Problem (integration): Docker VM runs out of space while building a backend
+
+When: Running `make integration-rebuild BACKEND=pyspark41` or another image build.
+Error: Docker reports `no space left on device`; a later `apt-get update` can also report invalid repository signatures
+when it cannot write downloaded metadata.
+Cause: Docker's VM filesystem is full, even if the host filesystem has free space. Long-running Spark worker writable
+layers can occupy most of it.
+Fix: Inspect `docker system df -v` and check free space inside a running container with `docker exec <container> df -h /`.
+Finish any active integration jobs before stopping their workers. Remove only unused images or stale containers whose
+owners are known, or increase Docker Desktop's disk allocation, then rerun the build. Do not interpret the APT error as a
+package signing problem until the VM has free space.
+
 ### Problem (integration): Spark did not become ready
 
 When: Integration pytest starts but fails before executing the generated transform test.

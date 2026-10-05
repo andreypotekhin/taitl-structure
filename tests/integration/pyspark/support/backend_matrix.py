@@ -25,7 +25,7 @@ from structure.plugin.pyspark import PySpark
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.plugin.pyspark.execution.logic.PlanBoundary import close_plan_boundaries
 
-BACKENDS = ("pyspark35", "pyspark40", "spark-connect35", "spark-connect40")
+BACKENDS = ("pyspark35", "pyspark40", "pyspark41", "spark-connect35", "spark-connect40")
 CLASSIC_ONLY_TOKENS = (
     "SparkContext",
     "sparkContext",
@@ -148,6 +148,8 @@ def _target_profile() -> str:
         return ">=3.5,<4.0"
     if backend.endswith("40"):
         return ">=4.0,<4.1"
+    if backend.endswith("41"):
+        return ">=4.1,<4.2"
     return ">=3.5,<4.1"
 
 

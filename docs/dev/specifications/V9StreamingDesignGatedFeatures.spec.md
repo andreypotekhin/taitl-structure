@@ -83,20 +83,24 @@ stateful operation.
 
 ## Chained Stateful Operators
 
-The first admitted chained stateful shape must be only chained event-time window aggregation. All other chained
-stateful operators remain rejected until a separate specification adds them.
+Two exact chained stateful shapes are admitted: the existing two-stage event-time window aggregate pair, and the
+watermarked dedupe followed by one watermarked event-time window aggregate pair defined in
+`V11RetainedV9DesignGates.spec.md`. The latter is supported on ordinary PySpark 3.5.0 and 4.0.0 in Append mode with
+per-operation budget declarations and caller-owned checkpoint recovery. All other pairs remain rejected.
 
 The compiler must record state-stage metadata for every streaming aggregate, dedupe, session window, and stream-stream
 join. Each stage records operation family, event-time source, watermark source, grouping keys, required output mode,
 and whether a following stateful operation is allowed. When a transform adds a second stateful operation, the checker
-must decide whether the pair is the approved chained-window pair. If not, it fails before query start with a diagnostic
-that names both stateful operations. Explain output must show the ordered state-stage list.
+must decide whether the pair is one of the two approved shapes and enforce its event-time, watermark, output, and target
+constraints. If not, it fails before query start with a diagnostic that names both stateful operations. Explain output
+must show the ordered state-stage list.
 
 Acceptance for this gate requires tests that prove:
 
 - the approved chained-window pair is compatible;
+- explicit watermarked dedupe followed by a watermarked event-time window aggregate is compatible only in Append mode;
 - aggregate followed by dedupe is rejected;
-- dedupe followed by aggregate is rejected;
+- dedupe followed by an aggregate without the admitted event-time window contract is rejected;
 - stream-stream join followed by aggregate is rejected;
 - generated source contains no lifecycle calls or Spark actions.
 
@@ -177,9 +181,12 @@ The caller-owned recipe is accepted only when it shows this shape:
 
 ## Arbitrary State APIs
 
-Arbitrary state APIs remain design-gated until the typed state model exists. V9 should produce that implementation-ready
-model before closeout. A future implementation must define the model before exposing
-`applyInPandasWithState`, `transformWithState`, or any state processor API.
+This V9 design gate is superseded for the explicit V11 processor surfaces. Structure now implements row-based
+`transform_with_state(...)` for ordinary PySpark 4.1 and `transform_with_state_in_pandas(...)` for ordinary PySpark 4.0
+and 4.1. Their typed and opaque-native compiler paths, schema boundaries, processor modes, and streaming classification
+are documented in the V11 plans. They remain design-gated as support claims until profile-specific live timer,
+online/generated parity, and checkpoint-restart evidence passes. `applyInPandasWithState` and other unmodeled state APIs
+remain caller-owned; `ArbitraryStateContract` is an adoption-metadata validator, not a runtime.
 
 Required contract:
 

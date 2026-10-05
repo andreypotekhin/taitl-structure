@@ -171,7 +171,9 @@ The IR and shared PySpark recipe carry operation kind, input modes, watermarks, 
 output mode, and compatibility status. Online execution and generated rendering consume the same facts. Structure must
 not add sources, sinks, checkpoints, triggers, output-mode calls, query lifecycle calls, actions, Pandas/RDD boundaries,
 or hidden UDFs. Chained stateful operators, dynamic session gaps, sorting/limits, analytic windows, selected-row
-helpers, arbitrary state, and lifecycle ownership remain outside this migration slice until separately designed.
+helpers, and lifecycle ownership remain outside this migration slice until separately designed. Explicit row-based
+`transform_with_state(...)` and Pandas-based `transform_with_state_in_pandas(...)` operations are specified in V11
+plans; their compiler surfaces exist, while runtime support remains gated on profile-specific execution evidence.
 
 Evidence includes symbolic, capability, compatibility, generated-source, explain, online/generated parity, and live
 restart tests on the supported PySpark target lines. Test-owned fixtures own only their temporary source, sink,

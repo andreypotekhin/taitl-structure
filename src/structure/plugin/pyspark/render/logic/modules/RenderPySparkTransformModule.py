@@ -172,6 +172,18 @@ class RenderPySparkTransformModule:
                 lines.append(
                     f"from {item.schema.__module__} import {item.schema.__name__} as _StructureDeltaSchema_{index}"
                 )
+            output_schemas = tuple(
+                dict.fromkeys(
+                    mutation.output_schema
+                    for step in plan.steps
+                    for mutation in step.delta_mutations
+                    if mutation.output_schema is not None
+                )
+            )
+            for index, schema in enumerate(output_schemas, start=len(delta_inputs)):
+                lines.append(
+                    f"from {schema.__module__} import {schema.__name__} as _StructureDeltaOutputSchema_{schema.__name__}"
+                )
         return "\n".join(lines)
 
     def _unique(self, lines: list[str]) -> str:
@@ -323,6 +335,7 @@ class RenderPySparkTransformModule:
                     current=sources[output.source],
                     sources=sources,
                     backend_target=plan.backend.target,
+                    delta_check_match=plan.delta_check_match,
                 )
             )
             lines.append(f"        self.{fields[output.name]} = {output.name}")
@@ -375,6 +388,7 @@ class RenderPySparkTransformModule:
                     source_transform=source_transform,
                     generated_hooks=True,
                     backend_target=plan.backend.target,
+                    delta_check_match=plan.delta_check_match,
                 )
             )
             for result in step.results:
@@ -536,6 +550,7 @@ class RenderPySparkTransformModule:
                     sources=sources,
                     generated_hooks=self._options.enabled(generated_code_options, "embed_hooks"),
                     backend_target=plan.backend.target,
+                    delta_check_match=plan.delta_check_match,
                 )
             )
             for result in step.results:
@@ -738,6 +753,7 @@ class RenderPySparkTransformModule:
                     generated_hooks=generated_hooks,
                     backend_target=plan.backend.target,
                     frame_mapping="frames",
+                    delta_check_match=plan.delta_check_match,
                 )
             )
             methods.append("        return {")

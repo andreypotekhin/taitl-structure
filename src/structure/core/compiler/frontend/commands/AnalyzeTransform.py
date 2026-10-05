@@ -11,6 +11,7 @@ from structure.core.compiler.frontend.commands.CompileTransform import (
     _semantic_policies,
 )
 from structure.core.compiler.frontend.logic.CompilerTransformMember import CompilerTransformMember
+from structure.core.compiler.frontend.logic.DeltaEvolution import evolving_delta_outputs
 from structure.core.compiler.ir.model.StepPlan import StepPlan
 from structure.core.compiler.ir.model.StepResultPlan import StepResultPlan
 from structure.core.compiler.ir.model.TransformPlan import TransformPlan
@@ -92,6 +93,8 @@ class AnalyzeTransform(CompileTransform):
                 use="Declare at least one transform result with name = output(Schema).",
             )
         inputs = self._input_collector.collect(transform_class)
+        evolving_outputs = evolving_delta_outputs(transform_class)
+        inputs = [item for item in inputs if item.name not in evolving_outputs]
         if not inputs:
             raise self._error(
                 "DSL-E0402",
@@ -242,6 +245,10 @@ class AnalyzeTransform(CompileTransform):
             explicit_outputs=explicit_outputs,
             default_lane=bindings[0].lane,
         )
+        delta_result = len(output_lanes) == 1 and (
+            (declaration := transform_class._structure_outputs.get(output_lanes[0])) is not None
+            and declaration.binding == "delta"
+        )
         results = tuple(
             StepResultPlan(
                 schema=schema,
@@ -269,5 +276,6 @@ class AnalyzeTransform(CompileTransform):
             options=self._step_options(item.owner, metadata),
             origin=TransformMemberOrigin.of(item.owner, item.name),
             plugin_body=None,
-            effect=effect_schema is not None,
+            effect=effect_schema is not None
+            or (delta_result and any(binding.binding in {"delta", "delta_input", "delta_output"} for binding in bindings)),
         )

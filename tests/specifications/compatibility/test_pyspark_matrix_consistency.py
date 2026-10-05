@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import ast
+import os
 import re
+import subprocess
 from pathlib import Path
 
 
@@ -15,11 +17,35 @@ def test_pyspark_compatibility_matrix_matches_docs_and_compose_defaults() -> Non
     assert 'profile = ">=3.5,<4.1"' in docs
     assert _env_value(env, "PYSPARK35_VERSION") == "3.5.0"
     assert _env_value(env, "PYSPARK40_VERSION") == "4.0.0"
-    assert _backends(script) == ("pyspark35", "pyspark40", "spark-connect35", "spark-connect40")
+    assert _env_value(env, "PYSPARK41_VERSION") == "4.1.0"
+    assert _backends(script) == ("pyspark35", "pyspark40", "pyspark41", "spark-connect35", "spark-connect40")
+    assert '"pyspark41": ("spark41-master", "spark41-worker")' in script
+    assert "structure-integration-pyspark41" in compose
     assert "structure-integration-spark-connect35" in compose
     assert "structure-integration-spark-connect40" in compose
     assert "spark35-connect" not in compose
     assert "spark40-connect" not in compose
+
+
+def test_pyspark_4_1_runner_selects_v11_only(tmp_path) -> None:
+    captured = tmp_path / "pytest-arguments"
+    timeout = tmp_path / "timeout"
+    timeout.write_text('#!/bin/sh\nprintf "%s\\n" "$@" > "$STRUCTURE_CAPTURED_ARGS"\n', encoding="utf-8")
+    timeout.chmod(0o755)
+    environment = {
+        **os.environ,
+        "PATH": f"{tmp_path}:{os.environ['PATH']}",
+        "STRUCTURE_CAPTURED_ARGS": str(captured),
+    }
+    runner = Path("infra/compose/images/pyspark/run-integration.sh").resolve()
+
+    subprocess.run(["bash", str(runner), "pyspark41"], check=True, env=environment)
+    arguments = captured.read_text(encoding="utf-8").splitlines()
+
+    assert "/workspace/tests/integration/pyspark/backend/test_runtime_versions.py" in arguments
+    assert "/workspace/tests/integration/pyspark/v11" in arguments
+    assert "/workspace/tests/integration" not in arguments
+    assert "/workspace/tests/concepts/live_pyspark" not in arguments
 
 
 def test_public_docs_use_target_variant_and_do_not_claim_v4_only_spark_connect() -> None:

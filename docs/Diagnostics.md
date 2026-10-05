@@ -233,6 +233,13 @@ tuning choice; it does not establish stable output order or partition identity.
 Hash repartitioning shuffles streaming rows and can affect throughput. Treat the partition count and hash keys as
 deployment tuning choices; they do not establish stable output order or partition identity.
 
+### STREAM-W0805
+
+A stateful streaming operation has no explicit state budget declaration. Add `budget(max_rows=..., max_state_bytes=...)`
+immediately after the operation to declare its limits, or declare `memory_budget = budget(memory_source=...)` on the
+transform when the deployment provides a shared memory policy. Compile-time checking reports declarations; runtime
+enforcement requires an attached state budget guard and Spark progress metrics that can be mapped to each operator.
+
 ### CRYPTO-W0801
 
 An AES encryption expression uses a caller-supplied IV. Prefer Spark's generated IV, or prove that the supplied IV is

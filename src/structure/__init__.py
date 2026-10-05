@@ -35,6 +35,8 @@ from structure.core.runtime.api import (
     SinkResult,
     StructureRuntimeError,
     StructureSession,
+    StateBudgetExceeded,
+    StateBudgetGuard,
     TransformResult,
     TransformSchemas,
 )
@@ -62,6 +64,8 @@ __all__ = [
     "StructureConfig",
     "StructureRuntimeError",
     "StructureSession",
+    "StateBudgetExceeded",
+    "StateBudgetGuard",
     "StructureSources",
     "StructureTools",
     "Transform",

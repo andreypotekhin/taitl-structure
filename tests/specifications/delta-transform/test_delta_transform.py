@@ -8,6 +8,7 @@ from structure import Schema, Transform, input, output, step, transform
 from structure.core.compiler.api import Compiler
 from structure.plugin.pyspark import (
     check,
+    delta_append,
     delta_delete,
     delta_input,
     delta_merge,
@@ -30,6 +31,10 @@ class Order(Schema):
 class Change(Schema):
     id = integer(nullable=False)
     status = string(nullable=False)
+
+
+class OrderV2(Order):
+    note = string()
 
 
 def _compile(subject, **plugin):
@@ -204,3 +209,52 @@ def test_unmatched_by_source_cannot_read_merge_source() -> None:
 
     with pytest.raises(Exception, match="unavailable relation scope"):
         _compile(Invalid)
+
+
+def test_schema_evolving_merge_uses_return_schema_as_delta_output() -> None:
+    changes_input = input(Change)
+    current_orders_input = delta_input(Order)
+    orders_output = delta_output(OrderV2)
+
+    @transform
+    class Evolve(Transform):
+        changes = changes_input
+        current_orders = current_orders_input
+        orders = orders_output
+
+        def merge(self, change: Change, order: Order) -> OrderV2:
+            return (
+                delta_merge(order, change, on=order.id == change.id)
+                .with_schema_evolution()
+                .when_matched_update_all()
+                .when_not_matched_insert_all()
+                .execute()
+            )
+
+    plan = _compile(Evolve).lowered
+    assert tuple(binding.name for binding in plan.inputs) == ("changes", "current_orders")
+    step_plan = plan.steps[0]
+    assert step_plan.effect
+    assert step_plan.delta_mutations[0].schema_evolution
+    assert step_plan.delta_mutations[0].output == "orders"
+    assert step_plan.delta_mutations[0].output_schema is OrderV2
+
+
+def test_schema_evolving_append_is_explicit() -> None:
+    changes_input = input(Change)
+    current_orders_input = delta_input(Order)
+    orders_output = delta_output(OrderV2)
+
+    @transform
+    class Evolve(Transform):
+        changes = changes_input
+        current_orders = current_orders_input
+        orders = orders_output
+
+        def append(self, change: Change, order: Order) -> OrderV2:
+            return delta_append(order, change).with_schema_evolution().execute()
+
+    mutation = _compile(Evolve).lowered.steps[0].delta_mutations[0]
+    assert mutation.kind == "append"
+    assert mutation.schema_evolution
+    assert mutation.output == "orders"

@@ -217,11 +217,15 @@ class Transform:
     @classmethod
     def effective_transform_options(cls) -> dict[str, object]:
         """Resolve explicit class options without inferring transform streaming."""
-        return cls.resolve_transform_options(
+        options = cls.resolve_transform_options(
             cls.__dict__.get("_structure_transform_options", {}),
             inputs=cls._structure_inputs.values(),
             transform_name=cls.__name__,
         )
+        memory_budget = cls.__dict__.get("memory_budget")
+        if memory_budget is not None:
+            options["memory_budget"] = memory_budget
+        return options
 
     @staticmethod
     def resolve_transform_options(

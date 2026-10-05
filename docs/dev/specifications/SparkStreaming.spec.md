@@ -218,9 +218,12 @@ effects, arbitrary state, RDD/Pandas boundaries, and Spark Connect streaming. Li
 Structure transformation support.
 
 `foreachBatch` is caller-owned-guided: the caller receives Structure's transformed DataFrame and applies the writer
-chain, checkpoint, trigger, output mode, and lifecycle in caller code. `foreach` remains design-gated. Arbitrary state
-APIs such as `applyInPandasWithState` and `transformWithState` require declared input/state/output Schemas, timeout and
-clock policy, initialization and cleanup behavior, profile gating, generated-code rules, and restart evidence.
+chain, checkpoint, trigger, output mode, and lifecycle in caller code. `foreach` remains design-gated. Structure has
+explicit row `transform_with_state(...)` and Pandas `transform_with_state_in_pandas(...)` compiler surfaces with typed
+and opaque-native processor modes. Row execution targets ordinary PySpark 4.1; Pandas execution targets ordinary 4.0
+and 4.1. Both remain design-gated as support claims until profile-specific live behavior, timer, online/generated parity,
+and checkpoint-restart evidence passes. `applyInPandasWithState` remains caller-owned. The
+`ArbitraryStateContract` validates adoption metadata and does not implement any runtime.
 
 ## Chained Event-Time Windows
 

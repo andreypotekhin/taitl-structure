@@ -7,3 +7,4 @@ class StepAuthoringResult:
     lane: str
     frame: str
     ordinal: int
+    binding: str = "dataframe"

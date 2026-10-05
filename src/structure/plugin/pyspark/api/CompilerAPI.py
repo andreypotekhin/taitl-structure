@@ -1,9 +1,13 @@
+from dataclasses import replace
+from typing import cast
+
 from structure.plugin.api.v1 import CompilationPurpose
 from structure.plugin.api.v1 import CompilerAPI as CompilerAPIV1
 from structure.plugin.api.v1 import CompileRequest, PluginCompilation
 from structure.plugin.api.v1.model import TransformPlan
 from structure.plugin.pyspark.api.AuthoringAPI import PySparkStepBody
 from structure.plugin.pyspark.api.PySpark import PySpark
+from structure.plugin.pyspark.dsl.operations.StateBudgetPlan import StateBudgetPlan
 
 
 class CompilerAPI(CompilerAPIV1):
@@ -19,6 +23,21 @@ class CompilerAPI(CompilerAPIV1):
             raise ValueError("PLUGIN-E2708: PySpark compilation requires a Core TransformPlan analysis.")
         if any(not isinstance(step.plugin_body, PySparkStepBody) for step in plan.steps):
             raise ValueError("PLUGIN-E2708: PySpark compilation requires a PySpark-owned body for every step.")
+        plan_options = {
+            **(plan.options or {}),
+            "state_budget_checking": options.get("state_budget_checking", "compile_time_check"),
+            "state_budget_memory_source": options.get("state_budget_memory_source"),
+            "state_budget_fallback_mb": options.get("state_budget_fallback_mb"),
+        }
+        if plan_options.get("memory_budget") is None and plan_options.get("state_budget_memory_source") is not None:
+            plan_options["memory_budget"] = StateBudgetPlan(
+                memory_source=cast(str, plan_options["state_budget_memory_source"]),
+                fallback_mb=cast(int | None, plan_options["state_budget_fallback_mb"]),
+            )
+        plan = replace(
+            plan,
+            options=plan_options,
+        )
         PySpark.compiler.hooks()(plan)
         warn_on_udfs = self._warn_on_udfs(plan, default=bool(options.get("warn_on_udfs", True)))
         warn_on_lineage_growth = self._warn_on_lineage_growth(

@@ -40,6 +40,7 @@ from structure.plugin.pyspark.compiler.model.PySparkSqlRecipe import PySparkSqlR
 from structure.plugin.pyspark.compiler.model.PySparkStackRecipe import PySparkStackRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStatefulTransformRecipe import PySparkStatefulTransformRecipe
 from structure.plugin.pyspark.compiler.model.PySparkWatermarkRecipe import PySparkWatermarkRecipe
+from structure.plugin.pyspark.dsl.operations.StateBudgetPlan import StateBudgetPlan
 from structure.plugin.pyspark.dsl.operations.StreamingOutputMode import StreamingOutputMode
 
 
@@ -79,6 +80,7 @@ class PySparkOperationRecipe:
     checkpoint: PySparkCheckpointRecipe | None = None
     local_checkpoint: PySparkCheckpointRecipe | None = None
     streaming_output_modes: tuple[StreamingOutputMode, ...] = ()
+    state_budget: StateBudgetPlan | None = None
 
     @staticmethod
     def filter_operation(predicate: PySparkExpressionRecipe) -> "PySparkOperationRecipe":

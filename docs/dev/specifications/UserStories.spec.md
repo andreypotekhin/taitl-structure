@@ -440,6 +440,9 @@ the first analytical join slice.
 
 ## 23. Streaming Transformation Roadmap
 
+- + As a developer, I can chain watermarked deduplication with one watermarked event-time window aggregate in Append
+  mode on proven ordinary PySpark 3.5/4.0 profiles, declare per-operator budgets, and retain dedupe state across a
+  caller-owned checkpoint restart.
 - As a developer, I can define additional state policies for streaming transformations so that supported Spark stateful
   operations fail early when under-specified.
 - As a developer, I can use more stream-stream join shapes when Structure can prove Spark-required watermarks,

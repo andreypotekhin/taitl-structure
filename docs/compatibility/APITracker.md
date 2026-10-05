@@ -93,7 +93,8 @@ and [V11 project tracker](../dev/project-management/V11.md).
 | Complex-valued `DataFrame.observe` metrics | design-gated | Observation is a metric side channel, not an implicit output-field mutation. | Keep caller-owned until metric typing, retrieval, and parity are specified. |
 | KLL and Theta approximate sketches | design-gated | Opaque branded Binary types under the 4.1 profile; consumers require separate admission. | Use caller-owned PySpark until merge, dependency, determinism, and consumer semantics are specified and evidenced. |
 | Arrow-optimized Python UDF/UDTF APIs | caller-owned-guided | Worker Python and callback-defined UDTF cardinality remain outside the symbolic compiler contract. | Use explicit raw/caller-owned hooks; no generated UDF/UDTF claim. |
-| Row-based `transformWithState` | design-gated | User state, timers, recovery, and streaming lifecycle remain outside Structure. | Use caller-owned Structured Streaming state code. |
+| Row-based `transformWithState` | design-gated | `transform_with_state(...)` is implemented for ordinary PySpark `>=4.1,<4.2`; live timer, parity, and checkpoint-restart evidence is pending. | Use caller-owned Structured Streaming state code until the profile's support gate passes. |
+| Pandas `transformWithStateInPandas` | design-gated | `transform_with_state_in_pandas(...)` is implemented for ordinary PySpark 4.0 and 4.1; Pandas dependencies and live parity/restart evidence are pending. | Use caller-owned Structured Streaming state code until the profile's support gate passes. |
 | Declarative Pipelines, SQL Scripting, Python Data Sources, readers/writers, and catalog/session APIs | unsupported | These are not compiler-visible DataFrame transformations. | Use native PySpark/Spark orchestration around Structure. |
 
 ## Column Method Register

@@ -4,6 +4,7 @@ from structure.core.runtime.session.model.StructureSession import StructureSessi
 from structure.core.runtime.session.model.StageResult import StageResult
 from structure.core.runtime.session.model.SinkResult import SinkResult
 from structure.core.runtime.session.model.TransformResult import TransformResult
+from structure.core.runtime.session.model.StateBudgetGuard import StateBudgetExceeded, StateBudgetGuard
 
 __all__ = [
     "RuntimeDiagnostic",
@@ -12,4 +13,6 @@ __all__ = [
     "StageResult",
     "SinkResult",
     "TransformResult",
+    "StateBudgetGuard",
+    "StateBudgetExceeded",
 ]

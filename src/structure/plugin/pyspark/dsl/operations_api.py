@@ -10,6 +10,7 @@ compile context; Spark execution happens only after compilation.
 from __future__ import annotations
 
 from collections.abc import Callable
+from dataclasses import replace
 from datetime import date, datetime
 from decimal import Decimal
 from functools import cache as cached
@@ -35,6 +36,7 @@ from structure.plugin.pyspark.dsl.operations.MaterializationPlan import Checkpoi
 from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
 from structure.plugin.pyspark.dsl.operations.OrderedTimelineScanPlan import OrderedTimelineScanPlan
 from structure.plugin.pyspark.dsl.operations.SelectedRowsPlan import SelectedRowsPlan
+from structure.plugin.pyspark.dsl.operations.StateBudgetPlan import StateBudgetPlan
 from structure.plugin.pyspark.dsl.TimeWindow import TimeWindow
 from structure.plugin.pyspark.dsl.types import (
     ArrayType,
@@ -182,7 +184,68 @@ def _grouping(kind: str, call: str, keys: tuple[object, ...], named_keys: dict[s
         raise TypeError(f"{call} requires at least one grouping key")
     context.aggregate_keys = expressions
     context.aggregate_grouping = kind
+    context.state_budget_target = ("aggregate", None)
     return GroupedRows()
+
+
+def budget(
+    *,
+    max_rows: int | None = None,
+    max_state_bytes: int | None = None,
+    memory_source: str | None = None,
+    fallback_mb: int | None = None,
+) -> StateBudgetPlan:
+    """Declare transform memory policy or limits for the immediately preceding stateful operation."""
+    context = current_context()
+    operator_limits = max_rows is not None or max_state_bytes is not None
+    memory_policy = memory_source is not None or fallback_mb is not None
+    if operator_limits and memory_policy:
+        raise TypeError("budget(...) accepts operator limits or memory policy, not both")
+    if memory_policy:
+        if context is not None:
+            raise TypeError('memory_source= is valid only in a transform class as memory_budget = budget(...)')
+        if memory_source not in ("spark", "prefer_spark"):
+            raise TypeError('memory_source must be "spark" or "prefer_spark"')
+        if memory_source == "prefer_spark" and fallback_mb is None:
+            raise TypeError('memory_source="prefer_spark" requires fallback_mb=...')
+        if memory_source == "spark" and fallback_mb is not None:
+            raise TypeError('fallback_mb=... is valid only with memory_source="prefer_spark"')
+        _positive_budget_integer(fallback_mb, "fallback_mb", optional=True)
+        return StateBudgetPlan(memory_source=memory_source, fallback_mb=fallback_mb)
+    if context is None:
+        raise TypeError("budget(max_rows=..., max_state_bytes=...) can only be used inside a transform step")
+    if not operator_limits:
+        raise TypeError("budget(...) requires max_rows=..., max_state_bytes=..., or a memory_source=...")
+    _positive_budget_integer(max_rows, "max_rows", optional=True)
+    _positive_budget_integer(max_state_bytes, "max_state_bytes", optional=True)
+    target = getattr(context, "state_budget_target", None)
+    attached = getattr(context, "state_budget_attached_target", None)
+    if target is None:
+        if attached is not None:
+            raise TypeError("budget(...) was declared twice for the same stateful operation")
+        raise TypeError("budget(...) must immediately follow drop_duplicates_within_watermark(...) or group_by(...)")
+    declaration = StateBudgetPlan(max_rows=max_rows, max_state_bytes=max_state_bytes)
+    kind, index = target
+    if kind == "aggregate":
+        if getattr(context, "aggregate_state_budget", None) is not None:
+            raise TypeError("budget(...) was declared twice for the pending aggregate")
+        context.aggregate_state_budget = declaration
+    else:
+        operations = context.operations
+        operation = operations[index]
+        if operation.state_budget is not None:
+            raise TypeError("budget(...) was declared twice for the same stateful operation")
+        operations[index] = replace(operation, state_budget=declaration)
+    context.state_budget_target = None
+    context.state_budget_attached_target = target
+    return declaration
+
+
+def _positive_budget_integer(value: int | None, name: str, *, optional: bool) -> None:
+    if value is None and optional:
+        return
+    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+        raise TypeError(f"budget({name}=...) requires a positive integer")
 
 
 def count(*, where: object | None = None) -> Expression:
@@ -1461,7 +1524,8 @@ def drop_duplicates(*subset: object) -> None:
 def drop_duplicates_within_watermark(*subset: object) -> None:
     """Remove streaming duplicates within the active event-time watermark."""
     duplicate_rows = _duplicate_rows(subset, call="drop_duplicates_within_watermark(...)")
-    _context("drop_duplicates_within_watermark()").operations.append(
+    context = _context("drop_duplicates_within_watermark()")
+    context.operations.append(
         OperationPlan.drop_duplicates_operation(
             DuplicateRowsPlan(
                 subset=duplicate_rows.subset,
@@ -1470,6 +1534,7 @@ def drop_duplicates_within_watermark(*subset: object) -> None:
             )
         )
     )
+    context.state_budget_target = ("operation", len(context.operations) - 1)
 
 
 def distinct(relation: object | None = None) -> None:
@@ -3328,6 +3393,9 @@ def _context(call: str) -> SymbolicContext:
     context = current_context()
     if context is None:
         raise RuntimeError(f"{call} can only be used inside a compiled Structure step method")
+    if getattr(context, "state_budget_target", None) is not None:
+        context.state_budget_target = None
+    context.state_budget_attached_target = None
     return context
 
 

@@ -25,10 +25,12 @@ missing-column contract is proven.
 
 ### Broader Chained Stateful Operations — `design-gated`
 
-The admitted chained-window shape is narrow: one watermarked event-time aggregate, stateless work, and one second
-aggregate over `window_time(...)`. Broader chains need ordered state-stage metadata containing event-time and watermark
-sources, grouping keys, retention, output mode, allowed following stages, diagnostics, generated form, and restart
-evidence. Keep the one-stateful-plus-stateless policy for other chains.
+Two exact pairs are admitted: the existing watermarked event-time window aggregate followed by a second aggregate over
+`window_time(...)`, and, on ordinary PySpark 3.5 and 4.0, watermarked deduplication followed by one watermarked
+event-time window aggregate in Append mode. Per-operator `budget(...)` declarations and the caller-attached progress
+guard are available for the latter. All other chains remain design-gated, including reversed order, joins, state
+processors, and a third stateful operation. Broader admission still requires ordered state-stage metadata, retention,
+output, diagnostics, generated form, and live restart evidence for each target profile.
 
 ### Row-Level `foreach` — `caller-owned-guided`
 

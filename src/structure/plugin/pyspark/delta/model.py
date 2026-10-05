@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 
+from structure.dsl import Schema
 from structure.plugin.pyspark.dsl.Expression import Expression
 
 
@@ -17,8 +18,18 @@ class DeltaMutation:
     kind: str
     target: str
     target_scope: str
-    predicate: Expression
+    predicate: Expression | None = None
     assignments: tuple[tuple[str, Expression], ...] = ()
     source: str | None = None
     source_scope: str | None = None
     clauses: tuple[DeltaClause, ...] = ()
+    schema_evolution: bool = False
+    output: str | None = None
+    output_schema: type[Schema] | None = None
+
+
+@dataclass(frozen=True)
+class DeltaMutationResult:
+    """Relation-like symbolic result marking an evolving table output."""
+
+    mutation: DeltaMutation

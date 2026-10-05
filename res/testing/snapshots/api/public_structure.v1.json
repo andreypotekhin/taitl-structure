@@ -1,52 +1,58 @@
 {
+  "package": "structure",
   "exports": {
     "ArtifactCacheReport": {
+      "kind": "class",
+      "module": "structure.core.compiler.artifacts.model.ArtifactCacheReport",
+      "qualname": "ArtifactCacheReport",
+      "signature": "(entries: 'int', hits: 'int', misses: 'int', loaded: 'int') -> None",
+      "enum_members": [],
       "dataclass_fields": [
         "entries",
         "hits",
         "misses",
         "loaded"
-      ],
-      "enum_members": [],
-      "kind": "class",
-      "module": "structure.core.compiler.artifacts.model.ArtifactCacheReport",
-      "qualname": "ArtifactCacheReport",
-      "signature": "(entries: 'int', hits: 'int', misses: 'int', loaded: 'int') -> None"
+      ]
     },
     "CompileKey": {
+      "kind": "class",
+      "module": "structure.core.compiler.artifacts.model.CompileKey",
+      "qualname": "CompileKey",
+      "signature": "(subject: 'tuple[str, ...]', structure_version: 'str', options: 'tuple[object, ...]', sources: 'tuple[tuple[str, int | None, int | None, str | None], ...]', manifest: 'str' = '') -> None",
+      "enum_members": [],
       "dataclass_fields": [
         "subject",
         "structure_version",
         "options",
         "sources",
         "manifest"
-      ],
-      "enum_members": [],
-      "kind": "class",
-      "module": "structure.core.compiler.artifacts.model.CompileKey",
-      "qualname": "CompileKey",
-      "signature": "(subject: 'tuple[str, ...]', structure_version: 'str', options: 'tuple[object, ...]', sources: 'tuple[tuple[str, int | None, int | None, str | None], ...]', manifest: 'str' = '') -> None"
+      ]
     },
     "CompiledArtifactPool": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "class",
       "module": "structure.core.compiler.artifacts.model.CompiledArtifactPool",
       "qualname": "CompiledArtifactPool",
-      "signature": "(*, max_entries: 'int | None' = None) -> 'None'"
+      "signature": "(*, max_entries: 'int | None' = None) -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "CompiledSources": {
-      "dataclass_fields": [
-        "sources",
-        "artifacts"
-      ],
-      "enum_members": [],
       "kind": "class",
       "module": "structure.core.sources.model.CompiledSources",
       "qualname": "CompiledSources",
-      "signature": "(sources: \"'StructureSources'\", artifacts: 'Mapping[SourceTransformAddress, CompiledTransform]') -> None"
+      "signature": "(sources: \"'StructureSources'\", artifacts: 'Mapping[SourceTransformAddress, CompiledTransform]') -> None",
+      "enum_members": [],
+      "dataclass_fields": [
+        "sources",
+        "artifacts"
+      ]
     },
     "CompiledTransform": {
+      "kind": "class",
+      "module": "structure.core.compiler.artifacts.model.CompiledTransform",
+      "qualname": "CompiledTransform",
+      "signature": "(key: 'CompileKey', transform_plan: 'TransformPlan', payload: 'object', schemas: 'TransformSchemas | None', semantic_fingerprint: 'str', optimization: 'OptimizationReport | None' = None) -> None",
+      "enum_members": [],
       "dataclass_fields": [
         "key",
         "transform_plan",
@@ -54,14 +60,14 @@
         "schemas",
         "semantic_fingerprint",
         "optimization"
-      ],
-      "enum_members": [],
-      "kind": "class",
-      "module": "structure.core.compiler.artifacts.model.CompiledTransform",
-      "qualname": "CompiledTransform",
-      "signature": "(key: 'CompileKey', transform_plan: 'TransformPlan', payload: 'object', schemas: 'TransformSchemas | None', semantic_fingerprint: 'str', optimization: 'OptimizationReport | None' = None) -> None"
+      ]
     },
     "CompilerOptions": {
+      "kind": "class",
+      "module": "structure.core.compiler.artifacts.model.CompilerOptions",
+      "qualname": "CompilerOptions",
+      "signature": "(project_root: 'Path', source_roots: 'tuple[Path, ...]', generated_dir: 'Path', generated_package: 'str', generated_code_options: 'tuple[str, ...]', generated_code_hard_wrap: 'int', target: 'str', traceability: 'str', validate_inputs: 'bool', input_validation_mode: 'str', validate_intermediate: 'bool', intermediate_validation_mode: 'str', validate_outputs: 'bool', output_validation_mode: 'str', strict_performance: 'bool', warn_on_udfs: 'bool', warn_on_lineage_growth: 'bool', disable: 'tuple[str, ...]', allow_stream_to_batch: 'bool', stream_to_batch_policy: 'str', allow_output_to_input: 'bool', allow_to_reassign_output: 'bool', allow_stage_outputs: 'bool', state_budget_checking: 'str', state_budget_memory_source: 'str | None', state_budget_fallback_mb: 'int | None', prune_unused_steps: 'bool', schema_types_key: 'str | None' = None, plugin_options: 'Mapping[str, Mapping[str, object]]' = <factory>, spark_sql: 'Mapping[str, object]' = <factory>) -> None",
+      "enum_members": [],
       "dataclass_fields": [
         "project_root",
         "source_roots",
@@ -86,26 +92,29 @@
         "allow_output_to_input",
         "allow_to_reassign_output",
         "allow_stage_outputs",
+        "state_budget_checking",
+        "state_budget_memory_source",
+        "state_budget_fallback_mb",
         "prune_unused_steps",
         "schema_types_key",
         "plugin_options",
         "spark_sql"
-      ],
-      "enum_members": [],
-      "kind": "class",
-      "module": "structure.core.compiler.artifacts.model.CompilerOptions",
-      "qualname": "CompilerOptions",
-      "signature": "(project_root: 'Path', source_roots: 'tuple[Path, ...]', generated_dir: 'Path', generated_package: 'str', generated_code_options: 'tuple[str, ...]', generated_code_hard_wrap: 'int', target: 'str', traceability: 'str', validate_inputs: 'bool', input_validation_mode: 'str', validate_intermediate: 'bool', intermediate_validation_mode: 'str', validate_outputs: 'bool', output_validation_mode: 'str', strict_performance: 'bool', warn_on_udfs: 'bool', warn_on_lineage_growth: 'bool', disable: 'tuple[str, ...]', allow_stream_to_batch: 'bool', stream_to_batch_policy: 'str', allow_output_to_input: 'bool', allow_to_reassign_output: 'bool', allow_stage_outputs: 'bool', prune_unused_steps: 'bool', schema_types_key: 'str | None' = None, plugin_options: 'Mapping[str, Mapping[str, object]]' = <factory>, spark_sql: 'Mapping[str, object]' = <factory>) -> None"
+      ]
     },
     "DiskStorage": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "class",
       "module": "structure.core.compiler.artifacts.storage.DiskStorage",
       "qualname": "DiskStorage",
-      "signature": "(root: 'Path | str') -> 'None'"
+      "signature": "(root: 'Path | str') -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "GeneratedTransform": {
+      "kind": "class",
+      "module": "structure.core.compiler.artifacts.model.GeneratedTransform",
+      "qualname": "GeneratedTransform",
+      "signature": "(source_unit: 'str', module_name: 'str', classes: 'tuple[str, ...]', generated_package: 'str', files: 'Mapping[str, str]', storage: 'object', result: 'object' = None) -> None",
+      "enum_members": [],
       "dataclass_fields": [
         "source_unit",
         "module_name",
@@ -114,95 +123,111 @@
         "files",
         "storage",
         "result"
-      ],
-      "enum_members": [],
-      "kind": "class",
-      "module": "structure.core.compiler.artifacts.model.GeneratedTransform",
-      "qualname": "GeneratedTransform",
-      "signature": "(source_unit: 'str', module_name: 'str', classes: 'tuple[str, ...]', generated_package: 'str', files: 'Mapping[str, str]', storage: 'object', result: 'object' = None) -> None"
+      ]
     },
     "MemoryStorage": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "class",
       "module": "structure.core.compiler.artifacts.storage.MemoryStorage",
       "qualname": "MemoryStorage",
-      "signature": "() -> 'None'"
+      "signature": "() -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "PackageImportStorage": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "class",
       "module": "structure.core.compiler.artifacts.storage.PackageImportStorage",
       "qualname": "PackageImportStorage",
-      "signature": "(package: 'str') -> 'None'"
+      "signature": "(package: 'str') -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "ResultSchemas": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "class",
       "module": "structure.core.runtime.schemas.model.TransformSchemas",
       "qualname": "ResultSchemas",
-      "signature": "(schemas: 'Mapping[str, Any] | None' = None, *, aliases: 'Mapping[str, tuple[str, ...]] | None' = None) -> 'None'"
+      "signature": "(schemas: 'Mapping[str, Any] | None' = None, *, aliases: 'Mapping[str, tuple[str, ...]] | None' = None) -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "Schema": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "class",
       "module": "structure.core.dsl.model.schemas.Schema",
       "qualname": "Schema",
-      "signature": "(**values: 'object') -> 'None'"
+      "signature": "(**values: 'object') -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "SchemaMode": {
-      "dataclass_fields": [],
+      "kind": "class",
+      "module": "structure.core.dsl.model.transforms.SchemaMode",
+      "qualname": "SchemaMode",
+      "signature": "(*values)",
       "enum_members": [
         "STRICT",
         "ALLOW_EXTRA_COLUMNS"
       ],
-      "kind": "class",
-      "module": "structure.core.dsl.model.transforms.SchemaMode",
-      "qualname": "SchemaMode",
-      "signature": "(*values)"
+      "dataclass_fields": []
     },
     "SinkResult": {
-      "dataclass_fields": [
-        "dataframe",
-        "writer"
-      ],
-      "enum_members": [],
       "kind": "class",
       "module": "structure.core.runtime.session.model.SinkResult",
       "qualname": "SinkResult",
-      "signature": "(dataframe: object, writer: type) -> None"
+      "signature": "(dataframe: object, writer: type) -> None",
+      "enum_members": [],
+      "dataclass_fields": [
+        "dataframe",
+        "writer"
+      ]
     },
     "SourceTransformAddress": {
-      "dataclass_fields": [
-        "module",
-        "qualname"
-      ],
-      "enum_members": [],
       "kind": "class",
       "module": "structure.core.sources.model.SourceTransformAddress",
       "qualname": "SourceTransformAddress",
-      "signature": "(module: 'str', qualname: 'str') -> None"
+      "signature": "(module: 'str', qualname: 'str') -> None",
+      "enum_members": [],
+      "dataclass_fields": [
+        "module",
+        "qualname"
+      ]
     },
     "StageResult": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "class",
       "module": "structure.core.runtime.session.model.StageResult",
       "qualname": "StageResult",
-      "signature": "(outputs: 'Mapping[str, Any]', *, schema: 'Mapping[str, Any] | None' = None, aliases: 'Mapping[str, tuple[str, ...]] | None' = None, stages: \"Mapping[str, 'StageResult'] | None\" = None) -> 'None'"
+      "signature": "(outputs: 'Mapping[str, Any]', *, schema: 'Mapping[str, Any] | None' = None, aliases: 'Mapping[str, tuple[str, ...]] | None' = None, stages: \"Mapping[str, 'StageResult'] | None\" = None) -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
+    },
+    "StateBudgetExceeded": {
+      "kind": "class",
+      "module": "structure.core.runtime.session.model.StateBudgetGuard",
+      "qualname": "StateBudgetExceeded",
+      "signature": "(*, step: 'str', operation: 'str', metric: 'str', limit: 'int', observed: 'int', batch_id: 'int') -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
+    },
+    "StateBudgetGuard": {
+      "kind": "class",
+      "module": "structure.core.runtime.session.model.StateBudgetGuard",
+      "qualname": "StateBudgetGuard",
+      "signature": "(*, runtime: 'object', policy: 'Mapping[str, object]') -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "StructureCompileError": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "class",
       "module": "structure.core.compiler.diagnostics.model.StructureCompileError",
       "qualname": "StructureCompileError",
-      "signature": "(diagnostic: 'Diagnostic') -> 'None'"
+      "signature": "(diagnostic: 'Diagnostic') -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "StructureConfig": {
+      "kind": "class",
+      "module": "structure.core.configuration.model.StructureConfig",
+      "qualname": "StructureConfig",
+      "signature": "(project_root: 'Path', source_roots: 'tuple[Path, ...]', generated_dir: 'Path', generated_package: 'str', generated_docs: 'bool', generated_docs_dir: 'Path', generated_docs_formats: 'tuple[str, ...]', generated_code_options: 'tuple[str, ...]', generated_code_hard_wrap: 'int', execution_mode: 'str', target: 'str', hook_target_default: 'tuple[str, ...] | str', traceability: 'str', validate_inputs: 'bool', input_validation_mode: 'str', validate_intermediate: 'bool', intermediate_validation_mode: 'str', validate_outputs: 'bool', output_validation_mode: 'str', strict_performance: 'bool', warn_on_udfs: 'bool', warn_on_lineage_growth: 'bool', disable: 'tuple[str, ...]', allow_stream_to_batch: 'bool', stream_to_batch_policy: 'str', allow_output_to_input: 'bool', allow_to_reassign_output: 'bool', allow_stage_outputs: 'bool', state_budget_checking: 'str', state_budget_memory_source: 'str | None', state_budget_fallback_mb: 'int | None', prune_unused_steps: 'bool', fail_on_diff: 'bool', spark_sql: 'Mapping[str, object]', plugin_options: 'Mapping[str, Mapping[str, object]]', source_map: 'Mapping[str, str]') -> None",
+      "enum_members": [],
       "dataclass_fields": [
         "project_root",
         "source_roots",
@@ -232,163 +257,160 @@
         "allow_output_to_input",
         "allow_to_reassign_output",
         "allow_stage_outputs",
+        "state_budget_checking",
+        "state_budget_memory_source",
+        "state_budget_fallback_mb",
         "prune_unused_steps",
         "fail_on_diff",
         "spark_sql",
         "plugin_options",
         "source_map"
-      ],
-      "enum_members": [],
-      "kind": "class",
-      "module": "structure.core.configuration.model.StructureConfig",
-      "qualname": "StructureConfig",
-      "signature": "(project_root: 'Path', source_roots: 'tuple[Path, ...]', generated_dir: 'Path', generated_package: 'str', generated_docs: 'bool', generated_docs_dir: 'Path', generated_docs_formats: 'tuple[str, ...]', generated_code_options: 'tuple[str, ...]', generated_code_hard_wrap: 'int', execution_mode: 'str', target: 'str', hook_target_default: 'tuple[str, ...] | str', traceability: 'str', validate_inputs: 'bool', input_validation_mode: 'str', validate_intermediate: 'bool', intermediate_validation_mode: 'str', validate_outputs: 'bool', output_validation_mode: 'str', strict_performance: 'bool', warn_on_udfs: 'bool', warn_on_lineage_growth: 'bool', disable: 'tuple[str, ...]', allow_stream_to_batch: 'bool', stream_to_batch_policy: 'str', allow_output_to_input: 'bool', allow_to_reassign_output: 'bool', allow_stage_outputs: 'bool', prune_unused_steps: 'bool', fail_on_diff: 'bool', spark_sql: 'Mapping[str, object]', plugin_options: 'Mapping[str, Mapping[str, object]]', source_map: 'Mapping[str, str]') -> None"
+      ]
     },
     "StructureRuntimeError": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "class",
       "module": "structure.core.runtime.session.model.StructureRuntimeError",
       "qualname": "StructureRuntimeError",
-      "signature": "(diagnostic: 'RuntimeDiagnostic') -> 'None'"
+      "signature": "(diagnostic: 'RuntimeDiagnostic') -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "StructureSession": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "class",
       "module": "structure.core.runtime.session.model.StructureSession",
       "qualname": "StructureSession",
-      "signature": "(*, spark=None, runtime=None, ctx=None, config: 'StructureConfig | None' = None, project_root: 'Path | str | None' = None, execution_mode: 'str | None' = None, target: 'str | None' = None, generated_package: 'str | None' = None, schema_types=None, online_executor: 'Callable[..., object] | None' = None, storage=None, artifacts: 'CompiledArtifactPool | None' = None) -> 'None'"
+      "signature": "(*, spark=None, runtime=None, ctx=None, config: 'StructureConfig | None' = None, project_root: 'Path | str | None' = None, execution_mode: 'str | None' = None, target: 'str | None' = None, generated_package: 'str | None' = None, schema_types=None, online_executor: 'Callable[..., object] | None' = None, storage=None, artifacts: 'CompiledArtifactPool | None' = None) -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "StructureSources": {
+      "kind": "class",
+      "module": "structure.core.sources.model.StructureSources",
+      "qualname": "StructureSources",
+      "signature": "(texts: 'Mapping[str, str]') -> None",
+      "enum_members": [],
       "dataclass_fields": [
         "texts",
         "digest",
         "_modules"
-      ],
-      "enum_members": [],
-      "kind": "class",
-      "module": "structure.core.sources.model.StructureSources",
-      "qualname": "StructureSources",
-      "signature": "(texts: 'Mapping[str, str]') -> None"
+      ]
     },
     "StructureTools": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "class",
       "module": "structure.core.tools.api.StructureTools",
       "qualname": "StructureTools",
-      "signature": "()"
+      "signature": "()",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "Transform": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "class",
       "module": "structure.core.dsl.model.transforms.Transform",
       "qualname": "Transform",
-      "signature": "(**inputs: 'object') -> 'None'"
+      "signature": "(**inputs: 'object') -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "TransformResult": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "class",
       "module": "structure.core.runtime.session.model.TransformResult",
       "qualname": "TransformResult",
-      "signature": "(outputs: 'Mapping[str, Any]', *, single: 'bool' = False, schema: 'Mapping[str, Any] | None' = None, aliases: 'Mapping[str, tuple[str, ...]] | None' = None, stage_records: 'list[tuple[tuple[str, ...], Any, Any, tuple[str, ...]]] | None' = None, stages: 'Mapping[str, StageResult] | None' = None, sinks: 'Mapping[str, SinkResult] | None' = None, stage_outputs_enabled: 'bool' = True, stage_names: 'tuple[str, ...]' = ()) -> 'None'"
+      "signature": "(outputs: 'Mapping[str, Any]', *, single: 'bool' = False, schema: 'Mapping[str, Any] | None' = None, aliases: 'Mapping[str, tuple[str, ...]] | None' = None, stage_records: 'list[tuple[tuple[str, ...], Any, Any, tuple[str, ...]]] | None' = None, stages: 'Mapping[str, StageResult] | None' = None, sinks: 'Mapping[str, SinkResult] | None' = None, stage_outputs_enabled: 'bool' = True, stage_names: 'tuple[str, ...]' = (), state_budget: 'Mapping[str, object] | None' = None) -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "TransformSchemas": {
+      "kind": "class",
+      "module": "structure.core.runtime.schemas.model.TransformSchemas",
+      "qualname": "TransformSchemas",
+      "signature": "(inputs: 'Mapping[str, Any]', steps: 'Mapping[str, Any]', outputs: 'Mapping[str, Any]', output_aliases: 'Mapping[str, tuple[str, ...]] | None' = None) -> None",
+      "enum_members": [],
       "dataclass_fields": [
         "inputs",
         "steps",
         "outputs",
         "output_aliases"
-      ],
-      "enum_members": [],
-      "kind": "class",
-      "module": "structure.core.runtime.schemas.model.TransformSchemas",
-      "qualname": "TransformSchemas",
-      "signature": "(inputs: 'Mapping[str, Any]', steps: 'Mapping[str, Any]', outputs: 'Mapping[str, Any]', output_aliases: 'Mapping[str, tuple[str, ...]] | None' = None) -> None"
+      ]
     },
     "input": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.core.dsl.model.transforms.transform_api",
       "qualname": "input",
-      "signature": "(value: 'type[Schema] | InputDeclaration | OutputDeclaration', *, streaming: 'bool' = False, optional: 'bool' = False) -> 'InputDeclaration | BindingSelector'"
+      "signature": "(value: 'type[Schema] | InputDeclaration | OutputDeclaration', *, streaming: 'bool' = False, optional: 'bool' = False) -> 'InputDeclaration | BindingSelector'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "lane": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.core.dsl.model.transforms.transform_api",
       "qualname": "lane",
-      "signature": "(value: 'type[Schema] | SelectedDeclaration') -> 'LaneDeclaration | BindingSelector'"
+      "signature": "(value: 'type[Schema] | SelectedDeclaration') -> 'LaneDeclaration | BindingSelector'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "output": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.core.dsl.model.transforms.transform_api",
       "qualname": "output",
-      "signature": "(value: 'type[Schema] | OutputDeclaration | object' = _UNSET, source: 'object' = _UNSET, **bindings: 'object') -> 'OutputDeclaration | OutputBindings | BindingSelector'"
+      "signature": "(value: 'type[Schema] | OutputDeclaration | object' = _UNSET, source: 'object' = _UNSET, **bindings: 'object') -> 'OutputDeclaration | OutputBindings | BindingSelector'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "parameter": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.core.dsl.model.transforms.transform_api",
       "qualname": "parameter",
-      "signature": "(default: 'object') -> 'ParameterDeclaration'"
+      "signature": "(default: 'object') -> 'ParameterDeclaration'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "raw": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.core.dsl.model.transforms.transform_api",
       "qualname": "raw",
-      "signature": "(function: 'Callable | None' = None, *, input: 'object | None' = None, output: 'object | None' = None, inout: 'object | None' = None, schema_mode: 'SchemaMode' = <SchemaMode.STRICT: 'strict'>, project_output: 'bool' = False, streaming: 'bool' = False, target: 'str | Iterable[str] | None' = None, target_platform: 'str | None' = None)"
+      "signature": "(function: 'Callable | None' = None, *, input: 'object | None' = None, output: 'object | None' = None, inout: 'object | None' = None, schema_mode: 'SchemaMode' = <SchemaMode.STRICT: 'strict'>, project_output: 'bool' = False, streaming: 'bool' = False, target: 'str | Iterable[str] | None' = None, target_platform: 'str | None' = None)",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "sink": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.core.dsl.model.transforms.transform_api",
       "qualname": "sink",
-      "signature": "(writer_type: 'type') -> 'SinkDeclaration'"
+      "signature": "(writer_type: 'type') -> 'SinkDeclaration'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "special": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.core.dsl.model.transforms.transform_api",
       "qualname": "special",
-      "signature": "(function: 'Callable | None' = None, *, type: 'str', **kwargs)"
+      "signature": "(function: 'Callable | None' = None, *, type: 'str', **kwargs)",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "stage": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.core.dsl.model.transforms.transform_api",
       "qualname": "stage",
-      "signature": "(value: 'Transform') -> 'StageDeclaration'"
+      "signature": "(value: 'Transform') -> 'StageDeclaration'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "step": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.core.dsl.model.transforms.transform_api",
       "qualname": "step",
-      "signature": "(target=None, **kwargs)"
+      "signature": "(target=None, **kwargs)",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "transform": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.core.dsl.model.transforms.transform_api",
       "qualname": "transform",
-      "signature": "(target=None, **kwargs)"
+      "signature": "(target=None, **kwargs)",
+      "enum_members": [],
+      "dataclass_fields": []
     }
-  },
-  "package": "structure"
+  }
 }

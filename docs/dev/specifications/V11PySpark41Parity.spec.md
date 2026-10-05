@@ -46,13 +46,15 @@ result inside a Structure schema. Until those decisions are implemented and test
 Acceptance is a documented positive or negative contract, with no misleading support claim and with runtime diagnostics
 that point to the caller-owned alternative when applicable.
 
-## Feature 4: Arrow UDF/UDTF and row-based transformWithState
+## Feature 4: Arrow UDF/UDTF and state processors
 
-Arrow UDF and UDTF decorators, vectorized UDF execution, and row-based `transformWithState` are explicit boundaries.
-The specification must document why arbitrary Python execution, user-owned state, checkpoint/retry behavior, and
-streaming timeouts do not fit the current compiler contract. A future implementation may promote a narrow typed slice,
-but only after defining serialization, worker failure, state schema, initialization, timeout, recovery, and Connect
-behavior. V11's default acceptance is a stable design gate and actionable diagnostic, not a partial implementation.
+Arrow UDF and UDTF decorators and general vectorized callbacks remain caller-owned boundaries. The explicit state
+processor surfaces are implemented: row-based `transform_with_state(...)` targets ordinary PySpark 4.1, while
+`transform_with_state_in_pandas(...)` targets ordinary PySpark 4.0 and 4.1. Each provides typed Structure and opaque
+native processor paths, captures schemas and modes in a recipe, and participates in streaming-stage classification.
+Their support status remains `design-gated` until the exact profile passes live processor behavior, timer, online/generated
+parity, and same-checkpoint restart tests. Spark Connect remains unclaimed. This gate records missing runtime evidence;
+it does not mean the compiler surfaces are unimplemented.
 
 ## Feature 5: target and evidence matrix
 

@@ -19,3 +19,15 @@ This is the compatibility companion to the [API reference](../api/Streaming.api.
 | `event_time_between(...)` | Stream-stream time-range predicate | `event_time_between(o.at, c.at, upper="1 hour")` | yes | yes | `event_time_between(...)` supplies the bounded event-time relation required by supported stream-stream joins. |
 | `@raw(...)` | Streaming-safe hook | `@raw(streaming=True)` | yes | yes | Runs caller-authored PySpark outside the symbolic compiler contract; streaming hooks declare `streaming=True` for streaming-plan checks. |
 
+## Stateful processor operations
+
+These Structure compiler surfaces are separate from the shared PySpark 3.5/4.0 compatibility baseline. Their support
+claims remain profile-gated until live processor, timer, online/generated parity, and same-checkpoint restart evidence
+passes for each target. Both use the caller's streaming DataFrame and leave query lifecycle and checkpoint ownership with
+the application.
+
+| Structure API | PySpark parity | Example | PySpark 3 | PySpark 4 | Details |
+| --- | --- | --- | --- | --- | --- |
+| `transform_with_state(...)` | `GroupedData.transformWithState` | `transform_with_state(key=event.account_id, processor=Counter, output_mode="Update", time_mode="ProcessingTime")` | no | no | Status: `design-gated`. Implemented for ordinary PySpark `>=4.1,<4.2`; supports a typed `StateProcessor` with one `ValueState` and timers, or an opaque native processor. PySpark 4.0's Python API has no row-based entry point. See the [row processor plan](../dev/planning/P10042603.V11-transform-with-state.plan.md). |
+| `transform_with_state_in_pandas(...)` | `GroupedData.transformWithStateInPandas` | `transform_with_state_in_pandas(key=event.account_id, processor=Counter, output_mode="Update", time_mode="ProcessingTime")` | no | no | Status: `design-gated`. Implemented for ordinary PySpark `>=4.0,<4.1` and `>=4.1,<4.2`; uses Pandas batches and requires pandas, PyArrow, and protobuf on the driver and workers. See the [Pandas processor plan](../dev/planning/P10042604.V11-transform-with-state-in-pandas.plan.md). |
+| `applyInPandasWithState` | `GroupedData.applyInPandasWithState` | — | no | no | Status: `caller-owned-guided`. No Structure compiler operation is implemented for this legacy API; use native PySpark around a Structure transform. |

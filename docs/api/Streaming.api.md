@@ -36,6 +36,7 @@ catalog; the [Streaming background](../background/Streaming.back.md) explains th
 | `session_window(event_time, gap)` | `functions.session_window` | `session_window(o.event_time, "5 minutes")` |
 | `drop_duplicates(...)` | `dropDuplicates` / `dropDuplicatesWithinWatermark` | `drop_duplicates(o.id)` |
 | `drop_duplicates_within_watermark(...)` | `dropDuplicatesWithinWatermark` | `drop_duplicates_within_watermark(o.id)` |
+| `budget(...)` | Structure state budget declaration and progress guard metadata | `budget(max_rows=500_000, max_state_bytes=268_435_456)` |
 | `@special(type="udf")` | scalar PySpark `udf` | `self.normalize(o.id)` |
 | `event_time_between(...)` | Stream-stream time-range predicate | `event_time_between(o.at, c.at, upper="1 hour")` |
 | `@raw(..., streaming=True)` | Streaming-safe hook | `@raw(streaming=True)` |
@@ -63,6 +64,14 @@ catalog; the [Streaming background](../background/Streaming.back.md) explains th
 - `drop_duplicates(...)` remains cross-mode: batch lowers to `dropDuplicates`, while a streaming frame lowers to
   watermark-bounded `dropDuplicatesWithinWatermark`. `drop_duplicates_within_watermark(...)` makes that streaming-only
   choice explicit and requires `streaming=True` plus a preceding watermark.
+- On ordinary PySpark 3.5 and 4.0, one watermarked `drop_duplicates_within_watermark(...)` followed by one watermarked
+  event-time `group_by(window(...))` aggregate is supported in Append mode. Declare operator limits with
+  `budget(max_rows=..., max_state_bytes=...)` immediately after each stateful helper. Other chained stateful shapes
+  remain rejected with `STREAM-E0801`; processor chains are not included.
+- `state_budget_checking` accepts `off`, `compile_time_check`, `require_declaration`, or
+  `declaration_and_runtime`. The default checks declarations at compile time without requiring them. Runtime limits are
+  observed only after Spark reports a completed batch; the caller attaches `session.state_budget_guard(result)` to its
+  own query and checks the handle. This does not provide a hard within-batch cap.
 - Scalar `@special(type="udf")` expressions are admitted as row-local ordinary-PySpark streaming transformations.
   They retain the existing `warn_on_udfs` warning policy and remain unavailable on Spark Connect.
 - Variant fields and helpers are admitted as profile-gated streaming transformations on ordinary PySpark 4 profiles.

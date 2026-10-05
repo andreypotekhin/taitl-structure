@@ -319,7 +319,8 @@ class WindowedOrders(Transform):
 Streaming compatibility is a checked contract, not a query runner. Callers own `readStream`, `writeStream`, output
 mode, triggers, checkpoints, sinks, and query lifecycle. Watermarks, event-time windows, bounded deduplication, and
 admitted stream joins must meet the conditions in the [Streaming API](../api/Streaming.api.md). Broad analytic
-windows, unbounded state, and arbitrary state processors remain outside the current transform contract.
+windows and unbounded state remain outside the current transform contract. Explicit row and Pandas state processor
+operations have separate compiler contracts and remain gated on live runtime evidence.
 
 ## Compile, explain, and run
 

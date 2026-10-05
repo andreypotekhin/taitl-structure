@@ -19,6 +19,7 @@ class StructureConfigValidator:
         "intermediate_validation_mode": ("off", "schema_only", "schema_and_constraints"),
         "output_validation_mode": ("off", "schema_only", "schema_and_constraints"),
         "stream_to_batch_policy": ("default", "strict"),
+        "state_budget_checking": ("off", "compile_time_check", "require_declaration", "declaration_and_runtime"),
         "spark.sql.storeAssignmentPolicy": ("ANSI", "LEGACY", "STRICT"),
         "spark.sql.timestampType": ("TIMESTAMP_LTZ", "TIMESTAMP_NTZ"),
     }
@@ -62,6 +63,7 @@ class StructureConfigValidator:
         for key, allowed in self._enums.items():
             if values[key] not in allowed:
                 self._fail_invalid(key, f"Invalid value {values[key]!r}", f"Use one of: {', '.join(allowed)}.")
+        self._validate_state_budget_defaults(values)
 
         package = str(values["generated_package"])
         if package == "structure" or not all(part.isidentifier() for part in package.split(".")):
@@ -117,6 +119,34 @@ class StructureConfigValidator:
         if not isinstance(value, type_):
             self._fail_invalid(
                 key, f"Expected {type_.__name__}, got {type(value).__name__}", f"Set {key} to a valid {type_.__name__}."
+            )
+
+    def _validate_state_budget_defaults(self, values: Mapping[str, object]) -> None:
+        source = values["state_budget_memory_source"]
+        fallback = values["state_budget_fallback_mb"]
+        if source not in (None, "spark", "prefer_spark"):
+            self._fail_invalid(
+                "state_budget_memory_source",
+                f"Invalid memory source {source!r}",
+                'Use "spark" or "prefer_spark".',
+            )
+        if source == "prefer_spark" and fallback is None:
+            self._fail_invalid(
+                "state_budget_fallback_mb",
+                "prefer_spark requires a fallback memory limit",
+                "Set state_budget_fallback_mb to a positive integer number of MiB.",
+            )
+        if source != "prefer_spark" and fallback is not None:
+            self._fail_invalid(
+                "state_budget_fallback_mb",
+                "A fallback is only valid with prefer_spark",
+                'Set state_budget_memory_source = "prefer_spark" or remove the fallback.',
+            )
+        if fallback is not None and (isinstance(fallback, bool) or not isinstance(fallback, int) or fallback <= 0):
+            self._fail_invalid(
+                "state_budget_fallback_mb",
+                "The fallback memory limit must be a positive integer",
+                "Use a positive whole number of MiB.",
             )
 
     def _validate_string_list(self, value: object, key: str, use: str) -> None:

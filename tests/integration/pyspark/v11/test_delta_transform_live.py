@@ -8,7 +8,16 @@ import pytest
 from integration.pyspark.support.backend_matrix import generated_project, render_generated_project, session
 
 from structure import Schema, Transform, input, output, step, transform
-from structure.plugin.pyspark import check, delta_delete, delta_input, delta_merge, delta_output, delta_update, string
+from structure.plugin.pyspark import (
+    check,
+    delta_append,
+    delta_delete,
+    delta_input,
+    delta_merge,
+    delta_output,
+    delta_update,
+    string,
+)
 
 pytestmark = pytest.mark.integration
 PACKAGE = "integration_v11_delta_transform_generated"
@@ -23,6 +32,14 @@ class Order(Schema):
 class Change(Schema):
     id = string(nullable=False)
     status = string(nullable=False)
+
+
+class ChangeV2(Change):
+    note = string()
+
+
+class OrderV2(Order):
+    note = string()
 
 
 @transform
@@ -114,6 +131,32 @@ class ReadOrders(Transform):
         return Order.project(order)
 
 
+@transform
+class EvolvingMerge(Transform):
+    changes = input(ChangeV2)
+    current_orders = delta_input(Order)
+    orders = delta_output(OrderV2)
+
+    def merge(self, change: ChangeV2, order: Order) -> OrderV2:
+        return (
+            delta_merge(order, change, on=order.id == change.id)
+            .with_schema_evolution()
+            .when_matched_update_all()
+            .when_not_matched_insert_all()
+            .execute()
+        )
+
+
+@transform
+class EvolvingAppend(Transform):
+    changes = input(ChangeV2)
+    current_orders = delta_input(Order)
+    orders = delta_output(OrderV2)
+
+    def append(self, change: ChangeV2, order: Order) -> OrderV2:
+        return delta_append(order, change).with_schema_evolution().execute()
+
+
 @pytest.fixture
 def delta_spark():
     pyspark = pytest.importorskip("pyspark")
@@ -147,6 +190,55 @@ def _table(
     if native_check:
         spark.sql(f"ALTER TABLE delta.`{path}` ADD CONSTRAINT valid_status CHECK ({check_sql})")
     return DeltaTable.forPath(spark, str(path))
+
+
+def _v1_table(spark, path: Path):
+    from delta.tables import DeltaTable  # type: ignore[import-not-found]
+
+    spark.sql(f"CREATE TABLE delta.`{path}` (id STRING NOT NULL, status STRING NOT NULL) USING DELTA")
+    spark.sql(f"INSERT INTO delta.`{path}` VALUES ('1', 'open'), ('2', 'open')")
+    spark.sql(f"ALTER TABLE delta.`{path}` ADD CONSTRAINT valid_status CHECK (status <> 'invalid')")
+    return DeltaTable.forPath(spark, str(path))
+
+
+@pytest.mark.parametrize("mode", ["online", "generated"])
+@pytest.mark.parametrize(
+    ("subject", "expected"),
+    [
+        (EvolvingMerge, [("1", "updated", "merged"), ("2", "open", None), ("3", "inserted", "new")]),
+        (
+            EvolvingAppend,
+            [
+                ("1", "open", None),
+                ("1", "updated", "merged"),
+                ("2", "open", None),
+                ("3", "inserted", "new"),
+            ],
+        ),
+    ],
+)
+def test_explicit_schema_evolution_is_scoped_and_verified(delta_spark, tmp_path, mode, subject, expected) -> None:
+    from delta.tables import DeltaTable  # type: ignore[import-not-found]
+
+    path = tmp_path / f"evolution-{subject.__name__}-{mode}"
+    table = _v1_table(delta_spark, path)
+    changes = delta_spark.createDataFrame(
+        [("1", "updated", "merged"), ("3", "inserted", "new")],
+        ["id", "status", "note"],
+    )
+    files = render_generated_project(
+        subject,
+        source_transform=f"{subject.__module__}.{subject.__name__}",
+        generated_package=PACKAGE,
+        source_schema_modules={Order.__module__: [Order, OrderV2, Change, ChangeV2]},
+    )
+    with generated_project(tmp_path, PACKAGE, files):
+        result = subject(changes=changes, current_orders=table).run(
+            session(delta_spark, execution_mode=mode, generated_package=PACKAGE)
+        )
+    assert result.orders is table
+    reopened = DeltaTable.forPath(delta_spark, str(path))
+    assert sorted(tuple(row) for row in reopened.toDF().collect()) == expected
 
 
 def _changes(spark, rows=(("1", "changed"), ("3", "new"))):

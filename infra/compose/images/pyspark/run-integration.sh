@@ -87,8 +87,15 @@ cleanup() {
 trap cleanup EXIT
 
 pytest_status=0
+test_paths=(/workspace/tests/integration /workspace/tests/concepts/live_pyspark)
+if [[ "${backend}" == "pyspark41" ]]; then
+    test_paths=(
+        /workspace/tests/integration/pyspark/backend/test_runtime_versions.py
+        /workspace/tests/integration/pyspark/v11
+    )
+fi
 timeout --signal=TERM --kill-after=15s "${STRUCTURE_INTEGRATION_TIMEOUT:-3600}" \
-    python -m pytest /workspace/tests/integration /workspace/tests/concepts/live_pyspark \
+    python -m pytest "${test_paths[@]}" \
     --rootdir=/workspace \
     -p no:cacheprovider \
     --run-integration \

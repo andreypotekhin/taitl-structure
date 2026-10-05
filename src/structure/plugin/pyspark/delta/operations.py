@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from structure.dsl import Schema
-from structure.plugin.pyspark.delta.model import DeltaClause, DeltaMutation
+from structure.plugin.pyspark.delta.model import DeltaClause, DeltaMutation, DeltaMutationResult
 from structure.plugin.pyspark.dsl.Expression import Expression, _same_type
 from structure.plugin.pyspark.dsl.expressions import literal
 from structure.plugin.pyspark.dsl.InputScope import InputScope
@@ -26,9 +26,24 @@ def _context():
 
 
 def _target(target: object) -> DeltaScope:
-    if not isinstance(target, DeltaScope) or not target._structure_delta_mutable:
-        raise TypeError("Delta mutation target must be a delta_output(...) relation parameter")
+    if not isinstance(target, DeltaScope):
+        raise TypeError("Delta mutation target must be a Delta table relation parameter")
     return target
+
+
+def _require_mutable(target: DeltaScope, *, schema_evolution: bool) -> None:
+    if not target._structure_delta_mutable and not schema_evolution:
+        raise TypeError("A delta_input(...) relation can only be mutated by an explicit schema evolution")
+    if target._structure_delta_mutable and schema_evolution:
+        raise TypeError("Schema evolution requires a delta_input(...) target and a distinct delta_output(...) result")
+
+
+def _evolution_output_schema() -> type[Schema]:
+    context = _context()
+    schema = getattr(context, "delta_output_schema", None)
+    if not isinstance(schema, type) or not issubclass(schema, Schema):
+        raise TypeError("with_schema_evolution() requires a step returning a delta_output(...) Schema")
+    return schema
 
 
 def _predicate(name: str, value: object) -> Expression:
@@ -113,6 +128,17 @@ class DeltaMerge:
         self.predicate = predicate
         self.clauses: list[DeltaClause] = []
         self.executed = False
+        self.schema_evolution = False
+        self.output_schema: type[Schema] | None = None
+
+    def with_schema_evolution(self) -> DeltaMerge:
+        if self.executed or self.schema_evolution:
+            raise TypeError("Delta schema evolution can be enabled only once before execute()")
+        self.output_schema = _evolution_output_schema()
+        if self.output_schema is self.target._structure_input_schema:
+            raise TypeError("with_schema_evolution() requires a different delta_output(...) Schema")
+        self.schema_evolution = True
+        return self
 
     def _add(self, action: str, condition: object | None = None, values: Schema | None = None) -> DeltaMerge:
         if self.executed:
@@ -121,7 +147,15 @@ class DeltaMerge:
         phases = {"matched": 0, "unmatched": 1, "source": 2}
         if self.clauses and phases[phase] < phases[self.clauses[-1].action.split("_")[0]]:
             raise TypeError("Delta merge clauses must be ordered: matched, unmatched, unmatched by source")
-        assignments = () if values is None else _assignments(self.target, values, insert=action == "unmatched_insert")
+        assignment_target = self.target
+        if self.schema_evolution and self.output_schema is not None:
+            assignment_target = DeltaScope(
+                name=self.target._structure_scope_name,
+                schema=self.output_schema,
+                source=self.target._structure_source,
+                mutable=False,
+            )
+        assignments = () if values is None else _assignments(assignment_target, values, insert=action == "unmatched_insert")
         predicate = None if condition is None else _predicate("Delta merge condition", condition)
         allowed = {self.target._structure_scope_name, self.source._structure_scope_name}
         if phase == "unmatched":
@@ -156,7 +190,7 @@ class DeltaMerge:
     def when_not_matched_by_source_delete(self, *, condition: object | None = None) -> DeltaMerge:
         return self._add("source_delete", condition)
 
-    def execute(self) -> None:
+    def execute(self) -> DeltaMutationResult | None:
         if self.executed or not self.clauses:
             raise TypeError("Delta merge requires clauses and can be executed only once")
         self.executed = True
@@ -164,17 +198,20 @@ class DeltaMerge:
             clauses = [item for item in self.clauses if item.action.startswith(phase)]
             if any(item.condition is None for item in clauses[:-1]):
                 raise TypeError(f"Only the final {phase} Delta merge clause may omit condition=")
-        _context().delta_mutations.append(
-            DeltaMutation(
-                "merge",
-                self.target._structure_source,
-                self.target._structure_scope_name,
-                self.predicate,
-                source=self.source_name,
-                source_scope=self.source._structure_scope_name,
-                clauses=tuple(self.clauses),
-            )
+        _require_mutable(self.target, schema_evolution=self.schema_evolution)
+        mutation = DeltaMutation(
+            "merge",
+            self.target._structure_source,
+            self.target._structure_scope_name,
+            self.predicate,
+            source=self.source_name,
+            source_scope=self.source._structure_scope_name,
+            clauses=tuple(self.clauses),
+            schema_evolution=self.schema_evolution,
+            output_schema=self.output_schema,
         )
+        _context().delta_mutations.append(mutation)
+        return DeltaMutationResult(mutation) if self.schema_evolution else None
 
 
 def delta_merge(target: DeltaScope, source: RowScope, *, on: object) -> DeltaMerge:
@@ -190,3 +227,51 @@ def delta_merge(target: DeltaScope, source: RowScope, *, on: object) -> DeltaMer
     if actual != expected:
         raise TypeError("delta_merge(on=...) must compare the target and source relation parameters")
     return DeltaMerge(target, source, source_name, predicate)
+
+
+class DeltaAppend:
+    """A typed append to a caller-bound Delta table."""
+
+    def __init__(self, target: DeltaScope, source: RowScope, source_name: str) -> None:
+        self.target = target
+        self.source = source
+        self.source_name = source_name
+        self.schema_evolution = False
+        self.output_schema: type[Schema] | None = None
+        self.executed = False
+
+    def with_schema_evolution(self) -> DeltaAppend:
+        if self.executed or self.schema_evolution:
+            raise TypeError("Delta schema evolution can be enabled only once before execute()")
+        self.output_schema = _evolution_output_schema()
+        if self.output_schema is self.target._structure_input_schema:
+            raise TypeError("with_schema_evolution() requires a different delta_output(...) Schema")
+        self.schema_evolution = True
+        return self
+
+    def execute(self) -> DeltaMutationResult | None:
+        if self.executed:
+            raise TypeError("A Delta append builder can be executed only once")
+        _require_mutable(self.target, schema_evolution=self.schema_evolution)
+        self.executed = True
+        mutation = DeltaMutation(
+            "append",
+            self.target._structure_source,
+            self.target._structure_scope_name,
+            source=self.source_name,
+            source_scope=self.source._structure_scope_name,
+            schema_evolution=self.schema_evolution,
+            output_schema=self.output_schema,
+        )
+        _context().delta_mutations.append(mutation)
+        return DeltaMutationResult(mutation) if self.schema_evolution else None
+
+
+def delta_append(target: DeltaScope, source: RowScope) -> DeltaAppend:
+    target = _target(target)
+    if not isinstance(source, RowScope):
+        raise TypeError("delta_append(source=...) requires a Structure relation parameter")
+    source_name = source._structure_source if isinstance(source, InputScope) else _context().default_project_frame
+    if not isinstance(source_name, str):
+        raise TypeError("delta_append(source=...) cannot resolve the source relation")
+    return DeltaAppend(target, source, source_name)

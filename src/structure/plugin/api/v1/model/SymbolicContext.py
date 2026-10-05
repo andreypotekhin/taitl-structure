@@ -20,7 +20,9 @@ class SymbolicContext(Protocol):
     current_scopes: set[str]
     relation_scopes: dict[str, object]
     foreach: list[Any]
-
+    state_budget_target: tuple[str, int | None] | None
+    state_budget_attached_target: tuple[str, int | None] | None
+    aggregate_state_budget: object | None
     def __enter__(self) -> SymbolicContext: ...
 
     def __exit__(

@@ -153,7 +153,7 @@ class MapPySparkStep:
             operations=operations,
             input_sources=tuple(binding.source for binding in step.inputs),
             origin=step.origin,
-            effect=step.effect,
+            effect=step.effect or bool(body.delta_mutations),
             delta_mutations=body.delta_mutations,
             delta_check_match=cast(str | None, (step.options or {}).get("delta_check_match")),
         )
@@ -766,7 +766,11 @@ class MapPySparkStep:
 
     @staticmethod
     def _operation_modes(recipe: PySparkOperationRecipe, operation) -> PySparkOperationRecipe:
-        return replace(recipe, streaming_output_modes=operation.streaming_output_modes)
+        return replace(
+            recipe,
+            streaming_output_modes=operation.streaming_output_modes,
+            state_budget=operation.state_budget,
+        )
 
     def _body(self, step: StepPlan) -> PySparkStepBody:
         body = step.plugin_body

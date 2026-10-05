@@ -63,7 +63,8 @@ inventory and evidence boundary are maintained in the [V11 charter](dev/project-
 | 4.1 expressions and `Column.transform` | design-gated | Typed expressions require type, nullability, determinism, generated spelling, and target evidence. |
 | `exists`, IN-subqueries, and `lateralJoin` | design-gated | Relation scope, cardinality, aliases, null behavior, and online/generated parity must be specified. |
 | Observations, KLL, and Theta sketches | design-gated | Metric side channels and opaque sketch results require separate typed and dependency contracts. |
-| Arrow UDF/UDTF and `transformWithState` | caller-owned-guided | Python workers, state, retries, and lifecycle remain outside generated Structure transforms. |
+| Arrow UDF/UDTF | caller-owned-guided | Python workers and callback-defined row cardinality remain outside generated Structure transforms. |
+| Row and Pandas `transformWithState` | design-gated | Typed and opaque-native Structure compiler surfaces are implemented; live profile-specific parity and checkpoint-restart evidence is still required before support is claimed. See the [Streaming API](api/Streaming.api.md). |
 | Delta transform mutations | planned | Caller-bound `delta_input`/`delta_output`, `Schema.constraints`, and compiled delete/update/merge require isolated Delta evidence. |
 | Retained V9 gates | design-gated | See the retained-gates design/specification pair; XML and join reordering remain unsupported. |
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
+from collections.abc import Iterator
 from uuid import uuid4
 
 import pytest
@@ -14,24 +14,22 @@ from integration.pyspark.support.backend_matrix import (
 
 from structure import Schema, Transform, input, output, step
 from structure.plugin.pyspark import (
-    PandasStateProcessor,
+    StateProcessor,
+    TimerContext,
     ValueState,
     integer,
-    pandas_state_processor,
+    state_processor,
     string,
-    transform_with_state_in_pandas,
+    transform_with_state,
 )
 
 pytestmark = [
     pytest.mark.integration,
-    pytest.mark.skipif(
-        backend_name() not in {"pyspark40", "pyspark41"},
-        reason="Pandas transformWithState evidence targets ordinary PySpark 4.0 and 4.1",
-    ),
+    pytest.mark.skipif(backend_name() != "pyspark41", reason="Row transformWithState requires ordinary PySpark 4.1"),
 ]
 
-SOURCE_MODULE = "integration.pyspark.v11.test_transform_with_state_in_pandas"
-GENERATED_PACKAGE = "integration_v11_pandas_state_generated"
+SOURCE_MODULE = "integration.pyspark.v11.test_transform_with_state"
+GENERATED_PACKAGE = "integration_v11_row_state_generated"
 
 
 class Event(Schema):
@@ -52,17 +50,21 @@ class TotalOutput(Schema):
     total = integer(nullable=False)
 
 
-@pandas_state_processor
-class CustomerTotals(PandasStateProcessor[Event, CustomerKey, CustomerTotal, TotalOutput]):
-    def on_batches(self, key, batches, state: ValueState[CustomerTotal], timers):
-        import pandas as pd  # type: ignore[import-untyped]
-
+@state_processor
+class CustomerTotals(StateProcessor[Event, CustomerKey, CustomerTotal, TotalOutput]):
+    def on_rows(
+        self,
+        key: CustomerKey,
+        rows: Iterator[Event],
+        state: ValueState[CustomerTotal],
+        timers: TimerContext,
+    ) -> Iterator[TotalOutput]:
         current = state.get()
         total = 0 if current is None else current.total
-        for batch in batches:
-            total += int(batch["amount"].sum())
+        for row in rows:
+            total += row.amount
         state.update(CustomerTotal(total=total))
-        yield pd.DataFrame({"customer_id": [key.customer_id], "total": [total]})
+        yield TotalOutput(customer_id=key.customer_id, total=total)
 
 
 class AccumulateCustomerTotals(Transform):
@@ -71,7 +73,7 @@ class AccumulateCustomerTotals(Transform):
 
     @step(input=events, output=totals)
     def accumulate(self, event: Event) -> TotalOutput:
-        return transform_with_state_in_pandas(
+        return transform_with_state(
             key=event.customer_id,
             processor=CustomerTotals,
             output_mode="Update",
@@ -79,19 +81,19 @@ class AccumulateCustomerTotals(Transform):
         )
 
 
-def test_pandas_state_runs_online_and_generated_and_resumes_checkpoint(spark, tmp_path) -> None:
+def test_row_state_runs_online_and_generated_and_resumes_checkpoint(spark, tmp_path) -> None:
     files = render_generated_projects(
         ((AccumulateCustomerTotals, f"{SOURCE_MODULE}.AccumulateCustomerTotals"),),
         generated_package=GENERATED_PACKAGE,
         source_schema_modules={SOURCE_MODULE: [Event, TotalOutput]},
     )
     generated_source = "\n".join(files.values())
-    assert "interface='pandas'" in generated_source
+    assert "interface='row'" in generated_source
     assert "apply_stateful_transform(" in generated_source
     for token in ("readStream", "writeStream", "checkpointLocation", "toPandas(", ".rdd"):
         assert token not in generated_source
 
-    root = tmp_path / f"pandas-state-{uuid4().hex}"
+    root = tmp_path / f"row-state-{uuid4().hex}"
     with generated_project(tmp_path, GENERATED_PACKAGE, files):
         for mode in ("online", "generated"):
             source = root / mode / "source"
@@ -99,14 +101,11 @@ def test_pandas_state_runs_online_and_generated_and_resumes_checkpoint(spark, tm
             checkpoint = root / mode / "checkpoint"
             emitted: list[tuple[str, int]] = []
 
-            def build_transform():
+            def run_available_now() -> None:
                 events = spark.readStream.schema("customer_id STRING NOT NULL, amount INT NOT NULL").json(str(source))
-                return AccumulateCustomerTotals(events=events).run(
+                result = AccumulateCustomerTotals(events=events).run(
                     session(spark, execution_mode=mode, generated_package=GENERATED_PACKAGE)
                 )
-
-            def run_available_now() -> None:
-                result = build_transform()
 
                 def collect_batch(frame, _batch_id: int) -> None:
                     emitted.extend((row.customer_id, row.total) for row in frame.collect())
@@ -115,7 +114,7 @@ def test_pandas_state_runs_online_and_generated_and_resumes_checkpoint(spark, tm
                     "checkpointLocation", str(checkpoint)
                 ).trigger(availableNow=True).start()
                 try:
-                    assert query.awaitTermination(120), "Pandas state query did not complete"
+                    assert query.awaitTermination(120), "Row state query did not complete"
                 finally:
                     query.stop()
 

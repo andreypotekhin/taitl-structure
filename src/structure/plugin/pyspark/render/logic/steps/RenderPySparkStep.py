@@ -56,9 +56,10 @@ class RenderPySparkStep:
         generated_hooks: bool = False,
         backend_target: str = ">=3.5,<4.1",
         frame_mapping: str | None = None,
+        delta_check_match: str = "expression",
     ) -> str:
         if isinstance(step, PySparkStepRecipe) and step.effect:
-            return self._delta_effect(step, sources or {})
+            return self._delta_effect(step, sources or {}, delta_check_match=delta_check_match)
         if isinstance(step, PySparkOutputRecipe) and step.binding == "delta":
             return f"        {step.name} = self._delta_tables[{step.name!r}]"
         if isinstance(step, PySparkStepRecipe) and len(step.results) > 1:
@@ -109,14 +110,18 @@ class RenderPySparkStep:
                 lines.extend(self._command_result_accumulation(result, frame_mapping=frame_mapping))
         return "\n".join(lines)
 
-    def _delta_effect(self, step: PySparkStepRecipe, sources: Mapping[str, str]) -> str:
+    def _delta_effect(
+        self, step: PySparkStepRecipe, sources: Mapping[str, str], *, delta_check_match: str
+    ) -> str:
         lines = [f"        # Delta effect: {step.name}"]
         for index, mutation in enumerate(step.delta_mutations):
             table = f"_delta_target_{index}"
             lines.append(f"        {table} = self._delta_tables[{mutation.target!r}]")
             aliases = {mutation.target_scope: ""}
-            predicate = render_pyspark_expression(
-                cast(PySparkExpressionRecipe, mutation.predicate), scope_aliases=aliases
+            predicate = (
+                None
+                if mutation.predicate is None
+                else render_pyspark_expression(cast(PySparkExpressionRecipe, mutation.predicate), scope_aliases=aliases)
             )
             if mutation.kind == "delete":
                 lines.append(f"        {table}.delete({predicate})")
@@ -132,6 +137,7 @@ class RenderPySparkStep:
                 lines.append(f"        {table}.update(condition={predicate}, set={values})")
             elif mutation.kind == "merge":
                 assert mutation.source is not None and mutation.source_scope is not None
+                assert predicate is not None
                 merged_aliases = {mutation.target_scope: "target", mutation.source_scope: "source"}
                 source = sources.get(mutation.source, mutation.source)
                 predicate = render_pyspark_expression(
@@ -140,6 +146,8 @@ class RenderPySparkStep:
                 lines.append(
                     f"        _delta_merge_{index} = {table}.alias('target').merge({source}.alias('source'), {predicate})"
                 )
+                if mutation.schema_evolution:
+                    lines.append(f"        _delta_merge_{index} = _delta_merge_{index}.withSchemaEvolution()")
                 methods = {
                     "matched_update": ("whenMatchedUpdate", "set"),
                     "matched_delete": ("whenMatchedDelete", None),
@@ -171,14 +179,32 @@ class RenderPySparkStep:
                         f"        _delta_merge_{index} = _delta_merge_{index}.{method}({', '.join(arguments)})"
                     )
                 lines.append(f"        _delta_merge_{index}.execute()")
+            elif mutation.kind == "append":
+                assert mutation.source is not None
+                source = sources.get(mutation.source, mutation.source)
+                lines.append(f"        _delta_writer_{index} = {source}.write.format('delta').mode('append')")
+                if mutation.schema_evolution:
+                    lines.append(f"        _delta_writer_{index} = _delta_writer_{index}.option('mergeSchema', 'true')")
+                lines.append(
+                    f"        _delta_writer_{index}.save({table}.detail().select('location').first()['location'])"
+                )
             else:
                 raise ValueError(f"Unknown Delta mutation {mutation.kind}")
+            if mutation.output is not None:
+                if mutation.output_schema is None:
+                    raise ValueError("A schema-evolving Delta mutation requires its declared output Schema")
+                lines.append(
+                    f"        validate_delta_table({table}, _StructureDeltaOutputSchema_{mutation.output_schema.__name__}, mode={(step.delta_check_match or delta_check_match)!r})"
+                )
+                lines.append(f"        self._delta_tables[{mutation.output!r}] = {table}")
             for key in (mutation.target, f"input:{mutation.target}"):
                 variable = sources.get(key)
                 if variable is not None:
                     lines.append(f"        {variable} = fresh_delta_frame({table})")
         result = step.results[0].frame
-        lines.append(f"        {result} = fresh_delta_frame(self._delta_tables[{step.delta_mutations[-1].target!r}])")
+        final = step.delta_mutations[-1]
+        result_table = final.output or final.target
+        lines.append(f"        {result} = fresh_delta_frame(self._delta_tables[{result_table!r}])")
         return "\n".join(
             [
                 lines[0],

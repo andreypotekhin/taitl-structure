@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from structure.plugin.api.v1.model import StreamingFinding, StreamingReport, StreamingStateStage
 from structure.plugin.pyspark.compiler.logic.streaming.ClassifyGeneratorStreamingCompatibility import (
@@ -12,6 +12,7 @@ from structure.plugin.pyspark.compiler.model.PySparkHookRecipe import PySparkHoo
 from structure.plugin.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoinRecipe
 from structure.plugin.pyspark.dsl.joins.Join import Join
 from structure.plugin.pyspark.dsl.joins.JoinMethod import JoinMethod
+from structure.plugin.pyspark.dsl.operations.StateBudgetPlan import StateBudgetPlan
 from structure.plugin.pyspark.dsl.operations.StreamingSupport import StreamingSupport
 
 
@@ -20,6 +21,8 @@ class _StatefulStreamingOperation:
     step: str
     operation: str
     aggregate: object | None = None
+    explicit_within_watermark: bool = False
+    state_budget: StateBudgetPlan | None = None
 
 
 class ClassifyStreamingCompatibility:
@@ -97,7 +100,7 @@ class ClassifyStreamingCompatibility:
                             )
                         )
                         stateful_operations.append(
-                            _StatefulStreamingOperation(step.name, operation_name)
+                            _StatefulStreamingOperation(step.name, operation_name, state_budget=operation.state_budget)
                         )
                 if operation.aggregate is not None:
                     allow_chained_window = len(stateful_operations) == 1 and self._approved_chained_window(
@@ -127,6 +130,7 @@ class ClassifyStreamingCompatibility:
                                 step.name,
                                 self._aggregate_operation(operation.aggregate),
                                 aggregate=operation.aggregate,
+                                state_budget=operation.state_budget,
                             )
                         )
                 if streaming_step and operation.selected_rows is not None:
@@ -152,7 +156,14 @@ class ClassifyStreamingCompatibility:
                             )
                         )
                         stateful_operations.append(
-                            _StatefulStreamingOperation(step.name, "watermark-bounded duplicate removal")
+                            _StatefulStreamingOperation(
+                                step.name,
+                                "watermark-bounded duplicate removal",
+                                explicit_within_watermark=bool(
+                                    operation.duplicate_rows and operation.duplicate_rows.within_watermark
+                                ),
+                                state_budget=operation.state_budget,
+                            )
                         )
                 if streaming_step and operation.exactly_one is not None:
                     findings.extend(self._exactly_one(step.name, operation.exactly_one.scope))
@@ -243,7 +254,14 @@ class ClassifyStreamingCompatibility:
                     streaming=bool(input_modes.get(output.source)),
                 )
             )
-        findings.extend(self._stateful_composition(stateful_operations))
+        composition_findings = self._stateful_composition(stateful_operations)
+        findings.extend(composition_findings)
+        if not composition_findings and len(stateful_operations) == 2 and self._approved_dedupe_window(
+            stateful_operations[0], stateful_operations[1]
+        ):
+            state_stages = [replace(stage, output_modes=("append",)) for stage in state_stages]
+        if not composition_findings:
+            findings.extend(self._state_budget_findings(plan, stateful_operations))
 
         return StreamingReport(
             transform=plan.transform,
@@ -283,6 +301,8 @@ class ClassifyStreamingCompatibility:
                 self._is_event_time_window(key.expression) and not self._is_window_time_window(key.expression)
                 for key in aggregate.keys
             ),
+            max_rows=None if operation.state_budget is None else operation.state_budget.max_rows,
+            max_state_bytes=None if operation.state_budget is None else operation.state_budget.max_state_bytes,
         )
 
     def _dedupe_stage(
@@ -304,6 +324,8 @@ class ClassifyStreamingCompatibility:
             ),
             retention=tuple(sorted(watermark_delays.get(scope, {}).values())),
             output_modes=tuple(mode.value for mode in operation.streaming_output_modes),
+            max_rows=None if operation.state_budget is None else operation.state_budget.max_rows,
+            max_state_bytes=None if operation.state_budget is None else operation.state_budget.max_state_bytes,
         )
 
     def _join_stage(
@@ -446,6 +468,8 @@ class ClassifyStreamingCompatibility:
             return ()
         if len(operations) == 2 and self._approved_chained_window(operations[0], operations[1].aggregate):
             return ()
+        if len(operations) == 2 and self._approved_dedupe_window(operations[0], operations[1]):
+            return ()
         first, second = operations[0], operations[1]
         return (
             StreamingFinding(
@@ -454,15 +478,82 @@ class ClassifyStreamingCompatibility:
                 step=second.step,
                 operation="stateful streaming composition",
                 problem=(
-                    "A streaming transform may contain one admitted stateful operation followed only by "
-                    f"stateless work; found {first.operation} in {first.step} and {second.operation} in {second.step}."
+                    "A streaming transform may contain one admitted stateful operation or one explicitly admitted pair; found "
+                    f"{first.operation} in {first.step} and {second.operation} in {second.step}."
                 ),
                 use=(
-                    "Keep one transform_with_state processor, watermarked dedupe, window/session aggregate, or bounded stream-stream join in this "
-                    "transform, then split any later stateful work into a separate pipeline boundary."
+                    "Use the admitted watermarked event-time window pair or watermarked dedupe followed by one event-time window aggregate in Append mode; split any later stateful work that does not match those pairs into a separate caller-owned streaming stage."
                 ),
             ),
         )
+
+    @staticmethod
+    def _approved_dedupe_window(first: _StatefulStreamingOperation, second: _StatefulStreamingOperation) -> bool:
+        aggregate = second.aggregate
+        if first.operation != "watermark-bounded duplicate removal" or not first.explicit_within_watermark:
+            return False
+        if aggregate is None:
+            return False
+        keys = getattr(aggregate, "keys", ())
+        return any(
+            key.expression.kind == "time_window"
+            and bool(key.expression.args)
+            and key.expression.args[0].kind == "field"
+            for key in keys
+        )
+
+    def _state_budget_findings(self, plan: PySparkExecutionPlan, operations: list[_StatefulStreamingOperation]):
+        if len(operations) < 2:
+            return ()
+        mode = plan.state_budget_checking
+        if mode == "off":
+            return ()
+        memory_budget = plan.transform_memory_budget
+        has_memory = bool(memory_budget is not None and getattr(memory_budget, "memory_source", None))
+        incomplete = [
+            operation
+            for operation in operations
+            if operation.state_budget is None
+            or operation.state_budget.max_rows is None
+            or operation.state_budget.max_state_bytes is None
+        ]
+        if mode == "require_declaration" and incomplete and not has_memory:
+            first = incomplete[0]
+            return (
+                StreamingFinding(
+                    code="STREAM-E0801",
+                    support=StreamingSupport.BATCH_ONLY,
+                    step=first.step,
+                    operation=first.operation,
+                    problem=f"State budget declaration is missing for {first.operation} in step {first.step}.",
+                    use="Add budget(max_rows=..., max_state_bytes=...) after each stateful operation or declare memory_budget = budget(memory_source=...).",
+                ),
+            )
+        if mode == "declaration_and_runtime" and incomplete and not has_memory:
+            first = incomplete[0]
+            return (
+                StreamingFinding(
+                    code="STREAM-E0801",
+                    support=StreamingSupport.BATCH_ONLY,
+                    step=first.step,
+                    operation=first.operation,
+                    problem=f"Runtime state-budget checking requires declarations for every stateful operation; missing {first.operation} in step {first.step}.",
+                    use="Add operator budgets and attach session.state_budget_guard(result) to the caller-owned query, or declare a Spark memory budget.",
+                ),
+            )
+        if mode == "compile_time_check" and incomplete and not has_memory:
+            first = incomplete[0]
+            return (
+                StreamingFinding(
+                    code="STREAM-W0805",
+                    support=StreamingSupport.COMPATIBLE,
+                    step=first.step,
+                    operation=first.operation,
+                    problem=f"No state budget is declared for {first.operation} in step {first.step}.",
+                    use="Declare operator limits with budget(max_rows=..., max_state_bytes=...) or configure state_budget_checking='require_declaration'.",
+                ),
+            )
+        return ()
 
     def _aggregate(
         self,

@@ -29,6 +29,7 @@ from structure.plugin.pyspark.dsl.operations.ScalarGeneratorPlan import ScalarGe
 from structure.plugin.pyspark.dsl.operations.SelectedRowsPlan import SelectedRowsPlan
 from structure.plugin.pyspark.dsl.operations.SqlPlan import SqlPlan
 from structure.plugin.pyspark.dsl.operations.StackPlan import StackPlan
+from structure.plugin.pyspark.dsl.operations.StateBudgetPlan import StateBudgetPlan
 from structure.plugin.pyspark.dsl.operations.StatefulTransformPlan import StatefulTransformPlan
 from structure.plugin.pyspark.dsl.operations.StreamingOutputMode import StreamingOutputMode
 from structure.plugin.pyspark.dsl.operations.StreamingSupport import StreamingSupport
@@ -76,6 +77,7 @@ class OperationPlan:
     cardinality: OperationCardinality = OperationCardinality.UNKNOWN
     streaming: StreamingSupport = StreamingSupport.UNKNOWN
     streaming_output_modes: tuple[StreamingOutputMode, ...] = ()
+    state_budget: StateBudgetPlan | None = None
 
     @staticmethod
     def filter_operation(predicate: Any) -> OperationPlan:
@@ -108,7 +110,7 @@ class OperationPlan:
         )
 
     @staticmethod
-    def aggregate_operation(aggregate: Any) -> OperationPlan:
+    def aggregate_operation(aggregate: Any, state_budget: StateBudgetPlan | None = None) -> OperationPlan:
         session_window = any((key.expression.data or {}).get("function") == "session_window" for key in aggregate.keys)
         event_time_window = any(
             (key.expression.kind == "time_window")
@@ -133,6 +135,7 @@ class OperationPlan:
             cardinality=OperationCardinality.AGGREGATE,
             streaming=StreamingSupport.BATCH_ONLY,
             streaming_output_modes=modes,
+            state_budget=state_budget,
         )
 
     @staticmethod

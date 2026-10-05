@@ -1,5 +1,6 @@
 import json
 import sys
+from dataclasses import replace as dataclass_replace
 from pathlib import Path
 from typing import Any, cast
 
@@ -759,6 +760,23 @@ class StreamingDedupeThenAggregate(Transform):
 
 
 @transform(streaming=True)
+class StreamingDedupeThenWindowBudgeted(Transform):
+    rows = input(StreamRaw, streaming=True)
+    summary = output(StreamWindowSummary)
+    memory_budget = budget(memory_source="prefer_spark", fallback_mb=768)
+
+    def summarize(self, row: StreamRaw) -> StreamWindowSummary:
+        watermark(row.event_time, delay="10 minutes")
+        drop_duplicates_within_watermark(row.id)
+        budget(max_rows=500_000, max_state_bytes=268_435_456)
+        group_by(bucket=window(row.event_time, "10 minutes"), id=row.id)
+        budget(max_rows=2_000_000, max_state_bytes=1_073_741_824)
+        return StreamWindowSummary(
+            bucket=window(row.event_time, "10 minutes"), id=row.id, row_count=count()
+        )
+
+
+@transform(streaming=True)
 class StreamingInnerStreamJoin(Transform):
     rows = input(StreamRaw, streaming=True)
     lookups = input(StreamLookup, streaming=True)
@@ -1215,7 +1233,7 @@ def test_v9_chained_event_time_windows_are_streaming_compatible_without_spark(pr
     report = Compiler.compileability.streaming()(plan, required=True)
 
     assert report.support is StreamingSupport.COMPATIBLE
-    assert report.findings == ()
+    assert [finding.code for finding in report.findings] == ["STREAM-W0805"]
     second_aggregate = next(operation.aggregate for operation in plan.steps[1].operations if operation.aggregate)
     assert second_aggregate.keys[0].expression.kind == "time_window"
     assert second_aggregate.keys[0].expression.args[0].kind == "window_time"
@@ -1418,6 +1436,51 @@ def test_v7_second_admitted_stateful_operation_is_batch_only_without_spark() -> 
     assert report.findings[-1].operation == "stateful streaming composition"
     assert "watermark-bounded duplicate removal" in report.findings[-1].problem
     assert "watermark-bounded event-time aggregate" in report.findings[-1].problem
+
+
+def test_v11_watermarked_dedupe_then_event_time_window_is_admitted_with_budgets() -> None:
+    recipe = _recipe(StreamingDedupeThenWindowBudgeted)
+    report = Compiler.compileability.streaming()(recipe, required=True)
+
+    assert report.support is StreamingSupport.COMPATIBLE
+    assert report.findings == ()
+    assert [stage.output_modes for stage in report.stages] == [("append",), ("append",)]
+    assert [(stage.max_rows, stage.max_state_bytes) for stage in report.stages] == [
+        (500_000, 268_435_456),
+        (2_000_000, 1_073_741_824),
+    ]
+
+
+@pytest.mark.parametrize(
+    ("mode", "support", "codes"),
+    [
+        ("off", StreamingSupport.COMPATIBLE, ()),
+        ("compile_time_check", StreamingSupport.COMPATIBLE, ("STREAM-W0805",)),
+        ("require_declaration", StreamingSupport.BATCH_ONLY, ("STREAM-E0801",)),
+        ("declaration_and_runtime", StreamingSupport.BATCH_ONLY, ("STREAM-E0801",)),
+    ],
+)
+def test_v11_state_budget_checking_modes_apply_to_admitted_chain(mode, support, codes) -> None:
+    recipe = _recipe(StreamingDedupeThenWindowBudgeted)
+    steps = tuple(
+        dataclass_replace(
+            step,
+            operations=tuple(dataclass_replace(operation, state_budget=None) for operation in step.operations),
+        )
+        for step in recipe.steps
+    )
+    unbudgeted = dataclass_replace(
+        recipe,
+        steps=steps,
+        state_budget_checking=mode,
+        transform_memory_budget=None,
+        state_budget_memory_source=None,
+    )
+
+    report = Compiler.compileability.streaming()(unbudgeted, required=True)
+
+    assert report.support is support
+    assert tuple(finding.code for finding in report.findings) == codes
 
 
 def test_v2_inner_stream_stream_join_is_compatible_with_watermarks_and_time_bounds() -> None:

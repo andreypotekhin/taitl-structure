@@ -4,16 +4,17 @@
 
 Delta tables participate in Structure's normal compile-and-run workflow. A caller supplies an existing native
 `delta.tables.DeltaTable`; Structure compiles typed mutations and verifies the table contract before running them.
-Table creation and constraint installation remain caller-owned. The implemented mutation surface rejects implicit
-schema changes. A later operation-scoped extension may admit explicit schema evolution while retaining compile-time
-and post-commit schema contracts.
+Table creation and constraint installation remain caller-owned. Mutations preserve the bound schema by default.
+Schema evolution is allowed only when a step explicitly opts in and declares its expected output schema as its return
+type. Structure verifies the declared old schema before the operation and the declared new schema after the commit.
 
 ## Public shape
 
-`delta_input(Schema)` declares a read-only table relation. `delta_output(Schema)` declares a caller-bound mutable
-table target and a named result. The caller supplies native Delta tables as keyword arguments when constructing the
-Transform. A successful result exposes the identical table object. A Delta output may be selected as a relation
-parameter in an effect step, which returns `None` rather than a row schema.
+`delta_input(Schema)` declares a caller-bound table relation. `delta_output(Schema)` declares a caller-bound table
+result. The caller supplies native Delta tables as keyword arguments when constructing the Transform. A successful
+result exposes the identical table object. Ordinary same-schema effects may use `@step` with a `None` return. An
+explicit schema transition returns the declared `delta_output` schema, which lets normal return-schema resolution
+select the result without extra step parameters or decorator metadata.
 
     class Order(Schema):
         id = string(nullable=False)
@@ -62,21 +63,32 @@ uncertain commit.
 
 The first tested runtime is ordinary PySpark 4.1.0 with Delta 4.1.0. Public support remains gated on V11's 4.1
 capability admission and integration matrix. Spark Connect requires separate evidence.
-Full merge *data mutation clause* coverage currently excludes schema evolution, raw SQL, table administration, and
-metrics not returned by the native Python API.
+Full merge *data mutation clause* coverage includes opt-in schema evolution. Raw SQL, table administration, and
+metrics not returned by the native Python API remain outside this surface.
 
-## Explicit schema evolution follow-up
+## Explicit schema evolution
 
-Schema evolution is safe enough to expose only when the transform names both the operation and the expected resulting
-schema. The merge analog should be `.with_schema_evolution(to=OrderV2)`, lowered to Delta's
-`withSchemaEvolution()`. Before execution, the bound table must match either the declaration's current schema or the
-named result schema, which permits repeat runs. After the commit, Structure must validate the exact result shape and
-its CHECK contract before later steps use it. Compilation must verify that the result is a compatible evolution of the
-current schema and that the source relation can supply every added field used by the merge clauses.
+Schema evolution is opt-in through a return-typed state transition:
 
-Delta's `.option("mergeSchema", "true")` belongs to `DataFrameWriter`, not `DeltaTable`. Its typed analog therefore
-needs a distinct append/write effect such as `delta_append(target, source, evolve_to=OrderV2)`. It should resolve the
-bound table location at runtime, apply `mergeSchema` only to that one append, and perform the same post-commit contract
-check. A session-wide auto-merge configuration is intentionally outside the API because it can evolve unrelated
-operations. Overwrite schema replacement is a separate, more destructive contract and should not be implied by this
-append option.
+    changes = input(Change)
+    current_orders = delta_input(OrderV1)
+    orders = delta_output(OrderV2)
+
+    def merge(self, change: Change, order: OrderV1) -> OrderV2:
+        return (delta_merge(order, change, on=order.id == change.id)
+                .with_schema_evolution()
+                .when_matched_update_all()
+                .when_not_matched_insert_all()
+                .execute())
+
+The return schema resolves to the declared Delta output. Capture accepts the marker only when it represents the
+step's sole mutation, its target is the declared `delta_input`, and input/output schemas differ. The table must match
+`OrderV1` before mutation; after commit Structure validates `OrderV2`, including its declared CHECK contract. A later
+invocation must declare the table's current schema as its input rather than silently accepting either version.
+
+Merge evolution lowers to the native builder's `withSchemaEvolution()`. Append evolution is a separate typed
+`delta_append(target, source).with_schema_evolution().execute()` operation because Delta's `.option("mergeSchema",
+"true")` belongs to `DataFrameWriter`, not `DeltaTable`. It resolves the bound table location at runtime, applies the
+option only to that append, and performs the same post-commit check. Session-wide auto-merge is excluded because it
+could evolve unrelated operations. Overwrite schema replacement is a separate, more destructive contract and is not
+implied by this append option.

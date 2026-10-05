@@ -29,6 +29,9 @@ class CompileContext:
         self.default_project_source: object | None = None
         self.current_scopes: set[str] = set()
         self.relation_scopes: dict[str, object] = {}
+        self.state_budget_target: tuple[str, int | None] | None = None
+        self.state_budget_attached_target: tuple[str, int | None] | None = None
+        self.aggregate_state_budget: object | None = None
         self._token: Token[SymbolicContext | None] | None = None
 
     def __enter__(self) -> "CompileContext":

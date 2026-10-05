@@ -119,6 +119,18 @@ class PySparkTraceabilityReport:
                 }
                 for state in stateful
             ]
+        budgets = [
+            {
+                "id": f"{step.ordinal}:{index}",
+                "operation": operation.kind,
+                "max_rows": operation.state_budget.max_rows,
+                "max_state_bytes": operation.state_budget.max_state_bytes,
+            }
+            for index, operation in enumerate(step.operations)
+            if operation.state_budget is not None
+        ]
+        if budgets:
+            data["state_budgets"] = budgets
         return data
 
     def _join(self, join) -> dict[str, str]:

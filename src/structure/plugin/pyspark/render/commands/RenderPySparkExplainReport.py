@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import cast
+
 from structure.dsl import Transform
 from structure.plugin.api.v1.model import ExplainRequest, TransformPlan
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
@@ -71,8 +73,21 @@ class RenderPySparkExplainReport:
                 "  streaming:",
                 f"    status: {streaming.support.value}",
                 f"    required: {str(streaming.required).lower()}",
+                f"    state_budget_checking: {recipe.state_budget_checking}",
             ]
         )
+        memory_budget = recipe.transform_memory_budget
+        source: str | None
+        fallback: int | None
+        if memory_budget is None and recipe.state_budget_memory_source is not None:
+            source = recipe.state_budget_memory_source
+            fallback = recipe.state_budget_fallback_mb
+        else:
+            source = cast(str | None, getattr(memory_budget, "memory_source", None))
+            fallback = getattr(memory_budget, "fallback_mb", None)
+        if source is not None:
+            suffix = "" if fallback is None else f" fallback_mb={fallback}"
+            lines.append(f"    memory_budget: source={source}{suffix}")
         for finding in streaming.findings:
             lines.append(f"    {finding.code}: {finding.support.value} in {finding.step} ({finding.operation})")
         lines.extend(["", "  state stages:"])
@@ -94,6 +109,13 @@ class RenderPySparkExplainReport:
             lines.append(f"      order_keys: {order_keys}")
             lines.append(f"      completion_window: {completion_window}")
             lines.append(f"      output_modes: {modes}")
+            if stage.max_rows is not None or stage.max_state_bytes is not None:
+                limits = []
+                if stage.max_rows is not None:
+                    limits.append(f"max_rows={stage.max_rows}")
+                if stage.max_state_bytes is not None:
+                    limits.append(f"max_state_bytes={stage.max_state_bytes}")
+                lines.append(f"      budget: {', '.join(limits)}")
             lines.append(f"      allows_later_stateful: {str(stage.allows_later_stateful).lower()}")
         lines.extend(["", "  inputs:"])
         for item in recipe.inputs:
@@ -218,7 +240,7 @@ class RenderPySparkExplainReport:
 
     def _operation(self, operation: PySparkOperationRecipe) -> str:
         if operation.aggregate is not None:
-            return f"aggregate(aggregate {self._aggregate(operation)})"
+            return f"aggregate(aggregate {self._aggregate(operation)}{self._budget(operation)})"
         if operation.selected_rows is not None:
             return (
                 f"{operation.selected_rows.direction}_by("
@@ -230,7 +252,7 @@ class RenderPySparkExplainReport:
             suffix = "" if not subset else f" subset={subset}"
             if scope is not None:
                 suffix = f"{suffix} scope={scope}"
-            return f"drop_duplicates(row_filtering{suffix}{self._streaming_modes(operation)})"
+            return f"drop_duplicates(row_filtering{suffix}{self._streaming_modes(operation)}{self._budget(operation)})"
         if operation.exactly_one is not None:
             return f"exactly_one(row_preserving scope={operation.exactly_one.scope})"
         if operation.posexplode_struct is not None:
@@ -350,6 +372,18 @@ class RenderPySparkExplainReport:
         )
         having = " having=1" if operation.aggregate.having is not None else ""
         return f"keys={keys}{levels} metrics={metrics}{having}{self._streaming_modes(operation)}"
+
+    @staticmethod
+    def _budget(operation: PySparkOperationRecipe) -> str:
+        budget = operation.state_budget
+        if budget is None:
+            return ""
+        values = []
+        if budget.max_rows is not None:
+            values.append(f"max_rows={budget.max_rows}")
+        if budget.max_state_bytes is not None:
+            values.append(f"max_state_bytes={budget.max_state_bytes}")
+        return " budget=" + ",".join(values) if values else ""
 
     def _aggregate_levels(self, operation: PySparkOperationRecipe) -> str:
         if operation.aggregate is None or not operation.aggregate.levels:

@@ -266,8 +266,8 @@ class RollUpWindows(Transform):
 ```
 
 The admitted chained shape is one first window aggregate, stateless work, and one second event-time aggregate. A third
-stateful stage, nested window construction, a second join or deduplication stage, and arbitrary state processing remain
-unsupported.
+stateful stage, nested window construction, a second join or deduplication stage, and unmodeled arbitrary state
+processing remain unsupported. The explicit row and Pandas state processor operations are documented separately below.
 
 ## Deduplicate within a watermark
 
@@ -289,6 +289,38 @@ class UniqueEvents(Transform):
 `drop_duplicates(...)` is cross-mode: Structure uses the batch form for batch inputs and a watermark-bounded streaming
 form for streaming inputs. `drop_duplicates_within_watermark(...)` requires a declared streaming input and a prior
 watermark. Neither helper means that the source will retain records forever.
+
+## Deduplicate, then aggregate in event time
+
+Ordinary PySpark 3.5 and 4.0 also support one watermarked deduplication operation followed by one watermarked event-time
+window aggregate in Append mode. Set limits adjacent to each operator, then let the caller own the output query and
+checkpoint:
+
+```python
+@transform(streaming=True)
+class EventSummary(Transform):
+    events = input(RawEvent, streaming=True)
+    summary = output(WindowSummary)
+    memory_budget = budget(memory_source="prefer_spark", fallback_mb=768)
+
+    def summarize(self, event: RawEvent) -> WindowSummary:
+        watermark(event.event_time, delay="10 minutes")
+        drop_duplicates_within_watermark(event.event_id)
+        budget(max_rows=500_000, max_state_bytes=268_435_456)
+        group_by(bucket=window(event.event_time, "5 minutes"))
+        budget(max_rows=2_000_000, max_state_bytes=1_073_741_824)
+        return WindowSummary(bucket=window(event.event_time, "5 minutes"), row_count=count())
+```
+
+`state_budget_checking` supports `off`, `compile_time_check`, `require_declaration`, and
+`declaration_and_runtime`; its default is `compile_time_check`. To observe operator limits, the caller builds and starts
+the Append query with its checkpoint, then attaches `guard = session.state_budget_guard(result).attach(query)`. Call
+`guard.check()` after progress and `guard.close()` when finished. A breach is observed after a completed batch, so the
+guard does not impose a hard within-batch cap. `prefer_spark` uses an active bounded RocksDB memory pool when present;
+otherwise its fallback is a declaration and Structure warns that runtime memory enforcement is absent.
+
+This does not admit reversed order, a third stateful operation, joins, arbitrary operators, or either state processor.
+Spark Connect and PySpark 4.1 are not claimed because this pair has no live evidence on those profiles.
 
 ## Join a stream to static reference data
 
@@ -506,10 +538,11 @@ selects its plain callback branch instead of `process/open/close`. For batch out
 ## Review an arbitrary-state boundary
 
 `transform_with_state(...)` and `transform_with_state_in_pandas(...)` have typed and native compiler paths for ordinary
-PySpark 4.1 and 4.0/4.1 respectively. They remain design-gated until each claimed profile passes live online/generated
-parity and checkpoint restart evidence. The Pandas API requires pandas, PyArrow, and protobuf on the driver and workers.
-`applyInPandasWithState` remains outside Structure's state APIs. Record the typed state boundary, timeout policy,
-checkpoint identity, and restart policy before writing native caller-controlled state code:
+PySpark 4.1 and 4.0/4.1 respectively. They remain design-gated until each claimed profile passes live processor,
+timer, online/generated parity, and same-checkpoint restart evidence. The Pandas API requires pandas, PyArrow, and
+protobuf on the driver and workers. `applyInPandasWithState` remains outside Structure's state APIs.
+`ArbitraryStateContract` records the typed state boundary, timeout policy, checkpoint identity, and restart policy for
+caller-owned state code; it does not implement a processor runtime:
 
 ```python
 state_review = {

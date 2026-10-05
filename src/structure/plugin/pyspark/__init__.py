@@ -166,7 +166,7 @@ arr_flatten arr_forall arr_position arr_prepend arr_reverse arr_insert arr_remov
 arr_zip_with array array_contains array_except array_intersect array_join array_max array_min array_repeat array_size array_union arrays_overlap avg as_of_one bit_and bit_or bit_xor bit_length bool_and bool_or every
 collect_list collect_set concat_ws coalesce ceil char_length character_length count count_if count_distinct corr covar covar_pop cos cosh cot csc cross_join cube current_row conv date_add btrim char soundex regexp_count regexp_extract_all regexp_instr regexp_substr bit_count bit_get getbit equal_null mean regr_avgx regr_avgy regr_count regr_intercept regr_r2 regr_slope regr_sxx regr_sxy regr_syy
 date_sub date_trunc date_format date_from_unix_date unix_date dayofmonth dayofweek weekday dayofyear datediff decode cume_dist cbrt bin shiftleft shiftright shiftrightunsigned dedupe_earliest_by dedupe_latest_by dense_rank degrees distinct months_between
-drop_duplicates drop_duplicates_within_watermark earliest_by element_at encode event_time_between exactly_one except_all e exp expm1 factorial exists floor from_csv from_json get hash hour hypot last_day left
+drop_duplicates drop_duplicates_within_watermark budget earliest_by element_at encode event_time_between exactly_one except_all e exp expm1 factorial exists floor from_csv from_json get hash hour hypot last_day left
 initcap ifnull instr intersect intersect_all first first_value following full_join greatest grouping grouping_id grouping_sets having inner_join isnan
 isnotnull isnull is_grouped kurtosis lag last last_value left_join latest_by lead lookup_join length levenshtein lower lcase lpad find_in_set format_number mask overlay
 ltrim ln locate log log10 log1p log2 least limit md5 create_map map_from_arrays str_to_map named_struct map_entries map_concat map_contains_key map_filter map_from_entries map_keys map_transform_keys max_by median min_by
@@ -370,6 +370,7 @@ __all__ = [  # noqa: F405
     "distinct",
     "drop_duplicates",
     "drop_duplicates_within_watermark",
+    "budget",
     "earliest_by",
     "element_at",
     "encode",
@@ -732,6 +733,7 @@ __all__ = [  # noqa: F405
     "delta_delete",
     "delta_update",
     "delta_merge",
+    "delta_append",
 ]
 
 
@@ -750,7 +752,7 @@ def __getattr__(name: str):
         return getattr(import_module("structure.plugin.pyspark.dsl.SqlResult"), name)
     if name == "sql":
         return import_module("structure.plugin.pyspark.dsl.sql_api").sql
-    if name in {"check", "delta_input", "delta_output", "delta_delete", "delta_update", "delta_merge"}:
+    if name in {"check", "delta_input", "delta_output", "delta_delete", "delta_update", "delta_merge", "delta_append"}:
         return getattr(import_module("structure.plugin.pyspark.delta"), name)
     dsl = import_module("structure.plugin.pyspark.dsl")
 

@@ -23,13 +23,14 @@ if TYPE_CHECKING:
 
 class PySparkSymbolicContext:
 
-    def __init__(self, *, step: str, capture_special_exprs: bool = False) -> None:
+    def __init__(self, *, step: str, capture_special_exprs: bool = False, delta_output_schema=None) -> None:
         self.step = step
         self.capture_special_exprs = capture_special_exprs
         self.filters: list[Expression] = []
         self.joins: list[JoinPlan] = []
         self.operations: list[OperationPlan] = []
         self.delta_mutations: list[DeltaMutation] = []
+        self.delta_output_schema = delta_output_schema
         self.aggregate_keys: tuple[tuple[str, Expression], ...] | None = None
         self.aggregate_requested = False
         self.aggregate_levels: tuple[tuple[str, ...], ...] = ()
@@ -44,6 +45,9 @@ class PySparkSymbolicContext:
         self.current_scopes: set[str] = set()
         self.relation_scopes: dict[str, object] = {}
         self._token: Token[SymbolicContext | None] | None = None
+        self.state_budget_target: tuple[str, int | None] | None = None
+        self.state_budget_attached_target: tuple[str, int | None] | None = None
+        self.aggregate_state_budget: object | None = None
 
     def __enter__(self) -> PySparkSymbolicContext:
         self._token = install_symbolic_context(self)
@@ -68,10 +72,12 @@ class PySparkSymbolicContext:
         self.relation_scopes[scope] = relation
         return relation
 
-    def record_aggregate(self, aggregate: object) -> None:
+    def record_aggregate(self, aggregate: object, state_budget: object | None = None) -> None:
         from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
 
-        self.operations.append(OperationPlan.aggregate_operation(cast(Any, aggregate)))
+        self.operations.append(
+            OperationPlan.aggregate_operation(cast(Any, aggregate), state_budget=cast(Any, state_budget))
+        )
 
     def input_scope(self, *, name: str, schema: object) -> object:
         from structure.plugin.pyspark.dsl.InputScope import InputScope

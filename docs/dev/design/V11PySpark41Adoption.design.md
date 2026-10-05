@@ -49,9 +49,11 @@ no Connect or streaming claim before positive evidence. External providers are n
 their namespaces and Binary boundaries are specified in
 [Geospatial Provider Boundaries](../planning/past/P10012602.Geospatial-provider-boundaries.plan.md).
 
-The Python-and-streaming package records Arrow UDF/UDTF and row-based `transformWithState` as design-gated. These APIs
-execute user Python or own state and retries, so no generated Structure support is claimed merely because PySpark 4.1
-exposes them. The package specifies the boundary, diagnostics, and a future promotion test.
+The Python-and-streaming package keeps Arrow UDF/UDTF caller-owned and implements explicit state processor compiler
+surfaces. Row-based `transform_with_state(...)` targets ordinary PySpark 4.1; the separate
+`transform_with_state_in_pandas(...)` targets ordinary PySpark 4.0 and 4.1. Both are still design-gated as support claims
+until their per-profile runtime, timer, online/generated parity, and checkpoint-restart evidence passes. Their generated
+transforms do not own query lifecycle. See the row and Pandas ExecPlans for the exact callback and dependency contracts.
 
 The infrastructure package adds versioned Compose images, ordinary and Connect runners, backend metadata, capability
 profiles, and evidence reports. It must permit one backend to be selected without starting unrelated Spark services.
