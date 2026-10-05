@@ -471,6 +471,7 @@ class RunOnlinePySparkTransform:
                     processor_mode=state.processor_mode,
                     output_mode=state.output_mode,
                     time_mode=state.time_mode,
+                    interface=state.interface,
                     target_profile=self._backend_target,
                     event_time_column=state.event_time_column,
                     initial_state=initial_state,

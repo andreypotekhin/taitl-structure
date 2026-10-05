@@ -579,6 +579,7 @@ class RenderPySparkStep:
                     f"input_schema={input_ref!r}, key_schema={key_ref!r}, state_schema={state_ref}, "
                     f"output_schema={output_ref!r}, processor_mode={state.processor_mode!r}, "
                     f"output_mode={state.output_mode!r}, time_mode={state.time_mode!r}, "
+                    f"interface={state.interface!r}, "
                     f"target_profile={backend_target!r}, event_time_column={state.event_time_column!r}, "
                     f"initial_state={initial_state})"
                 )

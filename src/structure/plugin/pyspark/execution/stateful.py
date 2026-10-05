@@ -26,6 +26,7 @@ def apply_stateful_transform(
     state_schema: type[Schema] | None,
     output_schema: type[Schema],
     processor_mode: str,
+    interface: str = "row",
     output_mode: str,
     time_mode: str,
     target_profile: str,
@@ -39,14 +40,25 @@ def apply_stateful_transform(
     state_schema = None if state_schema is None else _resolve_type(state_schema)
     output_schema = _resolve_type(output_schema)
     processor = _resolve_object(processor)
-    if target_profile != ">=4.1,<4.2":
+    if interface not in {"row", "pandas"}:
+        raise ValueError(f"Unknown state processor interface {interface!r}.")
+    if interface == "row" and target_profile != ">=4.1,<4.2":
         raise RuntimeError(f"Row-based transform_with_state requires PySpark >=4.1,<4.2, not {target_profile!r}.")
+    if interface == "pandas" and target_profile not in {">=4.0,<4.1", ">=4.1,<4.2"}:
+        raise RuntimeError(
+            "Pandas transform_with_state_in_pandas requires PySpark >=4.0,<4.1 or >=4.1,<4.2, "
+            f"not {target_profile!r}."
+        )
+    if interface == "pandas":
+        _require_pandas_runtime()
     stateful_processor = _processor_instance(
         processor,
         input_schema=input_schema,
         key_schema=key_schema,
         state_schema=state_schema,
+        output_schema=output_schema,
         processor_mode=processor_mode,
+        interface=interface,
     )
     grouped = frame.groupBy(key)
     if initial_state is not None and hasattr(initial_state, "groupBy"):
@@ -59,7 +71,7 @@ def apply_stateful_transform(
         "initialState": initial_state,
         "eventTimeColumnName": event_time_column or "",
     }
-    method_name = "transformWithState"
+    method_name = "transformWithState" if interface == "row" else "transformWithStateInPandas"
     method = getattr(grouped, method_name, None)
     if method is None:
         raise RuntimeError(f"The installed PySpark runtime lacks {method_name} for target {target_profile!r}.")
@@ -82,7 +94,16 @@ def _resolve_object(value):
     return resolved
 
 
-def _processor_instance(processor, *, input_schema, key_schema, state_schema, processor_mode: str):
+def _processor_instance(
+    processor,
+    *,
+    input_schema,
+    key_schema,
+    state_schema,
+    output_schema,
+    processor_mode: str,
+    interface: str,
+):
     if isinstance(processor, ExternalStateProcessor):
         return processor.processor()
     if processor_mode == "native":
@@ -99,13 +120,21 @@ def _processor_instance(processor, *, input_schema, key_schema, state_schema, pr
             self._timers = TimerContext(handle)
 
         def handleInputRows(self, key, rows, timerValues):
-            values = self._user.on_rows(
-                _schema_instance(key_schema, key),
-                (_schema_instance(input_schema, row) for row in rows),
-                ValueState(self._state, state_schema),
-                self._timers,
-            )
-            yield from _output_rows(values, row_type=Row)
+            wrapped_key = _schema_instance(key_schema, key)
+            value_state: ValueState[Schema] = ValueState(self._state, state_schema)
+            if interface == "row":
+                values = self._user.on_rows(
+                    wrapped_key,
+                    (_schema_instance(input_schema, row) for row in rows),
+                    value_state,
+                    self._timers,
+                )
+                yield from _output_rows(values, row_type=Row)
+            else:
+                yield from _output_pandas_frames(
+                    self._user.on_batches(wrapped_key, rows, value_state, self._timers),
+                    output_schema,
+                )
 
         def handleExpiredTimer(self, key, timerValues, expiredTimerInfo):
             callback = getattr(self._user, "on_timer", None)
@@ -117,7 +146,10 @@ def _processor_instance(processor, *, input_schema, key_schema, state_schema, pr
                 ValueState(self._state, state_schema),
                 self._timers,
             )
-            yield from _output_rows(values, row_type=Row)
+            if interface == "row":
+                yield from _output_rows(values, row_type=Row)
+            else:
+                yield from _output_pandas_frames(values, output_schema)
 
     return StructureStateProcessorAdapter()
 
@@ -126,6 +158,43 @@ def _output_rows(values, *, row_type):
     for value in values:
         mapping = _output_mapping(value)
         yield row_type(**mapping)
+
+
+def _output_pandas_frames(values, output_schema: type[Schema]):
+    import pandas as pd  # type: ignore[import-untyped]
+
+    expected = [field.column for field in output_schema._structure_fields.values()]
+    for frame in values:
+        if not isinstance(frame, pd.DataFrame):
+            raise TypeError(
+                "Pandas state processor callbacks must yield pandas.DataFrame values; "
+                f"received {type(frame).__name__}."
+            )
+        if frame.empty and len(frame.columns) == 0:
+            yield pd.DataFrame(columns=expected)
+            continue
+        actual = list(frame.columns)
+        if actual != expected:
+            raise ValueError(
+                "Pandas state processor output columns must match the declared Structure output Schema: "
+                f"expected {expected!r}, received {actual!r}."
+            )
+        yield frame
+
+
+def _require_pandas_runtime() -> None:
+    required = ("pandas", "pyarrow", "google.protobuf")
+    missing = []
+    for module in required:
+        try:
+            import_module(module)
+        except ImportError:
+            missing.append(module)
+    if missing:
+        raise RuntimeError(
+            "transform_with_state_in_pandas requires pandas, pyarrow, and protobuf on the driver and every worker; "
+            f"the driver is missing: {', '.join(missing)}. Install compatible versions in the Spark runtime."
+        )
 
 
 def _output_mapping(value):

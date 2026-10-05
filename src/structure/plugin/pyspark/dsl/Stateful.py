@@ -24,6 +24,12 @@ class StateProcessor(Generic[Input, Key, State, Output]):
     __structure_state_processor__: ClassVar[tuple[type[Schema], ...]]
 
 
+class PandasStateProcessor(Generic[Input, Key, State, Output]):
+    """Base declaration for a typed Pandas ``transformWithStateInPandas`` processor."""
+
+    __structure_pandas_state_processor__: ClassVar[tuple[type[Schema], ...]]
+
+
 @dataclass(frozen=True)
 class ValueState(Generic[State]):
     """Typed facade for the processor's single declared value state."""
@@ -83,14 +89,18 @@ class StatefulResult:
 def state_processor(processor: type[StateProcessor[Input, Key, State, Output]]) -> type:
     """Mark a top-level typed processor class for Structure compilation."""
 
-    arguments = _processor_schemas(processor)
-    if len(arguments) != 4 or not all(isinstance(argument, type) and issubclass(argument, Schema) for argument in arguments):
-        raise TypeError(
-            f"@state_processor requires {processor.__name__} to inherit "
-            "StateProcessor[InputSchema, KeySchema, StateSchema, OutputSchema]."
-        )
-    setattr(processor, "__structure_state_processor__", arguments)
-    return processor
+    return _mark_processor(processor, StateProcessor, "__structure_state_processor__", "StateProcessor")
+
+
+def pandas_state_processor(processor: type[PandasStateProcessor[Input, Key, State, Output]]) -> type:
+    """Mark a top-level Pandas state processor class for Structure compilation."""
+
+    return _mark_processor(
+        processor,
+        PandasStateProcessor,
+        "__structure_pandas_state_processor__",
+        "PandasStateProcessor",
+    )
 
 
 def external_state_processor(
@@ -111,9 +121,21 @@ def external_state_processor(
     return ExternalStateProcessor(processor, input, key, states, output)
 
 
-def _processor_schemas(processor: type) -> tuple[object, ...]:
+def _mark_processor(processor: type, origin: type, attribute: str, label: str) -> type:
+    arguments = _processor_schemas(processor, origin)
+    if len(arguments) != 4 or not all(isinstance(argument, type) and issubclass(argument, Schema) for argument in arguments):
+        raise TypeError(
+            f"Processor decorator requires {processor.__name__} to inherit "
+            f"{label}[InputSchema, KeySchema, StateSchema, OutputSchema]."
+        )
+    _require_importable(processor)
+    setattr(processor, attribute, arguments)
+    return processor
+
+
+def _processor_schemas(processor: type, origin: type) -> tuple[object, ...]:
     for base in getattr(processor, "__orig_bases__", ()):
-        if getattr(base, "__origin__", None) is StateProcessor:
+        if getattr(base, "__origin__", None) is origin:
             return get_args(base)
     return ()
 
@@ -142,37 +164,94 @@ def transform_with_state(
 ) -> Any:
     """Capture a row-based stateful stage in the active PySpark step."""
 
+    return _capture_stateful_transform(
+        "row",
+        "transform_with_state",
+        StateProcessor,
+        "__structure_state_processor__",
+        key=key,
+        processor=processor,
+        output_mode=output_mode,
+        time_mode=time_mode,
+        event_time_column=event_time_column,
+        initial_state=initial_state,
+    )
+
+
+def transform_with_state_in_pandas(
+    *,
+    key: object,
+    processor: type[PandasStateProcessor] | ExternalStateProcessor,
+    output_mode: str,
+    time_mode: str,
+    event_time_column: str | None = None,
+    initial_state: object | None = None,
+) -> Any:
+    """Capture a Pandas-batch stateful stage in the active PySpark step."""
+
+    return _capture_stateful_transform(
+        "pandas",
+        "transform_with_state_in_pandas",
+        PandasStateProcessor,
+        "__structure_pandas_state_processor__",
+        key=key,
+        processor=processor,
+        output_mode=output_mode,
+        time_mode=time_mode,
+        event_time_column=event_time_column,
+        initial_state=initial_state,
+    )
+
+
+def _capture_stateful_transform(
+    interface: str,
+    operation_name: str,
+    processor_type: type,
+    processor_attribute: str,
+    *,
+    key: object,
+    processor: type | ExternalStateProcessor,
+    output_mode: str,
+    time_mode: str,
+    event_time_column: str | None,
+    initial_state: object | None,
+) -> Any:
+
     from structure.plugin.pyspark.dsl.Expression import Expression
     from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
     from structure.plugin.pyspark.symbolic_execution.model.PySparkSymbolicContext import current_pyspark_context
 
     context = current_pyspark_context()
     if context is None:
-        raise RuntimeError("transform_with_state(...) is available only while compiling a PySpark transform step.")
+        raise RuntimeError(f"{operation_name}(...) is available only while compiling a PySpark transform step.")
     if not isinstance(key, Expression) or key.kind != "field":
-        raise TypeError("transform_with_state(key=...) requires one field from the current input row.")
+        raise TypeError(f"{operation_name}(key=...) requires one field from the current input row.")
     if output_mode not in {"Append", "Update", "Complete"}:
-        raise ValueError("transform_with_state(output_mode=...) must be Append, Update, or Complete.")
+        raise ValueError(f"{operation_name}(output_mode=...) must be Append, Update, or Complete.")
     if time_mode not in {"None", "ProcessingTime", "EventTime"}:
-        raise ValueError("transform_with_state(time_mode=...) must be None, ProcessingTime, or EventTime.")
+        raise ValueError(f"{operation_name}(time_mode=...) must be None, ProcessingTime, or EventTime.")
     if isinstance(processor, ExternalStateProcessor):
         _require_importable(processor.processor)
         input_schema, key_schema, output_schema = processor.input_schema, processor.key_schema, processor.output_schema
         mode = "native"
     else:
-        schemas = getattr(processor, "__structure_state_processor__", None)
+        schemas = getattr(processor, processor_attribute, None)
         if not isinstance(schemas, tuple) or len(schemas) != 4:
-            raise TypeError("processor must be decorated with @state_processor.")
+            decorator = "@state_processor" if interface == "row" else "@pandas_state_processor"
+            raise TypeError(f"processor must be decorated with {decorator}.")
+        if not isinstance(processor, type) or not issubclass(processor, processor_type):
+            other_interface = "PandasStateProcessor" if interface == "row" else "StateProcessor"
+            raise TypeError(f"{operation_name}(...) requires {processor_type.__name__}; received {other_interface}.")
         _require_importable(processor)
         input_schema, key_schema, _state_schema, output_schema = schemas
         mode = "typed"
     input_row = context.default_project_source
     input_schema_for_step = getattr(input_row, "_structure_scope_schema", None)
     if input_schema_for_step is not input_schema:
-        raise TypeError("transform_with_state processor input Schema must match the step's driving input Schema.")
+        raise TypeError(f"{operation_name} processor input Schema must match the step's driving input Schema.")
     key_fields = tuple(key_schema._structure_fields.values())
     if len(key_fields) != 1 or key_fields[0].type != key.type:
-        raise TypeError("transform_with_state currently requires one key Schema field matching the grouping expression.")
+        raise TypeError(f"{operation_name} currently requires one key Schema field matching the grouping expression.")
     if initial_state is not None and mode != "native":
         raise TypeError("initial_state is available only with external_state_processor(...).")
     if initial_state is not None:
@@ -184,10 +263,11 @@ def transform_with_state(
         if not set(key_schema._structure_fields).issubset(initial_fields):
             raise TypeError("initial_state input must include every field declared by the processor key Schema.")
     if context.operations:
-        raise TypeError("transform_with_state(...) must be the only relational operation in its step.")
+        raise TypeError(f"{operation_name}(...) must be the only relational operation in its step.")
     plan = OperationPlan.transform_with_state_operation(
         key=key,
         processor=processor,
+        interface=interface,
         processor_mode=mode,
         input_schema=input_schema,
         key_schema=key_schema,

@@ -318,8 +318,11 @@ class RenderPySparkExplainReport:
             key_data = state.key.data or {}
             key_name = key_data.get("name", key_data.get("field", "expression"))
             state_names = "|".join(schema.__name__ for schema in state.state_schemas)
+            operation_name = (
+                "transform_with_state_in_pandas" if state.interface == "pandas" else "transform_with_state"
+            )
             return (
-                f"transform_with_state(mode={state.processor_mode} key={key_name} "
+                f"{operation_name}(mode={state.processor_mode} key={key_name} "
                 f"input={state.input_schema.__name__} state={state_names} output={state.output_schema.__name__} "
                 f"output_mode={state.output_mode} time_mode={state.time_mode})"
             )

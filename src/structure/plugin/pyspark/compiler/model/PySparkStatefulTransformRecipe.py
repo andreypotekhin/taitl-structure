@@ -19,5 +19,6 @@ class PySparkStatefulTransformRecipe:
     output_schema: type[Schema]
     output_mode: str
     time_mode: str
+    interface: str = "row"
     event_time_column: str | None = None
     initial_state: object | None = None

@@ -1,6 +1,7 @@
 from dataclasses import replace
 from typing import Any, cast
 
+from structure import Schema
 from structure.plugin.api.v1.model import BackendCapabilities, CapabilityRequirement, StepPlan
 from structure.plugin.pyspark.compiler.logic.maps.MapPySparkExpression import MapPySparkExpression
 from structure.plugin.pyspark.compiler.logic.maps.MapPySparkGenerator import MapPySparkGenerator
@@ -407,6 +408,16 @@ class MapPySparkStep:
                 )
             if operation.kind == "transform_with_state" and operation.stateful_transform is not None:
                 state_plan = operation.stateful_transform
+                processor_schema_attribute = (
+                    "__structure_pandas_state_processor__"
+                    if state_plan.interface == "pandas"
+                    else "__structure_state_processor__"
+                )
+                typed_state_schema = (
+                    cast(type[Schema], getattr(state_plan.processor, processor_schema_attribute)[2])
+                    if state_plan.processor_mode == "typed"
+                    else None
+                )
                 recipes.append(
                     self._operation_modes(
                         PySparkOperationRecipe.transform_with_state_operation(
@@ -416,19 +427,16 @@ class MapPySparkStep:
                                 processor_mode=state_plan.processor_mode,
                                 input_schema=state_plan.input_schema,
                                 key_schema=state_plan.key_schema,
-                                state_schema=(
-                                    getattr(state_plan.processor, "__structure_state_processor__")[2]
-                                    if state_plan.processor_mode == "typed"
-                                    else None
-                                ),
+                                state_schema=typed_state_schema,
                                 state_schemas=(
-                                    (getattr(state_plan.processor, "__structure_state_processor__")[2],)
+                                    (cast(type[Schema], typed_state_schema),)
                                     if state_plan.processor_mode == "typed"
                                     else state_plan.processor.state_schemas
                                 ),
                                 output_schema=state_plan.output_schema,
                                 output_mode=state_plan.output_mode,
                                 time_mode=state_plan.time_mode,
+                                interface=state_plan.interface,
                                 event_time_column=state_plan.event_time_column,
                                 initial_state=state_plan.initial_state,
                             )

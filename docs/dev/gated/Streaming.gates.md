@@ -46,8 +46,10 @@ Positive support for row-based `transformWithState` is tracked by
 [the row processor plan](../planning/P10042603.V11-transform-with-state.plan.md) for ordinary PySpark 4.1. PySpark 4.0's
 Python API is `transformWithStateInPandas`, tracked separately by
 [the Pandas processor plan](../planning/P10042604.V11-transform-with-state-in-pandas.plan.md) for ordinary PySpark 4.0
-and 4.1. Both support claims remain gated on online/generated parity and restart evidence. `applyInPandasWithState`
-remains outside these plans. `ArbitraryStateContract` validates adoption metadata only; it is not a state runtime.
+and 4.1. The typed and native compiler surfaces are implemented, but both support claims remain gated on
+profile-specific live online/generated parity and checkpoint restart evidence. The Pandas runtime also requires
+pandas, PyArrow, and protobuf on the driver and workers. `applyInPandasWithState` remains outside these plans.
+`ArbitraryStateContract` validates adoption metadata only; it is not a state runtime.
 
 The SearchDocuments proving lane and streaming-ineligible selected-row/window shapes are recorded in
 [Streaming Deferred Work](../deferred/Streaming.deferred.md).

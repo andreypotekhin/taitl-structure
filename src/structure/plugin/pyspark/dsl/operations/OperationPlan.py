@@ -148,11 +148,13 @@ class OperationPlan:
 
     @staticmethod
     def transform_with_state_operation(**values: Any) -> OperationPlan:
+        interface = values.get("interface", "row")
+        capability = "transform_with_state_in_pandas" if interface == "pandas" else "transform_with_state"
         return OperationPlan(
             "transform_with_state",
             stateful_transform=StatefulTransformPlan(**values),
             family="stateful",
-            capability=OperationCapability("streaming", "transform_with_state"),
+            capability=OperationCapability("streaming", capability),
             cardinality=OperationCardinality.UNKNOWN,
             streaming=StreamingSupport.COMPATIBLE,
         )

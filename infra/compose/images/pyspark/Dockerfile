@@ -21,6 +21,9 @@ RUN pip install --no-cache-dir \
     pytest==8.4.2 \
     rich==13.9.4 \
     toml==0.10.2 \
+    pandas==2.2.3 \
+    pyarrow==19.0.1 \
+    protobuf==5.29.3 \
     "pyspark[connect]==${PYSPARK_VERSION}" \
     "apache-sedona==${SEDONA_VERSION}"
 

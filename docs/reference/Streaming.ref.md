@@ -505,10 +505,11 @@ selects its plain callback branch instead of `process/open/close`. For batch out
 
 ## Review an arbitrary-state boundary
 
-`applyInPandasWithState` remains outside Structure's state APIs. Row-based `transformWithState` and
-`transformWithStateInPandas` are tracked as separate Structure plans for ordinary PySpark 4.1 and 4.0/4.1 respectively;
-neither is supported until its online/generated parity and restart evidence passes. Record the typed state boundary,
-timeout policy, checkpoint identity, and restart policy before writing native caller-controlled state code:
+`transform_with_state(...)` and `transform_with_state_in_pandas(...)` have typed and native compiler paths for ordinary
+PySpark 4.1 and 4.0/4.1 respectively. They remain design-gated until each claimed profile passes live online/generated
+parity and checkpoint restart evidence. The Pandas API requires pandas, PyArrow, and protobuf on the driver and workers.
+`applyInPandasWithState` remains outside Structure's state APIs. Record the typed state boundary, timeout policy,
+checkpoint identity, and restart policy before writing native caller-controlled state code:
 
 ```python
 state_review = {

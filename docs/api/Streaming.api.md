@@ -83,12 +83,14 @@ state assumptions visible in explain output; it does not make Structure control 
   operation remains rejected with `STREAM-E0801` unless a specific finite contract is admitted.
 - Cross and anti stream-stream joins remain rejected until finite completion, retention, and restart behavior are
   proven.
-- Arbitrary state APIs remain design-gated. A future admission requires typed input, state, and output Schemas;
-  grouping keys; event-time or processing-time timeout policy; initialization, update, and removal behavior; a
-  resolved PySpark profile; a visible generated-code or hook boundary; and checkpoint/restart evidence. See the
-  [arbitrary-state contract](../dev/specifications/V9StreamingDesignGatedFeatures.spec.md#arbitrary-state-apis).
-- Pandas, RDD, `mapInPandas`, and state-processor boundaries remain unsupported because their execution and state
-  semantics are opaque to the compiler.
+- Arbitrary state APIs remain design-gated pending profile-specific live evidence. The compiler surface includes
+  `transform_with_state(...)` for ordinary PySpark 4.1 and `transform_with_state_in_pandas(...)` for ordinary PySpark
+  4.0 and 4.1; the Pandas form requires pandas, PyArrow, and protobuf on the driver and workers. Neither API currently
+  carries a Structure support claim. `applyInPandasWithState` remains outside the implementation. See the
+  [arbitrary-state contract](../dev/specifications/V9StreamingDesignGatedFeatures.spec.md#arbitrary-state-apis) and
+  the [state gate](../dev/gated/Streaming.gates.md#arbitrary-state-processors--design-gated).
+- General Pandas, RDD, and `mapInPandas` boundaries remain unsupported because they are not part of these typed state
+  processor surfaces.
 
 ## Lifecycle Boundaries
 

@@ -109,7 +109,9 @@ class PySparkTraceabilityReport:
                     "key": (state.key.data or {}).get("name", (state.key.data or {}).get("field", "expression")),
                     "key_schema": state.key_schema.__name__,
                     "mode": state.processor_mode,
-                    "operation": "transform_with_state",
+                    "operation": (
+                        "transform_with_state_in_pandas" if state.interface == "pandas" else "transform_with_state"
+                    ),
                     "output_mode": state.output_mode,
                     "output_schema": state.output_schema.__name__,
                     "state_schemas": [schema.__name__ for schema in state.state_schemas],

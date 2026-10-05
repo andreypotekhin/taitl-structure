@@ -71,14 +71,17 @@ class ClassifyStreamingCompatibility:
                     continue
                 if operation.kind == "transform_with_state" and operation.stateful_transform is not None:
                     state = operation.stateful_transform
+                    operation_name = (
+                        "transform_with_state_in_pandas" if state.interface == "pandas" else "transform_with_state"
+                    )
                     if not streaming_step:
                         findings.append(
                             StreamingFinding(
                                 code="STREAM-E0801",
                                 support=StreamingSupport.BATCH_ONLY,
                                 step=step.name,
-                                operation="transform_with_state",
-                                problem="transform_with_state(...) requires a streaming input.",
+                                operation=operation_name,
+                                problem=f"{operation_name}(...) requires a streaming input.",
                                 use="Declare the driving input as streaming and keep query lifecycle ownership with the caller.",
                             )
                         )
@@ -86,7 +89,7 @@ class ClassifyStreamingCompatibility:
                         state_stages.append(
                             StreamingStateStage(
                                 step=step.name,
-                                operation=f"transform_with_state ({state.processor_mode})",
+                                operation=f"{operation_name} ({state.processor_mode})",
                                 keys=(self._expression_label(state.key),),
                                 retention=tuple(schema.__name__ for schema in state.state_schemas),
                                 output_modes=(state.output_mode,),
@@ -94,7 +97,7 @@ class ClassifyStreamingCompatibility:
                             )
                         )
                         stateful_operations.append(
-                            _StatefulStreamingOperation(step.name, "transform_with_state")
+                            _StatefulStreamingOperation(step.name, operation_name)
                         )
                 if operation.aggregate is not None:
                     allow_chained_window = len(stateful_operations) == 1 and self._approved_chained_window(
