@@ -148,11 +148,39 @@ def read_delta_relation(mutation, *, tables, spark, evaluator, functions):
         selector,
         end,
         selector_type,
+        output_schema=mutation.output_schema,
         spark=spark,
     )
 
 
-def open_delta_relation(table, kind, selector, end, selector_type, *, spark):
+def validate_delta_relation(frame, schema):
+    """Validate the declared result fields against a resolved Delta read schema."""
+    from pyspark.sql import types as T
+
+    from structure.plugin.pyspark.api.PySpark import PySpark
+
+    expected = PySpark.schema.materialize()(schema, types=T)
+    actual_fields = {field.name: field for field in frame.schema}
+    validator = PySpark.execution.validator()
+    for field in expected:
+        actual = actual_fields.get(field.name)
+        if actual is None:
+            raise ValueError(
+                f"Delta read declared as {schema.__name__} is missing column {field.name!r}; "
+                "check the result Schema and physical aliases"
+            )
+        if not validator._same_data_type(actual.dataType, field.dataType):
+            raise ValueError(
+                f"Delta read column {field.name!r} has a type incompatible with {schema.__name__}.{field.name}"
+            )
+        if actual.nullable and not field.nullable:
+            raise ValueError(
+                f"Delta read column {field.name!r} may be null, but {schema.__name__}.{field.name} is non-nullable"
+            )
+    return frame
+
+
+def open_delta_relation(table, kind, selector, end, selector_type, *, output_schema=None, spark):
     details = table.detail().first().asDict(recursive=True)
     properties = {str(key).casefold(): str(value).casefold() for key, value in (details.get("properties") or {}).items()}
     if kind == "delta_changes":
@@ -196,13 +224,15 @@ def open_delta_relation(table, kind, selector, end, selector_type, *, spark):
     reader = spark.read.format("delta")
     if kind == "delta_snapshot":
         option = "timestampAsOf" if selector_type == "timestamp" else "versionAsOf"
-        return reader.option(option, selector).load(location)
+        frame = reader.option(option, selector).load(location)
+        return validate_delta_relation(frame, output_schema) if output_schema is not None else frame
     option = "startingTimestamp" if selector_type == "timestamp" else "startingVersion"
     reader = reader.option("readChangeFeed", "true").option(option, selector)
     if end is not None:
         end_option = "endingTimestamp" if selector_type == "timestamp" else "endingVersion"
         reader = reader.option(end_option, end)
-    return reader.load(location)
+    frame = reader.load(location)
+    return validate_delta_relation(frame, output_schema) if output_schema is not None else frame
 
 
 def _selector_value(expression):

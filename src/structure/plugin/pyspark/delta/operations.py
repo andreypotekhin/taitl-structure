@@ -13,9 +13,10 @@ from structure.plugin.pyspark.symbolic_execution.model.PySparkSymbolicContext im
 
 
 class DeltaScope(InputScope):
-    def __init__(self, *, name: str, schema: type[Schema], source: str, mutable: bool) -> None:
+    def __init__(self, *, name: str, schema: type[Schema], source: str, binding: str) -> None:
         super().__init__(name=name, schema=schema, source=source)
-        self._structure_delta_mutable = mutable
+        self._structure_delta_binding = binding
+        self._structure_delta_mutable = binding == "delta_table"
 
 
 def _context():
@@ -32,9 +33,11 @@ def _target(target: object) -> DeltaScope:
 
 
 def _require_mutable(target: DeltaScope, *, schema_evolution: bool) -> None:
-    if not target._structure_delta_mutable and not schema_evolution:
+    if target._structure_delta_binding == "delta_output":
+        raise TypeError("delta_output(...) declares a schema-evolution result; mutate a delta_table(...) relation")
+    if target._structure_delta_binding == "delta_input" and not schema_evolution:
         raise TypeError("A delta_input(...) relation can only be mutated by an explicit schema evolution")
-    if target._structure_delta_mutable and schema_evolution:
+    if target._structure_delta_binding == "delta_table" and schema_evolution:
         raise TypeError("Schema evolution requires a delta_input(...) target and a distinct delta_output(...) result")
 
 
@@ -93,8 +96,76 @@ def _assignments(target: DeltaScope, values: object, *, insert: bool = False) ->
     return tuple(assignments)
 
 
+def _validate_evolution_schema(
+    source: RowScope,
+    target: DeltaScope,
+    output: type[Schema],
+    *,
+    clauses: tuple[DeltaClause, ...] = (),
+    require_source_fields: bool = False,
+) -> None:
+    """Check that the declared evolved table shape follows from this write."""
+    old_fields = {field.column: field for field in target._structure_input_schema._structure_fields.values()}
+    source_schema = source._structure_scope_schema
+    source_fields = {field.column: field for field in source_schema._structure_fields.values()}
+    output_fields = {field.column: field for field in output._structure_fields.values()}
+    if not old_fields.keys() <= output_fields.keys():
+        missing_columns = ", ".join(sorted(old_fields.keys() - output_fields.keys()))
+        raise TypeError(f"Schema evolution result {output.__name__} drops existing Delta column(s): {missing_columns}")
+
+    for column, field in old_fields.items():
+        result = output_fields[column]
+        if not _same_type(field.type, result.type) or (field.nullable and not result.nullable):
+            raise TypeError(
+                f"Schema evolution result {output.__name__}.{result.name} is incompatible with existing "
+                f"Delta column {field.name}; preserve its type and do not make a nullable column required"
+            )
+
+    assignment_columns = {
+        column
+        for clause in clauses
+        for column, _ in clause.assignments
+    }
+    has_all_clause = any(clause.action.endswith("_all") for clause in clauses)
+    if (has_all_clause or require_source_fields) and not source_fields.keys() <= output_fields.keys():
+        extra = ", ".join(sorted(source_fields.keys() - output_fields.keys()))
+        reason = "append" if require_source_fields else "*_all()"
+        raise TypeError(f"Schema evolution result {output.__name__} omits source column(s) added by {reason}: {extra}")
+
+    for column, field in output_fields.items():
+        source_field = source_fields.get(column)
+        old_field = old_fields.get(column)
+        if old_field is None and column not in assignment_columns and source_field is None:
+            raise TypeError(
+                f"Schema evolution result {output.__name__} adds {field.name!r}, but the merge cannot supply that column"
+            )
+        if source_field is not None:
+            if not _same_type(source_field.type, field.type):
+                raise TypeError(
+                    f"Schema evolution result {output.__name__}.{field.name} has a different type from source "
+                    f"{source_schema.__name__}.{source_field.name}"
+                )
+            if source_field.nullable and not field.nullable:
+                raise TypeError(
+                    f"Schema evolution result {output.__name__}.{field.name} is required, but source "
+                    f"{source._structure_input_schema.__name__}.{source_field.name} may be null"
+                )
+
+    if any(clause.action == "unmatched_insert_all" for clause in clauses):
+        missing = [
+            field.name
+            for column, field in output_fields.items()
+            if not field.nullable and column not in source_fields
+        ]
+        if missing:
+            raise TypeError(
+                f"Schema evolution insert_all cannot supply non-nullable result field(s): {', '.join(missing)}"
+            )
+
+
 def delta_delete(target: DeltaScope, *, where: object) -> None:
     target = _target(target)
+    _require_mutable(target, schema_evolution=False)
     predicate = _predicate("delta_delete(where=...)", where)
     _visible(predicate, allowed={target._structure_scope_name}, action="delta_delete")
     _context().delta_mutations.append(
@@ -104,6 +175,7 @@ def delta_delete(target: DeltaScope, *, where: object) -> None:
 
 def delta_update(target: DeltaScope, *, where: object, set: Schema) -> None:
     target = _target(target)
+    _require_mutable(target, schema_evolution=False)
     predicate = _predicate("delta_update(where=...)", where)
     assignments = _assignments(target, set)
     _visible(predicate, allowed={target._structure_scope_name}, action="delta_update")
@@ -153,7 +225,7 @@ class DeltaMerge:
                 name=self.target._structure_scope_name,
                 schema=self.output_schema,
                 source=self.target._structure_source,
-                mutable=False,
+                binding="delta_input",
             )
         assignments = () if values is None else _assignments(assignment_target, values, insert=action == "unmatched_insert")
         predicate = None if condition is None else _predicate("Delta merge condition", condition)
@@ -190,7 +262,7 @@ class DeltaMerge:
     def when_not_matched_by_source_delete(self, *, condition: object | None = None) -> DeltaMerge:
         return self._add("source_delete", condition)
 
-    def execute(self) -> DeltaMutationResult | None:
+    def execute(self) -> DeltaMutationResult:
         if self.executed or not self.clauses:
             raise TypeError("Delta merge requires clauses and can be executed only once")
         self.executed = True
@@ -199,6 +271,16 @@ class DeltaMerge:
             if any(item.condition is None for item in clauses[:-1]):
                 raise TypeError(f"Only the final {phase} Delta merge clause may omit condition=")
         _require_mutable(self.target, schema_evolution=self.schema_evolution)
+        context = _context()
+        output_schema = self.output_schema if self.schema_evolution else getattr(context, "step_output_schema", None)
+        if self.schema_evolution:
+            assert self.output_schema is not None
+            _validate_evolution_schema(
+                self.source,
+                self.target,
+                self.output_schema,
+                clauses=tuple(self.clauses),
+            )
         mutation = DeltaMutation(
             "merge",
             self.target._structure_source,
@@ -208,10 +290,10 @@ class DeltaMerge:
             source_scope=self.source._structure_scope_name,
             clauses=tuple(self.clauses),
             schema_evolution=self.schema_evolution,
-            output_schema=self.output_schema,
+            output_schema=output_schema,
         )
-        _context().delta_mutations.append(mutation)
-        return DeltaMutationResult(mutation) if self.schema_evolution else None
+        context.delta_mutations.append(mutation)
+        return DeltaMutationResult(mutation)
 
 
 def delta_merge(target: DeltaScope, source: RowScope, *, on: object) -> DeltaMerge:
@@ -254,6 +336,14 @@ class DeltaAppend:
             raise TypeError("A Delta append builder can be executed only once")
         _require_mutable(self.target, schema_evolution=self.schema_evolution)
         self.executed = True
+        if self.schema_evolution:
+            assert self.output_schema is not None
+            _validate_evolution_schema(
+                self.source,
+                self.target,
+                self.output_schema,
+                require_source_fields=True,
+            )
         mutation = DeltaMutation(
             "append",
             self.target._structure_source,
@@ -290,8 +380,8 @@ class DeltaReplaceWhere:
     def execute(self) -> None:
         if self.executed:
             raise TypeError("A Delta replaceWhere builder can be executed only once")
-        if not self.target._structure_delta_mutable:
-            raise TypeError("delta_replace_where(...) requires a delta_output(...) target")
+        if self.target._structure_delta_binding != "delta_table":
+            raise TypeError("delta_replace_where(...) requires a delta_table(...) target")
         if self.target._structure_input_schema is not self.source._structure_input_schema:
             raise TypeError("delta_replace_where(...) requires source and target to use the same Structure Schema")
         self.executed = True

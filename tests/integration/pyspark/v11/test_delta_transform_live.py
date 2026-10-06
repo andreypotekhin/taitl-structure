@@ -23,6 +23,7 @@ from structure.plugin.pyspark import (
     delta_output,
     delta_replace_where,
     delta_snapshot,
+    delta_table,
     delta_update,
     long,
     string,
@@ -61,7 +62,7 @@ class OrderChange(Order):
 @transform
 class Apply(Transform):
     changes = input(Change)
-    orders = delta_output(Order)
+    orders = delta_table(Order)
 
     @step(input=(changes, orders), output=orders)
     def apply(self, change: Change, order: Order) -> None:
@@ -78,7 +79,7 @@ class Apply(Transform):
 @transform
 class MergeFamilies(Transform):
     changes = input(Change)
-    orders = delta_output(Order)
+    orders = delta_table(Order)
 
     @step(input=(changes, orders), output=orders)
     def merge(self, change: Change, order: Order) -> None:
@@ -98,7 +99,7 @@ class MergeFamilies(Transform):
 @transform
 class MergeBySource(Transform):
     changes = input(Change)
-    orders = delta_output(Order)
+    orders = delta_table(Order)
 
     @step(input=(changes, orders), output=orders)
     def merge(self, change: Change, order: Order) -> None:
@@ -112,7 +113,7 @@ class MergeBySource(Transform):
 
 @transform(delta_check_match="name")
 class NameOnly(Transform):
-    orders = delta_output(Order)
+    orders = delta_table(Order)
 
     @step(input=orders, output=orders)
     def delete(self, order: Order) -> None:
@@ -121,7 +122,7 @@ class NameOnly(Transform):
 
 @transform(delta_check_match="off")
 class ChecksOff(Transform):
-    orders = delta_output(Order)
+    orders = delta_table(Order)
 
     @step(input=orders, output=orders)
     def delete(self, order: Order) -> None:
@@ -130,7 +131,7 @@ class ChecksOff(Transform):
 
 @transform
 class InvalidUpdate(Transform):
-    orders = delta_output(Order)
+    orders = delta_table(Order)
 
     @step(input=orders, output=orders)
     def update(self, order: Order) -> None:
@@ -175,7 +176,7 @@ class ReadSnapshot(Transform):
 @transform
 class ReplaceWest(Transform):
     replacements = input(Order)
-    orders = delta_output(Order)
+    orders = delta_table(Order)
 
     @step(input=(orders, replacements), output=orders)
     def replace(self, order: Order, replacement: Order) -> None:

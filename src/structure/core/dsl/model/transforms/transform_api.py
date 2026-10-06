@@ -431,7 +431,7 @@ def _decorate_transform_method(function, kwargs):
         inputs = _method_declaration_values(
             binding.inputs,
             option="@step(inout=...) input side",
-            bare=(InputDeclaration, LaneDeclaration),
+            bare=(InputDeclaration, LaneDeclaration, OutputDeclaration),
             roles={"input", "lane", "output"},
         )
         outputs = _method_declaration_values(

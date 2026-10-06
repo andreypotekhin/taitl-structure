@@ -95,10 +95,10 @@ class PySparkStepSession:
             if not isinstance(schema, type):
                 raise TypeError(f"PLUGIN-E2708: PySpark step {self._request.name!r} has an invalid schema binding.")
             argument: RowScope
-            if binding.binding in {"delta_input", "delta_output"}:
+            if binding.binding in {"delta_input", "delta_output", "delta_table", "delta"}:
                 argument = DeltaScope(
                     name=binding.scope, schema=schema, source=binding.source,
-                    mutable=binding.binding == "delta_output",
+                    binding="delta_input" if binding.binding in {"delta_input", "delta"} else binding.binding,
                 )
             elif binding.driving:
                 argument = RowScope(name=binding.scope, schema=schema)

@@ -5,7 +5,7 @@ native constraints, and passes a `delta.tables.DeltaTable` object to the transfo
 release-gated**: ordinary PySpark 4.1.0 with Delta 4.1.0 has isolated live evidence, while the wider V11 admission
 matrix is pending. See [Delta compatibility](../compatibility/DeltaTables.compat.md) before adopting it.
 
-Import `Schema`, `Transform`, `input`, `step`, `transform`, and `StructureSession` from `structure`. Import the Delta
+Import `Schema`, `Transform`, `input`, `transform`, and `StructureSession` from `structure`. Import the Delta
 declarations, operations, `check`, and field factories from `structure.plugin.pyspark`.
 
 ## Declarations
@@ -13,23 +13,33 @@ declarations, operations, `check`, and field factories from `structure.plugin.py
 | Structure API | Purpose | Example |
 | --- | --- | --- |
 | `delta_input(Schema)` | Caller-bound, read-only Delta relation | `current_orders = delta_input(OrderV1)` |
-| `delta_output(Schema)` | Mutable Delta target and named result | `orders = delta_output(Order)` |
+| `delta_table(Schema)` | Caller-bound relation that may be read and mutated in place | `orders = delta_table(Order)` |
+| `delta_output(Schema)` | Declared result schema for an explicit schema transition | `orders = delta_output(OrderV2)` |
 | `check(predicate, name=None)` | Expected native Delta CHECK | `check(status != "invalid", name="valid_status")` |
 
 Declare CHECKs in `Schema.constraints`. Structure checks that the bound table has matching native CHECK metadata; it
-does not create the table or install constraints. Table columns, types, and nullability must match the current declared
-schema before mutation. For explicit evolution, the new output schema is checked after the commit. Every Delta binding
-needs a native `DeltaTable`, not a DataFrame.
+does not create the table or install constraints. Provision the corresponding native constraint when creating the
+table, or add it explicitly:
+
+```sql
+ALTER TABLE delta.`/path/to/orders`
+ADD CONSTRAINT valid_status CHECK (status <> 'invalid')
+```
+
+Table columns, types, and nullability must match the current declared schema before mutation. For explicit evolution,
+the new output schema is checked after the commit. Every Delta binding needs a native `DeltaTable`, not a DataFrame.
 
 ## Same-schema mutations
 
-The target is a relation parameter in a `None`-returning effect step. A step may record several operations, which run
-in source order. `@step` makes the input and output binding explicit when a schema is used by more than one relation.
+The target is a relation parameter in an effect step. A plain typed method can infer its same-schema mutation target and
+return `None`; `@step` can disambiguate relations when a schema is used more than once. Authors who prefer a typed return
+may return a merge operation directly and annotate the method with the target schema. Structure checks that this
+annotation matches the bound table.
 
 ```python
 from structure import Schema, StructureSession, Transform, input, step, transform
 from structure.plugin.pyspark import (
-    check, delta_delete, delta_merge, delta_output, delta_update, string,
+    check, delta_delete, delta_merge, delta_table, delta_update, string,
 )
 
 
@@ -44,12 +54,10 @@ class Change(Schema):
     status = string(nullable=False)
 
 
-@transform
 class Apply(Transform):
     changes = input(Change)
-    orders = delta_output(Order)
+    orders = delta_table(Order)
 
-    @step(input=(changes, orders), output=orders)
     def apply(self, change: Change, order: Order) -> None:
         delta_delete(order, where=order.id == "2")
         delta_update(order, where=order.id == "1", set=Order(status="pending"))
@@ -65,6 +73,25 @@ class Apply(Transform):
 result = Apply(changes=changes_df, orders=table).run(StructureSession(spark=spark))
 assert result.orders is table
 ```
+
+For a merge-only step, the mutation result may be the method's typed return value:
+
+```python
+class MergeOrders(Transform):
+    changes = input(Change)
+    orders = delta_table(Order)
+
+    def merge(self, change: Change, order: Order) -> Order:
+        return (
+            delta_merge(order, change, on=order.id == change.id)
+            .when_matched_update_all()
+            .when_not_matched_insert_all()
+            .execute()
+        )
+```
+
+The return annotation does not turn the table into a DataFrame output. It states that the returned mutation targets a
+table with the same `Order` schema, and Structure checks that contract during compilation.
 
 `delta_delete(target, where=...)` and `delta_update(target, where=..., set=Schema(...))` require an explicit Boolean
 predicate. `where=True` deliberately affects every row. Update values may specify some target fields; insert values
@@ -94,7 +121,6 @@ class OrderV2(Order):
     note = string()
 
 
-@transform
 class EvolvingMerge(Transform):
     changes = input(ChangeV2)
     current_orders = delta_input(Order)
@@ -137,7 +163,6 @@ class OrderChange(Schema):
     commit_timestamp = timestamp(nullable=False, alias="_commit_timestamp")
 
 
-@transform
 class ReadOrderChanges(Transform):
     orders = delta_input(Order)
     starting_version = variable(int)
@@ -227,5 +252,7 @@ transaction or retry uncertain commits. A later failure does not undo an earlier
 run the same checked operations. The returned `DeltaTable` is the caller's original object; if its `toDF()` was
 materialized earlier, reopen the table to inspect the latest snapshot.
 
-For rationale and lifecycle details, see [Delta table background](../background/DeltaTables.back.md). For the exact
+For rationale and lifecycle details, see [Delta table background](../background/DeltaTables.back.md). For recipes, see
+[same-schema mutations](../recipes/DeltaTableMutations.md), [schema evolution](../recipes/DeltaSchemaEvolution.md), and
+[change data feed](../recipes/DeltaChangeDataFeed.md). For the exact
 release and target limits, see [Delta compatibility](../compatibility/DeltaTables.compat.md).

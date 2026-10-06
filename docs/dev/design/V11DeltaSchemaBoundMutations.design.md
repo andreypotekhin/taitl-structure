@@ -1,5 +1,9 @@
 # V11 Delta Transform Mutations Design
 
+> Historical V11 design record. The current API uses `delta_table(Schema)` for the common same-schema read/write
+> binding; see the durable [Delta Tables design](DeltaTables.design.md), [specification](../specifications/DeltaTables.spec.md),
+> and [public reference](../../reference/DeltaTables.ref.md).
+
 Public usage and target status: [Delta tables API](../../api/DeltaTables.api.md) and
 [Delta compatibility](../../compatibility/DeltaTables.compat.md).
 
@@ -13,9 +17,11 @@ type. Structure verifies the declared old schema before the operation and the de
 
 ## Public shape
 
-`delta_input(Schema)` declares a caller-bound table relation. `delta_output(Schema)` declares a caller-bound table
-result. The caller supplies native Delta tables as keyword arguments when constructing the Transform. A successful
-result exposes the identical table object. Ordinary same-schema effects may use `@step` with a `None` return. An
+`delta_table(Schema)` declares the common caller-bound read/write relation. `delta_input(Schema)` is read-only and
+`delta_output(Schema)` declares a result schema for explicit evolution. The caller supplies native Delta tables as
+keyword arguments when constructing the Transform. A successful result exposes the identical table object. Ordinary
+same-schema effects may use `-> None`, with inference when relation resolution is unambiguous, or return the direct
+result of a merge with a matching table-schema annotation. An
 explicit schema transition returns the declared `delta_output` schema, which lets normal return-schema resolution
 select the result without extra step parameters or decorator metadata.
 
@@ -25,9 +31,8 @@ select the result without extra step parameters or decorator metadata.
         constraints = (check(status != "invalid"),)
 
     class RemoveRefunds(Transform):
-        orders = delta_output(Order)
+        orders = delta_table(Order)
 
-        @step(input=orders, output=orders)
         def remove(self, order: Order) -> None:
             delta_delete(order, where=order.status == "refunded")
 

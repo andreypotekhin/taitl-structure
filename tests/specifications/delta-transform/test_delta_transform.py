@@ -16,6 +16,7 @@ from structure.plugin.pyspark import (
     delta_output,
     delta_replace_where,
     delta_snapshot,
+    delta_table,
     delta_update,
     integer,
     string,
@@ -36,6 +37,10 @@ class Change(Schema):
     status = string(nullable=False)
 
 
+class ChangeV2(Change):
+    note = string()
+
+
 class OrderV2(Order):
     note = string()
 
@@ -44,23 +49,71 @@ def _compile(subject, **plugin):
     return Compiler.frontend.compile()(subject, materialize_schemas=False, plugin={"pyspark": plugin})
 
 
-def test_delta_output_is_caller_bound_and_delete_effect_is_retained() -> None:
+def test_delta_table_is_caller_bound_and_delete_effect_is_retained() -> None:
     @transform
     class Delete(Transform):
-        orders = delta_output(Order)
+        orders = delta_table(Order)
 
-        @step(input=orders, output=orders)
         def delete(self, order: Order) -> None:
             delta_delete(order, where=order.id == 1)
 
     handle = object()
     assert Delete(orders=handle)._structure_bound_inputs["orders"] is handle
     plan = _compile(Delete).lowered
-    assert plan.inputs[0].binding == "delta"
+    assert plan.inputs[0].binding == "delta_table"
     assert plan.steps[0].effect
     assert plan.steps[0].delta_mutations[0].kind == "delete"
     assert tuple(step.name for step in plan.steps) == ("delete",)
-    assert plan.outputs[0].binding == "delta"
+    assert plan.outputs[0].binding == "delta_table"
+
+
+def test_same_schema_merge_can_return_a_typed_delta_result() -> None:
+    @transform
+    class Merge(Transform):
+        changes = input(Change)
+        orders = delta_table(Order)
+
+        def merge(self, change: Change, order: Order) -> Order:
+            return (
+                delta_merge(order, change, on=order.id == change.id)
+                .when_matched_update_all()
+                .when_not_matched_insert_all()
+                .execute()
+            )
+
+    step_plan = _compile(Merge).lowered.steps[0]
+    assert step_plan.effect
+    assert step_plan.output_schema is Order
+    assert step_plan.delta_mutations[0].output_schema is Order
+
+
+def test_typed_same_schema_merge_rejects_an_incompatible_return_schema() -> None:
+    @transform
+    class Invalid(Transform):
+        changes = input(Change)
+        orders = delta_table(Order)
+
+        def merge(self, change: Change, order: Order) -> OrderV2:
+            return delta_merge(order, change, on=order.id == change.id).execute()
+
+    with pytest.raises(Exception, match="Cannot deduce final output orders"):
+        _compile(Invalid)
+
+
+def test_delta_table_can_be_resolved_through_step_inout() -> None:
+    @transform
+    class Delete(Transform):
+        changes = input(Change)
+        orders = delta_table(Order)
+
+        @step(inout=(changes, orders) | orders)
+        def delete(self, change: Change, order: Order) -> None:
+            delta_delete(order, where=order.id == 1)
+
+    plan = _compile(Delete).lowered
+    step_plan = plan.steps[0]
+    assert step_plan.effect
+    assert {binding.binding for binding in plan.inputs} == {"dataframe", "delta_table"}
 
 
 def test_delta_input_cannot_be_mutated() -> None:
@@ -73,14 +126,14 @@ def test_delta_input_cannot_be_mutated() -> None:
         def mutate(self, order: Order) -> None:
             delta_delete(order, where=True)
 
-    with pytest.raises(Exception, match="delta_output"):
+    with pytest.raises(Exception, match="delta_input|Delta table result"):
         _compile(Invalid)
 
 
 def test_update_requires_typed_assignment() -> None:
     @transform
     class Update(Transform):
-        orders = delta_output(Order)
+        orders = delta_table(Order)
 
         @step(input=orders, output=orders)
         def update(self, order: Order) -> None:
@@ -95,7 +148,7 @@ def test_merge_compiles_matched_unmatched_and_source_clauses() -> None:
     @transform
     class Sync(Transform):
         changes = input(Change)
-        orders = delta_output(Order)
+        orders = delta_table(Order)
 
         @step(input=(changes, orders), output=orders)
         def sync(self, change: Change, order: Order) -> None:
@@ -127,7 +180,7 @@ def test_check_comparison_ignores_cosmetic_sql_changes() -> None:
 def test_generated_code_preserves_table_handle() -> None:
     @transform
     class Delete(Transform):
-        orders = delta_output(Order)
+        orders = delta_table(Order)
 
         @step(input=orders, output=orders)
         def delete(self, order: Order) -> None:
@@ -149,7 +202,7 @@ def test_generated_code_preserves_table_handle() -> None:
 def test_replace_where_requires_execute_and_renders_safe_predicate() -> None:
     @transform
     class Replace(Transform):
-        orders = delta_output(Order)
+        orders = delta_table(Order)
         replacements = input(Order)
 
         @step(input=(orders, replacements), output=orders)
@@ -235,7 +288,7 @@ def test_delta_input_is_a_readable_relation_for_ordinary_steps() -> None:
 def test_delta_check_match_precedence_is_recorded_in_plan() -> None:
     @transform(delta_check_match="name")
     class Delete(Transform):
-        orders = delta_output(Order)
+        orders = delta_table(Order)
 
         @step(input=orders, output=orders, delta_check_match="off")
         def delete(self, order: Order) -> None:
@@ -251,7 +304,7 @@ def test_delta_check_match_precedence_is_recorded_in_plan() -> None:
 def test_multiple_delta_effect_steps_keep_source_order() -> None:
     @transform
     class ChangeTwice(Transform):
-        orders = delta_output(Order)
+        orders = delta_table(Order)
 
         @step(input=orders, output=orders)
         def delete(self, order: Order) -> None:
@@ -269,7 +322,7 @@ def test_unmatched_by_source_cannot_read_merge_source() -> None:
     @transform
     class Invalid(Transform):
         changes = input(Change)
-        orders = delta_output(Order)
+        orders = delta_table(Order)
 
         @step(input=(changes, orders), output=orders)
         def merge(self, change: Change, order: Order) -> None:
@@ -282,7 +335,7 @@ def test_unmatched_by_source_cannot_read_merge_source() -> None:
 
 
 def test_schema_evolving_merge_uses_return_schema_as_delta_output() -> None:
-    changes_input = input(Change)
+    changes_input = input(ChangeV2)
     current_orders_input = delta_input(Order)
     orders_output = delta_output(OrderV2)
 
@@ -292,7 +345,7 @@ def test_schema_evolving_merge_uses_return_schema_as_delta_output() -> None:
         current_orders = current_orders_input
         orders = orders_output
 
-        def merge(self, change: Change, order: Order) -> OrderV2:
+        def merge(self, change: ChangeV2, order: Order) -> OrderV2:
             return (
                 delta_merge(order, change, on=order.id == change.id)
                 .with_schema_evolution()
@@ -311,7 +364,7 @@ def test_schema_evolving_merge_uses_return_schema_as_delta_output() -> None:
 
 
 def test_schema_evolving_append_is_explicit() -> None:
-    changes_input = input(Change)
+    changes_input = input(ChangeV2)
     current_orders_input = delta_input(Order)
     orders_output = delta_output(OrderV2)
 
@@ -321,10 +374,30 @@ def test_schema_evolving_append_is_explicit() -> None:
         current_orders = current_orders_input
         orders = orders_output
 
-        def append(self, change: Change, order: Order) -> OrderV2:
+        def append(self, change: ChangeV2, order: Order) -> OrderV2:
             return delta_append(order, change).with_schema_evolution().execute()
 
     mutation = _compile(Evolve).lowered.steps[0].delta_mutations[0]
     assert mutation.kind == "append"
     assert mutation.schema_evolution
     assert mutation.output == "orders"
+
+
+def test_evolution_rejects_a_result_field_missing_from_source() -> None:
+    @transform
+    class Invalid(Transform):
+        changes = input(Change)
+        current_orders = delta_input(Order)
+        orders = delta_output(OrderV2)
+
+        def merge(self, change: Change, order: Order) -> OrderV2:
+            return (
+                delta_merge(order, change, on=order.id == change.id)
+                .with_schema_evolution()
+                .when_matched_update_all()
+                .when_not_matched_insert_all()
+                .execute()
+            )
+
+    with pytest.raises(Exception, match="cannot supply that column"):
+        _compile(Invalid)

@@ -631,10 +631,12 @@ class CompileTransform:
         hints = get_type_hints(member)
         return_annotation = hints.get("return")
         output_schemas = self._return_schemas(return_annotation)
-        effect_schema = self._delta_effect_schema(hints.get("return"), getattr(member, "_structure_output_method", None))
+        metadata = getattr(member, "_structure_output_method", None)
+        effect_schema = self._delta_effect_schema(hints.get("return"), metadata)
+        if effect_schema is None and hints.get("return") is type(None):
+            effect_schema = self._inferred_delta_table_schema(transform_class, member, hints, metadata)
         if effect_schema is not None:
             output_schemas = (effect_schema,)
-        metadata = getattr(member, "_structure_output_method", None)
         if not output_schemas and not self._is_sink_class(return_annotation):
             if get_origin(hints.get("return")) is tuple:
                 raise self._error(
@@ -703,10 +705,10 @@ class CompileTransform:
         )
         delta_result = len(output_lanes) == 1 and (
             (declaration := transform_class._structure_outputs.get(output_lanes[0])) is not None
-            and declaration.binding == "delta"
+            and declaration.binding in {"delta", "delta_table"}
         )
         effect_candidate = effect_schema is not None or (
-            delta_result and any(binding.binding in {"delta", "delta_input", "delta_output"} for binding in bindings)
+            delta_result and any(binding.binding in {"delta", "delta_input", "delta_output", "delta_table"} for binding in bindings)
         )
         options = self._step_options(item.owner, metadata)
         parent_call: dict[str, object] = {}
@@ -740,9 +742,9 @@ class CompileTransform:
                     frame=lane,
                     ordinal=ordinal,
                     binding=(
-                        "delta"
+                        transform_class._structure_outputs[lane].binding
                         if transform_class._structure_outputs.get(lane) is not None
-                        and transform_class._structure_outputs[lane].binding == "delta"
+                        and transform_class._structure_outputs[lane].binding in {"delta", "delta_table"}
                         else "dataframe"
                     ),
                 )
@@ -925,7 +927,7 @@ class CompileTransform:
                 "source": result.frame,
                 "scope": result.schema.__name__,
                 "streaming": streaming,
-                "binding": "delta_output" if declaration is not None and declaration.binding == "delta" else "dataframe",
+                "binding": declaration.binding if declaration is not None and declaration.binding in {"delta", "delta_table"} else "dataframe",
             }
         return tuple(result_plans)
 
@@ -1208,7 +1210,7 @@ class CompileTransform:
                 "source": source_name,
                 "scope": input_plan.name,
                 "streaming": input_plan.streaming,
-                "binding": "delta_output" if input_plan.name in transform_class._structure_outputs and input_plan.binding == "delta" else "delta_input" if input_plan.binding == "delta" else "dataframe",
+                "binding": "delta_output" if input_plan.name in transform_class._structure_outputs and input_plan.binding == "delta" else "delta_table" if input_plan.binding == "delta_table" else "delta_input" if input_plan.binding == "delta" else "dataframe",
             }
             if input_plan.schema is schema and (input_plan.name, source_name) not in used:
                 candidates.append((input_plan.name, source))
@@ -1317,14 +1319,23 @@ class CompileTransform:
         *,
         member: str,
     ) -> tuple[str, dict[str, object]]:
-        if declaration.binding == "delta" and declaration.name not in lanes:
+        if declaration.binding == "delta":
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=member,
+                problem=f"delta_output(...) {declaration.name} is a schema-evolution result, not an input relation.",
+                use="Use delta_input(...) for the old schema and delta_table(...) for same-schema reads and mutations.",
+                context={"output": declaration.name},
+            )
+        if declaration.binding == "delta_table" and declaration.name not in lanes:
             return declaration.name, {
                 "kind": "input",
                 "schema": declaration.schema,
                 "source": declaration.name,
                 "scope": declaration.name,
                 "streaming": False,
-                "binding": "delta_output",
+                "binding": declaration.binding,
             }
         allow, _ = self._output_policy()
         if not allow:
@@ -1380,7 +1391,7 @@ class CompileTransform:
                 "source": source,
                 "scope": declaration.name,
                 "streaming": declaration.streaming,
-                "binding": "delta_output" if declaration.name in transform_class._structure_outputs and declaration.binding == "delta" else "delta_input" if declaration.binding == "delta" else "dataframe",
+                "binding": "delta_table" if declaration.binding == "delta_table" else "delta_input" if declaration.binding == "delta" else "dataframe",
             }
         if lane_source is not None:
             return declaration.name, lane_source
@@ -1494,7 +1505,7 @@ class CompileTransform:
                 delta_matches = [
                     item
                     for item in transform_class._structure_outputs.values()
-                    if item.binding == "delta" and item.schema is output_schemas[0]
+                    if item.binding in {"delta", "delta_table"} and item.schema is output_schemas[0]
                 ]
                 if len(delta_matches) == 1:
                     declaration = delta_matches[0]
@@ -1571,7 +1582,25 @@ class CompileTransform:
         outputs = tuple(cast(tuple[object, ...], metadata.get("outputs", ())))
         if len(outputs) != 1 or not isinstance(outputs[0], OutputDeclaration):
             return None
-        return outputs[0].schema if outputs[0].binding == "delta" else None
+        return outputs[0].schema if outputs[0].binding in {"delta", "delta_table"} else None
+
+    def _inferred_delta_table_schema(
+        self,
+        transform_class: type[Transform],
+        member,
+        hints: dict[str, object],
+        metadata: dict[str, object] | None,
+    ) -> type[Schema] | None:
+        if metadata is not None and metadata.get("outputs"):
+            return None
+        parameter_names = set(inspect.signature(member).parameters) - {"self"}
+        parameter_schemas = {hints.get(name) for name in parameter_names}
+        targets = [
+            declaration
+            for declaration in transform_class._structure_outputs.values()
+            if declaration.binding == "delta_table" and declaration.schema in parameter_schemas
+        ]
+        return targets[0].schema if len(targets) == 1 else None
 
     def _input_lane(
         self,
@@ -1629,7 +1658,7 @@ class CompileTransform:
             "source": input_plan.name,
             "scope": input_plan.name,
             "streaming": input_plan.streaming,
-            "binding": "delta_output" if input_plan.name in transform_class._structure_outputs and input_plan.binding == "delta" else "delta_input" if input_plan.binding == "delta" else "dataframe",
+            "binding": "delta_output" if input_plan.name in transform_class._structure_outputs and input_plan.binding == "delta" else "delta_table" if input_plan.binding == "delta_table" else "delta_input" if input_plan.binding == "delta" else "dataframe",
         }
 
     def _output_lane(
@@ -1667,7 +1696,7 @@ class CompileTransform:
     def _check_output_assignment(
         self, transform_class: type[Transform], declaration: WriteDeclaration, *, member: str
     ) -> None:
-        if isinstance(declaration, OutputDeclaration) and declaration.binding == "delta":
+        if isinstance(declaration, OutputDeclaration) and declaration.binding in {"delta", "delta_table"}:
             return
         if not self._writes_output(declaration) or declaration.name not in self._assigned_output_names():
             return

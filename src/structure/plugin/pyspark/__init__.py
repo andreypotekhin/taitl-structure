@@ -737,6 +737,7 @@ __all__ = [  # noqa: F405
     "check",
     "delta_input",
     "delta_output",
+    "delta_table",
     "delta_delete",
     "delta_update",
     "delta_merge",
@@ -762,7 +763,7 @@ def __getattr__(name: str):
         return getattr(import_module("structure.plugin.pyspark.dsl.SqlResult"), name)
     if name == "sql":
         return import_module("structure.plugin.pyspark.dsl.sql_api").sql
-    if name in {"check", "delta_input", "delta_output", "delta_delete", "delta_update", "delta_merge", "delta_append", "delta_replace_where", "delta_snapshot", "delta_changes"}:
+    if name in {"check", "delta_input", "delta_output", "delta_table", "delta_delete", "delta_update", "delta_merge", "delta_append", "delta_replace_where", "delta_snapshot", "delta_changes"}:
         return getattr(import_module("structure.plugin.pyspark.delta"), name)
     dsl = import_module("structure.plugin.pyspark.dsl")
 

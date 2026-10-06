@@ -1,5 +1,9 @@
 # V11 Delta Transform Mutations Specification
 
+> Historical V11 contract record. The current durable contract is
+> [Delta Tables specification](DeltaTables.spec.md), with user-facing declarations in the
+> [Delta tables API](../../api/DeltaTables.api.md).
+
 Public usage and target status: [Delta tables API](../../api/DeltaTables.api.md) and
 [Delta compatibility](../../compatibility/DeltaTables.compat.md).
 
@@ -12,7 +16,8 @@ remains release-gated until V11's 4.1 capability profile and integration matrix 
 | --- | --- | --- |
 | `Schema.constraints = (check(...),)` | implemented; release-gated | Immutable, symbolic CHECK declarations with stable names. |
 | `delta_input(Schema)` | implemented; release-gated | Caller-bound, read-only Delta table relation. |
-| `delta_output(Schema)` | implemented; release-gated | Caller-bound mutable target returned by identity after success. |
+| `delta_table(Schema)` | implemented; release-gated | Caller-bound read/write relation for same-schema effects. |
+| `delta_output(Schema)` | implemented; release-gated | Result schema for an explicit schema transition. |
 | `delta_delete`, `delta_update`, `delta_merge` | implemented; release-gated | Compiled, typed table mutations in effect steps. |
 | `with_schema_evolution()` on merge/append | implemented; release-gated | Per-operation evolution to the Schema returned by the step. |
 
@@ -21,11 +26,11 @@ remains release-gated until V11's 4.1 capability profile and integration matrix 
 1. Import and compile paths do not import PySpark or Delta, create sessions, or inspect table data. Invocation binds
    native `delta.tables.DeltaTable` objects under the declared input and output names. An ordinary DataFrame is invalid
    for a Delta binding, and a Delta table is invalid for an ordinary DataFrame input.
-2. A same-schema effect step binds its target as a relation parameter, returns `None`, and records one or more
-   compiler-visible Delta operations. Only a `delta_output` may be mutated in this mode. Explicit schema evolution
-   instead targets a `delta_input` and returns the declared `delta_output` schema as its result. The declared Delta
-   output is the caller's original table object; it is not a DataFrame snapshot or a command-metric relation. Effect
-   steps execute in source order and cannot be pruned as unused.
+2. A same-schema effect step binds a `delta_table` target as a relation parameter, returns `None` or returns its sole
+   merge mutation with a matching table-schema annotation, and records compiler-visible Delta operations. Explicit
+   schema evolution instead targets a `delta_input` and returns the declared `delta_output` schema as its result. The
+   declared Delta output is the caller's original table object; it is not a DataFrame snapshot or command-metric
+   relation. Effect steps execute in source order and cannot be pruned as unused.
 3. Table shape is validated for every Delta input and output. All declared checks are verified before any mutation,
    unless the effective comparison mode is `off`. Shape validation cannot be disabled by this option. Missing checks
    and mismatches fail before the first mutation; Structure never changes constraint or schema metadata.

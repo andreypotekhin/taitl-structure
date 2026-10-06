@@ -5,17 +5,20 @@ step instead records a typed effect that commits changes to an existing table du
 source checker and generator examine a mutation before it reaches the native Delta API.
 
 The caller creates the table, provisions native CHECK constraints, configures a Delta-capable Spark session, and
-passes the native `DeltaTable` handle. Structure binds it through `delta_input(Schema)` or
-`delta_output(Schema)`. A DataFrame cannot stand in for a Delta binding. The feature is currently **implemented;
+passes the native `DeltaTable` handle. Structure binds it through `delta_table(Schema)` for same-schema reads and
+mutations, `delta_input(Schema)` for read-only roles, and `delta_output(Schema)` for explicitly evolved result schemas.
+A DataFrame cannot stand in for a Delta binding. The feature is currently **implemented;
 release-gated** for the isolated ordinary PySpark 4.1.0 / Delta 4.1.0 evidence pair. See
 [Delta compatibility](../compatibility/DeltaTables.compat.md) for the admission status.
 
 ## Relations and effects
 
-A `delta_input` is a read-only table relation. A `delta_output` is a mutable target and a named result. Both supply
-relation parameters to step methods, so predicates and assignments can refer to typed fields. Same-schema mutation
-steps return `None` and may record multiple delete, update, merge, or append operations in source order. Successful
-execution returns the original caller-provided table handle, not a DataFrame or a metric row.
+A `delta_table` is the common relation for reads and same-schema mutations. A typed method may return `None`, with its
+unique mutation target inferred from relation resolution, or return a merge operation directly and annotate the method
+with the table schema. `@step` disambiguates relations when necessary. A `delta_input` is read-only. A `delta_output`
+declares the result schema for an explicit schema transition; neither is a mutable target. Relation declarations supply
+typed parameters to step methods, so predicates and assignments can refer to typed fields. Successful execution returns
+the original caller-provided table handle, not a DataFrame or a metric row.
 
 Structure checks the current table's columns, types, nullability, and declared CHECKs before the first mutation. An
 evolving output is checked after its commit. A schema's `constraints = (check(...),)` states what native CHECK metadata
@@ -44,9 +47,9 @@ Each native mutation may commit separately. Structure does not provide a transac
 commits after a later failure, or retry an uncertain native commit. The native exception remains catchable and carries
 step context. Delta mutation steps are batch operations; streaming source/sink lifecycle remains caller-owned.
 
-For signatures and working examples, use the [Delta API](../api/DeltaTables.api.md). The developer
-[design](../dev/design/V11DeltaSchemaBoundMutations.design.md) and
-[specification](../dev/specifications/V11DeltaSchemaBoundMutations.spec.md) record the compiler and runtime rules.
+For signatures and working examples, use the [Delta API](../api/DeltaTables.api.md) and the
+[Delta recipes](../recipes/DeltaTableMutations.md). The durable developer [design](../dev/design/DeltaTables.design.md)
+and [specification](../dev/specifications/DeltaTables.spec.md) record the compiler and runtime rules.
 
 ## Historical reads, CDF, and selective overwrite
 
@@ -64,4 +67,5 @@ and query lifecycle. Structure only compiles the row transformation.
 `delta_replace_where(...).execute()` writes a same-schema source into the target's selected slice using Delta's
 native `replaceWhere` option. The source and predicate are validated before the commit; Delta enforces that source
 rows satisfy the predicate. This operation is a native commit, not a transaction spanning multiple transform steps.
-The new snapshot, CDF, and selective-overwrite paths remain release-gated until their pinned live tests pass.
+These paths remain release-gated until the wider V11 admission matrix is complete; see
+[Delta compatibility](../compatibility/DeltaTables.compat.md).

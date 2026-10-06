@@ -114,7 +114,7 @@ class RunOnlinePySparkTransform:
                     raise ValueError(f"Missing required input {input.name!r}.")
                 schema = self._schema.materialize()(input.schema, types=T)
                 inputs[input.name] = session.spark.createDataFrame([], schema)
-            if input.binding == "delta":
+            if input.binding in {"delta", "delta_table"}:
                 table = inputs[input.name]
                 modes = {
                     step.delta_check_match or plan.delta_check_match
@@ -188,7 +188,7 @@ class RunOnlinePySparkTransform:
 
         outputs = {}
         for output in plan.outputs:
-            outputs[output.name] = delta_tables[output.name] if output.binding == "delta" else self._output(
+            outputs[output.name] = delta_tables[output.name] if output.binding in {"delta", "delta_table"} else self._output(
                 output,
                 source=frames[output.source],
                 inputs=inputs,

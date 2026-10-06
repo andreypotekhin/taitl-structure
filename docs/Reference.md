@@ -12,6 +12,7 @@ discrepancies, use the [API documentation map](API.md#api-documentation-map) and
   composition, streaming compatibility, and execution boundaries.
 - [Delta tables API](api/DeltaTables.api.md): caller-bound table relations, typed mutations, CHECK metadata, and
   explicit schema evolution (implemented; release-gated).
+- [Delta tables reference](reference/DeltaTables.ref.md): concise declaration and operation inventory.
 - [Aggregations reference](reference/Aggregations.ref.md): grouped metrics, opaque HLL/Bitmap state, selected rows,
   deduplication, windows, and higher-order collection operations.
 - [Join reference](reference/Join.ref.md): lookup, rowset, existence, temporal, as-of, and Cartesian joins.

@@ -172,7 +172,7 @@ class AnalyzeTransform(CompileTransform):
                     "source": item.frame,
                     "scope": item.schema.__name__,
                     "streaming": streaming,
-                    "binding": "delta_output" if declaration is not None and declaration.binding == "delta" else "dataframe",
+                    "binding": declaration.binding if declaration is not None and declaration.binding in {"delta", "delta_table"} else "dataframe",
                 }
             if pending_raw:
                 for raw in pending_raw:
@@ -207,7 +207,10 @@ class AnalyzeTransform(CompileTransform):
         hints = get_type_hints(member)
         return_annotation = hints.get("return")
         output_schemas = self._return_schemas(return_annotation)
-        effect_schema = self._delta_effect_schema(hints.get("return"), getattr(member, "_structure_output_method", None))
+        metadata = getattr(member, "_structure_output_method", None)
+        effect_schema = self._delta_effect_schema(hints.get("return"), metadata)
+        if effect_schema is None and hints.get("return") is type(None):
+            effect_schema = self._inferred_delta_table_schema(transform_class, member, hints, metadata)
         if effect_schema is not None:
             output_schemas = (effect_schema,)
         if not output_schemas and not self._is_sink_class(return_annotation):
@@ -220,7 +223,6 @@ class AnalyzeTransform(CompileTransform):
                     use="Use a fixed tuple of Schema classes, such as tuple[Accepted, Audited].",
                 )
             return None
-        metadata = getattr(member, "_structure_output_method", None)
         parameters, sink_bindings = self._step_parameters(transform_class, member, hints, metadata)
         if any(binding.sink_type is return_annotation for binding in sink_bindings):
             return None
@@ -252,7 +254,7 @@ class AnalyzeTransform(CompileTransform):
         )
         delta_result = len(output_lanes) == 1 and (
             (declaration := transform_class._structure_outputs.get(output_lanes[0])) is not None
-            and declaration.binding == "delta"
+            and declaration.binding in {"delta", "delta_table"}
         )
         results = tuple(
             StepResultPlan(
@@ -282,5 +284,5 @@ class AnalyzeTransform(CompileTransform):
             origin=TransformMemberOrigin.of(item.owner, item.name),
             plugin_body=None,
             effect=effect_schema is not None
-            or (delta_result and any(binding.binding in {"delta", "delta_input", "delta_output"} for binding in bindings)),
+            or (delta_result and any(binding.binding in {"delta", "delta_input", "delta_output", "delta_table"} for binding in bindings)),
         )

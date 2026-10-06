@@ -61,7 +61,7 @@ class RenderPySparkStep:
     ) -> str:
         if isinstance(step, PySparkStepRecipe) and step.effect:
             return self._delta_effect(step, sources or {}, delta_check_match=delta_check_match)
-        if isinstance(step, PySparkOutputRecipe) and step.binding == "delta":
+        if isinstance(step, PySparkOutputRecipe) and step.binding in {"delta", "delta_table"}:
             return f"        {step.name} = self._delta_tables[{step.name!r}]"
         if isinstance(step, PySparkStepRecipe) and len(step.results) > 1:
             return self._multiple(
@@ -82,9 +82,14 @@ class RenderPySparkStep:
             start = self._render_delta_selector(mutation.selector)
             end = self._render_delta_selector(mutation.end_selector)
             selector_type = mutation.selector.type.name if mutation.selector is not None and mutation.selector.type else ""
+            output_schema = (
+                f", output_schema=_StructureDeltaOutputSchema_{mutation.output_schema.__name__}"
+                if mutation.output_schema is not None
+                else ""
+            )
             lines.append(
                 f"        {source} = open_delta_relation(self._delta_tables[{mutation.target!r}], "
-                f"{mutation.kind!r}, {start}, {end}, {selector_type!r}, spark=self.spark)"
+                f"{mutation.kind!r}, {start}, {end}, {selector_type!r}{output_schema}, spark=self.spark)"
             )
         active = current
         if step.before_hooks:

@@ -165,7 +165,7 @@ class RenderPySparkTransformModule:
 
         for module, constants in self._schema_imports(plan, schema_modules).items():
             lines.append(f"from {module} import {', '.join(constants)}")
-        delta_inputs = [item for item in plan.inputs if item.binding == "delta"]
+        delta_inputs = [item for item in plan.inputs if item.binding in {"delta", "delta_table"}]
         if delta_inputs:
             lines.append(
                 "from structure.plugin.pyspark.delta.runtime import ("
@@ -320,13 +320,13 @@ class RenderPySparkTransformModule:
                 "        self._ran = True",
             ]
         )
-        if any(item.binding == "delta" for item in plan.inputs):
+        if any(item.binding in {"delta", "delta_table"} for item in plan.inputs):
             lines.append("        self._delta_tables = {}")
         for input in plan.inputs:
             current = fields[input.name]
             original = fields[f"input:{input.name}"]
             lines.append(f"        self.{current} = self.{original}")
-            if input.binding == "delta":
+            if input.binding in {"delta", "delta_table"}:
                 lines.extend(self._delta_input_lines(plan, input, variable=f"self.{current}"))
             else:
                 lines.extend(self._validation(input.validation, target=f"self.{current}"))
@@ -526,7 +526,7 @@ class RenderPySparkTransformModule:
         lines.append("    ) -> TransformResult:")
         if self._has_runtime_variables(plan):
             lines.append("        self._structure_variables = _structure_variables or {}")
-        if any(item.binding == "delta" for item in plan.inputs):
+        if any(item.binding in {"delta", "delta_table"} for item in plan.inputs):
             lines.append("        self._delta_tables = {}")
         for input in plan.inputs:
             if input.internal:
@@ -538,7 +538,7 @@ class RenderPySparkTransformModule:
                     f"        {input.name} = self.spark.createDataFrame([], {self._schema.constant_name(input.schema)})"
                     f" if {input.name} is None else {input.name}"
                 )
-            if input.binding == "delta":
+            if input.binding in {"delta", "delta_table"}:
                 lines.extend(self._delta_input_lines(plan, input, variable=input.name))
             else:
                 lines.extend(self._validation(input.validation))
@@ -688,7 +688,7 @@ class RenderPySparkTransformModule:
         lines.append("    ) -> TransformResult:")
         if self._has_runtime_variables(plan):
             lines.append("        self._structure_variables = _structure_variables or {}")
-        if any(item.binding == "delta" for item in plan.inputs):
+        if any(item.binding in {"delta", "delta_table"} for item in plan.inputs):
             lines.append("        self._delta_tables = {}")
         for input in plan.inputs:
             if input.internal:
@@ -700,7 +700,7 @@ class RenderPySparkTransformModule:
                     f"        {input.name} = self.spark.createDataFrame([], {self._schema.constant_name(input.schema)})"
                     f" if {input.name} is None else {input.name}"
                 )
-            if input.binding == "delta":
+            if input.binding in {"delta", "delta_table"}:
                 lines.extend(self._delta_input_lines(plan, input, variable=input.name))
             else:
                 lines.extend(self._validation(input.validation))
@@ -1209,7 +1209,7 @@ class RenderPySparkTransformModule:
         return tuple(input for input in plan.inputs if not input.internal)
 
     def _delta_input_lines(self, plan: PySparkExecutionPlan, item, *, variable: str) -> list[str]:
-        index = [source for source in plan.inputs if source.binding == "delta"].index(item)
+        index = [source for source in plan.inputs if source.binding in {"delta", "delta_table"}].index(item)
         modes = sorted(
             {step.delta_check_match or plan.delta_check_match for step in plan.steps if item.name in step.input_sources}
             or {plan.delta_check_match}

@@ -1,43 +1,31 @@
 # Delta Tables Compatibility
 
-Delta mutations are **implemented; release-gated**. Isolated live tests cover ordinary PySpark 4.1.0 with
-`delta-spark` 4.1.0, including online/generated parity and explicit merge/append schema evolution. The V11 PySpark
-4.1 capability profile and broader integration matrix have not yet passed the public support gate. Delta is an
-optional runtime dependency, not part of Structure's default PySpark `>=3.5,<4.1` target.
+This page follows the shared compatibility matrix format. Delta integration is release-gated and separate from the
+ordinary DataFrame API baseline. Isolated evidence covers classic PySpark 4.1.0 with Delta 4.1.0; the broader V11
+admission matrix and Spark Connect are not claimed. See the [Delta API](../api/DeltaTables.api.md) for usage and the
+[design](../dev/design/DeltaTables.design.md) and [specification](../dev/specifications/DeltaTables.spec.md) for
+contracts.
 
-| Runtime or mode | Status | Evidence and boundary |
-| --- | --- | --- |
-| Ordinary PySpark 4.1.0 + Delta 4.1.0 | implemented; release-gated | Isolated live mutation and online/generated parity tests; wider V11 admission pending. |
-| Default PySpark `>=3.5,<4.1` | no Delta support claim | The default profile remains unchanged; no 3.5/4.0 Delta matrix is admitted. |
-| Spark Connect | design-gated | Native Delta binding and mutation behavior need separate evidence. |
-| Structured Streaming | unsupported | Delta effect steps require batch inputs and execute native table mutations. |
+| Structure API | PySpark parity | Example | PySpark 3 | PySpark 4 | Details |
+| --- | --- | --- | --- | --- | --- |
+| `delta_table(Schema)` | Caller-bound `DeltaTable` mutation target | `orders = delta_table(Order)` | — | 4.1 only* | Common same-schema read/write binding. The caller supplies a native Delta table; `-> None` effects may infer a unique target. |
+| `delta_input(Schema)` | Read-only Delta relation | `orders = delta_input(Order)` | — | 4.1 only* | Used for snapshot/CDF reads and as the source binding for explicit schema evolution. |
+| `delta_output(Schema)` | Evolved result schema | `orders = delta_output(OrderV2)` | — | 4.1 only* | Resolves the return schema of an opted-in merge/append evolution; not a mutable input. |
+| `delta_delete`, `delta_update` | `DeltaTable.delete`, `DeltaTable.update` | `delta_delete(order, where=...)` | — | 4.1 only* | Typed predicates and assignments are compiled to native Delta operations. |
+| `delta_merge` | `DeltaTable.merge` | `delta_merge(order, change, on=...)` | — | 4.1 only* | Ordered typed clauses; `.execute()` is required and can be returned with a target-schema annotation. |
+| `delta_append` | `DataFrameWriter.format("delta").mode("append")` | `delta_append(order, change).execute()` | — | 4.1 only* | Append operation; `with_schema_evolution()` scopes `mergeSchema=true` to its writer. |
+| `.with_schema_evolution()` | `DeltaMergeBuilder.withSchemaEvolution()` | `delta_merge(...).with_schema_evolution()` | — | 4.1 only* | Requires an explicit `delta_input` source, `delta_output` result, direct returned operation, and statically compatible schemas. |
+| `delta_replace_where` | Delta overwrite with `replaceWhere` | `delta_replace_where(...).execute()` | — | 4.1 only* | Typed same-schema selective overwrite; `.execute()` records the effect. |
+| `delta_snapshot` | Delta reader `versionAsOf` / `timestampAsOf` | `delta_snapshot(order, version=18)` | — | 4.1 only* | Return annotation selects the ordinary DataFrame output schema. |
+| `delta_changes` | Delta reader `readChangeFeed` | `delta_changes(order, starting_version=18)` | — | 4.1 only* | Requires table CDF property and Spark session extension/catalog configuration. |
+| `check(...)` in `Schema.constraints` | Native Delta CHECK metadata | `check(status != "invalid")` | — | 4.1 only* | Structure validates matching constraints but does not install them. |
 
-## API correspondence
+`—` means this API is not admitted by the current project profile. `4.1 only*` means isolated classic runtime evidence
+exists for PySpark 4.1.0 and Delta 4.1.0, while public release admission is pending. No Spark Connect claim is made.
 
-| Structure API | Native Delta/PySpark API | Boundary |
-| --- | --- | --- |
-| `delta_input(Schema)` | `DeltaTable.toDF()` for relation reads | Caller supplies an existing native `DeltaTable`; Structure validates its shape and CHECK metadata. |
-| `delta_output(Schema)` | Native `DeltaTable` mutation target | Caller supplies the table for same-schema effects; result preserves its object identity. |
-| `check(predicate, name=...)` | Delta `CHECK` table property | Expected metadata is verified, never installed or modified. |
-| `delta_delete(target, where=...)` | `DeltaTable.delete(condition)` | Requires an explicit typed Boolean predicate. |
-| `delta_update(target, where=..., set=...)` | `DeltaTable.update(condition, set)` | Assignments are typed target-schema values. |
-| `delta_merge(target, source, on=...)` | `DeltaTable.merge(...)` builder | Ordered matched, unmatched, and unmatched-by-source data mutation clauses; symbolic expressions only. |
-| `delta_append(target, source).execute()` | `DataFrameWriter.format("delta").mode("append")` | Resolves the bound table location; append is a native commit. |
-| `delta_snapshot(target, version=... / timestamp=...)` | Delta `versionAsOf` / `timestampAsOf` reader options | Direct result of a typed step; runtime scalar selectors are invocation-bound. |
-| `delta_changes(target, starting_version=... / starting_timestamp=...)` | Delta `readChangeFeed` reader options | Requires the table property and Delta Spark session configuration; endpoints are inclusive. |
-| `delta_replace_where(target, source, where=...).execute()` | Delta `replaceWhere` overwrite option | Same Structure Schema and target-only predicate; live evidence for this addition is pending. |
-| `variable(type, default=...)` | Runtime scalar binding | Compiled source refers to the variable; values are supplied per invocation and do not specialize artifacts. |
-| Merge `.with_schema_evolution()` | `DeltaMergeBuilder.withSchemaEvolution()` | Requires a distinct return-typed `delta_output` schema. |
-| Append `.with_schema_evolution()` | Writer `.option("mergeSchema", "true")` | Applies to this append, not the Spark session. |
+## Caller-owned behavior
 
-Structure checks the current table schema before mutations and the declared new schema after an evolving commit.
-`delta_check_match="expression"` is the default; `"name"` and `"off"` relax native CHECK comparison but never
-disable shape validation. Raw SQL clauses, Delta table creation/administration, native constraint installation,
-session-wide auto-merge, overwrite schema replacement, transaction coordination, and native operation metrics are
-outside this API. `delta_replace_where` is a same-schema data overwrite, not schema replacement. Native failures
-propagate; successful earlier commits remain committed. The new read and selective-overwrite paths remain
-release-gated until the pinned live tests run in the ordinary PySpark 4.1.0 / Delta 4.1.0 lane.
-
-See the [Delta API](../api/DeltaTables.api.md) for declarations and examples, the
-[Delta background](../background/DeltaTables.back.md) for execution semantics, and the
-[V11 Delta specification](../dev/specifications/V11DeltaSchemaBoundMutations.spec.md) for the implementation gate.
+Delta table creation, native constraint installation, arbitrary SQL clauses, table administration, and streaming query
+lifecycle remain caller-owned. Structure does not retry commits or provide a transaction across multiple transform
+steps. CDF additionally requires `delta.enableChangeDataFeed=true` on the table and the Delta session extension and
+catalog. Schema evolution is explicit and scoped to the individual merge or append operation.
