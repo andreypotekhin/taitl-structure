@@ -438,6 +438,15 @@ the first analytical join slice.
 - + As a developer, I can use `structure tools schemas generate` in a Spark-available CLI runtime so that terminal
   workflows can produce the same schema source.
 
+## 22F. Delta table transforms
+
+- + As a developer, I can inspect typed Delta history and table detail from transform steps so that metadata reads
+  participate in compilation and generated execution.
+- + As a developer, I can declare Delta generated, identity, and default columns so that insert validation permits
+  omitted values only when the bound table's native metadata confirms how those values are produced.
+- + As a developer, I can restore, optimize, and vacuum a caller-bound Delta table through explicit transform effects so
+  that commits and file maintenance are visible in the compiled plan.
+
 ## 23. Streaming Transformation Roadmap
 
 - + As a developer, I can chain watermarked deduplication with one watermarked event-time window aggregate in Append

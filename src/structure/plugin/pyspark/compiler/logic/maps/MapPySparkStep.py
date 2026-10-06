@@ -79,6 +79,10 @@ class MapPySparkStep:
         boundary_frames: frozenset[str] = frozenset(),
     ) -> PySparkStepRecipe:
         body = self._body(step)
+        for mutation in body.delta_mutations:
+            capabilities.require(CapabilityRequirement(group="delta", name=mutation.kind.removeprefix("delta_")))
+            if mutation.schema_evolution:
+                capabilities.require(CapabilityRequirement(group="delta", name="schema_evolution"))
         input_alias = self._names.alias(step.input_schema.__name__)
         output_alias = self._names.alias(step.output_schema.__name__)
         operations = self._operations(body, input_alias=input_alias, capabilities=capabilities, step_name=step.name)
@@ -154,10 +158,12 @@ class MapPySparkStep:
             input_sources=tuple(binding.source for binding in step.inputs),
             origin=step.origin,
             effect=step.effect or any(
-                mutation.kind not in {"delta_snapshot", "delta_changes"} for mutation in body.delta_mutations
+                mutation.kind not in {"delta_snapshot", "delta_changes", "delta_history", "delta_detail"}
+                for mutation in body.delta_mutations
             ),
             delta_mutations=body.delta_mutations,
             delta_check_match=cast(str | None, (step.options or {}).get("delta_check_match")),
+            delta_cdf_checks=cast(bool | None, (step.options or {}).get("delta_cdf_checks")),
         )
 
     @staticmethod

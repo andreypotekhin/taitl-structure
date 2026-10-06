@@ -39,3 +39,4 @@ class PySparkStepRecipe:
     effect: bool = False
     delta_mutations: tuple[DeltaMutation, ...] = ()
     delta_check_match: str | None = None
+    delta_cdf_checks: bool | None = None

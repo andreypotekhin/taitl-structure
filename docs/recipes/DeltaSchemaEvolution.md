@@ -31,7 +31,7 @@ class EvolveOrders(Transform):
     def merge(self, change: ChangeV2, order: Order) -> OrderV2:
         return (
             delta_merge(order, change, on=order.id == change.id)
-            .with_schema_evolution()
+            .with_schema_evolution(to=OrderV2)
             .when_matched_update_all()
             .when_not_matched_insert_all()
             .execute()

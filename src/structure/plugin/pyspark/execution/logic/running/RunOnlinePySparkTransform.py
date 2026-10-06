@@ -161,13 +161,18 @@ class RunOnlinePySparkTransform:
                     frames[result.frame] = fresh_delta_frame(delta_tables[table_name])
                 continue
             for mutation in step.delta_mutations:
-                if mutation.kind in {"delta_snapshot", "delta_changes"}:
+                if mutation.kind in {"delta_snapshot", "delta_changes", "delta_history", "delta_detail"}:
                     frame = read_delta_relation(
                         mutation,
                         tables=delta_tables,
                         spark=session.spark,
                         evaluator=self._expressions,
                         functions=F,
+                        check_cdf_configuration=(
+                            step.delta_cdf_checks
+                            if step.delta_cdf_checks is not None
+                            else plan.delta_cdf_checks
+                        ),
                     )
                     frames[mutation.target] = frame
                     frames[f"input:{mutation.target}"] = frame

@@ -15,8 +15,9 @@ release-gated** for the isolated ordinary PySpark 4.1.0 / Delta 4.1.0 evidence p
 
 A `delta_table` is the common relation for reads and same-schema mutations. A typed method may return `None`, with its
 unique mutation target inferred from relation resolution, or return a merge operation directly and annotate the method
-with the table schema. `@step` disambiguates relations when necessary. A `delta_input` is read-only. A `delta_output`
-declares the result schema for an explicit schema transition; neither is a mutable target. Relation declarations supply
+with the table schema. `@step` disambiguates relations when necessary. A `delta_input` is read-only for row mutations;
+it may be a restore target when the return annotation selects a `delta_output` schema. A `delta_output` declares the
+result schema for an explicit schema transition and is never a caller-bound table. Relation declarations supply
 typed parameters to step methods, so predicates and assignments can refer to typed fields. Successful execution returns
 the original caller-provided table handle, not a DataFrame or a metric row.
 
@@ -29,10 +30,12 @@ configuration, on a transform, or on a step; the closest declaration wins.
 
 ## A deliberate schema transition
 
-A same-schema step cannot silently add columns. To change the expected table shape, bind the current table as
+A same-schema row-write step cannot silently add columns. To evolve its expected table shape, bind the current table as
 `delta_input(OrderV1)`, declare `delta_output(OrderV2)`, annotate the step `-> OrderV2`, and return one
-`delta_merge(...).with_schema_evolution().execute()` or
-`delta_append(...).with_schema_evolution().execute()` result. Structure validates `OrderV1` before mutation and
+`delta_merge(...).with_schema_evolution(to=OrderV2).execute()` or
+`delta_append(...).with_schema_evolution(to=OrderV2).execute()` result. The required `to` schema drives static
+compatibility checks and must match the declared output. A `delta_table(OrderV1)` binding may instead target an
+evolving effect in a `-> None` step without exposing a separate composable output. Structure validates `OrderV1` before mutation and
 `OrderV2` after the native commit. Merge uses Delta's `withSchemaEvolution()`; append applies `mergeSchema=true` to
 that writer. The choice is local to the operation, so unrelated writes do not inherit an auto-merge setting.
 
@@ -67,5 +70,23 @@ and query lifecycle. Structure only compiles the row transformation.
 `delta_replace_where(...).execute()` writes a same-schema source into the target's selected slice using Delta's
 native `replaceWhere` option. The source and predicate are validated before the commit; Delta enforces that source
 rows satisfy the predicate. This operation is a native commit, not a transaction spanning multiple transform steps.
+
+## Metadata inspection and table maintenance
+
+`delta_history` and `delta_detail` return typed ordinary relations from a Delta binding. A step annotation selects the
+declared result fields, which lets transform code consume recent commits or table location/partition metadata without
+hard-coding every vendor column.
+
+`Schema.delta_columns` records explicit expectations for generated, identity, and default fields. Runtime binding
+compares those declarations with Delta's own schema metadata before the compiler relaxes insert completeness. Delta
+generated expressions and identity attributes reside in Delta log schema metadata; defaults are visible through Spark's
+`CURRENT_DEFAULT` column metadata. These declarations do not install table features or make any field optional in
+ordinary DataFrame schemas.
+
+Restore, optimize, and vacuum are explicit effect calls. Restore creates a new version; optimize changes physical file
+layout; vacuum removes eligible unreferenced files. Structure does not expose native metric rows as transform results.
+Vacuum defaults to 168 hours, and a shorter retention requires source opt-in while retaining Delta's native safety
+check. Because vacuum can invalidate old time-travel reads, the caller coordinates it with readers and streams. See the
+[inspection and maintenance recipe](../recipes/DeltaInspectionAndMaintenance.md).
 These paths remain release-gated until the wider V11 admission matrix is complete; see
 [Delta compatibility](../compatibility/DeltaTables.compat.md).

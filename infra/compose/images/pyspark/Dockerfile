@@ -1,6 +1,7 @@
 FROM python:3.11-slim-bookworm
 
 ARG PYSPARK_VERSION
+ARG DELTA_SPARK_VERSION=
 ARG PROTOBUF_VERSION=5.29.3
 ARG SEDONA_VERSION=1.9.0
 
@@ -27,6 +28,10 @@ RUN pip install --no-cache-dir --timeout=120 --retries=5 \
     "protobuf==${PROTOBUF_VERSION}" \
     "pyspark[connect]==${PYSPARK_VERSION}" \
     "apache-sedona==${SEDONA_VERSION}"
+
+RUN if [ -n "${DELTA_SPARK_VERSION}" ]; then \
+    pip install --no-cache-dir --timeout=120 --retries=5 "delta-spark==${DELTA_SPARK_VERSION}"; \
+    fi
 
 COPY infra/compose/images/pyspark/log4j2-integration.properties /etc/spark/log4j2-integration.properties
 COPY infra/compose/images/pyspark/run-integration.sh /usr/local/bin/run-integration

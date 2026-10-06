@@ -354,13 +354,13 @@ The ordinary PySpark 4.1 lane currently runs `tests/integration/pyspark/backend/
 `tests/integration/pyspark/v11` only. Other integration tests continue to run on their existing backends; Connect 4.1
 is a later, separate lane.
 
-The Delta mutation suite is `tests/integration/pyspark/v11/test_delta_transform_live.py`. It uses disposable native
-tables and checks preflight validation, native CHECK enforcement, delete/update/merge/append, explicit merge and append
-schema evolution, and online/generated parity. Its isolated evidence pair is ordinary `pyspark==4.1.0` with
-`delta-spark==4.1.0` in a Delta-enabled Spark session. After provisioning that runtime, run
-`poetry run pytest --run-integration -q tests/integration/pyspark/v11/test_delta_transform_live.py`. The full V11
-profile and Compose matrix remains an admission gate; see the
-[Delta specification](specifications/V11DeltaSchemaBoundMutations.spec.md).
+The Delta suite is `tests/integration/pyspark/v11/test_delta_transform_live.py`. It uses disposable native tables and
+checks preflight validation, native CHECK and column metadata, mutations and reads, schema evolution, maintenance, and
+online/generated parity. The classic Compose lanes pin PySpark 3.5.3 / Delta 3.3.3, PySpark 4.0.0 / Delta 4.1.0, and
+PySpark 4.1.0 / Delta 4.1.0. Run `make integration BACKEND=pyspark35`, `make integration BACKEND=pyspark40`, and
+`make integration BACKEND=pyspark41` for release evidence. A local focused run must install the matching `delta-spark`
+package and use a Delta-enabled Spark session; a skipped live test is not admission evidence. The
+[Delta compatibility ledger](../compatibility/DeltaTables.compat.md) records admission by profile and helper.
 
 Integration runs retain the selected local Spark master/worker services and the versioned Spark Connect dependency
 caches; only the disposable test runner is removed. This makes repeated focused runs fast without sharing test process

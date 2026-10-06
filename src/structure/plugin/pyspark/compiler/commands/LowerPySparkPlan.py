@@ -2,7 +2,7 @@ from collections import Counter
 from typing import cast
 
 from structure.dsl import Schema
-from structure.plugin.api.v1.model import BackendCapabilities, TransformPlan
+from structure.plugin.api.v1.model import BackendCapabilities, CapabilityRequirement, TransformPlan
 from structure.plugin.pyspark.compiler.commands.ValidatePySparkHooks import ValidatePySparkHooks
 from structure.plugin.pyspark.compiler.commands.ValidatePySparkSchemaCapabilities import (
     ValidatePySparkSchemaCapabilities,
@@ -33,12 +33,20 @@ class LowerPySparkPlan:
         check_intermediate: bool = True,
         boundary_policy: str = "off",
         delta_check_match: str = "expression",
+        delta_cdf_checks: bool = True,
     ) -> PySparkExecutionPlan:
         target = capabilities or self._capabilities
         if target is None:
             raise ValueError("PySpark plan lowering requires explicit capabilities.")
         self._hooks(plan)
         self._schema_capabilities(plan, capabilities=target)
+        for binding in (*plan.inputs, *plan.outputs):
+            if binding.binding.startswith("delta"):
+                target.require(CapabilityRequirement(group="delta", name="binding"))
+                if getattr(binding.schema, "constraints", ()):
+                    target.require(CapabilityRequirement(group="delta", name="check"))
+                if getattr(binding.schema, "delta_columns", ()):
+                    target.require(CapabilityRequirement(group="delta", name="columns"))
         inputs = tuple(
             self._inputs.map(
                 input.name,
@@ -84,6 +92,7 @@ class LowerPySparkPlan:
             stage_outputs=stage_outputs,
             allow_stage_outputs=plan.allow_stage_outputs,
             delta_check_match=str((plan.options or {}).get("delta_check_match", delta_check_match)),
+            delta_cdf_checks=bool((plan.options or {}).get("delta_cdf_checks", delta_cdf_checks)),
             sinks=plan.sinks,
             state_budget_checking=str((plan.options or {}).get("state_budget_checking", "compile_time_check")),
             state_budget_memory_source=cast(str | None, (plan.options or {}).get("state_budget_memory_source")),

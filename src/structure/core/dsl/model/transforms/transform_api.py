@@ -37,8 +37,9 @@ _CLASS_OPTIONS = {
     "disable",
     "allow_stream_to_batch",
     "delta_check_match",
+    "delta_cdf_checks",
 }
-_STEP_METHOD_OPTIONS = {"target", "target_platform", "target_profile", "delta_check_match"}
+_STEP_METHOD_OPTIONS = {"target", "target_platform", "target_profile", "delta_check_match", "delta_cdf_checks"}
 _METHOD_BINDING_OPTIONS = {"input", "output", "inout", "sink"}
 _METHOD_OPTIMIZATION_OPTIONS = {"cache"}
 
@@ -522,6 +523,10 @@ def _step_method_option(name: str, value: object) -> object:
     if name == "delta_check_match":
         if value not in ("expression", "name", "off"):
             raise TypeError("delta_check_match must be 'expression', 'name', or 'off'")
+        return value
+    if name == "delta_cdf_checks":
+        if not isinstance(value, bool):
+            raise TypeError("delta_cdf_checks must be a Boolean")
         return value
     if name in {"target", "target_platform", "target_profile"}:
         if not isinstance(value, str) or not value:

@@ -41,6 +41,7 @@ class Schema:
     _structure_local_fields: dict[str, FieldDefinition] = {}
     _structure_schema_bases: tuple[type["Schema"], ...] = ()
     _structure_constraints: tuple[object, ...] = ()
+    _structure_delta_columns: tuple[object, ...] = ()
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
@@ -78,6 +79,13 @@ class Schema:
         if not isinstance(declared, tuple):
             raise TypeError(f"{cls.__name__}.constraints must be a tuple of check declarations")
         cls._structure_constraints = (*inherited, *declared)
+        inherited_delta_columns = tuple(
+            declaration for base in cls._structure_schema_bases for declaration in base._structure_delta_columns
+        )
+        declared_delta_columns = cls.__dict__.get("delta_columns", ())
+        if not isinstance(declared_delta_columns, tuple):
+            raise TypeError(f"{cls.__name__}.delta_columns must be a tuple of Delta column declarations")
+        cls._structure_delta_columns = (*inherited_delta_columns, *declared_delta_columns)
 
     def __init__(self, **values: object) -> None:
         unknown = set(values) - set(self._structure_fields)

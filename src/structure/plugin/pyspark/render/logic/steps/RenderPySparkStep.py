@@ -58,6 +58,7 @@ class RenderPySparkStep:
         backend_target: str = ">=3.5,<4.1",
         frame_mapping: str | None = None,
         delta_check_match: str = "expression",
+        delta_cdf_checks: bool = True,
     ) -> str:
         if isinstance(step, PySparkStepRecipe) and step.effect:
             return self._delta_effect(step, sources or {}, delta_check_match=delta_check_match)
@@ -76,7 +77,7 @@ class RenderPySparkStep:
         target = self._target(step)
         lines = [f"        # Step method: {step.name}"]
         for index, mutation in enumerate(step.delta_mutations if isinstance(step, PySparkStepRecipe) else ()):
-            if mutation.kind not in {"delta_snapshot", "delta_changes"}:
+            if mutation.kind not in {"delta_snapshot", "delta_changes", "delta_history", "delta_detail"}:
                 continue
             source = (sources or {}).get(mutation.target, mutation.target)
             start = self._render_delta_selector(mutation.selector)
@@ -87,9 +88,15 @@ class RenderPySparkStep:
                 if mutation.output_schema is not None
                 else ""
             )
+            cdf_checks = (
+                step.delta_cdf_checks
+                if isinstance(step, PySparkStepRecipe) and step.delta_cdf_checks is not None
+                else delta_cdf_checks
+            )
             lines.append(
                 f"        {source} = open_delta_relation(self._delta_tables[{mutation.target!r}], "
-                f"{mutation.kind!r}, {start}, {end}, {selector_type!r}{output_schema}, spark=self.spark)"
+                f"{mutation.kind!r}, {start}, {end}, {selector_type!r}{output_schema}, "
+                f"check_cdf_configuration={cdf_checks!r}, spark=self.spark)"
             )
         active = current
         if step.before_hooks:
@@ -140,8 +147,23 @@ class RenderPySparkStep:
             return repr(value.isoformat()) if isinstance(value, datetime) else repr(value)
         raise TypeError("Delta snapshot and CDF selectors must be literals or variable references")
 
+    @staticmethod
+    def _delta_expression_fields(expression) -> set[str]:
+        if expression is None:
+            return set()
+        fields = set()
+        if expression.kind == "field":
+            fields.add(str((expression.data or {}).get("field", "")))
+        for argument in expression.args:
+            fields.update(RenderPySparkStep._delta_expression_fields(argument))
+        return fields
+
     def _delta_effect(
-        self, step: PySparkStepRecipe, sources: Mapping[str, str], *, delta_check_match: str
+        self,
+        step: PySparkStepRecipe,
+        sources: Mapping[str, str],
+        *,
+        delta_check_match: str,
     ) -> str:
         lines = [f"        # Delta effect: {step.name}"]
         for index, mutation in enumerate(step.delta_mutations):
@@ -177,6 +199,30 @@ class RenderPySparkStep:
                 lines.append(
                     f"        {source}.write.format('delta').mode('overwrite').option("
                     f"'replaceWhere', _delta_replace_where_{index}).save({location})"
+                )
+            elif mutation.kind == "restore":
+                selector = self._render_delta_selector(mutation.selector)
+                lines.append(f"        execute_delta_restore({table}, {selector}, {mutation.selector_type!r})")
+            elif mutation.kind == "optimize":
+                if mutation.predicate is None:
+                    predicate = "None"
+                    predicate_columns: set[str] = set()
+                else:
+                    template = render_delta_predicate_template(mutation.predicate)
+                    lines.append(
+                        f"        _delta_optimize_where_{index} = bind_delta_predicate_variables("
+                        f"{template!r}, self._structure_variables)"
+                    )
+                    predicate = f"_delta_optimize_where_{index}"
+                    predicate_columns = self._delta_expression_fields(mutation.predicate)
+                lines.append(
+                    f"        execute_delta_optimize({table}, {predicate}, {mutation.action!r}, "
+                    f"{mutation.columns!r}, {tuple(sorted(predicate_columns))!r})"
+                )
+            elif mutation.kind == "vacuum":
+                retention = self._render_delta_selector(mutation.selector)
+                lines.append(
+                    f"        execute_delta_vacuum({table}, {retention}, {mutation.allow_short_retention!r})"
                 )
             elif mutation.kind == "merge":
                 assert mutation.source is not None and mutation.source_scope is not None

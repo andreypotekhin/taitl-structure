@@ -4,8 +4,6 @@ from typing import TYPE_CHECKING, Any, cast, overload
 from structure.dsl import FieldDeclaration
 from structure.plugin.pyspark.dsl import field as field
 from structure.plugin.pyspark.dsl import types as types
-from structure.plugin.pyspark.dsl.Interval import Interval
-from structure.plugin.pyspark.dsl.Temporal import Temporal
 from structure.plugin.pyspark.dsl.generators import explode_array as _explode_array
 from structure.plugin.pyspark.dsl.generators import explode_map as _explode_map
 from structure.plugin.pyspark.dsl.generators import explode_outer_array as _explode_outer_array
@@ -25,6 +23,7 @@ from structure.plugin.pyspark.dsl.generators import stack as _stack
 from structure.plugin.pyspark.dsl.generators import variant_explode as _variant_explode
 from structure.plugin.pyspark.dsl.generators import variant_explode_outer as _variant_explode_outer
 from structure.plugin.pyspark.dsl.geo import contains, geometry_as_wkt, geometry_from_wkt, intersects, within
+from structure.plugin.pyspark.dsl.Interval import Interval
 from structure.plugin.pyspark.dsl.relation_sets import (
     except_all,
     hierarchy_closure,
@@ -47,6 +46,7 @@ from structure.plugin.pyspark.dsl.relation_sets import (
     union_all,
     union_by_name,
 )
+from structure.plugin.pyspark.dsl.Temporal import Temporal
 from structure.plugin.pyspark.PySparkPlugin import PySparkPlugin
 
 
@@ -738,6 +738,9 @@ __all__ = [  # noqa: F405
     "delta_input",
     "delta_output",
     "delta_table",
+    "delta_generated",
+    "delta_identity",
+    "delta_default",
     "delta_delete",
     "delta_update",
     "delta_merge",
@@ -745,6 +748,11 @@ __all__ = [  # noqa: F405
     "delta_replace_where",
     "delta_snapshot",
     "delta_changes",
+    "delta_history",
+    "delta_detail",
+    "delta_restore",
+    "delta_optimize",
+    "delta_vacuum",
 ]
 
 
@@ -763,7 +771,7 @@ def __getattr__(name: str):
         return getattr(import_module("structure.plugin.pyspark.dsl.SqlResult"), name)
     if name == "sql":
         return import_module("structure.plugin.pyspark.dsl.sql_api").sql
-    if name in {"check", "delta_input", "delta_output", "delta_table", "delta_delete", "delta_update", "delta_merge", "delta_append", "delta_replace_where", "delta_snapshot", "delta_changes"}:
+    if name in {"check", "delta_input", "delta_output", "delta_table", "delta_generated", "delta_identity", "delta_default", "delta_delete", "delta_update", "delta_merge", "delta_append", "delta_replace_where", "delta_snapshot", "delta_changes", "delta_history", "delta_detail", "delta_restore", "delta_optimize", "delta_vacuum"}:
         return getattr(import_module("structure.plugin.pyspark.delta"), name)
     dsl = import_module("structure.plugin.pyspark.dsl")
 

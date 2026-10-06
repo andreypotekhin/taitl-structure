@@ -9,8 +9,15 @@ connect_checkpoints=""
 # Include source modules used by pickled UDFs, including with older cached images.
 export PYTHONPATH="/workspace:/workspace/src:/workspace/res:/workspace/tests${PYTHONPATH:+:${PYTHONPATH}}"
 
-if [[ "${backend}" != spark-connect* && -n "${STRUCTURE_SPARK_DRIVER_MEMORY:-}" ]]; then
-    export PYSPARK_SUBMIT_ARGS="--driver-memory ${STRUCTURE_SPARK_DRIVER_MEMORY} pyspark-shell"
+if [[ "${backend}" != spark-connect* ]]; then
+    submit_args=()
+    if [[ -n "${STRUCTURE_SPARK_DRIVER_MEMORY:-}" ]]; then
+        submit_args+=(--driver-memory "${STRUCTURE_SPARK_DRIVER_MEMORY}")
+    fi
+    if (( ${#submit_args[@]} > 0 )); then
+        printf -v submit_args_string '%q ' "${submit_args[@]}"
+        export PYSPARK_SUBMIT_ARGS="${submit_args_string}pyspark-shell"
+    fi
 fi
 
 mkdir -p /tmp/artifacts /tmp/spark-artifacts
@@ -87,7 +94,27 @@ cleanup() {
 trap cleanup EXIT
 
 pytest_status=0
+pytest_args=()
 test_paths=(/workspace/tests/integration /workspace/tests/concepts/live_pyspark)
+if [[ "${backend}" == "pyspark35" || "${backend}" == "pyspark40" || "${backend}" == "pyspark41" ]]; then
+    # Delta resolves startup jars and needs a fresh process before ordinary
+    # PySpark tests initialize their driver JVM.
+    timeout --signal=TERM --kill-after=15s "${STRUCTURE_INTEGRATION_TIMEOUT:-3600}" \
+        python -m pytest /workspace/tests/integration/pyspark/v11/test_delta_transform_live.py \
+        --rootdir=/workspace \
+        -p no:cacheprovider \
+        --run-integration \
+        "--integration-backend=${backend}" \
+        -W 'ignore:distutils Version classes are deprecated:DeprecationWarning' \
+        -W 'ignore:The copy keyword is deprecated:Warning' \
+        -W 'ignore:ReleaseExecute failed with exception:UserWarning' \
+        ${INTEGRATION_PYTEST_ARGS:-} || pytest_status=$?
+    if (( pytest_status != 0 )); then
+        exit "${pytest_status}"
+    fi
+    pytest_args+=(--ignore=/workspace/tests/integration/pyspark/v11/test_delta_transform_live.py)
+fi
+
 if [[ "${backend}" == "pyspark41" ]]; then
     test_paths=(
         /workspace/tests/integration/pyspark/backend/test_runtime_versions.py
@@ -103,6 +130,7 @@ timeout --signal=TERM --kill-after=15s "${STRUCTURE_INTEGRATION_TIMEOUT:-3600}" 
     -W 'ignore:distutils Version classes are deprecated:DeprecationWarning' \
     -W 'ignore:The copy keyword is deprecated:Warning' \
     -W 'ignore:ReleaseExecute failed with exception:UserWarning' \
+    "${pytest_args[@]}" \
     ${INTEGRATION_PYTEST_ARGS:-} || pytest_status=$?
 
 if (( pytest_status == 124 || pytest_status == 137 )); then

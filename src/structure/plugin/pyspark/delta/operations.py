@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import math
+
 from structure.dsl import Schema
 from structure.plugin.pyspark.delta.model import DeltaClause, DeltaMutation, DeltaMutationResult
+from structure.plugin.pyspark.delta.schema import resolve_delta_columns
 from structure.plugin.pyspark.dsl.Expression import Expression, _same_type
 from structure.plugin.pyspark.dsl.expressions import literal
 from structure.plugin.pyspark.dsl.InputScope import InputScope
@@ -37,15 +40,11 @@ def _require_mutable(target: DeltaScope, *, schema_evolution: bool) -> None:
         raise TypeError("delta_output(...) declares a schema-evolution result; mutate a delta_table(...) relation")
     if target._structure_delta_binding == "delta_input" and not schema_evolution:
         raise TypeError("A delta_input(...) relation can only be mutated by an explicit schema evolution")
-    if target._structure_delta_binding == "delta_table" and schema_evolution:
-        raise TypeError("Schema evolution requires a delta_input(...) target and a distinct delta_output(...) result")
 
 
-def _evolution_output_schema() -> type[Schema]:
-    context = _context()
-    schema = getattr(context, "delta_output_schema", None)
+def _evolution_output_schema(schema: type[Schema]) -> type[Schema]:
     if not isinstance(schema, type) or not issubclass(schema, Schema):
-        raise TypeError("with_schema_evolution() requires a step returning a delta_output(...) Schema")
+        raise TypeError("with_schema_evolution(to=...) requires a Structure Schema class")
     return schema
 
 
@@ -76,11 +75,17 @@ def _assignments(target: DeltaScope, values: object, *, insert: bool = False) ->
     supplied = values._structure_values
     if not supplied:
         raise TypeError("Delta assignments must contain at least one target field")
+    declarations = resolve_delta_columns(schema)
+    for name in supplied:
+        declaration = declarations.get(name)
+        if declaration is not None and declaration.kind == "identity" and declaration.mode == "always":
+            raise TypeError(f"Delta identity column {name!r} is GENERATED ALWAYS and cannot be assigned")
     if insert:
+        auto_populated = set(declarations)
         missing = [
             field.name
             for field in schema._structure_fields.values()
-            if not field.nullable and field.name not in supplied
+            if not field.nullable and field.name not in supplied and field.name not in auto_populated
         ]
         if missing:
             raise TypeError(f"Delta insert is missing non-nullable target fields: {', '.join(missing)}")
@@ -203,12 +208,12 @@ class DeltaMerge:
         self.schema_evolution = False
         self.output_schema: type[Schema] | None = None
 
-    def with_schema_evolution(self) -> DeltaMerge:
+    def with_schema_evolution(self, *, to: type[Schema]) -> DeltaMerge:
         if self.executed or self.schema_evolution:
             raise TypeError("Delta schema evolution can be enabled only once before execute()")
-        self.output_schema = _evolution_output_schema()
+        self.output_schema = _evolution_output_schema(to)
         if self.output_schema is self.target._structure_input_schema:
-            raise TypeError("with_schema_evolution() requires a different delta_output(...) Schema")
+            raise TypeError("with_schema_evolution(to=...) requires a Schema different from the target Schema")
         self.schema_evolution = True
         return self
 
@@ -322,12 +327,12 @@ class DeltaAppend:
         self.output_schema: type[Schema] | None = None
         self.executed = False
 
-    def with_schema_evolution(self) -> DeltaAppend:
+    def with_schema_evolution(self, *, to: type[Schema]) -> DeltaAppend:
         if self.executed or self.schema_evolution:
             raise TypeError("Delta schema evolution can be enabled only once before execute()")
-        self.output_schema = _evolution_output_schema()
+        self.output_schema = _evolution_output_schema(to)
         if self.output_schema is self.target._structure_input_schema:
-            raise TypeError("with_schema_evolution() requires a different delta_output(...) Schema")
+            raise TypeError("with_schema_evolution(to=...) requires a Schema different from the target Schema")
         self.schema_evolution = True
         return self
 
@@ -442,6 +447,211 @@ def _read_result(target: DeltaScope, *, kind: str, selector: object, end_selecto
         )
     )
     return RowScope(name=target._structure_scope_name, schema=schema)
+
+
+def _metadata_result(target: DeltaScope, *, kind: str, limit: object | None = None):
+    """Capture a typed read of Delta table metadata as the step's relation result."""
+    context = _context()
+    schema = getattr(context, "step_output_schema", None)
+    if not isinstance(schema, type) or not issubclass(schema, Schema):
+        raise TypeError(f"{kind} must be the direct result of a single-output step")
+    selected = None if limit is None else literal(limit)
+    if selected is not None:
+        if selected.kind not in {"literal", "variable"}:
+            raise TypeError("delta_history(limit=...) requires an integer literal or variable(int)")
+        if selected.kind == "literal":
+            value = (selected.data or {}).get("value")
+            if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+                raise ValueError("delta_history(limit=...) must be a positive integer")
+        elif selected.type is None or selected.type.name not in {"long", "integer"}:
+            raise TypeError("delta_history(limit=...) requires a positive integer literal or variable(int)")
+    context.delta_mutations.append(
+        DeltaMutation(
+            kind,
+            target._structure_source,
+            target._structure_scope_name,
+            selector=selected,
+            output_schema=schema,
+        )
+    )
+    return RowScope(name=target._structure_scope_name, schema=schema)
+
+
+def delta_history(target: DeltaScope, *, limit: object | None = None):
+    """Read typed Delta commit history; limit may be a positive runtime variable."""
+    target = _target(target)
+    return _metadata_result(target, kind="delta_history", limit=limit)
+
+
+def delta_detail(target: DeltaScope):
+    """Read typed Delta table details."""
+    target = _target(target)
+    return _metadata_result(target, kind="delta_detail")
+
+
+def _maintenance_target(value: object, action: str) -> DeltaScope:
+    target = _target(value)
+    if target._structure_delta_binding == "delta_output":
+        raise TypeError(f"{action} requires a caller-supplied delta_input(...) or delta_table(...) relation")
+    return target
+
+
+def _version_or_timestamp(value: object, *, action: str, name: str) -> Expression:
+    expression = literal(value)
+    allowed = {"long", "integer", "timestamp"}
+    if expression.kind not in {"literal", "variable"} or expression.type is None or expression.type.name not in allowed:
+        raise TypeError(f"{action} {name} must be an integer or timestamp literal/variable")
+    if expression.kind == "literal":
+        actual = (expression.data or {}).get("value")
+        if actual is None or isinstance(actual, bool):
+            raise ValueError(f"{action} {name} cannot be None or Boolean")
+        if expression.type.name in {"long", "integer"} and (not isinstance(actual, int) or actual < 0):
+            raise ValueError(f"{action} {name} must be a nonnegative integer version")
+    return expression
+
+
+class DeltaRestore:
+    def __init__(self, target: DeltaScope, selector: Expression, selector_type: str) -> None:
+        self.target = target
+        self.selector = selector
+        self.selector_type = selector_type
+        self.executed = False
+
+    def execute(self) -> DeltaMutationResult:
+        if self.executed:
+            raise TypeError("A Delta restore builder can be executed only once")
+        context = _context()
+        output = getattr(context, "step_output_schema", None)
+        if not isinstance(output, type) or not issubclass(output, Schema):
+            raise TypeError("delta_restore(...).execute() must be returned from a typed Delta step")
+        self.executed = True
+        mutation = DeltaMutation(
+            "restore",
+            self.target._structure_source,
+            self.target._structure_scope_name,
+            selector=self.selector,
+            selector_type=self.selector_type,
+            output_schema=output,
+        )
+        context.delta_mutations.append(mutation)
+        return DeltaMutationResult(mutation)
+
+
+def delta_restore(
+    target: DeltaScope,
+    *,
+    version: object | None = None,
+    timestamp: object | None = None,
+) -> DeltaRestore:
+    """Restore a caller-owned Delta table to one earlier version or timestamp."""
+    target = _maintenance_target(target, "delta_restore")
+    if (version is None) == (timestamp is None):
+        raise TypeError("delta_restore requires exactly one of version= or timestamp=")
+    selected = version if version is not None else timestamp
+    selector_type = "version" if version is not None else "timestamp"
+    return DeltaRestore(
+        target,
+        _version_or_timestamp(selected, action="delta_restore", name=selector_type),
+        selector_type,
+    )
+
+
+class DeltaOptimize:
+    def __init__(self, target: DeltaScope, where: Expression | None) -> None:
+        self.target = target
+        self.where = where
+        self.executed = False
+
+    def _execute(self, action: str, columns: tuple[str, ...] = ()) -> None:
+        if self.executed:
+            raise TypeError("A Delta optimize builder can be executed only once")
+        self.executed = True
+        _context().delta_mutations.append(
+            DeltaMutation(
+                "optimize",
+                self.target._structure_source,
+                self.target._structure_scope_name,
+                predicate=self.where,
+                action=action,
+                columns=columns,
+            )
+        )
+
+    def execute_compaction(self) -> None:
+        self._execute("compaction")
+
+    def execute_zorder(self, *, by: tuple[Expression, ...]) -> None:
+        if not isinstance(by, tuple) or not by:
+            raise TypeError("execute_zorder(by=...) requires a non-empty tuple of table fields")
+        columns: list[str] = []
+        for value in by:
+            if not isinstance(value, Expression) or value.kind != "field":
+                raise TypeError("execute_zorder(by=...) accepts only fields from its bound Delta table")
+            data = value.data or {}
+            path = data.get("path", ())
+            if data.get("scope") != self.target._structure_scope_name or not isinstance(path, tuple) or len(path) != 1:
+                raise TypeError("execute_zorder(by=...) accepts only top-level fields from its bound Delta table")
+            columns.append(str(data["field"]))
+        if len(columns) != len(set(columns)):
+            raise TypeError("execute_zorder(by=...) does not allow duplicate fields")
+        self._execute("zorder", tuple(columns))
+
+
+def delta_optimize(target: DeltaScope, *, where: object | None = None) -> DeltaOptimize:
+    """Build an explicit compaction or Z-order maintenance effect."""
+    target = _maintenance_target(target, "delta_optimize")
+    if target._structure_delta_binding != "delta_table":
+        raise TypeError("delta_optimize(...) requires a delta_table(...) relation")
+    predicate = None if where is None else _predicate("delta_optimize(where=...)", where)
+    if predicate is not None:
+        _visible(predicate, allowed={target._structure_scope_name}, action="delta_optimize")
+    return DeltaOptimize(target, predicate)
+
+
+class DeltaVacuum:
+    def __init__(self, target: DeltaScope, retention: Expression, allow_short_retention: bool) -> None:
+        self.target = target
+        self.retention = retention
+        self.allow_short_retention = allow_short_retention
+        self.executed = False
+
+    def execute(self) -> None:
+        if self.executed:
+            raise TypeError("A Delta vacuum builder can be executed only once")
+        self.executed = True
+        _context().delta_mutations.append(
+            DeltaMutation(
+                "vacuum",
+                self.target._structure_source,
+                self.target._structure_scope_name,
+                selector=self.retention,
+                allow_short_retention=self.allow_short_retention,
+            )
+        )
+
+
+def delta_vacuum(
+    target: DeltaScope,
+    *,
+    retention_hours: object = 168,
+    allow_short_retention: bool = False,
+) -> DeltaVacuum:
+    """Build an explicit vacuum with Delta's default seven-day retention."""
+    target = _maintenance_target(target, "delta_vacuum")
+    if target._structure_delta_binding != "delta_table":
+        raise TypeError("delta_vacuum(...) requires a delta_table(...) relation")
+    if not isinstance(allow_short_retention, bool):
+        raise TypeError("allow_short_retention must be a Boolean")
+    retention = literal(retention_hours)
+    if retention.kind not in {"literal", "variable"} or retention.type is None or retention.type.name not in {"integer", "long", "float", "double", "decimal"}:
+        raise TypeError("delta_vacuum(retention_hours=...) requires a numeric literal or variable")
+    if retention.kind == "literal":
+        value = (retention.data or {}).get("value")
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value < 0:
+            raise ValueError("delta_vacuum(retention_hours=...) must be finite and nonnegative")
+        if value < 168 and not allow_short_retention:
+            raise ValueError("retention below 168 hours requires allow_short_retention=True")
+    return DeltaVacuum(target, retention, allow_short_retention)
 
 
 def delta_snapshot(target: DeltaScope, *, version: object | None = None, timestamp: object | None = None):

@@ -58,22 +58,62 @@ class CapturePySparkStep:
                 if len(context.delta_mutations) != 1 or value.mutation is not context.delta_mutations[0]:
                     raise TypeError("A typed Delta effect step must return its sole mutation result directly")
                 result = request.results[0]
-                if value.mutation.schema_evolution:
-                    if result.binding != "delta":
-                        raise TypeError("A schema-evolving Delta step must resolve to a delta_output(...) result")
+                if value.mutation.kind == "restore":
+                    if result.binding not in {"delta", "delta_table"}:
+                        raise TypeError("A Delta restore step must resolve to delta_table(...) or delta_output(...)")
+                    expected_binding = "delta_table" if result.binding == "delta_table" else "delta_input"
                     target = next(
                         (
                             item
                             for item in request.inputs
-                            if item.source == value.mutation.target and item.binding == "delta_input"
+                            if item.source == value.mutation.target and item.binding == expected_binding
                         ),
                         None,
                     )
                     if target is None:
-                        raise TypeError("Schema evolution must target a declared delta_input(...) relation")
-                    if target.schema is result.schema:
-                        raise TypeError("Schema evolution requires different input and output Structure Schemas")
-                    mutation = replace(value.mutation, output=result.lane, output_schema=cast(type, result.schema))
+                        raise TypeError("A Delta restore result must bind to its declared caller-supplied table")
+                    if result.binding == "delta_table" and target.schema is not result.schema:
+                        raise TypeError("A same-schema Delta restore must return the delta_table(...) Schema")
+                    if result.binding == "delta" and target.schema is result.schema:
+                        raise TypeError("A shape-changing Delta restore must return a distinct delta_output(...) Schema")
+                    mutation = replace(
+                        value.mutation,
+                        output=result.lane,
+                        output_schema=cast(type, result.schema),
+                    )
+                    context.delta_mutations[0] = mutation
+                    value = DeltaMutationResult(mutation)
+                elif value.mutation.schema_evolution:
+                    if result.binding not in {"delta", "delta_table"}:
+                        raise TypeError(
+                            "A schema-evolving Delta step must resolve to delta_table(...) or delta_output(...)"
+                        )
+                    expected_binding = "delta_table" if result.binding == "delta_table" else "delta_input"
+                    target = next(
+                        (
+                            item
+                            for item in request.inputs
+                            if item.source == value.mutation.target and item.binding == expected_binding
+                        ),
+                        None,
+                    )
+                    if target is None:
+                        raise TypeError(
+                            "Schema evolution must target its declared delta_table(...) or delta_input(...) relation"
+                        )
+                    if result.binding == "delta_table":
+                        if target.schema is not result.schema:
+                            raise TypeError("A delta_table(...) effect must retain its declared relation Schema")
+                        mutation = value.mutation
+                    else:
+                        if value.mutation.output_schema is not result.schema:
+                            actual = getattr(value.mutation.output_schema, "__name__", "unknown Schema")
+                            expected = getattr(result.schema, "__name__", str(result.schema))
+                            raise TypeError(
+                                f"with_schema_evolution(to=...) selected {actual}, but the declared "
+                                f"delta_output(...) Schema is {expected}"
+                            )
+                        mutation = replace(value.mutation, output=result.lane)
                     context.delta_mutations[0] = mutation
                     value = DeltaMutationResult(mutation)
                 else:
@@ -101,7 +141,10 @@ class CapturePySparkStep:
             if context.foreach:
                 raise TypeError("foreach(row, sink) cannot be used in a Delta effect step")
         else:
-            if any(mutation.kind not in {"delta_snapshot", "delta_changes"} for mutation in context.delta_mutations):
+            if any(
+                mutation.kind not in {"delta_snapshot", "delta_changes", "delta_history", "delta_detail"}
+                for mutation in context.delta_mutations
+            ):
                 raise TypeError("Delta mutations require a None-returning @step bound to delta_output(...)")
             state_operations = [
                 operation.stateful_transform

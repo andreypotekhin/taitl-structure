@@ -19,7 +19,7 @@ remains release-gated until V11's 4.1 capability profile and integration matrix 
 | `delta_table(Schema)` | implemented; release-gated | Caller-bound read/write relation for same-schema effects. |
 | `delta_output(Schema)` | implemented; release-gated | Result schema for an explicit schema transition. |
 | `delta_delete`, `delta_update`, `delta_merge` | implemented; release-gated | Compiled, typed table mutations in effect steps. |
-| `with_schema_evolution()` on merge/append | implemented; release-gated | Per-operation evolution to the Schema returned by the step. |
+| `with_schema_evolution(to=Schema)` on merge/append | implemented; release-gated | Per-operation evolution to the explicitly selected Schema. |
 
 ## Normative behavior
 
@@ -48,7 +48,9 @@ remains release-gated until V11's 4.1 capability profile and integration matrix 
    unmatched-by-source update/delete clauses with conditions allowed by Delta 4.1.0. `execute()` captures the complete
    builder once. Source-only fields cannot appear in unmatched-by-source actions. Insert assignments must satisfy the
    target schema. Reject duplicate field assignments, illegal clause order, unsupported strings, and schema evolution
-   unless `.with_schema_evolution()` is present and the step returns a distinct declared Delta output schema.
+   unless `.with_schema_evolution(to=Schema)` is present. The `to` Schema drives compatibility checks; with a declared
+   `delta_output`, it must match that declaration. A `delta_table` effect may evolve without exposing a separate
+   transform output.
    `delta_append(target, source)` is a typed append; its evolution option is lowered only to that writer's
    `.option("mergeSchema", "true")`.
 7. Runtime operations delegate to the native vendor API once, in plan order. They are batch-only and are never retried
@@ -68,23 +70,23 @@ before the corresponding API rows are marked supported.
 
 ## Explicit schema evolution
 
-For a schema transition, the method's `-> OutputSchema` annotation selects a matching `delta_output(OutputSchema)`
-declaration. The method takes the current `delta_input(CurrentSchema)` as a relation parameter and returns the sole
-mutation result directly:
+For a schema transition with a composable output, declare `delta_input(CurrentSchema)` and
+`delta_output(OutputSchema)`. The method takes the current table as a relation parameter and returns the sole mutation
+result directly; `to` must agree with the declared output:
 
     def merge(self, change: Change, order: OrderV1) -> OrderV2:
         return (delta_merge(order, change, on=order.id == change.id)
-                .with_schema_evolution()
+                .with_schema_evolution(to=OrderV2)
                 .when_matched_update_all()
                 .when_not_matched_insert_all()
                 .execute())
 
-`delta_merge(...).with_schema_evolution()` enables Delta's native merge schema evolution. The append analog is
-`delta_append(order, change).with_schema_evolution().execute()` and applies `mergeSchema` to that append writer only.
-Capture rejects a marker unless it is the sole mutation targeting a declared Delta input and its output Schema differs
-from the input Schema. Structure validates the current input shape before the operation and the exact declared result
-shape and CHECK contract after commit. Session-wide auto-merge, unknown output schemas, metadata installation, and
-overwrite schema replacement are excluded.
+`delta_merge(...).with_schema_evolution(to=OrderV2)` enables Delta's native merge schema evolution. The append analog is
+`delta_append(order, change).with_schema_evolution(to=OrderV2).execute()` and applies `mergeSchema` to that append
+writer only. An in-place effect can instead bind `orders = delta_table(OrderV1)`, use `-> None`, and omit a return;
+this retains the relation schema and does not expose a composable `delta_output`. Structure validates the current input
+shape before the operation and the selected evolved shape and CHECK contract after commit. Session-wide auto-merge,
+unknown output schemas, metadata installation, and overwrite schema replacement are excluded.
 
 ## Snapshot, CDF, variables, and selective overwrite
 

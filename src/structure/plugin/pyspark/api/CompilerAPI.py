@@ -61,6 +61,9 @@ class CompilerAPI(CompilerAPIV1):
         delta_check_match = plugin_options.get("delta_check_match", "expression")
         if delta_check_match not in ("expression", "name", "off"):
             raise ValueError("PySpark delta_check_match must be 'expression', 'name', or 'off'")
+        delta_cdf_checks = plugin_options.get("delta_cdf_checks", True)
+        if not isinstance(delta_cdf_checks, bool):
+            raise ValueError("PySpark delta_cdf_checks must be a Boolean")
         if any(step.effect for step in plan.steps) and (
             any(input.streaming for input in plan.inputs) or bool((plan.options or {}).get("streaming"))
         ):
@@ -78,6 +81,7 @@ class CompilerAPI(CompilerAPIV1):
             check_intermediate=check_intermediate,
             boundary_policy=boundary_policy,
             delta_check_match=delta_check_match,
+            delta_cdf_checks=delta_cdf_checks,
         )
         lowered = PySpark.compiler.optimize_projection_unions()(lowered)
         diagnostics = self._diagnostics(

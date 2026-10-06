@@ -34,6 +34,9 @@ untracked `.env` predates this lane. The 4.1 image also uses Protobuf 6.33.0 to 
 bundled with PySpark 4.1; 3.5 and 4.0 keep the shared Protobuf 5.29.3 pin. The PySpark 4.0 Pandas state API and both
 4.1 state processor APIs require pandas, PyArrow, and Protobuf in the driver and worker environments. The 4.0/4.1
 state test sessions use Spark's RocksDB state store because these APIs create multiple state column families.
+The Delta live module runs first in its own Python process on each classic lane so Delta's Ivy-resolved jars are on the
+driver classpath before another PySpark test initializes the JVM. The image pins PySpark 3.5.3 with Delta 3.3.3,
+PySpark 4.0.0 with Delta 4.1.0, and PySpark 4.1.0 with Delta 4.1.0. The remaining V11 tests run in a fresh process.
 
 The Spark Connect lanes are experimental. They start the Spark Connect gateway inside the test runner container and do
 not add separate Connect services to the Compose stack. The gateway defaults to a 3 GiB driver heap, which can be

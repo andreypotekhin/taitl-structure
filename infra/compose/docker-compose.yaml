@@ -6,6 +6,7 @@ services:
       dockerfile: infra/compose/images/pyspark/Dockerfile
       args:
         PYSPARK_VERSION: ${PYSPARK35_VERSION}
+        DELTA_SPARK_VERSION: ${DELTA_SPARK35_VERSION:-3.3.3}
     command: >
       spark-class org.apache.spark.deploy.master.Master --host 0.0.0.0 --port 7077 --webui-port 8080
     ports:
@@ -25,6 +26,7 @@ services:
       dockerfile: infra/compose/images/pyspark/Dockerfile
       args:
         PYSPARK_VERSION: ${PYSPARK35_VERSION}
+        DELTA_SPARK_VERSION: ${DELTA_SPARK35_VERSION:-3.3.3}
     command: >
       spark-class org.apache.spark.deploy.worker.Worker spark://spark35-master:7077 --webui-port 8081
     depends_on:
@@ -46,6 +48,7 @@ services:
       dockerfile: infra/compose/images/pyspark/Dockerfile
       args:
         PYSPARK_VERSION: ${PYSPARK40_VERSION}
+        DELTA_SPARK_VERSION: ${DELTA_SPARK40_VERSION:-4.1.0}
     command: >
       spark-class org.apache.spark.deploy.master.Master --host 0.0.0.0 --port 7077 --webui-port 8080
     ports:
@@ -65,6 +68,7 @@ services:
       dockerfile: infra/compose/images/pyspark/Dockerfile
       args:
         PYSPARK_VERSION: ${PYSPARK40_VERSION}
+        DELTA_SPARK_VERSION: ${DELTA_SPARK40_VERSION:-4.1.0}
     command: >
       spark-class org.apache.spark.deploy.worker.Worker spark://spark40-master:7077 --webui-port 8081
     depends_on:
@@ -87,6 +91,7 @@ services:
       args:
         PYSPARK_VERSION: ${PYSPARK41_VERSION:-4.1.0}
         PROTOBUF_VERSION: ${PROTOBUF41_VERSION:-6.33.0}
+        DELTA_SPARK_VERSION: ${DELTA_SPARK41_VERSION:-4.1.0}
     command: >
       spark-class org.apache.spark.deploy.master.Master --host 0.0.0.0 --port 7077 --webui-port 8080
     ports:
@@ -107,6 +112,7 @@ services:
       args:
         PYSPARK_VERSION: ${PYSPARK41_VERSION:-4.1.0}
         PROTOBUF_VERSION: ${PROTOBUF41_VERSION:-6.33.0}
+        DELTA_SPARK_VERSION: ${DELTA_SPARK41_VERSION:-4.1.0}
     command: >
       spark-class org.apache.spark.deploy.worker.Worker spark://spark41-master:7077 --webui-port 8081
     depends_on:
@@ -128,6 +134,7 @@ services:
       dockerfile: infra/compose/images/pyspark/Dockerfile
       args:
         PYSPARK_VERSION: ${PYSPARK35_VERSION}
+        DELTA_SPARK_VERSION: ${DELTA_SPARK35_VERSION:-3.3.3}
     command: run-integration pyspark35
     depends_on:
       - spark35-master
@@ -157,6 +164,7 @@ services:
       dockerfile: infra/compose/images/pyspark/Dockerfile
       args:
         PYSPARK_VERSION: ${PYSPARK40_VERSION}
+        DELTA_SPARK_VERSION: ${DELTA_SPARK40_VERSION:-4.1.0}
     command: run-integration pyspark40
     depends_on:
       - spark40-master
@@ -187,6 +195,7 @@ services:
       args:
         PYSPARK_VERSION: ${PYSPARK41_VERSION:-4.1.0}
         PROTOBUF_VERSION: ${PROTOBUF41_VERSION:-6.33.0}
+        DELTA_SPARK_VERSION: ${DELTA_SPARK41_VERSION:-4.1.0}
     command: run-integration pyspark41
     depends_on:
       - spark41-master
@@ -215,6 +224,7 @@ services:
       dockerfile: infra/compose/images/pyspark/Dockerfile
       args:
         PYSPARK_VERSION: ${PYSPARK35_VERSION}
+        DELTA_SPARK_VERSION: ${DELTA_SPARK35_VERSION:-3.3.3}
     command: run-integration spark-connect35
     depends_on:
       - spark35-master
@@ -251,6 +261,7 @@ services:
       dockerfile: infra/compose/images/pyspark/Dockerfile
       args:
         PYSPARK_VERSION: ${PYSPARK40_VERSION}
+        DELTA_SPARK_VERSION: ${DELTA_SPARK40_VERSION:-4.1.0}
     command: run-integration spark-connect40
     depends_on:
       - spark40-master

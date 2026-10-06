@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
+import json
+import math
 import re
+from importlib.metadata import PackageNotFoundError, version
 from datetime import date, datetime
 from decimal import Decimal
 from zoneinfo import ZoneInfo
 
 from structure.plugin.pyspark.delta.checks import bind_checks
+from structure.plugin.pyspark.delta.schema import resolve_delta_columns
 
 
 def validate_delta_table(table, schema, *, mode: str = "expression"):
@@ -18,6 +22,7 @@ def validate_delta_table(table, schema, *, mode: str = "expression"):
         raise RuntimeError("Delta table bindings require the optional delta-spark and pyspark packages") from error
     if not isinstance(table, DeltaTable):
         raise TypeError(f"{schema.__name__} Delta binding requires delta.tables.DeltaTable")
+    require_compatible_delta_runtime(table)
     from structure.plugin.pyspark.api.PySpark import PySpark
 
     expected = PySpark.schema.materialize()(schema, types=T)
@@ -33,6 +38,7 @@ def validate_delta_table(table, schema, *, mode: str = "expression"):
         found = actual_fields[name]
         if not validator._same_data_type(found.dataType, field.dataType) or found.nullable != field.nullable:
             raise ValueError(f"Delta table for {schema.__name__}.{name} has incompatible type or nullability")
+    _validate_delta_column_metadata(table, schema, actual)
     if mode == "off":
         return table
     checks = bind_checks(schema)
@@ -54,6 +60,107 @@ def validate_delta_table(table, schema, *, mode: str = "expression"):
         if mode == "expression" and _check_tree(check.predicate, case_sensitive) != _sql_tree(stored, case_sensitive):
             raise ValueError(f"Delta CHECK {check.name} differs from {schema.__name__}.constraints")
     return table
+
+
+def require_compatible_delta_runtime(table) -> None:
+    """Reject Spark and Delta package pairs outside the project's evidenced matrix."""
+    try:
+        delta_version = version("delta-spark")
+    except PackageNotFoundError as error:
+        raise RuntimeError(
+            "Delta table bindings require delta-spark; install the Delta version supported by this PySpark profile"
+        ) from error
+    spark_version = table.toDF().sparkSession.version
+    try:
+        spark_parts = tuple(int(part) for part in spark_version.split(".")[:3])
+        delta_line = ".".join(delta_version.split(".")[:2])
+    except (AttributeError, TypeError, ValueError):
+        raise RuntimeError(
+            f"Cannot identify the active Spark/Delta versions ({spark_version!r}, {delta_version!r})"
+        ) from None
+    compatible = (
+        (spark_parts[:2] == (3, 5) and spark_parts >= (3, 5, 3) and delta_line == "3.3")
+        or (spark_parts[:2] in {(4, 0), (4, 1)} and delta_line == "4.1")
+    )
+    if not compatible:
+        supported = "PySpark 3.5.3+ with Delta 3.3.x, or PySpark 4.0.x/4.1.x with Delta 4.1.x"
+        raise RuntimeError(
+            f"Unsupported Spark/Delta runtime pair: PySpark {spark_version} with delta-spark {delta_version}. "
+            f"Supported pairs are {supported}."
+        )
+
+
+def _validate_delta_column_metadata(table, schema, spark_schema) -> None:
+    declarations = resolve_delta_columns(schema)
+    if not declarations:
+        return
+    delta_metadata = _delta_log_field_metadata(table)
+    spark_fields = {field.name: field for field in spark_schema}
+    structure_fields = schema._structure_fields
+    for name, declaration in declarations.items():
+        field = structure_fields[name]
+        native = delta_metadata.get(field.column, {})
+        if declaration.kind == "generated":
+            actual = native.get("delta.generationExpression")
+            expected = str(declaration.value)
+            if not isinstance(actual, str) or _compact_sql(actual) != _compact_sql(expected):
+                raise ValueError(
+                    f"Delta table for {schema.__name__}.{name} does not have the declared generated expression "
+                    f"{expected!r}"
+                )
+        elif declaration.kind == "identity":
+            expected_mode = declaration.mode == "by_default"
+            if (
+                native.get("delta.identity.start") != declaration.start
+                or native.get("delta.identity.step") != declaration.step
+                or native.get("delta.identity.allowExplicitInsert", False) is not expected_mode
+            ):
+                raise ValueError(
+                    f"Delta table for {schema.__name__}.{name} does not match the declared identity mode, start, "
+                    "and step"
+                )
+        elif declaration.kind == "default":
+            actual = spark_fields[field.column].metadata.get("CURRENT_DEFAULT")
+            expected = _sql_literal(declaration.value)
+            if actual != expected:
+                raise ValueError(
+                    f"Delta table for {schema.__name__}.{name} does not have the declared default {expected!r}"
+                )
+
+
+def _delta_log_field_metadata(table) -> dict[str, dict[str, object]]:
+    frame = table.toDF()
+    spark = frame.sparkSession
+    location = table.detail().select("location").first()["location"]
+    log = spark._jvm.org.apache.spark.sql.delta.DeltaLog.forTable(
+        spark._jsparkSession,
+        spark._jvm.org.apache.hadoop.fs.Path(location),
+    )
+    schema = json.loads(log.unsafeVolatileSnapshot().metadata().schemaString())
+    return {field["name"]: field.get("metadata", {}) for field in schema.get("fields", ())}
+
+
+def _compact_sql(source: str) -> str:
+    compact: list[str] = []
+    quote: str | None = None
+    index = 0
+    while index < len(source):
+        character = source[index]
+        if quote is not None:
+            compact.append(character)
+            if character == quote:
+                if index + 1 < len(source) and source[index + 1] == quote:
+                    compact.append(source[index + 1])
+                    index += 1
+                else:
+                    quote = None
+        elif character in {"'", '"', "`"}:
+            quote = character
+            compact.append(character)
+        elif not character.isspace():
+            compact.append(character)
+        index += 1
+    return "".join(compact)
 
 
 def fresh_delta_frame(table):
@@ -93,6 +200,23 @@ def execute_delta_mutation(mutation, *, tables, frames, functions):
         frames[mutation.source].write.format("delta").mode("overwrite").option(
             "replaceWhere", predicate
         ).save(location)
+        return
+    if mutation.kind == "restore":
+        execute_delta_restore(table, _selector_value(mutation.selector), mutation.selector_type)
+        return
+    if mutation.kind == "optimize":
+        optimize_predicate = None if mutation.predicate is None else delta_predicate_sql(mutation.predicate)
+        execute_delta_optimize(
+            table,
+            optimize_predicate,
+            mutation.action,
+            mutation.columns,
+            tuple(_expression_fields(mutation.predicate)),
+        )
+        return
+    if mutation.kind == "vacuum":
+        retention = _selector_value(mutation.selector)
+        execute_delta_vacuum(table, retention, mutation.allow_short_retention)
         return
     if mutation.kind not in {"merge", "append"} or mutation.source is None:
         raise ValueError(f"Unknown Delta mutation {mutation.kind!r}")
@@ -136,12 +260,17 @@ def execute_delta_mutation(mutation, *, tables, frames, functions):
     builder.execute()
 
 
-def read_delta_relation(mutation, *, tables, spark, evaluator, functions):
+def read_delta_relation(
+    mutation, *, tables, spark, evaluator, functions, check_cdf_configuration=True
+):
     """Open a snapshot or bounded CDF range from a caller-owned Delta handle."""
     table = tables[mutation.target]
     selector = _selector_value(mutation.selector)
-    end = _selector_value(mutation.end_selector) if mutation.end_selector else None
-    selector_type = mutation.selector.type.name if mutation.selector is not None and mutation.selector.type else ""
+    end = _selector_value(mutation.end_selector) if mutation.end_selector is not None else None
+    selector_type = (
+        mutation.selector_type
+        or (mutation.selector.type.name if mutation.selector is not None and mutation.selector.type else "")
+    )
     return open_delta_relation(
         table,
         mutation.kind,
@@ -149,8 +278,23 @@ def read_delta_relation(mutation, *, tables, spark, evaluator, functions):
         end,
         selector_type,
         output_schema=mutation.output_schema,
+        check_cdf_configuration=check_cdf_configuration,
         spark=spark,
     )
+
+
+def _validate_delta_cdf_configuration(properties, spark) -> None:
+    if properties.get("delta.enablechangedatafeed") != "true":
+        raise ValueError(
+            "Delta change feed is not enabled; set the table property delta.enableChangeDataFeed=true before writing changes"
+        )
+    extensions = spark.conf.get("spark.sql.extensions", "")
+    catalog = spark.conf.get("spark.sql.catalog.spark_catalog", "")
+    if "delta" not in extensions.casefold() or "delta" not in catalog.casefold():
+        raise RuntimeError(
+            "Delta CDF requires a Spark session with Delta SQL extension and catalog configuration; "
+            "set delta_cdf_checks=False only when your environment validates these requirements another way"
+        )
 
 
 def validate_delta_relation(frame, schema):
@@ -180,21 +324,22 @@ def validate_delta_relation(frame, schema):
     return frame
 
 
-def open_delta_relation(table, kind, selector, end, selector_type, *, output_schema=None, spark):
+def open_delta_relation(
+    table, kind, selector, end, selector_type, *, output_schema=None, check_cdf_configuration=True, spark
+):
+    if kind in {"delta_history", "delta_detail"}:
+        frame = table.history() if kind == "delta_history" and selector is None else None
+        if kind == "delta_history" and selector is not None:
+            if isinstance(selector, bool) or not isinstance(selector, int) or selector <= 0:
+                raise ValueError("delta_history(limit=...) must be a positive integer")
+            frame = table.history(selector)
+        elif kind == "delta_detail":
+            frame = table.detail()
+        return validate_delta_relation(frame, output_schema) if output_schema is not None else frame
     details = table.detail().first().asDict(recursive=True)
     properties = {str(key).casefold(): str(value).casefold() for key, value in (details.get("properties") or {}).items()}
-    if kind == "delta_changes":
-        if properties.get("delta.enablechangedatafeed") != "true":
-            raise ValueError(
-                "Delta change feed is not enabled; set the table property delta.enableChangeDataFeed=true before writing changes"
-            )
-        extensions = spark.conf.get("spark.sql.extensions", "")
-        catalog = spark.conf.get("spark.sql.catalog.spark_catalog", "")
-        if "io.delta.sql.DeltaSparkSessionExtension" not in extensions or catalog != "org.apache.spark.sql.delta.catalog.DeltaCatalog":
-            raise RuntimeError(
-                "Delta CDF requires Spark session configuration spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension "
-                "and spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog"
-            )
+    if kind == "delta_changes" and check_cdf_configuration:
+        _validate_delta_cdf_configuration(properties, spark)
     if selector_type == "timestamp":
         if isinstance(selector, str):
             selector = datetime.fromisoformat(selector)
@@ -245,6 +390,59 @@ def _selector_value(expression):
 
         return runtime_variable(str(expression.data["name"]))
     raise TypeError("Delta snapshot and CDF selectors must be literals or runtime variable references")
+
+
+def _expression_fields(expression):
+    if expression is None:
+        return set()
+    fields = set()
+    if expression.kind == "field":
+        data = expression.data or {}
+        fields.add(str(data.get("field", "")))
+    for argument in expression.args:
+        fields.update(_expression_fields(argument))
+    return fields
+
+
+def execute_delta_restore(table, selector, selector_type):
+    if selector_type == "version":
+        if isinstance(selector, bool) or not isinstance(selector, int) or selector < 0:
+            raise ValueError("Delta restore version must be a nonnegative integer")
+        return table.restoreToVersion(selector)
+    if selector_type == "timestamp":
+        if isinstance(selector, str):
+            selector = datetime.fromisoformat(selector)
+        if not isinstance(selector, datetime):
+            raise TypeError("Delta restore timestamp must be a datetime value")
+        return table.restoreToTimestamp(selector.isoformat(sep=" "))
+    raise ValueError("Delta restore is missing its version or timestamp selector")
+
+
+def execute_delta_optimize(table, predicate, action, columns, predicate_columns=()):
+    partition_columns = set(table.detail().first().asDict(recursive=True).get("partitionColumns") or ())
+    invalid = set(predicate_columns) - partition_columns
+    if invalid:
+        raise ValueError(
+            f"Delta optimize where=... may reference only partition columns; invalid: {', '.join(sorted(invalid))}"
+        )
+    builder = table.optimize()
+    if predicate is not None:
+        builder = builder.where(predicate)
+    if action == "compaction":
+        return builder.executeCompaction()
+    if action == "zorder":
+        return builder.executeZOrderBy(list(columns))
+    raise ValueError(f"Unknown Delta optimize action {action!r}")
+
+
+def execute_delta_vacuum(table, retention, allow_short_retention=False):
+    if isinstance(retention, bool) or not isinstance(retention, (int, float, Decimal)):
+        raise TypeError("Delta vacuum retention_hours must be numeric")
+    if not math.isfinite(retention) or retention < 0:
+        raise ValueError("Delta vacuum retention_hours must be finite and nonnegative")
+    if retention < 168 and not allow_short_retention:
+        raise ValueError("retention below 168 hours requires allow_short_retention=True")
+    return table.vacuum(float(retention))
 
 
 def delta_predicate_sql(expression, *, variables=None) -> str:

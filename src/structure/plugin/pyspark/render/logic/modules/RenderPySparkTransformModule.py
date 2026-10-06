@@ -169,7 +169,8 @@ class RenderPySparkTransformModule:
         if delta_inputs:
             lines.append(
                 "from structure.plugin.pyspark.delta.runtime import ("
-                "bind_delta_predicate_variables, fresh_delta_frame, open_delta_relation, "
+                "bind_delta_predicate_variables, execute_delta_optimize, execute_delta_restore, "
+                "execute_delta_vacuum, fresh_delta_frame, open_delta_relation, "
                 "render_delta_predicate_template, "
                 "validate_delta_table)"
             )
@@ -345,6 +346,7 @@ class RenderPySparkTransformModule:
                     sources=sources,
                     backend_target=plan.backend.target,
                     delta_check_match=plan.delta_check_match,
+                    delta_cdf_checks=plan.delta_cdf_checks,
                 )
             )
             lines.append(f"        self.{fields[output.name]} = {output.name}")
@@ -398,6 +400,7 @@ class RenderPySparkTransformModule:
                     generated_hooks=True,
                     backend_target=plan.backend.target,
                     delta_check_match=plan.delta_check_match,
+                    delta_cdf_checks=plan.delta_cdf_checks,
                 )
             )
             for result in step.results:
@@ -564,6 +567,7 @@ class RenderPySparkTransformModule:
                     generated_hooks=self._options.enabled(generated_code_options, "embed_hooks"),
                     backend_target=plan.backend.target,
                     delta_check_match=plan.delta_check_match,
+                    delta_cdf_checks=plan.delta_cdf_checks,
                 )
             )
             for result in step.results:
@@ -771,6 +775,7 @@ class RenderPySparkTransformModule:
                     backend_target=plan.backend.target,
                     frame_mapping="frames",
                     delta_check_match=plan.delta_check_match,
+                    delta_cdf_checks=plan.delta_cdf_checks,
                 )
             )
             methods.append("        return {")
@@ -1200,7 +1205,11 @@ class RenderPySparkTransformModule:
                 return any(contains(getattr(value, item.name)) for item in fields(value))
             return False
 
-        return contains(plan.steps)
+        return contains(plan.steps) or any(
+            mutation.kind in {"replace_where", "delta_snapshot", "delta_changes", "delta_history"}
+            for step in plan.steps
+            for mutation in step.delta_mutations
+        )
 
     def _raw_input_name(self, name: str) -> str:
         return f"_input_{name}"

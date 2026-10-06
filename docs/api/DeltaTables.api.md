@@ -1,9 +1,10 @@
 # Delta Tables API
 
 Structure can compile typed mutations against an existing Delta table. The caller creates the table, provisions its
-native constraints, and passes a `delta.tables.DeltaTable` object to the transform. Delta support is **implemented;
-release-gated**: ordinary PySpark 4.1.0 with Delta 4.1.0 has isolated live evidence, while the wider V11 admission
-matrix is pending. See [Delta compatibility](../compatibility/DeltaTables.compat.md) before adopting it.
+native constraints, and passes a `delta.tables.DeltaTable` object to the transform. Delta support is optional and is
+admitted by helper and classic PySpark profile. The compatibility ledger names the pinned live evidence pair for each
+admitted profile; Spark Connect and PySpark 4.2 are outside the current claim. See
+[Delta compatibility](../compatibility/DeltaTables.compat.md) before adopting it.
 
 Import `Schema`, `Transform`, `input`, `transform`, and `StructureSession` from `structure`. Import the Delta
 declarations, operations, `check`, and field factories from `structure.plugin.pyspark`.
@@ -12,10 +13,13 @@ declarations, operations, `check`, and field factories from `structure.plugin.py
 
 | Structure API | Purpose | Example |
 | --- | --- | --- |
-| `delta_input(Schema)` | Caller-bound, read-only Delta relation | `current_orders = delta_input(OrderV1)` |
+| `delta_input(Schema)` | Caller-bound relation for reads, evolution sources, or cross-schema restore | `current_orders = delta_input(OrderV1)` |
 | `delta_table(Schema)` | Caller-bound relation that may be read and mutated in place | `orders = delta_table(Order)` |
 | `delta_output(Schema)` | Declared result schema for an explicit schema transition | `orders = delta_output(OrderV2)` |
 | `check(predicate, name=None)` | Expected native Delta CHECK | `check(status != "invalid", name="valid_status")` |
+| `delta_generated`, `delta_identity`, `delta_default` | Expected metadata for existing Delta columns | `delta_generated(total, as_="price * quantity")` |
+| `delta_history`, `delta_detail` | Typed history and table-detail relations | `return delta_history(order, limit=self.limit)` |
+| `delta_restore`, `delta_optimize`, `delta_vacuum` | Explicit table maintenance effects | `delta_vacuum(order).execute()` |
 
 Declare CHECKs in `Schema.constraints`. Structure checks that the bound table has matching native CHECK metadata; it
 does not create the table or install constraints. Provision the corresponding native constraint when creating the
@@ -106,8 +110,9 @@ respectively. Finish the builder with `.execute()`. `delta_append(target, source
 ## Explicit schema evolution
 
 For an expected schema change, declare the current table as `delta_input(CurrentSchema)` and the result as
-`delta_output(NewSchema)`. The step's return annotation resolves that output. Return exactly one merge or append
-operation with `.with_schema_evolution()`; do not pass the new output as a step parameter or invocation argument.
+`delta_output(NewSchema)`. Return exactly one merge or append operation with
+`.with_schema_evolution(to=NewSchema)`; the explicit `to` schema drives compatibility checks and must match the
+declared output. Do not pass the new output as a step parameter or invocation argument.
 
 ```python
 from structure.plugin.pyspark import delta_input, delta_merge
@@ -129,7 +134,7 @@ class EvolvingMerge(Transform):
     def merge(self, change: ChangeV2, order: Order) -> OrderV2:
         return (
             delta_merge(order, change, on=order.id == change.id)
-            .with_schema_evolution()
+            .with_schema_evolution(to=OrderV2)
             .when_matched_update_all()
             .when_not_matched_insert_all()
             .execute()
@@ -141,9 +146,9 @@ assert result.orders is table
 ```
 
 Merge evolution maps to Delta's `withSchemaEvolution()`. The append form is
-`return delta_append(order, change).with_schema_evolution().execute()`; it applies `mergeSchema=true` to that append
-writer. Neither form changes a session-wide setting. Structure checks the old shape before the commit and the declared
-new shape and CHECK metadata afterward. For a later invocation, bind the table using its new schema.
+`return delta_append(order, change).with_schema_evolution(to=OrderV2).execute()`; it applies `mergeSchema=true` to that
+append writer. Neither form changes a session-wide setting. Structure checks the old shape before the commit and the
+declared new shape and CHECK metadata afterward. For a later invocation, bind the table using its new schema.
 
 ## Snapshot and change-feed reads
 
@@ -195,14 +200,133 @@ ALTER TABLE delta.`/path/to/orders`
 SET TBLPROPERTIES (delta.enableChangeDataFeed = true)
 ```
 
-The Spark session must include `spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension` and
-`spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog`. Structure checks the table property
-and session configuration before a CDF read. CDF only includes changes committed after the property was enabled, and
-the requested versions or timestamps must still be available in Delta history.
+Before a CDF read, Structure checks by default that the table property `delta.enableChangeDataFeed` is `true` and
+that both `spark.sql.extensions` and `spark.sql.catalog.spark_catalog` contain `delta`, case-insensitively. These are
+sanity checks rather than exact vendor-class checks; Spark and Delta still need to accept the configured classes.
+Disable both preflight checks with `delta_cdf_checks=False` in PySpark plugin configuration, `@transform(...)`, or
+`@step(...)`; the closest setting wins. For example, set it in `pyproject.toml`:
+
+```toml
+[tool.structure.plugin.pyspark]
+delta_cdf_checks = false
+```
+
+Disabling checks does not enable CDF or change Delta behavior. CDF only includes
+changes committed after the property was enabled, and the requested versions or timestamps must still be available in
+Delta history.
 
 `delta_replace_where(target, source, where=...).execute()` performs a same-schema selective overwrite. The predicate
 may reference target fields and runtime variables. The source must use the same Structure Schema; Delta also checks
 that incoming rows satisfy the predicate. The call is a native commit and is retained as a step effect.
+
+## Constraints and generated columns
+
+Use `Schema.constraints` to declare expected table CHECK constraints. Structure checks them during binding; the caller
+creates the native constraint. Delta generated, identity, and default columns also need explicit declarations so
+Structure never treats every non-nullable field as optional:
+
+```python
+from structure import Schema
+from structure.plugin.pyspark import check, delta_default, delta_generated, delta_identity, long, string
+
+
+class Order(Schema):
+    id = long()
+    price = long(nullable=False)
+    quantity = long(nullable=False)
+    total = long()
+    status = string()
+    constraints = (
+        check(price >= 0, name="nonnegative_price"),
+        check(quantity > 0, name="positive_quantity"),
+        check(status != "invalid", name="valid_status"),
+    )
+    delta_columns = (
+        delta_identity(id, mode="always", start=1, step=1),
+        delta_generated(total, as_="price * quantity"),
+        delta_default(status, value="open"),
+    )
+```
+
+The caller provisions the Delta table with those features before binding it. Structure compares the declarations with
+the native Delta log schema before a write. An insert may omit a declared generated, identity, or default column; an
+undeclared required field still fails. `GENERATED ALWAYS` identity fields cannot be assigned. Delta checks an explicitly
+supplied generated value. Identity columns use `long`; Delta identity tables have concurrency restrictions that remain
+in force. Default values require Delta's column-default table feature to be enabled by the caller.
+
+## History, detail, and maintenance
+
+History and detail are normal typed relation results, with the return annotation selecting an ordinary DataFrame output:
+
+```python
+from structure import Schema, Transform, output, variable
+from structure.plugin.pyspark import delta_detail, delta_history, delta_input, long, string
+
+
+class OrderCommit(Schema):
+    version = long()
+    operation = string()
+
+
+class OrderDetail(Schema):
+    format = string()
+    location = string()
+
+
+class InspectOrders(Transform):
+    orders = delta_input(Order)
+    limit = variable(int, default=5)
+    commits = output(OrderCommit)
+    details = output(OrderDetail)
+
+    def history(self, order: Order) -> OrderCommit:
+        return delta_history(order, limit=self.limit)
+
+    def detail(self, order: Order) -> OrderDetail:
+        return delta_detail(order)
+```
+
+`limit` is `None` or a positive integer; `variable(int)` lets one compiled transform read a different number of commits
+per invocation. History is newest first. Detail and history schemas vary across Delta versions, so declare only the
+fields the transform needs.
+
+Restore, optimize, and vacuum are isolated effect steps. A same-schema restore returns the table relation directly; its
+annotation must match the bound table schema:
+
+```python
+from structure.plugin.pyspark import delta_restore, delta_table
+
+
+class RestoreOrders(Transform):
+    orders = delta_table(Order)
+    version = variable(int)
+
+    def restore(self, order: Order) -> Order:
+        return delta_restore(order, version=self.version).execute()
+```
+
+If the selected version has a different shape, bind the current table as `delta_input(Current)`, declare
+`delta_output(Restored)`, and return the restore operation with `-> Restored`. Structure validates the current schema
+before restoring and validates the declared restored schema afterward.
+
+`delta_optimize(order).execute_compaction()` compacts files;
+`delta_optimize(order).execute_zorder(by=(order.id,))` performs Z-ordering. An optional `where=` must use
+only partition columns. Both preserve logical rows and schema. Native maintenance metric DataFrames are not returned.
+
+Vacuum uses Delta's 168-hour default retention. Short retention requires the explicit `allow_short_retention=True`
+argument, and Delta's own safety guard remains enabled:
+
+```python
+class VacuumOrders(Transform):
+    orders = delta_table(Order)
+
+    def vacuum(self, order: Order) -> None:
+        delta_vacuum(order).execute()  # keeps Delta's default 168-hour retention
+```
+
+Vacuum permanently removes eligible unreferenced files and can make older time-travel reads unavailable. The caller
+must ensure active readers and streams no longer need those files. Structure does not switch off Delta's native safety
+check.
 
 ## Streaming CDF boundary
 
@@ -241,11 +365,66 @@ startup, checkpointing, and shutdown.
 
 ## CHECK comparison and runtime behavior
 
+Declare multiple expected native constraints directly on the schema. For example:
+
+```python
+from structure import Schema
+from structure.plugin.pyspark import check, long, string
+
+
+class Order(Schema):
+    id = long(nullable=False)
+    status = string(nullable=False)
+    total = long(nullable=False)
+    constraints = (
+        check(status != "invalid", name="valid_status"),
+        check(total >= 0, name="nonnegative_total"),
+    )
+```
+
+The same contract is checked when a merge changes the table. Delta enforces the native CHECK constraints on rows it
+writes; Structure verifies that the caller's table has the declared constraints before executing the merge:
+
+```python
+from structure import Schema, Transform, input
+from structure.plugin.pyspark import check, delta_merge, delta_table, long, string
+
+
+class Order(Schema):
+    id = long(nullable=False)
+    status = string(nullable=False)
+    total = long(nullable=False)
+    constraints = (
+        check(status != "invalid", name="valid_status"),
+        check(total >= 0, name="nonnegative_total"),
+    )
+
+
+class OrderChange(Schema):
+    id = long(nullable=False)
+    status = string(nullable=False)
+    total = long(nullable=False)
+
+
+class ApplyOrderChanges(Transform):
+    changes = input(OrderChange)
+    orders = delta_table(Order)
+
+    def merge(self, change: OrderChange, order: Order) -> None:
+        (delta_merge(order, change, on=order.id == change.id)
+         .when_matched_update_all()
+         .when_not_matched_insert_all()
+         .execute())
+```
+
 `delta_check_match` may be set in PySpark plugin configuration, `@transform(...)`, or `@step(...)`; the nearest setting
 wins. The default, `"expression"`, compares native and declared CHECK predicates after normalizing supported SQL
 syntax. `"name"` checks names without comparing predicates. `"off"` skips CHECK verification. Table shape checks
 remain active in every mode. An unsupported native CHECK expression fails under the default mode; use `"name"` only
 when name matching is sufficient for your table policy.
+
+`delta_cdf_checks` independently controls the CDF session and table-property preflight described above. It defaults to
+`True`; set it to `False` only when another part of your deployment validates those prerequisites.
 
 Delta operations are batch-only. Each operation makes its own native commit; Structure does not combine steps into a
 transaction or retry uncertain commits. A later failure does not undo an earlier success. Online and generated modes

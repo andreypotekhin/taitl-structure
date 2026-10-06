@@ -47,6 +47,26 @@ MATERIALIZATION_CAPABILITIES = frozenset(
     }
 )
 MATERIALIZATION_PROFILES = frozenset({">=3.5,<4.1", ">=3.5,<4.0", ">=4.0,<4.1"})
+DELTA_CAPABILITIES = frozenset(
+    {
+        ("delta", "binding"),
+        ("delta", "check"),
+        ("delta", "columns"),
+        ("delta", "delete"),
+        ("delta", "update"),
+        ("delta", "merge"),
+        ("delta", "append"),
+        ("delta", "replace_where"),
+        ("delta", "schema_evolution"),
+        ("delta", "snapshot"),
+        ("delta", "changes"),
+        ("delta", "history"),
+        ("delta", "detail"),
+        ("delta", "restore"),
+        ("delta", "optimize"),
+        ("delta", "vacuum"),
+    }
+)
 VARIANT_FAMILIES = {
     "ordinary": "ordinary_pyspark",
     "spark-connect": "spark_connect_dataframe",
@@ -362,6 +382,13 @@ class PySparkCapabilities:
                 base_capabilities |= PYSPARK_4_0_STREAMING_CAPABILITIES
         elif target_profile == ">=4.2,<4.3":
             base_capabilities = base_capabilities | PYSPARK_4_CAPABILITIES | PYSPARK_4_2_CAPABILITIES
+        if self.id.variant == "ordinary" and target_profile in {
+            ">=3.5,<4.1",
+            ">=3.5,<4.0",
+            ">=4.0,<4.1",
+            ">=4.1,<4.2",
+        }:
+            base_capabilities |= DELTA_CAPABILITIES
         if self.id.variant == "ordinary" and target_profile in MATERIALIZATION_PROFILES | {">=4.1,<4.2"}:
             base_capabilities |= MATERIALIZATION_CAPABILITIES
         elif self.id.variant == "spark-connect" and target_profile == ">=4.0,<4.1":

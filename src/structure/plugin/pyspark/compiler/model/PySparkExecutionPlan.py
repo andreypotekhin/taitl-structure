@@ -26,6 +26,7 @@ class PySparkExecutionPlan:
     optimizations: tuple[PySparkOptimizationTrace, ...] = ()
     pruning: OptimizationReport | None = None
     delta_check_match: str = "expression"
+    delta_cdf_checks: bool = True
     sinks: tuple[SinkPlan, ...] = ()
     state_budget_checking: str = "compile_time_check"
     state_budget_memory_source: str | None = None

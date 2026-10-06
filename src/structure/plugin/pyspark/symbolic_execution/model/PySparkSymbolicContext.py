@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 class PySparkSymbolicContext:
 
     def __init__(
-        self, *, step: str, capture_special_exprs: bool = False, delta_output_schema=None, step_output_schema=None
+        self, *, step: str, capture_special_exprs: bool = False, step_output_schema=None
     ) -> None:
         self.step = step
         self.capture_special_exprs = capture_special_exprs
@@ -32,7 +32,6 @@ class PySparkSymbolicContext:
         self.joins: list[JoinPlan] = []
         self.operations: list[OperationPlan] = []
         self.delta_mutations: list[DeltaMutation] = []
-        self.delta_output_schema = delta_output_schema
         self.step_output_schema = step_output_schema
         self.aggregate_keys: tuple[tuple[str, Expression], ...] | None = None
         self.aggregate_requested = False

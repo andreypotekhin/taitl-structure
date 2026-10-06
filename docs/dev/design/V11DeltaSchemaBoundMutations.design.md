@@ -12,8 +12,8 @@ Public usage and target status: [Delta tables API](../../api/DeltaTables.api.md)
 Delta tables participate in Structure's normal compile-and-run workflow. A caller supplies an existing native
 `delta.tables.DeltaTable`; Structure compiles typed mutations and verifies the table contract before running them.
 Table creation and constraint installation remain caller-owned. Mutations preserve the bound schema by default.
-Schema evolution is allowed only when a step explicitly opts in and declares its expected output schema as its return
-type. Structure verifies the declared old schema before the operation and the declared new schema after the commit.
+Schema evolution is allowed only when a mutation explicitly opts in and names its expected output schema. Structure
+verifies the declared old schema before the operation and the selected new schema after the commit.
 
 ## Public shape
 
@@ -21,9 +21,11 @@ type. Structure verifies the declared old schema before the operation and the de
 `delta_output(Schema)` declares a result schema for explicit evolution. The caller supplies native Delta tables as
 keyword arguments when constructing the Transform. A successful result exposes the identical table object. Ordinary
 same-schema effects may use `-> None`, with inference when relation resolution is unambiguous, or return the direct
-result of a merge with a matching table-schema annotation. An
-explicit schema transition returns the declared `delta_output` schema, which lets normal return-schema resolution
-select the result without extra step parameters or decorator metadata.
+result of a merge with a matching table-schema annotation. An explicit schema transition can return the declared
+`delta_output` schema, which lets normal return-schema resolution select the result without extra step parameters or
+decorator metadata. The required `to=Schema` argument independently selects the physical evolved shape; it must match
+`delta_output` when one is declared. A `delta_table` effect may use `-> None` and omit a return, retaining its relation
+schema without exposing a separate composable output.
 
     class Order(Schema):
         id = string(nullable=False)
@@ -84,18 +86,18 @@ Schema evolution is opt-in through a return-typed state transition:
 
     def merge(self, change: Change, order: OrderV1) -> OrderV2:
         return (delta_merge(order, change, on=order.id == change.id)
-                .with_schema_evolution()
+                .with_schema_evolution(to=OrderV2)
                 .when_matched_update_all()
                 .when_not_matched_insert_all()
                 .execute())
 
 The return schema resolves to the declared Delta output. Capture accepts the marker only when it represents the
-step's sole mutation, its target is the declared `delta_input`, and input/output schemas differ. The table must match
+step's sole mutation, its target is the declared `delta_input`, and `to` matches the output schema. The table must match
 `OrderV1` before mutation; after commit Structure validates `OrderV2`, including its declared CHECK contract. A later
 invocation must declare the table's current schema as its input rather than silently accepting either version.
 
 Merge evolution lowers to the native builder's `withSchemaEvolution()`. Append evolution is a separate typed
-`delta_append(target, source).with_schema_evolution().execute()` operation because Delta's `.option("mergeSchema",
+`delta_append(target, source).with_schema_evolution(to=Schema).execute()` operation because Delta's `.option("mergeSchema",
 "true")` belongs to `DataFrameWriter`, not `DeltaTable`. It resolves the bound table location at runtime, applies the
 option only to that append, and performs the same post-commit check. Session-wide auto-merge is excluded because it
 could evolve unrelated operations. Overwrite schema replacement is a separate, more destructive contract and is not

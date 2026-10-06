@@ -26,7 +26,10 @@ Schema declarations define Structure's typed row contract and materialize to Spa
 | `bitmap()` | Branded opaque Binary Bitmap state | `features = bitmap()` |
 
 For a caller-bound Delta table, `Schema.constraints = (check(predicate, name=...),)` declares expected native CHECK
-metadata. See the [Delta tables API](DeltaTables.api.md). This is separate from ordinary DataFrame validation modes.
+metadata. `Schema.delta_columns` can declare expected generated, identity, and default fields so Delta insert checks
+account for values the native table produces. Both declarations are validated against a bound Delta table and do not
+change an ordinary DataFrame schema. See the [Delta tables API](DeltaTables.api.md). This is separate from ordinary
+DataFrame validation modes.
 
 **Details And Differences**
 

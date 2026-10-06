@@ -28,6 +28,10 @@ class DeltaMutation:
     output_schema: type[Schema] | None = None
     selector: Expression | None = None
     end_selector: Expression | None = None
+    selector_type: str | None = None
+    action: str | None = None
+    columns: tuple[str, ...] = ()
+    allow_short_retention: bool = False
 
 
 @dataclass(frozen=True)
