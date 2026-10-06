@@ -232,8 +232,13 @@ This matrix maps early sprints to specification sections and major deliverables.
   diagnostic, test, and evidence path.
 - As a developer, I can use admitted 4.1 expressions and relational query operations with online/generated parity,
   declared schema/cardinality, and explainable dependencies.
-- As a developer, I can inspect the explicit typed/native compiler surfaces and remaining runtime gates for row and
-  Pandas `transformWithState`, while observations, sketches, and Arrow UDF/UDTFs retain their documented boundaries.
+- As a developer, I can inspect separate typed/native compiler surfaces and runtime gates for row
+  `transform_with_state`, Pandas `transform_with_state_in_pandas`, and legacy `apply_in_pandas_with_state`, while
+  observations, sketches, and Arrow UDF/UDTFs retain their documented boundaries.
+- As a developer, I can hand a final Structure output to caller-owned `foreach` or `foreach_batch` code with explicit
+  writer/safety metadata, without generated Structure code taking query-lifecycle ownership.
+- As a maintainer, I can distinguish classic Delta-table admission from the separately evidenced Delta Connect 4.1
+  package and avoid widening either claim to unsupported profiles.
 - As a maintainer, I can run six version/variant integration lanes for PySpark 3.5, 4.0, and 4.1 without dropping
   regression coverage.
 - As a maintainer, I can close V11 only after the API Catalog, API Reference, capability ledgers, diagnostics, generated

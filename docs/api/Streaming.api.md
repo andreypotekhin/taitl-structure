@@ -180,19 +180,23 @@ the declared key, handling retries, and ensuring that the checkpoint and snapsho
 ## Typed Arbitrary-State Contract
 
 Arbitrary state remains design-gated; `ArbitraryStateContract` is a metadata completeness guard, not a state processor
-runtime. Row-based `transformWithState` targets ordinary PySpark 4.1 and is tracked separately from
-`transformWithStateInPandas`, which targets ordinary PySpark 4.0 and 4.1. Both remain gated until their respective
-online/generated parity and restart evidence passes. `apply_in_pandas_with_state(...)` has a separate typed/native
-compiler path and legacy `PandasGroupState` facade; it does not adapt Spark 4 processor callbacks or migrate their
-checkpoint state. Before reviewing another native state API, the contract
+runtime. The four ledger families are independent: row-based `transform_with_state` targets ordinary PySpark 4.1;
+`transform_with_state_in_pandas` targets ordinary PySpark 4.0 and 4.1; `apply_in_pandas_with_state(...)` targets
+ordinary PySpark 3.5, 4.0, and 4.1; Dataset/Scala arbitrary-state APIs remain outside the V11 claim. The row family has
+the dedicated [admission and typed-parity plan](../dev/planning/P10062603.V11-transform-with-state-admission-and-typed-parity.plan.md);
+the Pandas families retain their separate plans. Each remains gated until its own online/generated parity, timer or
+callback behavior, and same-checkpoint restart evidence passes. `apply_in_pandas_with_state(...)` has a separate
+typed/native compiler path and legacy `PandasGroupState` facade; it does not adapt Spark 4 processor callbacks or
+migrate their checkpoint state. Before reviewing another native state API, the contract
 records typed input, key, state, and output Schemas; grouping fields; timeout policy, clock, and duration;
 initialization, update, and removal behavior; target PySpark profile; hook boundary; checkpoint identity; serialized
 state version; and restart policy. `contract.validate()` rejects missing or inconsistent declarations with
 `ARBITRARY-STATE-E0901`, `ARBITRARY-STATE-E0902`, or `ARBITRARY-STATE-E0903`.
 
 Validation does not start a query, generate a state processor, control a checkpoint, or prove recovery. The application
-still controls the native PySpark API and live restart evidence. Structure must not promote the streaming ledger row
-until a separate runtime contract and PySpark 3.5/4.0 evidence exist.
+still controls the native PySpark API and live restart evidence. A passing row-state proof does not promote the Pandas,
+legacy, Dataset, or Scala families. Structure must not promote any streaming ledger row until its separate runtime
+contract and target-profile evidence exist.
 
 ## SearchDocuments Streaming Status
 

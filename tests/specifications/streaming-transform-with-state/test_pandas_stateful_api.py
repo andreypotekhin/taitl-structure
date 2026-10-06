@@ -17,7 +17,7 @@ from structure.plugin.api.v1.model import BackendCapabilityError, CapabilityRequ
 from structure.plugin.pyspark.api.PySpark import PySpark
 from structure.plugin.pyspark.capabilities.model.PySparkCapabilities import PySparkCapabilities
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
-from structure.plugin.pyspark.dsl.field import string
+from structure.plugin.pyspark.dsl.field import integer, string
 from structure.plugin.pyspark.dsl.Stateful import (
     ExternalStateProcessor,
     PandasStateProcessor,
@@ -54,11 +54,28 @@ class CompositeKey(Schema):
     region = string(nullable=False)
 
 
+class SingleCompositeKey(Schema):
+    customer_id = string(nullable=False)
+
+
+class WrongTypeCompositeKey(Schema):
+    customer_id = string(nullable=False)
+    region = integer(nullable=False)
+
+
 class CompositeOutput(Schema):
     total = string(nullable=False)
 
 
 class CompositeCounter(PandasStateProcessor[CompositeInput, CompositeKey, State, CompositeOutput]):
+    pass
+
+
+class SingleKeyCounter(PandasStateProcessor[CompositeInput, SingleCompositeKey, State, CompositeOutput]):
+    pass
+
+
+class WrongTypeKeyCounter(PandasStateProcessor[CompositeInput, WrongTypeCompositeKey, State, CompositeOutput]):
     pass
 
 
@@ -111,6 +128,59 @@ def test_pandas_processor_schema_hints_are_the_source_of_truth() -> None:
 
     assert _processor_schemas(PandasCounter, PandasStateProcessor) == (Input, Key, State, Output)
     assert DecoratedPandasCounter.__structure_pandas_state_processor__ == (Input, Key, State, Output)
+
+
+@pytest.mark.parametrize(
+    "frames, error_type, message",
+    [
+        ([object()], TypeError, "must yield pandas.DataFrame"),
+        ([{"columns": ["wrong"], "empty": False}], ValueError, r"expected \['total'\], received \['wrong'\]"),
+    ],
+)
+def test_pandas_state_validates_output_frames_without_importing_pandas(
+    monkeypatch, frames, error_type: type[Exception], message: str
+) -> None:
+    import sys
+    from types import ModuleType
+
+    from structure.plugin.pyspark.execution.stateful import _output_pandas_frames
+
+    class FakeDataFrame:
+        def __init__(self, *, columns: list[str]):
+            self.columns = columns
+            self.empty = True
+
+    pandas = ModuleType("pandas")
+    pandas.DataFrame = FakeDataFrame  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "pandas", pandas)
+    values = [
+        FakeDataFrame(columns=frame["columns"]) if isinstance(frame, dict) else frame
+        for frame in frames
+    ]
+
+    with pytest.raises(error_type, match=message):
+        list(_output_pandas_frames(values, Output, callback_name="on_batches"))
+
+
+def test_pandas_state_normalizes_empty_output_frame_without_columns(monkeypatch) -> None:
+    import sys
+    from types import ModuleType
+
+    from structure.plugin.pyspark.execution.stateful import _output_pandas_frames
+
+    class FakeDataFrame:
+        def __init__(self, *, columns: list[str]):
+            self.columns = columns
+            self.empty = not columns
+
+    pandas = ModuleType("pandas")
+    pandas.DataFrame = FakeDataFrame  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "pandas", pandas)
+
+    output_frames = list(_output_pandas_frames([FakeDataFrame(columns=[])], Output, callback_name="on_batches"))
+
+    assert len(output_frames) == 1
+    assert output_frames[0].columns == ["total"]
 
 
 def test_pandas_processor_rejects_unresolved_inherited_type_variables() -> None:
@@ -292,6 +362,29 @@ def test_pandas_state_rejects_invalid_composite_keys(key_factory: str) -> None:
     with pytest.raises(TypeError, match=expected):
         Compiler.frontend.compile()(
             InvalidCompositeKey,
+            materialize_schemas=False,
+            plugin={"pyspark": {"profile": ">=4.0,<4.1", "variant": "ordinary"}},
+        )
+
+
+@pytest.mark.parametrize("processor", [SingleKeyCounter, WrongTypeKeyCounter])
+def test_pandas_state_rejects_composite_key_schema_mismatch(processor) -> None:
+    class MismatchedKeySchema(Transform):
+        events = input(CompositeInput, streaming=True)
+        output_schema = output(CompositeOutput)
+
+        @step(input=events, output=output_schema)
+        def calculate(self, row: CompositeInput) -> CompositeOutput:
+            return transform_with_state_in_pandas(
+                key=(row.customer_id, row.region),
+                processor=processor,
+                output_mode="Update",
+                time_mode="ProcessingTime",
+            )
+
+    with pytest.raises(TypeError, match="key Schema fields must match.*count and type"):
+        Compiler.frontend.compile()(
+            MismatchedKeySchema,
             materialize_schemas=False,
             plugin={"pyspark": {"profile": ">=4.0,<4.1", "variant": "ordinary"}},
         )

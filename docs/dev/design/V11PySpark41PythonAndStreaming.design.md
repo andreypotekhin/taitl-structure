@@ -20,14 +20,15 @@ remain ordinary worker Python. The compiler lowers the operation to a shared rec
 execution and classifies it as one stateful stage.
 
 The row operation is not a general callback or query-lifecycle escape hatch. It has explicit composition and schema rules;
-Spark Connect and PySpark 4.0 row execution are not claimed. Positive support remains gated until the ordinary 4.1 runtime
-proves typed and native behavior, timers, online/generated parity, and same-checkpoint restart. The separate
+Spark Connect and PySpark 4.0 row execution are not claimed. Initial ordinary 4.1 typed/native behavior, timers,
+online/generated parity, and same-checkpoint restart evidence is implemented; positive support remains gated while
+`P10062603` proves the narrow output-mode/time-mode/composite-key admission matrix. The separate
 `transform_with_state_in_pandas(...)` operation covers the Pandas API on ordinary PySpark 4.0 and 4.1 and has its own
 dependency and runtime evidence gate. Both state operations require pandas, PyArrow, and Protobuf in PySpark 4.1 driver
 and worker environments; the Pandas operation requires them on PySpark 4.0 as well. The separate
 `apply_in_pandas_with_state(...)` operation targets ordinary PySpark 3.5, 4.0, and 4.1 through the legacy
-`GroupedData.applyInPandasWithState` contract; its runtime support claim remains gated by its own parity and restart
-evidence.
+`GroupedData.applyInPandasWithState` contract; typed/native accumulation and same-checkpoint restart are evidenced on
+the three pinned ordinary profiles, while timeout and zero/multiple-output behavior remain gated by its own plan.
 
 The initial ordinary PySpark 4.1 integration lane selects the backend version check and V11 integration tests only. It
 does not run pre-V11 integration or concept suites against 4.1, and it does not establish a support claim by itself.

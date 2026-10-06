@@ -601,11 +601,14 @@ selects its plain callback branch instead of `process/open/close`. For batch out
 ## Review an arbitrary-state boundary
 
 `transform_with_state(...)` and `transform_with_state_in_pandas(...)` have typed and native compiler paths for ordinary
-PySpark 4.1 and 4.0/4.1 respectively. They remain design-gated until each claimed profile passes live processor,
-timer, online/generated parity, and same-checkpoint restart evidence. PySpark 4.1 requires pandas, PyArrow, and protobuf
-on the driver and workers for both state processor APIs; the Pandas API also requires those packages on PySpark 4.0.
-`apply_in_pandas_with_state(...)` is a separate legacy state operation for ordinary PySpark 3.5–4.1; its support
-claim remains design-gated pending profile-specific runtime evidence. It supports a typed `PandasGroupStateProcessor`
+PySpark 4.1 and 4.0/4.1 respectively. Initial row typed/native, timer, online/generated, and restart evidence exists;
+the row admission plan still gates support on its exact Append/Update, time-mode, and composite-key matrix. The Pandas
+family has pinned-profile state/timer/restart and native-feature evidence, while event-time, differential, broader 4.0,
+and schema-evolution evidence remains pending. PySpark 4.1 requires pandas, PyArrow, and protobuf on the driver and
+workers for both state processor APIs; the Pandas API also requires those packages on PySpark 4.0.
+`apply_in_pandas_with_state(...)` is a separate legacy state operation for ordinary PySpark 3.5–4.1; accumulation and
+same-checkpoint restart are evidenced on the three pinned ordinary profiles, while timeout and zero/multiple-output
+coverage remains design-gated. It supports a typed `PandasGroupStateProcessor`
 or an importable native callback, with declared input, key, state, and output schemas. The caller still owns the query,
 sink, trigger, checkpoint, and restart policy. Its legacy state format is not promised compatible with either Spark 4
 state processor API. Spark's `mapGroupsWithState` and `flatMapGroupsWithState` are typed Dataset APIs without a PySpark

@@ -125,3 +125,59 @@ class NativePandasCompositeTotals(StatefulProcessor):
 
     def close(self) -> None:
         pass
+
+
+class NativePandasEvolutionV1(StatefulProcessor):
+    """Write the original value schema and a state variable removed in the next processor version."""
+
+    def init(self, handle) -> None:
+        self._total = handle.getValueState(
+            "evolution_total",
+            StructType([StructField("total", LongType(), nullable=True)]),
+        )
+        self._removed = handle.getValueState(
+            "evolution_removed",
+            StructType([StructField("old_value", LongType(), nullable=True)]),
+        )
+
+    def handleInputRows(self, key, rows, timerValues):
+        import pandas as pd  # type: ignore[import-untyped]
+
+        current = self._total.get()
+        total = 0 if current is None else int(current[0])
+        for batch in rows:
+            total += int(batch["amount"].sum())
+        self._total.update((total,))
+        self._removed.update((1,))
+        return iter([pd.DataFrame({"customer_id": [key[0]], "total": [total], "marker": ["v1"]})])
+
+
+class NativePandasEvolutionV2(StatefulProcessor):
+    """Add/remove named state and widen the Avro value schema across a checkpoint restart."""
+
+    def init(self, handle) -> None:
+        handle.deleteIfExists("evolution_removed")
+        self._total = handle.getValueState(
+            "evolution_total",
+            StructType(
+                [
+                    StructField("total", LongType(), nullable=True),
+                    StructField("marker", StringType(), nullable=True),
+                ]
+            ),
+        )
+        self._added = handle.getValueState(
+            "evolution_added",
+            StructType([StructField("value", StringType(), nullable=True)]),
+        )
+
+    def handleInputRows(self, key, rows, timerValues):
+        import pandas as pd  # type: ignore[import-untyped]
+
+        current = self._total.get()
+        total = 0 if current is None else int(current[0])
+        for batch in rows:
+            total += int(batch["amount"].sum())
+        self._total.update((total, "v2"))
+        self._added.update(("created",))
+        return iter([pd.DataFrame({"customer_id": [key[0]], "total": [total], "marker": ["v2"]})])

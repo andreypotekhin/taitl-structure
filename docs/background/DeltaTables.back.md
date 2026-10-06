@@ -7,8 +7,8 @@ source checker and generator examine a mutation before it reaches the native Del
 The caller creates the table, provisions native CHECK constraints, configures a Delta-capable Spark session, and
 passes the native `DeltaTable` handle. Structure binds it through `delta_table(Schema)` for same-schema reads and
 mutations, `delta_input(Schema)` for read-only roles, and `delta_output(Schema)` for explicitly evolved result schemas.
-A DataFrame cannot stand in for a Delta binding. The feature is currently **implemented;
-release-gated** for the isolated ordinary PySpark 4.1.0 / Delta 4.1.0 evidence pair. See
+A DataFrame cannot stand in for a Delta binding. These helpers are admitted on classic PySpark 3.5, 4.0, and 4.1 with
+the pinned Delta pairs listed in the compatibility ledger. Spark Connect and PySpark 4.2 are outside this admission. See
 [Delta compatibility](../compatibility/DeltaTables.compat.md) for the admission status.
 
 ## Relations and effects

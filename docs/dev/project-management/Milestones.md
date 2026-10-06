@@ -523,8 +523,12 @@ Status: planned. V11 follows the V10 closeout and runs from Sprint 55 through Sp
   diagnostic, test, and evidence path.
 - Admitted expression and relational features have online/generated parity, schemas, explain/traceability, and live
   ordinary 4.1 evidence.
-- Complex observations, sketches, Arrow UDF/UDTFs, and row-based state have implemented contracts or stable gates with
-  caller-owned remedies.
+- Complex observations, sketches, and Arrow UDF/UDTFs have implemented contracts or stable gates with caller-owned
+  remedies. Row `transform_with_state`, Pandas `transform_with_state_in_pandas`, and legacy
+  `apply_in_pandas_with_state` remain separate evidence gates, each with its own target profiles, restart proof, and
+  owner; Dataset/Scala arbitrary state remains outside the V11 claim.
+- Row `foreach` and `foreach_batch` have caller-owned handoffs, safety declarations, and classic 3.5/4.0 evidence;
+  Structure does not start queries or own external effects.
 - The Delta package has a normative transform design/specification, caller-bound Delta inputs/outputs,
   delete/update/merge/append tests, opt-in return-typed schema evolution, native CHECK verification evidence, and an
   honest optional-runtime status.
@@ -541,6 +545,12 @@ Status: planned. V11 follows the V10 closeout and runs from Sprint 55 through Sp
 - `docs/dev/project-management/V11.md`
 - `docs/dev/planning/P08042601.V11-pyspark-4.1-adoption.plan.md`
 - `docs/dev/planning/past/P10042601.V11-delta-transform-mutations.plan.md`
+- `docs/dev/planning/past/P10062601.V11-delta-connect-admission.plan.md`
+- `docs/dev/planning/P10062602.V11-apply-in-pandas-with-state.plan.md`
+- `docs/dev/planning/P10062603.V11-transform-with-state-admission-and-typed-parity.plan.md`
+- `docs/dev/planning/P10042604.V11-transform-with-state-in-pandas.plan.md`
+- `docs/dev/planning/P10042602.Row-level-foreach-sinks.plan.md`
+- `docs/dev/planning/past/P10052601.Schema-declared-foreach-batch-sinks.plan.md`
 - `docs/dev/planning/P08042603.V11-retained-v9-design-gates.plan.md`
 - `docs/dev/design/V11PySpark41Adoption.design.md`
 - `docs/dev/specifications/V11PySpark41Parity.spec.md`
@@ -548,3 +558,5 @@ Status: planned. V11 follows the V10 closeout and runs from Sprint 55 through Sp
 - `docs/dev/specifications/V11DeltaSchemaBoundMutations.spec.md`
 - `docs/dev/design/V11RetainedV9DesignGates.design.md`
 - `docs/dev/specifications/V11RetainedV9DesignGates.spec.md`
+- `docs/dev/design/DeltaTables.design.md`
+- `docs/dev/specifications/DeltaTables.spec.md`

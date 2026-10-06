@@ -3,7 +3,8 @@
 Structure can compile typed mutations against an existing Delta table. The caller creates the table, provisions its
 native constraints, and passes a native `DeltaTable` object to the transform. Delta support is optional and is
 gated by target profile. Classic PySpark 3.5, 4.0, and 4.1 are admitted with the tested Delta pairs listed in the
-compatibility ledger. Spark Connect and PySpark 4.2 are outside this admission. See
+compatibility ledger. The exact PySpark 4.1 Spark Connect Delta package is also admitted; other Connect profiles and
+PySpark 4.2 are outside this admission. See
 [Delta compatibility](../compatibility/DeltaTables.compat.md) before adopting it.
 
 Import `Schema`, `Transform`, `input`, `transform`, and `StructureSession` from `structure`. Import the Delta

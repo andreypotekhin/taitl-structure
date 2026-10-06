@@ -49,12 +49,15 @@ that point to the caller-owned alternative when applicable.
 ## Feature 4: Arrow UDF/UDTF and state processors
 
 Arrow UDF and UDTF decorators and general vectorized callbacks remain caller-owned boundaries. The explicit state
-processor surfaces are implemented: row-based `transform_with_state(...)` targets ordinary PySpark 4.1, while
-`transform_with_state_in_pandas(...)` targets ordinary PySpark 4.0 and 4.1. Each provides typed Structure and opaque
-native processor paths, captures schemas and modes in a recipe, and participates in streaming-stage classification.
-Their support status remains `design-gated` until the exact profile passes live processor behavior, timer, online/generated
-parity, and same-checkpoint restart tests. Spark Connect remains unclaimed. This gate records missing runtime evidence;
-it does not mean the compiler surfaces are unimplemented.
+processor surfaces are separate families: row-based `transform_with_state(...)` targets ordinary PySpark 4.1;
+`transform_with_state_in_pandas(...)` targets ordinary PySpark 4.0 and 4.1; and legacy
+`apply_in_pandas_with_state(...)` targets ordinary PySpark 3.5, 4.0, and 4.1. Each has its own compiler path,
+target-profile rows, live evidence, and checkpoint-restart gate. The row family is governed by the dedicated
+[admission and typed-parity plan](../planning/P10062603.V11-transform-with-state-admission-and-typed-parity.plan.md),
+which admits only the planned Append and Update output modes and rejects Complete before startup. Spark Connect and
+Dataset/Scala arbitrary-state APIs remain unclaimed. These rows remain `design-gated` until the exact family and
+profile pass live processor behavior, timer/callback, online/generated parity, and same-checkpoint restart tests. This
+gate records missing runtime evidence; it does not mean the compiler surfaces are unimplemented.
 
 In typed mode, `on_rows(key, rows, state, timers)` is required and `on_timer(key, timer, state, timers)` is optional.
 The callback context exposes current processing time and current watermark in milliseconds along with timer management;
@@ -62,9 +65,10 @@ reading the watermark requires a watermarked input. Callback signatures are chec
 operator. Converted input and state values expose the declared Structure fields, and yielded values must match the
 declared output Schema, including non-null constraints. A callback may yield zero or many rows.
 
-The typed state surface is deliberately a subset. The first release slice types one `ValueState`; the opaque native path
-preserves Spark's additional state kinds and processor methods. Typed `ListState`, `MapState`, multiple named variables,
-TTL, composite keys, and initial state need separate schema and checkpoint contracts and remain follow-up design items.
+The typed row state surface is deliberately a subset. Its first release slice types one `ValueState`; the opaque native
+path preserves Spark's additional state kinds and processor methods. Typed `ListState`, `MapState`, multiple named
+variables, TTL, composite keys, and initial state need separate schema and checkpoint contracts and remain follow-up
+design items. The Pandas and legacy families do not inherit the row family's status or evidence.
 Typed `close` callbacks and schema evolution are deferred because cleanup is not guaranteed after worker failure and
 checkpoint migration needs its own contract.
 
@@ -81,15 +85,16 @@ native capabilities claimed by their profile.
 ## Feature 5: target and evidence matrix
 
 The eventual release matrix has six backends: `pyspark35`, `pyspark40`, `pyspark41`, `spark-connect35`,
-`spark-connect40`, and `spark-connect41`. The currently configured matrix has five; Connect 4.1 remains deferred. Each
-configured backend reports the exact PySpark and Spark version, target profile, target variant, image digest or pinned
-package version, and test selection. The 4.1 profile is `>=4.1,<4.2`. The initial ordinary 4.1 selection is limited to
+`spark-connect40`, and `spark-connect41`. General Connect 4.1 coverage remains deferred, while the separately
+evidenced Delta Connect package is admitted only for its exact Delta rows. Each configured backend reports the exact
+PySpark and Spark version, target profile, target variant, image digest or pinned package version, and test selection.
+The 4.1 profile is `>=4.1,<4.2`. The initial ordinary 4.1 selection is limited to
 the backend version check and V11 integration tests. Ordinary 4.1 is release-blocking for every supported row after its
 profile-specific evidence is complete; Connect 4.1 is release-blocking only for rows whose catalog entry claims Connect
 support.
 
 The staged matrix runs through `make integration`; the configured 4.1 lane runs through
-`make integration BACKEND=pyspark41`. Add Connect 4.1 only after a separate API and test selection is reviewed. The
+`make integration BACKEND=pyspark41`. Add general Connect 4.1 coverage only after a separate API and test selection is reviewed. The
 Spark-free `make build` remains mandatory and must not require Docker, Java, or an installed PySpark package.
 
 ## Cross-cutting requirements

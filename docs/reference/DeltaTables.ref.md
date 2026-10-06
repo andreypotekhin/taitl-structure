@@ -1,7 +1,8 @@
 # Delta Tables Reference
 
 Structure's Delta API compiles typed table effects and reads into transforms. The caller creates/configures the Delta
-table and passes its native `DeltaTable` handle to the transform.
+table and passes its native `DeltaTable` handle to the transform. Classic PySpark 3.5–4.1 and the exact Spark Connect
+4.1 Delta package are supported; other Connect profiles and PySpark 4.2 remain outside the claim.
 
 | API | Use |
 | --- | --- |

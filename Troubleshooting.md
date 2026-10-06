@@ -118,3 +118,14 @@ Keep the same caller-owned checkpoint location when restarting the same legacy q
 load through `transform_with_state_in_pandas(...)` or `transform_with_state(...)`; Structure does not migrate between
 these Spark state formats. Timeout callbacks run only as later triggers advance, so a processing-time timeout is not an
 exact wall-clock guarantee. See [Streaming reference](docs/reference/Streaming.ref.md#review-an-arbitrary-state-boundary).
+
+## Typed Pandas State Output or Dependency Error
+
+`transform_with_state_in_pandas(...)` requires pandas, PyArrow, and protobuf on the Spark driver and every worker.
+Install compatible versions in the runtime image. Import worker-only libraries inside the processor callback when
+they are not needed by Structure compilation.
+
+The typed processor's `on_batches` and `on_timer` callbacks must yield Pandas DataFrames whose columns match the
+declared output Schema by name and order. An empty DataFrame with no columns is normalized to that Schema; for other
+frames, use the error's callback name and expected/actual columns to correct the result. Spark still validates and
+converts column data types when the streaming query executes. See [Streaming reference](docs/reference/Streaming.ref.md#review-an-arbitrary-state-boundary).

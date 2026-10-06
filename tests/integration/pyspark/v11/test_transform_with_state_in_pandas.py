@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from time import monotonic, sleep
@@ -17,6 +18,7 @@ from integration.pyspark.support.backend_matrix import (
 from structure import Schema, Transform, input, output, step
 from structure.plugin.pyspark import (
     PandasStateProcessor,
+    StateProcessor,
     Timer,
     TimerContext,
     ValueState,
@@ -24,7 +26,10 @@ from structure.plugin.pyspark import (
     integer,
     long,
     pandas_state_processor,
+    state_processor,
     string,
+    timestamp,
+    transform_with_state,
     transform_with_state_in_pandas,
 )
 
@@ -85,6 +90,19 @@ class NativePandasOutput(Schema):
     reason = string(nullable=False)
 
 
+class EventTimeEvent(Schema):
+    customer_id = string(nullable=False)
+    event_time = timestamp(nullable=False)
+    amount = integer(nullable=False)
+
+
+class EventTimeOutput(Schema):
+    customer_id = string(nullable=False)
+    total = integer(nullable=False)
+    event_time = timestamp(nullable=False)
+    reason = string(nullable=False)
+
+
 @pandas_state_processor
 class CustomerTotals(PandasStateProcessor[Event, CustomerKey, CustomerTotal, TotalOutput]):
     def on_batches(self, key, batches, state: ValueState[CustomerTotal], timers):
@@ -96,6 +114,17 @@ class CustomerTotals(PandasStateProcessor[Event, CustomerKey, CustomerTotal, Tot
             total += int(batch["amount"].sum())
         state.update(CustomerTotal(total=total))
         yield pd.DataFrame({"customer_id": [key.customer_id], "total": [total]})
+
+
+@state_processor
+class RowCustomerTotals(StateProcessor[Event, CustomerKey, CustomerTotal, TotalOutput]):
+    def on_rows(self, key, rows, state: ValueState[CustomerTotal], timers):
+        current = state.get()
+        total = 0 if current is None else current.total
+        for row in rows:
+            total += row.amount
+        state.update(CustomerTotal(total=total))
+        yield TotalOutput(customer_id=key.customer_id, total=total)
 
 
 @pandas_state_processor
@@ -134,6 +163,44 @@ class MultiplePandasOutputs(PandasStateProcessor[Event, CustomerKey, CustomerTot
         yield pd.DataFrame({"customer_id": [key.customer_id], "total": [total + 1]})
 
 
+class EventTimePandasTotals(PandasStateProcessor[EventTimeEvent, CustomerKey, CustomerTotal, EventTimeOutput]):
+    def on_batches(self, key, batches, state: ValueState[CustomerTotal], timers: TimerContext):
+        import pandas as pd  # type: ignore[import-untyped]
+
+        total = 0 if (current := state.get()) is None else current.total
+        latest_event_time = None
+        for batch in batches:
+            total += int(batch["amount"].sum())
+            batch_time = batch["event_time"].max()
+            latest_event_time = batch_time if latest_event_time is None else max(latest_event_time, batch_time)
+        state.update(CustomerTotal(total=total))
+        if latest_event_time is not None:
+            timers.register(int(latest_event_time.timestamp() * 1000) + 500)
+            yield pd.DataFrame(
+                {
+                    "customer_id": [key.customer_id],
+                    "total": [total],
+                    "event_time": [latest_event_time],
+                    "reason": ["input"],
+                }
+            )
+
+    def on_timer(self, key, timer: Timer, state: ValueState[CustomerTotal], timers: TimerContext):
+        import pandas as pd  # type: ignore[import-untyped]
+
+        current = state.get()
+        if current is not None:
+            expiry = datetime.fromtimestamp(timer.timestamp_ms / 1000, tz=timezone.utc)
+            yield pd.DataFrame(
+                {
+                    "customer_id": [key.customer_id],
+                    "total": [current.total],
+                    "event_time": [expiry],
+                    "reason": ["timer"],
+                }
+            )
+
+
 class AccumulateCustomerTotals(Transform):
     events = input(Event, streaming=True)
     totals = output(TotalOutput)
@@ -143,6 +210,20 @@ class AccumulateCustomerTotals(Transform):
         return transform_with_state_in_pandas(
             key=event.customer_id,
             processor=CustomerTotals,
+            output_mode="Update",
+            time_mode="ProcessingTime",
+        )
+
+
+class AccumulateCustomerTotalsByRow(Transform):
+    events = input(Event, streaming=True)
+    totals = output(TotalOutput)
+
+    @step(input=events, output=totals)
+    def accumulate(self, event: Event) -> TotalOutput:
+        return transform_with_state(
+            key=event.customer_id,
+            processor=RowCustomerTotals,
             output_mode="Update",
             time_mode="ProcessingTime",
         )
@@ -173,6 +254,21 @@ class EmitMultiplePandasFrames(Transform):
             processor=MultiplePandasOutputs,
             output_mode="Update",
             time_mode="ProcessingTime",
+        )
+
+
+class EmitEventTimePandasTotals(Transform):
+    events = input(EventTimeEvent, streaming=True)
+    totals = output(EventTimeOutput)
+
+    @step(input=events, output=totals)
+    def accumulate(self, event: EventTimeEvent) -> EventTimeOutput:
+        return transform_with_state_in_pandas(
+            key=event.customer_id,
+            processor=EventTimePandasTotals,
+            output_mode="Update",
+            time_mode="EventTime",
+            event_time_column="event_time",
         )
 
 
@@ -259,6 +355,53 @@ def test_pandas_state_runs_online_and_generated_and_resumes_checkpoint(
                 run_available_now()
 
                 assert emitted == [("c-1", 3), ("c-1", 7)]
+
+
+@pytest.mark.skipif(backend_name() != "pyspark41", reason="Row transformWithState requires ordinary PySpark 4.1")
+def test_row_and_pandas_state_have_equal_finite_results_on_4_1(spark, tmp_path, integration_shared_dir) -> None:
+    files = render_generated_projects(
+        (
+            (AccumulateCustomerTotalsByRow, f"{SOURCE_MODULE}.AccumulateCustomerTotalsByRow"),
+            (AccumulateCustomerTotals, f"{SOURCE_MODULE}.AccumulateCustomerTotals"),
+        ),
+        generated_package=f"{GENERATED_PACKAGE}_differential",
+        source_schema_modules={SOURCE_MODULE: [Event, TotalOutput]},
+    )
+    package = f"{GENERATED_PACKAGE}_differential"
+    with TemporaryDirectory(prefix=f"state-differential-{uuid4().hex}-", dir=integration_shared_dir) as shared_root:
+        root = Path(shared_root)
+        with generated_project(tmp_path, package, files):
+            for mode in ("online", "generated"):
+                outputs: dict[str, list[tuple[str, int]]] = {"row": [], "pandas": []}
+                for interface, transform_type in (
+                    ("row", AccumulateCustomerTotalsByRow),
+                    ("pandas", AccumulateCustomerTotals),
+                ):
+                    source = root / mode / interface / "source"
+                    source.mkdir(parents=True)
+                    (source / "events.json").write_text(
+                        json.dumps({"customer_id": "c-1", "amount": 2})
+                        + "\n"
+                        + json.dumps({"customer_id": "c-1", "amount": 1})
+                        + "\n",
+                        encoding="utf-8",
+                    )
+                    events = spark.readStream.schema("customer_id STRING NOT NULL, amount INT NOT NULL").json(str(source))
+                    result = transform_type(events=events).run(
+                        session(spark, execution_mode=mode, generated_package=package)
+                    )
+
+                    def collect_batch(frame, _batch_id: int) -> None:
+                        outputs[interface].extend((row.customer_id, row.total) for row in frame.collect())
+
+                    query = result.totals.writeStream.foreachBatch(collect_batch).outputMode("update").option(
+                        "checkpointLocation", str(root / mode / interface / "checkpoint")
+                    ).trigger(once=True).start()
+                    try:
+                        assert query.awaitTermination(120), f"{interface} state differential query did not complete"
+                    finally:
+                        query.stop()
+                assert outputs["row"] == outputs["pandas"] == [("c-1", 3)]
 
 
 def test_native_pandas_state_supports_composite_keys_initial_state_and_restart(
@@ -411,6 +554,100 @@ def test_direct_pyspark_pandas_processor_accepts_native_operator_arguments(spark
             assert any(row[2:] == (7, 2, 2, "timer") for row in emitted), "direct native Pandas timer did not fire"
         finally:
             query.stop()
+
+
+def test_typed_pandas_event_time_timer_runs_online_and_generated(spark, tmp_path, integration_shared_dir) -> None:
+    files = render_generated_projects(
+        ((EmitEventTimePandasTotals, f"{SOURCE_MODULE}.EmitEventTimePandasTotals"),),
+        generated_package=f"{GENERATED_PACKAGE}_event_time",
+        source_schema_modules={SOURCE_MODULE: [EventTimeEvent, EventTimeOutput]},
+    )
+    package = f"{GENERATED_PACKAGE}_event_time"
+    with TemporaryDirectory(prefix=f"pandas-event-time-{uuid4().hex}-", dir=integration_shared_dir) as shared_root:
+        root = Path(shared_root)
+        with generated_project(tmp_path, package, files):
+            for mode in ("online", "generated"):
+                source = root / mode / "source"
+                source.mkdir(parents=True)
+                events = spark.readStream.schema(
+                    "customer_id STRING NOT NULL, event_time TIMESTAMP NOT NULL, amount INT NOT NULL"
+                ).json(str(source)).withWatermark("event_time", "1 second")
+                result = EmitEventTimePandasTotals(events=events).run(
+                    session(spark, execution_mode=mode, generated_package=package)
+                )
+                emitted: list[tuple[str, int, str]] = []
+
+                def collect_batch(frame, _batch_id: int) -> None:
+                    emitted.extend((row.customer_id, row.total, row.reason) for row in frame.collect())
+
+                query = result.totals.writeStream.foreachBatch(collect_batch).outputMode("update").option(
+                    "checkpointLocation", str(root / mode / "checkpoint")
+                ).trigger(processingTime="100 milliseconds").start()
+                first_event = {"customer_id": "c-1", "event_time": "2020-01-01T00:00:00Z", "amount": 2}
+                second_event = {"customer_id": "c-1", "event_time": "2020-01-01T00:00:05Z", "amount": 1}
+                (source / "first.json").write_text(json.dumps(first_event) + "\n", encoding="utf-8")
+                deadline = monotonic() + 30
+                try:
+                    while not any(row[2] == "input" for row in emitted) and monotonic() < deadline:
+                        sleep(0.1)
+                    assert any(row == ("c-1", 2, "input") for row in emitted), "event-time input was not emitted"
+                    (source / "second.json").write_text(json.dumps(second_event) + "\n", encoding="utf-8")
+                    deadline = monotonic() + 30
+                    while not any(row == ("c-1", 3, "timer") for row in emitted) and monotonic() < deadline:
+                        sleep(0.1)
+                    assert any(row == ("c-1", 3, "timer") for row in emitted), "event-time timer did not expire"
+                finally:
+                    query.stop()
+
+
+def test_native_pandas_checkpoint_supports_state_variable_and_avro_value_evolution(
+    spark, integration_shared_dir
+) -> None:
+    from integration.pyspark.v11.native_state_processors import NativePandasEvolutionV1, NativePandasEvolutionV2
+    from pyspark.sql.types import LongType, StringType, StructField, StructType
+
+    spark.conf.set("spark.sql.streaming.stateStore.encodingFormat", "avro")
+    with TemporaryDirectory(prefix=f"pandas-state-evolution-{uuid4().hex}-", dir=integration_shared_dir) as shared_root:
+        root = Path(shared_root)
+        source = root / "source"
+        source.mkdir(parents=True)
+        checkpoint = root / "checkpoint"
+        output_schema = StructType(
+            [
+                StructField("customer_id", StringType(), nullable=True),
+                StructField("total", LongType(), nullable=True),
+                StructField("marker", StringType(), nullable=True),
+            ]
+        )
+
+        def run(processor, expected_marker: str, expected_total: int) -> None:
+            events = spark.readStream.schema("customer_id STRING, amount INT").json(str(source))
+            result = events.groupBy("customer_id").transformWithStateInPandas(
+                statefulProcessor=processor(),
+                outputStructType=output_schema,
+                outputMode="Update",
+                timeMode="None",
+                initialState=None,
+                eventTimeColumnName="",
+            )
+            emitted: list[tuple[str, int, str]] = []
+
+            def collect_batch(frame, _batch_id: int) -> None:
+                emitted.extend((row.customer_id, row.total, row.marker) for row in frame.collect())
+
+            query = result.writeStream.foreachBatch(collect_batch).outputMode("update").option(
+                "checkpointLocation", str(checkpoint)
+            ).trigger(once=True).start()
+            try:
+                assert query.awaitTermination(120), "native Avro state evolution query did not complete"
+            finally:
+                query.stop()
+            assert emitted == [("c-1", expected_total, expected_marker)]
+
+        (source / "first.json").write_text(json.dumps({"customer_id": "c-1", "amount": 2}) + "\n", encoding="utf-8")
+        run(NativePandasEvolutionV1, "v1", 2)
+        (source / "second.json").write_text(json.dumps({"customer_id": "c-1", "amount": 3}) + "\n", encoding="utf-8")
+        run(NativePandasEvolutionV2, "v2", 5)
 
 
 def test_typed_pandas_state_emits_multiple_frames_and_allows_zero_output(spark, tmp_path, integration_shared_dir) -> None:

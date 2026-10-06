@@ -4,7 +4,10 @@
 
 This specification defines typed transform bindings for caller-owned Delta tables, their mutation effects, checks, and
 read operations. Table creation, constraint installation, arbitrary SQL, and general Delta administration remain
-caller-owned. Current support is release-gated as described in the [compatibility ledger](../../compatibility/DeltaTables.compat.md).
+caller-owned. The classic PySpark 3.5, 4.0, and 4.1 profiles admit the helpers with per-profile capability checks;
+the exact Spark Connect 4.1 Delta package is also admitted, while other Connect profiles and PySpark 4.2 are outside
+this admission. Exact tested pairs are listed in the
+[compatibility ledger](../../compatibility/DeltaTables.compat.md).
 
 ## Declarations
 

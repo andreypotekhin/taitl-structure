@@ -11,18 +11,18 @@ Public usage and target status: [Delta tables API](../../api/DeltaTables.api.md)
 
 The following surfaces are implemented and admitted for ordinary PySpark 3.5, 4.0, and 4.1 with pinned live evidence
 for PySpark 3.5.3 / Delta 3.3.3, PySpark 4.0.0 / Delta 4.0.1, and PySpark 4.1.0 / Delta 4.1.0. The broad
-`>=3.5,<4.1` profile admits only helpers supported on both 3.5 and 4.0. Spark Connect and PySpark 4.2 are outside this
-admission; see the
+`>=3.5,<4.1` profile admits only helpers supported on both 3.5 and 4.0. The exact PySpark 4.1 Spark Connect Delta
+package is separately admitted; other Connect profiles and PySpark 4.2 are outside this admission; see the
 [compatibility ledger](../../compatibility/DeltaTables.compat.md).
 
 | Surface | Status | Contract |
 | --- | --- | --- |
-| `Schema.constraints = (check(...),)` | admitted; classic 3.5–4.1 | Immutable, symbolic CHECK declarations with stable names. |
-| `delta_input(Schema)` | admitted; classic 3.5–4.1 | Caller-bound, read-only Delta table relation. |
-| `delta_table(Schema)` | admitted; classic 3.5–4.1 | Caller-bound read/write relation for same-schema effects. |
-| `delta_output(Schema)` | admitted; classic 3.5–4.1 | Result schema for an explicit schema transition. |
-| `delta_delete`, `delta_update`, `delta_merge` | admitted; classic 3.5–4.1 | Compiled, typed table mutations in effect steps. |
-| `with_schema_evolution(to=Schema)` on merge/append | admitted; classic 3.5–4.1 | Per-operation evolution to the explicitly selected Schema. |
+| `Schema.constraints = (check(...),)` | supported | Immutable, symbolic CHECK declarations with stable names on the tested classic 3.5–4.1 and Connect 4.1 Delta profiles. |
+| `delta_input(Schema)` | supported | Caller-bound, read-only Delta table relation on the tested classic 3.5–4.1 and Connect 4.1 Delta profiles. |
+| `delta_table(Schema)` | supported | Caller-bound read/write relation for same-schema effects on the tested profiles. |
+| `delta_output(Schema)` | supported | Result schema for an explicit schema transition on the tested profiles. |
+| `delta_delete`, `delta_update`, `delta_merge` | supported | Compiled, typed table mutations in effect steps on the tested profiles. |
+| `with_schema_evolution(to=Schema)` on merge/append | supported | Per-operation evolution to the explicitly selected Schema on the tested profiles. |
 
 ## Normative behavior
 
@@ -61,7 +61,7 @@ admission; see the
    may have committed. Structure's internal post-mutation reads use a newly opened native handle. The returned
    original handle can retain a previously materialized `toDF()` snapshot; callers reopen it to inspect the latest commit.
 8. The admitted ordinary pairs are PySpark 3.5.3 / Delta 3.3.3, PySpark 4.0.0 / Delta 4.0.1, and PySpark 4.1.0 /
-   Delta 4.1.0. Spark Connect and PySpark 4.2 are outside this admission. Missing Delta runtimes and incompatible Spark/Delta pairs
+   Delta 4.1.0, plus the exact Spark Connect 4.1 / Delta 4.1.0 package. Other Connect profiles and PySpark 4.2 are outside this admission. Missing Delta runtimes and incompatible Spark/Delta pairs
    fail with an actionable diagnostic before table effects.
 
 ## Acceptance
@@ -119,4 +119,4 @@ unknown output schemas, metadata installation, and overwrite schema replacement 
    before the commit. Delta enforces that all source rows satisfy the predicate. The operation does not evolve the
    target schema.
 6. Snapshot, CDF, and replacement operations are admitted on the classic profiles listed above, with online/generated parity covered by each pinned
-   lane. Spark Connect and PySpark 4.2 remain outside this admission.
+   lane. The exact Connect 4.1 Delta package is separately evidenced; other Connect profiles and PySpark 4.2 remain outside this admission.

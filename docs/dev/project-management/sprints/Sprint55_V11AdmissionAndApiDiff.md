@@ -17,6 +17,11 @@ evidence path.
 - Add the 4.1-to-4.0 API inventory and reconcile machine-readable coverage.
 - Add exact 4.1 target profile and variant policy tests.
 - Review the V11 design/specification documents and record scope decisions.
+- Split the state ledger into row `transform_with_state`, Pandas
+  `transform_with_state_in_pandas`, legacy `apply_in_pandas_with_state`, and Dataset/Scala arbitrary-state families;
+  assign each family its own status and evidence owner.
+- Record the already implemented Delta-table and Delta Connect admissions as separate packages, and carry forward the
+  caller-owned `foreach` and `foreach_batch` handoffs without assigning Structure query-lifecycle ownership.
 - Update catalog/reference, roadmap, milestone, backlog, and traceability navigation.
 
 ## Inherited V10 entry conditions
@@ -41,4 +46,7 @@ Spark-free and green.
 
 ## Governing plan
 
-`docs/dev/planning/P08042601.V11-pyspark-4.1-adoption.plan.md`.
+`docs/dev/planning/P08042601.V11-pyspark-4.1-adoption.plan.md`,
+`docs/dev/planning/P10062603.V11-transform-with-state-admission-and-typed-parity.plan.md`,
+`docs/dev/planning/past/P10062601.V11-delta-connect-admission.plan.md`,
+and the completed row-sink and foreachBatch plans.

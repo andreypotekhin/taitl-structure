@@ -42,18 +42,33 @@ external effects; the local-file restart fixture passes online and generated on 
 compile-time `foreach(row, sink)` marker is not rendered into generated modules, and `foreachBatch` remains caller-owned
 through the adoption recipe.
 
-### Arbitrary State Processors — `design-gated`
+### Row `transformWithState` — `structure-supported`
 
-Positive support for row-based `transformWithState` is tracked by
-[the row processor plan](../planning/P10042603.V11-transform-with-state.plan.md) for ordinary PySpark 4.1. PySpark 4.0's
-Python API is `transformWithStateInPandas`, tracked separately by
-[the Pandas processor plan](../planning/P10042604.V11-transform-with-state-in-pandas.plan.md) for ordinary PySpark 4.0
-and 4.1. The typed and native compiler surfaces are implemented, but both support claims remain gated on
-profile-specific live online/generated parity and checkpoint restart evidence. The Pandas runtime also requires
-pandas, PyArrow, and protobuf on the driver and workers. The separate legacy `apply_in_pandas_with_state(...)`
-compiler surface targets ordinary PySpark 3.5, 4.0, and 4.1 through `GroupedData.applyInPandasWithState`; its profile
-support remains gated pending typed/native online/generated parity and same-checkpoint restart evidence. See the
+The typed and native row interfaces are supported on ordinary PySpark 4.1. See the
+[row admission plan](../planning/P10062603.V11-transform-with-state-admission-and-typed-parity.plan.md) and
+[row processor plan](../planning/P10042603.V11-transform-with-state.plan.md) for the runtime evidence and admitted
+mode/key/time scope. PySpark 4.0 does not expose the row processor entry point.
+
+### Pandas `transformWithStateInPandas` — `design-gated`
+
+The typed and native compiler surfaces are implemented for ordinary PySpark 4.0 and 4.1. Pandas-module evidence passes
+on both profiles, including online/generated execution, processing-time timers, composite keys, initial state, native
+state types, and same-checkpoint restart. The 4.1 V11 lane passes; the broader 4.0 integration lane exceeded its
+3,600-second deadline. Event-time behavior, row/Pandas differential output, and native checkpoint state-schema
+evolution remain unverified, so the Pandas support claim stays gated. The runtime requires pandas, PyArrow, and
+protobuf on the driver and workers. See the
+[Pandas processor plan](../planning/P10042604.V11-transform-with-state-in-pandas.plan.md).
+
+### Legacy `applyInPandasWithState` — `design-gated`
+
+The separate `apply_in_pandas_with_state(...)` compiler surface targets ordinary PySpark 3.5, 4.0, and 4.1 through
+`GroupedData.applyInPandasWithState`; accumulation and same-checkpoint restart evidence passes on the three pinned
+ordinary profiles, while timeout and zero/multiple-output coverage remains pending. See the
 [legacy Pandas state plan](../planning/P10062602.V11-apply-in-pandas-with-state.plan.md).
+
+### Other Arbitrary State APIs — `design-gated`
+
+`mapGroupsWithState` and `flatMapGroupsWithState` are JVM Dataset APIs without PySpark entry points. The
 `ArbitraryStateContract` validates adoption metadata only; it is not a state runtime.
 
 The SearchDocuments proving lane and streaming-ineligible selected-row/window shapes are recorded in

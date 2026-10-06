@@ -246,6 +246,7 @@ def _processor_instance(
                 yield from _output_pandas_frames(
                     self._user.on_batches(wrapped_key, rows, value_state, timers),
                     output_schema,
+                    callback_name="on_batches",
                 )
 
         def handleExpiredTimer(self, key, timerValues, expiredTimerInfo):
@@ -262,7 +263,7 @@ def _processor_instance(
             if interface == "row":
                 yield from _output_rows(values, output_schema=output_schema, row_type=Row)
             else:
-                yield from _output_pandas_frames(values, output_schema)
+                yield from _output_pandas_frames(values, output_schema, callback_name="on_timer")
 
     return StructureStateProcessorAdapter()
 
@@ -323,15 +324,15 @@ def _output_rows(values, *, output_schema: type[Schema], row_type):
         yield row_type(**mapping)
 
 
-def _output_pandas_frames(values, output_schema: type[Schema]):
+def _output_pandas_frames(values, output_schema: type[Schema], *, callback_name: str):
     import pandas as pd  # type: ignore[import-untyped]
 
     expected = [field.column for field in output_schema._structure_fields.values()]
     for frame in values:
         if not isinstance(frame, pd.DataFrame):
             raise TypeError(
-                "Pandas state processor callbacks must yield pandas.DataFrame values; "
-                f"received {type(frame).__name__}."
+                f"Pandas state processor callback {callback_name!r} must yield pandas.DataFrame values; "
+                f"received {type(frame).__name__}. See Troubleshooting.md#typed-pandas-state-output-or-dependency-error."
             )
         if frame.empty and len(frame.columns) == 0:
             yield pd.DataFrame(columns=expected)
@@ -339,8 +340,9 @@ def _output_pandas_frames(values, output_schema: type[Schema]):
         actual = list(frame.columns)
         if actual != expected:
             raise ValueError(
-                "Pandas state processor output columns must match the declared Structure output Schema: "
-                f"expected {expected!r}, received {actual!r}."
+                f"Pandas state processor callback {callback_name!r} output columns must match the declared "
+                f"Structure output Schema: expected {expected!r}, received {actual!r}. "
+                "See Troubleshooting.md#typed-pandas-state-output-or-dependency-error."
             )
         yield frame
 
@@ -356,7 +358,8 @@ def _require_pandas_runtime() -> None:
     if missing:
         raise RuntimeError(
             "transform_with_state_in_pandas requires pandas, pyarrow, and protobuf on the driver and every worker; "
-            f"the driver is missing: {', '.join(missing)}. Install compatible versions in the Spark runtime."
+            f"the driver is missing: {', '.join(missing)}. Install compatible versions in the Spark runtime. "
+            "See Troubleshooting.md#typed-pandas-state-output-or-dependency-error."
         )
 
 

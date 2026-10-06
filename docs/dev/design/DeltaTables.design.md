@@ -35,7 +35,9 @@ affect unrelated operations.
 Delta column behavior is an explicit schema contract in `Schema.delta_columns`. `delta_generated(field, as_=...)`,
 `delta_identity(field, ...)`, and `delta_default(field, value=...)` declare expectations about a table the caller has
 already created. Ordinary PySpark binding checks those expectations against the Delta log schema (and Spark's current
-default metadata). Spark Connect remains outside the admitted target profiles for this integration.
+default metadata). The exact PySpark 4.1 Spark Connect package validates native table shape and CHECK metadata but
+delegates generated, identity, and default behavior to Delta; it does not use the ordinary client-side feature-metadata
+bridge. Other Connect profiles remain outside the admitted target profiles for this integration.
 Only declared generated, identity, and default columns may be omitted from insert values. `GENERATED ALWAYS` identity
 fields cannot be assigned; Delta remains responsible for checking explicitly supplied generated-column values.
 
