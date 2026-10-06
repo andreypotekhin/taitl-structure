@@ -98,10 +98,22 @@ class IdentityColumnSchema(Schema):
     delta_columns = (delta_identity(id),)
 
 
+class WrongIdentityColumnSchema(Schema):
+    id = long()
+    value = string(nullable=False)
+    delta_columns = (delta_identity(id, start=100),)
+
+
 class DefaultColumnSchema(Schema):
     id = long(nullable=False)
     value = string()
     delta_columns = (delta_default(value, value="open"),)
+
+
+class WrongDefaultColumnSchema(Schema):
+    id = long(nullable=False)
+    value = string()
+    delta_columns = (delta_default(value, value="closed"),)
 
 
 class GeneratedSource(Schema):
@@ -127,6 +139,16 @@ class AppendGeneratedColumn(Transform):
 
 
 @transform
+class AppendWrongGeneratedColumn(Transform):
+    rows = input(GeneratedSource)
+    orders = delta_table(WrongGeneratedColumnSchema)
+
+    @step(input=(rows, orders), output=orders)
+    def append(self, row: GeneratedSource, order: WrongGeneratedColumnSchema) -> None:
+        delta_append(order, row).execute()
+
+
+@transform
 class InsertIdentityColumn(Transform):
     rows = input(IdentitySource)
     orders = delta_table(IdentityColumnSchema)
@@ -141,6 +163,20 @@ class InsertIdentityColumn(Transform):
 
 
 @transform
+class InsertWrongIdentityColumn(Transform):
+    rows = input(IdentitySource)
+    orders = delta_table(WrongIdentityColumnSchema)
+
+    @step(input=(rows, orders), output=orders)
+    def insert(self, row: IdentitySource, order: WrongIdentityColumnSchema) -> None:
+        (
+            delta_merge(order, row, on=order.value == row.value)
+            .when_not_matched_insert(values=WrongIdentityColumnSchema(value=row.value))
+            .execute()
+        )
+
+
+@transform
 class InsertDefaultColumn(Transform):
     rows = input(DefaultSource)
     orders = delta_table(DefaultColumnSchema)
@@ -150,6 +186,20 @@ class InsertDefaultColumn(Transform):
         (
             delta_merge(order, row, on=order.id == row.id)
             .when_not_matched_insert(values=DefaultColumnSchema(id=row.id))
+            .execute()
+        )
+
+
+@transform
+class InsertWrongDefaultColumn(Transform):
+    rows = input(DefaultSource)
+    orders = delta_table(WrongDefaultColumnSchema)
+
+    @step(input=(rows, orders), output=orders)
+    def insert(self, row: DefaultSource, order: WrongDefaultColumnSchema) -> None:
+        (
+            delta_merge(order, row, on=order.id == row.id)
+            .when_not_matched_insert(values=WrongDefaultColumnSchema(id=row.id))
             .execute()
         )
 
@@ -389,17 +439,27 @@ def delta_spark(pytestconfig):
     backend = pytestconfig.getoption("--integration-backend")
     expected_versions = {
         "pyspark35": ("3.5.3", "3.3.3"),
-        "pyspark40": ("4.0.0", "4.1.0"),
+        "pyspark40": ("4.0.0", "4.0.1"),
         "pyspark41": ("4.1.0", "4.1.0"),
+        "spark-connect41": ("4.1.0", "4.1.0"),
     }
     expected = expected_versions.get(backend)
     if expected is None:
-        pytest.skip("Delta transform evidence runs only in classic PySpark 3.5, 4.0, and 4.1 lanes")
+        pytest.skip("Delta transform evidence requires an admitted PySpark/Delta lane")
     from importlib.metadata import version
 
     actual = (pyspark.__version__, version("delta-spark"))
     if actual != expected:
         pytest.fail(f"Delta evidence for {backend} requires PySpark/Delta {expected}, got {actual}")
+    if backend == "spark-connect41":
+        import os
+
+        from pyspark.sql import SparkSession
+
+        spark = SparkSession.builder.remote(os.environ["STRUCTURE_SPARK_REMOTE"]).getOrCreate()
+        yield spark
+        spark.stop()
+        return
     from delta import configure_spark_with_delta_pip  # type: ignore[import-not-found]
     from pyspark.sql import SparkSession
 
@@ -496,10 +556,10 @@ def test_schema_evolution_can_target_delta_table_without_output(delta_spark, tmp
         ["id", "status", "note"],
     )
     files = render_generated_project(
-            EvolvingTableMerge,
-            source_transform=f"{EvolvingTableMerge.__module__}.{EvolvingTableMerge.__name__}",
-            generated_package=PACKAGE,
-            source_schema_modules={Order.__module__: [Order, OrderV2, Change, ChangeV2]},
+        EvolvingTableMerge,
+        source_transform=f"{EvolvingTableMerge.__module__}.{EvolvingTableMerge.__name__}",
+        generated_package=PACKAGE,
+        source_schema_modules={Order.__module__: [Order, OrderV2, Change, ChangeV2]},
     )
     with generated_project(tmp_path, PACKAGE, files):
         result = EvolvingTableMerge(changes=changes, orders=table).run(
@@ -609,10 +669,11 @@ def test_missing_native_check_fails_before_mutation(delta_spark, tmp_path) -> No
     assert sorted(tuple(row) for row in table.toDF().collect()) == before
 
 
-def test_remaining_matched_and_unmatched_merge_actions(delta_spark, tmp_path) -> None:
+@pytest.mark.parametrize("mode", ["online", "generated"])
+def test_remaining_matched_and_unmatched_merge_actions(delta_spark, tmp_path, mode) -> None:
     table = _table(
         delta_spark,
-        tmp_path / "merge-families",
+        tmp_path / f"merge-families-{mode}",
         native_check=True,
         rows=(("1", "open"), ("2", "open"), ("3", "open")),
     )
@@ -620,7 +681,16 @@ def test_remaining_matched_and_unmatched_merge_actions(delta_spark, tmp_path) ->
         delta_spark,
         (("1", "update"), ("2", "delete"), ("3", "replace"), ("4", "insert"), ("5", "insert-all")),
     )
-    MergeFamilies(changes=changes, orders=table).run(session(delta_spark, execution_mode="online"))
+    files = render_generated_project(
+        MergeFamilies,
+        source_transform=f"{MergeFamilies.__module__}.MergeFamilies",
+        generated_package=PACKAGE,
+        source_schema_modules={Order.__module__: [Order, Change]},
+    )
+    with generated_project(tmp_path, PACKAGE, files):
+        MergeFamilies(changes=changes, orders=table).run(
+            session(delta_spark, execution_mode=mode, generated_package=PACKAGE)
+        )
     assert sorted(tuple(row) for row in table.toDF().collect()) == [
         ("1", "update"),
         ("3", "replace"),
@@ -629,14 +699,24 @@ def test_remaining_matched_and_unmatched_merge_actions(delta_spark, tmp_path) ->
     ]
 
 
-def test_unmatched_by_source_update_and_delete(delta_spark, tmp_path) -> None:
+@pytest.mark.parametrize("mode", ["online", "generated"])
+def test_unmatched_by_source_update_and_delete(delta_spark, tmp_path, mode) -> None:
     table = _table(
         delta_spark,
-        tmp_path / "by-source",
+        tmp_path / f"by-source-{mode}",
         native_check=True,
         rows=(("1", "keep"), ("2", "remove")),
     )
-    MergeBySource(changes=_changes(delta_spark, ()), orders=table).run(session(delta_spark, execution_mode="online"))
+    files = render_generated_project(
+        MergeBySource,
+        source_transform=f"{MergeBySource.__module__}.MergeBySource",
+        generated_package=PACKAGE,
+        source_schema_modules={Order.__module__: [Order, Change]},
+    )
+    with generated_project(tmp_path, PACKAGE, files):
+        MergeBySource(changes=_changes(delta_spark, ()), orders=table).run(
+            session(delta_spark, execution_mode=mode, generated_package=PACKAGE)
+        )
     assert sorted(tuple(row) for row in table.toDF().collect()) == [("1", "stale")]
 
 
@@ -662,11 +742,21 @@ def test_check_match_modes_and_shape_preflight(delta_spark, tmp_path) -> None:
         ChecksOff(orders=unchecked).run(session(delta_spark, execution_mode="online"))
 
 
-def test_native_check_rejects_invalid_update(delta_spark, tmp_path) -> None:
-    table = _table(delta_spark, tmp_path / "native-check", native_check=True)
+@pytest.mark.parametrize("mode", ["online", "generated"])
+def test_native_check_rejects_invalid_update(delta_spark, tmp_path, mode) -> None:
+    table = _table(delta_spark, tmp_path / f"native-check-{mode}", native_check=True)
     before = sorted(tuple(row) for row in table.toDF().collect())
-    with pytest.raises(Exception, match="valid_status"):
-        InvalidUpdate(orders=table).run(session(delta_spark, execution_mode="online"))
+    files = render_generated_project(
+        InvalidUpdate,
+        source_transform=f"{InvalidUpdate.__module__}.InvalidUpdate",
+        generated_package=PACKAGE,
+        source_schema_modules={Order.__module__: [Order]},
+    )
+    with generated_project(tmp_path, PACKAGE, files):
+        with pytest.raises(Exception, match="valid_status"):
+            InvalidUpdate(orders=table).run(
+                session(delta_spark, execution_mode=mode, generated_package=PACKAGE)
+            )
     assert sorted(tuple(row) for row in table.toDF().collect()) == before
 
 
@@ -713,33 +803,46 @@ def test_history_and_detail_reads_are_typed_and_use_runtime_limit(delta_spark, t
     assert DeltaTable.forPath(delta_spark, str(path)).toDF().count() == 2
 
 
-def test_restore_optimize_and_vacuum_effects_on_disposable_table(delta_spark, tmp_path) -> None:
+@pytest.mark.parametrize("mode", ["online", "generated"])
+def test_restore_optimize_and_vacuum_effects_on_disposable_table(delta_spark, tmp_path, mode) -> None:
     from delta.tables import DeltaTable  # type: ignore[import-not-found]
 
-    path = tmp_path / "maintenance"
+    def run(subject, **inputs):
+        if mode == "generated":
+            files = render_generated_project(
+                subject,
+                source_transform=f"{subject.__module__}.{subject.__name__}",
+                generated_package=PACKAGE,
+                source_schema_modules={Order.__module__: [Order]},
+            )
+            with generated_project(tmp_path, PACKAGE, files):
+                return subject(**inputs).run(session(delta_spark, execution_mode=mode, generated_package=PACKAGE))
+        return subject(**inputs).run(session(delta_spark, execution_mode=mode))
+
+    path = tmp_path / f"maintenance-{mode}"
     table = _table(delta_spark, path, native_check=True)
     original_version = table.history(1).first()["version"]
     delta_spark.sql(f"UPDATE delta.`{path}` SET status = 'changed' WHERE id = '1'")
 
-    RestoreOrders(orders=table, version=original_version).run(session(delta_spark, execution_mode="online"))
+    run(RestoreOrders, orders=table, version=original_version)
     reopened = DeltaTable.forPath(delta_spark, str(path))
     assert sorted(tuple(row) for row in reopened.toDF().collect()) == [("1", "open"), ("2", "open")]
     assert reopened.history(1).first()["operation"] == "RESTORE"
 
     before_rows = sorted(tuple(row) for row in reopened.toDF().collect())
-    CompactOrders(orders=reopened).run(session(delta_spark, execution_mode="online"))
-    ZOrderOrders(orders=reopened).run(session(delta_spark, execution_mode="online"))
+    run(CompactOrders, orders=reopened)
+    run(ZOrderOrders, orders=reopened)
     assert sorted(tuple(row) for row in DeltaTable.forPath(delta_spark, str(path)).toDF().collect()) == before_rows
 
     delta_spark.sql(f"DELETE FROM delta.`{path}` WHERE id = '2'")
     before_files = set(path.rglob("*.parquet"))
     assert before_files
     with pytest.raises(Exception, match="retention"):
-        VacuumOrders(orders=reopened, retention=0.0).run(session(delta_spark, execution_mode="online"))
+        run(VacuumOrders, orders=reopened, retention=0.0)
     original_guard = delta_spark.conf.get("spark.databricks.delta.retentionDurationCheck.enabled", "true")
     delta_spark.conf.set("spark.databricks.delta.retentionDurationCheck.enabled", "false")
     try:
-        VacuumOrders(orders=reopened, retention=0.0).run(session(delta_spark, execution_mode="online"))
+        run(VacuumOrders, orders=reopened, retention=0.0)
     finally:
         delta_spark.conf.set("spark.databricks.delta.retentionDurationCheck.enabled", original_guard)
     after_files = set(path.rglob("*.parquet"))
@@ -747,24 +850,34 @@ def test_restore_optimize_and_vacuum_effects_on_disposable_table(delta_spark, tm
     assert DeltaTable.forPath(delta_spark, str(path)).toDF().count() == 1
 
 
-def test_restore_can_return_a_prior_table_schema(delta_spark, tmp_path) -> None:
+@pytest.mark.parametrize("mode", ["online", "generated"])
+def test_restore_can_return_a_prior_table_schema(delta_spark, tmp_path, mode) -> None:
     from delta.tables import DeltaTable  # type: ignore[import-not-found]
 
-    path = tmp_path / "restore-prior-schema"
+    path = tmp_path / f"restore-prior-schema-{mode}"
     table = _table(delta_spark, path, native_check=True)
     before_schema_change = table.history(1).first()["version"]
     delta_spark.sql(f"ALTER TABLE delta.`{path}` ADD COLUMNS (note STRING)")
     assert set(DeltaTable.forPath(delta_spark, str(path)).toDF().columns) == {"id", "status", "note"}
 
-    RestoreSchemaOrders(current_orders=table, version=before_schema_change).run(
-        session(delta_spark, execution_mode="online")
+    files = render_generated_project(
+        RestoreSchemaOrders,
+        source_transform=f"{RestoreSchemaOrders.__module__}.RestoreSchemaOrders",
+        generated_package=PACKAGE,
+        source_schema_modules={Order.__module__: [Order, OrderV2]},
     )
+    with generated_project(tmp_path, PACKAGE, files):
+        RestoreSchemaOrders(current_orders=table, version=before_schema_change).run(
+            session(delta_spark, execution_mode=mode, generated_package=PACKAGE)
+        )
     restored = DeltaTable.forPath(delta_spark, str(path))
     assert set(restored.toDF().columns) == {"id", "status"}
     assert restored.history(1).first()["operation"] == "RESTORE"
 
 
 def test_delta_column_feature_metadata_contract(delta_spark, tmp_path) -> None:
+    if type(delta_spark).__module__.startswith("pyspark.sql.connect"):
+        pytest.skip("Client JVM metadata inspection belongs to the ordinary PySpark regression lane")
     from delta.tables import DeltaTable, IdentityGenerator  # type: ignore[import-not-found]
     from pyspark.sql.types import LongType
 
@@ -799,6 +912,8 @@ def test_delta_column_feature_metadata_contract(delta_spark, tmp_path) -> None:
     )
     identity_table = DeltaTable.forPath(delta_spark, str(identity_path)).toDF()
     validate_delta_table(DeltaTable.forPath(delta_spark, str(identity_path)), IdentityColumnSchema)
+    with pytest.raises(ValueError, match="declared identity mode, start, and step"):
+        validate_delta_table(DeltaTable.forPath(delta_spark, str(identity_path)), WrongIdentityColumnSchema)
     assert identity_table.schema["id"].metadata == {}
     assert sorted(row.id for row in identity_table.collect()) == [1, 2]
     identity_log = delta_spark._jvm.org.apache.spark.sql.delta.DeltaLog.forTable(
@@ -824,6 +939,8 @@ def test_delta_column_feature_metadata_contract(delta_spark, tmp_path) -> None:
     delta_spark.sql(f"INSERT INTO {default_name} (id) VALUES (1)")
     default_table = DeltaTable.forPath(delta_spark, str(default_path)).toDF()
     validate_delta_table(DeltaTable.forPath(delta_spark, str(default_path)), DefaultColumnSchema)
+    with pytest.raises(ValueError, match="declared default"):
+        validate_delta_table(DeltaTable.forPath(delta_spark, str(default_path)), WrongDefaultColumnSchema)
     assert default_table.schema["value"].metadata.get("CURRENT_DEFAULT") == "'open'"
     assert [row.value for row in default_table.collect()] == ["open"]
 
@@ -904,3 +1021,127 @@ def test_declared_auto_columns_can_be_omitted_from_append_and_merge_writes(delta
     identity_ids = [row.id for row in identity_table.toDF().collect()]
     assert len(identity_ids) == 1 and identity_ids[0] > 0
     assert [(row.id, row.value) for row in default_table.toDF().collect()] == [(1, "open")]
+
+
+@pytest.mark.parametrize("mode", ["online", "generated"])
+def test_connect_declaration_drift_delegates_values_to_delta(delta_spark, tmp_path, mode) -> None:
+    if not type(delta_spark).__module__.startswith("pyspark.sql.connect"):
+        pytest.skip("Declaration drift delegation is specific to Connect 4.1")
+    from delta.tables import DeltaTable, IdentityGenerator  # type: ignore[import-not-found]
+    from pyspark.sql.types import LongType
+
+    generated_path = tmp_path / f"drift-generated-{mode}"
+    DeltaTable.create(delta_spark).location(str(generated_path)).addColumn(
+        "base", dataType=LongType(), nullable=False
+    ).addColumn("derived", dataType=LongType(), generatedAlwaysAs="base + 1").execute()
+    delta_spark.createDataFrame([(1,)], ["base"]).write.format("delta").mode("append").save(str(generated_path))
+    generated = DeltaTable.forPath(delta_spark, str(generated_path))
+
+    identity_path = tmp_path / f"drift-identity-{mode}"
+    identity_name = f"identity_drift_{abs(hash(str(identity_path)))}"
+    DeltaTable.create(delta_spark).tableName(identity_name).location(str(identity_path)).addColumn(
+        "id", dataType=LongType(), generatedAlwaysAs=IdentityGenerator()
+    ).addColumn("value", "STRING", nullable=False).execute()
+    delta_spark.createDataFrame([("direct",)], ["value"]).write.format("delta").mode("append").save(
+        str(identity_path)
+    )
+    identity = DeltaTable.forPath(delta_spark, str(identity_path))
+
+    default_path = tmp_path / f"drift-default-{mode}"
+    default_name = f"default_drift_{abs(hash(str(default_path)))}"
+    delta_spark.sql(
+        f"CREATE TABLE {default_name} (id BIGINT NOT NULL, value STRING DEFAULT 'open') "
+        "USING DELTA TBLPROPERTIES ('delta.feature.allowColumnDefaults' = 'supported') "
+        f"LOCATION '{default_path}'"
+    )
+    delta_spark.createDataFrame([(1,)], ["id"]).write.format("delta").mode("append").save(str(default_path))
+    default = DeltaTable.forPath(delta_spark, str(default_path))
+
+    cases = (
+        (AppendWrongGeneratedColumn, delta_spark.createDataFrame([(2,)], ["base"]), generated),
+        (InsertWrongIdentityColumn, delta_spark.createDataFrame([("declared",)], ["value"]), identity),
+        (InsertWrongDefaultColumn, delta_spark.createDataFrame([(2,)], ["id"]), default),
+    )
+    schema_modules = {
+        Order.__module__: [
+            WrongGeneratedColumnSchema,
+            WrongIdentityColumnSchema,
+            WrongDefaultColumnSchema,
+            GeneratedSource,
+            IdentitySource,
+            DefaultSource,
+        ]
+    }
+    run_session = session(delta_spark, execution_mode=mode, generated_package=PACKAGE)
+    for subject, rows, table in cases:
+        if mode == "generated":
+            files = render_generated_project(
+                subject,
+                source_transform=f"{subject.__module__}.{subject.__name__}",
+                generated_package=PACKAGE,
+                source_schema_modules=schema_modules,
+            )
+            with generated_project(tmp_path, PACKAGE, files):
+                subject(rows=rows, orders=table).run(run_session)
+        else:
+            subject(rows=rows, orders=table).run(run_session)
+
+    assert sorted((row.base, row.derived) for row in generated.toDF().collect()) == [(1, 2), (2, 3)]
+    identity_rows = {row.value: row.id for row in identity.toDF().collect()}
+    assert identity_rows["direct"] > 0
+    assert identity_rows["declared"] > identity_rows["direct"]
+    assert sorted((row.id, row.value) for row in default.toDF().collect()) == [(1, "open"), (2, "open")]
+
+
+def test_connect_binding_request_count_against_direct_delta_write(delta_spark, tmp_path, monkeypatch) -> None:
+    if not type(delta_spark).__module__.startswith("pyspark.sql.connect"):
+        pytest.skip("Remote request counts are specific to Connect 4.1")
+    from time import perf_counter
+
+    from delta.tables import DeltaTable  # type: ignore[import-not-found]
+    from pyspark.sql.connect.client.core import SparkConnectClient
+    from pyspark.sql.types import LongType
+
+    from structure.plugin.pyspark.delta import runtime
+
+    path = tmp_path / "binding-requests"
+    DeltaTable.create(delta_spark).location(str(path)).addColumn(
+        "base", dataType=LongType(), nullable=False
+    ).addColumn("derived", dataType=LongType(), generatedAlwaysAs="base + 1").execute()
+    table = DeltaTable.forPath(delta_spark, str(path))
+    rows = delta_spark.createDataFrame([(3,)], ["base"])
+    calls = {"execute": 0, "analyze": 0, "refresh": 0}
+
+    def count(name, original):
+        def wrapped(*args, **kwargs):
+            calls[name] += 1
+            return original(*args, **kwargs)
+
+        return wrapped
+
+    with monkeypatch.context() as patch:
+        patch.setattr(
+            SparkConnectClient,
+            "_execute_and_fetch_as_iterator",
+            count("execute", SparkConnectClient._execute_and_fetch_as_iterator),
+        )
+        patch.setattr(SparkConnectClient, "_analyze", count("analyze", SparkConnectClient._analyze))
+        patch.setattr(runtime, "fresh_delta_frame", count("refresh", runtime.fresh_delta_frame))
+        patch.setattr(runtime, "_delta_log_field_metadata", lambda _: pytest.fail("Connect requested client JVM metadata"))
+        started = perf_counter()
+        runtime.validated_delta_frame(table, WrongGeneratedColumnSchema)
+        binding_seconds = perf_counter() - started
+        binding_calls = dict(calls)
+        assert binding_calls["refresh"] == 1
+
+        calls.update(execute=0, analyze=0, refresh=0)
+        started = perf_counter()
+        rows.write.format("delta").mode("append").save(str(path))
+        direct_seconds = perf_counter() - started
+        direct_calls = dict(calls)
+
+    assert [(row.base, row.derived) for row in table.toDF().collect()] == [(3, 4)]
+    print(
+        f"Connect binding: {binding_calls}, {binding_seconds:.3f}s; "
+        f"direct Delta append: {direct_calls}, {direct_seconds:.3f}s"
+    )

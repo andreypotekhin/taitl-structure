@@ -25,7 +25,7 @@ from structure.plugin.pyspark import PySpark
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.plugin.pyspark.execution.logic.PlanBoundary import close_plan_boundaries
 
-BACKENDS = ("pyspark35", "pyspark40", "pyspark41", "spark-connect35", "spark-connect40")
+BACKENDS = ("pyspark35", "pyspark40", "pyspark41", "spark-connect35", "spark-connect40", "spark-connect41")
 CLASSIC_ONLY_TOKENS = (
     "SparkContext",
     "sparkContext",

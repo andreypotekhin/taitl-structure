@@ -5,9 +5,9 @@ from __future__ import annotations
 import json
 import math
 import re
-from importlib.metadata import PackageNotFoundError, version
 from datetime import date, datetime
 from decimal import Decimal
+from importlib.metadata import PackageNotFoundError, version
 from zoneinfo import ZoneInfo
 
 from structure.plugin.pyspark.delta.checks import bind_checks
@@ -15,18 +15,35 @@ from structure.plugin.pyspark.delta.schema import resolve_delta_columns
 
 
 def validate_delta_table(table, schema, *, mode: str = "expression"):
+    validated_delta_frame(table, schema, modes=(mode,))
+    return table
+
+
+def validated_delta_frame(table, schema, *, modes=("expression",)):
+    """Validate a caller-owned table and return its single refreshed binding frame."""
     try:
         from delta.tables import DeltaTable  # type: ignore[import-not-found]
         from pyspark.sql import types as T
     except ImportError as error:
         raise RuntimeError("Delta table bindings require the optional delta-spark and pyspark packages") from error
+    connect_table = False
     if not isinstance(table, DeltaTable):
-        raise TypeError(f"{schema.__name__} Delta binding requires delta.tables.DeltaTable")
+        try:
+            from delta.connect.tables import DeltaTable as ConnectDeltaTable  # type: ignore[import-not-found]
+            from pyspark.sql.connect.session import SparkSession as ConnectSparkSession
+        except ImportError:
+            raise TypeError(f"{schema.__name__} Delta binding requires a native DeltaTable") from None
+        if not isinstance(table, ConnectDeltaTable):
+            raise TypeError(f"{schema.__name__} Delta binding requires a native DeltaTable")
+        connect_table = True
+        if not isinstance(table.toDF().sparkSession, ConnectSparkSession):
+            raise TypeError(f"{schema.__name__} Delta Connect binding requires a Connect session")
     require_compatible_delta_runtime(table)
     from structure.plugin.pyspark.api.PySpark import PySpark
 
     expected = PySpark.schema.materialize()(schema, types=T)
-    actual = fresh_delta_frame(table).schema
+    frame = fresh_delta_frame(table)
+    actual = frame.schema
     expected_fields = {field.name: field for field in expected}
     actual_fields = {field.name: field for field in actual}
     if expected_fields.keys() != actual_fields.keys():
@@ -38,28 +55,29 @@ def validate_delta_table(table, schema, *, mode: str = "expression"):
         found = actual_fields[name]
         if not validator._same_data_type(found.dataType, field.dataType) or found.nullable != field.nullable:
             raise ValueError(f"Delta table for {schema.__name__}.{name} has incompatible type or nullability")
-    _validate_delta_column_metadata(table, schema, actual)
-    if mode == "off":
-        return table
+    if not connect_table:
+        _validate_delta_column_metadata(table, schema, actual)
+    if set(modes) == {"off"}:
+        return frame
     checks = bind_checks(schema)
     if not checks:
-        return table
+        return frame
     properties = table.detail().select("properties").first()["properties"] or {}
     native = {
         key[len("delta.constraints.") :].casefold(): value
         for key, value in properties.items()
         if key.casefold().startswith("delta.constraints.")
     }
-    case_sensitive = table.toDF().sparkSession.conf.get("spark.sql.caseSensitive", "false").lower() == "true"
+    case_sensitive = frame.sparkSession.conf.get("spark.sql.caseSensitive", "false").lower() == "true"
     for check in checks:
         stored = native.get(check.name.casefold())
         if stored is None:
             raise ValueError(
                 f"Delta table for {schema.__name__} is missing CHECK {check.name}; provision it before running the transform"
             )
-        if mode == "expression" and _check_tree(check.predicate, case_sensitive) != _sql_tree(stored, case_sensitive):
+        if "expression" in modes and _check_tree(check.predicate, case_sensitive) != _sql_tree(stored, case_sensitive):
             raise ValueError(f"Delta CHECK {check.name} differs from {schema.__name__}.constraints")
-    return table
+    return frame
 
 
 def require_compatible_delta_runtime(table) -> None:
@@ -80,10 +98,14 @@ def require_compatible_delta_runtime(table) -> None:
         ) from None
     compatible = (
         (spark_parts[:2] == (3, 5) and spark_parts >= (3, 5, 3) and delta_line == "3.3")
-        or (spark_parts[:2] in {(4, 0), (4, 1)} and delta_line == "4.1")
+        or (spark_parts[:2] == (4, 0) and delta_line == "4.0")
+        or (spark_parts[:2] == (4, 1) and delta_line == "4.1")
     )
     if not compatible:
-        supported = "PySpark 3.5.3+ with Delta 3.3.x, or PySpark 4.0.x/4.1.x with Delta 4.1.x"
+        supported = (
+            "PySpark 3.5.3+ with Delta 3.3.x, PySpark 4.0.x with Delta 4.0.x, "
+            "or PySpark 4.1.x with Delta 4.1.x"
+        )
         raise RuntimeError(
             f"Unsupported Spark/Delta runtime pair: PySpark {spark_version} with delta-spark {delta_version}. "
             f"Supported pairs are {supported}."
@@ -94,7 +116,11 @@ def _validate_delta_column_metadata(table, schema, spark_schema) -> None:
     declarations = resolve_delta_columns(schema)
     if not declarations:
         return
-    delta_metadata = _delta_log_field_metadata(table)
+    delta_metadata = (
+        _delta_log_field_metadata(table)
+        if any(declaration.kind in {"generated", "identity"} for declaration in declarations.values())
+        else {}
+    )
     spark_fields = {field.name: field for field in spark_schema}
     structure_fields = schema._structure_fields
     for name, declaration in declarations.items():
@@ -169,6 +195,11 @@ def fresh_delta_frame(table):
 
     frame = table.toDF()
     location = table.detail().select("location").first()["location"]
+    if not isinstance(table, DeltaTable):
+        from delta.connect.tables import DeltaTable as ConnectDeltaTable  # type: ignore[import-not-found]
+
+        if isinstance(table, ConnectDeltaTable):
+            return ConnectDeltaTable.forPath(frame.sparkSession, location).toDF()
     return DeltaTable.forPath(frame.sparkSession, location).toDF()
 
 

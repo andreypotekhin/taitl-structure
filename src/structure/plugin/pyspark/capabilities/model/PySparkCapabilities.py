@@ -389,6 +389,8 @@ class PySparkCapabilities:
             ">=4.1,<4.2",
         }:
             base_capabilities |= DELTA_CAPABILITIES
+        elif self.id.variant == "spark-connect" and target_profile == ">=4.1,<4.2":
+            base_capabilities |= DELTA_CAPABILITIES
         if self.id.variant == "ordinary" and target_profile in MATERIALIZATION_PROFILES | {">=4.1,<4.2"}:
             base_capabilities |= MATERIALIZATION_CAPABILITIES
         elif self.id.variant == "spark-connect" and target_profile == ">=4.0,<4.1":
@@ -416,6 +418,21 @@ class PySparkCapabilities:
 
         if requirement.key() in self.supported:
             return CapabilityDecision.ok(backend=self.id, requirement=requirement)
+
+        if requirement.group == "delta":
+            return CapabilityDecision.unsupported_capability(
+                backend=self.id,
+                requirement=requirement,
+                rationale=(
+                    f"Delta {requirement.name} is not admitted for PySpark {self.id.target} "
+                    f"with variant {self.id.variant}."
+                ),
+                use=(
+                    'Use PySpark ">=4.1,<4.2" with variant "spark-connect" and Delta Connect 4.1, or '
+                    'choose an admitted ordinary PySpark profile with its pinned delta-spark version. '
+                    'See docs/compatibility/DeltaTables.compat.md.'
+                ),
+            )
 
         return CapabilityDecision.unsupported_capability(
             backend=self.id,

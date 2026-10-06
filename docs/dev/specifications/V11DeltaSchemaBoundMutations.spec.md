@@ -9,17 +9,20 @@ Public usage and target status: [Delta tables API](../../api/DeltaTables.api.md)
 
 ## Status and contract
 
-The following surfaces are implemented and have isolated ordinary PySpark 4.1.0 / Delta 4.1.0 evidence. Public support
-remains release-gated until V11's 4.1 capability profile and integration matrix are admitted.
+The following surfaces are implemented and admitted for ordinary PySpark 3.5, 4.0, and 4.1 with pinned live evidence
+for PySpark 3.5.3 / Delta 3.3.3, PySpark 4.0.0 / Delta 4.0.1, and PySpark 4.1.0 / Delta 4.1.0. Spark Connect
+4.1.0 / Delta 4.1.0 has separate live evidence. The broad `>=3.5,<4.1` profile admits only helpers supported on
+both 3.5 and 4.0. Other Connect profiles and PySpark 4.2 are outside this admission; see the
+[compatibility ledger](../../compatibility/DeltaTables.compat.md).
 
 | Surface | Status | Contract |
 | --- | --- | --- |
-| `Schema.constraints = (check(...),)` | implemented; release-gated | Immutable, symbolic CHECK declarations with stable names. |
-| `delta_input(Schema)` | implemented; release-gated | Caller-bound, read-only Delta table relation. |
-| `delta_table(Schema)` | implemented; release-gated | Caller-bound read/write relation for same-schema effects. |
-| `delta_output(Schema)` | implemented; release-gated | Result schema for an explicit schema transition. |
-| `delta_delete`, `delta_update`, `delta_merge` | implemented; release-gated | Compiled, typed table mutations in effect steps. |
-| `with_schema_evolution(to=Schema)` on merge/append | implemented; release-gated | Per-operation evolution to the explicitly selected Schema. |
+| `Schema.constraints = (check(...),)` | admitted; ordinary 3.5–4.1, Connect 4.1 | Immutable, symbolic CHECK declarations with stable names. |
+| `delta_input(Schema)` | admitted; ordinary 3.5–4.1, Connect 4.1 | Caller-bound, read-only Delta table relation. |
+| `delta_table(Schema)` | admitted; ordinary 3.5–4.1, Connect 4.1 | Caller-bound read/write relation for same-schema effects. |
+| `delta_output(Schema)` | admitted; ordinary 3.5–4.1, Connect 4.1 | Result schema for an explicit schema transition. |
+| `delta_delete`, `delta_update`, `delta_merge` | admitted; ordinary 3.5–4.1, Connect 4.1 | Compiled, typed table mutations in effect steps. |
+| `with_schema_evolution(to=Schema)` on merge/append | admitted; ordinary 3.5–4.1, Connect 4.1 | Per-operation evolution to the explicitly selected Schema. |
 
 ## Normative behavior
 
@@ -57,8 +60,10 @@ remains release-gated until V11's 4.1 capability profile and integration matrix 
    by Structure. A failure keeps its native exception type and gains transform/step context. Earlier successful steps
    may have committed. Structure's internal post-mutation reads use a newly opened native handle. The returned
    original handle can retain a previously materialized `toDF()` snapshot; callers reopen it to inspect the latest commit.
-8. The first tested pair is ordinary PySpark 4.1.0 with Delta 4.1.0. Spark Connect is design-gated until
-   separately tested. Missing Delta runtimes fail with an actionable diagnostic.
+8. The admitted ordinary pairs are PySpark 3.5.3 / Delta 3.3.3, PySpark 4.0.0 / Delta 4.0.1, and PySpark 4.1.0 /
+   Delta 4.1.0. Spark Connect admits only PySpark 4.1.0 / Delta 4.1.0; other Connect profiles and PySpark 4.2 are
+   outside this admission. Missing Delta runtimes and incompatible Spark/Delta pairs
+   fail with an actionable diagnostic before table effects.
 
 ## Acceptance
 
@@ -114,5 +119,6 @@ unknown output schemas, metadata installation, and overwrite schema replacement 
    It records one explicit mutation and writes with Delta `replaceWhere`; unsupported predicate expressions fail
    before the commit. Delta enforces that all source rows satisfy the predicate. The operation does not evolve the
    target schema.
-6. The snapshot/CDF/replacement additions remain release-gated until pinned live tests pass in ordinary PySpark 4.1.0
-   with Delta 4.1.0 for both online and generated execution. Spark Connect is outside the evidence scope.
+6. Snapshot, CDF, and replacement operations are admitted on the ordinary profiles and Connect 4.1 listed above,
+   with online/generated parity covered by each pinned lane. Other Connect profiles and PySpark 4.2 remain outside
+   this admission.

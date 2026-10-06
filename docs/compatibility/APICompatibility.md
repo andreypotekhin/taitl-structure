@@ -14,7 +14,7 @@ each entry must name its owner boundary, evidence, and caller remedy.
 ## Delta Tables
 
 Typed Delta mutations, inspection reads, generated/identity/default columns, and maintenance effects have focused live
-evidence on ordinary PySpark 4.1.0 / Delta 4.1.0 and remain release-gated pending V11's wider admission matrix. They
+evidence on ordinary and Connect PySpark 4.1.0 / Delta 4.1.0 and remain release-gated pending V11's wider admission matrix. They
 are separate from the default PySpark `>=3.5,<4.1`
 DataFrame API baseline. See the [Delta API](../api/DeltaTables.api.md) and
 [Delta compatibility ledger](DeltaTables.compat.md) for the precise operations, schema evolution rules, and target

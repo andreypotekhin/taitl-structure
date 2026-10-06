@@ -77,11 +77,12 @@ rows satisfy the predicate. This operation is a native commit, not a transaction
 declared result fields, which lets transform code consume recent commits or table location/partition metadata without
 hard-coding every vendor column.
 
-`Schema.delta_columns` records explicit expectations for generated, identity, and default fields. Runtime binding
-compares those declarations with Delta's own schema metadata before the compiler relaxes insert completeness. Delta
-generated expressions and identity attributes reside in Delta log schema metadata; defaults are visible through Spark's
-`CURRENT_DEFAULT` column metadata. These declarations do not install table features or make any field optional in
-ordinary DataFrame schemas.
+`Schema.delta_columns` records explicit expectations for generated, identity, and default fields. Ordinary PySpark
+binding compares them with Delta's own schema metadata. Connect 4.1 uses them for typing and insert omission, then
+lets Delta compute values or reject a write. A mismatched declaration can produce different values without a Structure
+error on Connect. Delta generated expressions and identity attributes reside in Delta log schema metadata; defaults
+are visible through Spark's `CURRENT_DEFAULT` column metadata. These declarations do not install table features or
+make any field optional in ordinary DataFrame schemas.
 
 Restore, optimize, and vacuum are explicit effect calls. Restore creates a new version; optimize changes physical file
 layout; vacuum removes eligible unreferenced files. Structure does not expose native metric rows as transform results.

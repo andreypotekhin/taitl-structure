@@ -250,7 +250,7 @@ claiming that an unimplemented backend was checked.
 
 ## Compatibility Policy
 
-Structure follows semantic versioning after 1.0. Major releases may change DSL behavior, runtime APIs, config keys,
+Structure follows semantic versioning after 1.0.0. Major releases may change DSL behavior, runtime APIs, config keys,
 generated helper contracts, compatibility rules, supported Python/PySpark lines, or traceability/config schemas. Minor
 releases may add features, diagnostics, target support, or backward-compatible metadata. Patch releases fix bugs and
 documentation without changing public behavior.
@@ -269,8 +269,7 @@ structure compile --fail-on-diff
 Compiler traceability uses a `major.minor` schema version. Breaking changes require a major bump; additive fields
 require a minor bump, and consumers should ignore unknown additive fields. Config values and unknown keys remain strict;
 New optional keys may appear in minor releases, while changing or removing a documented key requires a major release
-after
-1.0.
+after 1.0.0.
 
 
 ## Diagnostics

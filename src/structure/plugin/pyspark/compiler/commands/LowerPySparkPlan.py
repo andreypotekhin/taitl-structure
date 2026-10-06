@@ -2,7 +2,13 @@ from collections import Counter
 from typing import cast
 
 from structure.dsl import Schema
-from structure.plugin.api.v1.model import BackendCapabilities, CapabilityRequirement, TransformPlan
+from structure.plugin.api.v1.model import (
+    BackendCapabilities,
+    CapabilityRequirement,
+    InputPlan,
+    OutputPlan,
+    TransformPlan,
+)
 from structure.plugin.pyspark.compiler.commands.ValidatePySparkHooks import ValidatePySparkHooks
 from structure.plugin.pyspark.compiler.commands.ValidatePySparkSchemaCapabilities import (
     ValidatePySparkSchemaCapabilities,
@@ -40,13 +46,14 @@ class LowerPySparkPlan:
             raise ValueError("PySpark plan lowering requires explicit capabilities.")
         self._hooks(plan)
         self._schema_capabilities(plan, capabilities=target)
-        for binding in (*plan.inputs, *plan.outputs):
+        for entry in (*plan.inputs, *plan.outputs):
+            binding = cast(InputPlan | OutputPlan, entry)
             if binding.binding.startswith("delta"):
-                target.require(CapabilityRequirement(group="delta", name="binding"))
+                target.require(CapabilityRequirement(group="delta", name="binding", docs="docs/compatibility/DeltaTables.compat.md"))
                 if getattr(binding.schema, "constraints", ()):
-                    target.require(CapabilityRequirement(group="delta", name="check"))
+                    target.require(CapabilityRequirement(group="delta", name="check", docs="docs/compatibility/DeltaTables.compat.md"))
                 if getattr(binding.schema, "delta_columns", ()):
-                    target.require(CapabilityRequirement(group="delta", name="columns"))
+                    target.require(CapabilityRequirement(group="delta", name="columns", docs="docs/compatibility/DeltaTables.compat.md"))
         inputs = tuple(
             self._inputs.map(
                 input.name,

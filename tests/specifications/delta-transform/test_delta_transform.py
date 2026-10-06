@@ -114,7 +114,7 @@ def test_delta_capabilities_are_available_on_admitted_classic_profiles(profile, 
     ).supported
 
 
-def test_delta_capability_is_not_claimed_for_spark_connect() -> None:
+def test_delta_capability_is_not_claimed_for_connect_40() -> None:
     from structure.plugin.api.v1.model import CapabilityRequirement
     from structure.plugin.pyspark.capabilities.model.PySparkCapabilities import PySparkCapabilities
 
@@ -122,11 +122,42 @@ def test_delta_capability_is_not_claimed_for_spark_connect() -> None:
         target_profile=">=4.0,<4.1", target_variant="spark-connect"
     ).supports(CapabilityRequirement(group="delta", name="binding"))
     assert not decision.supported
+    assert ">=4.1,<4.2" in decision.use
+
+
+@pytest.mark.parametrize("capability", sorted({
+    "binding", "check", "columns", "delete", "update", "merge", "append", "replace_where",
+    "schema_evolution", "snapshot", "changes", "history", "detail", "restore", "optimize", "vacuum",
+}))
+def test_delta_capabilities_are_available_on_connect_41(capability) -> None:
+    from structure.plugin.api.v1.model import CapabilityRequirement
+    from structure.plugin.pyspark.capabilities.model.PySparkCapabilities import PySparkCapabilities
+
+    assert PySparkCapabilities(target_profile=">=4.1,<4.2", target_variant="spark-connect").supports(
+        CapabilityRequirement(group="delta", name=capability)
+    ).supported
+
+
+@pytest.mark.parametrize("profile", [">=3.5,<4.1", ">=3.5,<4.0", ">=4.0,<4.1", ">=4.2,<4.3"])
+def test_delta_connect_other_profiles_fail_before_plan_lowering(profile) -> None:
+    from structure.plugin.api.v1.model import BackendCapabilityError
+
+    @transform
+    class Delete(Transform):
+        orders = delta_table(Order)
+
+        def delete(self, order: Order) -> None:
+            delta_delete(order, where=True)
+
+    with pytest.raises(BackendCapabilityError) as raised:
+        _compile(Delete, profile=profile, variant="spark-connect")
+    assert raised.value.diagnostic.feature_name == "binding"
+    assert ">=4.1,<4.2" in raised.value.diagnostic.use
 
 
 @pytest.mark.parametrize(
     ("spark_version", "delta_version"),
-    [("3.5.0", "4.1.0"), ("3.5.3", "3.3.3"), ("4.0.0", "4.1.0"), ("4.1.0", "4.1.0")],
+    [("3.5.0", "4.1.0"), ("3.5.3", "3.3.3"), ("4.0.0", "4.0.1"), ("4.1.0", "4.1.0")],
 )
 def test_delta_runtime_pair_check(monkeypatch, spark_version, delta_version) -> None:
     from structure.plugin.pyspark.delta import runtime
@@ -322,7 +353,7 @@ def test_generated_code_preserves_table_handle() -> None:
         runtime_module="tests.runtime",
     )
     ast.parse(source)
-    assert "validate_delta_table(orders, _StructureDeltaSchema_0" in source
+    assert "validated_delta_frame(orders, _StructureDeltaSchema_0" in source
     assert "self._delta_tables['orders']" in source
     assert ".delete(F.lit(True))" in source
 

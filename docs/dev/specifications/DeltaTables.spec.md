@@ -54,8 +54,10 @@ caller-owned. Current support is release-gated as described in the [compatibilit
 4. `Schema.constraints` declares expected native `CHECK` constraints. Structure validates them but never creates,
    changes, or drops Delta constraints. `delta_check_match` supports `expression`, `name`, and `off`; `off` skips CHECK
    comparison only and never disables schema validation.
-5. At binding, generated expressions and identity mode/start/step are compared with Delta log field metadata; defaults
-   are compared with the native `CURRENT_DEFAULT`. A mismatch fails before a write. On insert, only declared generated,
+5. On ordinary PySpark, binding compares generated expressions and identity mode/start/step with Delta log field
+   metadata and defaults with native `CURRENT_DEFAULT`; drift fails before a write. On Spark Connect 4.1, binding uses
+   declarations for typing and field omission but delegates feature behavior to Delta. A mismatched declaration can
+   yield different values without a Structure error. On insert, only declared generated,
    identity, and default fields may be omitted from non-nullable assignments. A `GENERATED ALWAYS` identity field may
    not be assigned. Explicit generated values are left to Delta's native equality check.
 

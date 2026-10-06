@@ -142,6 +142,16 @@ Fix: Rebuild the affected image with `make integration-rebuild BACKEND=pyspark40
 build selects Protobuf 6.33.0 for 4.1, leaves the 4.0 Protobuf 5.29.3 pin unchanged, and the V11 fixture selects
 `RocksDBStateStoreProvider` for both profiles.
 
+### Problem (integration): Delta Connect 4.1 fails while decoding a server response
+
+When: Starting the `spark-connect41` Delta lane with an older cached server dependency set.
+Error: A Delta `detail()` or table operation fails with `MapFieldReflectionAccessor` missing from Protobuf Java.
+Cause: The Delta Connect server artifact can resolve Protobuf Java 3.x, which lacks a class used by Spark 4.1's Connect
+protocol. The Python client's Protobuf package does not change the server JVM classpath.
+Fix: Use the Connect 4.1 launcher in `infra/compose/images/pyspark/run-integration.sh`, which pins
+`com.google.protobuf:protobuf-java:4.33.0` beside `delta-connect-server_4.1_2.13:4.1.0`. Rerun
+`make integration BACKEND=spark-connect41`; rebuild the image if the launcher itself was changed.
+
 ### Problem (integration): PySpark 4.0 cannot import a test processor in the state driver worker
 
 When: Running `transformWithStateInPandas` in the ordinary PySpark 4.0 Compose lane.

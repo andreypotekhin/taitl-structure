@@ -269,7 +269,7 @@ narrower use cases and roadmap features.
 - + As a developer, I can configure `target_profile` so that the emitter avoids APIs outside my deployment range.
 - + As a developer, I can configure `target_variant` so that ordinary PySpark and Spark Connect variant expectations are clear.
 - + As a developer, I can see Spark Connect batch scope so that completed batch-feature expectations are clear.
-- As a developer, I can rely on semantic versioning after 1.0 so that upgrades carry predictable risk.
+- As a developer, I can rely on semantic versioning after 1.0.0 so that upgrades carry predictable risk.
 - + As a developer, I can rely on stable compiler provenance and static dataflow schemas so that diagnostics and explain
   output can evolve safely.
 - + As a developer, I can rely on config schema compatibility rules so that project configuration changes are intentional.

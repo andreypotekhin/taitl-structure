@@ -66,5 +66,5 @@ The project gains stable targets for tests, troubleshooting pages, CI annotation
 little ceremony when adding a new diagnostic: a registry entry, a docs anchor, and a focused test. That ceremony is
 worth it because diagnostics are part of the public developer experience.
 
-Before 1.0, draft diagnostics may still move. Once a code is published in a release, changing its meaning requires a
+Before 1.0.0, draft diagnostics may still move. Once a code is published in a release, changing its meaning requires a
 new code or an explicit deprecation path.

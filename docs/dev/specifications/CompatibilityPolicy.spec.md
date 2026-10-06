@@ -127,7 +127,7 @@ code is claimed compatible. The detailed support contract is specified in [Spark
 
 ## Semantic Versioning
 
-After 1.0, Structure follows semantic versioning.
+After 1.0.0, Structure follows semantic versioning.
 
 Major releases may:
 
@@ -156,7 +156,7 @@ Patch releases may:
 - fix documentation;
 - improve internal implementation without changing public behavior.
 
-Before 1.0, minor releases may change public contracts, but every breaking change should include migration notes.
+Before 1.0.0, minor releases may change public contracts, but every breaking change should include migration notes.
 
 ## Execution Compatibility
 
@@ -168,7 +168,7 @@ Execution is the default v1 runtime surface. Compatible execution means:
 - compiler commands remain Spark-free even though direct runtime execution may import PySpark.
 
 Breaking changes to `StructureSession`, transform invocation binding, or execution/generated-code semantic parity require a
-major version after 1.0 or a compatibility shim.
+major version after 1.0.0 or a compatibility shim.
 
 ## Generated-Code Compatibility
 
@@ -228,7 +228,7 @@ Unknown config keys and invalid values are errors. The diagnostic must include:
 - a link to [Configuration.md](../../Configuration.md) or [Compatibility.md](../../Compatibility.md) when the problem is compatibility-related.
 
 New optional keys may appear in minor releases. Removing or changing a documented key requires a major version after
-1.0. Deprecated keys should warn before removal when practical.
+1.0.0. Deprecated keys should warn before removal when practical.
 
 ## Acceptance Criteria
 

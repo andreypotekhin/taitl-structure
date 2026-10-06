@@ -15,14 +15,16 @@ def test_pyspark_compatibility_matrix_matches_docs_and_compose_defaults() -> Non
 
     assert "PySpark 3.5.x and 4.0.x" in docs
     assert 'profile = ">=3.5,<4.1"' in docs
-    assert _env_value(env, "PYSPARK35_VERSION") == "3.5.0"
+    assert _env_value(env, "PYSPARK35_VERSION") == "3.5.3"
     assert _env_value(env, "PYSPARK40_VERSION") == "4.0.0"
     assert _env_value(env, "PYSPARK41_VERSION") == "4.1.0"
-    assert _backends(script) == ("pyspark35", "pyspark40", "pyspark41", "spark-connect35", "spark-connect40")
+    assert _backends(script) == ("pyspark35", "pyspark40", "pyspark41", "spark-connect35", "spark-connect40", "spark-connect41")
     assert '"pyspark41": ("spark41-master", "spark41-worker")' in script
+    assert '"spark-connect41": ()' in script
     assert "structure-integration-pyspark41" in compose
     assert "structure-integration-spark-connect35" in compose
     assert "structure-integration-spark-connect40" in compose
+    assert "structure-integration-spark-connect41" in compose
     assert "spark35-connect" not in compose
     assert "spark40-connect" not in compose
 

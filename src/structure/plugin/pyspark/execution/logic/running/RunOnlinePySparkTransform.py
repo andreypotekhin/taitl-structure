@@ -13,6 +13,7 @@ from structure.plugin.pyspark.delta.runtime import (
     fresh_delta_frame,
     read_delta_relation,
     validate_delta_table,
+    validated_delta_frame,
 )
 from structure.plugin.pyspark.dsl.joins.JoinMethod import JoinMethod
 from structure.plugin.pyspark.dsl.types import ArrayType, StructType
@@ -120,10 +121,8 @@ class RunOnlinePySparkTransform:
                     step.delta_check_match or plan.delta_check_match
                     for step in plan.steps if input.name in step.input_sources
                 } or {plan.delta_check_match}
-                for mode in modes:
-                    validate_delta_table(table, input.schema, mode=mode)
                 delta_tables[input.name] = table
-                inputs[input.name] = fresh_delta_frame(table)
+                inputs[input.name] = validated_delta_frame(table, input.schema, modes=modes)
             else:
                 self._validator.validate(inputs[input.name], input.validation, types=T)
 

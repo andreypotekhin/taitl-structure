@@ -348,17 +348,19 @@ make integration BACKEND=pyspark40
 make integration BACKEND=pyspark41
 make integration BACKEND=spark-connect35
 make integration BACKEND=spark-connect40
+make integration BACKEND=spark-connect41
 ```
 
-The ordinary PySpark 4.1 lane currently runs `tests/integration/pyspark/backend/test_runtime_versions.py` and
-`tests/integration/pyspark/v11` only. Other integration tests continue to run on their existing backends; Connect 4.1
-is a later, separate lane.
+The ordinary and Connect PySpark 4.1 lanes run `tests/integration/pyspark/backend/test_runtime_versions.py` and
+`tests/integration/pyspark/v11` only. Each runs the Delta module first in a separate process. Other integration tests
+continue to run on their existing backends.
 
 The Delta suite is `tests/integration/pyspark/v11/test_delta_transform_live.py`. It uses disposable native tables and
 checks preflight validation, native CHECK and column metadata, mutations and reads, schema evolution, maintenance, and
-online/generated parity. The classic Compose lanes pin PySpark 3.5.3 / Delta 3.3.3, PySpark 4.0.0 / Delta 4.1.0, and
-PySpark 4.1.0 / Delta 4.1.0. Run `make integration BACKEND=pyspark35`, `make integration BACKEND=pyspark40`, and
-`make integration BACKEND=pyspark41` for release evidence. A local focused run must install the matching `delta-spark`
+online/generated parity. The classic Compose lanes pin PySpark 3.5.3 / Delta 3.3.3, PySpark 4.0.0 / Delta 4.0.1, and
+PySpark 4.1.0 / Delta 4.1.0. The Connect 4.1 lane pins PySpark 4.1.0 / Delta 4.1.0 with Delta Connect server plugins;
+it delegates generated, identity, and default behavior to Delta while retaining shape and CHECK validation. Run the
+matching `make integration BACKEND=...` command for each admitted profile. A local focused run must install the matching `delta-spark`
 package and use a Delta-enabled Spark session; a skipped live test is not admission evidence. The
 [Delta compatibility ledger](../compatibility/DeltaTables.compat.md) records admission by profile and helper.
 

@@ -63,7 +63,7 @@ is not yet a support claim. Rows marked `planned`, `scheduled`, `partial`, `defe
 Compatible API additions may appear in minor releases when they preserve existing source behavior and pass backend
 capability checks for their target profile. Removing a supported catalog row, changing its public spelling, widening
 or narrowing its result schema/nullability in a breaking way, or changing documented semantics requires a major version
-after 1.0 or an explicit compatibility shim.
+after 1.0.0 or an explicit compatibility shim.
 
 Structure additions on top of PySpark are summarized in [API.md](API.md#extensions-beyond-pyspark). Detailed API
 reference material remains in [API.ref.md](reference/API.ref.md). The [API documentation map](API.md#api-documentation-map)
@@ -90,9 +90,9 @@ examples, per-version availability, and Structure contract or migration boundary
 
 ## Delta Tables
 
-The typed Delta mutation API has isolated live evidence on ordinary PySpark 4.1.0 with `delta-spark` 4.1.0. It is
-implemented but release-gated while V11's wider profile and integration matrix are pending. Delta remains an optional
-runtime dependency; this evidence does not change the default PySpark profile or establish Spark Connect support.
+The typed Delta mutation API has isolated live evidence on ordinary PySpark 4.1.0 and Spark Connect 4.1.0 with
+`delta-spark` 4.1.0. It is implemented but release-gated while V11's wider profile and integration matrix are pending.
+Delta remains an optional runtime dependency; this evidence does not change the default PySpark profile.
 See the [Delta API](api/DeltaTables.api.md) and [Delta compatibility ledger](compatibility/DeltaTables.compat.md).
 
 ## Spark Connect
@@ -150,7 +150,7 @@ Execution is the default runtime surface. Compatible execution means:
 - compiler commands remain Spark-free even though execution may import PySpark.
 
 Breaking changes to `StructureSession`, transform invocation binding, or execution/generated-code semantic parity
-require a major version after 1.0 or a compatibility shim.
+require a major version after 1.0.0 or a compatibility shim.
 
 ## Generated-Code Compatibility
 
@@ -261,7 +261,7 @@ Config schema rules:
 
 - Unknown keys and invalid values are errors with structured diagnostics.
 - New optional keys may be added in minor versions.
-- Removing or changing the meaning of a documented key requires a major version after 1.0.
+- Removing or changing the meaning of a documented key requires a major version after 1.0.0.
 - Deprecated keys should produce warnings before removal when practical.
 
 ## Current Boundary

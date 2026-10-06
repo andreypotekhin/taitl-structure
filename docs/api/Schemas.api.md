@@ -27,8 +27,10 @@ Schema declarations define Structure's typed row contract and materialize to Spa
 
 For a caller-bound Delta table, `Schema.constraints = (check(predicate, name=...),)` declares expected native CHECK
 metadata. `Schema.delta_columns` can declare expected generated, identity, and default fields so Delta insert checks
-account for values the native table produces. Both declarations are validated against a bound Delta table and do not
-change an ordinary DataFrame schema. See the [Delta tables API](DeltaTables.api.md). This is separate from ordinary
+account for values the native table produces. Structure validates CHECK constraints for both ordinary PySpark and
+Connect 4.1. It checks generated, identity, and default feature metadata on ordinary PySpark; Connect delegates those
+values and errors to Delta. These declarations do not change an ordinary DataFrame schema. See the
+[Delta tables API](DeltaTables.api.md). This is separate from ordinary
 DataFrame validation modes.
 
 **Details And Differences**

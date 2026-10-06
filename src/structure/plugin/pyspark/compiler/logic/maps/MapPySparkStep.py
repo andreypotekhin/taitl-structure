@@ -80,9 +80,9 @@ class MapPySparkStep:
     ) -> PySparkStepRecipe:
         body = self._body(step)
         for mutation in body.delta_mutations:
-            capabilities.require(CapabilityRequirement(group="delta", name=mutation.kind.removeprefix("delta_")))
+            capabilities.require(CapabilityRequirement(group="delta", name=mutation.kind.removeprefix("delta_"), docs="docs/compatibility/DeltaTables.compat.md"))
             if mutation.schema_evolution:
-                capabilities.require(CapabilityRequirement(group="delta", name="schema_evolution"))
+                capabilities.require(CapabilityRequirement(group="delta", name="schema_evolution", docs="docs/compatibility/DeltaTables.compat.md"))
         input_alias = self._names.alias(step.input_schema.__name__)
         output_alias = self._names.alias(step.output_schema.__name__)
         operations = self._operations(body, input_alias=input_alias, capabilities=capabilities, step_name=step.name)

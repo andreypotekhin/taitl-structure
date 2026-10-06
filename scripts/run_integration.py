@@ -12,13 +12,14 @@ ROOT = Path(__file__).resolve().parents[1]
 COMPOSE = ROOT / "infra" / "compose" / "docker-compose.yaml"
 ENV = ROOT / "infra" / "compose" / ".env"
 WORKSPACE_TMP = ROOT / ".pytest-workspace-tmp" / "integration"
-BACKENDS = ("pyspark35", "pyspark40", "pyspark41", "spark-connect35", "spark-connect40")
+BACKENDS = ("pyspark35", "pyspark40", "pyspark41", "spark-connect35", "spark-connect40", "spark-connect41")
 SERVICES = {
     "pyspark35": ("spark35-master", "spark35-worker"),
     "spark-connect35": ("spark35-master", "spark35-worker"),
     "pyspark40": ("spark40-master", "spark40-worker"),
     "pyspark41": ("spark41-master", "spark41-worker"),
     "spark-connect40": ("spark40-master", "spark40-worker"),
+    "spark-connect41": (),
 }
 
 
@@ -33,7 +34,12 @@ def main() -> None:
     backends = BACKENDS if args.backend == "all" else (args.backend,)
 
     build = ("--build",) if args.build else ()
-    run("up", "-d", *build, *_services(backends))
+    services = _services(backends)
+    if services:
+        run("up", "-d", *build, *services)
+    elif args.build:
+        for backend in backends:
+            run("build", f"structure-integration-{backend}")
     for backend in backends:
         print(f"\n=== Structure integration: {backend} ===", flush=True)
         run("run", "--rm", f"structure-integration-{backend}")

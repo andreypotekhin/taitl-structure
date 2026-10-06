@@ -68,6 +68,18 @@ if [[ "${backend}" == spark-connect* ]]; then
             connect_args+=(--conf "spark.sql.extensions=org.apache.sedona.sql.SedonaSqlExtensions")
         fi
     fi
+    if [[ "${backend}" == "spark-connect41" ]]; then
+        connect_packages+=(
+            "io.delta:delta-connect-server_4.1_2.13:${STRUCTURE_EXPECTED_DELTA:-4.1.0}"
+            "com.google.protobuf:protobuf-java:4.33.0"
+        )
+        connect_args+=(
+            --conf "spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension"
+            --conf "spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog"
+            --conf "spark.connect.extensions.relation.classes=org.apache.spark.sql.connect.delta.DeltaRelationPlugin"
+            --conf "spark.connect.extensions.command.classes=org.apache.spark.sql.connect.delta.DeltaCommandPlugin"
+        )
+    fi
     if (( ${#connect_packages[@]} > 0 )); then
         packages_arg=$(IFS=,; printf '%s' "${connect_packages[*]}")
         connect_args+=(--packages "${packages_arg}")
@@ -96,9 +108,9 @@ trap cleanup EXIT
 pytest_status=0
 pytest_args=()
 test_paths=(/workspace/tests/integration /workspace/tests/concepts/live_pyspark)
-if [[ "${backend}" == "pyspark35" || "${backend}" == "pyspark40" || "${backend}" == "pyspark41" ]]; then
-    # Delta resolves startup jars and needs a fresh process before ordinary
-    # PySpark tests initialize their driver JVM.
+if [[ "${backend}" == "pyspark35" || "${backend}" == "pyspark40" || "${backend}" == "pyspark41" || "${backend}" == "spark-connect41" ]]; then
+    # Keep Delta's pinned live evidence in its own process before the broader
+    # PySpark tests initialize a driver or Connect client.
     timeout --signal=TERM --kill-after=15s "${STRUCTURE_INTEGRATION_TIMEOUT:-3600}" \
         python -m pytest /workspace/tests/integration/pyspark/v11/test_delta_transform_live.py \
         --rootdir=/workspace \
@@ -115,7 +127,7 @@ if [[ "${backend}" == "pyspark35" || "${backend}" == "pyspark40" || "${backend}"
     pytest_args+=(--ignore=/workspace/tests/integration/pyspark/v11/test_delta_transform_live.py)
 fi
 
-if [[ "${backend}" == "pyspark41" ]]; then
+if [[ "${backend}" == "pyspark41" || "${backend}" == "spark-connect41" ]]; then
     test_paths=(
         /workspace/tests/integration/pyspark/backend/test_runtime_versions.py
         /workspace/tests/integration/pyspark/v11

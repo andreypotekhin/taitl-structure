@@ -48,7 +48,7 @@ services:
       dockerfile: infra/compose/images/pyspark/Dockerfile
       args:
         PYSPARK_VERSION: ${PYSPARK40_VERSION}
-        DELTA_SPARK_VERSION: ${DELTA_SPARK40_VERSION:-4.1.0}
+        DELTA_SPARK_VERSION: ${DELTA_SPARK40_VERSION:-4.0.1}
     command: >
       spark-class org.apache.spark.deploy.master.Master --host 0.0.0.0 --port 7077 --webui-port 8080
     ports:
@@ -68,7 +68,7 @@ services:
       dockerfile: infra/compose/images/pyspark/Dockerfile
       args:
         PYSPARK_VERSION: ${PYSPARK40_VERSION}
-        DELTA_SPARK_VERSION: ${DELTA_SPARK40_VERSION:-4.1.0}
+        DELTA_SPARK_VERSION: ${DELTA_SPARK40_VERSION:-4.0.1}
     command: >
       spark-class org.apache.spark.deploy.worker.Worker spark://spark40-master:7077 --webui-port 8081
     depends_on:
@@ -164,7 +164,7 @@ services:
       dockerfile: infra/compose/images/pyspark/Dockerfile
       args:
         PYSPARK_VERSION: ${PYSPARK40_VERSION}
-        DELTA_SPARK_VERSION: ${DELTA_SPARK40_VERSION:-4.1.0}
+        DELTA_SPARK_VERSION: ${DELTA_SPARK40_VERSION:-4.0.1}
     command: run-integration pyspark40
     depends_on:
       - spark40-master
@@ -261,7 +261,7 @@ services:
       dockerfile: infra/compose/images/pyspark/Dockerfile
       args:
         PYSPARK_VERSION: ${PYSPARK40_VERSION}
-        DELTA_SPARK_VERSION: ${DELTA_SPARK40_VERSION:-4.1.0}
+        DELTA_SPARK_VERSION: ${DELTA_SPARK40_VERSION:-4.0.1}
     command: run-integration spark-connect40
     depends_on:
       - spark40-master
@@ -291,6 +291,41 @@ services:
         source: spark-connect-ivy40
         target: /root/.ivy2
 
+  structure-integration-spark-connect41:
+    image: structure-integration-pyspark41
+    build:
+      context: ${STRUCTURE_ROOT:-../..}
+      dockerfile: infra/compose/images/pyspark/Dockerfile
+      args:
+        PYSPARK_VERSION: ${PYSPARK41_VERSION:-4.1.0}
+        PROTOBUF_VERSION: ${PROTOBUF41_VERSION:-6.33.0}
+        DELTA_SPARK_VERSION: ${DELTA_SPARK41_VERSION:-4.1.0}
+    command: run-integration spark-connect41
+    environment:
+      STRUCTURE_EXPECTED_PYSPARK: ${PYSPARK41_VERSION:-4.1.0}
+      STRUCTURE_EXPECTED_SPARK: ${PYSPARK41_VERSION:-4.1.0}
+      STRUCTURE_EXPECTED_DELTA: ${DELTA_SPARK41_VERSION:-4.1.0}
+      STRUCTURE_INTEGRATION_BACKEND: spark-connect41
+      STRUCTURE_SPARK_MASTER: spark://spark41-master:7077
+      STRUCTURE_SPARK_CONNECT_MASTER: local[2]
+      STRUCTURE_SPARK_REMOTE: sc://127.0.0.1:15002
+      STRUCTURE_SPARK_CONNECT_PORT: 15002
+      STRUCTURE_SPARK_CONNECT_DRIVER_MEMORY: ${STRUCTURE_SPARK_CONNECT_DRIVER_MEMORY:-3g}
+      STRUCTURE_SPARK41_MASTER: spark://spark41-master:7077
+      SPARK_CONNECT_SCALA_VERSION: "2.13"
+    volumes:
+      - type: bind
+        source: ${STRUCTURE_ROOT:-../..}
+        target: /workspace
+        read_only: true
+      - type: bind
+        source: ${STRUCTURE_ROOT:-../..}/.pytest-workspace-tmp/integration
+        target: /workspace/.pytest-workspace-tmp/integration
+      - type: volume
+        source: spark-connect-ivy41
+        target: /root/.ivy2
+
 volumes:
   spark-connect-ivy35:
   spark-connect-ivy40:
+  spark-connect-ivy41:

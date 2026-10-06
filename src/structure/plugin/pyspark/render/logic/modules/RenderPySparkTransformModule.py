@@ -172,7 +172,7 @@ class RenderPySparkTransformModule:
                 "bind_delta_predicate_variables, execute_delta_optimize, execute_delta_restore, "
                 "execute_delta_vacuum, fresh_delta_frame, open_delta_relation, "
                 "render_delta_predicate_template, "
-                "validate_delta_table)"
+                "validate_delta_table, validated_delta_frame)"
             )
             for index, item in enumerate(delta_inputs):
                 lines.append(
@@ -1224,9 +1224,9 @@ class RenderPySparkTransformModule:
             or {plan.delta_check_match}
         )
         lines = [f"        self._delta_tables[{item.name!r}] = {variable}"]
-        for mode in modes:
-            lines.append(f"        validate_delta_table({variable}, _StructureDeltaSchema_{index}, mode={mode!r})")
-        lines.append(f"        {variable} = fresh_delta_frame({variable})")
+        lines.append(
+            f"        {variable} = validated_delta_frame({variable}, _StructureDeltaSchema_{index}, modes={tuple(modes)!r})"
+        )
         return lines
 
     def _validation(self, validation: PySparkValidationRecipe, *, target: str | None = None) -> list[str]:

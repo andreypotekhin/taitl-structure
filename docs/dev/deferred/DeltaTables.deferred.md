@@ -4,12 +4,15 @@ The [Delta design](../design/DeltaTables.design.md) and [specification](../speci
 the implemented transform contract. This queue lists native Delta features still outside that contract. The current
 implementation plan is [V11 Delta parity and maintenance](../planning/past/P10052603.V11-delta-parity-inspection-and-maintenance.plan.md).
 
-## Implemented surface, awaiting broader release admission
+## Implemented and admitted surface
 
 Typed delete, update, merge, append, selective `replaceWhere`, snapshot/CDF/history/detail reads, explicit schema
 evolution, generated/identity/default field declarations, restore, optimize, and vacuum run through caller-owned table
-bindings. PySpark 4.1.0 / Delta 4.1.0 has focused and live integration evidence. Broader target-matrix evidence remains
-pending; the compatibility ledger records the scope precisely.
+bindings. Structure has live online/generated evidence for PySpark 3.5.3 / Delta 3.3.3, PySpark 4.0.0 / Delta 4.0.1,
+and PySpark 4.1.0 / Delta 4.1.0. These are tested Structure pairs, distinct from upstream compatibility claims. The
+ordinary profiles and Spark Connect 4.1 admit these helpers; other Connect profiles and PySpark 4.2 remain outside
+this admission. See the
+[compatibility ledger](../../compatibility/DeltaTables.compat.md) for the exact scope.
 
 ## Deferred table administration
 
@@ -37,5 +40,5 @@ binding would need to specify option behavior after checkpoint recovery and Delt
 ## Admission evidence
 
 Each new family requires Spark-free compile diagnostics, generated-source inspection, online/generated parity when
-applicable, a focused public example, pinned live runtime evidence, and a compatibility-ledger row. Spark Connect is
-not admitted until its own Delta support and test environment are available.
+applicable, a focused public example, pinned live runtime evidence, and a compatibility-ledger row. This admission
+covers ordinary PySpark 3.5–4.1 and Spark Connect 4.1 with separate pinned evidence.

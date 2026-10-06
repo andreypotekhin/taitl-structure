@@ -26,9 +26,11 @@ Run one backend's test selection:
     make integration BACKEND=pyspark41
     make integration BACKEND=spark-connect35
     make integration BACKEND=spark-connect40
+    make integration BACKEND=spark-connect41
 
 The ordinary PySpark 4.1 runner executes only the backend version check and `tests/integration/pyspark/v11`. It does
-not run the 3.5/4.0 regression tree or the concept tests. `spark-connect41` is not configured yet. The tracked
+not run the 3.5/4.0 regression tree or the concept tests. The Connect 4.1 runner uses the same V11 selection, with
+the Delta module in a separate process. The tracked
 environment template pins PySpark 4.1.0 and separate 4.1 ports; Compose uses those values as defaults if an existing
 untracked `.env` predates this lane. The 4.1 image also uses Protobuf 6.33.0 to match the generated state protocol
 bundled with PySpark 4.1; 3.5 and 4.0 keep the shared Protobuf 5.29.3 pin. The PySpark 4.0 Pandas state API and both
@@ -36,11 +38,19 @@ bundled with PySpark 4.1; 3.5 and 4.0 keep the shared Protobuf 5.29.3 pin. The P
 state test sessions use Spark's RocksDB state store because these APIs create multiple state column families.
 The Delta live module runs first in its own Python process on each classic lane so Delta's Ivy-resolved jars are on the
 driver classpath before another PySpark test initializes the JVM. The image pins PySpark 3.5.3 with Delta 3.3.3,
-PySpark 4.0.0 with Delta 4.1.0, and PySpark 4.1.0 with Delta 4.1.0. The remaining V11 tests run in a fresh process.
+PySpark 4.0.0 with Delta 4.0.1, and PySpark 4.1.0 with Delta 4.1.0. The remaining V11 tests run in a fresh process.
 
 The Spark Connect lanes are experimental. They start the Spark Connect gateway inside the test runner container and do
 not add separate Connect services to the Compose stack. The gateway defaults to a 3 GiB driver heap, which can be
 overridden with `STRUCTURE_SPARK_CONNECT_DRIVER_MEMORY` for constrained or larger local environments.
+The Connect 4.1 lane runs that gateway with `local[2]`; selecting it alone does not start Spark master and worker
+containers.
+The Connect 4.1 gateway loads `delta-connect-server_4.1_2.13:4.1.0` with Protobuf Java 4.33.0, Delta's SQL extension
+and catalog, and the Delta relation and command plugins. The explicit Protobuf pin keeps the server compatible with
+Spark 4.1's Connect protocol. Its Python client uses the matching `delta-spark` package. The server settings
+are required for external Connect deployments using Structure's Delta helpers.
+See [Delta Connect server troubleshooting](../../docs/dev/Troubleshooting.md#problem-integration-delta-connect-41-fails-while-decoding-a-server-response)
+if a cached server reports a Protobuf class error.
 
 Ordinary PySpark runs use the JVM default driver heap unless `STRUCTURE_SPARK_DRIVER_MEMORY` is set. For a bounded
 diagnostic run, set it in `infra/compose/.env` or pass it to the runner, for example
