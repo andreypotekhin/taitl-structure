@@ -53,6 +53,29 @@ class Output(Schema):
     total = string(nullable=False)
 
 
+class CompositeInput(Schema):
+    customer_id = string(nullable=False)
+    region = string(nullable=False)
+
+
+class CompositeKey(Schema):
+    customer_id = string(nullable=False)
+    region = string(nullable=False)
+
+
+class CompositeState(Schema):
+    total = string(nullable=False)
+
+
+class CompositeOutput(Schema):
+    total = string(nullable=False)
+
+
+@state_processor
+class CompositeCounter(StateProcessor[CompositeInput, CompositeKey, CompositeState, CompositeOutput]):
+    pass
+
+
 def test_input_relation_fingerprints_are_stable_across_scope_instances() -> None:
     fingerprint = BuildArtifactFingerprint()
     left = InputScope(name="initial", schema=Input)
@@ -341,3 +364,26 @@ def test_spark_free_state_api_import_does_not_load_pyspark() -> None:
 
     assert callable(public_transform_with_state)
     assert {name for name in sys.modules if name.startswith("pyspark")} == before
+
+
+def test_row_state_supports_composite_grouping_keys() -> None:
+    class CompositeTotals(Transform):
+        events = input(CompositeInput, streaming=True)
+        totals = output(CompositeOutput)
+
+        @step(input=events, output=totals)
+        def accumulate(self, event: CompositeInput) -> CompositeOutput:
+            return transform_with_state(
+                key=(event.customer_id, event.region),
+                processor=CompositeCounter,
+                output_mode="Update",
+                time_mode="ProcessingTime",
+            )
+
+    compiled = Compiler.frontend.compile()(
+        CompositeTotals,
+        materialize_schemas=False,
+        plugin={"pyspark": {"profile": ">=4.1,<4.2", "variant": "ordinary"}},
+    )
+    state = cast(PySparkExecutionPlan, compiled.lowered).steps[0].operations[0].stateful_transform
+    assert state is not None and isinstance(state.key, tuple) and len(state.key) == 2

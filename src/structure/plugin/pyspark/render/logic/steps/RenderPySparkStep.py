@@ -677,7 +677,13 @@ class RenderPySparkStep:
                     if state.state_schema is None
                     else repr(f"{state.state_schema.__module__}:{state.state_schema.__qualname__}")
                 )
-                key_expression = render_pyspark_expression(state.key, scope_aliases=self._scope_aliases(step))
+                key_expression = (
+                    "(" + ", ".join(
+                        render_pyspark_expression(key, scope_aliases=self._scope_aliases(step)) for key in state.key
+                    ) + ",)"
+                    if isinstance(state.key, tuple)
+                    else render_pyspark_expression(state.key, scope_aliases=self._scope_aliases(step))
+                )
                 if state.initial_state is None:
                     initial_state = "None"
                 else:
@@ -697,6 +703,28 @@ class RenderPySparkStep:
                     f"interface={state.interface!r}, "
                     f"target_profile={backend_target!r}, event_time_column={state.event_time_column!r}, "
                     f"initial_state={initial_state})"
+                )
+            if operation.kind == "apply_in_pandas_with_state" and operation.legacy_pandas_state is not None:
+                legacy_state = operation.legacy_pandas_state
+                processor = legacy_state.processor.function if legacy_state.processor_mode == "native" else legacy_state.processor
+                processor_ref = f"{processor.__module__}:{processor.__qualname__}"
+                schema_refs = {
+                    name: repr(f"{schema.__module__}:{schema.__qualname__}")
+                    for name, schema in (
+                        ("input_schema", legacy_state.input_schema),
+                        ("key_schema", legacy_state.key_schema),
+                        ("state_schema", legacy_state.state_schema),
+                        ("output_schema", legacy_state.output_schema),
+                    )
+                }
+                key_expression = render_pyspark_expression(legacy_state.key, scope_aliases=self._scope_aliases(step))
+                ordered_lines.append(
+                    f"        {target} = apply_legacy_pandas_state("
+                    f"{target}, key={key_expression}, processor={processor_ref!r}, "
+                    f"input_schema={schema_refs['input_schema']}, key_schema={schema_refs['key_schema']}, "
+                    f"state_schema={schema_refs['state_schema']}, output_schema={schema_refs['output_schema']}, "
+                    f"processor_mode={legacy_state.processor_mode!r}, output_mode={legacy_state.output_mode!r}, "
+                    f"timeout={legacy_state.timeout!r}, target_profile={backend_target!r})"
                 )
             if operation.kind == "ordered_timeline_scan" and operation.ordered_timeline_scan is not None:
                 ordered_lines.extend(

@@ -10,8 +10,7 @@ Typed delete, update, merge, append, selective `replaceWhere`, snapshot/CDF/hist
 evolution, generated/identity/default field declarations, restore, optimize, and vacuum run through caller-owned table
 bindings. Structure has live online/generated evidence for PySpark 3.5.3 / Delta 3.3.3, PySpark 4.0.0 / Delta 4.0.1,
 and PySpark 4.1.0 / Delta 4.1.0. These are tested Structure pairs, distinct from upstream compatibility claims. The
-ordinary profiles and Spark Connect 4.1 admit these helpers; other Connect profiles and PySpark 4.2 remain outside
-this admission. See the
+classic ordinary profiles admit these helpers; Spark Connect and PySpark 4.2 remain outside this admission. See the
 [compatibility ledger](../../compatibility/DeltaTables.compat.md) for the exact scope.
 
 ## Deferred table administration
@@ -41,4 +40,4 @@ binding would need to specify option behavior after checkpoint recovery and Delt
 
 Each new family requires Spark-free compile diagnostics, generated-source inspection, online/generated parity when
 applicable, a focused public example, pinned live runtime evidence, and a compatibility-ledger row. This admission
-covers ordinary PySpark 3.5–4.1 and Spark Connect 4.1 with separate pinned evidence.
+covers classic PySpark 3.5–4.1 with separate pinned evidence.

@@ -185,8 +185,11 @@ This V9 design gate is superseded for the explicit V11 processor surfaces. Struc
 `transform_with_state(...)` for ordinary PySpark 4.1 and `transform_with_state_in_pandas(...)` for ordinary PySpark 4.0
 and 4.1. Their typed and opaque-native compiler paths, schema boundaries, processor modes, and streaming classification
 are documented in the V11 plans. They remain design-gated as support claims until profile-specific live timer,
-online/generated parity, and checkpoint-restart evidence passes. `applyInPandasWithState` and other unmodeled state APIs
-remain caller-owned; `ArbitraryStateContract` is an adoption-metadata validator, not a runtime.
+online/generated parity, and checkpoint-restart evidence passes. V11 adds a separate typed/native
+`apply_in_pandas_with_state(...)` compiler operation for ordinary PySpark 3.5, 4.0, and 4.1, tracked by the
+[legacy Pandas state plan](../planning/P10062602.V11-apply-in-pandas-with-state.plan.md); its support claim remains
+gated on matching profile evidence. Other unmodeled state APIs remain caller-owned. `ArbitraryStateContract` is an
+adoption-metadata validator, not a runtime.
 
 Required contract:
 

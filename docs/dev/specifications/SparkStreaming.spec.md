@@ -229,8 +229,9 @@ Structure has explicit row `transform_with_state(...)` and Pandas `transform_wit
 and opaque-native processor modes. Row execution targets ordinary PySpark 4.1; Pandas execution targets ordinary 4.0
 and 4.1. Both remain design-gated as support claims until profile-specific live behavior, timer, online/generated parity,
 and checkpoint-restart evidence passes. The initial ordinary 4.1 Compose lane selects the runtime-version check and V11
-tests; live execution is required before either API's 4.1 support claim can change. `applyInPandasWithState` remains
-caller-owned. The
+tests; live execution is required before either API's 4.1 support claim can change. The separate
+`apply_in_pandas_with_state(...)` legacy compiler operation targets ordinary PySpark 3.5, 4.0, and 4.1; its support
+claim awaits profile-specific parity and same-checkpoint restart evidence. The
 `ArbitraryStateContract` validates adoption metadata and does not implement any runtime.
 
 The typed row processor requires `on_rows(key, rows, state, timers)` and permits `on_timer(key, timer, state, timers)`.

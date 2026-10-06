@@ -151,7 +151,7 @@ class RenderPySparkTransformModule:
 
         helpers = ["TransformResult", "assert_schema", "project_schema", "apply_plan_boundary", "close_plan_boundaries"]
         has_stateful_transform = any(
-            operation.kind == "transform_with_state"
+            operation.kind in {"transform_with_state", "apply_in_pandas_with_state"}
             for step in plan.steps
             for operation in step.operations
         )
@@ -161,7 +161,8 @@ class RenderPySparkTransformModule:
             helpers.extend(("reuse_policy_checks", "singleton_policy"))
         lines.append(f"from {runtime_module} import {', '.join(helpers)}")
         if has_stateful_transform:
-            lines.append("from structure.plugin.pyspark.execution.stateful import apply_stateful_transform")
+            state_helpers = ["apply_stateful_transform", "apply_legacy_pandas_state"]
+            lines.append(f"from structure.plugin.pyspark.execution.stateful import {', '.join(state_helpers)}")
 
         for module, constants in self._schema_imports(plan, schema_modules).items():
             lines.append(f"from {module} import {', '.join(constants)}")

@@ -96,8 +96,9 @@ state assumptions visible in explain output; it does not make Structure control 
   `transform_with_state(...)` for ordinary PySpark 4.1 and `transform_with_state_in_pandas(...)` for ordinary PySpark
   4.0 and 4.1; both 4.1 forms require pandas, PyArrow, and protobuf on the driver and workers. Neither API currently
   carries a Structure support claim. The initial 4.1 integration lane runs V11 tests only; the row operation still
-  requires typed/native timer, online/generated parity, and same-checkpoint restart evidence. `applyInPandasWithState`
-  remains outside the implementation. See the
+  requires typed/native timer, online/generated parity, and same-checkpoint restart evidence. The separate
+  `apply_in_pandas_with_state(...)` operation targets ordinary PySpark 3.5, 4.0, and 4.1 through the legacy
+  `GroupedData.applyInPandasWithState`; its support claim awaits matching profile evidence. See the
   [arbitrary-state contract](../dev/specifications/V9StreamingDesignGatedFeatures.spec.md#arbitrary-state-apis) and
   the [state gate](../dev/gated/Streaming.gates.md#arbitrary-state-processors--design-gated).
 - Typed state schemas come from the specialized `StateProcessor[Input, Key, State, Output]` or
@@ -181,7 +182,9 @@ the declared key, handling retries, and ensuring that the checkpoint and snapsho
 Arbitrary state remains design-gated; `ArbitraryStateContract` is a metadata completeness guard, not a state processor
 runtime. Row-based `transformWithState` targets ordinary PySpark 4.1 and is tracked separately from
 `transformWithStateInPandas`, which targets ordinary PySpark 4.0 and 4.1. Both remain gated until their respective
-online/generated parity and restart evidence passes. Before reviewing native `applyInPandasWithState` or a related state API, the contract
+online/generated parity and restart evidence passes. `apply_in_pandas_with_state(...)` has a separate typed/native
+compiler path and legacy `PandasGroupState` facade; it does not adapt Spark 4 processor callbacks or migrate their
+checkpoint state. Before reviewing another native state API, the contract
 records typed input, key, state, and output Schemas; grouping fields; timeout policy, clock, and duration;
 initialization, update, and removal behavior; target PySpark profile; hook boundary; checkpoint identity; serialized
 state version; and restart policy. `contract.validate()` rejects missing or inconsistent declarations with

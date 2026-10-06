@@ -114,7 +114,7 @@ def test_delta_capabilities_are_available_on_admitted_classic_profiles(profile, 
     ).supported
 
 
-def test_delta_capability_is_not_claimed_for_connect_40() -> None:
+def test_delta_capability_is_not_claimed_for_spark_connect() -> None:
     from structure.plugin.api.v1.model import CapabilityRequirement
     from structure.plugin.pyspark.capabilities.model.PySparkCapabilities import PySparkCapabilities
 
@@ -122,24 +122,11 @@ def test_delta_capability_is_not_claimed_for_connect_40() -> None:
         target_profile=">=4.0,<4.1", target_variant="spark-connect"
     ).supports(CapabilityRequirement(group="delta", name="binding"))
     assert not decision.supported
-    assert ">=4.1,<4.2" in decision.use
+    assert "ordinary PySpark" in decision.use
 
 
-@pytest.mark.parametrize("capability", sorted({
-    "binding", "check", "columns", "delete", "update", "merge", "append", "replace_where",
-    "schema_evolution", "snapshot", "changes", "history", "detail", "restore", "optimize", "vacuum",
-}))
-def test_delta_capabilities_are_available_on_connect_41(capability) -> None:
-    from structure.plugin.api.v1.model import CapabilityRequirement
-    from structure.plugin.pyspark.capabilities.model.PySparkCapabilities import PySparkCapabilities
-
-    assert PySparkCapabilities(target_profile=">=4.1,<4.2", target_variant="spark-connect").supports(
-        CapabilityRequirement(group="delta", name=capability)
-    ).supported
-
-
-@pytest.mark.parametrize("profile", [">=3.5,<4.1", ">=3.5,<4.0", ">=4.0,<4.1", ">=4.2,<4.3"])
-def test_delta_connect_other_profiles_fail_before_plan_lowering(profile) -> None:
+@pytest.mark.parametrize("profile", [">=3.5,<4.1", ">=3.5,<4.0", ">=4.0,<4.1", ">=4.1,<4.2"])
+def test_delta_spark_connect_profiles_fail_before_plan_lowering(profile) -> None:
     from structure.plugin.api.v1.model import BackendCapabilityError
 
     @transform
@@ -151,8 +138,9 @@ def test_delta_connect_other_profiles_fail_before_plan_lowering(profile) -> None
 
     with pytest.raises(BackendCapabilityError) as raised:
         _compile(Delete, profile=profile, variant="spark-connect")
-    assert raised.value.diagnostic.feature_name == "binding"
-    assert ">=4.1,<4.2" in raised.value.diagnostic.use
+    assert "delta.binding" in str(raised.value)
+    if profile == ">=4.1,<4.2":
+        assert "ordinary PySpark" in raised.value.diagnostic.use
 
 
 @pytest.mark.parametrize(

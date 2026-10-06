@@ -8,6 +8,7 @@ from structure.plugin.pyspark.dsl.operations.CachePlan import CachePlan
 from structure.plugin.pyspark.dsl.operations.DuplicateRowsPlan import DuplicateRowsPlan
 from structure.plugin.pyspark.dsl.operations.ExactlyOnePlan import ExactlyOnePlan
 from structure.plugin.pyspark.dsl.operations.JsonTuplePlan import JsonTuplePlan
+from structure.plugin.pyspark.dsl.operations.LegacyPandasStatePlan import LegacyPandasStatePlan
 from structure.plugin.pyspark.dsl.operations.MapGeneratorPlan import MapGeneratorPlan
 from structure.plugin.pyspark.dsl.operations.MaterializationPlan import CheckpointPlan, PersistPlan, UnpersistPlan
 from structure.plugin.pyspark.dsl.operations.OperationCapability import OperationCapability
@@ -49,6 +50,7 @@ class OperationPlan:
     json_tuple: JsonTuplePlan | None = None
     stack: StackPlan | None = None
     stateful_transform: StatefulTransformPlan | None = None
+    legacy_pandas_state: LegacyPandasStatePlan | None = None
     sql: SqlPlan | None = None
     scalar_generator: ScalarGeneratorPlan | None = None
     map_generator: MapGeneratorPlan | None = None
@@ -158,6 +160,17 @@ class OperationPlan:
             stateful_transform=StatefulTransformPlan(**values),
             family="stateful",
             capability=OperationCapability("streaming", capability),
+            cardinality=OperationCardinality.UNKNOWN,
+            streaming=StreamingSupport.COMPATIBLE,
+        )
+
+    @staticmethod
+    def apply_in_pandas_with_state_operation(**values: Any) -> OperationPlan:
+        return OperationPlan(
+            "apply_in_pandas_with_state",
+            legacy_pandas_state=LegacyPandasStatePlan(**values),
+            family="stateful",
+            capability=OperationCapability("streaming", "apply_in_pandas_with_state"),
             cardinality=OperationCardinality.UNKNOWN,
             streaming=StreamingSupport.COMPATIBLE,
         )

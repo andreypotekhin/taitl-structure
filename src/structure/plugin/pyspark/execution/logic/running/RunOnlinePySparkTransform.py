@@ -505,12 +505,17 @@ class RunOnlinePySparkTransform:
                 from structure.plugin.pyspark.execution.stateful import apply_stateful_transform
 
                 state = operation.stateful_transform
-                key = self._expressions.evaluate(
-                    state.key,
-                    functions=functions,
-                    aliases=self._scope_aliases(step),
-                    window=window,
+                key_expressions = state.key if isinstance(state.key, tuple) else (state.key,)
+                evaluated_keys = tuple(
+                    self._expressions.evaluate(
+                        expression,
+                        functions=functions,
+                        aliases=self._scope_aliases(step),
+                        window=window,
+                    )
+                    for expression in key_expressions
                 )
+                key = evaluated_keys if isinstance(state.key, tuple) else evaluated_keys[0]
                 initial_state = state.initial_state
                 if initial_state is not None:
                     initial_source = getattr(initial_state, "_structure_source", None)
@@ -532,6 +537,29 @@ class RunOnlinePySparkTransform:
                     target_profile=self._backend_target,
                     event_time_column=state.event_time_column,
                     initial_state=initial_state,
+                )
+            if operation.kind == "apply_in_pandas_with_state" and operation.legacy_pandas_state is not None:
+                from structure.plugin.pyspark.execution.stateful import apply_legacy_pandas_state
+
+                legacy_state = operation.legacy_pandas_state
+                legacy_key = self._expressions.evaluate(
+                    legacy_state.key,
+                    functions=functions,
+                    aliases=self._scope_aliases(step),
+                    window=window,
+                )
+                df = apply_legacy_pandas_state(
+                    df,
+                    key=legacy_key,
+                    processor=legacy_state.processor,
+                    input_schema=legacy_state.input_schema,
+                    key_schema=legacy_state.key_schema,
+                    state_schema=legacy_state.state_schema,
+                    output_schema=legacy_state.output_schema,
+                    processor_mode=legacy_state.processor_mode,
+                    output_mode=legacy_state.output_mode,
+                    timeout=legacy_state.timeout,
+                    target_profile=self._backend_target,
                 )
             if operation.kind == "ordered_timeline_scan" and operation.ordered_timeline_scan is not None:
                 df = self._ordered_timeline_scan(

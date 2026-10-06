@@ -37,6 +37,8 @@ PYSPARK_4_0_CAPABILITIES = frozenset(
 )
 PYSPARK_4_0_STREAMING_CAPABILITIES = frozenset({("streaming", "transform_with_state_in_pandas")})
 PYSPARK_4_1_CAPABILITIES = frozenset({("streaming", "transform_with_state")})
+LEGACY_PANDAS_STATE_PROFILES = frozenset({">=3.5,<4.1", ">=3.5,<4.0", ">=4.0,<4.1", ">=4.1,<4.2"})
+LEGACY_PANDAS_STATE_CAPABILITY = frozenset({("streaming", "apply_in_pandas_with_state")})
 PYSPARK_4_2_CAPABILITIES = frozenset({("expression", "is_valid_variant")})
 MATERIALIZATION_CAPABILITIES = frozenset(
     {
@@ -382,14 +384,14 @@ class PySparkCapabilities:
                 base_capabilities |= PYSPARK_4_0_STREAMING_CAPABILITIES
         elif target_profile == ">=4.2,<4.3":
             base_capabilities = base_capabilities | PYSPARK_4_CAPABILITIES | PYSPARK_4_2_CAPABILITIES
+        if self.id.variant == "ordinary" and target_profile in LEGACY_PANDAS_STATE_PROFILES:
+            base_capabilities |= LEGACY_PANDAS_STATE_CAPABILITY
         if self.id.variant == "ordinary" and target_profile in {
             ">=3.5,<4.1",
             ">=3.5,<4.0",
             ">=4.0,<4.1",
             ">=4.1,<4.2",
         }:
-            base_capabilities |= DELTA_CAPABILITIES
-        elif self.id.variant == "spark-connect" and target_profile == ">=4.1,<4.2":
             base_capabilities |= DELTA_CAPABILITIES
         if self.id.variant == "ordinary" and target_profile in MATERIALIZATION_PROFILES | {">=4.1,<4.2"}:
             base_capabilities |= MATERIALIZATION_CAPABILITIES
@@ -428,8 +430,7 @@ class PySparkCapabilities:
                     f"with variant {self.id.variant}."
                 ),
                 use=(
-                    'Use PySpark ">=4.1,<4.2" with variant "spark-connect" and Delta Connect 4.1, or '
-                    'choose an admitted ordinary PySpark profile with its pinned delta-spark version. '
+                    'Choose an admitted ordinary PySpark profile and install its pinned delta-spark version. '
                     'See docs/compatibility/DeltaTables.compat.md.'
                 ),
             )

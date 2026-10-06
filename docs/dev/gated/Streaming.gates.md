@@ -50,7 +50,10 @@ Python API is `transformWithStateInPandas`, tracked separately by
 [the Pandas processor plan](../planning/P10042604.V11-transform-with-state-in-pandas.plan.md) for ordinary PySpark 4.0
 and 4.1. The typed and native compiler surfaces are implemented, but both support claims remain gated on
 profile-specific live online/generated parity and checkpoint restart evidence. The Pandas runtime also requires
-pandas, PyArrow, and protobuf on the driver and workers. `applyInPandasWithState` remains outside these plans.
+pandas, PyArrow, and protobuf on the driver and workers. The separate legacy `apply_in_pandas_with_state(...)`
+compiler surface targets ordinary PySpark 3.5, 4.0, and 4.1 through `GroupedData.applyInPandasWithState`; its profile
+support remains gated pending typed/native online/generated parity and same-checkpoint restart evidence. See the
+[legacy Pandas state plan](../planning/P10062602.V11-apply-in-pandas-with-state.plan.md).
 `ArbitraryStateContract` validates adoption metadata only; it is not a state runtime.
 
 The SearchDocuments proving lane and streaming-ineligible selected-row/window shapes are recorded in

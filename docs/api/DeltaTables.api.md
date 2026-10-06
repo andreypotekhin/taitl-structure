@@ -2,8 +2,8 @@
 
 Structure can compile typed mutations against an existing Delta table. The caller creates the table, provisions its
 native constraints, and passes a native `DeltaTable` object to the transform. Delta support is optional and is
-gated by target profile. Ordinary PySpark 3.5, 4.0, and 4.1 and Spark Connect 4.1 are admitted with the tested Delta
-pairs listed in the compatibility ledger. Other Connect profiles and PySpark 4.2 are outside this admission. See
+gated by target profile. Classic PySpark 3.5, 4.0, and 4.1 are admitted with the tested Delta pairs listed in the
+compatibility ledger. Spark Connect and PySpark 4.2 are outside this admission. See
 [Delta compatibility](../compatibility/DeltaTables.compat.md) before adopting it.
 
 Import `Schema`, `Transform`, `input`, `transform`, and `StructureSession` from `structure`. Import the Delta
@@ -249,9 +249,7 @@ class Order(Schema):
 ```
 
 The caller provisions the Delta table with those features before binding it. Ordinary PySpark compares declarations
-with native feature metadata before a write. Connect 4.1 uses declarations for typing and omission and lets Delta
-supply values or reject the write. A mismatched Connect declaration can produce different values without a Structure
-error. An insert may omit a declared generated, identity, or default column; an
+with native feature metadata before a write. An insert may omit a declared generated, identity, or default column; an
 undeclared required field still fails. `GENERATED ALWAYS` identity fields cannot be assigned. Delta checks an explicitly
 supplied generated value. Identity columns use `long`; Delta identity tables have concurrency restrictions that remain
 in force. Default values require Delta's column-default table feature to be enabled by the caller.

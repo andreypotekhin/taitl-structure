@@ -90,9 +90,9 @@ examples, per-version availability, and Structure contract or migration boundary
 
 ## Delta Tables
 
-The typed Delta mutation API has isolated live evidence on ordinary PySpark 4.1.0 and Spark Connect 4.1.0 with
-`delta-spark` 4.1.0. It is implemented but release-gated while V11's wider profile and integration matrix are pending.
-Delta remains an optional runtime dependency; this evidence does not change the default PySpark profile.
+The typed Delta API is admitted on classic PySpark 3.5, 4.0, and 4.1 with pinned live online/generated evidence for
+3.5.3 / Delta 3.3.3, 4.0.0 / Delta 4.0.1, and 4.1.0 / Delta 4.1.0. Spark Connect and PySpark 4.2 are outside this
+admission. Delta remains an optional runtime dependency; this does not change the default PySpark profile.
 See the [Delta API](api/DeltaTables.api.md) and [Delta compatibility ledger](compatibility/DeltaTables.compat.md).
 
 ## Spark Connect

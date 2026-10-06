@@ -75,6 +75,11 @@ class PySparkTraceabilityReport:
             for operation in step.operations
             if operation.stateful_transform is not None
         ]
+        legacy_stateful = [
+            operation.legacy_pandas_state
+            for operation in step.operations
+            if operation.legacy_pandas_state is not None
+        ]
         data: dict[str, object] = {
             "after_hooks": [hook.name for hook in step.after_hooks],
             "before_hooks": [hook.name for hook in step.before_hooks],
@@ -102,11 +107,18 @@ class PySparkTraceabilityReport:
                 for validation in step.validations
             ],
         }
-        if stateful:
+        if stateful or legacy_stateful:
             data["stateful_operations"] = [
                 {
                     "input_schema": state.input_schema.__name__,
-                    "key": (state.key.data or {}).get("name", (state.key.data or {}).get("field", "expression")),
+                    "key": (
+                        [
+                            (key.data or {}).get("name", (key.data or {}).get("field", "expression"))
+                            for key in state.key
+                        ]
+                        if isinstance(state.key, tuple)
+                        else (state.key.data or {}).get("name", (state.key.data or {}).get("field", "expression"))
+                    ),
                     "key_schema": state.key_schema.__name__,
                     "mode": state.processor_mode,
                     "operation": (
@@ -118,6 +130,19 @@ class PySparkTraceabilityReport:
                     "time_mode": state.time_mode,
                 }
                 for state in stateful
+            ] + [
+                {
+                    "input_schema": state.input_schema.__name__,
+                    "key": (state.key.data or {}).get("name", (state.key.data or {}).get("field", "expression")),
+                    "key_schema": state.key_schema.__name__,
+                    "mode": state.processor_mode,
+                    "operation": "apply_in_pandas_with_state",
+                    "output_mode": state.output_mode,
+                    "output_schema": state.output_schema.__name__,
+                    "state_schemas": [state.state_schema.__name__],
+                    "timeout": state.timeout,
+                }
+                for state in legacy_stateful
             ]
         budgets = [
             {

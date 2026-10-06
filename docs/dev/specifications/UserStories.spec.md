@@ -259,6 +259,8 @@ narrower use cases and roadmap features.
   `writeStream`, triggers, checkpoints, and query execution.
 - + As a developer, I can declare streaming input modes and watermarks inside transform code so that stateful streaming
   transformations can be checked without Structure owning lifecycle.
+- + As a developer, I can declare typed Pandas group state with input, key, state, and output Schemas so that legacy
+  PySpark `applyInPandasWithState` is available on ordinary PySpark 3.5 and later without changing query ownership.
 - + As a developer, I receive an early diagnostic when a composed streaming output reaches an undeclared or explicitly
   batch-only downstream input, with `allow_stream_to_batch` available for intentional undeclared boundaries.
 

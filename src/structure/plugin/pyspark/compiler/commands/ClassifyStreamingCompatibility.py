@@ -93,9 +93,51 @@ class ClassifyStreamingCompatibility:
                             StreamingStateStage(
                                 step=step.name,
                                 operation=f"{operation_name} ({state.processor_mode})",
-                                keys=(self._expression_label(state.key),),
+                                keys=tuple(
+                                    self._expression_label(key)
+                                    for key in (state.key if isinstance(state.key, tuple) else (state.key,))
+                                ),
                                 retention=tuple(schema.__name__ for schema in state.state_schemas),
                                 output_modes=(state.output_mode,),
+                                allows_later_stateful=False,
+                            )
+                        )
+                        stateful_operations.append(
+                            _StatefulStreamingOperation(step.name, operation_name, state_budget=operation.state_budget)
+                        )
+                if operation.kind == "apply_in_pandas_with_state" and operation.legacy_pandas_state is not None:
+                    legacy_state = operation.legacy_pandas_state
+                    operation_name = "apply_in_pandas_with_state"
+                    if not streaming_step:
+                        findings.append(
+                            StreamingFinding(
+                                code="STREAM-E0801",
+                                support=StreamingSupport.BATCH_ONLY,
+                                step=step.name,
+                                operation=operation_name,
+                                problem="apply_in_pandas_with_state(...) requires a streaming input.",
+                                use="Declare the driving input as streaming and keep query lifecycle ownership with the caller.",
+                            )
+                        )
+                    else:
+                        if legacy_state.timeout == "event_time" and not watermarks.get(step.source_scope):
+                            findings.append(
+                                StreamingFinding(
+                                    code="STREAM-E0801",
+                                    support=StreamingSupport.BATCH_ONLY,
+                                    step=step.name,
+                                    operation=operation_name,
+                                    problem="Event-time state timeout requires a watermark on the driving input.",
+                                    use="Add watermark(...) before apply_in_pandas_with_state(...), or choose another timeout mode.",
+                                )
+                            )
+                        state_stages.append(
+                            StreamingStateStage(
+                                step=step.name,
+                                operation=f"{operation_name} ({legacy_state.processor_mode})",
+                                keys=(self._expression_label(legacy_state.key),),
+                                retention=(legacy_state.state_schema.__name__,),
+                                output_modes=(legacy_state.output_mode,),
                                 allows_later_stateful=False,
                             )
                         )

@@ -337,8 +337,11 @@ class RenderPySparkExplainReport:
             return f"watermark({operation.watermark.column} {operation.watermark.delay})"
         if operation.stateful_transform is not None:
             state = operation.stateful_transform
-            key_data = state.key.data or {}
-            key_name = key_data.get("name", key_data.get("field", "expression"))
+            key_names = []
+            for key in state.key if isinstance(state.key, tuple) else (state.key,):
+                key_data = key.data or {}
+                key_names.append(str(key_data.get("name", key_data.get("field", "expression"))))
+            key_name = ",".join(key_names)
             state_names = "|".join(schema.__name__ for schema in state.state_schemas)
             operation_name = (
                 "transform_with_state_in_pandas" if state.interface == "pandas" else "transform_with_state"
@@ -347,6 +350,15 @@ class RenderPySparkExplainReport:
                 f"{operation_name}(mode={state.processor_mode} key={key_name} "
                 f"input={state.input_schema.__name__} state={state_names} output={state.output_schema.__name__} "
                 f"output_mode={state.output_mode} time_mode={state.time_mode})"
+            )
+        if operation.legacy_pandas_state is not None:
+            legacy_state = operation.legacy_pandas_state
+            key_data = legacy_state.key.data or {}
+            legacy_key_name = str(key_data.get("name", key_data.get("field", "expression")))
+            return (
+                f"apply_in_pandas_with_state(mode={legacy_state.processor_mode} key={legacy_key_name} "
+                f"input={legacy_state.input_schema.__name__} state={legacy_state.state_schema.__name__} "
+                f"output={legacy_state.output_schema.__name__} output_mode={legacy_state.output_mode} timeout={legacy_state.timeout})"
             )
         if operation.persist is not None:
             level = "default" if operation.persist.storage_level is None else repr(operation.persist.storage_level)

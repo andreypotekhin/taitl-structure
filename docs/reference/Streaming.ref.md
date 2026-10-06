@@ -604,7 +604,103 @@ selects its plain callback branch instead of `process/open/close`. For batch out
 PySpark 4.1 and 4.0/4.1 respectively. They remain design-gated until each claimed profile passes live processor,
 timer, online/generated parity, and same-checkpoint restart evidence. PySpark 4.1 requires pandas, PyArrow, and protobuf
 on the driver and workers for both state processor APIs; the Pandas API also requires those packages on PySpark 4.0.
-`applyInPandasWithState` remains outside Structure's state APIs.
+`apply_in_pandas_with_state(...)` is a separate legacy state operation for ordinary PySpark 3.5–4.1; its support
+claim remains design-gated pending profile-specific runtime evidence. It supports a typed `PandasGroupStateProcessor`
+or an importable native callback, with declared input, key, state, and output schemas. The caller still owns the query,
+sink, trigger, checkpoint, and restart policy. Its legacy state format is not promised compatible with either Spark 4
+state processor API. Spark's `mapGroupsWithState` and `flatMapGroupsWithState` are typed Dataset APIs without a PySpark
+entry point, so Structure does not expose those methods.
+
+```python
+class AmountEvent(Schema):
+    account_id = string(nullable=False)
+    amount = integer(nullable=False)
+
+
+class AccountKey(Schema):
+    account_id = string(nullable=False)
+
+
+class AccountTotalState(Schema):
+    total = integer(nullable=False)
+
+
+class AccountTotal(Schema):
+    account_id = string(nullable=False)
+    total = integer(nullable=False)
+
+
+class AccountTotals(PandasGroupStateProcessor[AmountEvent, AccountKey, AccountTotalState, AccountTotal]):
+    def on_batches(self, key, batches, state):
+        import pandas as pd
+
+        previous = state.get()
+        total = 0 if previous is None else previous.total
+        for batch in batches:
+            total += int(batch["amount"].sum())
+        state.update(AccountTotalState(total=total))
+        yield pd.DataFrame({"account_id": [key.account_id], "total": [total]})
+
+
+@transform(streaming=True)
+class AccountTotalsTransform(Transform):
+    events = input(AmountEvent, streaming=True)
+    totals = output(AccountTotal)
+
+    @step(input=events, output=totals)
+    def accumulate(self, event: AmountEvent) -> AccountTotal:
+        return apply_in_pandas_with_state(
+            key=event.account_id,
+            processor=AccountTotals,
+            output_mode="Update",
+            timeout="none",
+        )
+```
+
+The typed callback may receive several Pandas batches for a key and yields zero or more Pandas DataFrames. Spark does
+not promise row ordering or batch boundaries. `PandasGroupState` provides tuple-schema `get`, `update`, `remove`,
+timeout setters, and callback time values. Pandas and PyArrow must be installed on the driver and workers. The state
+checkpoint belongs to this legacy Spark API; Structure does not migrate it to or from either Spark 4 state processor
+API.
+
+For an existing PySpark callback, bind its schemas explicitly. The native callback keeps Spark's `(key, batches,
+group_state)` arguments:
+
+```python
+def update_account_totals(key, batches, group_state):
+    import pandas as pd
+
+    total = group_state.get[0] if group_state.exists else 0
+    for batch in batches:
+        total += int(batch["amount"].sum())
+    group_state.update((total,))
+    yield pd.DataFrame({"account_id": [key[0]], "total": [total]})
+
+
+native_processor = external_pandas_state_function(
+    update_account_totals,
+    input=AmountEvent,
+    key=AccountKey,
+    state=AccountTotalState,
+    output=AccountTotal,
+)
+```
+
+For processing-time expiry, declare `timeout="processing_time"`; callbacks can set a duration and handle expiration:
+
+```python
+if state.has_timed_out:
+    state.remove()
+    return
+
+state.update(AccountTotalState(total=total))
+state.set_timeout_duration(60_000)
+```
+
+Use a caller-owned checkpoint location and keep it stable when restarting the same legacy query. A checkpoint is not
+portable between `applyInPandasWithState`, `transformWithStateInPandas`, and `transformWithState`. If the driver reports
+missing pandas or PyArrow, install compatible versions on both the driver and every executor before starting the
+query. Timeout delivery depends on later streaming triggers and is not an exact wall-clock deadline.
 `ArbitraryStateContract` records the typed state boundary, timeout policy, checkpoint identity, and restart policy for
 caller-owned state code; it does not implement a processor runtime:
 

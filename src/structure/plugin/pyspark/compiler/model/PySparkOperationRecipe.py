@@ -9,6 +9,7 @@ from structure.plugin.pyspark.compiler.model.PySparkExactlyOneRecipe import PySp
 from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.plugin.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoinRecipe
 from structure.plugin.pyspark.compiler.model.PySparkJsonTupleRecipe import PySparkJsonTupleRecipe
+from structure.plugin.pyspark.compiler.model.PySparkLegacyPandasStateRecipe import PySparkLegacyPandasStateRecipe
 from structure.plugin.pyspark.compiler.model.PySparkMapGeneratorRecipe import PySparkMapGeneratorRecipe
 from structure.plugin.pyspark.compiler.model.PySparkMaterializationRecipe import (
     PySparkCheckpointRecipe,
@@ -57,6 +58,7 @@ class PySparkOperationRecipe:
     json_tuple: PySparkJsonTupleRecipe | None = None
     stack: PySparkStackRecipe | None = None
     stateful_transform: PySparkStatefulTransformRecipe | None = None
+    legacy_pandas_state: PySparkLegacyPandasStateRecipe | None = None
     sql: PySparkSqlRecipe | None = None
     scalar_generator: PySparkScalarGeneratorRecipe | None = None
     map_generator: PySparkMapGeneratorRecipe | None = None
@@ -130,6 +132,15 @@ class PySparkOperationRecipe:
         stateful_transform: PySparkStatefulTransformRecipe,
     ) -> "PySparkOperationRecipe":
         return PySparkOperationRecipe(kind="transform_with_state", stateful_transform=stateful_transform)
+
+    @staticmethod
+    def apply_in_pandas_with_state_operation(
+        legacy_pandas_state: PySparkLegacyPandasStateRecipe,
+    ) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(
+            kind="apply_in_pandas_with_state",
+            legacy_pandas_state=legacy_pandas_state,
+        )
 
     @staticmethod
     def posexplode_outer_struct_operation(

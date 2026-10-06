@@ -13,10 +13,10 @@ each entry must name its owner boundary, evidence, and caller remedy.
 
 ## Delta Tables
 
-Typed Delta mutations, inspection reads, generated/identity/default columns, and maintenance effects have focused live
-evidence on ordinary and Connect PySpark 4.1.0 / Delta 4.1.0 and remain release-gated pending V11's wider admission matrix. They
-are separate from the default PySpark `>=3.5,<4.1`
-DataFrame API baseline. See the [Delta API](../api/DeltaTables.api.md) and
+Typed Delta mutations, inspection reads, generated/identity/default columns, and maintenance effects are admitted on
+classic PySpark 3.5, 4.0, and 4.1 with pinned live online/generated evidence: 3.5.3 / Delta 3.3.3, 4.0.0 / Delta
+4.0.1, and 4.1.0 / Delta 4.1.0. Spark Connect and PySpark 4.2 are outside this admission. They remain separate from
+the default PySpark `>=3.5,<4.1` DataFrame API baseline. See the [Delta API](../api/DeltaTables.api.md) and
 [Delta compatibility ledger](DeltaTables.compat.md) for the precise operations, schema evolution rules, and target
 limits.
 
@@ -198,7 +198,7 @@ lifecycle recipe.
 | Pandas and RDD boundaries | unsupported | Pandas UDF, RDD, `mapInPandas` | Opaque execution does not fit Structure's symbolic transform contract | Use caller-owned streaming code |
 | Row `transformWithState` | design-gated | `transform_with_state(...)`; ordinary PySpark `>=4.1,<4.2` | Typed and opaque-native compiler paths are implemented; live execution, parity, timer, and same-checkpoint restart evidence is pending | Use the Structure surface only where its exact runtime profile is verified; otherwise keep state processing caller-owned |
 | Pandas `transformWithStateInPandas` | design-gated | `transform_with_state_in_pandas(...)`; ordinary PySpark `>=4.0,<4.1` and `>=4.1,<4.2` | Separate typed and opaque-native compiler paths; Pandas, PyArrow, protobuf, parity, and restart evidence is pending | Use the Structure surface only where its exact runtime profile is verified; otherwise keep state processing caller-owned |
-| Legacy arbitrary state | caller-owned-guided | `applyInPandasWithState` | Not implemented as a Structure compiler operation; `ArbitraryStateContract` validates adoption metadata only | Use native PySpark around a Structure transform and own state/recovery behavior |
+| Legacy Pandas state | design-gated | `apply_in_pandas_with_state(...)`; ordinary PySpark `>=3.5,<4.0`, `>=4.0,<4.1`, and `>=4.1,<4.2` | Separate typed and opaque-native compiler paths; online/generated parity and same-checkpoint restart evidence is pending for each profile | Use the Structure surface only where its exact runtime profile is verified; Spark Connect and PySpark 4.2 are unclaimed |
 | Typed struct generators | implemented | `stack`, `explode`, `posexplode`, `inline` | Fixed `stack` and typed array-of-struct generators are stateless row expansion with schema/cardinality contracts | [Collections API](../api/Collections.api.md) |
 | Caller-owned lifecycle APIs | caller-owned-guided | Sources, sinks, triggers, checkpoints, query start/stop | Structure only transforms supplied DataFrames; executable recipes keep lifecycle outside generated modules | [Streaming API](../api/Streaming.api.md) |
 | `foreachBatch` side-effect sinks | caller-owned-guided | `DataStreamWriter.foreachBatch` | Use `examples.streams.adoption.start_foreach_batch_query(...)` with `ForeachBatchSafety` after Structure returns a transformed DataFrame; the helper validates sink identity, idempotence key, retry policy, and snapshot identity before start | [Streaming API](../api/Streaming.api.md) |

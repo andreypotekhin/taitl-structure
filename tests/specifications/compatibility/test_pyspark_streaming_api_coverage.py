@@ -40,6 +40,7 @@ REQUIRED_V9_IDS = LIFECYCLE_IDS | {
     "streaming.foreach",
     "streaming.listeners",
     "streaming.arbitrary-state",
+    "streaming.legacy-pandas-state",
     "streaming.rdd-pandas-boundaries",
     "streaming.actions",
     "streaming.spark-connect",

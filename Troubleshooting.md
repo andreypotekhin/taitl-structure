@@ -107,3 +107,14 @@ Structure transforms should return DataFrame plans. Put lifecycle calls in calle
 `examples/streams/adoption.py`, then pass the streaming DataFrame into online or generated Structure execution. See
 [Streaming API](docs/api/Streaming.api.md) and
 [Spark Streaming](docs/dev/specifications/SparkStreaming.spec.md).
+
+## Legacy Pandas State Runtime Is Missing a Dependency or Does Not Resume
+
+`apply_in_pandas_with_state(...)` requires compatible pandas and PyArrow installations on the Spark driver and every
+executor. Install them in the runtime image, not only in the local Structure environment. Spark may surface worker-side
+import failures after the query starts if an executor is missing a package.
+
+Keep the same caller-owned checkpoint location when restarting the same legacy query. Do not expect its saved state to
+load through `transform_with_state_in_pandas(...)` or `transform_with_state(...)`; Structure does not migrate between
+these Spark state formats. Timeout callbacks run only as later triggers advance, so a processing-time timeout is not an
+exact wall-clock guarantee. See [Streaming reference](docs/reference/Streaming.ref.md#review-an-arbitrary-state-boundary).

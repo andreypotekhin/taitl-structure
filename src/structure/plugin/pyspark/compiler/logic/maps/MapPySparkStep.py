@@ -18,6 +18,7 @@ from structure.plugin.pyspark.compiler.model.PySparkJoinAsOfRecipe import PySpar
 from structure.plugin.pyspark.compiler.model.PySparkJoinDedupeRecipe import PySparkJoinDedupeRecipe
 from structure.plugin.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoinRecipe
 from structure.plugin.pyspark.compiler.model.PySparkJoinTemporalRecipe import PySparkJoinTemporalRecipe
+from structure.plugin.pyspark.compiler.model.PySparkLegacyPandasStateRecipe import PySparkLegacyPandasStateRecipe
 from structure.plugin.pyspark.compiler.model.PySparkMaterializationRecipe import (
     PySparkCheckpointRecipe,
     PySparkPersistRecipe,
@@ -421,7 +422,11 @@ class MapPySparkStep:
                     self._operation_modes(
                         PySparkOperationRecipe.transform_with_state_operation(
                             PySparkStatefulTransformRecipe(
-                                key=self._expressions.map(state_plan.key, capabilities=capabilities),
+                                key=(
+                                    tuple(self._expressions.map(key, capabilities=capabilities) for key in state_plan.key)
+                                    if isinstance(state_plan.key, tuple)
+                                    else self._expressions.map(state_plan.key, capabilities=capabilities)
+                                ),
                                 processor=state_plan.processor,
                                 processor_mode=state_plan.processor_mode,
                                 input_schema=state_plan.input_schema,
@@ -438,6 +443,26 @@ class MapPySparkStep:
                                 interface=state_plan.interface,
                                 event_time_column=state_plan.event_time_column,
                                 initial_state=state_plan.initial_state,
+                            )
+                        ),
+                        operation,
+                    )
+                )
+            if operation.kind == "apply_in_pandas_with_state" and operation.legacy_pandas_state is not None:
+                legacy_state_plan = operation.legacy_pandas_state
+                recipes.append(
+                    self._operation_modes(
+                        PySparkOperationRecipe.apply_in_pandas_with_state_operation(
+                            PySparkLegacyPandasStateRecipe(
+                                key=self._expressions.map(legacy_state_plan.key, capabilities=capabilities),
+                                processor=legacy_state_plan.processor,
+                                processor_mode=legacy_state_plan.processor_mode,
+                                input_schema=legacy_state_plan.input_schema,
+                                key_schema=legacy_state_plan.key_schema,
+                                state_schema=legacy_state_plan.state_schema,
+                                output_schema=legacy_state_plan.output_schema,
+                                output_mode=legacy_state_plan.output_mode,
+                                timeout=legacy_state_plan.timeout,
                             )
                         ),
                         operation,

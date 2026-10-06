@@ -7,7 +7,10 @@ from inspect import signature
 
 from structure import Schema
 from structure.plugin.pyspark.dsl.Stateful import (
+    ExternalPandasStateFunction,
     ExternalStateProcessor,
+    PandasGroupState,
+    PandasGroupStateProcessor,
     Timer,
     TimerContext,
     ValueState,
@@ -61,7 +64,8 @@ def apply_stateful_transform(
         processor_mode=processor_mode,
         interface=interface,
     )
-    grouped = frame.groupBy(key)
+    keys = key if isinstance(key, tuple) else (key,)
+    grouped = frame.groupBy(*keys)
     if initial_state is not None and hasattr(initial_state, "groupBy"):
         initial_state = initial_state.groupBy(*(field.column for field in key_schema._structure_fields.values()))
     arguments = {
@@ -77,6 +81,111 @@ def apply_stateful_transform(
     if method is None:
         raise RuntimeError(f"The installed PySpark runtime lacks {method_name} for target {target_profile!r}.")
     return method(**arguments)
+
+
+def apply_legacy_pandas_state(
+    frame,
+    *,
+    key,
+    processor,
+    input_schema: type[Schema],
+    key_schema: type[Schema],
+    state_schema: type[Schema],
+    output_schema: type[Schema],
+    processor_mode: str,
+    output_mode: str,
+    timeout: str,
+    target_profile: str,
+):
+    """Apply the legacy grouped Pandas state API on an admitted profile."""
+
+    supported_profiles = {">=3.5,<4.1", ">=3.5,<4.0", ">=4.0,<4.1", ">=4.1,<4.2"}
+    if target_profile not in supported_profiles:
+        raise RuntimeError(
+            "apply_in_pandas_with_state requires ordinary PySpark >=3.5,<4.2 within the supported "
+            f"profiles; received {target_profile!r}."
+        )
+    input_schema = _resolve_type(input_schema)
+    key_schema = _resolve_type(key_schema)
+    state_schema = _resolve_type(state_schema)
+    output_schema = _resolve_type(output_schema)
+    if isinstance(processor, str):
+        processor = _resolve_object(processor)
+    if processor_mode == "native":
+        if isinstance(processor, ExternalPandasStateFunction):
+            function = processor.function
+        else:
+            function = processor
+    elif processor_mode == "typed":
+        if not isinstance(processor, type) or not issubclass(processor, PandasGroupStateProcessor):
+            raise TypeError("Typed apply_in_pandas_with_state processor must inherit PandasGroupStateProcessor.")
+        _validate_legacy_pandas_callback(processor)
+
+        def function(key_value, batches, group_state):
+            instance = processor()
+            return instance.on_batches(
+                _schema_instance(key_schema, key_value),
+                batches,
+                PandasGroupState(group_state, state_schema, timeout),
+            )
+
+    else:
+        raise ValueError(f"Unknown apply_in_pandas_with_state processor mode {processor_mode!r}.")
+    _require_legacy_pandas_runtime()
+    from pyspark.sql.streaming.state import GroupStateTimeout
+
+    timeout_conf = {
+        "none": GroupStateTimeout.NoTimeout,
+        "processing_time": GroupStateTimeout.ProcessingTimeTimeout,
+        "event_time": GroupStateTimeout.EventTimeTimeout,
+    }.get(timeout)
+    if timeout_conf is None:
+        raise ValueError(f"Unknown apply_in_pandas_with_state timeout {timeout!r}.")
+    method = getattr(frame.groupBy(key), "applyInPandasWithState", None)
+    if method is None:
+        raise RuntimeError(
+            f"The installed PySpark runtime lacks GroupedData.applyInPandasWithState for target {target_profile!r}."
+        )
+    return method(
+        func=function,
+        outputStructType=_spark_schema(output_schema),
+        stateStructType=_spark_schema(state_schema),
+        outputMode=output_mode,
+        timeoutConf=timeout_conf,
+    )
+
+
+def _validate_legacy_pandas_callback(processor: type) -> None:
+    callback = getattr(processor, "on_batches", None)
+    if not callable(callback):
+        raise TypeError("Typed PandasGroupStateProcessor must define callable on_batches(self, key, batches, state).")
+    try:
+        callback_signature = signature(callback)
+    except (TypeError, ValueError) as error:
+        raise TypeError("Cannot inspect typed PandasGroupStateProcessor callback 'on_batches'.") from error
+    try:
+        callback_signature.bind(*([object()] * 4))
+    except TypeError as error:
+        raise TypeError(
+            "Typed PandasGroupStateProcessor.on_batches must accept (self, key, batches, state); "
+            f"received signature {callback_signature}."
+        ) from error
+
+
+def _require_legacy_pandas_runtime() -> None:
+    required = ("pandas", "pyarrow")
+    missing = []
+    for module in required:
+        try:
+            import_module(module)
+        except ImportError:
+            missing.append(module)
+    if missing:
+        raise RuntimeError(
+            "apply_in_pandas_with_state requires pandas and pyarrow on the driver and every worker; "
+            f"the driver is missing: {', '.join(missing)}. Install compatible versions in the Spark runtime. "
+            "See docs/reference/Streaming.ref.md."
+        )
 
 
 def _resolve_type(value):

@@ -167,7 +167,28 @@ class CapturePySparkStep:
                     raise TypeError("A transform_with_state step must return its StatefulResult directly.")
                 results = (PySparkResultBody(),)
             else:
-                results = BuildPySparkResultBodies(request)(value, context=context)
+                legacy_state_operations = [
+                    operation.legacy_pandas_state
+                    for operation in context.operations
+                    if operation.kind == "apply_in_pandas_with_state" and operation.legacy_pandas_state is not None
+                ]
+                if legacy_state_operations:
+                    if len(request.results) != 1 or len(legacy_state_operations) != 1:
+                        raise TypeError("apply_in_pandas_with_state(...) requires exactly one declared step output.")
+                    legacy_state_plan = legacy_state_operations[0]
+                    if request.results[0].schema is not legacy_state_plan.output_schema:
+                        raise TypeError(
+                            "apply_in_pandas_with_state processor output Schema must match the step's declared output Schema."
+                        )
+                    if context.filters or context.joins or context.foreach or len(context.operations) != 1:
+                        raise TypeError("apply_in_pandas_with_state(...) must be the only operation in its step.")
+                    from structure.plugin.pyspark.dsl.Stateful import StatefulResult
+
+                    if not isinstance(value, StatefulResult) or value.output_schema is not legacy_state_plan.output_schema:
+                        raise TypeError("An apply_in_pandas_with_state step must return its StatefulResult directly.")
+                    results = (PySparkResultBody(),)
+                else:
+                    results = BuildPySparkResultBodies(request)(value, context=context)
         sink_captures = self._sink_captures(value, context.foreach, request)
         first = results[0]
         if first.aggregate is not None:
@@ -251,9 +272,19 @@ class CapturePySparkStep:
             if operation.posexplode_struct is not None
         )
         expressions.extend(
-            operation.stateful_transform.key
+            key
             for operation in body.operations
             if operation.stateful_transform is not None
+            for key in (
+                operation.stateful_transform.key
+                if isinstance(operation.stateful_transform.key, tuple)
+                else (operation.stateful_transform.key,)
+            )
+        )
+        expressions.extend(
+            operation.legacy_pandas_state.key
+            for operation in body.operations
+            if operation.legacy_pandas_state is not None
         )
         expressions.extend(
             operation.json_tuple.expression for operation in body.operations if operation.json_tuple is not None
@@ -317,8 +348,8 @@ class CapturePySparkStep:
             if result.aggregate.having is not None:
                 expressions.append(result.aggregate.having)
         for operation in body.operations:
-            if operation.stateful_transform is not None:
-                expressions.append(operation.stateful_transform.key)
+            if operation.legacy_pandas_state is not None:
+                expressions.append(operation.legacy_pandas_state.key)
         return tuple(expressions)
 
     def _reserved_operations(self, request: StepAuthoringRequest) -> tuple[OperationPlan, ...]:

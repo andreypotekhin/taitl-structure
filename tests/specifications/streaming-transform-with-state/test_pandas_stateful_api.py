@@ -44,6 +44,24 @@ class Output(Schema):
     total = string(nullable=False)
 
 
+class CompositeInput(Schema):
+    customer_id = string(nullable=False)
+    region = string(nullable=False)
+
+
+class CompositeKey(Schema):
+    customer_id = string(nullable=False)
+    region = string(nullable=False)
+
+
+class CompositeOutput(Schema):
+    total = string(nullable=False)
+
+
+class CompositeCounter(PandasStateProcessor[CompositeInput, CompositeKey, State, CompositeOutput]):
+    pass
+
+
 InputSchema = TypeVar("InputSchema", bound=Schema)
 KeySchema = TypeVar("KeySchema", bound=Schema)
 StateSchema = TypeVar("StateSchema", bound=Schema)
@@ -211,6 +229,71 @@ def test_pandas_processor_cannot_be_passed_to_row_operation() -> None:
             WrongProcessor,
             materialize_schemas=False,
             plugin={"pyspark": {"profile": ">=4.1,<4.2", "variant": "ordinary"}},
+        )
+
+
+def test_pandas_state_supports_composite_grouping_keys() -> None:
+    class CompositeTotals(Transform):
+        events = input(CompositeInput, streaming=True)
+        output_schema = output(CompositeOutput)
+
+        @step(input=events, output=output_schema)
+        def calculate(self, row: CompositeInput) -> CompositeOutput:
+            return transform_with_state_in_pandas(
+                key=(row.customer_id, row.region),
+                processor=CompositeCounter,
+                output_mode="Update",
+                time_mode="ProcessingTime",
+            )
+
+    compiled = Compiler.frontend.compile()(
+        CompositeTotals,
+        materialize_schemas=False,
+        plugin={"pyspark": {"profile": ">=4.0,<4.1", "variant": "ordinary"}},
+    )
+    plan = cast(PySparkExecutionPlan, compiled.lowered)
+    state = plan.steps[0].operations[0].stateful_transform
+    assert state is not None and isinstance(state.key, tuple) and len(state.key) == 2
+
+    generated_modules = PySpark.render.project()(
+        plan,
+        source_transform=f"{__name__}.CompositeTotals",
+        generated_package="composite_pandas_state_generated",
+        source_schema_modules={__name__: [CompositeInput, CompositeOutput]},
+    )
+    generated = "\n".join(generated_modules.values())
+    assert "key=(" in generated
+    assert "customer_id" in generated and "region" in generated
+    for module in generated_modules.values():
+        compile(module, "<generated-composite-pandas-state>", "exec")
+
+
+@pytest.mark.parametrize("key_factory", ["empty", "duplicate", "expression"])
+def test_pandas_state_rejects_invalid_composite_keys(key_factory: str) -> None:
+    class InvalidCompositeKey(Transform):
+        events = input(CompositeInput, streaming=True)
+        output_schema = output(CompositeOutput)
+
+        @step(input=events, output=output_schema)
+        def calculate(self, row: CompositeInput) -> CompositeOutput:
+            keys = {
+                "empty": (),
+                "duplicate": (row.customer_id, row.customer_id),
+                "expression": (row.customer_id, row.customer_id + "suffix"),
+            }[key_factory]
+            return transform_with_state_in_pandas(
+                key=keys,
+                processor=CompositeCounter,
+                output_mode="Update",
+                time_mode="ProcessingTime",
+            )
+
+    expected = "non-empty tuple" if key_factory == "empty" else "duplicate" if key_factory == "duplicate" else "only fields"
+    with pytest.raises(TypeError, match=expected):
+        Compiler.frontend.compile()(
+            InvalidCompositeKey,
+            materialize_schemas=False,
+            plugin={"pyspark": {"profile": ">=4.0,<4.1", "variant": "ordinary"}},
         )
 
 

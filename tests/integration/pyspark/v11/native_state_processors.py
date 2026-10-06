@@ -2,7 +2,7 @@
 
 from pyspark.sql import Row
 from pyspark.sql.streaming.stateful_processor import StatefulProcessor
-from pyspark.sql.types import LongType, StructField, StructType
+from pyspark.sql.types import LongType, StringType, StructField, StructType
 
 
 class NativeInitialTotals(StatefulProcessor):
@@ -45,3 +45,83 @@ class NativeInitialTotals(StatefulProcessor):
                 )
             ]
         )
+
+
+class NativePandasCompositeTotals(StatefulProcessor):
+    """Exercise composite keys, Pandas initial state, native state kinds, TTL, and timers."""
+
+    def init(self, handle) -> None:
+        self._handle = handle
+        self._total = handle.getValueState(
+            "native_pandas_total",
+            StructType([StructField("total", LongType(), nullable=False)]),
+            ttlDurationMs=60000,
+        )
+        self._amounts = handle.getListState(
+            "native_pandas_amounts",
+            StructType([StructField("amount", LongType(), nullable=False)]),
+            ttlDurationMs=60000,
+        )
+        self._items = handle.getMapState(
+            "native_pandas_items",
+            StructType([StructField("item_id", StringType(), nullable=False)]),
+            StructType([StructField("amount", LongType(), nullable=False)]),
+            ttlDurationMs=60000,
+        )
+
+    def handleInitialState(self, key, initialState, timerValues) -> None:
+        total = int(initialState["seed_total"].sum())
+        self._total.update((total,))
+        self._amounts.appendValue((total,))
+
+    def handleInputRows(self, key, rows, timerValues):
+        import pandas as pd  # type: ignore[import-untyped]
+
+        total = self._total.get()[0] if self._total.exists() else 0
+        for batch in rows:
+            for row in batch.itertuples(index=False):
+                amount = int(row.amount)
+                total += amount
+                self._amounts.appendValue((amount,))
+                existing = self._items.getValue((row.item_id,))
+                previous = 0 if existing is None else int(existing[0])
+                self._items.updateValue((row.item_id,), (previous + amount,))
+        self._total.update((total,))
+        expiry = timerValues.getCurrentProcessingTimeInMs() + 100
+        self._handle.registerTimer(expiry)
+        item_total = sum(int(value[0]) for value in self._items.values())
+        return iter(
+            [
+                pd.DataFrame(
+                    {
+                        "customer_id": [key[0]],
+                        "region": [key[1]],
+                        "total": [total],
+                        "amount_count": [sum(1 for _ in self._amounts.get())],
+                        "item_total": [item_total],
+                        "reason": ["input"],
+                    }
+                )
+            ]
+        )
+
+    def handleExpiredTimer(self, key, timerValues, expiredTimerInfo):
+        import pandas as pd  # type: ignore[import-untyped]
+
+        return iter(
+            [
+                pd.DataFrame(
+                    {
+                        "customer_id": [key[0]],
+                        "region": [key[1]],
+                        "total": [self._total.get()[0]],
+                        "amount_count": [sum(1 for _ in self._amounts.get())],
+                        "item_total": [sum(int(value[0]) for value in self._items.values())],
+                        "reason": ["timer"],
+                    }
+                )
+            ]
+        )
+
+    def close(self) -> None:
+        pass

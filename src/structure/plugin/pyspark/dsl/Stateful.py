@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 from dataclasses import dataclass
+from inspect import isfunction
 from typing import Any, ClassVar, Generic, TypeVar, cast, get_args, get_origin
 
 from structure import Schema
@@ -30,6 +31,15 @@ class PandasStateProcessor(Generic[Input, Key, State, Output]):
     __structure_pandas_state_processor__: ClassVar[tuple[type[Schema], ...]]
 
 
+class PandasGroupStateProcessor(Generic[Input, Key, State, Output]):
+    """Base declaration for legacy ``applyInPandasWithState`` callbacks."""
+
+    __structure_pandas_group_state_processor__: ClassVar[tuple[type[Schema], ...]]
+
+    def on_batches(self, key: Key, batches: Iterator[Any], state: PandasGroupState[State]) -> Iterator[Any]:
+        raise NotImplementedError
+
+
 @dataclass(frozen=True)
 class ValueState(Generic[State]):
     """Typed facade for the processor's single declared value state."""
@@ -49,6 +59,55 @@ class ValueState(Generic[State]):
 
     def clear(self) -> None:
         self._handle.clear()
+
+
+@dataclass(frozen=True)
+class PandasGroupState(Generic[State]):
+    """Typed facade for legacy PySpark ``GroupState`` and its tuple value."""
+
+    _handle: Any
+    _schema: type[Schema]
+    _timeout: str
+
+    @property
+    def exists(self) -> bool:
+        return self._handle.exists
+
+    def get(self) -> State | None:
+        value = self._handle.getOption
+        return None if value is None else cast(State, _schema_instance(self._schema, value))
+
+    def update(self, value: State) -> None:
+        self._handle.update(_schema_values(self._schema, value))
+
+    def remove(self) -> None:
+        self._handle.remove()
+
+    @property
+    def has_timed_out(self) -> bool:
+        return self._handle.hasTimedOut
+
+    def set_timeout_duration(self, duration_ms: int) -> None:
+        if self._timeout != "processing_time":
+            raise ValueError("set_timeout_duration(...) requires timeout='processing_time'.")
+        if not isinstance(duration_ms, int) or isinstance(duration_ms, bool) or duration_ms <= 0:
+            raise ValueError("set_timeout_duration(duration_ms=...) requires a positive integer number of milliseconds.")
+        self._handle.setTimeoutDuration(duration_ms)
+
+    def set_timeout_timestamp(self, timestamp_ms: int) -> None:
+        if self._timeout != "event_time":
+            raise ValueError("set_timeout_timestamp(...) requires timeout='event_time'.")
+        if not isinstance(timestamp_ms, int) or isinstance(timestamp_ms, bool) or timestamp_ms <= 0:
+            raise ValueError("set_timeout_timestamp(timestamp_ms=...) requires positive epoch milliseconds.")
+        self._handle.setTimeoutTimestamp(timestamp_ms)
+
+    @property
+    def current_processing_time_ms(self) -> int:
+        return self._handle.getCurrentProcessingTimeMs()
+
+    @property
+    def current_watermark_ms(self) -> int:
+        return self._handle.getCurrentWatermarkMs()
 
 
 @dataclass(frozen=True)
@@ -99,6 +158,15 @@ class ExternalStateProcessor:
 
 
 @dataclass(frozen=True)
+class ExternalPandasStateFunction:
+    function: Any
+    input_schema: type[Schema]
+    key_schema: type[Schema]
+    state_schema: type[Schema]
+    output_schema: type[Schema]
+
+
+@dataclass(frozen=True)
 class StatefulResult:
     output_schema: type[Schema]
 
@@ -120,6 +188,19 @@ def pandas_state_processor(processor: type[PandasStateProcessor[Input, Key, Stat
     )
 
 
+def pandas_group_state_processor(
+    processor: type[PandasGroupStateProcessor[Input, Key, State, Output]],
+) -> type:
+    """Mark a top-level typed legacy Pandas state processor class."""
+
+    return _mark_processor(
+        processor,
+        PandasGroupStateProcessor,
+        "__structure_pandas_group_state_processor__",
+        "PandasGroupStateProcessor",
+    )
+
+
 def external_state_processor(
     processor: type,
     *,
@@ -136,6 +217,25 @@ def external_state_processor(
     if not isinstance(states, tuple):
         raise TypeError("external_state_processor(states=...) must be a tuple of Structure Schema classes.")
     return ExternalStateProcessor(processor, input, key, states, output)
+
+
+def external_pandas_state_function(
+    function: Any,
+    *,
+    input: type[Schema],
+    key: type[Schema],
+    state: type[Schema],
+    output: type[Schema],
+) -> ExternalPandasStateFunction:
+    """Bind a native ``applyInPandasWithState`` function to Structure schemas."""
+
+    schemas = (input, key, state, output)
+    if not isfunction(function):
+        raise TypeError("external_pandas_state_function requires a top-level Python function.")
+    if not all(isinstance(schema, type) and issubclass(schema, Schema) for schema in schemas):
+        raise TypeError("external_pandas_state_function schema bindings must be Structure Schema classes.")
+    _require_importable(function)
+    return ExternalPandasStateFunction(function, input, key, state, output)
 
 
 def _mark_processor(processor: type, origin: type, attribute: str, label: str) -> type:
@@ -289,6 +389,83 @@ def transform_with_state_in_pandas(
     )
 
 
+def apply_in_pandas_with_state(
+    *,
+    key: object,
+    processor: type[PandasGroupStateProcessor] | ExternalPandasStateFunction,
+    output_mode: str,
+    timeout: str,
+) -> Any:
+    """Capture the legacy grouped Pandas state API as one transform step."""
+
+    from structure.plugin.pyspark.dsl.Expression import Expression
+    from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
+    from structure.plugin.pyspark.symbolic_execution.model.PySparkSymbolicContext import current_pyspark_context
+
+    context = current_pyspark_context()
+    if context is None:
+        raise RuntimeError("apply_in_pandas_with_state(...) is available only while compiling a PySpark transform step.")
+    if not isinstance(key, Expression) or key.kind != "field":
+        raise TypeError("apply_in_pandas_with_state(key=...) requires one field from the current input row.")
+    if output_mode not in {"Append", "Update"}:
+        raise ValueError("apply_in_pandas_with_state(output_mode=...) must be 'Append' or 'Update'.")
+    if timeout not in {"none", "processing_time", "event_time"}:
+        raise ValueError("apply_in_pandas_with_state(timeout=...) must be 'none', 'processing_time', or 'event_time'.")
+
+    if isinstance(processor, ExternalPandasStateFunction):
+        function = processor.function
+        _require_importable(function)
+        input_schema = processor.input_schema
+        key_schema = processor.key_schema
+        state_schema = processor.state_schema
+        output_schema = processor.output_schema
+        processor_mode = "native"
+    else:
+        if not isinstance(processor, type) or not issubclass(processor, PandasGroupStateProcessor):
+            raise TypeError(
+                "processor must inherit "
+                "PandasGroupStateProcessor[InputSchema, KeySchema, StateSchema, OutputSchema]."
+            )
+        schemas = _processor_schemas(processor, PandasGroupStateProcessor)
+        if len(schemas) != 4 or not all(
+            isinstance(schema, type) and issubclass(schema, Schema) for schema in schemas
+        ):
+            raise TypeError(
+                "processor must inherit PandasGroupStateProcessor[InputSchema, KeySchema, StateSchema, OutputSchema] "
+                "with concrete Structure Schema classes."
+            )
+        _require_importable(processor)
+        input_schema, key_schema, state_schema, output_schema = cast(
+            tuple[type[Schema], type[Schema], type[Schema], type[Schema]], schemas
+        )
+        processor_mode = "typed"
+
+    input_row = context.default_project_source
+    input_schema_for_step = getattr(input_row, "_structure_scope_schema", None)
+    if input_schema_for_step is not input_schema:
+        raise TypeError("apply_in_pandas_with_state processor input Schema must match the step's driving input Schema.")
+    key_fields = tuple(key_schema._structure_fields.values())
+    if len(key_fields) != 1 or key_fields[0].type != key.type:
+        raise TypeError("apply_in_pandas_with_state currently requires one key Schema field matching the grouping field.")
+    if context.operations:
+        raise TypeError("apply_in_pandas_with_state(...) must be the only relational operation in its step.")
+
+    context.operations.append(
+        OperationPlan.apply_in_pandas_with_state_operation(
+            key=key,
+            processor=processor,
+            processor_mode=processor_mode,
+            input_schema=input_schema,
+            key_schema=key_schema,
+            state_schema=state_schema,
+            output_schema=output_schema,
+            output_mode=output_mode,
+            timeout=timeout,
+        )
+    )
+    return StatefulResult(output_schema)
+
+
 def _capture_stateful_transform(
     interface: str,
     operation_name: str,
@@ -309,8 +486,17 @@ def _capture_stateful_transform(
     context = current_pyspark_context()
     if context is None:
         raise RuntimeError(f"{operation_name}(...) is available only while compiling a PySpark transform step.")
-    if not isinstance(key, Expression) or key.kind != "field":
-        raise TypeError(f"{operation_name}(key=...) requires one field from the current input row.")
+    key_expressions = (key,) if isinstance(key, Expression) else key if isinstance(key, tuple) else ()
+    if not key_expressions:
+        raise TypeError(f"{operation_name}(key=...) requires a field or a non-empty tuple of fields.")
+    if any(not isinstance(expression, Expression) or expression.kind != "field" for expression in key_expressions):
+        raise TypeError(f"{operation_name}(key=...) accepts only fields from the current input row.")
+    field_identities = tuple(
+        ((expression.data or {}).get("scope", ""), (expression.data or {}).get("field", ""))
+        for expression in key_expressions
+    )
+    if len(set(field_identities)) != len(field_identities):
+        raise TypeError(f"{operation_name}(key=...) does not allow duplicate grouping fields.")
     if output_mode not in {"Append", "Update", "Complete"}:
         raise ValueError(f"{operation_name}(output_mode=...) must be Append, Update, or Complete.")
     if time_mode not in {"None", "ProcessingTime", "EventTime"}:
@@ -353,8 +539,12 @@ def _capture_stateful_transform(
     if input_schema_for_step is not input_schema:
         raise TypeError(f"{operation_name} processor input Schema must match the step's driving input Schema.")
     key_fields = tuple(key_schema._structure_fields.values())
-    if len(key_fields) != 1 or key_fields[0].type != key.type:
-        raise TypeError(f"{operation_name} currently requires one key Schema field matching the grouping expression.")
+    if len(key_fields) != len(key_expressions) or any(
+        field.type != expression.type for field, expression in zip(key_fields, key_expressions, strict=True)
+    ):
+        raise TypeError(
+            f"{operation_name} key Schema fields must match the grouping expressions by count and type."
+        )
     if initial_state is not None and mode != "native":
         raise TypeError("initial_state is available only with external_state_processor(...).")
     if initial_state is not None:
@@ -368,7 +558,7 @@ def _capture_stateful_transform(
     if context.operations:
         raise TypeError(f"{operation_name}(...) must be the only relational operation in its step.")
     plan = OperationPlan.transform_with_state_operation(
-        key=key,
+        key=key_expressions[0] if len(key_expressions) == 1 else key_expressions,
         processor=processor,
         interface=interface,
         processor_mode=mode,
@@ -385,7 +575,7 @@ def _capture_stateful_transform(
     return StatefulResult(output_schema)
 
 
-def _require_importable(processor: type) -> None:
+def _require_importable(processor: Any) -> None:
     if "<locals>" in processor.__qualname__ or processor.__module__ in {"__main__", "builtins"}:
         raise TypeError(
             f"State processor {processor.__qualname__!r} must be defined at module scope in an importable module."
