@@ -47,3 +47,21 @@ step context. Delta mutation steps are batch operations; streaming source/sink l
 For signatures and working examples, use the [Delta API](../api/DeltaTables.api.md). The developer
 [design](../dev/design/V11DeltaSchemaBoundMutations.design.md) and
 [specification](../dev/specifications/V11DeltaSchemaBoundMutations.spec.md) record the compiler and runtime rules.
+
+## Historical reads, CDF, and selective overwrite
+
+`delta_snapshot` and `delta_changes` turn a typed step result into a native Delta reader. The caller still provisions
+and binds the table. Snapshot version/timestamp and CDF start/end selectors may be `variable()` values, so the same
+compiled transform can serve multiple requests without embedding selector values in generated code. Batch CDF needs
+the table property `delta.enableChangeDataFeed=true` and the Spark Delta extension/catalog settings. Structure checks
+both before opening the feed. CDF endpoints are inclusive, and Delta history retention still limits which ranges can
+be read.
+
+Streaming CDF stays at the normal DataFrame boundary: the caller builds a `readStream` Delta DataFrame with
+`readChangeFeed=true`, binds it to a streaming `input(Schema, streaming=True)`, and owns `writeStream`, checkpoints,
+and query lifecycle. Structure only compiles the row transformation.
+
+`delta_replace_where(...).execute()` writes a same-schema source into the target's selected slice using Delta's
+native `replaceWhere` option. The source and predicate are validated before the commit; Delta enforces that source
+rows satisfy the predicate. This operation is a native commit, not a transaction spanning multiple transform steps.
+The new snapshot, CDF, and selective-overwrite paths remain release-gated until their pinned live tests pass.

@@ -18,6 +18,7 @@ from structure.core.dsl.model.transforms.OutputDeclaration import OutputDeclarat
 from structure.core.dsl.model.transforms.ParameterDeclaration import NegatedParameter, ParameterDeclaration
 from structure.core.dsl.model.transforms.StageDeclaration import StageDeclaration, StageOutputReference
 from structure.core.dsl.model.transforms.Transform import Transform
+from structure.core.dsl.model.transforms.VariableDeclaration import VariableDeclaration, VariableReference
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
 from structure.plugin.api.v1 import InputPlan, StreamingBoundaryPlan
 
@@ -92,11 +93,40 @@ class ComposeTransformGraph:
             name: self._parameter(wrapper_class, value, bound)
             for name, value in stage.invocation._structure_bound_parameters.items()
         }
-        if parameters == stage.invocation._structure_bound_parameters:
+        variables = {
+            name: self._variable(wrapper_class, value)
+            for name, value in stage.invocation._structure_bound_variables.items()
+        }
+        if (
+            parameters == stage.invocation._structure_bound_parameters
+            and variables == stage.invocation._structure_bound_variables
+        ):
             return stage
-        invocation = type(stage.invocation)(**stage.invocation._structure_bound_inputs, **parameters)
+        invocation = type(stage.invocation)(
+            **stage.invocation._structure_bound_inputs,
+            **parameters,
+            **variables,
+        )
         invocation._structure_output_renames = dict(stage.invocation._structure_output_renames)
         return replace(stage, invocation=invocation)
+
+    @staticmethod
+    def _variable(wrapper_class: type[Transform], value: object) -> object:
+        if not isinstance(value, VariableDeclaration):
+            return value
+        forwarded_name = next(
+            (name for name, declaration in wrapper_class._structure_variables.items() if declaration is value),
+            value.name,
+        )
+        if not forwarded_name:
+            raise TypeError("A composed runtime variable must refer to a declared wrapper variable")
+        return VariableReference(
+            forwarded_name,
+            value.python_type,
+            nullable=value.nullable,
+            precision=value.precision,
+            scale=value.scale,
+        )
 
     def _parameter(self, wrapper_class: type[Transform], value: object, bound: Mapping[str, object]) -> object:
         if isinstance(value, NegatedParameter):

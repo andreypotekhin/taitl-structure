@@ -119,6 +119,101 @@ Merge evolution maps to Delta's `withSchemaEvolution()`. The append form is
 writer. Neither form changes a session-wide setting. Structure checks the old shape before the commit and the declared
 new shape and CHECK metadata afterward. For a later invocation, bind the table using its new schema.
 
+## Snapshot and change-feed reads
+
+Use `delta_snapshot` or `delta_changes` as the direct return value of a single-output step. The result annotation
+declares the output Schema. CDF metadata fields use their native Delta column names as aliases:
+
+```python
+from structure import Schema, Transform, output, transform, variable
+from structure.plugin.pyspark import delta_changes, delta_input, long, string, timestamp
+
+
+class OrderChange(Schema):
+    id = string(nullable=False)
+    status = string(nullable=False)
+    change_type = string(nullable=False, alias="_change_type")
+    commit_version = long(nullable=False, alias="_commit_version")
+    commit_timestamp = timestamp(nullable=False, alias="_commit_timestamp")
+
+
+@transform
+class ReadOrderChanges(Transform):
+    orders = delta_input(Order)
+    starting_version = variable(int)
+    ending_version = variable(int | None, default=None)
+    changes = output(OrderChange)
+
+    def read(self, order: Order) -> OrderChange:
+        return delta_changes(
+            order,
+            starting_version=self.starting_version,
+            ending_version=self.ending_version,
+        )
+
+
+first = ReadOrderChanges(orders=table, starting_version=18).run(session).changes
+later = ReadOrderChanges(orders=table, starting_version=24).run(session).changes
+```
+
+`variable(type, default=...)` supplies a runtime scalar without specializing the compiled transform for each value.
+It can appear in Spark expressions and Delta selectors. It cannot control Python `if` statements or graph shape; use
+`parameter()` for compile-time choices. Supported scalar types are `bool`, `int`, `float`, `str`, `bytes`, `Decimal`,
+`date`, and timezone-aware `datetime`; `Decimal` declarations require `precision=` and `scale=`. A Delta snapshot
+accepts exactly one of `version=` or `timestamp=`. `delta_changes` accepts `starting_version=` with optional
+`ending_version=`, or `starting_timestamp=` with optional `ending_timestamp=`. The range endpoints are inclusive.
+
+The caller enables CDF on the table before writing changes:
+
+```sql
+ALTER TABLE delta.`/path/to/orders`
+SET TBLPROPERTIES (delta.enableChangeDataFeed = true)
+```
+
+The Spark session must include `spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension` and
+`spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog`. Structure checks the table property
+and session configuration before a CDF read. CDF only includes changes committed after the property was enabled, and
+the requested versions or timestamps must still be available in Delta history.
+
+`delta_replace_where(target, source, where=...).execute()` performs a same-schema selective overwrite. The predicate
+may reference target fields and runtime variables. The source must use the same Structure Schema; Delta also checks
+that incoming rows satisfy the predicate. The call is a native commit and is retained as a step effect.
+
+## Streaming CDF boundary
+
+Structure does not start or manage a streaming CDF reader. Bind the caller-created stream as an ordinary streaming
+input, transform it through a normal typed step, then let the caller own `writeStream` and its checkpoint:
+
+```python
+from structure import Schema, Transform, input, output, transform
+from structure.plugin.pyspark import where
+
+
+@transform(streaming=True)
+class SelectOrderChanges(Transform):
+    changes = input(OrderChange, streaming=True)
+    updates = output(OrderChange)
+
+    def select(self, change: OrderChange) -> OrderChange:
+        where(change.change_type == "update_postimage")
+        return OrderChange.project(change)
+
+
+stream = (
+    spark.readStream.format("delta")
+    .option("readChangeFeed", "true")
+    .option("startingVersion", 18)
+    .load(orders_path)
+)
+updates = SelectOrderChanges(changes=stream).run(session).updates
+query = updates.writeStream.format("parquet").option(
+    "checkpointLocation", checkpoint_path
+).start(updates_path)
+```
+
+The table CDF property and Delta Spark session configuration described above also apply. The caller owns query
+startup, checkpointing, and shutdown.
+
 ## CHECK comparison and runtime behavior
 
 `delta_check_match` may be set in PySpark plugin configuration, `@transform(...)`, or `@step(...)`; the nearest setting

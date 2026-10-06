@@ -187,6 +187,13 @@ DataFrames do not enter those keys. Generated execution requires an artifact ren
 A parameter named `streaming` is still just scalar configuration: it does not override `input(..., streaming=True)`
 or grant streaming support to operations that lack it.
 
+Use `variable(type, default=...)` when the value changes per run but must not produce a separate compiled artifact.
+Use `variable(type, default=...)` when the value changes per run but must not produce a separate compiled artifact.
+Variables support scalar Spark literals and driver-side Delta selectors; they do not support Python branching or graph
+construction. A missing required value fails when the invocation runs. For example, a Delta CDF transform can declare
+`starting_version = variable(int)` and use `self.starting_version` in `delta_changes(...)`. See the
+[Delta table API](../api/DeltaTables.api.md#snapshot-and-change-feed-reads) for a full example and selector rules.
+
 ## Hooks
 
 `@raw(...)` is the explicit boundary for caller-supplied PySpark code. Structure checks the declaration and schema

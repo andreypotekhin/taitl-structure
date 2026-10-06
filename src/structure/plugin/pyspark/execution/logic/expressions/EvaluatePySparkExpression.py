@@ -56,6 +56,15 @@ class EvaluatePySparkExpression:
             return self._struct(expression, functions=functions, aliases=aliases, window=window)
         if expression.kind == "literal":
             return functions.lit(expression.data["value"])
+        if expression.kind == "variable":
+            from pyspark.sql import types as T  # type: ignore[import-not-found]
+
+            from structure.plugin.pyspark.dsl.RuntimeVariables import runtime_variable
+
+            value = functions.lit(runtime_variable(str(expression.data["name"])))
+            if expression.type is not None:
+                value = value.cast(self._schema.materialize().type(expression.type, types=T))
+            return value
         if expression.kind == "lambda_arg":
             return expression.data["column"]
         if expression.kind == "call":

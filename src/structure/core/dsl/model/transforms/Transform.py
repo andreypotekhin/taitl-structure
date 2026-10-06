@@ -17,6 +17,7 @@ from structure.core.dsl.model.transforms.StageDeclaration import (
     _output_reference,
 )
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline
+from structure.core.dsl.model.transforms.VariableDeclaration import VariableDeclaration, VariableReference
 
 
 class _InvocationOnlyMethod:
@@ -64,6 +65,7 @@ class Transform:
     _structure_outputs: dict[str, OutputDeclaration] = {}
     _structure_sinks: dict[str, SinkDeclaration] = {}
     _structure_parameters: dict[str, ParameterDeclaration] = {}
+    _structure_variables: dict[str, VariableDeclaration] = {}
     _structure_input_aliases: dict[str, str] = {}
     _structure_lane_aliases: dict[str, str] = {}
     _structure_output_aliases: dict[str, str] = {}
@@ -83,6 +85,7 @@ class Transform:
         sinks: dict[str, SinkDeclaration] = {}
         output_bindings: dict[str, object] = {}
         parameters: dict[str, ParameterDeclaration] = {}
+        variables: dict[str, VariableDeclaration] = {}
         for base in cls.__bases__:
             inputs.update(getattr(base, "_structure_inputs", {}))
             lanes.update(getattr(base, "_structure_lanes", {}))
@@ -90,6 +93,7 @@ class Transform:
             sinks.update(getattr(base, "_structure_sinks", {}))
             output_bindings.update(getattr(base, "_structure_output_bindings", {}))
             parameters.update(getattr(base, "_structure_parameters", {}))
+            variables.update(getattr(base, "_structure_variables", {}))
 
         for name, value in cls.__dict__.items():
             if isinstance(value, InputDeclaration):
@@ -107,6 +111,10 @@ class Transform:
                 parameters[value.name] = value
             elif name in parameters:
                 del parameters[name]
+            if isinstance(value, VariableDeclaration):
+                variables[value.name] = value
+            elif name in variables:
+                del variables[name]
 
         cls._structure_inputs = inputs
         cls._structure_lanes = lanes
@@ -128,6 +136,7 @@ class Transform:
                 output_bindings[name] = source
         cls._structure_output_bindings = output_bindings
         cls._structure_parameters = parameters
+        cls._structure_variables = variables
         cls._structure_input_aliases = cls._alias_index("input", inputs)
         cls._structure_lane_aliases = cls._alias_index("lane", lanes)
         cls._structure_output_aliases = cls._alias_index("output", outputs)
@@ -155,6 +164,7 @@ class Transform:
     def __init__(self, **inputs: object) -> None:
         normalized: dict[str, object] = {}
         parameters: dict[str, object] = {}
+        variables: dict[str, object] = {}
         unknown = []
         for name, value in inputs.items():
             canonical = self._structure_input_aliases.get(name, name)
@@ -169,16 +179,28 @@ class Transform:
             if name in self._structure_parameters:
                 parameters[name] = value
                 continue
+            if name in self._structure_variables:
+                declaration = self._structure_variables[name]
+                if isinstance(value, VariableDeclaration):
+                    if value.python_type is not declaration.python_type or value.nullable != declaration.nullable:
+                        raise TypeError(f"Forwarded runtime variable {value.name!r} is incompatible with {name!r}")
+                    variables[name] = value
+                else:
+                    variables[name] = value if isinstance(value, VariableReference) else declaration.validate(value)
+                continue
             if canonical not in self._structure_inputs:
                 unknown.append(name)
                 continue
         if unknown:
-            allowed = ", ".join((*self._structure_inputs, *self._structure_input_aliases, *self._structure_parameters))
+            allowed = ", ".join(
+                (*self._structure_inputs, *self._structure_input_aliases, *self._structure_parameters, *self._structure_variables)
+            )
             raise TypeError(
                 f"{type(self).__name__} got unknown input(s): {', '.join(sorted(unknown))}. Allowed: {allowed}"
             )
         self._structure_bound_inputs = normalized
         self._structure_bound_parameters = parameters
+        self._structure_bound_variables = variables
         self._structure_output_renames: dict[str, str] = {}
         self._structure_implicit_stage: StageDeclaration | None = None
 

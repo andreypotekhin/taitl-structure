@@ -413,6 +413,14 @@
       "module": "structure.core.dsl.model.transforms.transform_api",
       "qualname": "transform",
       "signature": "(target=None, **kwargs)"
+    },
+    "variable": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.core.dsl.model.transforms.transform_api",
+      "qualname": "variable",
+      "signature": "(python_type: 'object', *, default: 'object' = UNSET, precision: 'int | None' = None, scale: 'int | None' = None) -> 'VariableDeclaration'"
     }
   },
   "package": "structure"

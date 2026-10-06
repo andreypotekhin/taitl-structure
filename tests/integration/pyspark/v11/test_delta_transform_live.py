@@ -5,18 +5,28 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-from integration.pyspark.support.backend_matrix import generated_project, render_generated_project, session
+from integration.pyspark.support.backend_matrix import (
+    generated_project,
+    render_generated_project,
+    render_generated_projects,
+    session,
+)
 
-from structure import Schema, Transform, input, output, step, transform
+from structure import Schema, Transform, input, output, step, transform, variable
 from structure.plugin.pyspark import (
     check,
     delta_append,
+    delta_changes,
     delta_delete,
     delta_input,
     delta_merge,
     delta_output,
+    delta_replace_where,
+    delta_snapshot,
     delta_update,
+    long,
     string,
+    timestamp,
 )
 
 pytestmark = pytest.mark.integration
@@ -40,6 +50,12 @@ class ChangeV2(Change):
 
 class OrderV2(Order):
     note = string()
+
+
+class OrderChange(Order):
+    change_type = string(nullable=False, alias="_change_type")
+    commit_version = long(nullable=False, alias="_commit_version")
+    commit_timestamp = timestamp(nullable=False, alias="_commit_timestamp")
 
 
 @transform
@@ -132,6 +148,41 @@ class ReadOrders(Transform):
 
 
 @transform
+class ReadChanges(Transform):
+    orders = delta_input(Order)
+    starting_version = variable(int)
+    ending_version = variable(int | None, default=None)
+    changes = output(OrderChange)
+
+    def read(self, order: Order) -> OrderChange:
+        return delta_changes(
+            order,
+            starting_version=self.starting_version,
+            ending_version=self.ending_version,
+        )
+
+
+@transform
+class ReadSnapshot(Transform):
+    orders = delta_input(Order)
+    version = variable(int)
+    snapshot = output(Order)
+
+    def read(self, order: Order) -> Order:
+        return delta_snapshot(order, version=self.version)
+
+
+@transform
+class ReplaceWest(Transform):
+    replacements = input(Order)
+    orders = delta_output(Order)
+
+    @step(input=(orders, replacements), output=orders)
+    def replace(self, order: Order, replacement: Order) -> None:
+        delta_replace_where(order, replacement, where=order.status == "west").execute()
+
+
+@transform
 class EvolvingMerge(Transform):
     changes = input(ChangeV2)
     current_orders = delta_input(Order)
@@ -201,6 +252,10 @@ def _v1_table(spark, path: Path):
     return DeltaTable.forPath(spark, str(path))
 
 
+def _enable_cdf(spark, path: Path):
+    spark.sql(f"ALTER TABLE delta.`{path}` SET TBLPROPERTIES (delta.enableChangeDataFeed = true)")
+
+
 @pytest.mark.parametrize("mode", ["online", "generated"])
 @pytest.mark.parametrize(
     ("subject", "expected"),
@@ -251,6 +306,61 @@ def _changes(spark, rows=(("1", "changed"), ("3", "new"))):
         ]
     )
     return spark.createDataFrame(rows, schema)
+
+
+@pytest.mark.parametrize("mode", ["online", "generated"])
+def test_cdf_variables_reuse_one_compiled_transform(delta_spark, tmp_path, mode) -> None:
+    path = tmp_path / f"cdf-{mode}"
+    table = _v1_table(delta_spark, path)
+    _enable_cdf(delta_spark, path)
+    delta_spark.sql(f"UPDATE delta.`{path}` SET status = 'first' WHERE id = '1'")
+    first_version = table.history(1).first()["version"]
+    delta_spark.sql(f"UPDATE delta.`{path}` SET status = 'second' WHERE id = '1'")
+    second_version = table.history(1).first()["version"]
+
+    run_session = session(delta_spark, execution_mode=mode, generated_package=PACKAGE)
+    first = ReadChanges(orders=table, starting_version=first_version)
+    second = ReadChanges(orders=table, starting_version=second_version)
+    assert run_session.compile(first).key == run_session.compile(second).key
+    files = render_generated_projects(
+        [
+            (ReadChanges, f"{ReadChanges.__module__}.ReadChanges"),
+            (ReadSnapshot, f"{ReadSnapshot.__module__}.ReadSnapshot"),
+        ],
+        generated_package=PACKAGE,
+        source_schema_modules={Order.__module__: [Order, OrderChange]},
+    )
+    with generated_project(tmp_path, PACKAGE, files):
+        first_result = first.run(run_session).changes
+        second_result = second.run(run_session).changes
+        snapshot = ReadSnapshot(orders=table, version=first_version).run(run_session).snapshot
+    first_postimages = [row.status for row in first_result.where("change_type = 'update_postimage'").collect()]
+    second_postimages = [row.status for row in second_result.where("change_type = 'update_postimage'").collect()]
+    assert first_postimages == ["first", "second"]
+    assert second_postimages == ["second"]
+    assert {row.status for row in snapshot.collect()} == {"first"}
+
+
+@pytest.mark.parametrize("mode", ["online", "generated"])
+def test_delta_replace_where_commits_only_the_selected_slice(delta_spark, tmp_path, mode) -> None:
+    path = tmp_path / f"replace-where-{mode}"
+    table = _table(delta_spark, path, native_check=True, rows=(("1", "west"), ("2", "east")))
+    replacements = _changes(delta_spark, rows=(("3", "west"),))
+    files = render_generated_project(
+        ReplaceWest,
+        source_transform=f"{ReplaceWest.__module__}.ReplaceWest",
+        generated_package=PACKAGE,
+        source_schema_modules={Order.__module__: [Order]},
+    )
+    with generated_project(tmp_path, PACKAGE, files):
+        result = ReplaceWest(orders=table, replacements=replacements).run(
+            session(delta_spark, execution_mode=mode, generated_package=PACKAGE)
+        )
+    from delta.tables import DeltaTable  # type: ignore[import-not-found]
+
+    assert result.orders is table
+    rows = sorted(tuple(row) for row in DeltaTable.forPath(delta_spark, str(path)).toDF().collect())
+    assert rows == [("2", "east"), ("3", "west")]
 
 
 @pytest.mark.parametrize("mode", ["online", "generated"])

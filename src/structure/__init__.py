@@ -28,6 +28,7 @@ from structure.core.dsl.model.transforms.transform_api import (
     stage,
     step,
     transform,
+    variable,
 )
 from structure.core.runtime.api import (
     ResultSchemas,
@@ -81,4 +82,5 @@ __all__ = [
     "stage",
     "step",
     "transform",
+    "variable",
 ]

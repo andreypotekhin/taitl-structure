@@ -81,7 +81,7 @@ class CapturePySparkStep:
             if context.foreach:
                 raise TypeError("foreach(row, sink) cannot be used in a Delta effect step")
         else:
-            if context.delta_mutations:
+            if any(mutation.kind not in {"delta_snapshot", "delta_changes"} for mutation in context.delta_mutations):
                 raise TypeError("Delta mutations require a None-returning @step bound to delta_output(...)")
             state_operations = [
                 operation.stateful_transform

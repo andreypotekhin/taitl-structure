@@ -95,3 +95,24 @@ Merge evolution lowers to the native builder's `withSchemaEvolution()`. Append e
 option only to that append, and performs the same post-commit check. Session-wide auto-merge is excluded because it
 could evolve unrelated operations. Overwrite schema replacement is a separate, more destructive contract and is not
 implied by this append option.
+
+## Historical reads and runtime selectors
+
+Add `variable(type, default=...)` as a core transform declaration distinct from compile-time `parameter()`. Its
+symbolic access produces a typed expression reference; its value travels through an invocation-only channel for
+online and generated execution. Variable bindings do not enter artifact keys or generated source. They can participate
+in Spark expressions and driver-side Delta reader options, but cannot select Python branches or change the graph.
+
+`delta_snapshot` and `delta_changes` are relation-producing transform operations. A single-output step's return
+annotation chooses the output Schema, including aliases for CDF's `_change_type`, `_commit_version`, and
+`_commit_timestamp` columns. Reads use the caller's native table handle and never change its schema or metadata.
+Snapshot selection is by exactly one version or aware timestamp. CDF uses one start selector and an optional end of
+the same kind; endpoints are inclusive. The table must already have `delta.enableChangeDataFeed=true`, and the Spark
+session must have the Delta extension and catalog. Structure checks those preconditions before the CDF reader opens.
+Delta history retention and enabling time still constrain available events.
+
+The streaming path remains a caller-created `readStream` DataFrame bound through a regular streaming input. Structure
+transforms the rows; the caller owns stream startup, sink, checkpoint, and shutdown. `delta_replace_where` is a typed,
+same-schema mutation builder whose `.execute()` records a native `replaceWhere` overwrite. Its predicate is a restricted
+typed SQL subset, permits target fields and invocation variables, and is safely rendered as a Delta SQL option; Delta
+performs its native source-row predicate check.

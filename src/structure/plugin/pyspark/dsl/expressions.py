@@ -164,6 +164,11 @@ def literal(value: object) -> Expression:
         literal(Decimal("10.50"))
         literal(None)
     """
+    from structure.dsl import VariableReference
+
+    if isinstance(value, VariableReference):
+        return variable_expression(value)
+
     if isinstance(value, Expression):
         return value
 
@@ -214,6 +219,36 @@ def literal(value: object) -> Expression:
         return Expression(kind="literal", type=None, nullable=True, data={"value": None})
 
     return Expression(kind="literal", type=None, nullable=False, data={"value": value})
+
+
+def variable_expression(reference) -> Expression:
+    """Create a typed PySpark expression for one invocation-bound scalar."""
+    python_type = reference.python_type
+    spark_type: StructureType
+    if python_type is bool:
+        spark_type = BooleanType()
+    elif python_type is int:
+        spark_type = LongType()
+    elif python_type is float:
+        spark_type = DoubleType()
+    elif python_type is str:
+        spark_type = StringType()
+    elif python_type is bytes:
+        spark_type = BinaryType()
+    elif python_type is Decimal:
+        spark_type = DecimalType(reference.precision, reference.scale)
+    elif python_type is date:
+        spark_type = DateType()
+    elif python_type is datetime:
+        spark_type = TimestampType()
+    else:
+        raise TypeError(f"Unsupported runtime variable type {python_type!r}")
+    return Expression(
+        kind="variable",
+        type=spark_type,
+        nullable=reference.nullable,
+        data={"name": reference.name},
+    )
 
 
 def _decimal_literal_type(value: Decimal) -> DecimalType:

@@ -26,6 +26,8 @@ class DeltaMutation:
     schema_evolution: bool = False
     output: str | None = None
     output_schema: type[Schema] | None = None
+    selector: Expression | None = None
+    end_selector: Expression | None = None
 
 
 @dataclass(frozen=True)

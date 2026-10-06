@@ -9,9 +9,11 @@ class OpenPySparkStep:
         step: str,
         capture_special_exprs: bool = False,
         delta_output_schema=None,
+        step_output_schema=None,
     ) -> PySparkSymbolicContext:
         return PySparkSymbolicContext(
             step=step,
             capture_special_exprs=capture_special_exprs,
             delta_output_schema=delta_output_schema,
+            step_output_schema=step_output_schema,
         )

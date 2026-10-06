@@ -6,12 +6,15 @@ from structure.core.dsl.model.transforms.ParameterDeclaration import ParameterDe
 from structure.core.dsl.model.transforms.SinkDeclaration import SinkDeclaration
 from structure.core.dsl.model.transforms.StageDeclaration import StageDeclaration, StageOutputReference
 from structure.core.dsl.model.transforms.Transform import Transform
-from structure.core.dsl.model.transforms.transform_api import input, lane, parameter, sink, special, stage, transform
+from structure.core.dsl.model.transforms.VariableDeclaration import VariableDeclaration, VariableReference
+from structure.core.dsl.model.transforms.transform_api import input, lane, parameter, sink, special, stage, transform, variable
 
 __all__ = [
     "InputDeclaration",
     "LaneDeclaration",
     "ParameterDeclaration",
+    "VariableDeclaration",
+    "VariableReference",
     "SinkDeclaration",
     "StageDeclaration",
     "StageOutputReference",
@@ -23,4 +26,5 @@ __all__ = [
     "special",
     "stage",
     "transform",
+    "variable",
 ]

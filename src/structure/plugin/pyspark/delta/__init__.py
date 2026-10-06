@@ -14,11 +14,14 @@ __all__ = [
     "delta_update",
     "delta_merge",
     "delta_append",
+    "delta_replace_where",
+    "delta_snapshot",
+    "delta_changes",
 ]
 
 
 def __getattr__(name: str):
-    if name in {"delta_delete", "delta_update", "delta_merge", "delta_append"}:
+    if name in {"delta_delete", "delta_update", "delta_merge", "delta_append", "delta_replace_where", "delta_snapshot", "delta_changes"}:
         from structure.plugin.pyspark.delta import operations
 
         return getattr(operations, name)

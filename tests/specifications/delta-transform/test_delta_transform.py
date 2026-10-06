@@ -9,10 +9,13 @@ from structure.core.compiler.api import Compiler
 from structure.plugin.pyspark import (
     check,
     delta_append,
+    delta_changes,
     delta_delete,
     delta_input,
     delta_merge,
     delta_output,
+    delta_replace_where,
+    delta_snapshot,
     delta_update,
     integer,
     string,
@@ -141,6 +144,73 @@ def test_generated_code_preserves_table_handle() -> None:
     assert "validate_delta_table(orders, _StructureDeltaSchema_0" in source
     assert "self._delta_tables['orders']" in source
     assert ".delete(F.lit(True))" in source
+
+
+def test_replace_where_requires_execute_and_renders_safe_predicate() -> None:
+    @transform
+    class Replace(Transform):
+        orders = delta_output(Order)
+        replacements = input(Order)
+
+        @step(input=(orders, replacements), output=orders)
+        def replace(self, order: Order, replacement: Order) -> None:
+            delta_replace_where(order, replacement, where=order.status == "ready").execute()
+
+    plan = _compile(Replace).lowered
+    mutation = plan.steps[0].delta_mutations[0]
+    assert mutation.kind == "replace_where"
+    source = render_pyspark_transform_module(
+        plan,
+        source_transform=f"{__name__}.Replace",
+        schema_modules={Order: "tests.schemas"},
+        runtime_module="tests.runtime",
+    )
+    ast.parse(source)
+    assert ".mode('overwrite').option('replaceWhere'" in source
+    assert "`status` = 'ready'" in source
+
+
+def test_delta_replace_where_sql_escapes_literals_and_binds_variables() -> None:
+    from structure.plugin.pyspark.delta.runtime import bind_delta_predicate_variables
+
+    assert bind_delta_predicate_variables("(`status` = {{status}})", {"status": "O'Reilly"}) == "(`status` = 'O''Reilly')"
+
+
+def test_snapshot_and_cdf_reads_are_typed_non_effect_steps() -> None:
+    from structure import variable
+    from structure.plugin.pyspark import long
+
+    class Change(Schema):
+        id = integer(nullable=False)
+        status = string(nullable=False)
+        change_type = string(alias="_change_type")
+        commit_version = long(alias="_commit_version")
+
+    @transform
+    class Reads(Transform):
+        orders = delta_input(Order)
+        version = variable(int)
+        first_version = variable(int)
+        changes = output(Change)
+
+        @step(input=orders, output=changes)
+        def changes_since(self, order: Order) -> Change:
+            return delta_changes(order, starting_version=self.first_version)
+
+    plan = _compile(Reads).lowered
+    assert not plan.steps[0].effect
+    assert plan.steps[0].delta_mutations[0].kind == "delta_changes"
+    assert plan.steps[0].delta_mutations[0].output_schema is Change
+    assert plan.steps[0].delta_mutations[0].selector.kind == "variable"
+    source = render_pyspark_transform_module(
+        plan,
+        source_transform=f"{__name__}.Reads",
+        schema_modules={Order: "tests.schemas", Change: "tests.schemas"},
+        runtime_module="tests.runtime",
+    )
+    ast.parse(source)
+    assert "open_delta_relation(" in source
+    assert "'delta_changes'" in source
 
 
 def test_delta_input_is_a_readable_relation_for_ordinary_steps() -> None:

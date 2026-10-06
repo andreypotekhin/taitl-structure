@@ -8,7 +8,12 @@ from structure.plugin.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoi
 from structure.plugin.pyspark.compiler.model.PySparkOutputRecipe import PySparkOutputRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.plugin.pyspark.compiler.model.PySparkWatermarkRecipe import PySparkWatermarkRecipe
-from structure.plugin.pyspark.delta.runtime import execute_delta_mutation, fresh_delta_frame, validate_delta_table
+from structure.plugin.pyspark.delta.runtime import (
+    execute_delta_mutation,
+    fresh_delta_frame,
+    read_delta_relation,
+    validate_delta_table,
+)
 from structure.plugin.pyspark.dsl.joins.JoinMethod import JoinMethod
 from structure.plugin.pyspark.dsl.types import ArrayType, StructType
 from structure.plugin.pyspark.execution.logic.expressions.EvaluatePySparkExpression import EvaluatePySparkExpression
@@ -52,13 +57,23 @@ class RunOnlinePySparkTransform:
         *,
         session,
     ) -> TransformResult:
+        from structure.plugin.pyspark.dsl.RuntimeVariables import (
+            bind_runtime_variables,
+            invocation_variables,
+            reset_runtime_variables,
+        )
+
+        variables = invocation_variables(invocation)
         if session.online_executor is not None:
-            result = session.online_executor(
+            arguments = dict(
                 plan=plan,
                 inputs=invocation._structure_bound_inputs,
                 spark=session.spark,
                 ctx=session.ctx,
             )
+            if variables:
+                arguments["variables"] = variables
+            result = session.online_executor(**arguments)
             if isinstance(result, TransformResult):
                 return result
             if len(plan.outputs) == 1:
@@ -75,8 +90,11 @@ class RunOnlinePySparkTransform:
             raise TypeError("Injected online executor must return TransformResult for multi-output transforms")
         if session.spark is None:
             raise self._missing_executor(invocation, session=session)
-
-        return self._run(invocation, plan, session=session)
+        token = bind_runtime_variables(variables)
+        try:
+            return self._run(invocation, plan, session=session)
+        finally:
+            reset_runtime_variables(token)
 
     @reuse_policy_checks
     def _run(self, invocation: Transform, plan: PySparkExecutionPlan, *, session):
@@ -142,6 +160,18 @@ class RunOnlinePySparkTransform:
                     )
                     frames[result.frame] = fresh_delta_frame(delta_tables[table_name])
                 continue
+            for mutation in step.delta_mutations:
+                if mutation.kind in {"delta_snapshot", "delta_changes"}:
+                    frame = read_delta_relation(
+                        mutation,
+                        tables=delta_tables,
+                        spark=session.spark,
+                        evaluator=self._expressions,
+                        functions=F,
+                    )
+                    frames[mutation.target] = frame
+                    frames[f"input:{mutation.target}"] = frame
+                    inputs[mutation.target] = frame
             produced = self._step(
                 step,
                 current=frames[step.source],

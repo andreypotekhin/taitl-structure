@@ -80,3 +80,32 @@ Capture rejects a marker unless it is the sole mutation targeting a declared Del
 from the input Schema. Structure validates the current input shape before the operation and the exact declared result
 shape and CHECK contract after commit. Session-wide auto-merge, unknown output schemas, metadata installation, and
 overwrite schema replacement are excluded.
+
+## Snapshot, CDF, variables, and selective overwrite
+
+1. `variable(type, default=...)` is a per-invocation typed scalar declaration. Support `bool`, `int`, `float`, `str`,
+   `bytes`, `Decimal`, `date`, and `datetime`; `None` requires an optional type. Decimal variables declare precision
+   and scale. Variable values are validated when an invocation is executed, kept separate from relation inputs and
+   compile-time `parameter()` values, and excluded from compiled artifact keys and generated source. A missing required
+   variable fails before step execution. Runtime variables may lower to Spark literals and native Delta reader options;
+   they cannot control Python branching or graph construction.
+2. `delta_snapshot(target, version=...)` and `delta_snapshot(target, timestamp=...)` accept exactly one selector and
+   return a relation with the single-output step's annotated result Schema. Timestamp values are timezone-aware and
+   converted to the active Spark session timezone.
+3. `delta_changes(target, starting_version=..., ending_version=...)` and the corresponding timestamp form use
+   inclusive endpoints. A start is required; an end is optional and must match the selector type. The caller must have
+   enabled `delta.enableChangeDataFeed=true` before the changes being read were committed. The active Spark session
+   must use `io.delta.sql.DeltaSparkSessionExtension` and
+   `org.apache.spark.sql.delta.catalog.DeltaCatalog`. Missing preconditions fail before the CDF read starts. CDF
+   output schemas declare aliases for `_change_type`, `_commit_version`, and `_commit_timestamp` when those fields are
+   needed.
+4. Streaming CDF is supplied by the caller as a native `spark.readStream.format("delta")` frame with
+   `readChangeFeed=true`, bound to a regular `input(Schema, streaming=True)`. Structure transforms its rows only; the
+   caller owns `writeStream`, checkpointing, startup, and shutdown.
+5. `delta_replace_where(target, source, where=...).execute()` requires a `delta_output` target, a source with the
+   identical Structure Schema, and a Boolean predicate referencing target fields and optional runtime variables only.
+   It records one explicit mutation and writes with Delta `replaceWhere`; unsupported predicate expressions fail
+   before the commit. Delta enforces that all source rows satisfy the predicate. The operation does not evolve the
+   target schema.
+6. The snapshot/CDF/replacement additions remain release-gated until pinned live tests pass in ordinary PySpark 4.1.0
+   with Delta 4.1.0 for both online and generated execution. Spark Connect is outside the evidence scope.

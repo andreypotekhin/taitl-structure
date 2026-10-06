@@ -12,6 +12,8 @@ _EXPORTS = {
     "StageDeclaration": "structure.core.dsl.model.transforms.StageDeclaration",
     "StageOutputReference": "structure.core.dsl.model.transforms.StageDeclaration",
     "Transform": "structure.core.dsl.model.transforms.Transform",
+    "VariableDeclaration": "structure.core.dsl.model.transforms.VariableDeclaration",
+    "VariableReference": "structure.core.dsl.model.transforms.VariableDeclaration",
 }
 
 __all__ = list(_EXPORTS)

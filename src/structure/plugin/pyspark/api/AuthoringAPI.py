@@ -39,6 +39,7 @@ class PySparkStepSession:
                 if len(request.results) == 1 and request.results[0].binding == "delta"
                 else None
             ),
+            step_output_schema=(request.results[0].schema if len(request.results) == 1 else None),
         )
         self._capture_pending = False
 

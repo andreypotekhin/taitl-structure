@@ -23,7 +23,9 @@ if TYPE_CHECKING:
 
 class PySparkSymbolicContext:
 
-    def __init__(self, *, step: str, capture_special_exprs: bool = False, delta_output_schema=None) -> None:
+    def __init__(
+        self, *, step: str, capture_special_exprs: bool = False, delta_output_schema=None, step_output_schema=None
+    ) -> None:
         self.step = step
         self.capture_special_exprs = capture_special_exprs
         self.filters: list[Expression] = []
@@ -31,6 +33,7 @@ class PySparkSymbolicContext:
         self.operations: list[OperationPlan] = []
         self.delta_mutations: list[DeltaMutation] = []
         self.delta_output_schema = delta_output_schema
+        self.step_output_schema = step_output_schema
         self.aggregate_keys: tuple[tuple[str, Expression], ...] | None = None
         self.aggregate_requested = False
         self.aggregate_levels: tuple[tuple[str, ...], ...] = ()
@@ -83,6 +86,11 @@ class PySparkSymbolicContext:
         from structure.plugin.pyspark.dsl.InputScope import InputScope
 
         return InputScope(name=name, schema=cast(type, schema))
+
+    def variable_reference(self, reference):
+        from structure.plugin.pyspark.dsl.expressions import variable_expression
+
+        return variable_expression(reference)
 
     def project(self, *sources: object, target: object) -> object:
         from structure.plugin.pyspark.dsl.body import project

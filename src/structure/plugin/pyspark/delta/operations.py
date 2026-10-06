@@ -275,3 +275,107 @@ def delta_append(target: DeltaScope, source: RowScope) -> DeltaAppend:
     if not isinstance(source_name, str):
         raise TypeError("delta_append(source=...) cannot resolve the source relation")
     return DeltaAppend(target, source, source_name)
+
+
+class DeltaReplaceWhere:
+    """A selective overwrite of a caller-owned Delta table."""
+
+    def __init__(self, target: DeltaScope, source: RowScope, source_name: str, predicate: Expression) -> None:
+        self.target = target
+        self.source = source
+        self.source_name = source_name
+        self.predicate = predicate
+        self.executed = False
+
+    def execute(self) -> None:
+        if self.executed:
+            raise TypeError("A Delta replaceWhere builder can be executed only once")
+        if not self.target._structure_delta_mutable:
+            raise TypeError("delta_replace_where(...) requires a delta_output(...) target")
+        if self.target._structure_input_schema is not self.source._structure_input_schema:
+            raise TypeError("delta_replace_where(...) requires source and target to use the same Structure Schema")
+        self.executed = True
+        _context().delta_mutations.append(
+            DeltaMutation(
+                "replace_where",
+                self.target._structure_source,
+                self.target._structure_scope_name,
+                self.predicate,
+                source=self.source_name,
+                source_scope=self.source._structure_scope_name,
+            )
+        )
+
+
+def delta_replace_where(target: DeltaScope, source: RowScope, *, where: object) -> DeltaReplaceWhere:
+    """Replace rows selected by a target-only predicate with a same-schema source."""
+    target = _target(target)
+    if not isinstance(source, RowScope):
+        raise TypeError("delta_replace_where(source=...) requires a Structure relation parameter")
+    source_name = source._structure_source if isinstance(source, InputScope) else _context().default_project_frame
+    if not isinstance(source_name, str):
+        raise TypeError("delta_replace_where(source=...) cannot resolve the source relation")
+    predicate = _predicate("delta_replace_where(where=...)", where)
+    _visible(predicate, allowed={target._structure_scope_name}, action="delta_replace_where")
+    return DeltaReplaceWhere(target, source, source_name, predicate)
+
+
+def _read_result(target: DeltaScope, *, kind: str, selector: object, end_selector: object | None = None):
+    context = _context()
+    schema = getattr(context, "step_output_schema", None)
+    if not isinstance(schema, type) or not issubclass(schema, Schema):
+        raise TypeError(f"{kind} must be the direct result of a single-output @step")
+    selected = literal(selector)
+    if selected.kind not in {"literal", "variable"}:
+        raise TypeError(f"{kind} selectors must be literals or runtime variable references")
+    if selected.kind == "literal" and (selected.data or {}).get("value") is None:
+        raise TypeError(f"{kind} selector cannot be None")
+    if kind == "delta_snapshot":
+        allowed = {"long", "integer", "timestamp"}
+        if selected.type is None or selected.type.name not in allowed:
+            raise TypeError("delta_snapshot requires a version or timestamp selector")
+    elif selected.type is None or selected.type.name not in {"long", "integer", "timestamp"}:
+        raise TypeError("delta_changes requires a starting version or timestamp")
+    ending = None if end_selector is None else literal(end_selector)
+    if ending is not None and ending.kind not in {"literal", "variable"}:
+        raise TypeError(f"{kind} end selectors must be literals or runtime variable references")
+    if ending is not None and ending.type is not None and selected.type is not None and ending.type.name != selected.type.name:
+        raise TypeError("delta_changes start and end selectors must use the same version or timestamp type")
+    context.delta_mutations.append(
+        DeltaMutation(
+            kind,
+            target._structure_source,
+            target._structure_scope_name,
+            selector=selected,
+            end_selector=ending,
+            output_schema=schema,
+        )
+    )
+    return RowScope(name=target._structure_scope_name, schema=schema)
+
+
+def delta_snapshot(target: DeltaScope, *, version: object | None = None, timestamp: object | None = None):
+    """Read one typed Delta snapshot by version or timestamp."""
+    target = _target(target)
+    if (version is None) == (timestamp is None):
+        raise TypeError("delta_snapshot requires exactly one of version= or timestamp=")
+    return _read_result(target, kind="delta_snapshot", selector=version if version is not None else timestamp)
+
+
+def delta_changes(
+    target: DeltaScope,
+    *,
+    starting_version: object | None = None,
+    ending_version: object | None = None,
+    starting_timestamp: object | None = None,
+    ending_timestamp: object | None = None,
+):
+    """Read an inclusive Delta change feed range as one typed step result."""
+    target = _target(target)
+    by_version = starting_version is not None or ending_version is not None
+    by_timestamp = starting_timestamp is not None or ending_timestamp is not None
+    if by_version == by_timestamp or (starting_version is None and starting_timestamp is None):
+        raise TypeError("delta_changes requires a starting_version or starting_timestamp and only one selector kind")
+    start = starting_version if by_version else starting_timestamp
+    end = ending_version if by_version else ending_timestamp
+    return _read_result(target, kind="delta_changes", selector=start, end_selector=end)

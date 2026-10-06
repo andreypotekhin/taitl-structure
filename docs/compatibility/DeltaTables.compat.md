@@ -23,6 +23,10 @@ optional runtime dependency, not part of Structure's default PySpark `>=3.5,<4.1
 | `delta_update(target, where=..., set=...)` | `DeltaTable.update(condition, set)` | Assignments are typed target-schema values. |
 | `delta_merge(target, source, on=...)` | `DeltaTable.merge(...)` builder | Ordered matched, unmatched, and unmatched-by-source data mutation clauses; symbolic expressions only. |
 | `delta_append(target, source).execute()` | `DataFrameWriter.format("delta").mode("append")` | Resolves the bound table location; append is a native commit. |
+| `delta_snapshot(target, version=... / timestamp=...)` | Delta `versionAsOf` / `timestampAsOf` reader options | Direct result of a typed step; runtime scalar selectors are invocation-bound. |
+| `delta_changes(target, starting_version=... / starting_timestamp=...)` | Delta `readChangeFeed` reader options | Requires the table property and Delta Spark session configuration; endpoints are inclusive. |
+| `delta_replace_where(target, source, where=...).execute()` | Delta `replaceWhere` overwrite option | Same Structure Schema and target-only predicate; live evidence for this addition is pending. |
+| `variable(type, default=...)` | Runtime scalar binding | Compiled source refers to the variable; values are supplied per invocation and do not specialize artifacts. |
 | Merge `.with_schema_evolution()` | `DeltaMergeBuilder.withSchemaEvolution()` | Requires a distinct return-typed `delta_output` schema. |
 | Append `.with_schema_evolution()` | Writer `.option("mergeSchema", "true")` | Applies to this append, not the Spark session. |
 
@@ -30,7 +34,9 @@ Structure checks the current table schema before mutations and the declared new 
 `delta_check_match="expression"` is the default; `"name"` and `"off"` relax native CHECK comparison but never
 disable shape validation. Raw SQL clauses, Delta table creation/administration, native constraint installation,
 session-wide auto-merge, overwrite schema replacement, transaction coordination, and native operation metrics are
-outside this API. Native failures propagate; successful earlier commits remain committed.
+outside this API. `delta_replace_where` is a same-schema data overwrite, not schema replacement. Native failures
+propagate; successful earlier commits remain committed. The new read and selective-overwrite paths remain
+release-gated until the pinned live tests run in the ordinary PySpark 4.1.0 / Delta 4.1.0 lane.
 
 See the [Delta API](../api/DeltaTables.api.md) for declarations and examples, the
 [Delta background](../background/DeltaTables.back.md) for execution semantics, and the

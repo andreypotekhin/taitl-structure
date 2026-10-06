@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import re
+from datetime import date, datetime
+from decimal import Decimal
+from zoneinfo import ZoneInfo
 
 from structure.plugin.pyspark.delta.checks import bind_checks
 
@@ -82,6 +85,15 @@ def execute_delta_mutation(mutation, *, tables, frames, functions):
             condition=column(mutation.predicate), set={name: column(value) for name, value in mutation.assignments}
         )
         return
+    if mutation.kind == "replace_where":
+        if mutation.source is None or mutation.predicate is None:
+            raise ValueError("Delta replaceWhere mutation is missing its source or predicate")
+        location = table.detail().select("location").first()["location"]
+        predicate = delta_predicate_sql(mutation.predicate)
+        frames[mutation.source].write.format("delta").mode("overwrite").option(
+            "replaceWhere", predicate
+        ).save(location)
+        return
     if mutation.kind not in {"merge", "append"} or mutation.source is None:
         raise ValueError(f"Unknown Delta mutation {mutation.kind!r}")
     source = frames[mutation.source]
@@ -122,6 +134,166 @@ def execute_delta_mutation(mutation, *, tables, frames, functions):
         else:
             raise ValueError(f"Unknown Delta merge action {clause.action!r}")
     builder.execute()
+
+
+def read_delta_relation(mutation, *, tables, spark, evaluator, functions):
+    """Open a snapshot or bounded CDF range from a caller-owned Delta handle."""
+    table = tables[mutation.target]
+    selector = _selector_value(mutation.selector)
+    end = _selector_value(mutation.end_selector) if mutation.end_selector else None
+    selector_type = mutation.selector.type.name if mutation.selector is not None and mutation.selector.type else ""
+    return open_delta_relation(
+        table,
+        mutation.kind,
+        selector,
+        end,
+        selector_type,
+        spark=spark,
+    )
+
+
+def open_delta_relation(table, kind, selector, end, selector_type, *, spark):
+    details = table.detail().first().asDict(recursive=True)
+    properties = {str(key).casefold(): str(value).casefold() for key, value in (details.get("properties") or {}).items()}
+    if kind == "delta_changes":
+        if properties.get("delta.enablechangedatafeed") != "true":
+            raise ValueError(
+                "Delta change feed is not enabled; set the table property delta.enableChangeDataFeed=true before writing changes"
+            )
+        extensions = spark.conf.get("spark.sql.extensions", "")
+        catalog = spark.conf.get("spark.sql.catalog.spark_catalog", "")
+        if "io.delta.sql.DeltaSparkSessionExtension" not in extensions or catalog != "org.apache.spark.sql.delta.catalog.DeltaCatalog":
+            raise RuntimeError(
+                "Delta CDF requires Spark session configuration spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension "
+                "and spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog"
+            )
+    if selector_type == "timestamp":
+        if isinstance(selector, str):
+            selector = datetime.fromisoformat(selector)
+        if not isinstance(selector, datetime) or selector.tzinfo is None or selector.utcoffset() is None:
+            raise TypeError("Delta timestamp selectors must be timezone-aware datetime values")
+        selector = selector.astimezone(ZoneInfo(spark.conf.get("spark.sql.session.timeZone", "UTC"))).replace(
+            tzinfo=None
+        ).isoformat(sep=" ")
+        if isinstance(end, datetime):
+            if end.tzinfo is None or end.utcoffset() is None:
+                raise TypeError("Delta timestamp selectors must be timezone-aware datetime values")
+            end = end.astimezone(ZoneInfo(spark.conf.get("spark.sql.session.timeZone", "UTC"))).replace(
+                tzinfo=None
+            ).isoformat(sep=" ")
+        elif isinstance(end, str):
+            parsed_end = datetime.fromisoformat(end)
+            if parsed_end.tzinfo is None or parsed_end.utcoffset() is None:
+                raise TypeError("Delta timestamp selectors must be timezone-aware datetime values")
+            end = parsed_end.astimezone(ZoneInfo(spark.conf.get("spark.sql.session.timeZone", "UTC"))).replace(
+                tzinfo=None
+            ).isoformat(sep=" ")
+    elif isinstance(selector, bool) or not isinstance(selector, int):
+        raise TypeError("Delta version selectors must be integers")
+    elif end is not None and (isinstance(end, bool) or not isinstance(end, int)):
+        raise TypeError("Delta version selectors must be integers")
+    location = details["location"]
+    reader = spark.read.format("delta")
+    if kind == "delta_snapshot":
+        option = "timestampAsOf" if selector_type == "timestamp" else "versionAsOf"
+        return reader.option(option, selector).load(location)
+    option = "startingTimestamp" if selector_type == "timestamp" else "startingVersion"
+    reader = reader.option("readChangeFeed", "true").option(option, selector)
+    if end is not None:
+        end_option = "endingTimestamp" if selector_type == "timestamp" else "endingVersion"
+        reader = reader.option(end_option, end)
+    return reader.load(location)
+
+
+def _selector_value(expression):
+    if expression is None:
+        return None
+    if expression.kind == "literal":
+        return expression.data["value"]
+    if expression.kind == "variable":
+        from structure.plugin.pyspark.dsl.RuntimeVariables import runtime_variable
+
+        return runtime_variable(str(expression.data["name"]))
+    raise TypeError("Delta snapshot and CDF selectors must be literals or runtime variable references")
+
+
+def delta_predicate_sql(expression, *, variables=None) -> str:
+    """Render the deliberately small safe SQL subset accepted by Delta replaceWhere."""
+    variables = variables or {}
+    if expression.kind == "field":
+        return ".".join(f"`{str(part).replace('`', '``')}`" for part in expression.data["path"])
+    if expression.kind == "literal":
+        return _sql_literal(expression.data["value"])
+    if expression.kind == "variable":
+        name = str(expression.data["name"])
+        if name not in variables:
+            from structure.plugin.pyspark.dsl.RuntimeVariables import runtime_variable
+
+            value = runtime_variable(name)
+        else:
+            value = variables[name]
+        return _sql_literal(value)
+    unary = {"not": "NOT", "neg": "-"}
+    if expression.kind in unary:
+        return f"{unary[expression.kind]} ({delta_predicate_sql(expression.args[0], variables=variables)})"
+    binary = {
+        "and": "AND", "or": "OR", "eq": "=", "ne": "<>", "gt": ">", "lt": "<",
+        "ge": ">=", "le": "<=", "add": "+", "sub": "-", "mul": "*", "div": "/", "mod": "%",
+    }
+    if expression.kind in binary:
+        left, right = (delta_predicate_sql(item, variables=variables) for item in expression.args)
+        return f"({left} {binary[expression.kind]} {right})"
+    if expression.kind in {"is_null", "is_not_null"}:
+        operator = "IS NULL" if expression.kind == "is_null" else "IS NOT NULL"
+        return f"({delta_predicate_sql(expression.args[0], variables=variables)} {operator})"
+    raise TypeError(f"delta_replace_where(where=...) does not support {expression.kind!r} expressions")
+
+
+def render_delta_predicate_template(expression) -> str:
+    """Render SQL containing named markers for runtime variable values."""
+    if expression.kind == "variable":
+        return "{{" + str(expression.data["name"]) + "}}"
+    if expression.kind == "field":
+        return ".".join(f"`{str(part).replace('`', '``')}`" for part in expression.data["path"])
+    if expression.kind == "literal":
+        return _sql_literal(expression.data["value"])
+    unary = {"not": "NOT", "neg": "-"}
+    if expression.kind in unary:
+        return f"{unary[expression.kind]} ({render_delta_predicate_template(expression.args[0])})"
+    binary = {
+        "and": "AND", "or": "OR", "eq": "=", "ne": "<>", "gt": ">", "lt": "<",
+        "ge": ">=", "le": "<=", "add": "+", "sub": "-", "mul": "*", "div": "/", "mod": "%",
+    }
+    if expression.kind in binary:
+        left, right = (render_delta_predicate_template(item) for item in expression.args)
+        return f"({left} {binary[expression.kind]} {right})"
+    if expression.kind in {"is_null", "is_not_null"}:
+        operator = "IS NULL" if expression.kind == "is_null" else "IS NOT NULL"
+        return f"({render_delta_predicate_template(expression.args[0])} {operator})"
+    raise TypeError(f"delta_replace_where(where=...) does not support {expression.kind!r} expressions")
+
+
+def bind_delta_predicate_variables(template: str, variables) -> str:
+    for name, value in variables.items():
+        template = template.replace("{{" + name + "}}", _sql_literal(value))
+    if "{{" in template or "}}" in template:
+        raise ValueError("Delta replaceWhere predicate has an unbound runtime variable")
+    return template
+
+
+def _sql_literal(value) -> str:
+    if value is None:
+        return "NULL"
+    if isinstance(value, bool):
+        return "TRUE" if value else "FALSE"
+    if isinstance(value, (int, float, Decimal)):
+        return str(value)
+    if isinstance(value, (date, datetime)):
+        return "TIMESTAMP '" + value.isoformat(sep=" ") + "'" if isinstance(value, datetime) else "DATE '" + value.isoformat() + "'"
+    if isinstance(value, (str, bytes)):
+        text = value.decode("utf-8") if isinstance(value, bytes) else value
+        return "'" + text.replace("'", "''") + "'"
+    raise TypeError(f"Unsupported Delta replaceWhere literal {type(value).__name__}")
 
 
 _TOKEN = re.compile(

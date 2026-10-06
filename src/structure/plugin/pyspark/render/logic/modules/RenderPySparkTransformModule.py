@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from dataclasses import replace
+from dataclasses import fields, is_dataclass, replace
 from datetime import date, datetime
 from decimal import Decimal
 from typing import Callable, Iterable, Mapping, cast
@@ -167,7 +167,12 @@ class RenderPySparkTransformModule:
             lines.append(f"from {module} import {', '.join(constants)}")
         delta_inputs = [item for item in plan.inputs if item.binding == "delta"]
         if delta_inputs:
-            lines.append("from structure.plugin.pyspark.delta.runtime import fresh_delta_frame, validate_delta_table")
+            lines.append(
+                "from structure.plugin.pyspark.delta.runtime import ("
+                "bind_delta_predicate_variables, fresh_delta_frame, open_delta_relation, "
+                "render_delta_predicate_template, "
+                "validate_delta_table)"
+            )
             for index, item in enumerate(delta_inputs):
                 lines.append(
                     f"from {item.schema.__module__} import {item.schema.__name__} as _StructureDeltaSchema_{index}"
@@ -266,7 +271,8 @@ class RenderPySparkTransformModule:
         class_name = f"{plan.transform}Generated"
         source_name = source_transform.rsplit(".", 1)[1]
         fields = self._mirror_fields(plan)
-        lines = [f"class {class_name}:", "", "    def __init__(self, *, spark: SparkSession, ctx=None,"]
+        variable_argument = " _structure_variables=None," if self._has_runtime_variables(plan) else ""
+        lines = [f"class {class_name}:", "", f"    def __init__(self, *, spark: SparkSession, ctx=None,{variable_argument}"]
         for input in self._public_inputs(plan):
             suffix = " = None" if input.optional else ""
             lines.append(
@@ -274,7 +280,10 @@ class RenderPySparkTransformModule:
                 if input.optional
                 else f"        {input.name}: DataFrame,"
             )
-        lines.extend(["    ):", "        self.spark = spark", "        self.ctx = ctx", "        self._ran = False"])
+        lines.extend(["    ):", "        self.spark = spark", "        self.ctx = ctx"])
+        if self._has_runtime_variables(plan):
+            lines.append("        self._structure_variables = _structure_variables or {}")
+        lines.append("        self._ran = False")
         for input in plan.inputs:
             if input.internal:
                 lines.append(
@@ -506,13 +515,17 @@ class RenderPySparkTransformModule:
         lines.extend(["", "    def close(self) -> None:", "        close_plan_boundaries(self.spark, owner=self)"])
         lines.extend(self._policy_scope(plan))
         lines.extend(["    def run(", "        self,", "        *,"])
+        if self._has_runtime_variables(plan):
+            lines.append("        _structure_variables=None,")
         for input in self._public_inputs(plan):
             lines.append(
                 f"        {input.name}: DataFrame | None = None,"
                 if input.optional
                 else f"        {input.name}: DataFrame,"
             )
-        lines.extend(["    ) -> TransformResult:"])
+        lines.append("    ) -> TransformResult:")
+        if self._has_runtime_variables(plan):
+            lines.append("        self._structure_variables = _structure_variables or {}")
         if any(item.binding == "delta" for item in plan.inputs):
             lines.append("        self._delta_tables = {}")
         for input in plan.inputs:
@@ -664,13 +677,17 @@ class RenderPySparkTransformModule:
         lines.extend(["", "    def close(self) -> None:", "        close_plan_boundaries(self.spark, owner=self)"])
         lines.extend(self._policy_scope(plan))
         lines.extend(["    def run(", "        self,", "        *,"])
+        if self._has_runtime_variables(plan):
+            lines.append("        _structure_variables=None,")
         for input in self._public_inputs(plan):
             lines.append(
                 f"        {input.name}: DataFrame | None = None,"
                 if input.optional
                 else f"        {input.name}: DataFrame,"
             )
-        lines.extend(["    ) -> TransformResult:"])
+        lines.append("    ) -> TransformResult:")
+        if self._has_runtime_variables(plan):
+            lines.append("        self._structure_variables = _structure_variables or {}")
         if any(item.binding == "delta" for item in plan.inputs):
             lines.append("        self._delta_tables = {}")
         for input in plan.inputs:
@@ -1163,6 +1180,27 @@ class RenderPySparkTransformModule:
             validation.schema is final.schema and validation.mode is final.mode and validation.project == final.project
             for validation in plan.steps[-1].validations
         )
+
+    @staticmethod
+    def _has_runtime_variables(plan: PySparkExecutionPlan) -> bool:
+        visited: set[int] = set()
+
+        def contains(value: object) -> bool:
+            if id(value) in visited:
+                return False
+            visited.add(id(value))
+            kind = getattr(value, "kind", None)
+            if isinstance(kind, str) and kind == "variable":
+                return True
+            if isinstance(value, Mapping):
+                return any(contains(item) for item in value.values())
+            if isinstance(value, (tuple, list, set, frozenset)):
+                return any(contains(item) for item in value)
+            if is_dataclass(value) and not isinstance(value, type):
+                return any(contains(getattr(value, item.name)) for item in fields(value))
+            return False
+
+        return contains(plan.steps)
 
     def _raw_input_name(self, name: str) -> str:
         return f"_input_{name}"

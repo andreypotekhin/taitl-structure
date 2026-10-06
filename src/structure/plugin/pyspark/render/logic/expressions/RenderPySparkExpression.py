@@ -66,6 +66,11 @@ class RenderPySparkExpression:
             return self._struct(expression, aliases)
         if expression.kind == "literal":
             return f"F.lit({expression.data['value']!r})"
+        if expression.kind == "variable":
+            rendered = f"F.lit(self._structure_variables[{expression.data['name']!r}])"
+            if expression.type is not None:
+                rendered += f".cast({self._inline_type(expression.type)})"
+            return rendered
         if expression.kind == "lambda_arg":
             binding = expression.data.get("binding")
             if binding is not None:

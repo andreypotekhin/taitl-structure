@@ -23,6 +23,8 @@ from structure.core.dsl.model.transforms.SpecialFunction import (
 )
 from structure.core.dsl.model.transforms.StageDeclaration import StageDeclaration
 from structure.core.dsl.model.transforms.Transform import Transform
+from structure.core.dsl.model.transforms.VariableDeclaration import UNSET as _VARIABLE_UNSET
+from structure.core.dsl.model.transforms.VariableDeclaration import VariableDeclaration
 from structure.plugin.api.v1.model import current_symbolic_context
 
 _CLASS_OPTIONS = {
@@ -218,6 +220,19 @@ def parameter(default: object) -> ParameterDeclaration:
     """
 
     return ParameterDeclaration(default=default)
+
+
+def variable(
+    python_type: object,
+    *,
+    default: object = _VARIABLE_UNSET,
+    precision: int | None = None,
+    scale: int | None = None,
+) -> VariableDeclaration:
+    """Declare an invocation-bound scalar that does not specialize compilation."""
+    from structure.core.dsl.model.transforms.VariableDeclaration import variable as declare_variable
+
+    return declare_variable(python_type, default=default, precision=precision, scale=scale)
 
 
 def stage(value: Transform) -> StageDeclaration:

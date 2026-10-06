@@ -19,6 +19,7 @@ from structure.plugin.pyspark.compiler.model.PySparkSqlRecipe import PySparkSqlR
 from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.plugin.pyspark.compiler.model.PySparkValidationRecipe import PySparkValidationRecipe
 from structure.plugin.pyspark.compiler.model.PySparkWatermarkRecipe import PySparkWatermarkRecipe
+from structure.plugin.pyspark.delta.runtime import render_delta_predicate_template
 from structure.plugin.pyspark.dsl.joins.Join import Join
 from structure.plugin.pyspark.dsl.joins.JoinMethod import JoinMethod
 from structure.plugin.pyspark.dsl.types import ArrayType, DecimalType, MapType, StructType, StructureType
@@ -74,6 +75,17 @@ class RenderPySparkStep:
             )
         target = self._target(step)
         lines = [f"        # Step method: {step.name}"]
+        for index, mutation in enumerate(step.delta_mutations if isinstance(step, PySparkStepRecipe) else ()):
+            if mutation.kind not in {"delta_snapshot", "delta_changes"}:
+                continue
+            source = (sources or {}).get(mutation.target, mutation.target)
+            start = self._render_delta_selector(mutation.selector)
+            end = self._render_delta_selector(mutation.end_selector)
+            selector_type = mutation.selector.type.name if mutation.selector is not None and mutation.selector.type else ""
+            lines.append(
+                f"        {source} = open_delta_relation(self._delta_tables[{mutation.target!r}], "
+                f"{mutation.kind!r}, {start}, {end}, {selector_type!r}, spark=self.spark)"
+            )
         active = current
         if step.before_hooks:
             lines.extend(
@@ -110,6 +122,19 @@ class RenderPySparkStep:
                 lines.extend(self._command_result_accumulation(result, frame_mapping=frame_mapping))
         return "\n".join(lines)
 
+    @staticmethod
+    def _render_delta_selector(expression) -> str:
+        if expression is None:
+            return "None"
+        if expression.kind == "variable":
+            return f"self._structure_variables[{expression.data['name']!r}]"
+        if expression.kind == "literal":
+            value = expression.data["value"]
+            from datetime import datetime
+
+            return repr(value.isoformat()) if isinstance(value, datetime) else repr(value)
+        raise TypeError("Delta snapshot and CDF selectors must be literals or variable references")
+
     def _delta_effect(
         self, step: PySparkStepRecipe, sources: Mapping[str, str], *, delta_check_match: str
     ) -> str:
@@ -135,6 +160,19 @@ class RenderPySparkStep:
                     + "}"
                 )
                 lines.append(f"        {table}.update(condition={predicate}, set={values})")
+            elif mutation.kind == "replace_where":
+                assert mutation.source is not None and mutation.predicate is not None
+                source = sources.get(mutation.source, mutation.source)
+                template = render_delta_predicate_template(mutation.predicate)
+                lines.append(
+                    f"        _delta_replace_where_{index} = bind_delta_predicate_variables("
+                    f"{template!r}, self._structure_variables)"
+                )
+                location = f"{table}.detail().select('location').first()['location']"
+                lines.append(
+                    f"        {source}.write.format('delta').mode('overwrite').option("
+                    f"'replaceWhere', _delta_replace_where_{index}).save({location})"
+                )
             elif mutation.kind == "merge":
                 assert mutation.source is not None and mutation.source_scope is not None
                 assert predicate is not None
