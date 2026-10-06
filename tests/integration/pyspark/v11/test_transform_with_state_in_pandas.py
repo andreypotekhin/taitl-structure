@@ -243,6 +243,20 @@ class EmitPandasTimerTotals(Transform):
         )
 
 
+class EmitPandasCompleteTotals(Transform):
+    events = input(Event, streaming=True)
+    totals = output(TotalOutput)
+
+    @step(input=events, output=totals)
+    def accumulate(self, event: Event) -> TotalOutput:
+        return transform_with_state_in_pandas(
+            key=event.customer_id,
+            processor=CustomerTotals,
+            output_mode="Complete",
+            time_mode="ProcessingTime",
+        )
+
+
 class EmitMultiplePandasFrames(Transform):
     events = input(Event, streaming=True)
     totals = output(TotalOutput)
@@ -648,6 +662,119 @@ def test_native_pandas_checkpoint_supports_state_variable_and_avro_value_evoluti
         run(NativePandasEvolutionV1, "v1", 2)
         (source / "second.json").write_text(json.dumps({"customer_id": "c-1", "amount": 3}) + "\n", encoding="utf-8")
         run(NativePandasEvolutionV2, "v2", 5)
+
+
+@pytest.mark.parametrize("output_mode", ["Append", "Update", "Complete"])
+def test_direct_pyspark_pandas_operator_output_modes(spark, integration_shared_dir, output_mode: str) -> None:
+    from integration.pyspark.v11.native_state_processors import NativePandasEvolutionV1
+    from pyspark.sql.types import LongType, StringType, StructField, StructType
+
+    with TemporaryDirectory(prefix=f"pandas-output-mode-{uuid4().hex}-", dir=integration_shared_dir) as shared_root:
+        root = Path(shared_root)
+        source = root / "source"
+        source.mkdir(parents=True)
+        (source / "event.json").write_text(json.dumps({"customer_id": "c-1", "amount": 2}) + "\n", encoding="utf-8")
+        events = spark.readStream.schema("customer_id STRING, amount INT").json(str(source))
+        output_schema = StructType(
+            [
+                StructField("customer_id", StringType(), nullable=True),
+                StructField("total", LongType(), nullable=True),
+                StructField("marker", StringType(), nullable=True),
+            ]
+        )
+        result = events.groupBy("customer_id").transformWithStateInPandas(
+            statefulProcessor=NativePandasEvolutionV1(),
+            outputStructType=output_schema,
+            outputMode=output_mode,
+            timeMode="None",
+            initialState=None,
+            eventTimeColumnName="",
+        )
+        emitted: list[tuple[str, int, str]] = []
+
+        def collect_batch(frame, _batch_id: int) -> None:
+            emitted.extend((row.customer_id, row.total, row.marker) for row in frame.collect())
+
+        writer = result.writeStream.foreachBatch(collect_batch).outputMode(output_mode.lower()).option(
+            "checkpointLocation", str(root / "checkpoint")
+        ).trigger(once=True)
+        if output_mode == "Complete":
+            from pyspark.errors import AnalysisException
+
+            with pytest.raises(AnalysisException, match="output mode: complete.*not supported"):
+                writer.start()
+            return
+        query = writer.start()
+        try:
+            assert query.awaitTermination(120), f"{output_mode} Pandas query did not complete"
+        finally:
+            query.stop()
+        assert emitted == [("c-1", 2, "v1")]
+
+
+def test_structure_rejects_complete_pandas_output_mode_before_query_start(spark, integration_shared_dir) -> None:
+    with TemporaryDirectory(prefix=f"pandas-complete-mode-{uuid4().hex}-", dir=integration_shared_dir) as shared_root:
+        source = Path(shared_root) / "source"
+        source.mkdir(parents=True)
+        events = spark.readStream.schema("customer_id STRING, amount INT").json(str(source))
+
+        with pytest.raises(ValueError, match="use 'Append' or 'Update'"):
+            EmitPandasCompleteTotals(events=events).run(session(spark, execution_mode="online"))
+
+
+def test_direct_pyspark_pandas_ttl_expires_native_value_state(spark, integration_shared_dir) -> None:
+    from integration.pyspark.v11.native_state_processors import NativePandasTtlTotals
+    from pyspark.sql.types import IntegerType, LongType, StringType, StructField, StructType
+
+    with TemporaryDirectory(prefix=f"pandas-ttl-{uuid4().hex}-", dir=integration_shared_dir) as shared_root:
+        root = Path(shared_root)
+        source = root / "source"
+        source.mkdir(parents=True)
+        events = spark.readStream.schema(
+            "customer_id STRING, region STRING, item_id STRING, amount INT"
+        ).json(str(source))
+        output_schema = StructType(
+            [
+                StructField("customer_id", StringType(), nullable=False),
+                StructField("region", StringType(), nullable=False),
+                StructField("total", LongType(), nullable=False),
+                StructField("amount_count", IntegerType(), nullable=False),
+                StructField("item_total", LongType(), nullable=False),
+                StructField("reason", StringType(), nullable=False),
+            ]
+        )
+        result = events.groupBy("customer_id", "region").transformWithStateInPandas(
+            statefulProcessor=NativePandasTtlTotals(),
+            outputStructType=output_schema,
+            outputMode="Update",
+            timeMode="ProcessingTime",
+            initialState=None,
+            eventTimeColumnName="",
+        )
+        emitted: list[int] = []
+
+        def collect_batch(frame, _batch_id: int) -> None:
+            emitted.extend(row.total for row in frame.collect())
+
+        query = result.writeStream.foreachBatch(collect_batch).outputMode("update").option(
+            "checkpointLocation", str(root / "checkpoint")
+        ).trigger(processingTime="100 milliseconds").start()
+        first_event = {"customer_id": "c-1", "region": "west", "item_id": "i-1", "amount": 2}
+        second_event = {"customer_id": "c-1", "region": "west", "item_id": "i-1", "amount": 3}
+        try:
+            (source / "first.json").write_text(json.dumps(first_event) + "\n", encoding="utf-8")
+            deadline = monotonic() + 30
+            while 2 not in emitted and monotonic() < deadline:
+                sleep(0.1)
+            assert 2 in emitted, "native TTL fixture did not process its first event"
+            sleep(2)
+            (source / "second.json").write_text(json.dumps(second_event) + "\n", encoding="utf-8")
+            deadline = monotonic() + 30
+            while 3 not in emitted and monotonic() < deadline:
+                sleep(0.1)
+            assert 3 in emitted, "native ValueState TTL did not expire before the later event"
+        finally:
+            query.stop()
 
 
 def test_typed_pandas_state_emits_multiple_frames_and_allows_zero_output(spark, tmp_path, integration_shared_dir) -> None:

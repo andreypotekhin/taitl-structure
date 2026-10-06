@@ -6,7 +6,7 @@ For extensions on top of PySpark, see [API.md](../API.md#extensions-beyond-pyspa
 
 The current open contract register is maintained in [API Catalog Gates](../dev/gated/ApiCatalog.gates.md), with streaming
 gates in [Streaming Gates](../dev/gated/Streaming.gates.md). Planning for remaining actionable rows is grouped in the
-[API catalog and schema-evolution plan](../dev/planning/P08022601.V10-api-catalog-and-schema-evolution.plan.md).
+[API catalog and schema-evolution plan](../dev/planning/past/P08022601.V10-api-catalog-and-schema-evolution.plan.md).
 Companion streaming state, side-effect, and evidence plans are linked from the
 [streaming project plan](../dev/project-management/V10.md). An open or gated row is not a support claim;
 each entry must name its owner boundary, evidence, and caller remedy.
@@ -15,10 +15,38 @@ each entry must name its owner boundary, evidence, and caller remedy.
 
 Typed Delta mutations, inspection reads, generated/identity/default columns, and maintenance effects are admitted on
 classic PySpark 3.5, 4.0, and 4.1 with pinned live online/generated evidence: 3.5.3 / Delta 3.3.3, 4.0.0 / Delta
-4.0.1, and 4.1.0 / Delta 4.1.0. Spark Connect and PySpark 4.2 are outside this admission. They remain separate from
+4.0.1, and 4.1.0 / Delta 4.1.0. The exact Spark Connect 4.1 Delta package is separately admitted; other Connect
+profiles and PySpark 4.2 are outside this admission. They remain separate from
 the default PySpark `>=3.5,<4.1` DataFrame API baseline. See the [Delta API](../api/DeltaTables.api.md) and
 [Delta compatibility ledger](DeltaTables.compat.md) for the precise operations, schema evolution rules, and target
 limits.
+
+## PySpark 4.1 Adoption
+
+This is the compatibility register for the configured `>=4.1,<4.2` target. It does not widen the default
+`>=3.5,<4.1` baseline. The primary target is ordinary PySpark; Spark Connect is claimed only for rows with separate
+runtime evidence. The detailed row-by-row inventory is maintained in the [API tracker](APITracker.md), while the
+[V11 charter](../dev/project-management/V11.md) owns schedule and project scope.
+
+The current V11 state and side-effect boundaries are:
+
+- 4.1 expressions, relational query additions, observations, and KLL/Theta sketches remain `design-gated` until their
+  typed contracts and target evidence are complete.
+- Arrow UDF/UDTFs remain `caller-owned-guided`; generated Structure transforms do not own worker Python or callback
+  cardinality.
+- Row `transform_with_state`, Pandas `transform_with_state_in_pandas`, and legacy
+  `apply_in_pandas_with_state` are separate `design-gated` families with independent target profiles and evidence
+  owners. Their compiler paths are implemented, but each family retains its own remaining parity/restart or mode
+  coverage gate.
+- `foreach` and `foreach_batch` are `caller-owned-guided`: Structure supplies typed handoffs and safety metadata; the
+  caller constructs writers, starts queries, and owns checkpoints, retries, and idempotence.
+- Delta tables are `supported` on classic PySpark 3.5–4.1 and the exact Delta Connect 4.1 package. Other Connect
+  profiles and PySpark 4.2 remain outside the claim.
+- Retained V9 gates remain `design-gated`; XML and cost-based join reordering remain unsupported.
+
+See the [V11 parity specification](../dev/specifications/V11PySpark41Parity.spec.md), [streaming compatibility
+ledger](Streaming.compat.md), and [Delta compatibility ledger](DeltaTables.compat.md) for API-family detail and
+profile evidence.
 
 ## Validation and selection timing
 
@@ -196,8 +224,8 @@ lifecycle recipe.
 | Stateful composition boundary | implemented | One streaming aggregate/dedupe/join followed by stateless operations | The one-stateful-plus-stateless policy rejects a second stateful operation with diagnostics | [Streaming API](../api/Streaming.api.md) |
 | Chained stateful operators | design-gated | Chains of streaming aggregates/dedupe/joins | Needs explicit composition and state-budget policy before Structure can own the shape | Use caller-owned PySpark |
 | Pandas and RDD boundaries | unsupported | Pandas UDF, RDD, `mapInPandas` | Opaque execution does not fit Structure's symbolic transform contract | Use caller-owned streaming code |
-| Row `transformWithState` | design-gated | `transform_with_state(...)`; ordinary PySpark `>=4.1,<4.2` | Typed and opaque-native compiler paths plus the initial online/generated/timer/restart evidence are implemented; P10062603 still owns the narrow mode/time/composite-key admission matrix before support is claimed | Use the Structure surface only where its exact runtime profile is verified; otherwise keep state processing caller-owned |
-| Pandas `transformWithStateInPandas` | design-gated | `transform_with_state_in_pandas(...)`; ordinary PySpark `>=4.0,<4.1` and `>=4.1,<4.2` | Separate typed and opaque-native paths; typed state/timer/restart and native state-feature evidence exists on pinned profiles, while event-time, differential, broader 4.0-lane, and schema-evolution proof remains pending | Use the Structure surface only where its exact runtime profile is verified; otherwise keep state processing caller-owned |
+| Row `transformWithState` | supported | `transform_with_state(...)`; ordinary PySpark `>=4.1,<4.2` | Append/Update and all three time modes pass online/generated parity, timer, composite-key, and same-checkpoint restart evidence; Complete is rejected during compilation | Use `external_state_processor(...)` for native processor features outside the typed single-`ValueState` contract |
+| Pandas `transformWithStateInPandas` | design-gated | `transform_with_state_in_pandas(...)`; ordinary PySpark `>=4.0,<4.1` and `>=4.1,<4.2` | Feature-specific typed/native, event-time, differential, mode, TTL, and tested checkpoint-evolution evidence passes; canonical 4.1 lane passes, but complete 4.0 lane exceeded its deadline | Keep state processing caller-owned until the complete 4.0 lane passes |
 | Legacy Pandas state | design-gated | `apply_in_pandas_with_state(...)`; ordinary PySpark `>=3.5,<4.0`, `>=4.0,<4.1`, and `>=4.1,<4.2` | Separate typed and opaque-native paths; accumulation and same-checkpoint restart are evidenced on all three ordinary profiles, while timeout and zero/multiple-output coverage remains pending | Use the Structure surface only where its exact runtime profile is verified; Spark Connect and PySpark 4.2 are unclaimed |
 | Typed struct generators | implemented | `stack`, `explode`, `posexplode`, `inline` | Fixed `stack` and typed array-of-struct generators are stateless row expansion with schema/cardinality contracts | [Collections API](../api/Collections.api.md) |
 | Caller-owned lifecycle APIs | caller-owned-guided | Sources, sinks, triggers, checkpoints, query start/stop | Structure only transforms supplied DataFrames; executable recipes keep lifecycle outside generated modules | [Streaming API](../api/Streaming.api.md) |

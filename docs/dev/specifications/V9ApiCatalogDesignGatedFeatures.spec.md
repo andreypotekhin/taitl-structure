@@ -10,7 +10,7 @@ design-gated work and is not part of the active v9 implementation path unless an
 The companion gate registers are [API Catalog Gates](../gated/ApiCatalog.gates.md) and
 [Streaming Gates](../gated/Streaming.gates.md).
 
-The executable Variant completion sequence is [P07302602.V9-variant-type-and-helpers.plan.md](../planning/P07302602.V9-variant-type-and-helpers.plan.md).
+The executable Variant completion sequence is [P07302602.V9-variant-type-and-helpers.plan.md](../planning/past/P07302602.V9-variant-type-and-helpers.plan.md).
 
 ## XML Helpers
 

@@ -39,6 +39,6 @@ No new API scope. A skipped lane remains unavailable evidence rather than a rele
 
 ## Governing Plan
 
-`docs/dev/planning/P08022604.V10-evidence-catalog-reconciliation-and-hardening.plan.md` and
-`docs/dev/planning/P08042601.Collision-safe-generated-identities.plan.md` and
-`docs/dev/planning/P08082601.Typed-scalar-generators-and-optimizer-visible-search-chunking.plan.md`.
+`docs/dev/planning/past/P08022604.V10-evidence-catalog-reconciliation-and-hardening.plan.md` and
+`docs/dev/planning/past/P08042601.Collision-safe-generated-identities.plan.md` and
+`docs/dev/planning/past/P08082601.Typed-scalar-generators-and-optimizer-visible-search-chunking.plan.md`.

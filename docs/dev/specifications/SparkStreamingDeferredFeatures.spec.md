@@ -120,4 +120,4 @@ evidence.
 The v9 design-gated streaming rows now have dedicated design and implementation specifications:
 [SparkStreaming.design.md](../design/SparkStreaming.design.md) and
 [SparkStreaming.spec.md](SparkStreaming.spec.md). The broader active execution plan is
-`docs/dev/planning/P07302601.V9-api-catalog-design-gates.plan.md`.
+`docs/dev/planning/past/P07302601.V9-api-catalog-design-gates.plan.md`.

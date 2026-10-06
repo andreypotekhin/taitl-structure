@@ -3,7 +3,7 @@
 ## Status and Authority
 
 This document defines the design for field-aware boolean and phrase search in the Search example. The implementation
-plan is docs/dev/planning/P08082603.Field-aware-boolean-and-phrase-search.plan.md. The Search specification and
+plan is docs/dev/planning/past/P08082603.Field-aware-boolean-and-phrase-search.plan.md. The Search specification and
 implementation must be updated when this design becomes active.
 
 ## Purpose

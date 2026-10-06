@@ -28,4 +28,4 @@ No new API scope. Retain unresolved target or contract gaps rather than weakenin
 
 ## Governing Plan
 
-`docs/dev/planning/P07302603.V9-closeout-and-release.plan.md`.
+`docs/dev/planning/past/P07302603.V9-closeout-and-release.plan.md`.

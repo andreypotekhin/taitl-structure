@@ -82,8 +82,8 @@ V9 re-evaluates deferred streaming-related items from v7 and v8 under current ev
 Design-gated streaming rows are addressed by [V9 Streaming Design-Gated Features](V9StreamingDesignGatedFeatures.spec.md)
 and [Streaming Gates](../gated/Streaming.gates.md). The broader active follow-up plan for these
 rows and non-streaming APICatalog open rows is
-`docs/dev/planning/P07302601.V9-api-catalog-design-gates.plan.md`; its remaining Variant completion work is
-specified in `docs/dev/planning/P07302602.V9-variant-type-and-helpers.plan.md`.
+`docs/dev/planning/past/P07302601.V9-api-catalog-design-gates.plan.md`; its remaining Variant completion work is
+specified in `docs/dev/planning/past/P07302602.V9-variant-type-and-helpers.plan.md`.
 
 Non-streaming retained backlog from v7, such as Search evaluation follow-ups, plugin-owned DSL completion, incremental
 compile cache diagnostics, and data-quality constraints, remains outside v9 unless a v9 streaming adoption slice needs

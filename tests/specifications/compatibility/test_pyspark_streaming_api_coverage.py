@@ -39,8 +39,10 @@ REQUIRED_V9_IDS = LIFECYCLE_IDS | {
     "streaming.foreach-batch",
     "streaming.foreach",
     "streaming.listeners",
-    "streaming.arbitrary-state",
-    "streaming.legacy-pandas-state",
+    "streaming.transform-with-state-row",
+    "streaming.transform-with-state-pandas",
+    "streaming.apply-in-pandas-with-state",
+    "streaming.dataset-arbitrary-state",
     "streaming.rdd-pandas-boundaries",
     "streaming.actions",
     "streaming.spark-connect",
@@ -79,6 +81,30 @@ def test_streaming_api_ledger_entries_are_actionable() -> None:
         assert entry["notes"]
         for evidence in entry["evidence"]:
             assert (ROOT / evidence).is_file(), f"{entry['id']} evidence is missing: {evidence}"
+
+
+def test_arbitrary_state_families_have_independent_status_and_evidence() -> None:
+    entries = {entry["id"]: entry for entry in _v9_entries()}
+    row = entries["streaming.transform-with-state-row"]
+    pandas = entries["streaming.transform-with-state-pandas"]
+    legacy = entries["streaming.apply-in-pandas-with-state"]
+    dataset = entries["streaming.dataset-arbitrary-state"]
+
+    assert row["status"] == "structure-supported"
+    assert row["owner_boundary"] == "structure-transform"
+    assert row["support_claim"] == "transformed-dataframe-stateful"
+    assert "ordinary pyspark 4.1" in row["notes"].lower()
+    assert "EventTime" in row["notes"]
+    assert "Complete" in row["notes"]
+    assert "tests/integration/pyspark/v11/test_transform_with_state.py" in row["evidence"]
+
+    assert pandas["status"] == "design-gated"
+    assert legacy["status"] == "design-gated"
+    assert "GroupedData.transformWithStateInPandas" in pandas["pyspark_apis"]
+    assert "GroupedData.applyInPandasWithState" in legacy["pyspark_apis"]
+    assert dataset["status"] == "out-of-scope"
+    assert {"mapGroupsWithState", "flatMapGroupsWithState"} == set(dataset["pyspark_apis"])
+    assert not ({"transform_with_state", "transform_with_state_in_pandas"} & set(dataset["structure_surface"]))
 
 
 def test_lifecycle_apis_are_guided_without_becoming_structure_transform_claims() -> None:
@@ -155,6 +181,7 @@ def test_public_streaming_catalog_uses_v9_status_language() -> None:
     assert "| Analytic windows and selected-row helpers | streaming-ineligible |" in streaming
     assert "| `foreachBatch` side-effect sinks | caller-owned-guided |" in streaming
     assert "| Row-level `foreach` sinks | caller-owned-guided |" in streaming
+    assert "| Row `transformWithState` | supported |" in streaming
 
 
 def _v9_entries() -> list[dict[str, Any]]:

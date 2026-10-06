@@ -55,24 +55,12 @@ Other orientation: [API compatibility overview](compatibility/APICompatibility.m
 - Expression truthiness, raw SQL strings, UDTFs, and arbitrary callback bodies are unsupported. Scalar
   `@special(type="udf")` remains an ordinary-PySpark row-local feature with its warning policy.
 
-## PySpark 4.1 Adoption (V11)
+## Version compatibility
 
-These rows describe the planned `>=4.1,<4.2` target and do not widen the default `>=3.5,<4.1` baseline. The complete
-inventory and evidence boundary are maintained in the [V11 charter](dev/project-management/V11.md) and
-[API tracker](compatibility/APITracker.md).
-
-| API area | Status | Boundary |
-| --- | --- | --- |
-| 4.1 expressions and `Column.transform` | design-gated | Typed expressions require type, nullability, determinism, generated spelling, and target evidence. |
-| `exists`, IN-subqueries, and `lateralJoin` | design-gated | Relation scope, cardinality, aliases, null behavior, and online/generated parity must be specified. |
-| Observations, KLL, and Theta sketches | design-gated | Metric side channels and opaque sketch results require separate typed and dependency contracts. |
-| Arrow UDF/UDTF | caller-owned-guided | Python workers and callback-defined row cardinality remain outside generated Structure transforms. |
-| Row `transform_with_state` | design-gated | The ordinary PySpark 4.1 compiler surface is implemented; the separate admission plan still requires Append/Update mode, timer, parity, and same-checkpoint restart evidence before support is claimed. See the [Streaming API](api/Streaming.api.md). |
-| Pandas `transform_with_state_in_pandas` | design-gated | The ordinary PySpark 4.0/4.1 compiler surface is implemented; dependency, callback, parity, and restart evidence remains separate from the row API. |
-| Legacy `apply_in_pandas_with_state` | design-gated | The ordinary PySpark 3.5/4.0/4.1 compiler surface is separate and scheduled; its profile-specific parity and restart evidence is still required. |
-| `foreach` and `foreach_batch` | caller-owned-guided | Structure returns typed handoffs and safety metadata; callers construct writers, start queries, own checkpoints, retries, and idempotence. Generated modules do not start streaming lifecycles. |
-| Delta transform mutations | supported | Caller-bound Delta relations, typed mutations and reads, schema evolution, column metadata checks, and maintenance on classic PySpark 3.5–4.1; the exact Delta Connect 4.1 package is separately supported. See the [Delta tables API](api/DeltaTables.api.md) and [compatibility ledger](compatibility/DeltaTables.compat.md). |
-| Retained V9 gates | design-gated | See the retained-gates design/specification pair; XML and join reordering remain unsupported. |
+PySpark 4.1 adoption, feature status, target profiles, and live evidence are maintained in the
+[API Compatibility catalog](compatibility/APICompatibility.md#pyspark-41-adoption) and its detailed
+[API tracker](compatibility/APITracker.md). The [V11 charter](dev/project-management/V11.md) records project scope and
+schedule; these compatibility documents are the source for versioned API claims.
 
 ## Analytical APIs
 

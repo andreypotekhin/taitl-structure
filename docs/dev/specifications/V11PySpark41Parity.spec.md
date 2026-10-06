@@ -53,11 +53,15 @@ processor surfaces are separate families: row-based `transform_with_state(...)` 
 `transform_with_state_in_pandas(...)` targets ordinary PySpark 4.0 and 4.1; and legacy
 `apply_in_pandas_with_state(...)` targets ordinary PySpark 3.5, 4.0, and 4.1. Each has its own compiler path,
 target-profile rows, live evidence, and checkpoint-restart gate. The row family is governed by the dedicated
-[admission and typed-parity plan](../planning/P10062603.V11-transform-with-state-admission-and-typed-parity.plan.md),
-which admits only the planned Append and Update output modes and rejects Complete before startup. Spark Connect and
-Dataset/Scala arbitrary-state APIs remain unclaimed. These rows remain `design-gated` until the exact family and
-profile pass live processor behavior, timer/callback, online/generated parity, and same-checkpoint restart tests. This
-gate records missing runtime evidence; it does not mean the compiler surfaces are unimplemented.
+[admission and typed-parity plan](../planning/past/P10062603.V11-transform-with-state-admission-and-typed-parity.plan.md),
+which admits Append and Update output modes and rejects Complete during compilation. Spark Connect and
+Dataset/Scala arbitrary-state APIs remain outside the row claim. The row API supports Append and Update and the None,
+ProcessingTime, and EventTime modes in their valid combinations; Complete is rejected during compilation. Ordinary
+PySpark 4.1 online/generated evidence covers composite keys, both timer clocks, and same-checkpoint restart. The Pandas
+and legacy Pandas rows remain `design-gated` until their own profiles pass their remaining live behavior, callback,
+parity, and restart tests. The accepted future row typed-parity design is recorded in
+`V11TransformWithStateTypedParity.design.md`; this specification describes the currently implemented one-`ValueState`
+callback contract.
 
 In typed mode, `on_rows(key, rows, state, timers)` is required and `on_timer(key, timer, state, timers)` is optional.
 The callback context exposes current processing time and current watermark in milliseconds along with timer management;
@@ -65,10 +69,10 @@ reading the watermark requires a watermarked input. Callback signatures are chec
 operator. Converted input and state values expose the declared Structure fields, and yielded values must match the
 declared output Schema, including non-null constraints. A callback may yield zero or many rows.
 
-The typed row state surface is deliberately a subset. Its first release slice types one `ValueState`; the opaque native
-path preserves Spark's additional state kinds and processor methods. Typed `ListState`, `MapState`, multiple named
-variables, TTL, composite keys, and initial state need separate schema and checkpoint contracts and remain follow-up
-design items. The Pandas and legacy families do not inherit the row family's status or evidence.
+The typed row state surface is deliberately a subset. It types one `ValueState`; the opaque native path preserves
+Spark's additional state kinds and processor methods. Typed `ListState`, `MapState`, multiple named variables, TTL,
+and typed initial state remain follow-up design items. Composite keys are supported by the current row operation. The
+Pandas and legacy families do not inherit the row family's status or evidence.
 Typed `close` callbacks and schema evolution are deferred because cleanup is not guaranteed after worker failure and
 checkpoint migration needs its own contract.
 

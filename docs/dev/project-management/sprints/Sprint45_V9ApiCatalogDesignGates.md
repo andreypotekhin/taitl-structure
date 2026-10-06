@@ -26,7 +26,7 @@ lowering, documentation, diagnostics, compatibility tests, and live target evide
   value helpers.
 - Typed `window_time(...)` and the supported two-stage event-time window aggregation shape, with PySpark 3.5/4.0 live
   online/generated evidence.
-- Execute the linked [V9 Variant ExecPlan](../../planning/P07302602.V9-variant-type-and-helpers.plan.md): complete the
+- Execute the linked [V9 Variant ExecPlan](../../planning/past/P07302602.V9-variant-type-and-helpers.plan.md): complete the
   released 4.0/4.2 profile matrix, literals/equality, Variant table-valued row expansion, explicit exclusions, and
   evidence closure; keep 4.3+ mutation helpers design-gated until those runtimes are released.
 - Public docs, coverage ledgers, diagnostics, and compatibility tests for each resolved row.
@@ -70,7 +70,7 @@ online execution, diagnostics, and streaming compatibility.
 Sprint 45 closed the inventory and decision-closure slice. The implementation, evidence, and hardening work originally
 scheduled for Sprints 46--48 was completed on 2026-08-02 under the umbrella closeout plan. The dated sequence,
 dependencies, fallback rules, and exit criteria remain documented in the
-[V9 closeout ExecPlan](../../planning/P07302603.V9-closeout-and-release.plan.md).
+[V9 closeout ExecPlan](../../planning/past/P07302603.V9-closeout-and-release.plan.md).
 
 Sprint 45 exited when every selected V9 row had an owner, a precise status, a linked specification, and an acceptance
 command. The final hardening pass added no new API scope.
@@ -94,9 +94,9 @@ integration test exists.
 
 ## Governing Documents
 
-`docs/dev/planning/P07302601.V9-api-catalog-design-gates.plan.md`,
-`docs/dev/planning/P07302602.V9-variant-type-and-helpers.plan.md`,
-`docs/dev/planning/P07302603.V9-closeout-and-release.plan.md`,
+`docs/dev/planning/past/P07302601.V9-api-catalog-design-gates.plan.md`,
+`docs/dev/planning/past/P07302602.V9-variant-type-and-helpers.plan.md`,
+`docs/dev/planning/past/P07302603.V9-closeout-and-release.plan.md`,
 `close/archive/decisions/D07302603.V9-streaming-support-first.md`,
 `docs/dev/specifications/V9ApiCatalogDesignGatedFeatures.spec.md`, and
 `docs/dev/specifications/V9StreamingDesignGatedFeatures.spec.md`.

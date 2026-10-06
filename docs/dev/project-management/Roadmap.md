@@ -443,7 +443,7 @@ separate Structure-owned typed transformations from caller-owned PySpark lifecyc
 - Sprint 48 complete (closed 2026-08-02): performed dedicated V9 hardening with no new API scope, final `make build`,
   and the release evidence report.
 - The governing closeout schedule is
-  `docs/dev/planning/P07302603.V9-closeout-and-release.plan.md`; XML remains low-priority design-gated work.
+  `docs/dev/planning/past/P07302603.V9-closeout-and-release.plan.md`; XML remains low-priority design-gated work.
 
 ### v9 must include
 
@@ -458,8 +458,8 @@ separate Structure-owned typed transformations from caller-owned PySpark lifecyc
 - Live PySpark 3.5 and 4.0 evidence for every admitted Structure-owned streaming claim, plus `make build` in the final
   hardening sprint.
 - A follow-up execution plan for design-gated catalog rows:
-  `docs/dev/planning/P07302601.V9-api-catalog-design-gates.plan.md`, including the Variant child plan
-  `docs/dev/planning/P07302602.V9-variant-type-and-helpers.plan.md`.
+  `docs/dev/planning/past/P07302601.V9-api-catalog-design-gates.plan.md`, including the Variant child plan
+  `docs/dev/planning/past/P07302602.V9-variant-type-and-helpers.plan.md`.
 - The released PySpark 4.0/4.2 Variant implementation slice is wrapped up; 4.3+ mutation helpers stay design-gated
   until their profiles are released, with a live 4.2 probe tracked as infrastructure follow-up.
 

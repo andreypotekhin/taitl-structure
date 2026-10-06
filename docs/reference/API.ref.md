@@ -63,23 +63,12 @@ class Publish(Transform):
 
 The schema, transform, and expression remain visible to compile-time checking and generated output.
 
-## PySpark 4.1 Adoption (V11)
+## Version compatibility
 
-V11 tracks the exact `>=4.1,<4.2` profile without widening the default `>=3.5,<4.1` target. See the
-[V11 charter](../dev/project-management/V11.md), [V11 parity specification](../dev/specifications/V11PySpark41Parity.spec.md),
-and [API tracker](../compatibility/APITracker.md) for the normative status and evidence rules.
-
-| API area | Status | Reference boundary |
-| --- | --- | --- |
-| Expressions and relational query operations | design-gated | Typed contracts, capability checks, and online/generated parity are required. |
-| Observations and sketches | design-gated | Metrics and opaque binary results need explicit retrieval, merge, dependency, and determinism contracts. |
-| Arrow UDF/UDTF | caller-owned-guided | Worker Python and callback-defined row cardinality stay with the caller. |
-| Row `transform_with_state` | design-gated | Ordinary PySpark 4.1 compiler surface implemented; the admission plan owns Append/Update mode, timer, parity, and restart evidence. |
-| Pandas `transform_with_state_in_pandas` | design-gated | Ordinary PySpark 4.0/4.1 compiler surface implemented; its evidence gate is independent of row state. |
-| Legacy `apply_in_pandas_with_state` | design-gated | Ordinary PySpark 3.5/4.0/4.1 compiler surface implemented separately; accumulation and restart evidence exists, while timeout and zero/multiple-output proof remains pending. |
-| `foreach` and `foreach_batch` | caller-owned-guided | Typed handoffs and safety metadata only; the caller owns writers, query lifecycle, checkpoints, retries, and idempotence. |
-| Delta transform mutations | supported | Caller-bound Delta relations, typed mutations and reads, and opt-in schema evolution on classic PySpark 3.5–4.1; the exact Delta Connect 4.1 package is separately supported. See the [Delta tables API](../api/DeltaTables.api.md) and [compatibility ledger](../compatibility/DeltaTables.compat.md). |
-| Retained V9 gates | design-gated | Future Variant/state work is gated; XML and join reordering remain unsupported. |
+PySpark 4.1 adoption, feature status, target profiles, and live evidence are maintained in the
+[API Compatibility catalog](../compatibility/APICompatibility.md#pyspark-41-adoption) and its detailed
+[API tracker](../compatibility/APITracker.md). The [V11 charter](../dev/project-management/V11.md) records project
+scope and schedule; these compatibility documents are the source for versioned API claims.
 
 ## Analytical APIs
 

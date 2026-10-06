@@ -30,4 +30,4 @@ A skipped lane is not a pass. Do not add new API scope or promote a target-gated
 
 ## Governing Plan
 
-`docs/dev/planning/P07302603.V9-closeout-and-release.plan.md`.
+`docs/dev/planning/past/P07302603.V9-closeout-and-release.plan.md`.

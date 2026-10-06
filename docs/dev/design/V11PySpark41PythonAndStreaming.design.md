@@ -13,16 +13,18 @@ narrow typed contract must specify input/output schemas, nullability, batching, 
 
 ## Row-based transformWithState
 
-Structure implements `transform_with_state(...)` for ordinary PySpark `>=4.1,<4.2`. It captures a typed processor
-declared by inheriting `StateProcessor[Input, Key, State, Output]` (with optional `@state_processor` validation), or an opaque native PySpark processor
-bound with `external_state_processor(...)`. Typed callbacks use one `ValueState` and timer operations; processor bodies
-remain ordinary worker Python. The compiler lowers the operation to a shared recipe used by online and generated
-execution and classifies it as one stateful stage.
+Structure supports `transform_with_state(...)` for ordinary PySpark `>=4.1,<4.2`. It captures a typed processor
+declared by inheriting `StateProcessor[Input, Key, State, Output]` (with optional `@state_processor` validation), or
+an opaque native PySpark processor bound with `external_state_processor(...)`. Typed callbacks use one `ValueState`
+and timer operations; processor bodies remain ordinary worker Python. The compiler lowers the operation to a shared
+recipe used by online and generated execution and classifies it as one stateful stage.
 
-The row operation is not a general callback or query-lifecycle escape hatch. It has explicit composition and schema rules;
-Spark Connect and PySpark 4.0 row execution are not claimed. Initial ordinary 4.1 typed/native behavior, timers,
-online/generated parity, and same-checkpoint restart evidence is implemented; positive support remains gated while
-`P10062603` proves the narrow output-mode/time-mode/composite-key admission matrix. The separate
+The row operation supports `Append` and `Update` output modes and `None`, `ProcessingTime`, and `EventTime` time modes
+in their valid combinations. `Complete` is rejected during compilation. Ordinary 4.1 online/generated evidence covers
+both output modes, all time modes, composite keys, processing/event-time timers, and same-checkpoint restart. Spark
+Connect and PySpark 4.0 row execution are not claimed. The row operation is not a general callback or query-lifecycle
+escape hatch. See the [typed parity design](V11TransformWithStateTypedParity.design.md) for the accepted future
+breaking state-attribute API. The separate
 `transform_with_state_in_pandas(...)` operation covers the Pandas API on ordinary PySpark 4.0 and 4.1 and has its own
 dependency and runtime evidence gate. Both state operations require pandas, PyArrow, and Protobuf in PySpark 4.1 driver
 and worker environments; the Pandas operation requires them on PySpark 4.0 as well. The separate

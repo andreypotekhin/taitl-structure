@@ -153,6 +153,6 @@ and evidence template.
 - End-user guidance: [spark_driver_heap_oom.gotcha.md](../../troubleshooting/memory/spark_driver_heap_oom.gotcha.md)
 - Reproducer: [spark_driver_heap_oom.py](../../troubleshooting/memory/spark_driver_heap_oom.py)
 - Materialization and diagnostics plan:
-  [P08232601](../planning/P08232601.PySpark-lineage-materialization-and-diagnostics.plan.md)
+  [P08232601](../planning/past/P08232601.PySpark-lineage-materialization-and-diagnostics.plan.md)
 - Performance methodology: [Performance.opt.md](Performance.opt.md)
 - Memory investigation runbook: [Memory.runbook.md](../../runbooks/Memory.runbook.md)

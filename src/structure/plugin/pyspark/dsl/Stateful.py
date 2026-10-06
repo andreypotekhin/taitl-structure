@@ -497,8 +497,10 @@ def _capture_stateful_transform(
     )
     if len(set(field_identities)) != len(field_identities):
         raise TypeError(f"{operation_name}(key=...) does not allow duplicate grouping fields.")
-    if output_mode not in {"Append", "Update", "Complete"}:
-        raise ValueError(f"{operation_name}(output_mode=...) must be Append, Update, or Complete.")
+    allowed_output_modes = {"Append", "Update"} if interface == "row" else {"Append", "Update", "Complete"}
+    if output_mode not in allowed_output_modes:
+        allowed = " or ".join(sorted(allowed_output_modes))
+        raise ValueError(f"{operation_name}(output_mode=...) must be {allowed}.")
     if time_mode not in {"None", "ProcessingTime", "EventTime"}:
         raise ValueError(f"{operation_name}(time_mode=...) must be None, ProcessingTime, or EventTime.")
     if isinstance(processor, ExternalStateProcessor):

@@ -47,6 +47,6 @@ Spark-free and green.
 ## Governing plan
 
 `docs/dev/planning/P08042601.V11-pyspark-4.1-adoption.plan.md`,
-`docs/dev/planning/P10062603.V11-transform-with-state-admission-and-typed-parity.plan.md`,
+`docs/dev/planning/past/P10062603.V11-transform-with-state-admission-and-typed-parity.plan.md`,
 `docs/dev/planning/past/P10062601.V11-delta-connect-admission.plan.md`,
 and the completed row-sink and foreachBatch plans.

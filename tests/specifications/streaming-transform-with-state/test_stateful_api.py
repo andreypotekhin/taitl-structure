@@ -14,6 +14,7 @@ if str(SRC) not in sys.path:
 from structure import Schema, Transform, input, output, step
 from structure.core.compiler.api import Compiler
 from structure.core.compiler.artifacts.commands.BuildArtifactFingerprint import BuildArtifactFingerprint
+from structure.core.compiler.diagnostics.model.StructureCompileError import StructureCompileError
 from structure.plugin.api.v1.model import BackendCapabilityError, CapabilityRequirement
 from structure.plugin.pyspark.api.PySpark import PySpark
 from structure.plugin.pyspark.capabilities.model.PySparkCapabilities import PySparkCapabilities
@@ -167,6 +168,28 @@ def test_row_transform_with_state_is_rejected_for_spark_4_0() -> None:
             StreamingTotals,
             materialize_schemas=False,
             plugin={"pyspark": {"profile": ">=4.0,<4.1", "variant": "ordinary"}},
+        )
+
+
+def test_row_transform_with_state_rejects_complete_output_mode() -> None:
+    class CompleteOutput(Transform):
+        events = input(Input, streaming=True)
+        output_schema = output(Output)
+
+        @step(input=events, output=output_schema)
+        def calculate(self, row: Input) -> Output:
+            return transform_with_state(
+                key=row.customer_id,
+                processor=Counter,
+                output_mode="Complete",
+                time_mode="None",
+            )
+
+    with pytest.raises(StructureCompileError, match="must be Append or Update"):
+        Compiler.frontend.compile()(
+            CompleteOutput,
+            materialize_schemas=False,
+            plugin={"pyspark": {"profile": ">=4.1,<4.2", "variant": "ordinary"}},
         )
 
 

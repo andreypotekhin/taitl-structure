@@ -454,8 +454,8 @@ The governing completed plan is
   `docs/dev/specifications/V9StreamingDesignGatedFeatures.spec.md`,
   `docs/dev/gated/ApiCatalog.gates.md`,
   `docs/dev/specifications/V9ApiCatalogDesignGatedFeatures.spec.md`,
-`docs/dev/planning/P07302601.V9-api-catalog-design-gates.plan.md`, and the Variant child plan
-`docs/dev/planning/P07302602.V9-variant-type-and-helpers.plan.md`.
+`docs/dev/planning/past/P07302601.V9-api-catalog-design-gates.plan.md`, and the Variant child plan
+`docs/dev/planning/past/P07302602.V9-variant-type-and-helpers.plan.md`.
 The released PySpark 4.0/4.2 Variant implementation slice is complete; the repository has no PySpark 4.2 live lane,
 so `is_valid_variant(...)` retains capability-only evidence without a positive runtime claim. PySpark 4.3+ mutation
 helpers remain design-gated until released profiles exist. Global selected-row and broad analytic-window helpers are
@@ -463,7 +463,7 @@ streaming-ineligible; finite grouped selected-value aggregates are admitted. The
 Pandas `transform_with_state_in_pandas(...)` compiler surfaces are implemented; their support claims remain
 design-gated pending profile-specific runtime evidence.
 The dated execution schedule is
-`docs/dev/planning/P07302603.V9-closeout-and-release.plan.md`.
+`docs/dev/planning/past/P07302603.V9-closeout-and-release.plan.md`.
 - Diagnostics and explain output tell users whether a streaming issue should be fixed in Structure source,
   caller-owned lifecycle code, or a batch materialization boundary.
 - Every admitted Structure-owned streaming claim has PySpark 3.5/4.0 live evidence, generated-source lifecycle scans,
@@ -503,13 +503,13 @@ lanes whose broad full-selection runs did not complete.
 ### Governing Documents
 
 - `docs/dev/project-management/V10.md`
-- `docs/dev/planning/P08022601.V10-api-catalog-and-schema-evolution.plan.md`
-- `docs/dev/planning/P08022602.V10-streaming-state-and-join-contracts.plan.md`
-- `docs/dev/planning/P08022603.V10-streaming-side-effects-and-arbitrary-state.plan.md`
-- `docs/dev/planning/P08022604.V10-evidence-catalog-reconciliation-and-hardening.plan.md`
-- `docs/dev/planning/P08042601.Collision-safe-generated-identities.plan.md`
-- `docs/dev/planning/P08052602.Search-vector-index-and-rrf.plan.md` (explicit v10 Search application proving slice)
-- `docs/dev/planning/P08082601.Typed-scalar-generators-and-optimizer-visible-search-chunking.plan.md` (explicit v10 compiler/API and Search chunking proving slice)
+- `docs/dev/planning/past/P08022601.V10-api-catalog-and-schema-evolution.plan.md`
+- `docs/dev/planning/past/P08022602.V10-streaming-state-and-join-contracts.plan.md`
+- `docs/dev/planning/past/P08022603.V10-streaming-side-effects-and-arbitrary-state.plan.md`
+- `docs/dev/planning/past/P08022604.V10-evidence-catalog-reconciliation-and-hardening.plan.md`
+- `docs/dev/planning/past/P08042601.Collision-safe-generated-identities.plan.md`
+- `docs/dev/planning/past/P08052602.Search-vector-index-and-rrf.plan.md` (explicit v10 Search application proving slice)
+- `docs/dev/planning/past/P08082601.Typed-scalar-generators-and-optimizer-visible-search-chunking.plan.md` (explicit v10 compiler/API and Search chunking proving slice)
 
 ## M16: V11 PySpark 4.1 Adoption
 
@@ -524,9 +524,9 @@ Status: planned. V11 follows the V10 closeout and runs from Sprint 55 through Sp
 - Admitted expression and relational features have online/generated parity, schemas, explain/traceability, and live
   ordinary 4.1 evidence.
 - Complex observations, sketches, and Arrow UDF/UDTFs have implemented contracts or stable gates with caller-owned
-  remedies. Row `transform_with_state`, Pandas `transform_with_state_in_pandas`, and legacy
-  `apply_in_pandas_with_state` remain separate evidence gates, each with its own target profiles, restart proof, and
-  owner; Dataset/Scala arbitrary state remains outside the V11 claim.
+  remedies. Row `transform_with_state` is supported on ordinary PySpark 4.1 with its own profile, mode, timer, and
+  restart evidence. Pandas `transform_with_state_in_pandas` and legacy `apply_in_pandas_with_state` remain separate
+  evidence gates with their own target profiles and owners; Dataset/Scala arbitrary state remains outside the V11 claim.
 - Row `foreach` and `foreach_batch` have caller-owned handoffs, safety declarations, and classic 3.5/4.0 evidence;
   Structure does not start queries or own external effects.
 - The Delta package has a normative transform design/specification, caller-bound Delta inputs/outputs,
@@ -547,9 +547,9 @@ Status: planned. V11 follows the V10 closeout and runs from Sprint 55 through Sp
 - `docs/dev/planning/past/P10042601.V11-delta-transform-mutations.plan.md`
 - `docs/dev/planning/past/P10062601.V11-delta-connect-admission.plan.md`
 - `docs/dev/planning/P10062602.V11-apply-in-pandas-with-state.plan.md`
-- `docs/dev/planning/P10062603.V11-transform-with-state-admission-and-typed-parity.plan.md`
+- `docs/dev/planning/past/P10062603.V11-transform-with-state-admission-and-typed-parity.plan.md`
 - `docs/dev/planning/P10042604.V11-transform-with-state-in-pandas.plan.md`
-- `docs/dev/planning/P10042602.Row-level-foreach-sinks.plan.md`
+- `docs/dev/planning/past/P10042602.Row-level-foreach-sinks.plan.md`
 - `docs/dev/planning/past/P10052601.Schema-declared-foreach-batch-sinks.plan.md`
 - `docs/dev/planning/P08042603.V11-retained-v9-design-gates.plan.md`
 - `docs/dev/design/V11PySpark41Adoption.design.md`

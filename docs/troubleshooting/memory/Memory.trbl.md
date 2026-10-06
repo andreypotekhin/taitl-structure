@@ -84,4 +84,4 @@ measurements and the [Performance troubleshooting](../performance/Performance.tr
 - [Search integration performance issue](../../dev/issues/I09272601.Search-integration-performance.issue.md)
 - [Performance troubleshooting](../performance/Performance.trbl.md)
 
-[memory-plan]: ../../dev/planning/P08232601.PySpark-lineage-materialization-and-diagnostics.plan.md
+[memory-plan]: ../../dev/planning/past/P08232601.PySpark-lineage-materialization-and-diagnostics.plan.md

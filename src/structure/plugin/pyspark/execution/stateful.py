@@ -53,6 +53,11 @@ def apply_stateful_transform(
             "Pandas transform_with_state_in_pandas requires PySpark >=4.0,<4.1 or >=4.1,<4.2, "
             f"not {target_profile!r}."
         )
+    if interface == "pandas" and output_mode == "Complete":
+        raise ValueError(
+            "transform_with_state_in_pandas(output_mode='Complete') is unsupported for Spark streaming output; "
+            "use 'Append' or 'Update'. Spark rejects Complete for this operator before starting the query."
+        )
     if interface == "pandas":
         _require_pandas_runtime()
     stateful_processor = _processor_instance(

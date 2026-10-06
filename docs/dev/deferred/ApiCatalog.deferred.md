@@ -87,6 +87,6 @@ materialization boundaries, and `caller-owned-guided` for runnable caller integr
 ## V10 Adoption
 
 The adopted core API slices are governed by the grouped plan
-`docs/dev/planning/P08022601.V10-api-catalog-and-schema-evolution.plan.md`. Geospatial provider adoption is now
+`docs/dev/planning/past/P08022601.V10-api-catalog-and-schema-evolution.plan.md`. Geospatial provider adoption is now
 tracked separately in P10012602. XML, unreleased Variant mutation profiles, and join reordering remain explicit catalog
 dispositions rather than automatic support claims.

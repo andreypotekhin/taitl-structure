@@ -16,7 +16,7 @@ already-expanded DataFrame on both sides of a self-join duplicates that history 
 The developer-facing root-cause analysis, measurements, and design decisions are in the
 [resolved OOM issue record](../../dev/issues/I09272602.Spark-driver-heap-exhaustion.issue.md) and its
 [Memory evidence](../../dev/issues/I09272602/Memory-evidence.md). The implementation work is tracked in the
-[lineage materialization plan](../../dev/planning/P08232601.PySpark-lineage-materialization-and-diagnostics.plan.md).
+[lineage materialization plan](../../dev/planning/past/P08232601.PySpark-lineage-materialization-and-diagnostics.plan.md).
 
 ## Reproduce
 

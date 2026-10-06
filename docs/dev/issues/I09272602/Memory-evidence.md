@@ -7,7 +7,7 @@ materialization helpers, projection-union optimization, and the `PYSPARK-W2701`â
 source of truth for the measurements, root-cause model, implementation decisions, and acceptance evidence.
 
 End-user symptoms and remedies belong in the [memory gotcha](../../../troubleshooting/memory/spark_driver_heap_oom.gotcha.md).
-The implementation work is tracked in the [lineage materialization and diagnostics plan](../../planning/P08232601.PySpark-lineage-materialization-and-diagnostics.plan.md).
+The implementation work is tracked in the [lineage materialization and diagnostics plan](../../planning/past/P08232601.PySpark-lineage-materialization-and-diagnostics.plan.md).
 
 ## Scope
 
@@ -174,5 +174,5 @@ The bounded Docker evidence is:
 
 - End-user troubleshooting: [Spark driver heap exhaustion](../../../troubleshooting/memory/spark_driver_heap_oom.gotcha.md)
 - Reproducer: [spark_driver_heap_oom.py](../../../troubleshooting/memory/spark_driver_heap_oom.py)
-- Implementation plan: [P08232601](../../planning/P08232601.PySpark-lineage-materialization-and-diagnostics.plan.md)
+- Implementation plan: [P08232601](../../planning/past/P08232601.PySpark-lineage-materialization-and-diagnostics.plan.md)
 - Diagnostics catalog: [Diagnostics.md](../../../Diagnostics.md)

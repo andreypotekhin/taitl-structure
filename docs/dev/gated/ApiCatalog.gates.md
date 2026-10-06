@@ -29,7 +29,7 @@ helpers stay target-gated until the profile and contract are released.
 Batch missing-column union has typed nullable/defaulted behavior. Streaming schema evolution still needs explicit
 cardinality, nullability, nested-field, alias, state, and PySpark 3.5/4.0 evidence. Use exact-schema streaming unions
 or materialize to batch. The detailed implementation work is in the
-[V10 API plan](../planning/P08022601.V10-api-catalog-and-schema-evolution.plan.md).
+[V10 API plan](../planning/past/P08022601.V10-api-catalog-and-schema-evolution.plan.md).
 
 The typed API intentionally covers useful families rather than every PySpark spelling. Open function families remain
 listed in [APITracker.md](../../compatibility/APITracker.md) and [Function Gates](Functions.gates.md) until each has a type, nullability,

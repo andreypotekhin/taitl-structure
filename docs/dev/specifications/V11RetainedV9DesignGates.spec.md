@@ -3,8 +3,9 @@
 ## Scope
 
 This specification defines the observable status and boundary contract for V9 items retained into V11. It admits a
-typed, caller-started row-sink handoff for final outputs; it does not admit arbitrary state, Variant mutation, XML
-helpers, or join reordering.
+typed, caller-started row-sink handoff for final outputs. Row-based `transform_with_state(...)` is separately admitted
+by the V11 row-state contract; this specification does not widen that claim to Pandas or Dataset/Scala processors. It
+does not admit Variant mutation, XML helpers, or join reordering.
 
 ## Normative rules
 
@@ -29,8 +30,8 @@ helpers, or join reordering.
 | Chained stateful operators | `design-gated` | Admit only the proven event-time window pair and, on ordinary PySpark 3.5/4.0, watermarked dedupe followed by one watermarked event-time window aggregate in Append mode. Require per-operator budget declarations when configured; reject all other pairs with prior/requested stage context. |
 | Row-level `foreach` | `caller-owned-guided` | A transform may declare a typed sink and capture `foreach(row, sink)` on a final output. The caller constructs the writer, attaches it to the returned DataFrame, and owns query lifecycle, checkpoints, identity, retries, and recovery. |
 | `foreachBatch` | `caller-owned-guided` | A transform may declare a schema sink and return a batch handoff. The caller supplies `ForeachBatchSafety`, runs the batch transform for each batch ID, writes externally, and owns retries, checkpoints, and idempotence. |
-| Row-based `transformWithState` | `design-gated` | Typed and opaque-native compiler paths plus initial timer, parity, and restart evidence are implemented; `P10062603` must complete the ordinary PySpark 4.1 Append/Update and time-mode admission proof. Reject this row operation on PySpark 4.0, where the Python API is Pandas-based. |
-| `transformWithStateInPandas` | `design-gated` | Typed and opaque-native compiler paths plus pinned-profile state/timer/restart evidence exist in the separate Pandas plan for ordinary PySpark 4.0/4.1; event-time, differential, broader 4.0-lane, and schema-evolution evidence remains pending. |
+| Row-based `transformWithState` | `structure-supported` | Ordinary PySpark 4.1 supports Append/Update, None/ProcessingTime/EventTime in valid combinations, composite keys, timers, online/generated parity, and same-checkpoint restart. Reject Complete during compilation and reject this row operation on PySpark 4.0, where the Python API is Pandas-based. The typed path exposes one `ValueState`; native state features remain available through the opaque processor binding. |
+| `transformWithStateInPandas` | `design-gated` | Feature-specific typed/native, timer, event-time, differential, output-mode, TTL, and tested checkpoint-evolution evidence exists for ordinary PySpark 4.0/4.1; the canonical 4.1 lane passes, while the complete 4.0 lane exceeded its deadline. Retain the gate until the complete 4.0 lane passes. |
 | Legacy `apply_in_pandas_with_state` | `design-gated` | Keep the legacy typed/native compiler path separate from Spark 4 processor APIs; accumulation and restart are evidenced on ordinary PySpark 3.5/4.0/4.1, while timeout and zero/multiple-output behavior remains independently gated. |
 | XML helpers | `unsupported` | Do not export or lower XML helpers. |
 | Cost-based join reordering | `unsupported` | Do not export `join_order(...)` or reorder source-authored joins. |
@@ -39,7 +40,9 @@ helpers, or join reordering.
 
 The implementation is acceptable only when the catalog, machine-readable ledgers, diagnostics, generated-source scans,
 and caller recipes agree with this table. Positive support for a previously gated row additionally requires a normative
-contract, focused negative tests, online/generated parity, and live evidence for the claimed target and variant.
+contract, focused negative tests, online/generated parity, and live evidence for the claimed target and variant. The
+row processor support claim does not extend to the separate Pandas interfaces, Spark Connect, PySpark 4.2, or general
+stateful-operation chaining.
 
 ## Row-level `foreach`
 

@@ -31,4 +31,4 @@ Live evidence gaps remain explicit and are handed to Sprint 47.
 
 ## Governing Plan
 
-`docs/dev/planning/P07302603.V9-closeout-and-release.plan.md`, with child plans P07302601 and P07302602.
+`docs/dev/planning/past/P07302603.V9-closeout-and-release.plan.md`, with child plans P07302601 and P07302602.

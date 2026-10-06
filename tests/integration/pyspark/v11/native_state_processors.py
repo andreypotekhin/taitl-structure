@@ -181,3 +181,37 @@ class NativePandasEvolutionV2(StatefulProcessor):
         self._total.update((total, "v2"))
         self._added.update(("created",))
         return iter([pd.DataFrame({"customer_id": [key[0]], "total": [total], "marker": ["v2"]})])
+
+
+class NativePandasTtlTotals(StatefulProcessor):
+    """Keep a value briefly so the fixture can observe Spark's processing-time TTL eviction."""
+
+    def init(self, handle) -> None:
+        self._total = handle.getValueState(
+            "native_pandas_ttl_total",
+            StructType([StructField("total", LongType(), nullable=False)]),
+            ttlDurationMs=1000,
+        )
+
+    def handleInputRows(self, key, rows, timerValues):
+        import pandas as pd  # type: ignore[import-untyped]
+
+        current = self._total.get()
+        total = 0 if current is None else int(current[0])
+        for batch in rows:
+            total += int(batch["amount"].sum())
+        self._total.update((total,))
+        return iter(
+            [
+                pd.DataFrame(
+                    {
+                        "customer_id": [key[0]],
+                        "region": [key[1]],
+                        "total": [total],
+                        "amount_count": [1],
+                        "item_total": [total],
+                        "reason": ["input"],
+                    }
+                )
+            ]
+        )

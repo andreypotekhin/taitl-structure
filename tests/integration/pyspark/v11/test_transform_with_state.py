@@ -25,7 +25,9 @@ from structure.plugin.pyspark import (
     integer,
     state_processor,
     string,
+    timestamp,
     transform_with_state,
+    watermark,
 )
 
 pytestmark = [
@@ -70,6 +72,29 @@ class NativeTotalOutput(Schema):
     total = integer(nullable=False)
     count = integer(nullable=False)
     reason = string(nullable=False)
+
+
+class CompositeEvent(Schema):
+    customer_id = string(nullable=False)
+    region = string(nullable=False)
+    amount = integer(nullable=False)
+
+
+class CompositeKey(Schema):
+    customer_id = string(nullable=False)
+    region = string(nullable=False)
+
+
+class CompositeOutput(Schema):
+    customer_id = string(nullable=False)
+    region = string(nullable=False)
+    total = integer(nullable=False)
+
+
+class EventTimeEvent(Schema):
+    customer_id = string(nullable=False)
+    event_time = timestamp(nullable=False)
+    amount = integer(nullable=False)
 
 
 @state_processor
@@ -118,6 +143,52 @@ class TimerTotals(StateProcessor[Event, CustomerKey, CustomerTotal, TotalOutput]
         if current is not None:
             yield TotalOutput(customer_id=key.customer_id, total=current.total)
 
+
+@state_processor
+class CompositeTotals(StateProcessor[CompositeEvent, CompositeKey, CustomerTotal, CompositeOutput]):
+    def on_rows(
+        self,
+        key: CompositeKey,
+        rows: Iterator[CompositeEvent],
+        state: ValueState[CustomerTotal],
+        timers: TimerContext,
+    ) -> Iterator[CompositeOutput]:
+        previous = state.get()
+        total = 0 if previous is None else previous.total
+        for row in rows:
+            total += row.amount
+        state.update(CustomerTotal(total=total))
+        yield CompositeOutput(customer_id=key.customer_id, region=key.region, total=total)
+
+
+@state_processor
+class EventTimeTotals(StateProcessor[EventTimeEvent, CustomerKey, CustomerTotal, TotalOutput]):
+    def on_rows(
+        self,
+        key: CustomerKey,
+        rows: Iterator[EventTimeEvent],
+        state: ValueState[CustomerTotal],
+        timers: TimerContext,
+    ) -> Iterator[TotalOutput]:
+        current = state.get()
+        total = 0 if current is None else current.total
+        for row in rows:
+            total += row.amount
+            timers.register(int(row.event_time.timestamp() * 1_000) + 5_000)
+        state.update(CustomerTotal(total=total))
+        return iter(())
+
+    def on_timer(
+        self,
+        key: CustomerKey,
+        timer: Timer,
+        state: ValueState[CustomerTotal],
+        timers: TimerContext,
+    ) -> Iterator[TotalOutput]:
+        current = state.get()
+        if current is not None:
+            yield TotalOutput(customer_id=key.customer_id, total=current.total)
+
 class AccumulateCustomerTotals(Transform):
     events = input(Event, streaming=True)
     totals = output(TotalOutput)
@@ -143,6 +214,44 @@ class EmitTimerTotal(Transform):
             processor=TimerTotals,
             output_mode="Update",
             time_mode="ProcessingTime",
+        )
+
+
+class AccumulateAppendTotals(Transform):
+    events = input(CompositeEvent, streaming=True)
+    totals = output(CompositeOutput)
+
+    @step(input=events, output=totals)
+    def accumulate(self, event: CompositeEvent) -> CompositeOutput:
+        return transform_with_state(
+            key=(event.customer_id, event.region),
+            processor=CompositeTotals,
+            output_mode="Append",
+            time_mode="None",
+        )
+
+
+class WatermarkEventTime(Transform):
+    events = input(EventTimeEvent, streaming=True)
+    watermarked = output(EventTimeEvent)
+
+    @step(input=events, output=watermarked)
+    def apply_watermark(self, event: EventTimeEvent) -> EventTimeEvent:
+        watermark(event.event_time, delay="1 seconds")
+        return event
+
+
+class EmitEventTimeTotals(Transform):
+    events = input(EventTimeEvent, streaming=True)
+    totals = output(TotalOutput)
+
+    @step(input=events, output=totals)
+    def accumulate(self, event: EventTimeEvent) -> TotalOutput:
+        return transform_with_state(
+            key=event.customer_id,
+            processor=EventTimeTotals,
+            output_mode="Update",
+            time_mode="EventTime",
         )
 
 
@@ -224,6 +333,111 @@ def test_row_state_runs_online_and_generated_and_resumes_checkpoint(spark, tmp_p
                 run_available_now()
 
                 assert sorted(emitted) == [("c-1", 3), ("c-1", 7)]
+
+
+def test_row_state_append_none_and_composite_keys_online_and_generated(spark, tmp_path, integration_shared_dir) -> None:
+    generated_package = "integration_v11_row_state_append_generated"
+    files = render_generated_projects(
+        ((AccumulateAppendTotals, f"{SOURCE_MODULE}.AccumulateAppendTotals"),),
+        generated_package=generated_package,
+        source_schema_modules={SOURCE_MODULE: [CompositeEvent, CompositeOutput]},
+    )
+    with TemporaryDirectory(prefix=f"row-state-append-{uuid4().hex}-", dir=integration_shared_dir) as shared_root:
+        root = Path(shared_root)
+        with generated_project(tmp_path, generated_package, files):
+            for mode in ("online", "generated"):
+                source = root / mode / "source"
+                source.mkdir(parents=True)
+                (source / "events.json").write_text(
+                    json.dumps({"customer_id": "c-1", "region": "west", "amount": 2})
+                    + "\n"
+                    + json.dumps({"customer_id": "c-1", "region": "east", "amount": 5})
+                    + "\n"
+                    + json.dumps({"customer_id": "c-1", "region": "west", "amount": 1})
+                    + "\n",
+                    encoding="utf-8",
+                )
+                events = spark.readStream.schema(
+                    "customer_id STRING NOT NULL, region STRING NOT NULL, amount INT NOT NULL"
+                ).json(str(source))
+                result = AccumulateAppendTotals(events=events).run(
+                    session(spark, execution_mode=mode, generated_package=generated_package)
+                )
+                emitted: list[tuple[str, str, int]] = []
+
+                def collect_batch(frame, _batch_id: int) -> None:
+                    emitted.extend((row.customer_id, row.region, row.total) for row in frame.collect())
+
+                query = result.totals.writeStream.foreachBatch(collect_batch).outputMode("append").option(
+                    "checkpointLocation", str(root / mode / "checkpoint")
+                ).trigger(once=True).start()
+                try:
+                    assert query.awaitTermination(120), "Append row state query did not complete"
+                finally:
+                    query.stop()
+
+                assert sorted(emitted) == [("c-1", "east", 5), ("c-1", "west", 3)]
+
+
+def test_row_state_event_time_timer_fires_after_watermark_advances_online_and_generated(
+    spark, tmp_path, integration_shared_dir
+) -> None:
+    generated_package = "integration_v11_row_state_event_time_generated"
+    files = render_generated_projects(
+        (
+            (WatermarkEventTime, f"{SOURCE_MODULE}.WatermarkEventTime"),
+            (EmitEventTimeTotals, f"{SOURCE_MODULE}.EmitEventTimeTotals"),
+        ),
+        generated_package=generated_package,
+        source_schema_modules={SOURCE_MODULE: [EventTimeEvent, TotalOutput]},
+    )
+    with TemporaryDirectory(prefix=f"row-state-event-time-{uuid4().hex}-", dir=integration_shared_dir) as shared_root:
+        root = Path(shared_root)
+        with generated_project(tmp_path, generated_package, files):
+            for mode in ("online", "generated"):
+                source = root / mode / "source"
+                source.mkdir(parents=True)
+                emitted: list[tuple[str, int]] = []
+                events = spark.readStream.schema(
+                    "customer_id STRING NOT NULL, event_time TIMESTAMP NOT NULL, amount INT NOT NULL"
+                ).json(str(source))
+                runtime = session(spark, execution_mode=mode, generated_package=generated_package)
+                watermarked = WatermarkEventTime(events=events).run(runtime).watermarked
+                result = EmitEventTimeTotals(events=watermarked).run(runtime)
+
+                def collect_batch(frame, _batch_id: int) -> None:
+                    emitted.extend((row.customer_id, row.total) for row in frame.collect())
+
+                query = result.totals.writeStream.foreachBatch(collect_batch).outputMode("update").option(
+                    "checkpointLocation", str(root / mode / "checkpoint")
+                ).trigger(processingTime="100 milliseconds").start()
+                try:
+                    (source / "first.json").write_text(
+                        json.dumps(
+                            {"customer_id": "c-1", "event_time": "2024-01-01T00:00:00", "amount": 3}
+                        )
+                        + "\n",
+                        encoding="utf-8",
+                    )
+                    deadline = monotonic() + 30
+                    while not emitted and monotonic() < deadline and query.isActive:
+                        sleep(0.1)
+                    assert not emitted, "Event-time processor emitted before timer expiry"
+                    (source / "advance.json").write_text(
+                        json.dumps(
+                            {"customer_id": "advance", "event_time": "2024-01-01T00:00:20", "amount": 0}
+                        )
+                        + "\n",
+                        encoding="utf-8",
+                    )
+                    deadline = monotonic() + 30
+                    while not emitted and monotonic() < deadline and query.isActive:
+                        sleep(0.1)
+                    assert emitted, "Event-time timer did not fire after watermark advanced"
+                finally:
+                    query.stop()
+
+                assert emitted == [("c-1", 3)]
 
 
 def test_typed_state_timer_emits_after_registration_online_and_generated(spark, tmp_path, integration_shared_dir) -> None:

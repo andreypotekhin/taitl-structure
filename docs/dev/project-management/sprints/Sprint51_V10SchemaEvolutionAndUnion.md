@@ -39,4 +39,4 @@ Do not introduce a second schema-evolution API or claim streaming support withou
 
 ## Governing Plan
 
-`docs/dev/planning/P08022601.V10-api-catalog-and-schema-evolution.plan.md`.
+`docs/dev/planning/past/P08022601.V10-api-catalog-and-schema-evolution.plan.md`.

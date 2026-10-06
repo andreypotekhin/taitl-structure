@@ -35,4 +35,4 @@ No Structure-owned job, sink, `foreach`, `foreachBatch`, checkpoint, or recovery
 
 ## Governing Plan
 
-`docs/dev/planning/P08022603.V10-streaming-side-effects-and-arbitrary-state.plan.md`.
+`docs/dev/planning/past/P08022603.V10-streaming-side-effects-and-arbitrary-state.plan.md`.

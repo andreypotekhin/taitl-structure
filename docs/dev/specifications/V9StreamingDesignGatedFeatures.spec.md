@@ -2,8 +2,9 @@
 
 ## Purpose
 
-This specification records the v9 streaming design-gated contracts and their implementation status. The exact chained
-event-time window shape is now `structure-supported`; the remaining rows retain their individual design-gated status.
+This specification records the V9 streaming design-gated contracts and their implementation status. The exact chained
+event-time window shape is now `structure-supported`; V11 has also superseded the former row `transformWithState` gate.
+Other rows retain their individual status as recorded below.
 Each contract defines the evidence required before a row can move from `design-gated` to `structure-supported`,
 `caller-owned-guided`, or `streaming-ineligible`.
 
@@ -181,15 +182,16 @@ The caller-owned recipe is accepted only when it shows this shape:
 
 ## Arbitrary State APIs
 
-This V9 design gate is superseded for the explicit V11 processor surfaces. Structure now implements row-based
-`transform_with_state(...)` for ordinary PySpark 4.1 and `transform_with_state_in_pandas(...)` for ordinary PySpark 4.0
-and 4.1. Their typed and opaque-native compiler paths, schema boundaries, processor modes, and streaming classification
-are documented in the V11 plans. They remain design-gated as support claims until profile-specific live timer,
-online/generated parity, and checkpoint-restart evidence passes. V11 adds a separate typed/native
-`apply_in_pandas_with_state(...)` compiler operation for ordinary PySpark 3.5, 4.0, and 4.1, tracked by the
-[legacy Pandas state plan](../planning/P10062602.V11-apply-in-pandas-with-state.plan.md); its support claim remains
-gated on matching profile evidence. Other unmodeled state APIs remain caller-owned. `ArbitraryStateContract` is an
-adoption-metadata validator, not a runtime.
+This V9 design gate is superseded for the row `transformWithState` surface. Structure supports
+`transform_with_state(...)` on ordinary PySpark 4.1 for Append/Update output and None/ProcessingTime/EventTime modes;
+the admitted contract has online/generated, timer, composite-key, and same-checkpoint restart evidence. Complete is
+rejected during compilation. See the [row admission plan](../planning/past/P10062603.V11-transform-with-state-admission-and-typed-parity.plan.md)
+and [typed parity design](../design/V11TransformWithStateTypedParity.design.md).
+
+The Pandas `transform_with_state_in_pandas(...)` and legacy `apply_in_pandas_with_state(...)` interfaces remain separate
+design-gated families while their profile-specific evidence is completed. Dataset/Scala arbitrary state APIs remain
+outside the PySpark Structure surface; `ArbitraryStateContract` is adoption metadata, not a runtime. Their history in
+this V9 document records the earlier contract discussion, not current support status.
 
 Required contract:
 
@@ -210,12 +212,9 @@ The caller-owned metadata guard is `examples.streams.adoption.ArbitraryStateCont
 contract completeness and timeout consistency only; it does not start a query, lower a state processor, or promote this
 ledger row. The contract remains `design-gated` until a separate runtime and live restart lane exist.
 
-V9 closes the design gate with this implementation-ready model, but does not implement the APIs. A future
-`StructureStateTransform` contract must declare `(input_schema, state_schema, output_schema, timeout_policy,
-target_profile)` as one typed model; generated code must expose the corresponding public PySpark state operation and
-checkpoint/restart boundary; and the live acceptance fixture must write state, restart from the same checkpoint, and
-prove the recovered output. Until that separate runtime contract and evidence exist, the ledger remains
-`design-gated` and callers own arbitrary-state PySpark code.
+At the V9 closeout this model was a design only. V11 superseded that status for row `transformWithState`; the broader
+typed state model remains future work as specified in the linked V11 typed parity design. This historical V9 contract
+does not describe the currently supported row API or promote either Pandas interface.
 
 ## Acceptance
 

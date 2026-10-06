@@ -33,4 +33,4 @@ No bundled Sedona dependency, raw `ST_*` escape hatch, dynamic SRID, or silent o
 
 ## Governing Plan
 
-`docs/dev/planning/P08022601.V10-api-catalog-and-schema-evolution.plan.md`.
+`docs/dev/planning/past/P08022601.V10-api-catalog-and-schema-evolution.plan.md`.

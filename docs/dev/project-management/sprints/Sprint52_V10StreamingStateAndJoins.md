@@ -34,4 +34,4 @@ No arbitrary second-stateful composition, global selected-row support, or lifecy
 
 ## Governing Plan
 
-`docs/dev/planning/P08022602.V10-streaming-state-and-join-contracts.plan.md`.
+`docs/dev/planning/past/P08022602.V10-streaming-state-and-join-contracts.plan.md`.

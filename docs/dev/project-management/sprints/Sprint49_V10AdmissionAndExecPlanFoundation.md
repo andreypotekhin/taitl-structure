@@ -35,4 +35,4 @@ No feature implementation or lifecycle ownership. Do not duplicate one ExecPlan 
 
 ## Governing Plan
 
-`docs/dev/planning/P08022604.V10-evidence-catalog-reconciliation-and-hardening.plan.md`.
+`docs/dev/planning/past/P08022604.V10-evidence-catalog-reconciliation-and-hardening.plan.md`.

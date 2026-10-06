@@ -92,22 +92,22 @@ state assumptions visible in explain output; it does not make Structure control 
   operation remains rejected with `STREAM-E0801` unless a specific finite contract is admitted.
 - Cross and anti stream-stream joins remain rejected until finite completion, retention, and restart behavior are
   proven.
-- Arbitrary state APIs remain design-gated pending profile-specific live evidence. The compiler surface includes
-  `transform_with_state(...)` for ordinary PySpark 4.1 and `transform_with_state_in_pandas(...)` for ordinary PySpark
-  4.0 and 4.1; both 4.1 forms require pandas, PyArrow, and protobuf on the driver and workers. Neither API currently
-  carries a Structure support claim. The initial 4.1 integration lane runs V11 tests only; the row operation still
-  requires typed/native timer, online/generated parity, and same-checkpoint restart evidence. The separate
-  `apply_in_pandas_with_state(...)` operation targets ordinary PySpark 3.5, 4.0, and 4.1 through the legacy
-  `GroupedData.applyInPandasWithState`; its support claim awaits matching profile evidence. See the
+- Row `transform_with_state(...)` is supported on ordinary PySpark 4.1. Pandas
+  `transform_with_state_in_pandas(...)` remains design-gated on PySpark 4.0 and 4.1 because the full 4.0 integration
+  lane has not completed; feature-specific checks pass on both profiles and the canonical 4.1 lane passes. Spark and
+  the caller control native state/checkpoint evolution, with no Structure-owned migration promise. Legacy
+  `apply_in_pandas_with_state(...)` has a separate 3.5/4.0/4.1 evidence gate.
+  Both PySpark 4.1 state processor interfaces require pandas, PyArrow, and protobuf on the driver and workers. The
   [arbitrary-state contract](../dev/specifications/V9StreamingDesignGatedFeatures.spec.md#arbitrary-state-apis) and
-  the [state gate](../dev/gated/Streaming.gates.md#arbitrary-state-processors--design-gated).
+  [streaming gate](../dev/gated/Streaming.gates.md#arbitrary-state-processors--design-gated) keep the families distinct.
 - Typed state schemas come from the specialized `StateProcessor[Input, Key, State, Output]` or
   `PandasStateProcessor[Input, Key, State, Output]` base, including specialized intermediate classes. The
   `@state_processor` and `@pandas_state_processor` decorators remain optional compatibility validators.
 - The typed row processor uses one `ValueState`; `TimerContext` exposes timer registration, deletion, listing, current
   processing time, and the current watermark in milliseconds. The watermark property requires a watermarked input. Use
   `external_state_processor(...)` when the Spark processor needs additional state types, multiple named states, TTL, or
-  initial-state handling. These typed callbacks remain behind the live evidence gate above.
+  initial-state handling. Row support covers ordinary PySpark 4.1; the Pandas state APIs retain their separate evidence
+  gates above.
 - General Pandas, RDD, and `mapInPandas` boundaries remain unsupported because they are not part of these typed state
   processor surfaces.
 
@@ -179,13 +179,14 @@ the declared key, handling retries, and ensuring that the checkpoint and snapsho
 
 ## Typed Arbitrary-State Contract
 
-Arbitrary state remains design-gated; `ArbitraryStateContract` is a metadata completeness guard, not a state processor
-runtime. The four ledger families are independent: row-based `transform_with_state` targets ordinary PySpark 4.1;
+`ArbitraryStateContract` is a metadata completeness guard, not a state processor runtime. The four ledger families are
+independent: supported row-based `transform_with_state` targets ordinary PySpark 4.1;
 `transform_with_state_in_pandas` targets ordinary PySpark 4.0 and 4.1; `apply_in_pandas_with_state(...)` targets
 ordinary PySpark 3.5, 4.0, and 4.1; Dataset/Scala arbitrary-state APIs remain outside the V11 claim. The row family has
-the dedicated [admission and typed-parity plan](../dev/planning/P10062603.V11-transform-with-state-admission-and-typed-parity.plan.md);
-the Pandas families retain their separate plans. Each remains gated until its own online/generated parity, timer or
-callback behavior, and same-checkpoint restart evidence passes. `apply_in_pandas_with_state(...)` has a separate
+the dedicated [admission and typed-parity plan](../dev/planning/past/P10062603.V11-transform-with-state-admission-and-typed-parity.plan.md)
+and [typed parity design](../dev/design/V11TransformWithStateTypedParity.design.md); the Pandas families retain their
+separate plans. Each Pandas family remains gated until its own online/generated parity, timer or callback behavior, and
+same-checkpoint restart evidence passes. `apply_in_pandas_with_state(...)` has a separate
 typed/native compiler path and legacy `PandasGroupState` facade; it does not adapt Spark 4 processor callbacks or
 migrate their checkpoint state. Before reviewing another native state API, the contract
 records typed input, key, state, and output Schemas; grouping fields; timeout policy, clock, and duration;

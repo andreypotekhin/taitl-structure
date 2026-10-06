@@ -44,19 +44,25 @@ through the adoption recipe.
 
 ### Row `transformWithState` — `structure-supported`
 
-The typed and native row interfaces are supported on ordinary PySpark 4.1. See the
-[row admission plan](../planning/P10062603.V11-transform-with-state-admission-and-typed-parity.plan.md) and
-[row processor plan](../planning/P10042603.V11-transform-with-state.plan.md) for the runtime evidence and admitted
-mode/key/time scope. PySpark 4.0 does not expose the row processor entry point.
+The typed and native row interfaces are supported on ordinary PySpark 4.1 for Append/Update output modes and None,
+ProcessingTime, and EventTime modes in their valid combinations. Online/generated parity covers composite keys,
+processing-time and event-time timers, and same-checkpoint restart. Complete fails during compilation. The typed path
+exposes one `ValueState`; `external_state_processor(...)` keeps additional PySpark processor features available as an
+opaque boundary. PySpark 4.0 does not expose the row processor entry point. See the
+[row admission plan](../planning/past/P10062603.V11-transform-with-state-admission-and-typed-parity.plan.md),
+[typed parity design](../design/V11TransformWithStateTypedParity.design.md), and
+[row processor plan](../planning/past/P10042603.V11-transform-with-state.plan.md).
 
 ### Pandas `transformWithStateInPandas` — `design-gated`
 
-The typed and native compiler surfaces are implemented for ordinary PySpark 4.0 and 4.1. Pandas-module evidence passes
-on both profiles, including online/generated execution, processing-time timers, composite keys, initial state, native
-state types, and same-checkpoint restart. The 4.1 V11 lane passes; the broader 4.0 integration lane exceeded its
-3,600-second deadline. Event-time behavior, row/Pandas differential output, and native checkpoint state-schema
-evolution remain unverified, so the Pandas support claim stays gated. The runtime requires pandas, PyArrow, and
-protobuf on the driver and workers. See the
+The typed and native compiler surfaces are implemented for ordinary PySpark 4.0 and 4.1. Feature-specific evidence
+passes on both profiles for online/generated execution, processing- and event-time timers, composite keys, initial
+state, native Value/List/Map state, TTL expiry, zero and multiple output frames, output-mode acceptance, and
+same-checkpoint restart. The row/Pandas differential passes on 4.1, and tested native checkpoint state/schema evolution
+passes on both profiles. The canonical 4.1 integration lane passes. The full 4.0 integration lane exceeded its
+3,600-second deadline, although its Pandas module and V11 selection pass independently; keep the overall support claim
+gated until that full lane completes. Spark and the caller control native state/checkpoint evolution; Structure does
+not promise checkpoint migration. The runtime requires pandas, PyArrow, and protobuf on the driver and workers. See the
 [Pandas processor plan](../planning/P10042604.V11-transform-with-state-in-pandas.plan.md).
 
 ### Legacy `applyInPandasWithState` — `design-gated`
@@ -66,7 +72,7 @@ The separate `apply_in_pandas_with_state(...)` compiler surface targets ordinary
 ordinary profiles, while timeout and zero/multiple-output coverage remains pending. See the
 [legacy Pandas state plan](../planning/P10062602.V11-apply-in-pandas-with-state.plan.md).
 
-### Other Arbitrary State APIs — `design-gated`
+### Dataset State APIs — `unsupported`
 
 `mapGroupsWithState` and `flatMapGroupsWithState` are JVM Dataset APIs without PySpark entry points. The
 `ArbitraryStateContract` validates adoption metadata only; it is not a state runtime.
@@ -84,8 +90,9 @@ isolated file-stream restart behavior. A runtime unavailable for testing is unav
 ## Permanent Boundaries
 
 Generated streaming sources and sinks, triggers, checkpoints, output modes, query names, start/stop, deployment,
-recovery, `foreachBatch`, `foreach`, custom sinks, external side effects, and arbitrary state APIs remain caller-owned
-or outside the Structure transform contract. See [Streaming deferred work](../deferred/Streaming.deferred.md).
+recovery, `foreachBatch`, `foreach`, custom sinks, external side effects, Pandas state gates, and Dataset-only state
+APIs remain caller-owned or outside the Structure transform contract. See
+[Streaming deferred work](../deferred/Streaming.deferred.md).
 
 ## Related Records
 
@@ -93,6 +100,6 @@ or outside the Structure transform contract. See [Streaming deferred work](../de
 - [Streaming deferred work](../deferred/Streaming.deferred.md) owns postponed lifecycle and orchestration direction.
 - [Spark Streaming design](../design/SparkStreaming.design.md) owns the durable transformation boundary.
 - [Streaming API reference](../../api/Streaming.api.md) is the user-facing support surface.
-- [V10 streaming plan](../planning/P08022602.V10-streaming-state-and-join-contracts.plan.md) owns active
+- [V10 streaming plan](../planning/past/P08022602.V10-streaming-state-and-join-contracts.plan.md) owns active
   implementation work.
 - [V10 release evidence](../project-management/V10ReleaseEvidence.md) records unavailable proof lanes.
