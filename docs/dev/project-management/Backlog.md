@@ -479,8 +479,8 @@ future documents are not V10 backlog commitments.
   SQL Scripting, Python Data Sources, readers, writers, sessions, and catalogs.
 - + Keep row `transform_with_state`, Pandas `transform_with_state_in_pandas`, legacy
   `apply_in_pandas_with_state`, and Dataset/Scala arbitrary state as separate ledger families with independent
-  evidence owners; row admission is supported on ordinary PySpark 4.1 and its future typed parity contract is
-  documented. Pandas families retain independent evidence gates.
+  evidence owners; row admission and the typed named-state parity contract are implemented on ordinary PySpark 4.1.
+  Pandas families retain independent evidence gates.
 - Preserve typed caller-owned handoffs for `foreach` and `foreach_batch`, including retry/idempotence safety and clean
   generated-source boundaries.
 - Track classic Delta table admission and the separate Delta Connect 4.1 admission as distinct packages; do not infer

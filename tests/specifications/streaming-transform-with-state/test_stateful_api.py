@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import sys
+from dataclasses import replace
+from datetime import timedelta
 from pathlib import Path
-from typing import Generic, TypeVar, cast
+from typing import Generic, Iterator, TypeVar, cast
 
 import pytest
 
@@ -23,13 +25,21 @@ from structure.plugin.pyspark.dsl.field import string
 from structure.plugin.pyspark.dsl.InputScope import InputScope
 from structure.plugin.pyspark.dsl.Stateful import (
     ExternalStateProcessor,
+    ListState,
+    MapState,
+    StateAttribute,
     StateProcessor,
     TimerContext,
+    ValueState,
     _schema_instance,
     _schema_values,
+    _state_attributes,
     external_state_processor,
+    list_state,
+    map_state,
     state_processor,
     transform_with_state,
+    value_state,
 )
 from structure.plugin.pyspark.execution.stateful import _output_rows, _validate_typed_callbacks
 
@@ -54,6 +64,19 @@ class Output(Schema):
     total = string(nullable=False)
 
 
+class MapKey(Schema):
+    key = string(nullable=False)
+
+
+class MapValue(Schema):
+    value = string(nullable=False)
+
+
+class InitialSchema(Schema):
+    customer_id = string(nullable=False)
+    total = string(nullable=False)
+
+
 class CompositeInput(Schema):
     customer_id = string(nullable=False)
     region = string(nullable=False)
@@ -73,8 +96,11 @@ class CompositeOutput(Schema):
 
 
 @state_processor
-class CompositeCounter(StateProcessor[CompositeInput, CompositeKey, CompositeState, CompositeOutput]):
-    pass
+class CompositeCounter(StateProcessor[CompositeInput, CompositeKey, CompositeOutput]):
+    total: ValueState[CompositeState]
+
+    def on_rows(self, key: CompositeKey, rows, timers):
+        return iter(())
 
 
 def test_input_relation_fingerprints_are_stable_across_scope_instances() -> None:
@@ -93,13 +119,16 @@ StateSchema = TypeVar("StateSchema", bound=Schema)
 OutputSchema = TypeVar("OutputSchema", bound=Schema)
 
 
-class GenericCounter(StateProcessor[InputSchema, KeySchema, StateSchema, OutputSchema], Generic[
-    InputSchema, KeySchema, StateSchema, OutputSchema
+class GenericCounter(StateProcessor[InputSchema, KeySchema, OutputSchema], Generic[
+    InputSchema, KeySchema, OutputSchema, StateSchema
 ]):
-    pass
+    total: ValueState[StateSchema]
+
+    def on_rows(self, key, rows, timers):
+        return iter(())
 
 
-class Counter(GenericCounter[Input, Key, State, Output]):
+class Counter(GenericCounter[Input, Key, Output, State]):
     pass
 
 
@@ -108,8 +137,30 @@ class UnresolvedCounter(GenericCounter):
 
 
 @state_processor
-class DecoratedCounter(StateProcessor[Input, Key, State, Output]):
-    pass
+class DecoratedCounter(StateProcessor[Input, Key, Output]):
+    total: ValueState[State]
+
+    def on_rows(self, key, rows, timers):
+        return iter(())
+
+
+@state_processor
+class InitializingCounter(StateProcessor[Input, Key, Output]):
+    total: ValueState[State]
+
+    def on_rows(self, key: Key, rows: Iterator[Input], timers: TimerContext) -> Iterator[Output]:
+        return iter(())
+
+    def on_initial_state(self, key: Key, initial: InitialSchema, timers: TimerContext) -> None:
+        self.total.update(State(total=initial.total))
+
+
+@state_processor
+class ExpiringCounter(StateProcessor[Input, Key, Output]):
+    total: ValueState[State] = value_state(ttl=timedelta(seconds=2))
+
+    def on_rows(self, key: Key, rows: Iterator[Input], timers: TimerContext) -> Iterator[Output]:
+        return iter(())
 
 
 class StreamingTotals(Transform):
@@ -129,8 +180,8 @@ class StreamingTotals(Transform):
 def test_typed_processor_schema_hints_are_the_source_of_truth() -> None:
     from structure.plugin.pyspark.dsl.Stateful import _processor_schemas
 
-    assert _processor_schemas(Counter, StateProcessor) == (Input, Key, State, Output)
-    assert DecoratedCounter.__structure_state_processor__ == (Input, Key, State, Output)
+    assert _processor_schemas(Counter, StateProcessor) == (Input, Key, Output)
+    assert DecoratedCounter.__structure_state_processor__ == (Input, Key, Output)
 
 
 def test_transform_with_state_lowers_for_spark_4_1() -> None:
@@ -145,9 +196,15 @@ def test_transform_with_state_lowers_for_spark_4_1() -> None:
 
     assert lowered.processor_mode == "typed"
     assert lowered.key_schema is Key
-    assert lowered.state_schema is State
+    assert lowered.state_schema is None
+    assert lowered.state_attributes[0].value_schema is State
     assert lowered.output_schema is Output
     assert lowered.output_mode == "Update"
+    fingerprint = BuildArtifactFingerprint()
+    state_attribute = lowered.state_attributes[0]
+    changed = replace(lowered, state_attributes=(replace(state_attribute, ttl_ms=1),))
+    assert fingerprint(lowered) == fingerprint(lowered)
+    assert fingerprint(lowered) != fingerprint(changed)
 
     generated_modules = PySpark.render.project()(
         cast(PySparkExecutionPlan, compiled.lowered),
@@ -188,6 +245,50 @@ def test_row_transform_with_state_rejects_complete_output_mode() -> None:
     with pytest.raises(StructureCompileError, match="must be Append or Update"):
         Compiler.frontend.compile()(
             CompleteOutput,
+            materialize_schemas=False,
+            plugin={"pyspark": {"profile": ">=4.1,<4.2", "variant": "ordinary"}},
+        )
+
+
+def test_typed_initial_state_requires_relation_and_callback_together() -> None:
+    class InitialStateWithoutRelation(Transform):
+        events = input(Input, streaming=True)
+        output_schema = output(Output)
+
+        @step(input=events, output=output_schema)
+        def calculate(self, row: Input) -> Output:
+            return transform_with_state(
+                key=row.customer_id,
+                processor=InitializingCounter,
+                output_mode="Update",
+                time_mode="ProcessingTime",
+            )
+
+    with pytest.raises(StructureCompileError, match="must be supplied together"):
+        Compiler.frontend.compile()(
+            InitialStateWithoutRelation,
+            materialize_schemas=False,
+            plugin={"pyspark": {"profile": ">=4.1,<4.2", "variant": "ordinary"}},
+        )
+
+
+def test_typed_state_ttl_requires_processing_time() -> None:
+    class TtlOutsideProcessingTime(Transform):
+        events = input(Input, streaming=True)
+        output_schema = output(Output)
+
+        @step(input=events, output=output_schema)
+        def calculate(self, row: Input) -> Output:
+            return transform_with_state(
+                key=row.customer_id,
+                processor=ExpiringCounter,
+                output_mode="Update",
+                time_mode="EventTime",
+            )
+
+    with pytest.raises(StructureCompileError, match="TTL requires time_mode='ProcessingTime'"):
+        Compiler.frontend.compile()(
+            TtlOutsideProcessingTime,
             materialize_schemas=False,
             plugin={"pyspark": {"profile": ">=4.1,<4.2", "variant": "ordinary"}},
         )
@@ -242,10 +343,10 @@ def test_typed_processor_rejects_unresolved_inherited_type_variables() -> None:
 
 
 def test_processor_rejects_conflicting_generic_specializations() -> None:
-    class LeftCounter(StateProcessor[Input, Key, State, Output]):
+    class LeftCounter(StateProcessor[Input, Key, Output]):
         pass
 
-    class RightCounter(StateProcessor[Input, OtherKey, State, Output]):
+    class RightCounter(StateProcessor[Input, OtherKey, Output]):
         pass
 
     class ConflictingCounter(LeftCounter, RightCounter):
@@ -322,34 +423,141 @@ def test_typed_schema_rows_expose_values_and_validate_nullability() -> None:
         _schema_values(State, State(total=cast(str, None)))
 
 
-def test_typed_callbacks_are_validated_before_operator_construction() -> None:
-    class Valid:
-        def on_rows(self, key, rows, state, timers):
+def test_state_declarations_discover_inherited_attributes_and_exact_ttl() -> None:
+    class Base(StateProcessor[Input, Key, Output]):
+        total: ValueState[State] = value_state(ttl=timedelta(seconds=5))
+
+        def on_rows(self, key: Key, rows: Iterator[Input], timers: TimerContext) -> Iterator[Output]:
             return iter(())
 
-        def on_timer(self, key, timer, state, timers):
+    class Derived(Base):
+        recent: ListState[Input]
+        by_key: MapState[MapKey, MapValue] = map_state(name="saved", ttl=timedelta(milliseconds=1250))
+
+    Derived.__qualname__ = "Derived"
+    state_processor(Derived)
+    attributes = cast(tuple[StateAttribute, ...], getattr(Derived, "__structure_state_attributes__"))
+    assert [(state.attribute_name, state.name, state.kind, state.ttl_ms) for state in attributes] == [
+        ("total", "total", "value", 5000),
+        ("recent", "recent", "list", None),
+        ("by_key", "saved", "map", 1250),
+    ]
+
+
+@pytest.mark.parametrize(
+    "ttl, message",
+    [
+        (timedelta(0), "positive whole number"),
+        (timedelta(microseconds=1), "positive whole number"),
+        (timedelta(microseconds=1001), "positive whole number"),
+        ("1 second", "datetime.timedelta"),
+    ],
+)
+def test_state_factory_rejects_invalid_ttl(ttl, message: str) -> None:
+    with pytest.raises((TypeError, ValueError), match=message):
+        value_state(ttl=ttl)
+
+
+def test_state_factory_rejects_empty_names_and_duplicate_names() -> None:
+    with pytest.raises(ValueError, match="non-empty"):
+        value_state(name=" ")
+
+    with pytest.raises(TypeError, match="declared more than once"):
+
+        class DuplicateNames(StateProcessor[Input, Key, Output]):
+            first: ValueState[State] = value_state(name="total")
+            second: ListState[State] = list_state(name="total")
+
+            def on_rows(self, key, rows, timers):
+                return iter(())
+
+        DuplicateNames.__qualname__ = "DuplicateNames"
+        state_processor(DuplicateNames)
+
+
+def test_state_declaration_rejects_unparameterized_and_incompatible_factories() -> None:
+    class Unparameterized(StateProcessor[Input, Key, Output]):
+        total: ValueState
+
+    with pytest.raises(TypeError, match="parameterize its state wrapper"):
+        _state_attributes(Unparameterized)
+
+    class WrongFactory(StateProcessor[Input, Key, Output]):
+        total: ValueState[State] = list_state()
+
+    with pytest.raises(TypeError, match="factory kind 'list'.*ValueState"):
+        _state_attributes(WrongFactory)
+
+
+def test_list_and_map_state_wrappers_convert_values_lazily() -> None:
+    class ListHandle:
+        def get(self):
+            yield ("one",)
+            yield ("two",)
+
+        def appendValue(self, value):
+            self.appended = value
+
+    list_handle = ListHandle()
+    wrapped_list: ListState[State] = ListState(list_handle, State)
+    values = wrapped_list.get()
+    assert iter(values) is values
+    assert [value.total for value in values] == ["one", "two"]
+    wrapped_list.append_value(State(total="three"))
+    assert list_handle.appended == ("three",)
+
+    class MapHandle:
+        def getValue(self, key):
+            return ("value",)
+
+        def iterator(self):
+            yield ("one",), ("value",)
+
+        def updateValue(self, key, value):
+            self.updated = (key, value)
+
+    map_handle = MapHandle()
+    wrapped_map: MapState[MapKey, MapValue] = MapState(map_handle, MapKey, MapValue)
+    map_value = wrapped_map.get_value(MapKey(key="one"))
+    assert map_value is not None and map_value.value == "value"
+    entries = wrapped_map.iterator()
+    assert iter(entries) is entries
+    assert [(key.key, value.value) for key, value in entries] == [("one", "value")]
+    wrapped_map.update_value(MapKey(key="two"), MapValue(value="second"))
+    assert map_handle.updated == (("two",), ("second",))
+
+    with pytest.raises(TypeError, match="must be an instance of MapValue"):
+        wrapped_map.update_value(MapKey(key="two"), cast(MapValue, State(total="wrong")))
+
+
+def test_typed_callbacks_are_validated_before_operator_construction() -> None:
+    class Valid:
+        def on_rows(self, key, rows, timers):
+            return iter(())
+
+        def on_timer(self, key, timer, timers):
             return iter(())
 
     class Missing:
         pass
 
     class WrongSignature:
-        def on_rows(self, key, rows, state):
+        def on_rows(self, key, rows):
             return iter(())
 
     class WrongTimerSignature:
-        def on_rows(self, key, rows, state, timers):
+        def on_rows(self, key, rows, timers):
             return iter(())
 
-        def on_timer(self, key, timer, state):
+        def on_timer(self, key, timer):
             return iter(())
 
     _validate_typed_callbacks(Valid, "row")
-    with pytest.raises(TypeError, match="on_rows.*required.*callable"):
+    with pytest.raises(TypeError, match="must define on_rows"):
         _validate_typed_callbacks(Missing, "row")
-    with pytest.raises(TypeError, match=r"on_rows.*\(self, key, rows, state, timers\)"):
+    with pytest.raises(TypeError, match=r"on_rows.*\(self, key, rows, timers\)"):
         _validate_typed_callbacks(WrongSignature, "row")
-    with pytest.raises(TypeError, match=r"on_timer.*\(self, key, timer, state, timers\)"):
+    with pytest.raises(TypeError, match=r"on_timer.*\(self, key, timer, timers\)"):
         _validate_typed_callbacks(WrongTimerSignature, "row")
 
 

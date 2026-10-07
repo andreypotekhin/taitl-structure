@@ -2,9 +2,8 @@
 
 ## Status
 
-Accepted design for a future breaking update to the typed row processor API. This document does not describe the current
-public API as implemented. Row `transform_with_state(...)` currently supports one typed `ValueState` passed as a
-callback argument, plus an opaque native PySpark processor path. Implementation work belongs to a separate ExecPlan.
+Implemented for ordinary PySpark 4.1. The typed row processor uses the attribute-based API and callback contract below;
+the ExecPlan records implementation and live evidence. Pandas state processors retain their separate four-schema API.
 
 ## Purpose
 
@@ -218,5 +217,5 @@ transfer row evidence to the Pandas API.
 - Decision: Do not promise automatic checkpoint migration or typed cleanup through `close`.
   Rationale: Structure does not own the query checkpoint or Spark worker failure lifecycle.
 
-Revision note (2026-10-06): Recorded the selected attribute-based API and breaking migration direction while
-implementing the row admission and evidence plan.
+Revision note (2026-10-06): Implemented the selected attribute-based API and breaking migration direction alongside
+the row admission evidence. Typed row declarations now carry Value/List/Map handles, TTL, and initial-state metadata.

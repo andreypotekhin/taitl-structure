@@ -163,6 +163,7 @@ class RenderPySparkTransformModule:
         if has_stateful_transform:
             state_helpers = ["apply_stateful_transform", "apply_legacy_pandas_state"]
             lines.append(f"from structure.plugin.pyspark.execution.stateful import {', '.join(state_helpers)}")
+            lines.append("from structure.plugin.pyspark.dsl.Stateful import StateAttribute")
 
         for module, constants in self._schema_imports(plan, schema_modules).items():
             lines.append(f"from {module} import {', '.join(constants)}")

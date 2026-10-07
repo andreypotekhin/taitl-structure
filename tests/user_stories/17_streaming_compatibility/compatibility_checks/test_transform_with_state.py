@@ -28,12 +28,13 @@ class Total(Schema):
 
 
 @state_processor
-class AccountTotals(StateProcessor[Event, AccountKey, TotalState, Total]):
+class AccountTotals(StateProcessor[Event, AccountKey, Total]):
+    total: ValueState[TotalState]
+
     def on_rows(
         self,
         key: AccountKey,
         rows: Iterator[Event],
-        state: ValueState[TotalState],
         timers,
     ) -> Iterator[Total]:
         raise NotImplementedError("Processor bodies run on Spark workers.")

@@ -459,9 +459,10 @@ The governing completed plan is
 The released PySpark 4.0/4.2 Variant implementation slice is complete; the repository has no PySpark 4.2 live lane,
 so `is_valid_variant(...)` retains capability-only evidence without a positive runtime claim. PySpark 4.3+ mutation
 helpers remain design-gated until released profiles exist. Global selected-row and broad analytic-window helpers are
-streaming-ineligible; finite grouped selected-value aggregates are admitted. The row `transform_with_state(...)` and
-Pandas `transform_with_state_in_pandas(...)` compiler surfaces are implemented; their support claims remain
-design-gated pending profile-specific runtime evidence.
+streaming-ineligible; finite grouped selected-value aggregates are admitted. Row `transform_with_state(...)` is
+supported on ordinary PySpark 4.1 with typed named state, timer, online/generated parity, and restart evidence.
+Pandas `transform_with_state_in_pandas(...)` is implemented but remains design-gated because the complete 4.0 lane
+reports broad-phase failures.
 The dated execution schedule is
 `docs/dev/planning/past/P07302603.V9-closeout-and-release.plan.md`.
 - Diagnostics and explain output tell users whether a streaming issue should be fixed in Structure source,

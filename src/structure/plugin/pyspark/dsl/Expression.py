@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import builtins
 from dataclasses import dataclass
-from typing import Any, Mapping, cast
+from typing import Any, Callable, Mapping, cast
 
 from structure.plugin.api.v1.model.CompilationSettings import current_compilation_settings
 from structure.plugin.pyspark.dsl.types import (
@@ -177,6 +177,17 @@ class Expression:
         from structure.plugin.pyspark.dsl.expressions import _column_substr
 
         return _column_substr(self, startPos, length)
+
+    def transform(self, function: Callable[["Expression"], object]) -> "Expression":
+        """Apply a typed symbolic transformation to this expression.
+
+        This mirrors PySpark 4.1 ``Column.transform``. The callback runs while
+        authoring the transform and must return another typed Structure
+        expression; it is never executed once per row in Python.
+        """
+        from structure.plugin.pyspark.dsl.operations_api import _column_transform
+
+        return _column_transform(self, function)
 
     def contains(self, value: str | "Expression") -> "Expression":
         return self._string_predicate("contains", value, allow_expression=True)

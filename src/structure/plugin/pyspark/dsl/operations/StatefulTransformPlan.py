@@ -21,3 +21,5 @@ class StatefulTransformPlan:
     interface: str = "row"
     event_time_column: str | None = None
     initial_state: object | None = None
+    state_attributes: tuple[Any, ...] = ()
+    initial_schema: type[Schema] | None = None

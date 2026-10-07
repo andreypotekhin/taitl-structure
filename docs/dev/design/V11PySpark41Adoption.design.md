@@ -50,10 +50,11 @@ their namespaces and Binary boundaries are specified in
 [Geospatial Provider Boundaries](../planning/past/P10012602.Geospatial-provider-boundaries.plan.md).
 
 The Python-and-streaming package keeps Arrow UDF/UDTF caller-owned and implements explicit state processor compiler
-surfaces. Row-based `transform_with_state(...)` targets ordinary PySpark 4.1; the separate
-`transform_with_state_in_pandas(...)` targets ordinary PySpark 4.0 and 4.1. Both are still design-gated as support claims
-until their per-profile runtime, timer, online/generated parity, and checkpoint-restart evidence passes. Their generated
-transforms do not own query lifecycle. See the row and Pandas ExecPlans for the exact callback and dependency contracts.
+surfaces. Row-based `transform_with_state(...)` is supported on ordinary PySpark 4.1 with typed named
+Value/List/Map state, timers, initial state, online/generated parity, and same-checkpoint restart evidence. The separate
+`transform_with_state_in_pandas(...)` targets ordinary PySpark 4.0 and 4.1 and remains design-gated because the complete
+4.0 integration lane reports broad-phase failures. Their generated transforms do not own query lifecycle. See the row
+and Pandas ExecPlans for the exact callback and dependency contracts.
 
 The infrastructure package adds versioned Compose images, ordinary and Connect runners, backend metadata, capability
 profiles, and evidence reports. It must permit one backend to be selected without starting unrelated Spark services.

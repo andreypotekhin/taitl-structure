@@ -123,7 +123,7 @@ def _declared_collection_requirements() -> set[tuple[str, str]]:
             continue
         if node.func.id == "_reserved_expression":
             requirement = _reserved_requirement(node)
-            if requirement is not None:
+            if requirement is not None and requirement != ("expression", "column_transform"):
                 requirements.add(requirement)
         if node.func.id in {"_array_set_operation", "_element_lookup"} and node.args:
             function = _constant_string(node.args[0])

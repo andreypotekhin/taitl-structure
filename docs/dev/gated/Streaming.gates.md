@@ -36,7 +36,7 @@ output, diagnostics, generated form, and live restart evidence for each target p
 
 Structure supports an opt-in typed handoff for a declared final output. The caller constructs and attaches the writer,
 starts the query, and owns sink identity, idempotence, retry, security, checkpoints, and recovery. Each attached stream
-sink is an independent query. Classic PySpark 3.5 and 4.0 pass isolated callback and serialization checks; Spark Connect
+sink is an independent query. Classic PySpark 3.5, 4.0, and 4.1 pass isolated callback and serialization checks; Spark Connect
 is not claimed without equivalent proof. A failed writer query restarted from its checkpoint may replay rows and repeat
 external effects; the local-file restart fixture passes online and generated on both claimed classic profiles. The
 compile-time `foreach(row, sink)` marker is not rendered into generated modules, and `foreachBatch` remains caller-owned
@@ -47,8 +47,10 @@ through the adoption recipe.
 The typed and native row interfaces are supported on ordinary PySpark 4.1 for Append/Update output modes and None,
 ProcessingTime, and EventTime modes in their valid combinations. Online/generated parity covers composite keys,
 processing-time and event-time timers, and same-checkpoint restart. Complete fails during compilation. The typed path
-exposes one `ValueState`; `external_state_processor(...)` keeps additional PySpark processor features available as an
-opaque boundary. PySpark 4.0 does not expose the row processor entry point. See the
+declares named Value/List/Map state attributes, supports typed initial state, and accepts TTL only with ProcessingTime.
+`external_state_processor(...)` keeps unsupported Python constructs and additional PySpark features available as an
+opaque boundary. Persisted state changes are checkpoint-sensitive and Structure does not migrate state. PySpark 4.0
+does not expose the row processor entry point. See the
 [row admission plan](../planning/past/P10062603.V11-transform-with-state-admission-and-typed-parity.plan.md),
 [typed parity design](../design/V11TransformWithStateTypedParity.design.md), and
 [row processor plan](../planning/past/P10042603.V11-transform-with-state.plan.md).
@@ -59,9 +61,9 @@ The typed and native compiler surfaces are implemented for ordinary PySpark 4.0 
 passes on both profiles for online/generated execution, processing- and event-time timers, composite keys, initial
 state, native Value/List/Map state, TTL expiry, zero and multiple output frames, output-mode acceptance, and
 same-checkpoint restart. The row/Pandas differential passes on 4.1, and tested native checkpoint state/schema evolution
-passes on both profiles. The canonical 4.1 integration lane passes. The full 4.0 integration lane exceeded its
-3,600-second deadline, although its Pandas module and V11 selection pass independently; keep the overall support claim
-gated until that full lane completes. Spark and the caller control native state/checkpoint evolution; Structure does
+passes on both profiles. The canonical 4.1 integration lane passes. The canonical 4.0 lane completes with 10 broad-phase failures; its focused Pandas module and V11 selection pass
+independently, and a fresh reproduction confirms three existing plan-boundary/enrichment failures. Keep the support claim
+gated until the full lane is repeatably green. Spark and the caller control native state/checkpoint evolution; Structure does
 not promise checkpoint migration. The runtime requires pandas, PyArrow, and protobuf on the driver and workers. See the
 [Pandas processor plan](../planning/P10042604.V11-transform-with-state-in-pandas.plan.md).
 

@@ -14,17 +14,19 @@ narrow typed contract must specify input/output schemas, nullability, batching, 
 ## Row-based transformWithState
 
 Structure supports `transform_with_state(...)` for ordinary PySpark `>=4.1,<4.2`. It captures a typed processor
-declared by inheriting `StateProcessor[Input, Key, State, Output]` (with optional `@state_processor` validation), or
-an opaque native PySpark processor bound with `external_state_processor(...)`. Typed callbacks use one `ValueState`
-and timer operations; processor bodies remain ordinary worker Python. The compiler lowers the operation to a shared
+declared by inheriting `StateProcessor[Input, Key, Output]` (with optional `@state_processor` validation), or an
+opaque native PySpark processor bound with `external_state_processor(...)`. Typed processors declare named Value,
+List, and Map states and access their wrappers through `self`; processor bodies remain ordinary worker Python. The compiler lowers the operation to a shared
 recipe used by online and generated execution and classifies it as one stateful stage.
 
 The row operation supports `Append` and `Update` output modes and `None`, `ProcessingTime`, and `EventTime` time modes
 in their valid combinations. `Complete` is rejected during compilation. Ordinary 4.1 online/generated evidence covers
 both output modes, all time modes, composite keys, processing/event-time timers, and same-checkpoint restart. Spark
-Connect and PySpark 4.0 row execution are not claimed. The row operation is not a general callback or query-lifecycle
-escape hatch. See the [typed parity design](V11TransformWithStateTypedParity.design.md) for the accepted future
-breaking state-attribute API. The separate
+Connect and PySpark 4.0 row execution are not claimed. Typed initial state requires a paired callback and input
+relation. TTL requires ProcessingTime. Persisted state changes are checkpoint-sensitive; Structure does not migrate
+state and recommends a new checkpoint after declaration changes. The row operation is not a general callback or
+query-lifecycle escape hatch. See the [typed parity design](V11TransformWithStateTypedParity.design.md) for the
+attribute and checkpoint contract. The separate
 `transform_with_state_in_pandas(...)` operation covers the Pandas API on ordinary PySpark 4.0 and 4.1 and has its own
 dependency and runtime evidence gate. Both state operations require pandas, PyArrow, and Protobuf in PySpark 4.1 driver
 and worker environments; the Pandas operation requires them on PySpark 4.0 as well. The separate
@@ -45,11 +47,9 @@ watermark. The row adapter validates the required callback and optional timer ca
 converts rows and state through their declared Schemas, and checks output Schema type and non-null fields before yielding
 rows.
 
-The typed API stays intentionally narrower than Spark's native processor interface: one `ValueState`, timer operations,
-typed input/key/state/output values, and ordinary Python callbacks. The opaque native processor is the full-parity path for
-`ListState`, `MapState`, multiple named variables, TTL, initial-state handling, and other Spark APIs. After the first
-typed/native runtime slice passes, revisit typed multi-field keys, collection states, TTL, and typed initial state as
-separate contracts with schema, nullability, state naming, checkpoint compatibility, and migration rules. Do not add a
+The typed API stays narrower than Spark's native processor interface: named Value/List/Map state, ProcessingTime TTL,
+typed initial state, timer operations, typed input/key/output values, and ordinary Python callbacks. The opaque native
+processor remains the path for other Spark APIs and valid Python constructs that Structure does not compile. Do not add a
 typed `close` callback or state-schema evolution in this phase: Spark worker cleanup is not guaranteed after failure, and
 checkpoint schema evolution needs an explicit migration contract.
 

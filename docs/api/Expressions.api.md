@@ -83,6 +83,7 @@ PySpark `Column` surface; functions such as `trim` and `lower` remain function-f
 | `cast(...)` | `cast` | `o.total.cast(types.decimal(12, 2))` |
 | `astype(...)` | `astype` | `o.total.astype(types.decimal(12, 2))` |
 | `try_cast(...)` | `try_cast` | `o.raw_total.try_cast(types.decimal(12, 2))` |
+| `transform(function)` | `Column.transform` | `o.name.transform(lambda value: upper(trim(value)))` |
 | `asc()` | `asc` | `o.at.asc()` |
 | `desc()` | `desc` | `o.at.desc()` |
 | `asc_nulls_first()` | `asc_nulls_first` | `o.at.asc_nulls_first()` |
@@ -105,6 +106,40 @@ PySpark `Column` surface; functions such as `trim` and `lower` remain function-f
   when the receiver or either bound is nullable. Generated method calls use `o.name.substr(...)`; the equivalent
   function form is `substr(o.name, start=1, length=10)`.
 - `try_cast(...)` is always nullable and needs target profile `>=4.0,<4.1`.
+- `transform(function)` requires ordinary PySpark `>=4.1,<4.2`. Its callback takes exactly one Structure expression,
+  runs during symbolic authoring, and must return a typed expression. The result type and nullability come from that
+  callback. Arbitrary Python row callbacks are rejected; Spark Connect remains gated pending live evidence.
+
+Use a named `@special(type="expr")` helper when the same expression logic is reused. Define the helper with one
+expression parameter and pass the bound helper directly to `.transform(...)`:
+
+```python
+from structure import Schema, Transform, input, output, special, transform
+from structure.plugin.pyspark import string, trim, upper
+
+
+class RawName(Schema):
+    name = string(nullable=False)
+
+
+class NormalizedName(Schema):
+    name = string(nullable=False)
+
+
+@transform
+class NormalizeName(Transform):
+    rows = input(RawName)
+    normalized = output(NormalizedName)
+
+    @special(type="expr")
+    def normalize_text(value):
+        return upper(trim(value))
+
+    def normalize(self, row: RawName) -> NormalizedName:
+        return NormalizedName(name=row.name.transform(self.normalize_text))
+```
+
+The helper expands into a symbolic expression; its Python body does not run for each data row.
 - `bit_length(...)` accepts String or Binary and returns nullable Integer, counting UTF-8 bytes for String values.
 - Division, remainder, and negation require numeric expressions. Integral division returns Double; Decimal division uses
   Spark's bounded Decimal precision rules. Raw `Column.over(...)` remains unsupported.

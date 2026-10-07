@@ -75,41 +75,12 @@ catalog; the [Streaming background](../background/Streaming.back.md) explains th
 - Scalar `@special(type="udf")` expressions are admitted as row-local ordinary-PySpark streaming transformations.
   They retain the existing `warn_on_udfs` warning policy and remain unavailable on Spark Connect.
 - Variant fields and helpers are admitted as profile-gated streaming transformations on ordinary PySpark 4 profiles.
-  PySpark 4.0 live evidence covers parsing, extraction, schema inspection, object conversion, JSON-null testing,
+  PySpark 4.0 supports parsing, extraction, schema inspection, object conversion, JSON-null testing,
   validated `variant_literal(...)` extraction, watermarked `schema_of_variant_agg`, and typed inner/outer TVF expansion;
   PySpark 3.5 fails through the standard capability diagnostic before execution. PySpark 4.2-only helpers such as
   `is_valid_variant(...)` remain capability-gated until a 4.2 live lane exists.
 - `event_time_between(...)` supplies the bounded event-time relation required by supported stream-stream joins.
 - `streaming=True` declares the hook safe for its stated streaming shape; Structure does not inspect hook code.
-
-## Stateful Composition And Deferred State
-
-The compiler records state-stage metadata for admitted aggregates, bounded deduplication, and bounded stream-stream
-joins, including watermarks, grouping or join keys, retention bounds, and required output modes. This metadata makes the
-state assumptions visible in explain output; it does not make Structure control query lifecycle or recovery.
-
-- The supported composition boundary is one admitted stateful operation followed by stateless work. A second stateful
-  operation remains rejected with `STREAM-E0801` unless a specific finite contract is admitted.
-- Cross and anti stream-stream joins remain rejected until finite completion, retention, and restart behavior are
-  proven.
-- Row `transform_with_state(...)` is supported on ordinary PySpark 4.1. Pandas
-  `transform_with_state_in_pandas(...)` remains design-gated on PySpark 4.0 and 4.1 because the full 4.0 integration
-  lane has not completed; feature-specific checks pass on both profiles and the canonical 4.1 lane passes. Spark and
-  the caller control native state/checkpoint evolution, with no Structure-owned migration promise. Legacy
-  `apply_in_pandas_with_state(...)` has a separate 3.5/4.0/4.1 evidence gate.
-  Both PySpark 4.1 state processor interfaces require pandas, PyArrow, and protobuf on the driver and workers. The
-  [arbitrary-state contract](../dev/specifications/V9StreamingDesignGatedFeatures.spec.md#arbitrary-state-apis) and
-  [streaming gate](../dev/gated/Streaming.gates.md#arbitrary-state-processors--design-gated) keep the families distinct.
-- Typed state schemas come from the specialized `StateProcessor[Input, Key, State, Output]` or
-  `PandasStateProcessor[Input, Key, State, Output]` base, including specialized intermediate classes. The
-  `@state_processor` and `@pandas_state_processor` decorators remain optional compatibility validators.
-- The typed row processor uses one `ValueState`; `TimerContext` exposes timer registration, deletion, listing, current
-  processing time, and the current watermark in milliseconds. The watermark property requires a watermarked input. Use
-  `external_state_processor(...)` when the Spark processor needs additional state types, multiple named states, TTL, or
-  initial-state handling. Row support covers ordinary PySpark 4.1; the Pandas state APIs retain their separate evidence
-  gates above.
-- General Pandas, RDD, and `mapInPandas` boundaries remain unsupported because they are not part of these typed state
-  processor surfaces.
 
 ## Lifecycle Boundaries
 
@@ -162,8 +133,8 @@ Batch callers invoke `handoff.dataframe.foreach(handoff.writer(...).process)`; b
 `open` or `close` methods. Streaming writers must be noncallable and define `process(row)`; optional `open` and `close`
 follow PySpark's partition/epoch lifecycle. The caller starts and stops each query. An added streaming sink is a second,
 independent query with its own checkpoint and progress. Retries and checkpoint restarts may repeat external writes, so
-the caller owns idempotence, credentials, failure observation, and recovery. Live evidence covers classic PySpark 3.5
-and 4.0; Spark Connect is unclaimed. See the [row-level foreach contract](../dev/specifications/V11RetainedV9DesignGates.spec.md#row-level-foreach),
+  the caller owns idempotence, credentials, failure observation, and recovery. The supported profiles are listed in
+  the [compatibility ledger](../compatibility/Streaming.compat.md). See the [row-level foreach contract](../dev/specifications/V11RetainedV9DesignGates.spec.md#row-level-foreach),
 [Spark Streaming](../dev/specifications/SparkStreaming.spec.md), and the
 [Execution reference](../background/Execution.back.md).
 
@@ -177,36 +148,117 @@ calling `start()`. These declarations make the recovery assumptions reviewable; 
 idempotent, transactional, or secure. The callback and its sink remain the application's responsibility, including using
 the declared key, handling retries, and ensuring that the checkpoint and snapshot identity remain compatible.
 
-## Typed Arbitrary-State Contract
+## Stateful Operations And Composition
 
-`ArbitraryStateContract` is a metadata completeness guard, not a state processor runtime. The four ledger families are
-independent: supported row-based `transform_with_state` targets ordinary PySpark 4.1;
-`transform_with_state_in_pandas` targets ordinary PySpark 4.0 and 4.1; `apply_in_pandas_with_state(...)` targets
-ordinary PySpark 3.5, 4.0, and 4.1; Dataset/Scala arbitrary-state APIs remain outside the V11 claim. The row family has
-the dedicated [admission and typed-parity plan](../dev/planning/past/P10062603.V11-transform-with-state-admission-and-typed-parity.plan.md)
-and [typed parity design](../dev/design/V11TransformWithStateTypedParity.design.md); the Pandas families retain their
-separate plans. Each Pandas family remains gated until its own online/generated parity, timer or callback behavior, and
-same-checkpoint restart evidence passes. `apply_in_pandas_with_state(...)` has a separate
-typed/native compiler path and legacy `PandasGroupState` facade; it does not adapt Spark 4 processor callbacks or
-migrate their checkpoint state. Before reviewing another native state API, the contract
-records typed input, key, state, and output Schemas; grouping fields; timeout policy, clock, and duration;
-initialization, update, and removal behavior; target PySpark profile; hook boundary; checkpoint identity; serialized
-state version; and restart policy. `contract.validate()` rejects missing or inconsistent declarations with
-`ARBITRARY-STATE-E0901`, `ARBITRARY-STATE-E0902`, or `ARBITRARY-STATE-E0903`.
+Structured Streaming keeps state between input batches for operations such as aggregations, deduplication, joins, and
+state processors. A transform may contain one admitted stateful operation followed by stateless work. Additional
+stateful operations are rejected unless Structure has a specific finite contract for that combination.
 
-Validation does not start a query, generate a state processor, control a checkpoint, or prove recovery. The application
-still controls the native PySpark API and live restart evidence. A passing row-state proof does not promote the Pandas,
-legacy, Dataset, or Scala families. Structure must not promote any streaming ledger row until its separate runtime
-contract and target-profile evidence exist.
+- Cross and anti stream-stream joins are not supported because their completion and retention behavior cannot currently
+  be bounded by Structure.
+- Row `transform_with_state(...)` is available on ordinary PySpark 4.1. The separate Pandas
+  `transform_with_state_in_pandas(...)` and legacy `apply_in_pandas_with_state(...)` operations have distinct processor
+  APIs and runtime requirements; see the [compatibility ledger](../compatibility/Streaming.compat.md) for their
+  supported profiles. Spark and the caller own native state and checkpoint evolution. Structure does not migrate
+  persisted state.
+- Typed row state processors use `StateProcessor[Input, Key, Output]`; declare named `ValueState[Schema]`,
+  `ListState[Schema]`, and `MapState[KeySchema, ValueSchema]` attributes on the processor. They access handles through
+  `self` in `on_rows`, `on_timer`, and optional `on_initial_state`. The immutable factories `value_state(...)`,
+  `list_state(...)`, and `map_state(...)` accept optional `name=` and `ttl=datetime.timedelta(...)`. TTL requires
+  `time_mode="ProcessingTime"`. Typed initial state requires both a concrete `on_initial_state` callback and the
+  operation's `initial_state=` relation. Changing persisted state identity or schema is checkpoint-sensitive; use a
+  new checkpoint after such a change because Structure does not migrate Spark state.
+- Use `external_state_processor(...)` when processor code needs Python constructs or native PySpark features outside
+  this typed interface.
+- Example: declare typed handles on the processor and use them from a compiler-visible transform step. The example
+  shows all three handle kinds; the processor body runs on Spark workers.
 
-## SearchDocuments Streaming Status
+```python
+from collections.abc import Iterator
+from datetime import timedelta
 
-SearchDocuments declares streaming inputs but remains `batch_only` because its current ranking, deduplication, and join
-shapes are not bounded for Structured Streaming. Its future streaming work is deferred until the compiler and Spark
-integration lanes can prove bounded ranking state, finite event-time completion, append-only output, and checkpoint
-restart. The current Search transform does not expose a caller-adoption contract or start a streaming query. See the
-retained requirements in
-[search streaming plan](../dev/planning/P08022605.SearchDocuments-structured-streaming.plan.md).
+from structure import *
+from structure.plugin.pyspark import *
+
+
+class Event(Schema):
+    account_id = string(nullable=False)
+    amount = integer(nullable=False)
+
+
+class AccountKey(Schema):
+    account_id = string(nullable=False)
+
+
+class TotalState(Schema):
+    total = integer(nullable=False)
+
+
+class AmountKey(Schema):
+    amount = integer(nullable=False)
+
+
+class AmountCount(Schema):
+    count = integer(nullable=False)
+
+
+class TotalOutput(Schema):
+    account_id = string(nullable=False)
+    total = integer(nullable=False)
+
+
+@state_processor
+class AccountTotals(StateProcessor[Event, AccountKey, TotalOutput]):
+    total: ValueState[TotalState] = value_state(ttl=timedelta(hours=1))
+    recent: ListState[Event]
+    by_amount: MapState[AmountKey, AmountCount] = map_state(name="counts_by_amount")
+
+    def on_rows(
+        self,
+        key: AccountKey,
+        rows: Iterator[Event],
+        timers: TimerContext,
+    ) -> Iterator[TotalOutput]:
+        current = self.total.get()
+        total = 0 if current is None else current.total
+        for row in rows:
+            total += row.amount
+            self.recent.append_value(row)
+            amount_key = AmountKey(amount=row.amount)
+            previous = self.by_amount.get_value(amount_key)
+            count = 1 if previous is None else previous.count + 1
+            self.by_amount.update_value(amount_key, AmountCount(count=count))
+        self.total.update(TotalState(total=total))
+        yield TotalOutput(account_id=key.account_id, total=total)
+
+
+class AccountTotalsTransform(Transform):
+    events = input(Event, streaming=True)
+    totals = output(TotalOutput)
+
+    @step(input=events, output=totals)
+    def accumulate(self, event: Event) -> TotalOutput:
+        return transform_with_state(
+            key=event.account_id,
+            processor=AccountTotals,
+            output_mode="Update",
+            time_mode="ProcessingTime",
+        )
+```
+
+- `PandasStateProcessor[Input, Key, State, Output]` uses the separate
+  `on_batches(self, key, batches, state, timers)` callback. It receives Pandas batches, a typed `ValueState[State]`,
+  and timer context, then yields Pandas output frames. The `@pandas_state_processor` decorator is an optional declaration
+  validator. Both Spark 4 state processor APIs require pandas, PyArrow, and protobuf on the driver and workers; the
+  Pandas API has the same dependencies on PySpark 4.0.
+- General Pandas, RDD, and `mapInPandas` boundaries remain unsupported because they are not part of these typed state
+  processor surfaces.
+
+### Caller-owned arbitrary-state metadata
+
+`ArbitraryStateContract` is an optional helper for application code that uses Spark's state APIs directly. It checks
+declared schemas, grouping keys, timeout and initialization choices, and checkpoint/restart assumptions. It does not
+run a processor, start a query, or migrate checkpoint data. You do not need it when using `transform_with_state(...)`.
 
 ## Compatibility
 

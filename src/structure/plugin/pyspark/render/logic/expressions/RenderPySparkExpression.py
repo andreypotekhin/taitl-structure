@@ -192,6 +192,9 @@ class RenderPySparkExpression:
 
     def _reserved(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:
         function = expression.data["function"]
+        if function == "column_transform":
+            column, body = expression.args
+            return f"{self._render(column, aliases)}.transform(lambda _column: {self._render(body, aliases)})"
         if function == "session_window":
             return f"F.session_window({self._render(expression.args[0], aliases)}, {expression.data['gap']!r})"
         if function == "array_transform":

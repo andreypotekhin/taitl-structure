@@ -22,6 +22,7 @@ from structure.plugin.pyspark.dsl.Stateful import (
     ExternalStateProcessor,
     PandasStateProcessor,
     StateProcessor,
+    ValueState,
     external_state_processor,
     pandas_state_processor,
     transform_with_state_in_pandas,
@@ -105,7 +106,11 @@ class DecoratedPandasCounter(PandasStateProcessor[Input, Key, State, Output]):
     pass
 
 
-class RowCounter(StateProcessor[Input, Key, State, Output]):
+class RowCounter(StateProcessor[Input, Key, Output]):
+    total: ValueState[State]
+
+    def on_rows(self, key, rows, timers):
+        return iter(())
     pass
 
 

@@ -261,6 +261,8 @@ narrower use cases and roadmap features.
   transformations can be checked without Structure owning lifecycle.
 - + As a streaming developer, I can use typed row `transform_with_state(...)` on ordinary PySpark 4.1 with admitted
   output and time modes so stateful transforms compile while I retain ownership of the query and checkpoint lifecycle.
+- + As a streaming developer, I can process each key's batches with typed Pandas
+  `transform_with_state_in_pandas(...)` on ordinary PySpark 4.0 and 4.1 while retaining query and checkpoint ownership.
 - + As a developer, I can declare typed Pandas group state with input, key, state, and output Schemas so that legacy
   PySpark `applyInPandasWithState` is available on ordinary PySpark 3.5 and later without changing query ownership.
 - + As a developer, I receive an early diagnostic when a composed streaming output reaches an undeclared or explicitly

@@ -433,7 +433,13 @@ class MapPySparkStep:
                                 key_schema=state_plan.key_schema,
                                 state_schema=typed_state_schema,
                                 state_schemas=(
-                                    (cast(type[Schema], typed_state_schema),)
+                                    tuple(
+                                        schema
+                                        for attribute in state_plan.state_attributes
+                                        for schema in ((attribute.key_schema, attribute.value_schema) if attribute.key_schema is not None else (attribute.value_schema,))
+                                    )
+                                    if state_plan.interface == "row" and state_plan.processor_mode == "typed"
+                                    else (cast(type[Schema], typed_state_schema),)
                                     if state_plan.processor_mode == "typed"
                                     else state_plan.processor.state_schemas
                                 ),
@@ -443,6 +449,8 @@ class MapPySparkStep:
                                 interface=state_plan.interface,
                                 event_time_column=state_plan.event_time_column,
                                 initial_state=state_plan.initial_state,
+                                state_attributes=state_plan.state_attributes,
+                                initial_schema=state_plan.initial_schema,
                             )
                         ),
                         operation,

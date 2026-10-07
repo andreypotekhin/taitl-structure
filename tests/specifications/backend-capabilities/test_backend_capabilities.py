@@ -17,6 +17,7 @@ from structure.core.target.capabilities.api import (
 )
 from structure.plugin.pyspark.capabilities.model.PySparkCapabilities import PySparkCapabilities
 from structure.plugin.pyspark.compiler.logic.maps.MapPySparkExpression import MapPySparkExpression
+from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.expressions import try_url_decode
 
 
@@ -503,6 +504,32 @@ def test_try_url_decode_requires_the_pyspark_4_profile() -> None:
     assert PySparkCapabilities(target_profile=">=4.2,<4.3").supports(requirement).supported
     with pytest.raises(BackendCapabilityError):
         MapPySparkExpression().map(try_url_decode("x"), capabilities=PySparkCapabilities())
+
+
+def test_column_transform_requires_ordinary_pyspark_41() -> None:
+    requirement = CapabilityRequirement(group="expression", name="column_transform")
+
+    assert not PySparkCapabilities().supports(requirement).supported
+    assert not PySparkCapabilities(target_profile=">=4.0,<4.1").supports(requirement).supported
+    assert PySparkCapabilities(target_profile=">=4.1,<4.2").supports(requirement).supported
+    assert not PySparkCapabilities(
+        target_profile=">=4.1,<4.2", target_variant="spark-connect"
+    ).supports(requirement).supported
+    with pytest.raises(BackendCapabilityError) as raised:
+        MapPySparkExpression().map(
+            Expression(
+                kind="transform_expression",
+                type=None,
+                data={
+                    "function": "column_transform",
+                    "capability_group": "expression",
+                    "capability_name": "column_transform",
+                },
+            ),
+            capabilities=PySparkCapabilities(),
+        )
+    assert ">=4.1,<4.2" in raised.value.diagnostic.use
+    assert "target_variant = \"ordinary\"" in raised.value.diagnostic.use
     assert MapPySparkExpression().map(
         try_url_decode("x"), capabilities=PySparkCapabilities(target_profile=">=4.0,<4.1")
     ).data["function"] == "try_url_decode"

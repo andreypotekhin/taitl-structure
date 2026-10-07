@@ -212,9 +212,9 @@ The caller-owned metadata guard is `examples.streams.adoption.ArbitraryStateCont
 contract completeness and timeout consistency only; it does not start a query, lower a state processor, or promote this
 ledger row. The contract remains `design-gated` until a separate runtime and live restart lane exist.
 
-At the V9 closeout this model was a design only. V11 superseded that status for row `transformWithState`; the broader
-typed state model remains future work as specified in the linked V11 typed parity design. This historical V9 contract
-does not describe the currently supported row API or promote either Pandas interface.
+At the V9 closeout this model was a design only. V11 superseded that status for row `transformWithState` and implemented
+the typed named Value/List/Map state model, ProcessingTime TTL, and paired initial-state callback. This historical V9
+contract does not describe the currently supported row API or promote either Pandas interface.
 
 ## Acceptance
 

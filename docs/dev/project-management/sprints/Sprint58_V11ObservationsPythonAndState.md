@@ -23,9 +23,9 @@ API; no gated state or worker-Python API is generated accidentally.
 - Record `foreach` and `foreachBatch` as caller-owned handoffs, including writer construction, callback retries,
   checkpointing, and idempotence; generated Structure code must not start either lifecycle.
 - Add streaming classification and caller-owned examples where needed.
-- The current typed row subset uses one `ValueState` and callback-scoped timer values. Additional state types, TTL,
-  typed initial state, processor cleanup, and state-schema evolution are specified in the typed parity design and await
-  a separate implementation plan.
+- At Sprint58, typed row state used one `ValueState` and callback-scoped timer values. The subsequent typed parity
+  continuation implemented named Value/List/Map state, ProcessingTime TTL, and typed initial state; processor cleanup
+  and automatic state-schema evolution remain outside the typed contract.
 
 ## Acceptance
 

@@ -37,6 +37,7 @@ PYSPARK_4_0_CAPABILITIES = frozenset(
 )
 PYSPARK_4_0_STREAMING_CAPABILITIES = frozenset({("streaming", "transform_with_state_in_pandas")})
 PYSPARK_4_1_CAPABILITIES = frozenset({("streaming", "transform_with_state")})
+PYSPARK_4_1_ORDINARY_CAPABILITIES = frozenset({("expression", "column_transform")})
 LEGACY_PANDAS_STATE_PROFILES = frozenset({">=3.5,<4.1", ">=3.5,<4.0", ">=4.0,<4.1", ">=4.1,<4.2"})
 LEGACY_PANDAS_STATE_CAPABILITY = frozenset({("streaming", "apply_in_pandas_with_state")})
 PYSPARK_4_2_CAPABILITIES = frozenset({("expression", "is_valid_variant")})
@@ -381,7 +382,7 @@ class PySparkCapabilities:
                 base_capabilities | PYSPARK_4_CAPABILITIES | PYSPARK_4_0_CAPABILITIES | PYSPARK_4_1_CAPABILITIES
             )
             if self.id.variant == "ordinary":
-                base_capabilities |= PYSPARK_4_0_STREAMING_CAPABILITIES
+                base_capabilities |= PYSPARK_4_0_STREAMING_CAPABILITIES | PYSPARK_4_1_ORDINARY_CAPABILITIES
         elif target_profile == ">=4.2,<4.3":
             base_capabilities = base_capabilities | PYSPARK_4_CAPABILITIES | PYSPARK_4_2_CAPABILITIES
         if self.id.variant == "ordinary" and target_profile in LEGACY_PANDAS_STATE_PROFILES:
@@ -420,6 +421,21 @@ class PySparkCapabilities:
 
         if requirement.key() in self.supported:
             return CapabilityDecision.ok(backend=self.id, requirement=requirement)
+
+        if requirement.key() == ("expression", "column_transform"):
+            return CapabilityDecision.unsupported_capability(
+                backend=self.id,
+                requirement=requirement,
+                rationale=(
+                    f"Column.transform requires ordinary PySpark >=4.1,<4.2; configured target is "
+                    f"{self.id.target!r} with variant {self.id.variant!r}."
+                ),
+                use=(
+                    'Set target_profile = ">=4.1,<4.2" and target_variant = "ordinary". '
+                    "See docs/compatibility/Expressions.compat.md."
+                ),
+                required_target=">=4.1,<4.2",
+            )
 
         if requirement.group == "delta":
             return CapabilityDecision.unsupported_capability(

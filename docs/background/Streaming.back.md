@@ -204,6 +204,18 @@ Bounded stream-stream joins require both inputs to declare `streaming=True`, wat
 bound such as `event_time_between(left_time, right_time, upper=...)`. Structure admits only shapes whose state and
 retention policy are compiler-visible.
 
+### Row `transformWithState`
+
+For per-key state that cannot be expressed as an aggregation, use `transform_with_state(...)`. Its typed processor
+declares Value, List, and Map state handles as attributes and implements `on_rows(...)`, with optional `on_timer(...)`
+and paired `on_initial_state(...)` callbacks. Structure validates the schemas around those callbacks and adapts Spark's
+state handles; callback code remains ordinary Python. Use `external_state_processor(...)` when the processor needs
+Python constructs or Spark features outside the typed interface.
+
+Spark owns the persisted state and the application owns the query and checkpoint. State declaration changes can make
+an existing checkpoint incompatible; Structure does not migrate state. This adapter targets ordinary PySpark 4.1.
+See the [Streaming reference](../reference/Streaming.ref.md#use-state-processors) for a complete example and API details.
+
 ### Watermarked Stream-Stream Join
 
 Use a bounded stream-stream join when two event-time relations must be correlated while Spark can retain only a finite
@@ -332,8 +344,8 @@ and analytic-window helpers such as `latest_by(...)`, ranking, lag/lead, rolling
 batch-only unless a dedicated bounded-state contract admits the exact shape.
 
 Finite grouped `first_value(...)` and `last_value(...)` may be used inside a watermarked event-time aggregate window;
-that is not a general streaming reinterpretation of selected-row or analytic-window helpers. Streaming state remains a
-target policy, not a hidden Structure-owned store.
+that is not a general streaming reinterpretation of selected-row or analytic-window helpers. For state processors,
+Structure adapts Spark-owned state but does not own checkpoint recovery or migrate persisted values.
 
 The implementation must keep streaming-specific state, output-mode, and retention decisions in capability and
 compatibility metadata. It must not create sources, sinks, triggers, checkpoints, query lifecycle, or recovery logic.
@@ -463,7 +475,7 @@ be noncallable and expose `process(Row)`, with optional `open(partition_id, epoc
 caller starts the added sink as a second `StreamingQuery`, using a distinct checkpoint from any existing output query.
 The queries can progress, fail, and restart independently. Task retries and checkpoint restarts can repeat external
 writes; `close` is not guaranteed after worker failure. The caller owns idempotence, credentials, handles, failure
-observation, and recovery. The tested live profiles are classic PySpark 3.5 and 4.0; Spark Connect is unclaimed.
+observation, and recovery. The tested live profiles are classic PySpark 3.5, 4.0, and 4.1; Spark Connect is unclaimed.
 
 
 ## Compile-Time And IR Contract
@@ -501,7 +513,8 @@ The following remain batch-only or deferred for streaming inputs:
 - Pandas UDFs, RDD operations, `mapInPandas`, `foreachPartition`, and local Spark actions;
 - arbitrary hooks without an explicit streaming-safe declaration;
 - generated lifecycle calls and direct PySpark lifecycle or callback calls inside transform methods;
-- custom streaming sinks outside the declared `sink(...)`/`foreach(...)` handoff and arbitrary state APIs.
+- custom streaming sinks outside the declared `sink(...)`/`foreach(...)` handoffs;
+- state processor APIs outside the typed row `transform_with_state(...)` contract or its explicit native processor path.
 
 Finite grouped `first_value(...)` and `last_value(...)` remain possible inside a watermarked event-time window. They are
 aggregate expressions, not a streaming reinterpretation of batch selected-row or analytic-window helpers.

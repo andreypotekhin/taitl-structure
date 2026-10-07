@@ -343,6 +343,14 @@ class RenderPySparkExplainReport:
                 key_names.append(str(key_data.get("name", key_data.get("field", "expression"))))
             key_name = ",".join(key_names)
             state_names = "|".join(schema.__name__ for schema in state.state_schemas)
+            if state.processor_mode == "typed" and state.interface == "row":
+                state_names = "|".join(
+                    f"{attribute.name}:{attribute.kind}["
+                    f"{attribute.key_schema.__name__ + ',' if attribute.key_schema else ''}"
+                    f"{attribute.value_schema.__name__}]"
+                    f"{f' ttl={attribute.ttl_ms}ms' if attribute.ttl_ms is not None else ''}"
+                    for attribute in state.state_attributes
+                ) or "none"
             operation_name = (
                 "transform_with_state_in_pandas" if state.interface == "pandas" else "transform_with_state"
             )

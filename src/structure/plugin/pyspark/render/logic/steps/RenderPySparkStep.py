@@ -677,6 +677,16 @@ class RenderPySparkStep:
                     if state.state_schema is None
                     else repr(f"{state.state_schema.__module__}:{state.state_schema.__qualname__}")
                 )
+                state_attribute_refs = "()"
+                if state.state_attributes:
+                    state_attribute_refs = "(" + ", ".join(
+                        "StateAttribute("
+                        f"{attribute.attribute_name!r}, {attribute.name!r}, {attribute.kind!r}, "
+                        f"{f'{attribute.value_schema.__module__}:{attribute.value_schema.__qualname__}'!r}, "
+                        f"{None if attribute.key_schema is None else f'{attribute.key_schema.__module__}:{attribute.key_schema.__qualname__}'!r}, "
+                        f"{attribute.ttl_ms!r})"
+                        for attribute in state.state_attributes
+                    ) + ("," if len(state.state_attributes) == 1 else "") + ")"
                 key_expression = (
                     "(" + ", ".join(
                         render_pyspark_expression(key, scope_aliases=self._scope_aliases(step)) for key in state.key
@@ -702,7 +712,8 @@ class RenderPySparkStep:
                     f"output_mode={state.output_mode!r}, time_mode={state.time_mode!r}, "
                     f"interface={state.interface!r}, "
                     f"target_profile={backend_target!r}, event_time_column={state.event_time_column!r}, "
-                    f"initial_state={initial_state})"
+                    f"initial_state={initial_state}, state_attributes={state_attribute_refs}, "
+                    f"initial_schema={None if state.initial_schema is None else repr(f'{state.initial_schema.__module__}:{state.initial_schema.__qualname__}')})"
                 )
             if operation.kind == "apply_in_pandas_with_state" and operation.legacy_pandas_state is not None:
                 legacy_state = operation.legacy_pandas_state

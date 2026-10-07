@@ -117,13 +117,15 @@ class CustomerTotals(PandasStateProcessor[Event, CustomerKey, CustomerTotal, Tot
 
 
 @state_processor
-class RowCustomerTotals(StateProcessor[Event, CustomerKey, CustomerTotal, TotalOutput]):
-    def on_rows(self, key, rows, state: ValueState[CustomerTotal], timers):
-        current = state.get()
+class RowCustomerTotals(StateProcessor[Event, CustomerKey, TotalOutput]):
+    total_state: ValueState[CustomerTotal]
+
+    def on_rows(self, key, rows, timers):
+        current = self.total_state.get()
         total = 0 if current is None else current.total
         for row in rows:
             total += row.amount
-        state.update(CustomerTotal(total=total))
+        self.total_state.update(CustomerTotal(total=total))
         yield TotalOutput(customer_id=key.customer_id, total=total)
 
 

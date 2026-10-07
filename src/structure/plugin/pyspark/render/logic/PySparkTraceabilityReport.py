@@ -127,6 +127,17 @@ class PySparkTraceabilityReport:
                     "output_mode": state.output_mode,
                     "output_schema": state.output_schema.__name__,
                     "state_schemas": [schema.__name__ for schema in state.state_schemas],
+                    "state_attributes": [
+                        {
+                            "attribute": attribute.attribute_name,
+                            "name": attribute.name,
+                            "kind": attribute.kind,
+                            "key_schema": None if attribute.key_schema is None else attribute.key_schema.__name__,
+                            "value_schema": attribute.value_schema.__name__,
+                            "ttl_ms": attribute.ttl_ms,
+                        }
+                        for attribute in state.state_attributes
+                    ],
                     "time_mode": state.time_mode,
                 }
                 for state in stateful

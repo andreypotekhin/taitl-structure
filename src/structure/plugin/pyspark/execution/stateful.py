@@ -4,13 +4,17 @@ from __future__ import annotations
 
 from importlib import import_module
 from inspect import signature
+from typing import Any, cast
 
 from structure import Schema
 from structure.plugin.pyspark.dsl.Stateful import (
     ExternalPandasStateFunction,
     ExternalStateProcessor,
+    ListState,
+    MapState,
     PandasGroupState,
     PandasGroupStateProcessor,
+    StateAttribute,
     Timer,
     TimerContext,
     ValueState,
@@ -36,6 +40,8 @@ def apply_stateful_transform(
     target_profile: str,
     event_time_column: str | None = None,
     initial_state=None,
+    state_attributes: tuple[StateAttribute, ...] = (),
+    initial_schema: type[Schema] | None = None,
 ):
     """Apply Spark's profile-specific TransformWithState Python API."""
 
@@ -44,6 +50,30 @@ def apply_stateful_transform(
     state_schema = None if state_schema is None else _resolve_type(state_schema)
     output_schema = _resolve_type(output_schema)
     processor = _resolve_object(processor)
+    state_attributes = tuple(
+        StateAttribute(
+            attribute.attribute_name,
+            attribute.name,
+            attribute.kind,
+            _resolve_type(attribute.value_schema),
+            None if attribute.key_schema is None else _resolve_type(attribute.key_schema),
+            attribute.ttl_ms,
+        )
+        if isinstance(attribute, StateAttribute)
+        else StateAttribute(
+            attribute[0],
+            attribute[1],
+            attribute[2],
+            _resolve_type(attribute[3]),
+            None if attribute[4] is None else _resolve_type(attribute[4]),
+            attribute[5],
+        )
+        for attribute in state_attributes
+    )
+    initial_schema = None if initial_schema is None else _resolve_type(initial_schema)
+    if interface == "row" and processor_mode == "typed":
+        state_attributes = state_attributes or getattr(processor, "__structure_state_attributes__", ())
+        initial_schema = initial_schema or getattr(processor, "__structure_initial_schema__", None)
     if interface not in {"row", "pandas"}:
         raise ValueError(f"Unknown state processor interface {interface!r}.")
     if interface == "row" and target_profile != ">=4.1,<4.2":
@@ -68,6 +98,9 @@ def apply_stateful_transform(
         output_schema=output_schema,
         processor_mode=processor_mode,
         interface=interface,
+        state_attributes=state_attributes,
+        initial_schema=initial_schema,
+        time_mode=time_mode,
     )
     keys = key if isinstance(key, tuple) else (key,)
     grouped = frame.groupBy(*keys)
@@ -218,13 +251,26 @@ def _processor_instance(
     output_schema,
     processor_mode: str,
     interface: str,
+    state_attributes: tuple[StateAttribute, ...] = (),
+    initial_schema: type[Schema] | None = None,
+    time_mode: str = "None",
 ):
     if isinstance(processor, ExternalStateProcessor):
         return processor.processor()
     if processor_mode == "native":
         return processor()
+    if interface == "row":
+        return _row_processor_instance(
+            processor,
+            input_schema=input_schema,
+            key_schema=key_schema,
+            output_schema=output_schema,
+            state_attributes=state_attributes,
+            initial_schema=initial_schema,
+            time_mode=time_mode,
+        )
     if state_schema is None:
-        raise TypeError("Typed state processor is missing its ValueState schema.")
+        raise TypeError("Typed Pandas state processor is missing its state schema.")
     _validate_typed_callbacks(processor, interface)
     from pyspark.sql import Row
     from pyspark.sql.streaming.stateful_processor import StatefulProcessor
@@ -239,20 +285,11 @@ def _processor_instance(
             wrapped_key = _schema_instance(key_schema, key)
             value_state: ValueState[Schema] = ValueState(self._state, state_schema)
             timers = TimerContext(self._handle, timerValues)
-            if interface == "row":
-                values = self._user.on_rows(
-                    wrapped_key,
-                    (_schema_instance(input_schema, row) for row in rows),
-                    value_state,
-                    timers,
-                )
-                yield from _output_rows(values, output_schema=output_schema, row_type=Row)
-            else:
-                yield from _output_pandas_frames(
-                    self._user.on_batches(wrapped_key, rows, value_state, timers),
-                    output_schema,
-                    callback_name="on_batches",
-                )
+            yield from _output_pandas_frames(
+                self._user.on_batches(wrapped_key, rows, value_state, timers),
+                output_schema,
+                callback_name="on_batches",
+            )
 
         def handleExpiredTimer(self, key, timerValues, expiredTimerInfo):
             callback = getattr(self._user, "on_timer", None)
@@ -265,15 +302,99 @@ def _processor_instance(
                 ValueState(self._state, state_schema),
                 timers,
             )
-            if interface == "row":
-                yield from _output_rows(values, output_schema=output_schema, row_type=Row)
-            else:
-                yield from _output_pandas_frames(values, output_schema, callback_name="on_timer")
+            yield from _output_pandas_frames(values, output_schema, callback_name="on_timer")
 
     return StructureStateProcessorAdapter()
 
 
+def _row_processor_instance(
+    processor,
+    *,
+    input_schema,
+    key_schema,
+    output_schema,
+    state_attributes: tuple[StateAttribute, ...],
+    initial_schema: type[Schema] | None,
+    time_mode: str,
+):
+    _validate_typed_callbacks(processor, "row")
+    from pyspark.sql import Row
+    from pyspark.sql.streaming.stateful_processor import StatefulProcessor
+
+    class StructureStateProcessorAdapter(StatefulProcessor):
+        def init(self, handle) -> None:
+            self._handle = handle
+            self._user = processor()
+            for attribute in state_attributes:
+                ttl = attribute.ttl_ms
+                if ttl is not None and time_mode != "ProcessingTime":
+                    raise ValueError("State TTL requires time_mode='ProcessingTime'.")
+                if attribute.kind == "value":
+                    spark_handle = _create_state_handle(handle, "getValueState", attribute, attribute.value_schema)
+                    wrapper: Any = ValueState(spark_handle, attribute.value_schema)
+                elif attribute.kind == "list":
+                    spark_handle = _create_state_handle(handle, "getListState", attribute, attribute.value_schema)
+                    wrapper = ListState(spark_handle, attribute.value_schema)
+                else:
+                    assert attribute.key_schema is not None
+                    spark_handle = handle.getMapState(
+                        attribute.name,
+                        _spark_schema(attribute.key_schema),
+                        _spark_schema(attribute.value_schema),
+                        **({} if ttl is None else {"ttlDurationMs": ttl}),
+                    )
+                    wrapper = MapState(spark_handle, attribute.key_schema, attribute.value_schema)
+                setattr(self._user, attribute.attribute_name, wrapper)
+
+        def handleInputRows(self, key, rows, timerValues):
+            values = self._user.on_rows(
+                _schema_instance(key_schema, key),
+                (_schema_instance(input_schema, row) for row in rows),
+                TimerContext(self._handle, timerValues),
+            )
+            yield from _output_rows(values, output_schema=output_schema, row_type=Row)
+
+        def handleExpiredTimer(self, key, timerValues, expiredTimerInfo):
+            callback = getattr(self._user, "on_timer", None)
+            if callback is None:
+                return
+            values = callback(
+                _schema_instance(key_schema, key),
+                Timer(expiredTimerInfo.getExpiryTimeInMs()),
+                TimerContext(self._handle, timerValues),
+            )
+            if values is not None:
+                yield from _output_rows(values, output_schema=output_schema, row_type=Row)
+
+        def handleInitialState(self, key, initial_rows, timerValues):
+            callback = getattr(self._user, "on_initial_state", None)
+            if callback is None:
+                return
+            if initial_schema is None:
+                raise TypeError("Typed initial-state callback is missing its Structure Schema.")
+            callback(
+                _schema_instance(key_schema, key),
+                _schema_instance(initial_schema, initial_rows),
+                TimerContext(self._handle, timerValues),
+            )
+
+    return StructureStateProcessorAdapter()
+
+
+def _create_state_handle(handle, method_name: str, attribute: StateAttribute, schema: type[Schema]):
+    method = getattr(handle, method_name)
+    options = {} if attribute.ttl_ms is None else {"ttlDurationMs": attribute.ttl_ms}
+    return method(attribute.name, _spark_schema(schema), **options)
+
+
 def _validate_typed_callbacks(processor: type, interface: str) -> None:
+    if interface == "row":
+        # The decorator performs the same check during compilation. Keep this
+        # runtime guard for generated modules whose class may have changed.
+        from structure.plugin.pyspark.dsl.Stateful import _validate_typed_callbacks as validate
+
+        validate(processor, cast(tuple[StateAttribute, ...], getattr(processor, "__structure_state_attributes__", ())))
+        return
     input_callback = "on_rows" if interface == "row" else "on_batches"
     callbacks = ((input_callback, True), ("on_timer", False))
     for name, required in callbacks:

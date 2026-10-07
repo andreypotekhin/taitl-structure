@@ -2080,6 +2080,23 @@ def arr_transform(value: object, function: Callable[..., object]) -> Expression:
     )
 
 
+def _column_transform(value: object, function: Callable[..., object]) -> Expression:
+    call = "Column.transform(...)"
+    argument = literal(value)
+    arity = _callback_arity(call, function)
+    if arity != 1:
+        raise TypeError(f"{call} callback must declare exactly one required positional parameter")
+    body = _callback_expression(call, function, argument)
+    return _reserved_expression(
+        "column_transform",
+        group="expression",
+        name="column_transform",
+        type=body.type,
+        nullable=body.nullable,
+        args=(argument, body),
+    )
+
+
 @overload
 def arr_filter(value: object, function: Callable[[Expression], object]) -> Expression: ...
 
@@ -3086,6 +3103,11 @@ def map_from_entries(value: object) -> Expression:
 
 def _callback_arity(call: str, function: Callable[..., object]) -> int:
     message = f"{call} callback must declare exactly one or two required positional parameters"
+    owner = getattr(function, "__self__", None)
+    method = getattr(function, "__func__", None)
+    wrapped = getattr(owner, "function", None)
+    if getattr(method, "__name__", None) == "__call__" and callable(wrapped):
+        function = wrapped
     try:
         parameters = tuple(signature(function).parameters.values())
     except (TypeError, ValueError) as error:

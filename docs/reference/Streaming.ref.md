@@ -380,7 +380,7 @@ guard does not impose a hard within-batch cap. `prefer_spark` uses an active bou
 otherwise its fallback is a declaration and Structure warns that runtime memory enforcement is absent.
 
 This does not admit reversed order, a third stateful operation, joins, arbitrary operators, or either state processor.
-Spark Connect and PySpark 4.1 are not claimed because this pair has no live evidence on those profiles.
+This pair is supported on ordinary PySpark 3.5 and 4.0; Spark Connect and PySpark 4.1 are not supported.
 
 ## Join a stream to static reference data
 
@@ -598,52 +598,109 @@ selects its plain callback branch instead of `process/open/close`. For batch out
 `open` or `close`, so a batch writer that defines those methods is rejected. The `row` passed to `process` is a
 `pyspark.sql.Row`, not an instance of the Structure `Alert` schema.
 
-## Use arbitrary-state processor APIs
+## Use state processors
 
 Row `transform_with_state(...)` is supported on ordinary PySpark `>=4.1,<4.2`. It supports `Append` and `Update`
-output modes and `None`, `ProcessingTime`, and `EventTime` time modes in their valid combinations. Online and generated
-evidence covers composite keys, processing-time and event-time timers, and same-checkpoint restart. `Complete` is
-rejected during compilation. The typed Structure processor exposes one `ValueState`; use
-`external_state_processor(...)` when the processor needs Python constructs or native PySpark features outside that
-typed subset. PySpark 4.1 requires pandas, PyArrow, and protobuf on the driver and workers. Spark Connect and PySpark
-4.2 are not claimed. The caller still owns the query, sink, trigger, checkpoint, and restart policy.
+output modes and `None`, `ProcessingTime`, and `EventTime` time modes in their valid combinations. The typed API uses
+three processor schemas and named `ValueState`, `ListState`, and `MapState` attributes. State handles are constructed
+in Spark's `init` hook and accessed through `self`; `on_rows`, `on_timer`, and optional `on_initial_state` callbacks
+receive no state-handle parameter. Factories can set a persisted name or a positive whole-millisecond TTL. TTL requires
+`ProcessingTime`. Restart from the same checkpoint when declarations have not changed; changing a state's name, kind,
+TTL, or Schema may make that checkpoint incompatible. `Complete` is rejected during compilation. Use
+`external_state_processor(...)`
+when the processor needs Python constructs or native PySpark features outside the typed contract. PySpark 4.1 requires
+pandas, PyArrow, and protobuf on the driver and workers. This API supports ordinary PySpark 4.1; it does not support
+Spark Connect or PySpark 4.2. The caller owns the query, sink, trigger, checkpoint, and restart policy. Structure does
+not migrate persisted state, so use a new checkpoint after changing state declarations.
 
-The current typed row API uses one state Schema in its processor base and passes the typed handle to each callback:
+Declare typed states on the processor class. Attribute names become persisted state names unless a factory overrides
+the name:
 
 ```python
+from collections.abc import Iterator
+from datetime import timedelta
+
+from structure import *
+from structure.plugin.pyspark import *
+
+
+class Event(Schema):
+    account_id = string(nullable=False)
+    amount = integer(nullable=False)
+
+
+class CustomerKey(Schema):
+    account_id = string(nullable=False)
+
+
+class CustomerTotal(Schema):
+    total = integer(nullable=False)
+
+
+class TotalOutput(Schema):
+    account_id = string(nullable=False)
+    total = integer(nullable=False)
+
+
 @state_processor
-class CustomerTotals(StateProcessor[Event, CustomerKey, CustomerTotal, TotalOutput]):
-    def on_rows(self, key, rows, state, timers):
-        previous = state.get()
+class CustomerTotals(StateProcessor[Event, CustomerKey, TotalOutput]):
+    total: ValueState[CustomerTotal]
+    recent: ListState[Event] = list_state(ttl=timedelta(hours=2))
+
+    def on_rows(
+        self,
+        key: CustomerKey,
+        rows: Iterator[Event],
+        timers: TimerContext,
+    ) -> Iterator[TotalOutput]:
+        previous = self.total.get()
         total = 0 if previous is None else previous.total
         for row in rows:
             total += row.amount
-        state.update(CustomerTotal(total=total))
-        yield TotalOutput(customer_id=key.customer_id, total=total)
+            self.recent.append_value(row)
+        self.total.update(CustomerTotal(total=total))
+        yield TotalOutput(account_id=key.account_id, total=total)
 
 
-return transform_with_state(
-    key=event.customer_id,
-    processor=CustomerTotals,
-    output_mode="Update",
-    time_mode="ProcessingTime",
-)
+class CustomerTotalsTransform(Transform):
+    events = input(Event, streaming=True)
+    totals = output(TotalOutput)
+
+    @step(input=events, output=totals)
+    def accumulate(self, event: Event) -> TotalOutput:
+        return transform_with_state(
+            key=event.account_id,
+            processor=CustomerTotals,
+            output_mode="Update",
+            time_mode="ProcessingTime",
+        )
 ```
 
-The [typed parity design](../dev/design/V11TransformWithStateTypedParity.design.md) describes a future breaking API
-with named state attributes, list/map state, TTL, and typed initial state. Those declarations are not implemented yet.
-The [row admission plan](../dev/planning/past/P10062603.V11-transform-with-state-admission-and-typed-parity.plan.md)
-records the admitted runtime evidence.
+`ValueState` supports `exists()`, `get()`, `update(value)`, and `clear()`. `ListState` adds lazy `get()`, `put(values)`,
+`append_value(value)`, and `append_list(values)`. `MapState` provides `get_value(key)`, `contains_key(key)`,
+`update_value(key, value)`, lazy `iterator()`, `keys()`, `values()`, `remove_key(key)`, and `clear()`. Every write checks
+the declared Structure Schema. Factories `value_state(...)`, `list_state(...)`, and `map_state(...)` accept optional
+`name=` and `ttl=datetime.timedelta(...)`. A typed initial-state callback accepts one initial Structure row per key;
+the callback and operation's `initial_state=` relation must be supplied together. State handles are unavailable inside
+the user's `__init__`; use that method only for ordinary processor configuration. The
+[compatibility ledger](../compatibility/Streaming.compat.md) lists the supported PySpark profile and operation modes.
 
-Pandas `transform_with_state_in_pandas(...)` remains design-gated on ordinary PySpark 4.0 and 4.1 because the complete
-4.0 integration lane has not completed. Feature-specific checks pass on both profiles; the canonical 4.1 lane passes,
-including the 4.1 row/Pandas differential. Both pinned runtimes also prove typed processing/event timers, native initial
-state, Value/List/Map state, TTL expiry, zero/multiple outputs, and the tested native checkpoint evolution cases. This
-is a separate API and checkpoint contract. Spark and the caller control native state and checkpoint schema evolution;
-Structure does not promise migration. The runtime requires pandas, PyArrow, and protobuf on the driver and workers.
-`apply_in_pandas_with_state(...)` is a separate legacy state operation for ordinary PySpark 3.5–4.1; accumulation and
-same-checkpoint restart are evidenced on the three pinned ordinary profiles, while timeout and zero/multiple-output
-coverage remains design-gated. It supports a typed `PandasGroupStateProcessor`
+### Caller-owned arbitrary-state metadata
+
+`ArbitraryStateContract` is an optional helper for application code that uses Spark's state APIs directly. It checks
+declared schemas, grouping keys, timeout and initialization choices, and checkpoint/restart assumptions. It does not
+run a processor, start a query, or migrate checkpoint data. You do not need it when using
+`transform_with_state(...)`.
+
+Pandas `transform_with_state_in_pandas(...)` is a separate API. Structure does not currently support it on ordinary
+PySpark 4.0 or 4.1. Its typed processor subclasses `PandasStateProcessor[Input, Key, State, Output]` and implements
+`on_batches(self, key, batches, state, timers)`. The callback receives Pandas batches, a typed `ValueState[State]`, and
+timer context, then yields Pandas output frames.
+The runtime requires pandas, PyArrow, and protobuf on the driver and workers. Spark and the caller control its native
+state and checkpoint evolution; Structure does not migrate persisted state.
+
+`apply_in_pandas_with_state(...)` is a separate legacy state operation for ordinary PySpark 3.5–4.1. It supports a
+typed `PandasGroupStateProcessor`
 or an importable native callback, with declared input, key, state, and output schemas. The caller still owns the query,
 sink, trigger, checkpoint, and restart policy. Its legacy state format is not promised compatible with either Spark 4
 state processor API. Spark's `mapGroupsWithState` and `flatMapGroupsWithState` are typed Dataset APIs without a PySpark
@@ -739,37 +796,8 @@ Use a caller-owned checkpoint location and keep it stable when restarting the sa
 portable between `applyInPandasWithState`, `transformWithStateInPandas`, and `transformWithState`. If the driver reports
 missing pandas or PyArrow, install compatible versions on both the driver and every executor before starting the
 query. Timeout delivery depends on later streaming triggers and is not an exact wall-clock deadline.
-`ArbitraryStateContract` records the typed state boundary, timeout policy, checkpoint identity, and restart policy for
-caller-owned state code; it does not implement a processor runtime:
-
-Row `StateProcessor` callbacks receive a `TimerContext`. It manages timer registration, deletion, and listing, and
-exposes `current_processing_time_ms` and `current_watermark_ms` for the current callback. The watermark property requires
-a watermark earlier in the streaming plan. The supported row contract provides one `ValueState`; use an opaque native
-processor for Spark's additional state types, TTL, or initial-state callback. Row-based `transform_with_state(...)` is
-supported on ordinary PySpark 4.1 for Append/Update and None/ProcessingTime/EventTime. The Pandas processor families
-remain separately design-gated. Input, key, state, and output schemas are resolved from specialized processor bases,
-including intermediate bases; the matching state decorators remain optional validators. See the
-[typed state parity design](../dev/design/V11TransformWithStateTypedParity.design.md) for the future multi-state typed
-contract.
-
-```python
-state_review = {
-    "input_schema": Event,
-    "key_schema": EventKey,
-    "state_schema": EventState,
-    "output_schema": EventResult,
-    "grouping_key": ("account_id",),
-    "timeout_policy": "event_time",
-    "timeout_duration": "1 hour",
-    "checkpoint_identity": "events-state-v1",
-    "state_version": "event-state-v1",
-    "restart_policy": "same_checkpoint",
-}
-```
-
-Review that the state boundary has typed schemas, grouping keys, timeout clock and duration, target profile,
-initialization/update/removal behavior, checkpoint identity, state version, and restart behavior. This record does not
-generate a state processor, start a query, or prove recovery.
+Row `StateProcessor` callbacks receive a `TimerContext` for timer operations and current processing-time or watermark
+values. The watermark requires a watermark earlier in the streaming plan.
 
 ## Know the streaming-ineligible surface
 

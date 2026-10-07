@@ -209,6 +209,11 @@ class EvaluatePySparkExpression:
 
     def _reserved(self, expression: PySparkExpressionRecipe, *, functions, aliases, window):
         function = expression.data["function"]
+        if function == "column_transform":
+            column, body = expression.args
+            return self.evaluate(column, functions=functions, aliases=aliases, window=window).transform(
+                lambda _: self.evaluate(body, functions=functions, aliases=aliases, window=window)
+            )
         if function == "session_window":
             return functions.session_window(
                 self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window),

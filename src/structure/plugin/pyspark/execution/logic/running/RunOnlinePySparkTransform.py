@@ -537,6 +537,8 @@ class RunOnlinePySparkTransform:
                     target_profile=self._backend_target,
                     event_time_column=state.event_time_column,
                     initial_state=initial_state,
+                    state_attributes=state.state_attributes,
+                    initial_schema=state.initial_schema,
                 )
             if operation.kind == "apply_in_pandas_with_state" and operation.legacy_pandas_state is not None:
                 from structure.plugin.pyspark.execution.stateful import apply_legacy_pandas_state

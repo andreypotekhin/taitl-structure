@@ -13,9 +13,11 @@ safe to implement yet. `caller-owned-guided` means callers may use the upstream 
 
 The implementation inventory compares the PySpark 4.0 and 4.1 Python references and records every newly added or
 signature-changed row-preserving function. Deterministic numeric, string, binary, temporal, and collection functions
-with explicit scalar input/output types are candidates for `supported`. `Column.transform` is a candidate for a typed
-whole-expression transformation: the callback receives the complete symbolic expression and returns one symbolic
-expression. The result may have a different type and nullability from the input. This is distinct from array
+with explicit scalar input/output types are candidates for `supported`. `Column.transform` has a typed
+whole-expression implementation for ordinary PySpark 4.1: the callback receives the complete symbolic expression and
+returns one symbolic expression. The result may have a different type and nullability from the input. Its public status
+remains `planned` until ordinary 4.1 live online/generated evidence passes; Spark Connect remains separately gated.
+This is distinct from array
 `functions.transform`, represented by Structure's `arr_transform(...)`, whose callback receives an array element.
 Random functions such as `random`, `uniform`, `randstr`, and `uuid` require an explicit seed
 policy; without one they are `design-gated` or `streaming-ineligible` rather than silently treated as deterministic.
@@ -59,20 +61,19 @@ Dataset/Scala arbitrary-state APIs remain outside the row claim. The row API sup
 ProcessingTime, and EventTime modes in their valid combinations; Complete is rejected during compilation. Ordinary
 PySpark 4.1 online/generated evidence covers composite keys, both timer clocks, and same-checkpoint restart. The Pandas
 and legacy Pandas rows remain `design-gated` until their own profiles pass their remaining live behavior, callback,
-parity, and restart tests. The accepted future row typed-parity design is recorded in
-`V11TransformWithStateTypedParity.design.md`; this specification describes the currently implemented one-`ValueState`
-callback contract.
+parity, and restart tests. The accepted typed row contract is recorded in `V11TransformWithStateTypedParity.design.md`.
 
-In typed mode, `on_rows(key, rows, state, timers)` is required and `on_timer(key, timer, state, timers)` is optional.
+In typed row mode, `on_rows(self, key, rows, timers)` is required, `on_timer(self, key, timer, timers)` is optional,
+and `on_initial_state(self, key, initial, timers)` is optional when paired with an `initial_state=` relation.
 The callback context exposes current processing time and current watermark in milliseconds along with timer management;
 reading the watermark requires a watermarked input. Callback signatures are checked before constructing the Spark
 operator. Converted input and state values expose the declared Structure fields, and yielded values must match the
 declared output Schema, including non-null constraints. A callback may yield zero or many rows.
 
-The typed row state surface is deliberately a subset. It types one `ValueState`; the opaque native path preserves
-Spark's additional state kinds and processor methods. Typed `ListState`, `MapState`, multiple named variables, TTL,
-and typed initial state remain follow-up design items. Composite keys are supported by the current row operation. The
-Pandas and legacy families do not inherit the row family's status or evidence.
+The typed row state surface uses named `ValueState`, `ListState`, and `MapState` attributes. It includes optional TTL
+with ProcessingTime and typed initial-state callbacks paired with an initial relation. The opaque native path preserves
+Spark processor methods and Python constructs outside the typed contract. Composite keys are supported by the row
+operation. The Pandas and legacy families do not inherit the row family's status or evidence.
 Typed `close` callbacks and schema evolution are deferred because cleanup is not guaranteed after worker failure and
 checkpoint migration needs its own contract.
 

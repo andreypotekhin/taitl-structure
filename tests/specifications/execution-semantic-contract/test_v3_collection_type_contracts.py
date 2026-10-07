@@ -51,6 +51,46 @@ def test_array_aggregate_requires_a_type_stable_accumulator() -> None:
         arr_aggregate(array(2**31), 0, lambda accumulator, item: accumulator + item)
 
 
+def test_column_transform_preserves_the_symbolic_callback_result_type_and_nullability() -> None:
+    value = Expression(kind="test_value", type=types.long(), nullable=False)
+
+    result = value.transform(lambda column: column.try_cast(types.string()))
+
+    assert result.kind == "transform_expression"
+    assert result.data == {
+        "function": "column_transform",
+        "capability_group": "expression",
+        "capability_name": "column_transform",
+    }
+    assert result.type == types.string()
+    assert result.nullable is True
+    assert result.args[0] is value
+
+
+def test_column_transform_rejects_two_argument_callbacks() -> None:
+    value = Expression(kind="test_value", type=types.long(), nullable=False)
+
+    with pytest.raises(TypeError, match="callback must declare exactly one required positional parameter"):
+        value.transform(lambda column, index: column + index)  # type: ignore[arg-type,misc]
+
+
+def test_column_transform_accepts_a_bound_expression_special_helper() -> None:
+    class Helpers:
+        @special(type="expr")
+        def normalize_text(value):
+            return upper(trim(value))
+
+    value = Expression(kind="test_value", type=types.string(), nullable=True)
+
+    result = value.transform(Helpers().normalize_text)
+
+    assert result.type is not None
+    assert result.type.name == "string"
+    assert result.nullable is True
+    assert result.data is not None
+    assert result.data["function"] == "column_transform"
+
+
 def test_array_index_callbacks_expose_a_non_null_long_index_and_preserve_array_nullability() -> None:
     nullable_items = Expression(
         kind="test_nullable_items",

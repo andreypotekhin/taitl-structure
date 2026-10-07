@@ -223,23 +223,24 @@ chain, checkpoint, trigger, output mode, and lifecycle in caller code. Row-level
 the transform declares `sink(WriterClass)`, captures `foreach(returned_row, sink_parameter)`, and returns a named handoff
 for a declared final output. The caller creates the writer and attaches it using native `DataFrame.foreach` or
 `DataStreamWriter.foreach`; each streaming sink is an independent query with its own checkpoint. The generated transform
-must not include the callback or query lifecycle. Classic PySpark 3.5 and 4.0 pass batch, streaming, restart, and
+must not include the callback or query lifecycle. Classic PySpark 3.5, 4.0, and 4.1 pass batch, streaming, restart, and
 online/generated evidence; Spark Connect is unclaimed. See the [V11 row sink contract](V11RetainedV9DesignGates.spec.md#row-level-foreach).
 Structure has explicit row `transform_with_state(...)` and Pandas `transform_with_state_in_pandas(...)` compiler surfaces with typed
 and opaque-native processor modes. Row execution targets ordinary PySpark 4.1; Pandas execution targets ordinary 4.0
-and 4.1. Initial row typed/native, timer, online/generated, and restart evidence exists, while the row admission plan
-still gates support on its exact output/time-mode matrix. Pandas state/timer/restart and native-feature evidence exists
+and 4.1. Row state/timer/online/generated evidence targets the ordinary 4.1 lane. Pandas state/timer/restart and native-feature evidence exists
 on the pinned profiles, while event-time, differential, broader 4.0-lane, and schema-evolution evidence remains
 pending. The separate `apply_in_pandas_with_state(...)` legacy compiler operation targets ordinary PySpark 3.5, 4.0,
 and 4.1; accumulation and same-checkpoint restart are evidenced on all three profiles, while timeout and
 zero/multiple-output coverage remains gated. The
 `ArbitraryStateContract` validates adoption metadata and does not implement any runtime.
 
-The typed row processor requires `on_rows(key, rows, state, timers)` and permits `on_timer(key, timer, state, timers)`.
-`TimerContext` exposes timer management and callback-scoped processing time and watermark values in milliseconds. It
-converts input/state rows through their declared Schemas, validates yielded output Schemas and non-null fields, and lets
-callbacks yield zero or many output rows. The typed contract currently declares one `ValueState`; callers use an opaque
-native processor for Spark's additional state types and initial-state callback.
+The typed row processor requires `on_rows(self, key, rows, timers)` and permits `on_timer(self, key, timer, timers)` and
+`on_initial_state(self, key, initial, timers)`. It declares named Value/List/Map state attributes and supports TTL only
+in ProcessingTime. `TimerContext` exposes timer management and callback-scoped processing time and watermark values in
+milliseconds. It converts input and state rows through their declared Schemas, validates yielded output Schemas and
+non-null fields, and lets callbacks yield zero or many output rows. State identity and schemas are checkpoint-sensitive;
+Structure does not migrate persisted state. Callers use an opaque native processor for Spark features beyond the typed
+surface.
 
 ## Chained Event-Time Windows
 
