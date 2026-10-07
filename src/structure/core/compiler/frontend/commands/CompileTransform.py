@@ -412,6 +412,10 @@ class CompileTransform:
         target = steps[-1]
         inputs, outputs = self._raw_bindings(transform_class, target, metadata, member=item.name)
         hook_lanes, sources = self._raw_arguments(transform_class, inputs, outputs, lanes, member=item.name)
+        hook_outputs = tuple(
+            replace(output, schema=self._step_lane_schema(target, output.name))
+            for output in outputs
+        )
         output_lanes = tuple(result.lane for result in target.results) or (target.output_lane,)
         unknown = [declaration.name for declaration in outputs if declaration.name not in output_lanes]
         if unknown:
@@ -428,7 +432,7 @@ class CompileTransform:
             phase="raw",
             target=target.name,
             lanes=hook_lanes,
-            outputs=outputs,
+            outputs=hook_outputs,
             sources=sources,
             schema_mode=cast(SchemaMode, metadata["schema_mode"]),
             project_output=bool(metadata["project_output"]),
@@ -439,6 +443,11 @@ class CompileTransform:
             origin=TransformMemberOrigin.of(item.owner, item.name),
         )
         self._attach_after_hook(steps, hook)
+
+    @staticmethod
+    def _step_lane_schema(step: StepPlan, lane: str):
+        result = next((result for result in step.results if result.lane == lane), None)
+        return result.schema if result is not None else step.output_schema
 
     def _attach_raw_before(
         self,

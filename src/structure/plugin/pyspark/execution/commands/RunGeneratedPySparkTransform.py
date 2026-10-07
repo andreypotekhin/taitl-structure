@@ -86,17 +86,26 @@ class RunGeneratedPySparkTransform:
     def _run(self, generated_class, invocation: Transform, *, session):
         inputs = invocation._structure_bound_inputs
         from structure.plugin.pyspark.dsl.RuntimeVariables import invocation_variables
+        from structure.plugin.pyspark.execution.logic.PlanBoundary import transfer_plan_boundaries
 
         variables = invocation_variables(invocation)
         if self._options.enabled(session.config.generated_code_options, "mirror_methods"):
             arguments = dict(spark=session.spark, ctx=session.ctx, **inputs)
             if variables:
                 arguments["_structure_variables"] = variables
-            return generated_class(**arguments).run()
+            generated = generated_class(**arguments)
+            try:
+                return generated.run()
+            finally:
+                transfer_plan_boundaries(generated, session)
         arguments = dict(inputs)
         if variables:
             arguments["_structure_variables"] = variables
-        return generated_class(spark=session.spark, ctx=session.ctx).run(**arguments)
+        generated = generated_class(spark=session.spark, ctx=session.ctx)
+        try:
+            return generated.run(**arguments)
+        finally:
+            transfer_plan_boundaries(generated, session)
 
     def _result(self, plan: PySparkExecutionPlan, df) -> TransformResult:
         if len(plan.outputs) == 1 and not (plan.allow_stage_outputs and plan.stage_outputs):

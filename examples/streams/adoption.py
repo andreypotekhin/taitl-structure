@@ -37,13 +37,13 @@ class ForeachBatchSafety:
             if not value.strip():
                 raise ValueError(
                     f"FOREACH-BATCH-E0901: {name} must be a non-empty stable declaration; "
-                    "see docs/api/Streaming.api.md#caller-owned-side-effect-safety"
+                    "see docs/api/Streaming.api.md#application-controlled-side-effect-safety"
                 )
         if self.retry_policy not in {"at_least_once", "idempotent", "transactional"}:
             raise ValueError(
                 f"FOREACH-BATCH-E0902: unsupported retry_policy {self.retry_policy!r}; "
                 "use at_least_once, idempotent, or transactional; "
-                "see docs/api/Streaming.api.md#caller-owned-side-effect-safety"
+                "see docs/api/Streaming.api.md#application-controlled-side-effect-safety"
             )
 
 
@@ -87,13 +87,13 @@ class ArbitraryStateContract:
             if not isinstance(schema, type) or not issubclass(schema, Schema):
                 raise TypeError(
                     f"ARBITRARY-STATE-E0901: {name} must be a Structure Schema class; "
-                    "see docs/api/Streaming.api.md#typed-arbitrary-state-contract"
+                    "see docs/api/Streaming.api.md#caller-owned-arbitrary-state-metadata"
                 )
 
         if not self.grouping_key or any(not field.strip() for field in self.grouping_key):
             raise ValueError(
                 "ARBITRARY-STATE-E0901: grouping_key must name at least one non-empty field; "
-                "see docs/api/Streaming.api.md#typed-arbitrary-state-contract"
+                "see docs/api/Streaming.api.md#caller-owned-arbitrary-state-metadata"
             )
 
         declarations = (
@@ -108,37 +108,37 @@ class ArbitraryStateContract:
             if not value.strip():
                 raise ValueError(
                     f"ARBITRARY-STATE-E0901: {name} must be a non-empty stable declaration; "
-                    "see docs/api/Streaming.api.md#typed-arbitrary-state-contract"
+                    "see docs/api/Streaming.api.md#caller-owned-arbitrary-state-metadata"
                 )
 
         if self.timeout_policy == "none":
             if self.timeout_clock is not None or self.timeout_duration is not None:
                 raise ValueError(
                     "ARBITRARY-STATE-E0902: timeout_policy='none' cannot declare a clock or duration; "
-                    "see docs/api/Streaming.api.md#typed-arbitrary-state-contract"
+                    "see docs/api/Streaming.api.md#caller-owned-arbitrary-state-metadata"
                 )
         elif (
             self.timeout_clock != self.timeout_policy or not self.timeout_duration or not self.timeout_duration.strip()
         ):
             raise ValueError(
                 "ARBITRARY-STATE-E0902: timed state must declare a matching timeout clock and duration; "
-                "see docs/api/Streaming.api.md#typed-arbitrary-state-contract"
+                "see docs/api/Streaming.api.md#caller-owned-arbitrary-state-metadata"
             )
 
         if self.operation not in {"applyInPandasWithState", "transformWithState"}:
             raise ValueError(
                 f"ARBITRARY-STATE-E0903: unsupported operation {self.operation!r}; "
-                "see docs/api/Streaming.api.md#typed-arbitrary-state-contract"
+                "see docs/api/Streaming.api.md#caller-owned-arbitrary-state-metadata"
             )
         if self.hook_boundary not in {"caller-owned", "future-structure-hook"}:
             raise ValueError(
                 f"ARBITRARY-STATE-E0903: unsupported hook_boundary {self.hook_boundary!r}; "
-                "see docs/api/Streaming.api.md#typed-arbitrary-state-contract"
+                "see docs/api/Streaming.api.md#caller-owned-arbitrary-state-metadata"
             )
         if self.restart_policy not in {"same_checkpoint", "new_checkpoint_on_schema_change"}:
             raise ValueError(
                 f"ARBITRARY-STATE-E0903: unsupported restart_policy {self.restart_policy!r}; "
-                "see docs/api/Streaming.api.md#typed-arbitrary-state-contract"
+                "see docs/api/Streaming.api.md#caller-owned-arbitrary-state-metadata"
             )
 
 

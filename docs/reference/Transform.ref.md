@@ -552,6 +552,41 @@ Use:
 - Streaming inputs have a compatible operation path and caller-controlled lifecycle.
 - The same source can execute online or through generated code without changing meaning.
 
+## Reusable expression helpers with `Column.transform`
+
+Use `Column.transform` when a typed scalar expression needs to be wrapped or adjusted as a whole. Its callback runs
+during symbolic authoring and returns another typed expression; it does not run as a Python function for each data
+row. A named `@special(type="expr")` helper can hold reusable logic and be passed directly as the callback:
+
+```python
+from structure import Schema, Transform, input, output, special, transform
+from structure.plugin.pyspark import string, trim, upper
+
+
+class RawName(Schema):
+    name = string(nullable=False)
+
+
+class NormalizedName(Schema):
+    name = string(nullable=False)
+
+
+@transform
+class NormalizeName(Transform):
+    rows = input(RawName)
+    normalized = output(NormalizedName)
+
+    @special(type="expr")
+    def normalize_text(value):
+        return upper(trim(value))
+
+    def normalize(self, row: RawName) -> NormalizedName:
+        return NormalizedName(name=row.name.transform(self.normalize_text))
+```
+
+The helper has one expression parameter. Calling it with a Structure expression expands its body into the symbolic
+expression graph, so the same helper can also be used directly, for example `upper(trim(row.name))`.
+
 ## Reuse decision guide
 
 | Reuse need | Preferred shape |

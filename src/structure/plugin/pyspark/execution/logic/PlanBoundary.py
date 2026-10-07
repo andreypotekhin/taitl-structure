@@ -26,6 +26,13 @@ class PlanBoundaryTracker:
             for name in tuple(entry[1]):
                 self._drop(name)
 
+    def transfer(self, source, target) -> None:
+        source_entry = self._views.pop(id(source), None)
+        if source_entry is None:
+            return
+        target_entry = self._views.setdefault(id(target), (target, set()))
+        target_entry[1].update(source_entry[1])
+
     def _drop(self, name: str) -> None:
         try:
             self._spark.catalog.dropTempView(name)
@@ -47,6 +54,15 @@ def _tracker(spark) -> PlanBoundaryTracker:
 
 def apply_plan_boundary(frame, spark, owner=None):
     return _tracker(spark).apply(frame, owner=owner)
+
+
+def transfer_plan_boundaries(source, target) -> None:
+    if source is target:
+        return
+    for key, tracker in tuple(_TRACKERS.items()):
+        tracker.transfer(source, target)
+        if not tracker._views:
+            _TRACKERS.pop(key, None)
 
 
 def close_plan_boundaries(spark, owner=None) -> None:

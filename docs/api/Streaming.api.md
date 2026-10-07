@@ -84,181 +84,60 @@ catalog; the [Streaming background](../background/Streaming.back.md) explains th
 
 ## Lifecycle Boundaries
 
-Supported transform shapes include row-local projection/filter (including scalar Python UDFs), stream-static left/inner
-joins and `exists(...)` filtering, event-time and session-window aggregation, bounded dedupe, bounded inner
-stream-stream joins, and bounded left/right/full outer and semi stream-stream joins. The application controls
-`readStream`, `writeStream`, checkpoints, triggers, output-mode application, query lifecycle, and side effects.
-`foreachBatch` has application-controlled guidance through the streams adoption helper; generated Structure modules
-must not emit `foreachBatch`. A transform may declare a typed row-level sink on a final output, then return a read-only
-handoff on its result:
+Structure returns a transformed DataFrame; the application creates sources and owns writers, checkpoints, triggers,
+query start/stop, and recovery. Generated modules do not start queries or attach external sinks.
 
-```python
-from structure.plugin.pyspark import Sink
-
-
-class AlertWriter(Sink):
-    def __init__(self, destination: str) -> None:
-        self.destination = destination
-
-    def process(self, row: Row) -> None:
-        write_alert(self.destination, row)
-
-
-class PublishAlerts(Transform):
-    events = input(Event, streaming=True)
-    alerts = output(Alert)
-    publish_alerts = sink(AlertWriter)
-
-    @step(output=alerts)
-    def publish(self, event: Event, sink: AlertWriter) -> Alert:
-        alert = Alert(id=event.id)
-        foreach(alert, sink)
-        return alert
-
-
-result = PublishAlerts(events=events).run(session)
-handoff = result.publish_alerts
-assert handoff.dataframe is result.alerts
-query = handoff.dataframe.writeStream.foreach(
-    handoff.writer(destination="alerts-service")
-).option("checkpointLocation", foreach_checkpoint).start()
-```
-
-`Sink` is imported from `structure.plugin.pyspark`. Its subclasses are opaque during compilation and implement
-`process(row: Row) -> None`; no `@special(type="opaque")` decorator is needed. `foreach(row, sink)` records a binding
-to the exact row returned by the step; it does not execute the writer or start a query. The sink must resolve to a
-declared final output; intermediate rows and sink-bearing composed or staged
-transforms fail with `DSL-E0406`. The handoff keeps the writer class so the caller can supply application settings.
-Batch callers invoke `handoff.dataframe.foreach(handoff.writer(...).process)`; batch writers may not define streaming
-`open` or `close` methods. Streaming writers must be noncallable and define `process(row)`; optional `open` and `close`
-follow PySpark's partition/epoch lifecycle. The caller starts and stops each query. An added streaming sink is a second,
-independent query with its own checkpoint and progress. Retries and checkpoint restarts may repeat external writes, so
-  the caller owns idempotence, credentials, failure observation, and recovery. The supported profiles are listed in
-  the [compatibility ledger](../compatibility/Streaming.compat.md). See the [row-level foreach contract](../dev/specifications/V11RetainedV9DesignGates.spec.md#row-level-foreach),
-[Spark Streaming](../dev/specifications/SparkStreaming.spec.md), and the
-[Execution reference](../background/Execution.back.md).
+A transform may declare a row sink with `sink(WriterClass)` and `foreach(row, sink)`, or a schema-based batch sink with
+`sink(Schema)` and `foreach_batch(row, sink)`. The caller attaches the returned handoff with PySpark's `foreach(...)` or
+`foreachBatch(...)`. See the [Streaming reference](../reference/Streaming.ref.md) for the
+[batch-transform handoff](../reference/Streaming.ref.md#attach-a-batch-transform-to-a-foreachbatch-sink),
+[caller-controlled `foreachBatch`](../reference/Streaming.ref.md#attach-a-caller-controlled-foreachbatch-sink), and
+[row-level sink](../reference/Streaming.ref.md#attach-a-transform-declared-row-level-sink) examples.
 
 ## Application-Controlled Side-Effect Safety
 
-Before starting a `foreachBatch` sink, the application provides a `ForeachBatchSafety` declaration with a stable
-`sink_identity`,
-an `idempotence_key` such as `snapshot_id:batch_id`, a `retry_policy` (`at_least_once`, `idempotent`, or
-`transactional`), and a stable `snapshot_id`. The adoption helper rejects missing or unknown declarations before
-calling `start()`. These declarations make the recovery assumptions reviewable; they do not make callback code
-idempotent, transactional, or secure. The callback and its sink remain the application's responsibility, including using
-the declared key, handling retries, and ensuring that the checkpoint and snapshot identity remain compatible.
+The example-app helper `examples.streams.adoption.ForeachBatchSafety` lets the application declare the sink identity,
+idempotence key, retry policy, and snapshot identity before starting a `foreachBatch` query. It makes retry assumptions
+explicit; the application remains responsible for honoring them. See the
+[side-effect guidance](../reference/Streaming.ref.md#attach-a-caller-controlled-foreachbatch-sink).
 
 ## Stateful Operations And Composition
 
-Structured Streaming keeps state between input batches for operations such as aggregations, deduplication, joins, and
-state processors. A transform may contain one admitted stateful operation followed by stateless work. Additional
-stateful operations are rejected unless Structure has a specific finite contract for that combination.
+Structured Streaming keeps state between input batches. Structure admits one stateful operation followed by stateless
+work unless a specific bounded combination is documented. Cross and anti stream-stream joins remain unsupported.
 
-- Cross and anti stream-stream joins are not supported because their completion and retention behavior cannot currently
-  be bounded by Structure.
-- Row `transform_with_state(...)` is available on ordinary PySpark 4.1. The separate Pandas
-  `transform_with_state_in_pandas(...)` and legacy `apply_in_pandas_with_state(...)` operations have distinct processor
-  APIs and runtime requirements; see the [compatibility ledger](../compatibility/Streaming.compat.md) for their
-  supported profiles. Spark and the caller own native state and checkpoint evolution. Structure does not migrate
-  persisted state.
-- Typed row state processors use `StateProcessor[Input, Key, Output]`; declare named `ValueState[Schema]`,
-  `ListState[Schema]`, and `MapState[KeySchema, ValueSchema]` attributes on the processor. They access handles through
-  `self` in `on_rows`, `on_timer`, and optional `on_initial_state`. The immutable factories `value_state(...)`,
-  `list_state(...)`, and `map_state(...)` accept optional `name=` and `ttl=datetime.timedelta(...)`. TTL requires
-  `time_mode="ProcessingTime"`. Typed initial state requires both a concrete `on_initial_state` callback and the
-  operation's `initial_state=` relation. Changing persisted state identity or schema is checkpoint-sensitive; use a
-  new checkpoint after such a change because Structure does not migrate Spark state.
-- Use `external_state_processor(...)` when processor code needs Python constructs or native PySpark features outside
-  this typed interface.
-- Example: declare typed handles on the processor and use them from a compiler-visible transform step. The example
-  shows all three handle kinds; the processor body runs on Spark workers.
+Row `transform_with_state(...)` supports ordinary PySpark 4.1. A typed processor declares named
+`ValueState[Schema]`, `ListState[Schema]`, or `MapState[KeySchema, ValueSchema]` attributes on
+`StateProcessor[Input, Key, Output]`. Its required callback is `on_rows(self, key, rows, timers)`; it may also implement
+`on_timer(...)` and `on_initial_state(...)`. An initial-state callback must be paired with the operation's
+`initial_state=` relation. Declaration factories can set a persisted `name=` or `timedelta` TTL; TTL requires
+`time_mode="ProcessingTime"`. State changes may make an existing checkpoint incompatible, and Structure does not
+migrate persisted state.
+
+A transform step calls the operation like this:
 
 ```python
-from collections.abc import Iterator
-from datetime import timedelta
-
-from structure import *
-from structure.plugin.pyspark import *
-
-
-class Event(Schema):
-    account_id = string(nullable=False)
-    amount = integer(nullable=False)
-
-
-class AccountKey(Schema):
-    account_id = string(nullable=False)
-
-
-class TotalState(Schema):
-    total = integer(nullable=False)
-
-
-class AmountKey(Schema):
-    amount = integer(nullable=False)
-
-
-class AmountCount(Schema):
-    count = integer(nullable=False)
-
-
-class TotalOutput(Schema):
-    account_id = string(nullable=False)
-    total = integer(nullable=False)
-
-
-@state_processor
-class AccountTotals(StateProcessor[Event, AccountKey, TotalOutput]):
-    total: ValueState[TotalState] = value_state(ttl=timedelta(hours=1))
-    recent: ListState[Event]
-    by_amount: MapState[AmountKey, AmountCount] = map_state(name="counts_by_amount")
-
-    def on_rows(
-        self,
-        key: AccountKey,
-        rows: Iterator[Event],
-        timers: TimerContext,
-    ) -> Iterator[TotalOutput]:
-        current = self.total.get()
-        total = 0 if current is None else current.total
-        for row in rows:
-            total += row.amount
-            self.recent.append_value(row)
-            amount_key = AmountKey(amount=row.amount)
-            previous = self.by_amount.get_value(amount_key)
-            count = 1 if previous is None else previous.count + 1
-            self.by_amount.update_value(amount_key, AmountCount(count=count))
-        self.total.update(TotalState(total=total))
-        yield TotalOutput(account_id=key.account_id, total=total)
-
-
-class AccountTotalsTransform(Transform):
-    events = input(Event, streaming=True)
-    totals = output(TotalOutput)
-
-    @step(input=events, output=totals)
-    def accumulate(self, event: Event) -> TotalOutput:
-        return transform_with_state(
-            key=event.account_id,
-            processor=AccountTotals,
-            output_mode="Update",
-            time_mode="ProcessingTime",
-        )
+def accumulate(self, event: Event) -> TotalOutput:
+    return transform_with_state(
+        key=event.account_id,
+        processor=AccountTotals,
+        output_mode="Update",
+        time_mode="ProcessingTime",
+    )
 ```
 
-- `PandasStateProcessor[Input, Key, State, Output]` uses the separate
-  `on_batches(self, key, batches, state, timers)` callback. It receives Pandas batches, a typed `ValueState[State]`,
-  and timer context, then yields Pandas output frames. The `@pandas_state_processor` decorator is an optional declaration
-  validator. Both Spark 4 state processor APIs require pandas, PyArrow, and protobuf on the driver and workers; the
-  Pandas API has the same dependencies on PySpark 4.0.
-- General Pandas, RDD, and `mapInPandas` boundaries remain unsupported because they are not part of these typed state
-  processor surfaces.
+Use `external_state_processor(...)` when processor code needs Python constructs or native Spark features outside the
+Structure typed interface. For Pandas state processing, `PandasStateProcessor[Input, Key, State, Output]` implements
+`on_batches(self, key, batches, state, timers)`, receiving Pandas batches and a typed `ValueState[State]` and yielding
+Pandas output frames. The state processor APIs have separate runtime profiles and dependencies; see the
+[compatibility ledger](../compatibility/Streaming.compat.md). The [Streaming reference](../reference/Streaming.ref.md#use-state-processors)
+contains the complete typed example and state-operation details.
 
 ### Caller-owned arbitrary-state metadata
 
 `ArbitraryStateContract` is an optional helper for application code that uses Spark's state APIs directly. It checks
-declared schemas, grouping keys, timeout and initialization choices, and checkpoint/restart assumptions. It does not
-run a processor, start a query, or migrate checkpoint data. You do not need it when using `transform_with_state(...)`.
+declared schemas and checkpoint assumptions but does not run a processor or manage query lifecycle. It is not needed for
+`transform_with_state(...)`.
 
 ## Compatibility
 

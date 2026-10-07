@@ -540,21 +540,32 @@ Use `foreachBatch` when the application must write each micro-batch through a ba
 checkpoint, retry behavior, and query start outside Structure:
 
 ```python
+from examples.streams.adoption import ForeachBatchSafety, start_foreach_batch_query
+
+
 def write_batch(batch, batch_id):
-    batch.write.format("parquet").mode("append").save(output_path)
+    # The application implements this using its idempotence key and sink policy.
+    write_batch_idempotently(batch, snapshot_id=snapshot_id, batch_id=batch_id)
 
 
-query = (
-    clean.writeStream
-    .foreachBatch(write_batch)
-    .outputMode("append")
-    .option("checkpointLocation", checkpoint)
-    .start()
+query = start_foreach_batch_query(
+    clean,
+    write_batch,
+    checkpoint=checkpoint,
+    output_mode="append",
+    safety=ForeachBatchSafety(
+        sink_identity="alert-parquet",
+        idempotence_key="snapshot_id:batch_id",
+        retry_policy="idempotent",
+        snapshot_id=snapshot_id,
+    ),
 )
 ```
 
-Before starting a side-effecting query, validate a stable sink identity, idempotence key, retry policy, and snapshot
-identity in application code. The callback must honor those declarations across retries.
+`start_foreach_batch_query(...)` validates the declarations before starting PySpark's `foreachBatch` writer. It does not
+inspect the callback or make its writes idempotent; the callback must honor the declared identity and retry policy.
+Applications can also configure the native `DataStreamWriter.foreachBatch(...)` directly when they validate these
+assumptions themselves.
 
 ## Attach a transform-declared row-level sink
 
@@ -637,6 +648,19 @@ class CustomerTotal(Schema):
     total = integer(nullable=False)
 
 
+class InitialTotal(Schema):
+    account_id = string(nullable=False)
+    total = integer(nullable=False)
+
+
+class AmountKey(Schema):
+    amount = integer(nullable=False)
+
+
+class AmountCount(Schema):
+    count = integer(nullable=False)
+
+
 class TotalOutput(Schema):
     account_id = string(nullable=False)
     total = integer(nullable=False)
@@ -646,6 +670,15 @@ class TotalOutput(Schema):
 class CustomerTotals(StateProcessor[Event, CustomerKey, TotalOutput]):
     total: ValueState[CustomerTotal]
     recent: ListState[Event] = list_state(ttl=timedelta(hours=2))
+    by_amount: MapState[AmountKey, AmountCount]
+
+    def on_initial_state(
+        self,
+        key: CustomerKey,
+        initial: InitialTotal,
+        timers: TimerContext,
+    ) -> None:
+        self.total.update(CustomerTotal(total=initial.total))
 
     def on_rows(
         self,
@@ -658,12 +691,29 @@ class CustomerTotals(StateProcessor[Event, CustomerKey, TotalOutput]):
         for row in rows:
             total += row.amount
             self.recent.append_value(row)
+            amount_key = AmountKey(amount=row.amount)
+            previous = self.by_amount.get_value(amount_key)
+            count = 1 if previous is None else previous.count + 1
+            self.by_amount.update_value(amount_key, AmountCount(count=count))
         self.total.update(CustomerTotal(total=total))
+        if timers.current_processing_time_ms is not None:
+            timers.register(timers.current_processing_time_ms + 60_000)
         yield TotalOutput(account_id=key.account_id, total=total)
+
+    def on_timer(
+        self,
+        key: CustomerKey,
+        timer: Timer,
+        timers: TimerContext,
+    ) -> Iterator[TotalOutput]:
+        current = self.total.get()
+        if current is not None:
+            yield TotalOutput(account_id=key.account_id, total=current.total)
 
 
 class CustomerTotalsTransform(Transform):
     events = input(Event, streaming=True)
+    initial = input(InitialTotal)
     totals = output(TotalOutput)
 
     @step(input=events, output=totals)
@@ -673,6 +723,7 @@ class CustomerTotalsTransform(Transform):
             processor=CustomerTotals,
             output_mode="Update",
             time_mode="ProcessingTime",
+            initial_state=self.initial,
         )
 ```
 

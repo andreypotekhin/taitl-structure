@@ -25,12 +25,18 @@ missing-column contract is proven.
 
 ### Broader Chained Stateful Operations — `design-gated`
 
-Two exact pairs are admitted: the existing watermarked event-time window aggregate followed by a second aggregate over
-`window_time(...)`, and, on ordinary PySpark 3.5 and 4.0, watermarked deduplication followed by one watermarked
-event-time window aggregate in Append mode. Per-operator `budget(...)` declarations and the caller-attached progress
-guard are available for the latter. All other chains remain design-gated, including reversed order, joins, state
-processors, and a third stateful operation. Broader admission still requires ordered state-stage metadata, retention,
-output, diagnostics, generated form, and live restart evidence for each target profile.
+Two exact pairs are admitted: a watermarked event-time window aggregate followed by a second aggregate over
+`window_time(...)`, and, on ordinary PySpark 3.5.0 and 4.0.0, watermarked deduplication followed by one watermarked
+event-time window aggregate in Append mode. For the dedupe-to-window pair, per-operator `budget(...)` declarations,
+`state_budget_checking`, and a caller-attached progress guard are implemented. Live tests cover online/generated
+parity, Append output, same-checkpoint restart, and operator-progress mapping on both profiles.
+
+The broad gate remains for every other composition: reversed order, joins, state processors, and a third stateful
+operation. The PySpark 4.1 row `transformWithState` support and the Pandas processor implementation do not admit either
+processor into a chain. Broader admission needs an explicit stage-transition contract for watermark propagation,
+per-stage retention and output compatibility, restart/checkpoint behavior, rejection diagnostics, generated lowering,
+and profile-specific live evidence. The narrow pair's current live fixture does not separately assert behavior for an
+event arriving beyond the watermark or state eviction; add that coverage before treating those details as demonstrated.
 
 ### Row-Level `foreach` — `caller-owned-guided`
 

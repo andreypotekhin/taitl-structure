@@ -3,7 +3,12 @@ from __future__ import annotations
 import importlib
 
 import pytest
-from integration.pyspark.support.backend_matrix import generated_project, render_generated_project, session
+from integration.pyspark.support.backend_matrix import (
+    backend_name,
+    generated_project,
+    render_generated_project,
+    session,
+)
 from integration.pyspark.support.rows import rows
 
 from structure import Schema, Transform, input, output, transform
@@ -33,6 +38,7 @@ class NormalizeValue(Transform):
         return TransformOutput(value=row.value.transform(lambda value: upper(trim(value))))
 
 
+@pytest.mark.skipif(backend_name() != "pyspark41", reason="Column.transform requires ordinary PySpark 4.1")
 def test_column_transform_matches_online_and_generated_execution(spark, tmp_path) -> None:
     files = render_generated_project(
         NormalizeValue,
@@ -41,7 +47,8 @@ def test_column_transform_matches_online_and_generated_execution(spark, tmp_path
         source_schema_modules={SOURCE_MODULE: [TransformInput, TransformOutput]},
     )
     transform_path = f"{PACKAGE}/pyspark/transforms/integration/pyspark/v11/test_column_transform.py"
-    assert '.transform(lambda _column: F.upper(F.trim(F.col("transform_input.value"))))' in files[transform_path]
+    generated = "".join(files[transform_path].split())
+    assert '.transform(lambda_column:F.upper(F.trim(F.col("transform_input.value"))))' in generated
 
     with generated_project(tmp_path, PACKAGE, files):
         schemas = importlib.import_module(f"{PACKAGE}.pyspark.schemas.test_column_transform")

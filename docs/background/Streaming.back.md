@@ -207,10 +207,12 @@ retention policy are compiler-visible.
 ### Row `transformWithState`
 
 For per-key state that cannot be expressed as an aggregation, use `transform_with_state(...)`. Its typed processor
-declares Value, List, and Map state handles as attributes and implements `on_rows(...)`, with optional `on_timer(...)`
-and paired `on_initial_state(...)` callbacks. Structure validates the schemas around those callbacks and adapts Spark's
-state handles; callback code remains ordinary Python. Use `external_state_processor(...)` when the processor needs
-Python constructs or Spark features outside the typed interface.
+uses `StateProcessor[Input, Key, Output]`, declares Value, List, and Map state handles as attributes, and implements
+`on_rows(...)`, with optional `on_timer(...)` and paired `on_initial_state(...)` callbacks. TTL applies in
+`ProcessingTime` mode; an initial-state callback is paired with an initial-state relation. Structure validates the
+schemas around callbacks and adapts Spark's state handles; callback code remains ordinary Python. Use
+`external_state_processor(...)` when the processor needs Python constructs or Spark features outside the typed
+interface.
 
 Spark owns the persisted state and the application owns the query and checkpoint. State declaration changes can make
 an existing checkpoint incompatible; Structure does not migrate state. This adapter targets ordinary PySpark 4.1.
@@ -420,8 +422,15 @@ query = (
 ```
 
 The callback remains responsible for honoring a stable sink identity, idempotence key, retry policy, and snapshot
-identity. These declarations are application safeguards; they do not turn `foreachBatch` into a Structure transform
+identity. `examples.streams.adoption.start_foreach_batch_query(...)` validates those declarations before calling Spark's
+writer; it does not prove the callback honors them. These are application safeguards, not a Structure transform
 operation.
+
+Structure also offers a schema-declared `foreach_batch(row, sink)` marker for a typed batch-transform handoff. It
+records which streaming output and sink schema belong together; application code still chooses the batch transform,
+callback, checkpoint, and native `foreachBatch(...)` writer call. This is distinct from Spark's writer method with the
+similar name. See the [Streaming reference](../reference/Streaming.ref.md#attach-a-batch-transform-to-a-foreachbatch-sink)
+for the end-to-end flow.
 
 ### Attach a row-level sink
 

@@ -67,6 +67,7 @@ def test_v1_pyspark_recipe_records_joins_hooks_and_sources() -> None:
 
     assert [hook.name for hook in recipe.steps[0].before_hooks] == ["use_current_orders"]
     assert [hook.name for hook in recipe.steps[0].after_hooks] == ["remove_negative_totals"]
+    assert recipe.steps[0].after_hooks[0].validations[0].schema.__name__ == "OrderNormalized"
     assert [hook.name for hook in recipe.steps[4].after_hooks] == ["note_lookup_inputs"]
     assert [hook.name for hook in recipe.steps[5].after_hooks] == ["add_quality_columns"]
 

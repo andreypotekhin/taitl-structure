@@ -3,7 +3,7 @@ from __future__ import annotations
 from structure import Transform
 from structure.core.runtime.session.model.StructureSession import StructureSession
 from structure.core.sources.model.SourceTransformAddress import SourceTransformAddress
-from structure.plugin.pyspark.execution.logic.PlanBoundary import apply_plan_boundary
+from structure.plugin.pyspark.execution.logic.PlanBoundary import apply_plan_boundary, transfer_plan_boundaries
 
 
 class Catalog:
@@ -75,6 +75,19 @@ def test_closing_child_drops_only_its_plan_boundary_views() -> None:
     assert child_view not in spark.catalog.views
     parent.close()
     assert not spark.catalog.views
+    assert not spark.stopped
+
+
+def test_transferred_plan_boundary_views_follow_the_session_lifecycle() -> None:
+    spark = Spark()
+    session = StructureSession(runtime=spark)
+    generated = object()
+    view = apply_plan_boundary(Frame(spark, "generated"), spark, owner=generated)
+
+    transfer_plan_boundaries(generated, session)
+    session.close()
+
+    assert view not in spark.catalog.views
     assert not spark.stopped
 
 
