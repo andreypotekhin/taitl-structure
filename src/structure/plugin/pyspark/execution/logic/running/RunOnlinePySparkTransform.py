@@ -31,6 +31,12 @@ from structure.plugin.pyspark.execution.logic.running.RunOnlinePySparkStructGene
 )
 from structure.plugin.pyspark.execution.logic.ValidatePySparkFrame import ValidatePySparkFrame
 from structure.plugin.pyspark.execution.logic.ValidatePySparkOrderedAggregate import ordered_aggregate_guard
+from structure.plugin.pyspark.iceberg.runtime import (
+    execute_iceberg_mutation,
+    read_iceberg_relation,
+    validate_evolved_iceberg_table,
+    validate_iceberg_table,
+)
 
 
 class RunOnlinePySparkTransform:
@@ -105,6 +111,7 @@ class RunOnlinePySparkTransform:
 
         inputs = dict(invocation._structure_bound_inputs)
         delta_tables = {}
+        iceberg_tables = {}
         self._backend_target = plan.backend.target
         for input in plan.inputs:
             if input.internal:
@@ -123,6 +130,12 @@ class RunOnlinePySparkTransform:
                 } or {plan.delta_check_match}
                 delta_tables[input.name] = table
                 inputs[input.name] = validated_delta_frame(table, input.schema, modes=modes)
+            elif input.binding in {"iceberg", "iceberg_table"}:
+                table_name = inputs[input.name]
+                iceberg_tables[input.name] = table_name
+                inputs[input.name] = validate_iceberg_table(
+                    session.spark, table_name, input.schema, validation=input.validation
+                )
             else:
                 self._validator.validate(inputs[input.name], input.validation, types=T)
 
@@ -131,6 +144,34 @@ class RunOnlinePySparkTransform:
         command_result_frames: set[str] = set()
         for step in plan.steps:
             if step.effect:
+                if any(mutation.kind.startswith("iceberg_") for mutation in step.delta_mutations):
+                    for mutation in step.delta_mutations:
+                        try:
+                            execute_iceberg_mutation(
+                                mutation, tables=iceberg_tables, frames=frames, spark=session.spark
+                            )
+                        except Exception as error:
+                            error.add_note(
+                                f"Structure transform {plan.transform}, step {step.name}, Iceberg {mutation.kind}"
+                            )
+                            raise
+                        validator = validate_evolved_iceberg_table if mutation.schema_evolution else validate_iceberg_table
+                        refreshed = validator(
+                            session.spark, iceberg_tables[mutation.target],
+                            mutation.output_schema or next(item.schema for item in plan.inputs if item.name == mutation.target),
+                        )
+                        frames[mutation.target] = refreshed
+                        frames[f"input:{mutation.target}"] = refreshed
+                        if mutation.output is not None:
+                            iceberg_tables[mutation.output] = iceberg_tables[mutation.target]
+                            frames[mutation.output] = refreshed
+                            frames[f"input:{mutation.output}"] = refreshed
+                    for result in step.results:
+                        if result.frame not in frames:
+                            target = next((item.target for item in step.delta_mutations), None)
+                            if target is not None:
+                                frames[result.frame] = frames[target]
+                    continue
                 for mutation in step.delta_mutations:
                     try:
                         execute_delta_mutation(mutation, tables=delta_tables, frames=frames, functions=F)
@@ -160,6 +201,12 @@ class RunOnlinePySparkTransform:
                     frames[result.frame] = fresh_delta_frame(delta_tables[table_name])
                 continue
             for mutation in step.delta_mutations:
+                if mutation.kind in {"iceberg_snapshot", "iceberg_history", "iceberg_snapshots", "iceberg_metadata"}:
+                    frame = read_iceberg_relation(mutation, tables=iceberg_tables, spark=session.spark)
+                    frames[mutation.target] = frame
+                    frames[f"input:{mutation.target}"] = frame
+                    inputs[mutation.target] = frame
+                    continue
                 if mutation.kind in {"delta_snapshot", "delta_changes", "delta_history", "delta_detail"}:
                     frame = read_delta_relation(
                         mutation,
@@ -192,14 +239,18 @@ class RunOnlinePySparkTransform:
 
         outputs = {}
         for output in plan.outputs:
-            outputs[output.name] = delta_tables[output.name] if output.binding in {"delta", "delta_table"} else self._output(
-                output,
-                source=frames[output.source],
-                inputs=inputs,
-                session=session,
-                functions=F,
-                window=Window,
-                types=T,
+            outputs[output.name] = (
+                delta_tables[output.name] if output.binding in {"delta", "delta_table"}
+                else iceberg_tables[output.name] if output.binding in {"iceberg", "iceberg_table"}
+                else self._output(
+                    output,
+                    source=frames[output.source],
+                    inputs=inputs,
+                    session=session,
+                    functions=F,
+                    window=Window,
+                    types=T,
+                )
             )
         stage_records = []
         if plan.allow_stage_outputs:
@@ -690,6 +741,7 @@ class RunOnlinePySparkTransform:
                 raise KeyError(f"SQL relation scope {scope!r} is not available in step {step.name!r}")
             relations[name] = frame
         spark = df.sparkSession
+        from structure.plugin.pyspark.dsl.SqlResult import SqlCommandResult
         from structure.plugin.pyspark.execution.logic.running.ExecutePySparkSql import execute_pyspark_sql
 
         result = execute_pyspark_sql(
@@ -699,8 +751,8 @@ class RunOnlinePySparkTransform:
             relations=relations,
             step=recipe.step,
             label=recipe.label,
+            command_result=issubclass(recipe.schema, SqlCommandResult),
         )
-        from structure.plugin.pyspark.dsl.SqlResult import SqlCommandResult
         from structure.plugin.pyspark.execution.logic.running.NormalizePySparkSqlCommandResult import (
             normalize_sql_command_result,
         )

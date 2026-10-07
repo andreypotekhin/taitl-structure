@@ -17,8 +17,8 @@ Typed Delta mutations, inspection reads, generated/identity/default columns, and
 classic PySpark 3.5, 4.0, and 4.1 with pinned live online/generated evidence: 3.5.3 / Delta 3.3.3, 4.0.0 / Delta
 4.0.1, and 4.1.0 / Delta 4.1.0. The exact Spark Connect 4.1 Delta package is separately admitted; other Connect
 profiles and PySpark 4.2 are outside this admission. They remain separate from
-the default PySpark `>=3.5,<4.1` DataFrame API baseline. See the [Delta API](../api/DeltaTables.api.md) and
-[Delta compatibility ledger](DeltaTables.compat.md) for the precise operations, schema evolution rules, and target
+the default PySpark `>=3.5,<4.1` DataFrame API baseline. See the [Delta API](../api/DeltaIceberg.api.md) and
+[Delta compatibility ledger](DeltaIceberg.compat.md) for the precise operations, schema evolution rules, and target
 limits.
 
 ## PySpark 4.1 Adoption
@@ -34,19 +34,21 @@ The current V11 state and side-effect boundaries are:
   typed contracts and target evidence are complete.
 - Arrow UDF/UDTFs remain `caller-owned-guided`; generated Structure transforms do not own worker Python or callback
   cardinality.
-- Row `transform_with_state`, Pandas `transform_with_state_in_pandas`, and legacy
-  `apply_in_pandas_with_state` are separate `design-gated` families with independent target profiles and evidence
-  owners. Their compiler paths are implemented, but each family retains its own remaining parity/restart or mode
-  coverage gate.
+- Row `transform_with_state` and Pandas `transform_with_state_in_pandas` are supported on their admitted ordinary
+  PySpark profiles after their independent parity and restart evidence passed. Legacy `apply_in_pandas_with_state`
+  remains `design-gated` with its own callback and checkpoint contract.
 - `foreach` and `foreach_batch` are `caller-owned-guided`: Structure supplies typed handoffs and safety metadata; the
   caller constructs writers, starts queries, and owns checkpoints, retries, and idempotence.
 - Delta tables are `supported` on classic PySpark 3.5–4.1 and the exact Delta Connect 4.1 package. Other Connect
   profiles and PySpark 4.2 remain outside the claim.
+- Apache Iceberg SQL and typed helpers are `supported` on classic PySpark 3.5–4.1 and Spark Connect 4.1 with Iceberg
+  1.12.0; the exact operation scope and format-v2 limitation are recorded in the
+  [combined Delta and Iceberg ledger](DeltaIceberg.compat.md#apache-iceberg).
 - Retained V9 gates remain `design-gated`; XML and cost-based join reordering remain unsupported.
 
 See the [V11 parity specification](../dev/specifications/V11PySpark41Parity.spec.md), [streaming compatibility
-ledger](Streaming.compat.md), and [Delta compatibility ledger](DeltaTables.compat.md) for API-family detail and
-profile evidence.
+ledger](Streaming.compat.md), and [Delta and Iceberg compatibility ledger](DeltaIceberg.compat.md) for API-family
+detail and profile evidence.
 
 ## Validation and selection timing
 
@@ -225,7 +227,7 @@ lifecycle recipe.
 | Chained stateful operators | design-gated | Chains of streaming aggregates/dedupe/joins | Needs explicit composition and state-budget policy before Structure can own the shape | Use caller-owned PySpark |
 | Pandas and RDD boundaries | unsupported | Pandas UDF, RDD, `mapInPandas` | Opaque execution does not fit Structure's symbolic transform contract | Use caller-owned streaming code |
 | Row `transformWithState` | supported | `transform_with_state(...)`; ordinary PySpark `>=4.1,<4.2` | Supports Append/Update, None/ProcessingTime/EventTime, timers, composite keys, and typed named Value/List/Map state. Complete is rejected during compilation. | Use `external_state_processor(...)` for native processor features outside the typed named Value/List/Map state contract |
-| Pandas `transformWithStateInPandas` | design-gated | `transform_with_state_in_pandas(...)`; ordinary PySpark `>=4.0,<4.1` and `>=4.1,<4.2` | Separate Pandas callback and checkpoint contract. Structure does not currently support this operation on the listed profiles. | Keep state processing caller-owned until Structure lists this operation as supported |
+| Pandas `transformWithStateInPandas` | supported | `transform_with_state_in_pandas(...)`; ordinary PySpark `>=4.0,<4.1` and `>=4.1,<4.2` | Typed/native online/generated parity, timers, composite keys, initial state, TTL, restart, and tested native checkpoint evolution pass on both pinned profiles. Spark and the caller control state/checkpoint evolution; Structure does not migrate state. | Use `external_state_processor(...)` for native state features beyond the typed one-value-state-and-timers surface |
 | Legacy Pandas state | design-gated | `apply_in_pandas_with_state(...)`; ordinary PySpark `>=3.5,<4.0`, `>=4.0,<4.1`, and `>=4.1,<4.2` | Separate typed and opaque-native paths with a legacy `PandasGroupState` callback and checkpoint format | Keep state processing caller-owned until Structure lists this operation as supported |
 | Typed struct generators | implemented | `stack`, `explode`, `posexplode`, `inline` | Fixed `stack` and typed array-of-struct generators are stateless row expansion with schema/cardinality contracts | [Collections API](../api/Collections.api.md) |
 | Caller-owned lifecycle APIs | caller-owned-guided | Sources, sinks, triggers, checkpoints, query start/stop | Structure only transforms supplied DataFrames; executable recipes keep lifecycle outside generated modules | [Streaming API](../api/Streaming.api.md) |

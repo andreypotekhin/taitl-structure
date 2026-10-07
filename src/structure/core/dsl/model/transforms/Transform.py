@@ -103,8 +103,8 @@ class Transform:
             if isinstance(value, OutputDeclaration):
                 outputs[value.name] = value
                 output_bindings.pop(value.name, None)
-                if value.binding == "delta_table":
-                    inputs[value.name] = InputDeclaration(schema=value.schema, name=value.name, binding="delta_table")
+                if value.binding in {"delta_table", "iceberg_table"}:
+                    inputs[value.name] = InputDeclaration(schema=value.schema, name=value.name, binding=value.binding)
             if isinstance(value, SinkDeclaration):
                 sinks[value.name] = value
             if isinstance(value, ParameterDeclaration):
@@ -253,15 +253,26 @@ class Transform:
             options["memory_budget"] = memory_budget
         return options
 
-    @staticmethod
+    @classmethod
     def resolve_transform_options(
+        cls: type["Transform"],
         options: Mapping[str, object] | None = None,
         *,
         inputs: Iterable[object] = (),
         transform_name: str,
     ) -> dict[str, object]:
-        """Resolve effective transform options from declared options and inputs."""
+        """Resolve explicit options, inherited streaming requirements, and input declarations."""
         resolved = dict(options or {})
+        from structure.core.dsl.model.transforms.StreamingTransform import StreamingTransform
+
+        if issubclass(cls, StreamingTransform):
+            if resolved.get("streaming") is False:
+                raise TypeError(
+                    f"{transform_name} inherits from StreamingTransform and cannot declare streaming=False. "
+                    "Remove the option or move batch-specific behavior to a Transform hierarchy. "
+                    "See docs/dev/Troubleshooting.md#problem-dsl-a-streamingtransform-descendant-declares-streamingfalse."
+                )
+            resolved["streaming"] = True
         streaming = resolved.get("streaming")
         if streaming is False and any(bool(getattr(input, "streaming", False)) for input in inputs):
             raise TypeError(

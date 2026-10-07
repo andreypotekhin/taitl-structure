@@ -7,9 +7,10 @@ Structure's core API is target-neutral. Import PySpark fields, expressions, join
 Core selects one plugin target per transform and owns compilation, execution, generated-file lifecycle, and
 diagnostics. See [Configuration](docs/Configuration.md) and [Concepts](docs/Concepts.md).
 
-Transforms can also compile typed mutations of caller-supplied Delta tables. This API is implemented with isolated
-ordinary and Connect PySpark 4.1.0 / Delta 4.1.0 evidence and remains release-gated; see the
-[Delta tables API](docs/api/DeltaTables.api.md) and [compatibility status](docs/compatibility/DeltaTables.compat.md).
+Transforms can also compile typed operations against caller-supplied Delta and Apache Iceberg tables. Both provider
+integrations have tested runtime admission for the exact profiles listed in the combined
+[Delta and Iceberg API](docs/api/DeltaIceberg.api.md) and [compatibility ledger](docs/compatibility/DeltaIceberg.compat.md).
+The caller owns table creation, catalog configuration, and storage lifecycle.
 
 ## Less Code, More Spark
 

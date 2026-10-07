@@ -73,10 +73,14 @@ class ComposeTransformPlans:
             stage_outputs=tuple(stage_outputs),
             allow_stage_outputs=allow_stage_outputs,
             internal_inputs=tuple(internal_inputs),
-            options=Transform.resolve_transform_options(
-                wrapper_class.__dict__.get("_structure_transform_options", {}) if wrapper_class is not None else {},
-                inputs=inputs,
-                transform_name=name,
+            options=(
+                wrapper_class.resolve_transform_options(
+                    wrapper_class.__dict__.get("_structure_transform_options", {}),
+                    inputs=inputs,
+                    transform_name=name,
+                )
+                if wrapper_class is not None
+                else Transform.resolve_transform_options(inputs=inputs, transform_name=name)
             ),
             diagnostics=tuple(diagnostic for plan in stage_plans for diagnostic in plan.diagnostics),
             streaming_boundaries=tuple(

@@ -11,7 +11,7 @@ from integration.pyspark.support.backend_matrix import (
 )
 from integration.pyspark.support.rows import rows
 
-from structure import Schema, Transform, input, output, transform
+from structure import Schema, Transform, input, output, special, transform
 from structure.lib.testing import assert_online_generated_parity
 from structure.plugin.pyspark import string, trim, upper
 
@@ -34,8 +34,12 @@ class NormalizeValue(Transform):
     rows = input(TransformInput)
     normalized = output(TransformOutput)
 
+    @special(type="expr")
+    def normalize_text(value):
+        return upper(trim(value))
+
     def normalize(self, row: TransformInput) -> TransformOutput:
-        return TransformOutput(value=row.value.transform(lambda value: upper(trim(value))))
+        return TransformOutput(value=row.value.transform(self.normalize_text))
 
 
 @pytest.mark.skipif(backend_name() != "pyspark41", reason="Column.transform requires ordinary PySpark 4.1")

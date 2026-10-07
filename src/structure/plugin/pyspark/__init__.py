@@ -763,6 +763,22 @@ __all__ = [  # noqa: F405
     "delta_restore",
     "delta_optimize",
     "delta_vacuum",
+    "iceberg_input",
+    "iceberg_output",
+    "iceberg_table",
+    "iceberg_delete",
+    "iceberg_update",
+    "iceberg_append",
+    "iceberg_merge",
+    "iceberg_snapshot",
+    "iceberg_history",
+    "iceberg_snapshots",
+    "iceberg_metadata",
+    "iceberg_rollback",
+    "iceberg_rewrite_data_files",
+    "iceberg_rewrite_manifests",
+    "iceberg_expire_snapshots",
+    "iceberg_remove_orphan_files",
 ]
 
 
@@ -783,6 +799,15 @@ def __getattr__(name: str):
         return import_module("structure.plugin.pyspark.dsl.sql_api").sql
     if name in {"check", "delta_input", "delta_output", "delta_table", "delta_generated", "delta_identity", "delta_default", "delta_delete", "delta_update", "delta_merge", "delta_append", "delta_replace_where", "delta_snapshot", "delta_changes", "delta_history", "delta_detail", "delta_restore", "delta_optimize", "delta_vacuum"}:
         return getattr(import_module("structure.plugin.pyspark.delta"), name)
+    if name in {"iceberg_input", "iceberg_output", "iceberg_table"}:
+        return getattr(import_module("structure.plugin.pyspark.iceberg.bindings"), name)
+    if name in {
+        "iceberg_delete", "iceberg_update", "iceberg_append", "iceberg_merge",
+        "iceberg_snapshot", "iceberg_history", "iceberg_snapshots", "iceberg_metadata",
+        "iceberg_rollback", "iceberg_rewrite_data_files", "iceberg_rewrite_manifests",
+        "iceberg_expire_snapshots", "iceberg_remove_orphan_files",
+    }:
+        return getattr(import_module("structure.plugin.pyspark.iceberg.operations"), name)
     dsl = import_module("structure.plugin.pyspark.dsl")
 
     try:

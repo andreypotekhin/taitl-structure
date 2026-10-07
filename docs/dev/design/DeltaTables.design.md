@@ -63,7 +63,7 @@ safety setting.
 ## Related contracts
 
 - Normative behavior: [Delta tables specification](../specifications/DeltaTables.spec.md)
-- User API and examples: [Delta tables API](../../api/DeltaTables.api.md)
-- Vendor mapping and release status: [Delta tables compatibility](../../compatibility/DeltaTables.compat.md)
+- User API and examples: [Delta tables API](../../api/DeltaIceberg.api.md)
+- Vendor mapping and release status: [Delta tables compatibility](../../compatibility/DeltaIceberg.compat.md)
 - Historical V11 design record: [V11 Delta mutations](V11DeltaSchemaBoundMutations.design.md)
 - Remaining API families and order: [Delta parity queue](../deferred/DeltaTables.deferred.md)

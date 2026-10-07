@@ -401,6 +401,49 @@ def test_graph_owner_streaming_boundary_opt_in_applies_to_nested_stages() -> Non
     assert plan.outputs[0].streaming is True
 
 
+def test_streaming_transform_contract_applies_to_composed_graph() -> None:
+    @transform
+    class StreamingNormalize(Transform):
+        orders = input(Raw)
+        normalized = output(Normalized)
+
+        def normalize(self, order: Raw) -> Normalized:
+            return Normalized(id=order.id, product_id=order.product_id)
+
+    class OwnedGraph(StreamingTransform):
+        orders = input(Raw)
+        normalized = output(Normalized)
+
+        stage_normalized = stage(StreamingNormalize(orders=orders))
+        result = output(normalized=stage_normalized.normalized)
+
+    plan = _analysis(OwnedGraph)
+
+    assert plan.options["streaming"] is True
+
+
+def test_streaming_transform_rejects_incompatible_composed_batch_step() -> None:
+    @transform
+    class CheckpointBatch(Transform):
+        orders = input(Raw)
+        normalized = output(Normalized)
+
+        def normalize(self, order: Raw) -> Normalized:
+            checkpoint()
+            return Normalized(id=order.id, product_id=order.product_id)
+
+    class OwnedGraph(StreamingTransform):
+        orders = input(Raw)
+        normalized = output(Normalized)
+
+        stage_normalized = stage(CheckpointBatch(orders=orders))
+        result = output(normalized=stage_normalized.normalized)
+
+    plan = _analysis(OwnedGraph)
+
+    assert "STREAM-E0801" in {diagnostic.code for diagnostic in plan.diagnostics}
+
+
 def test_streaming_output_accepts_declared_streaming_downstream_input() -> None:
     @transform
     class StreamingNormalize(Transform):

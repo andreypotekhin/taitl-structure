@@ -79,7 +79,7 @@ examples, per-version availability, and Structure contract or migration boundary
 | --- | --- |
 | Aggregations and sketches | [Aggregations](compatibility/Aggregations.compat.md) |
 | Collections | [Collections](compatibility/Collections.compat.md) |
-| Delta tables | [Delta tables](compatibility/DeltaTables.compat.md) |
+| Delta and Iceberg tables | [Delta and Iceberg](compatibility/DeltaIceberg.compat.md) |
 | Expressions and SQL functions | [Expressions](compatibility/Expressions.compat.md) |
 | Joins | [Joins](compatibility/Joins.compat.md) |
 | Relations | [Relations](compatibility/Relations.compat.md) |
@@ -88,12 +88,14 @@ examples, per-version availability, and Structure contract or migration boundary
 | Transforms and hooks | [Transforms](compatibility/Transforms.compat.md) |
 | Windows | [Windows](compatibility/Windows.compat.md) |
 
-## Delta Tables
+## Delta and Iceberg Tables
 
 The typed Delta API is admitted on classic PySpark 3.5, 4.0, and 4.1 with pinned live online/generated evidence for
-3.5.3 / Delta 3.3.3, 4.0.0 / Delta 4.0.1, and 4.1.0 / Delta 4.1.0. Spark Connect and PySpark 4.2 are outside this
-admission. Delta remains an optional runtime dependency; this does not change the default PySpark profile.
-See the [Delta API](api/DeltaTables.api.md) and [Delta compatibility ledger](compatibility/DeltaTables.compat.md).
+3.5.3 / Delta 3.3.3, 4.0.0 / Delta 4.0.1, and 4.1.0 / Delta 4.1.0, plus the exact Spark Connect 4.1 Delta package.
+PySpark 4.2 and other Connect profiles are outside the Delta admission. Delta and Iceberg remain optional runtime
+integrations; this does not change the default PySpark profile.
+See the [combined API](api/DeltaIceberg.api.md) and [compatibility ledger](compatibility/DeltaIceberg.compat.md) for
+provider-specific runtime evidence and limitations.
 
 ## Spark Connect
 

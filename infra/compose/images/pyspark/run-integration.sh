@@ -71,11 +71,15 @@ if [[ "${backend}" == spark-connect* ]]; then
     if [[ "${backend}" == "spark-connect41" ]]; then
         connect_packages+=(
             "io.delta:delta-connect-server_4.1_2.13:${STRUCTURE_EXPECTED_DELTA:-4.1.0}"
+            "org.apache.iceberg:iceberg-spark-runtime-4.1_2.13:1.12.0"
             "com.google.protobuf:protobuf-java:4.33.0"
         )
         connect_args+=(
-            --conf "spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension"
+            --conf "spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension,org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions"
             --conf "spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog"
+            --conf "spark.sql.catalog.structure_iceberg=org.apache.iceberg.spark.SparkCatalog"
+            --conf "spark.sql.catalog.structure_iceberg.type=hadoop"
+            --conf "spark.sql.catalog.structure_iceberg.warehouse=file:/workspace/.pytest-workspace-tmp/integration/iceberg-warehouse"
             --conf "spark.connect.extensions.relation.classes=org.apache.spark.sql.connect.delta.DeltaRelationPlugin"
             --conf "spark.connect.extensions.command.classes=org.apache.spark.sql.connect.delta.DeltaCommandPlugin"
         )
@@ -105,8 +109,45 @@ cleanup() {
 }
 trap cleanup EXIT
 
+if [[ "${backend}" == "pyspark35" ]]; then
+    iceberg_runtime="org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.12.0"
+elif [[ "${backend}" == "pyspark40" ]]; then
+    iceberg_runtime="org.apache.iceberg:iceberg-spark-runtime-4.0_2.13:1.12.0"
+elif [[ "${backend}" == "pyspark41" || "${backend}" == "spark-connect41" ]]; then
+    iceberg_runtime="org.apache.iceberg:iceberg-spark-runtime-4.1_2.13:1.12.0"
+fi
+
+if [[ -n "${iceberg_runtime:-}" ]]; then
+    echo "Running native Iceberg evidence with ${iceberg_runtime}" >&2
+    STRUCTURE_ICEBERG_TESTS=1 STRUCTURE_SPARK_JARS_PACKAGES="${iceberg_runtime}" \
+        timeout --signal=TERM --kill-after=15s "${STRUCTURE_INTEGRATION_TIMEOUT:-3600}" \
+        python -m pytest \
+        /workspace/tests/integration/pyspark/iceberg/test_native_iceberg.py \
+        /workspace/tests/integration/pyspark/iceberg/test_iceberg_sql.py \
+        /workspace/tests/integration/pyspark/iceberg/test_iceberg_transform.py \
+        --rootdir=/workspace \
+        -p no:cacheprovider \
+        --run-integration \
+        "--integration-backend=${backend}" \
+        -W 'ignore:distutils Version classes are deprecated:DeprecationWarning' \
+        ${INTEGRATION_PYTEST_ARGS:-}
+fi
+
+if [[ "${STRUCTURE_ICEBERG_ONLY:-0}" == "1" ]]; then
+    if [[ -z "${iceberg_runtime:-}" ]]; then
+        echo "Iceberg-only integration requires a backend with a pinned Iceberg runtime." >&2
+        exit 2
+    fi
+    exit 0
+fi
+
 pytest_status=0
 pytest_args=()
+if [[ -n "${iceberg_runtime:-}" ]]; then
+    # The dedicated pass above has the Iceberg-only jars and catalog. Do not
+    # rediscover that suite in the general process without its isolated setup.
+    pytest_args+=(--ignore=/workspace/tests/integration/pyspark/iceberg)
+fi
 test_paths=(/workspace/tests/integration /workspace/tests/concepts/live_pyspark)
 if [[ "${backend}" == "pyspark35" || "${backend}" == "pyspark40" || "${backend}" == "pyspark41" || "${backend}" == "spark-connect41" ]]; then
     # Keep Delta's pinned live evidence in its own process before the broader

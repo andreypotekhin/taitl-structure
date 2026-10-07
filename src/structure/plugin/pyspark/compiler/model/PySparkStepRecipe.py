@@ -13,6 +13,7 @@ from structure.plugin.pyspark.compiler.model.PySparkProjectionRecipe import PySp
 from structure.plugin.pyspark.compiler.model.PySparkStepResultRecipe import PySparkStepResultRecipe
 from structure.plugin.pyspark.compiler.model.PySparkValidationRecipe import PySparkValidationRecipe
 from structure.plugin.pyspark.delta.model import DeltaMutation
+from structure.plugin.pyspark.iceberg.model import IcebergMutation
 
 
 @dataclass(frozen=True)
@@ -37,6 +38,6 @@ class PySparkStepRecipe:
     input_sources: tuple[str, ...] = ()
     origin: TransformMemberOrigin | None = None
     effect: bool = False
-    delta_mutations: tuple[DeltaMutation, ...] = ()
+    delta_mutations: tuple[DeltaMutation | IcebergMutation, ...] = ()
     delta_check_match: str | None = None
     delta_cdf_checks: bool | None = None

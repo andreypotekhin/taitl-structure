@@ -10,6 +10,7 @@ from structure.plugin.pyspark.dsl.model.Projection import Projection
 from structure.plugin.pyspark.dsl.operations.CacheOperations import cache_operation, reserved_operations
 from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
 from structure.plugin.pyspark.dsl.RowScope import RowScope
+from structure.plugin.pyspark.iceberg.model import IcebergMutation, IcebergMutationResult
 from structure.plugin.pyspark.symbolic_execution.commands.ValidatePySparkAggregates import ValidatePySparkAggregates
 from structure.plugin.pyspark.symbolic_execution.commands.ValidatePySparkAggregationUse import (
     ValidatePySparkAggregationUse,
@@ -39,6 +40,9 @@ class CapturePySparkStep:
         request: StepAuthoringRequest,
     ) -> PySparkStepBody:
         context.operations.extend(self._reserved_operations(request))
+        provider = "Iceberg" if any(
+            mutation.kind.startswith("iceberg_") for mutation in context.delta_mutations
+        ) else "Delta"
         results: tuple[PySparkResultBody, ...]
         if request.sink_effect:
             if context.operations or context.filters or context.joins or len(context.foreach) != 1:
@@ -46,15 +50,19 @@ class CapturePySparkStep:
             if not isinstance(value, PySparkSinkEffect) or value.capture is not context.foreach[0]:
                 raise TypeError("A sink-effect step must return foreach(row, sink) directly.")
             results = (PySparkResultBody(),)
-        elif request.effect:
+        elif request.effect or any(
+            mutation.kind.startswith("iceberg_")
+            and mutation.kind not in {"iceberg_snapshot", "iceberg_history", "iceberg_snapshots", "iceberg_metadata"}
+            for mutation in context.delta_mutations
+        ):
             if context.operations or context.filters or context.joins or not context.delta_mutations:
-                raise TypeError(f"Delta effect step {request.name} must contain Delta mutations only")
+                raise TypeError(f"{provider} effect step {request.name} must contain {provider} mutations only")
             if value is None:
                 if any(mutation.target != request.results[0].lane for mutation in context.delta_mutations):
                     raise TypeError(
                         f"Delta effect step {request.name} must target its declared Delta table result"
                     )
-            elif isinstance(value, DeltaMutationResult):
+            elif isinstance(value, (DeltaMutationResult, IcebergMutationResult)):
                 if len(context.delta_mutations) != 1 or value.mutation is not context.delta_mutations[0]:
                     raise TypeError("A typed Delta effect step must return its sole mutation result directly")
                 result = request.results[0]
@@ -82,13 +90,17 @@ class CapturePySparkStep:
                         output_schema=cast(type, result.schema),
                     )
                     context.delta_mutations[0] = mutation
-                    value = DeltaMutationResult(mutation)
+                    value = (
+                        IcebergMutationResult(mutation)
+                        if isinstance(mutation, IcebergMutation)
+                        else DeltaMutationResult(mutation)
+                    )
                 elif value.mutation.schema_evolution:
-                    if result.binding not in {"delta", "delta_table"}:
+                    if result.binding not in {"delta", "delta_table", "iceberg", "iceberg_table"}:
                         raise TypeError(
-                            "A schema-evolving Delta step must resolve to delta_table(...) or delta_output(...)"
+                            "A schema-evolving provider step must resolve to its table or schema-output declaration"
                         )
-                    expected_binding = "delta_table" if result.binding == "delta_table" else "delta_input"
+                    expected_binding = "delta_table" if result.binding == "delta_table" else "iceberg_table" if result.binding == "iceberg_table" else "delta_input" if result.binding == "delta" else "iceberg_input"
                     target = next(
                         (
                             item
@@ -99,7 +111,7 @@ class CapturePySparkStep:
                     )
                     if target is None:
                         raise TypeError(
-                            "Schema evolution must target its declared delta_table(...) or delta_input(...) relation"
+                            "Schema evolution must target its declared table or input relation"
                         )
                     if result.binding == "delta_table":
                         if target.schema is not result.schema:
@@ -111,30 +123,40 @@ class CapturePySparkStep:
                             expected = getattr(result.schema, "__name__", str(result.schema))
                             raise TypeError(
                                 f"with_schema_evolution(to=...) selected {actual}, but the declared "
-                                f"delta_output(...) Schema is {expected}"
+                                f"{provider.lower()}_output(...) Schema is {expected}"
                             )
                         mutation = replace(value.mutation, output=result.lane)
                     context.delta_mutations[0] = mutation
-                    value = DeltaMutationResult(mutation)
+                    value = (
+                        IcebergMutationResult(mutation)
+                        if isinstance(mutation, IcebergMutation)
+                        else DeltaMutationResult(mutation)
+                    )
                 else:
                     if result.binding != "delta_table" or value.mutation.kind != "merge":
-                        raise TypeError("A typed same-schema Delta result requires delta_merge(...).execute() on delta_table(...)")
+                        if not (value.mutation.kind == "iceberg_merge" and result.binding == "iceberg_table"):
+                            raise TypeError("A typed same-schema table result requires its matching merge helper")
                     target = next(
                         (
                             item
                             for item in request.inputs
-                            if item.source == value.mutation.target and item.binding == "delta_table"
+                            if item.source == value.mutation.target and item.binding == result.binding
                         ),
                         None,
                     )
                     if target is None or target.schema is not result.schema:
                         actual = getattr(target.schema, "__name__", str(target.schema)) if target is not None else "unbound relation"
                         raise TypeError(
-                            f"Delta merge result Schema {getattr(result.schema, '__name__', result.schema)} is incompatible with "
+                            f"Merge result Schema {getattr(result.schema, '__name__', result.schema)} is incompatible with "
                             f"target Schema {actual}"
                         )
                     context.delta_mutations[0] = replace(value.mutation, output_schema=cast(type, result.schema))
-                    value = DeltaMutationResult(context.delta_mutations[0])
+                    mutation = context.delta_mutations[0]
+                    value = (
+                        IcebergMutationResult(mutation)
+                        if isinstance(mutation, IcebergMutation)
+                        else DeltaMutationResult(mutation)
+                    )
             else:
                 raise TypeError(f"Delta effect step {request.name} must return None or a Delta mutation result")
             results = (PySparkResultBody(),)
@@ -142,7 +164,7 @@ class CapturePySparkStep:
                 raise TypeError("foreach(row, sink) cannot be used in a Delta effect step")
         else:
             if any(
-                mutation.kind not in {"delta_snapshot", "delta_changes", "delta_history", "delta_detail"}
+                mutation.kind not in {"delta_snapshot", "delta_changes", "delta_history", "delta_detail", "iceberg_snapshot", "iceberg_history", "iceberg_snapshots", "iceberg_metadata"}
                 for mutation in context.delta_mutations
             ):
                 raise TypeError("Delta mutations require a None-returning @step bound to delta_output(...)")

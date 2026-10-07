@@ -6,7 +6,8 @@ and runtime.
 
 The [Transform background](../background/Transform.back.md) explains the source model and composition rules. The
 [Transforms API](../api/Transforms.api.md) and the [Relations API](../api/Relations.api.md) provide the complete
-operation inventories. For persistent table mutation steps, see the [Delta tables API](../api/DeltaTables.api.md).
+operation inventories. For persistent table mutation and catalog-table steps, see the
+[Delta and Iceberg tables API](../api/DeltaIceberg.api.md).
 
 Examples use the `OrderRaw`, `OrderNormalized`, and related schemas introduced in the [Schema reference](Schema.ref.md).
 Replace them with the schemas in your own application.
@@ -45,6 +46,9 @@ class NormalizeOrders(Transform):
 | `output(schema)` | Named final result | `published = output(OrderPublished)` |
 | `delta_input(schema)` | Caller-bound read-only Delta relation | `current = delta_input(OrderV1)` |
 | `delta_output(schema)` | Caller-bound Delta mutation target and named result | `orders = delta_output(OrderV2)` |
+| `iceberg_input(schema)` | Caller-bound read-only Iceberg relation | `current = iceberg_input(OrderV1)` |
+| `iceberg_table(schema)` | Caller-bound Iceberg relation for same-schema effects | `orders = iceberg_table(Order)` |
+| `iceberg_output(schema)` | Named Iceberg result for explicit append evolution | `orders = iceberg_output(OrderV2)` |
 | `output(schema).alias(name)` | Additional result lookup name | `output(OrderPublished).alias("orders")` |
 | `stage(invocation)` | Explicit composed stage boundary | `clean = stage(Normalize(orders=orders))` |
 
@@ -192,7 +196,7 @@ Use `variable(type, default=...)` when the value changes per run but must not pr
 Variables support scalar Spark literals and driver-side Delta selectors; they do not support Python branching or graph
 construction. A missing required value fails when the invocation runs. For example, a Delta CDF transform can declare
 `starting_version = variable(int)` and use `self.starting_version` in `delta_changes(...)`. See the
-[Delta table API](../api/DeltaTables.api.md#snapshot-and-change-feed-reads) for a full example and selector rules.
+[Delta table API](../api/DeltaIceberg.api.md#snapshot-and-change-feed-reads) for a full example and selector rules.
 
 ## Hooks
 
@@ -316,6 +320,18 @@ The caller may add `label="merge-orders"` to the `sql(...)` call when it needs t
 commands. With no label, the result's `label` value is null.
 
 ## Streaming
+
+Use `StreamingTransform` when every subclass in a transform hierarchy must keep its steps streaming-compatible:
+
+```python
+class WindowedOrders(StreamingTransform):
+    events = input(OrderEvent, streaming=True)
+    totals = output(OrderWindowTotal)
+```
+
+The requirement applies to inherited and new steps. Descendants cannot opt out with `@transform(streaming=False)`.
+Use `@transform(streaming=True)` for a class-local requirement; a descendant of an ordinary `Transform` can opt in
+even if its parent declares `streaming=False`, and its own undecorated descendants do not inherit the decorator option.
 
 Declare streaming compatibility at the transform and input boundaries:
 

@@ -362,7 +362,7 @@ PySpark 4.1.0 / Delta 4.1.0. The Connect 4.1 lane pins PySpark 4.1.0 / Delta 4.1
 it delegates generated, identity, and default behavior to Delta while retaining shape and CHECK validation. Run the
 matching `make integration BACKEND=...` command for each admitted profile. A local focused run must install the matching `delta-spark`
 package and use a Delta-enabled Spark session; a skipped live test is not admission evidence. The
-[Delta compatibility ledger](../compatibility/DeltaTables.compat.md) records admission by profile and helper.
+[Delta compatibility ledger](../compatibility/DeltaIceberg.compat.md) records admission by profile and helper.
 
 Integration runs retain the selected local Spark master/worker services and the versioned Spark Connect dependency
 caches; only the disposable test runner is removed. This makes repeated focused runs fast without sharing test process

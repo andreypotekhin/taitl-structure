@@ -1,16 +1,18 @@
-# Delta Tables API
+# Delta and Iceberg Tables Reference
 
 Structure can compile typed mutations against an existing Delta table. The caller creates the table, provisions its
 native constraints, and passes a native `DeltaTable` object to the transform. Delta support is optional and is
 gated by target profile. Classic PySpark 3.5, 4.0, and 4.1 are admitted with the tested Delta pairs listed in the
 compatibility ledger. The exact PySpark 4.1 Spark Connect Delta package is also admitted; other Connect profiles and
 PySpark 4.2 are outside this admission. See
-[Delta compatibility](../compatibility/DeltaTables.compat.md) before adopting it.
+[Delta compatibility](../compatibility/DeltaIceberg.compat.md) before adopting it.
 
 Import `Schema`, `Transform`, `input`, `transform`, and `StructureSession` from `structure`. Import the Delta
 declarations, operations, `check`, and field factories from `structure.plugin.pyspark`.
 
-## Declarations
+## Delta tables
+
+### Declarations
 
 | Structure API | Purpose | Example |
 | --- | --- | --- |
@@ -432,7 +434,100 @@ transaction or retry uncertain commits. A later failure does not undo an earlier
 run the same checked operations. The returned `DeltaTable` is the caller's original object; if its `toDF()` was
 materialized earlier, reopen the table to inspect the latest snapshot.
 
-For rationale and lifecycle details, see [Delta table background](../background/DeltaTables.back.md). For recipes, see
+For rationale and lifecycle details, see [Delta table background](../background/DeltaIceberg.back.md). For recipes, see
 [same-schema mutations](../recipes/DeltaTableMutations.md), [schema evolution](../recipes/DeltaSchemaEvolution.md), and
 [change data feed](../recipes/DeltaChangeDataFeed.md). For the exact
-release and target limits, see [Delta compatibility](../compatibility/DeltaTables.compat.md).
+release and target limits, see [Delta and Iceberg compatibility](../compatibility/DeltaIceberg.compat.md).
+
+## Apache Iceberg tables
+
+Structure's Iceberg helpers bind transforms to existing Spark catalog tables. The caller supplies the Spark session,
+Iceberg runtime, catalog, credentials, and tables. Helpers cover common typed operations; use `sql(...)` for Iceberg
+SQL and procedures without a convenience helper. The exact admitted Spark and Iceberg pairs are listed in the
+[combined compatibility ledger](../compatibility/DeltaIceberg.compat.md#apache-iceberg).
+
+Import `iceberg_input`, `iceberg_table`, `iceberg_output`, and Iceberg operations from
+`structure.plugin.pyspark`.
+
+### Bind an existing table
+
+Pass a fully qualified catalog name when invoking the transform:
+
+```python
+class ApplyOrders(Transform):
+    changes = input(Order)
+    orders = iceberg_table(Order)
+
+    def append(self, change: Order, order: Order) -> None:
+        iceberg_append(order, change).execute()
+
+
+result = ApplyOrders(changes=changes_df, orders="warehouse.sales.orders").run(session)
+assert result.orders == "warehouse.sales.orders"
+```
+
+`iceberg_input(Schema)` is a read-only binding except as the source of an explicit evolving append.
+`iceberg_table(Schema)` supports reads and same-schema mutations. `iceberg_output(Schema)` declares the result schema
+for an append that evolves the table. It returns the supplied table identifier, not a DataFrame. Table names remain
+runtime bindings, so one compiled transform can target different tables.
+
+### Mutate rows and read snapshots
+
+Predicates and assignments use Structure expressions and schema values:
+
+```python
+def apply(self, change: Change, order: Order) -> None:
+    iceberg_update(order, where=order.id == change.id, set=Order(status=change.status))
+    iceberg_delete(order, where=order.status == "cancelled")
+    iceberg_append(order, change).execute()
+```
+
+`where=` is required; `where=True` affects every row. `iceberg_merge(target, source, on=...)` builds ordered matched
+update/delete and not-matched insert clauses and must end in `.execute()`. Native Iceberg and Spark determine commit
+and multiple-match behavior. A sequence of transform effects is not one transaction and is not automatically retried.
+
+`iceberg_snapshot(target, snapshot_id=...)` and `iceberg_snapshot(target, timestamp=...)` return a typed relation for
+that historical state. Supply exactly one selector. Snapshot IDs are opaque Iceberg IDs, not Delta versions; the step
+return annotation declares the historical schema.
+
+### Evolve an append schema
+
+Declare the current and result schemas separately, then return the evolving append from the transition step:
+
+```python
+class OrderV2(Order):
+    note = string()
+
+
+class EvolveOrders(Transform):
+    changes = input(OrderV2)
+    current_orders = iceberg_input(Order)
+    orders = iceberg_output(OrderV2)
+
+    def append(self, change: OrderV2, order: Order) -> OrderV2:
+        return iceberg_append(order, change).with_schema_evolution(to=OrderV2).execute()
+```
+
+The table must have `write.spark.accept-any-schema=true`. Structure enables the native schema-merge writer option for
+this append only; it does not change table properties or session settings. Helper evolution currently supports
+additive nullable columns. Other schema changes remain available through SQL.
+
+### Inspect and maintain Iceberg tables
+
+`iceberg_history`, `iceberg_snapshots`, and `iceberg_metadata` return typed relations. Metadata reads take a result
+`Schema`. `iceberg_rollback` selects a snapshot or timestamp and follows Iceberg's native ancestry rules. The explicit
+maintenance effects are `iceberg_rewrite_data_files`, `iceberg_rewrite_manifests`, `iceberg_expire_snapshots`, and
+`iceberg_remove_orphan_files`; each ends with `.execute()`. Procedure metrics remain available through
+`sql(..., to=ResultSchema)`.
+
+### SQL and provider boundaries
+
+The existing `sql(...)` helper supports typed Iceberg queries, commands, and procedures. SQL identifiers remain SQL
+text unless a bound Iceberg table is passed as a `relations` value; Structure then resolves its runtime catalog
+identifier. DataFrame row scopes remain DataFrame bindings. Catalog administration, table creation, branch/tag
+management, arbitrary DDL, and procedures without helpers remain caller-owned SQL. Iceberg changelog helpers and
+non-v2 table formats are outside the current convenience API.
+
+For the model and lifecycle details, see [table background](../background/DeltaIceberg.back.md#apache-iceberg-tables)
+and [quick reference](../reference/DeltaIceberg.ref.md). Iceberg-specific design and specification documents remain
+under `docs/dev/`.

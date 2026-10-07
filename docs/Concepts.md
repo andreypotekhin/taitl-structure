@@ -9,8 +9,10 @@ aggregation helpers come from `structure.plugin.pyspark`.
 The DSL is not a general wrapper around PySpark. A feature is compiler-visible only when Structure can capture
 it, represent it in IR, check it, and lower it to optimizer-visible target operations.
 
-The [Delta tables API](api/DeltaTables.api.md) also permits explicit, compiler-visible mutation of caller-supplied
-Delta tables. It is implemented with isolated evidence and remains release-gated.
+The [Delta and Iceberg tables API](api/DeltaIceberg.api.md) also permits explicit, compiler-visible operations on
+caller-supplied provider tables. Delta uses native `DeltaTable` handles; Iceberg binds catalog identifiers and keeps
+typed Spark SQL available for operations without convenience helpers. Each integration is admitted only for the
+runtime profiles listed in the [combined compatibility ledger](compatibility/DeltaIceberg.compat.md).
 
 Example source shape:
 
@@ -117,8 +119,8 @@ check the filter and projection before a DataFrame is executed.
 ### Transform
 
 A transform is a `Transform` subclass. It declares the pipeline surface: input DataFrames, output results, lanes,
-step methods, expression helpers, and hooks. `@transform(streaming=True)` is optional and records class-level options
-such as streaming compatibility.
+step methods, expression helpers, and hooks. `@transform(streaming=True)` records a class-local streaming requirement;
+subclass `StreamingTransform` when every descendant in the hierarchy must retain that requirement.
 
 A transform instance created with `EnrichOrders(orders=orders_df, customers=customers_df)` is a deferred invocation
 that stores runtime inputs until `.run(session)` is called. The class below shows the declarations, two steps, a

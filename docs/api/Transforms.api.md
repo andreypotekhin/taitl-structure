@@ -11,6 +11,7 @@ are documented in the [Relations API](Relations.api.md).
 | Structure API | PySpark parity | Example |
 | --- | --- | --- |
 | `Transform` | DataFrame pipeline class | `class Publish(Transform): pass` |
+| `StreamingTransform` | Transform hierarchy requiring streaming-compatible steps | `class Events(StreamingTransform): pass` |
 | `input(...)` | DataFrame input | `orders = input(OrderRaw)` |
 | `output(...)` | DataFrame result | `published = output(OrderPublished)` |
 | `lane(...)` | Intermediate DataFrame | `clean = lane(OrderClean)` |
@@ -29,6 +30,8 @@ are documented in the [Relations API](Relations.api.md).
   with `normalized.output`; ordinary Python assignments are ignored. The explicit `stage(...)` form remains supported.
 - Undecorated public methods with schema input/return annotations are also steps; `@step(...)` disambiguates bindings.
 - `@transform(...)` accepts transform-level target and streaming options.
+- `StreamingTransform` makes the streaming compatibility requirement apply to every descendant. Use
+  `@transform(streaming=True)` when the requirement should remain local to one class.
 - A sink declaration binds to a typed step parameter; the step must call `foreach(...)` with the exact row it returns to a
   declared final output. The caller receives the named read-only handoff and attaches it with PySpark. See
   [Hooks And Diagnostics](#hooks-and-diagnostics) for writer configuration and lifecycle boundaries.

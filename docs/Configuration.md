@@ -197,7 +197,8 @@ validate_intermediate = true
 
 `auto` is the default and references shared frames through temporary views when multiple steps or exposed outputs
 consume them. Linear steps do not receive periodic boundaries. `strict` inserts one after every non-final step for
-diagnostics; `off` disables compiler boundaries. An explicit `@transform(streaming=True)` defaults to `off`.
+diagnostics; `off` disables compiler boundaries. An explicit `@transform(streaming=True)` or a descendant of
+`StreamingTransform` defaults to `off`.
 Streaming-capable input declarations alone do not change the default, and actual streaming DataFrames always bypass
 boundaries, even with an explicit `auto` or `strict` policy.
 
@@ -374,6 +375,9 @@ Opaque boundaries remain an error. Under `"strict"`, an undeclared boundary is r
 `allow_stream_to_batch = true` opts into it. `allow_stream_to_batch` only bypasses the declaration guard; it never
 suppresses a known streaming-incompatible operation. An explicit `input(..., streaming=False)` or
 `@transform(streaming=False)` always fails at a streaming boundary.
+
+`StreamingTransform` makes the streaming compatibility requirement part of a class hierarchy. The existing
+`@transform(streaming=True)` option remains local to the decorated class.
 
 ## Compile-Time Performance
 

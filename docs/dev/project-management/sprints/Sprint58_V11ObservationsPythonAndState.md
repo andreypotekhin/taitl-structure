@@ -18,7 +18,7 @@ API; no gated state or worker-Python API is generated accidentally.
 - Specify sketch binary/merge/dependency semantics or retain the gate.
 - Add stable diagnostics and generated-source boundary checks for Arrow UDF/UDTF and unsupported state APIs. Row-based
   `transformWithState` is admitted for ordinary PySpark 4.1 with independent ledger status and live mode/timer/restart
-  evidence. Continue the separate `transformWithStateInPandas` evidence gate for PySpark 4.0/4.1 and legacy
+  evidence. Close the separate `transformWithStateInPandas` evidence gate for PySpark 4.0/4.1; retain the legacy
   `applyInPandasWithState` gate for PySpark 3.5/4.0/4.1; never combine their status with the row family.
 - Record `foreach` and `foreachBatch` as caller-owned handoffs, including writer construction, callback retries,
   checkpointing, and idempotence; generated Structure code must not start either lifecycle.
@@ -35,7 +35,7 @@ Catalog status, diagnostics, specification, and tests agree; gated APIs are reje
 
 `docs/dev/planning/P08042601.V11-pyspark-4.1-adoption.plan.md`,
 `docs/dev/planning/P10042603.V11-transform-with-state-admission-and-typed-parity.plan.md`,
-`docs/dev/planning/P10042604.V11-transform-with-state-in-pandas.plan.md`,
+`docs/dev/planning/past/P10042604.V11-transform-with-state-in-pandas.plan.md`,
 `docs/dev/planning/P10062602.V11-apply-in-pandas-with-state.plan.md`,
 `docs/dev/planning/past/P10042602.Row-level-foreach-sinks.plan.md`,
 `docs/dev/planning/past/P10052601.Schema-declared-foreach-batch-sinks.plan.md`, and the V11 Python/streaming and

@@ -8,6 +8,7 @@ from structure.core.compiler.artifacts.model.ArtifactDependency import ArtifactD
 from structure.core.compiler.artifacts.model.ArtifactManifest import ArtifactManifest
 from structure.core.compiler.artifacts.model.CompilerOptions import CompilerOptions
 from structure.core.dsl.model.schemas.Schema import Schema
+from structure.core.dsl.model.transforms.StreamingTransform import StreamingTransform
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline
 from structure.version import VERSION
@@ -56,7 +57,11 @@ class BuildArtifactManifest:
                     )
                 )
             for owner in transform.__mro__:
-                if not isinstance(owner, type) or not issubclass(owner, Transform) or owner is Transform:
+                if (
+                    not isinstance(owner, type)
+                    or not issubclass(owner, Transform)
+                    or owner in {Transform, StreamingTransform}
+                ):
                     continue
                 dependencies.add(self._dependency("transform", owner, project_root=project_root))
                 dependencies.update(self._schemas(owner, project_root=project_root))

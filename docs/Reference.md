@@ -10,9 +10,9 @@ discrepancies, use the [API documentation map](API.md#api-documentation-map) and
   runtime schemas, and data-quality boundaries.
 - [Transform reference](reference/Transform.ref.md): transform declarations, steps, bindings, projections, hooks,
   composition, streaming compatibility, and execution boundaries.
-- [Delta tables API](api/DeltaTables.api.md): caller-bound table relations, typed mutations, CHECK metadata, and
-  explicit schema evolution (implemented; release-gated).
-- [Delta tables reference](reference/DeltaTables.ref.md): concise declaration and operation inventory.
+- [Delta and Iceberg tables API](api/DeltaIceberg.api.md): caller-bound relations, typed mutations, SQL access,
+  metadata, maintenance, and explicit schema evolution.
+- [Delta and Iceberg tables reference](reference/DeltaIceberg.ref.md): concise provider declaration and operation inventory.
 - [Aggregations reference](reference/Aggregations.ref.md): grouped metrics, opaque HLL/Bitmap state, selected rows,
   deduplication, windows, and higher-order collection operations.
 - [Join reference](reference/Join.ref.md): lookup, rowset, existence, temporal, as-of, and Cartesian joins.

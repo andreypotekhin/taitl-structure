@@ -71,5 +71,5 @@ not exposed as transform outputs. An optimize predicate may use only table parti
 hours; a shorter retention requires `allow_short_retention=True`, and Delta's native retention safety check remains
 active. Vacuum removes files that older snapshots may need, so ensure no reader or stream still depends on them.
 
-See [Delta Tables API](../api/DeltaTables.api.md) for table metadata declarations and [compatibility](../compatibility/DeltaTables.compat.md)
+See [Delta Tables API](../api/DeltaIceberg.api.md) for table metadata declarations and [compatibility](../compatibility/DeltaIceberg.compat.md)
 for the runtime admission status.

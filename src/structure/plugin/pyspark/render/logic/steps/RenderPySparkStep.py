@@ -23,6 +23,8 @@ from structure.plugin.pyspark.delta.runtime import render_delta_predicate_templa
 from structure.plugin.pyspark.dsl.joins.Join import Join
 from structure.plugin.pyspark.dsl.joins.JoinMethod import JoinMethod
 from structure.plugin.pyspark.dsl.types import ArrayType, DecimalType, MapType, StructType, StructureType
+from structure.plugin.pyspark.iceberg.model import IcebergMutation
+from structure.plugin.pyspark.iceberg.runtime import render_iceberg_predicate_template
 from structure.plugin.pyspark.render.logic.expressions.RenderPySparkExpression import render_pyspark_expression
 from structure.plugin.pyspark.render.logic.steps.RenderPySparkAggregatePlan import RenderPySparkAggregatePlan
 from structure.plugin.pyspark.render.logic.steps.RenderPySparkFilters import RenderPySparkFilters
@@ -61,8 +63,12 @@ class RenderPySparkStep:
         delta_cdf_checks: bool = True,
     ) -> str:
         if isinstance(step, PySparkStepRecipe) and step.effect:
+            if any(mutation.kind.startswith("iceberg_") for mutation in step.delta_mutations):
+                return self._iceberg_effect(step, sources or {})
             return self._delta_effect(step, sources or {}, delta_check_match=delta_check_match)
-        if isinstance(step, PySparkOutputRecipe) and step.binding in {"delta", "delta_table"}:
+        if isinstance(step, PySparkOutputRecipe) and step.binding in {"delta", "delta_table", "iceberg", "iceberg_table"}:
+            if step.binding in {"iceberg", "iceberg_table"}:
+                return f"        {step.name} = self._iceberg_tables[{step.name!r}]"
             return f"        {step.name} = self._delta_tables[{step.name!r}]"
         if isinstance(step, PySparkStepRecipe) and len(step.results) > 1:
             return self._multiple(
@@ -77,6 +83,18 @@ class RenderPySparkStep:
         target = self._target(step)
         lines = [f"        # Step method: {step.name}"]
         for index, mutation in enumerate(step.delta_mutations if isinstance(step, PySparkStepRecipe) else ()):
+            if mutation.kind in {"iceberg_snapshot", "iceberg_history", "iceberg_snapshots", "iceberg_metadata"}:
+                source = (sources or {}).get(mutation.target, mutation.target)
+                lines.append(
+                    f"        _StructureIcebergRead_{index} = {self._iceberg_read_payload(mutation)!r}"
+                )
+                lines.append(
+                    f"        {source} = read_iceberg_relation(_StructureIcebergRead_{index}, "
+                    f"tables=self._iceberg_tables, spark=self.spark)"
+                )
+                continue
+            if isinstance(mutation, IcebergMutation):
+                continue
             if mutation.kind not in {"delta_snapshot", "delta_changes", "delta_history", "delta_detail"}:
                 continue
             source = (sources or {}).get(mutation.target, mutation.target)
@@ -135,6 +153,21 @@ class RenderPySparkStep:
         return "\n".join(lines)
 
     @staticmethod
+    def _iceberg_read_payload(mutation):
+        return {
+            "kind": mutation.kind,
+            "target": mutation.target,
+            "selector": None
+            if mutation.selector is None
+            else {
+                "kind": mutation.selector.kind,
+                "type": mutation.selector.type.name if mutation.selector.type else None,
+                "data": dict(mutation.selector.data or {}),
+            },
+            "action": mutation.action,
+        }
+
+    @staticmethod
     def _render_delta_selector(expression) -> str:
         if expression is None:
             return "None"
@@ -167,6 +200,8 @@ class RenderPySparkStep:
     ) -> str:
         lines = [f"        # Delta effect: {step.name}"]
         for index, mutation in enumerate(step.delta_mutations):
+            if isinstance(mutation, IcebergMutation):
+                continue
             table = f"_delta_target_{index}"
             lines.append(f"        {table} = self._delta_tables[{mutation.target!r}]")
             aliases = {mutation.target_scope: ""}
@@ -304,6 +339,109 @@ class RenderPySparkStep:
                 "            raise",
             ]
         )
+
+    def _iceberg_effect(self, step: PySparkStepRecipe, sources: Mapping[str, str]) -> str:
+        lines = [f"        # Iceberg effect: {step.name}"]
+        for index, mutation in enumerate(step.delta_mutations):
+            table = f"_iceberg_table_{index}"
+            lines.append(f"        {table} = quote_table_name(self._iceberg_tables[{mutation.target!r}])")
+            if mutation.kind == "iceberg_delete":
+                assert mutation.predicate is not None
+                template = render_iceberg_predicate_template(mutation.predicate)
+                lines.append(f"        _iceberg_where_{index} = bind_iceberg_predicate_variables({template!r}, self._structure_variables)")
+                lines.append(f"        self.spark.sql(f'DELETE FROM {{{table}}} WHERE {{_iceberg_where_{index}}}')")
+            elif mutation.kind == "iceberg_update":
+                assert mutation.predicate is not None
+                template = render_iceberg_predicate_template(mutation.predicate)
+                lines.append(f"        _iceberg_where_{index} = bind_iceberg_predicate_variables({template!r}, self._structure_variables)")
+                assignment_templates = [
+                    (name, render_iceberg_predicate_template(expression))
+                    for name, expression in mutation.assignments
+                ]
+                lines.append(
+                    f"        _iceberg_set_{index} = bind_iceberg_predicate_variables("
+                    f"{tuple(assignment_templates)!r}, self._structure_variables)"
+                )
+                lines.append(
+                    f"        self.spark.sql(f'UPDATE {{{table}}} SET ' + ', '.join("
+                    f"quote_iceberg_column(name) + ' = ' + value for name, value in _iceberg_set_{index}) "
+                    f"+ f' WHERE {{_iceberg_where_{index}}}')"
+                )
+            elif mutation.kind == "iceberg_append":
+                assert mutation.source is not None
+                source = sources.get(mutation.source, mutation.source)
+                lines.append(
+                    f"        append_iceberg_table({source}, self._iceberg_tables[{mutation.target!r}], "
+                    f"schema_evolution={mutation.schema_evolution!r})"
+                )
+            elif mutation.kind == "iceberg_merge":
+                assert mutation.source is not None and mutation.predicate is not None
+                source = sources.get(mutation.source, mutation.source)
+                view = f"_structure_iceberg_merge_{index}"
+                lines.append(f"        {source}.createOrReplaceTempView({view!r})")
+                predicate = render_iceberg_predicate_template(mutation.predicate, {mutation.target_scope: "target", mutation.source_scope: "source"})
+                clauses = []
+                for clause in mutation.clauses:
+                    condition = "" if clause.condition is None else " AND " + render_iceberg_predicate_template(clause.condition, {mutation.target_scope: "target", mutation.source_scope: "source"})
+                    if clause.action == "matched_update_all":
+                        clauses.append(f"WHEN MATCHED{condition} THEN UPDATE SET *")
+                    elif clause.action == "matched_delete":
+                        clauses.append(f"WHEN MATCHED{condition} THEN DELETE")
+                    elif clause.action == "unmatched_insert_all":
+                        clauses.append(f"WHEN NOT MATCHED{condition} THEN INSERT *")
+                    elif clause.action in {"matched_update", "unmatched_source_update"}:
+                        values = ", ".join(f"`{name}` = {render_iceberg_predicate_template(value, {mutation.target_scope: 'target', mutation.source_scope: 'source'})}" for name, value in clause.assignments)
+                        prefix = "WHEN MATCHED" if clause.action == "matched_update" else "WHEN NOT MATCHED BY SOURCE"
+                        clauses.append(f"{prefix}{condition} THEN UPDATE SET {values}")
+                    elif clause.action == "unmatched_source_delete":
+                        clauses.append(f"WHEN NOT MATCHED BY SOURCE{condition} THEN DELETE")
+                    elif clause.action == "unmatched_insert":
+                        names = ", ".join(f"`{name}`" for name, _ in clause.assignments)
+                        values = ", ".join(render_iceberg_predicate_template(value, {mutation.target_scope: 'target', mutation.source_scope: 'source'}) for _, value in clause.assignments)
+                        clauses.append(f"WHEN NOT MATCHED{condition} THEN INSERT ({names}) VALUES ({values})")
+                statement = f"MERGE INTO {{{table}}} AS target USING `{view}` AS source ON {predicate} {' '.join(clauses)}"
+                lines.append(
+                    f"        _iceberg_merge_sql_{index} = bind_iceberg_predicate_variables("
+                    f"{statement!r}, self._structure_variables).format(table={table})"
+                )
+                lines.append("        try:")
+                lines.append(f"            self.spark.sql(_iceberg_merge_sql_{index})")
+                lines.append("        finally:")
+                lines.append(f"            self.spark.catalog.dropTempView({view!r})")
+            elif mutation.kind == "iceberg_maintenance":
+                arguments = tuple(
+                    (
+                        name,
+                        render_iceberg_predicate_template(value)
+                        if hasattr(value, "kind")
+                        else value,
+                    )
+                    for name, value in mutation.procedure_args
+                )
+                lines.append(
+                    f"        execute_iceberg_procedure(self.spark, self._iceberg_tables[{mutation.target!r}], "
+                    f"{mutation.action!r}, {arguments!r}, self._structure_variables)"
+                )
+            else:
+                raise ValueError(f"Unknown Iceberg mutation {mutation.kind!r}")
+            if mutation.output is not None:
+                if mutation.output_schema is None:
+                    raise ValueError("An evolving Iceberg append requires its declared output Schema")
+                lines.append(
+                    f"        validate_evolved_iceberg_table(self.spark, self._iceberg_tables[{mutation.target!r}], "
+                    f"_StructureIcebergOutputSchema_{mutation.output_schema.__name__})"
+                )
+                lines.append(
+                    f"        self._iceberg_tables[{mutation.output!r}] = self._iceberg_tables[{mutation.target!r}]"
+                )
+            for key in (mutation.target, f"input:{mutation.target}"):
+                variable = sources.get(key)
+                if variable is not None:
+                    lines.append(f"        {variable} = self.spark.table(self._iceberg_tables[{mutation.target!r}])")
+        final = step.delta_mutations[-1]
+        result = step.results[0].frame
+        lines.append(f"        {result} = self.spark.table(self._iceberg_tables[{final.output or final.target!r}])")
+        return "\n".join(lines)
 
     def _multiple(
         self,
@@ -2450,15 +2588,16 @@ class RenderPySparkStep:
     def _sql_operation(self, recipe: PySparkSqlRecipe, *, sources: dict[str, str], target: str) -> list[str]:
         relations = ", ".join(f"{name!r}: {sources[scope]}" for name, scope in recipe.relations)
         relation_mapping = f"{{{relations}}}" if relations else "{}"
+        from structure.plugin.pyspark.dsl.SqlResult import SqlCommandResult
+
+        command_result = issubclass(recipe.schema, SqlCommandResult)
         lines = [
             "        from structure.plugin.pyspark.execution.logic.running.ExecutePySparkSql import execute_pyspark_sql",
             f"        {target} = execute_pyspark_sql(",
             f"            self.spark, {recipe.statement!r}, args={recipe.args!r}, relations={relation_mapping},",
-            f"            step={recipe.step!r}, label={recipe.label!r},",
+            f"            step={recipe.step!r}, label={recipe.label!r}, command_result={command_result!r},",
             "        )",
         ]
-        from structure.plugin.pyspark.dsl.SqlResult import SqlCommandResult
-
         if issubclass(recipe.schema, SqlCommandResult):
             lines = [
                 "        from structure.plugin.pyspark.execution.logic.running.NormalizePySparkSqlCommandResult import normalize_sql_command_result",

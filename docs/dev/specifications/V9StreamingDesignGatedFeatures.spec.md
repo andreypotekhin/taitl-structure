@@ -188,10 +188,12 @@ the admitted contract has online/generated, timer, composite-key, and same-check
 rejected during compilation. See the [row admission plan](../planning/past/P10062603.V11-transform-with-state-admission-and-typed-parity.plan.md)
 and [typed parity design](../design/V11TransformWithStateTypedParity.design.md).
 
-The Pandas `transform_with_state_in_pandas(...)` and legacy `apply_in_pandas_with_state(...)` interfaces remain separate
-design-gated families while their profile-specific evidence is completed. Dataset/Scala arbitrary state APIs remain
-outside the PySpark Structure surface; `ArbitraryStateContract` is adoption metadata, not a runtime. Their history in
-this V9 document records the earlier contract discussion, not current support status.
+Pandas `transform_with_state_in_pandas(...)` is supported on ordinary PySpark 4.0 and 4.1 after the full profile lanes
+passed; see its [completed ExecPlan](../planning/past/P10042604.V11-transform-with-state-in-pandas.plan.md). Legacy
+`apply_in_pandas_with_state(...)` remains a separate design-gated family with its own callback and checkpoint
+contract. Dataset/Scala arbitrary state APIs remain outside the PySpark Structure surface;
+`ArbitraryStateContract` is adoption metadata, not a runtime. This V9 document records the earlier contract discussion,
+not current support status.
 
 Required contract:
 

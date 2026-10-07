@@ -15,9 +15,10 @@ The implementation inventory compares the PySpark 4.0 and 4.1 Python references 
 signature-changed row-preserving function. Deterministic numeric, string, binary, temporal, and collection functions
 with explicit scalar input/output types are candidates for `supported`. `Column.transform` has a typed
 whole-expression implementation for ordinary PySpark 4.1: the callback receives the complete symbolic expression and
-returns one symbolic expression. The result may have a different type and nullability from the input. Its public status
-remains `planned` until ordinary 4.1 live online/generated evidence passes; Spark Connect remains separately gated.
-This is distinct from array
+returns one symbolic expression. The result may have a different type and nullability from the input. Ordinary PySpark
+4.1 live online/generated evidence passes, so this surface is `supported` for `>=4.1,<4.2`; Spark Connect remains
+separately gated. Streaming compatibility continues to be determined by the returned expression and its existing
+streaming checks. This is distinct from array
 `functions.transform`, represented by Structure's `arr_transform(...)`, whose callback receives an array element.
 Random functions such as `random`, `uniform`, `randstr`, and `uuid` require an explicit seed
 policy; without one they are `design-gated` or `streaming-ineligible` rather than silently treated as deterministic.
@@ -59,9 +60,11 @@ target-profile rows, live evidence, and checkpoint-restart gate. The row family 
 which admits Append and Update output modes and rejects Complete during compilation. Spark Connect and
 Dataset/Scala arbitrary-state APIs remain outside the row claim. The row API supports Append and Update and the None,
 ProcessingTime, and EventTime modes in their valid combinations; Complete is rejected during compilation. Ordinary
-PySpark 4.1 online/generated evidence covers composite keys, both timer clocks, and same-checkpoint restart. The Pandas
-and legacy Pandas rows remain `design-gated` until their own profiles pass their remaining live behavior, callback,
-parity, and restart tests. The accepted typed row contract is recorded in `V11TransformWithStateTypedParity.design.md`.
+PySpark 4.1 online/generated evidence covers composite keys, both timer clocks, and same-checkpoint restart. Pandas
+`transform_with_state_in_pandas(...)` is supported on ordinary PySpark 4.0 and 4.1 after both complete lanes passed;
+see its [completed ExecPlan](../planning/past/P10042604.V11-transform-with-state-in-pandas.plan.md). Legacy
+`apply_in_pandas_with_state(...)` remains `design-gated` pending its own profile-specific callback and parity evidence.
+The accepted typed row contract is recorded in `V11TransformWithStateTypedParity.design.md`.
 
 In typed row mode, `on_rows(self, key, rows, timers)` is required, `on_timer(self, key, timer, timers)` is optional,
 and `on_initial_state(self, key, initial, timers)` is optional when paired with an `initial_state=` relation.

@@ -395,6 +395,7 @@ def _decorate_transform_class(cls, kwargs):
     if not issubclass(cls, Transform):
         raise TypeError("@transform classes must inherit from Transform")
     options = _normalize_transform_options(kwargs)
+    cls.resolve_transform_options(options, transform_name=cls.__name__)
     cls._structure_transform = True
     cls._structure_transform_options = options
     cls._structure_step_method_options = _step_method_options(options)

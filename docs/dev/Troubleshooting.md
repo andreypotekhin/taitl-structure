@@ -1,5 +1,12 @@
 # Troubleshooting
 
+### Problem (DSL): A StreamingTransform descendant declares streaming=False
+
+When: Decorating a subclass of `StreamingTransform` with `@transform(streaming=False)`.
+Error: The class inherits a required streaming compatibility check and cannot disable it.
+Fix: Remove `streaming=False`, or move batch-only behavior into a hierarchy that inherits directly from `Transform`.
+Use `@transform(streaming=True)` to opt an ordinary `Transform` child into the class-local streaming requirement.
+
 ### Problem (runtime): An assertion disappears from Spark's optimized plan
 
 Reproduction: declare `require_all(order.amount >= 0)`, pass a negative amount, and collect the result.

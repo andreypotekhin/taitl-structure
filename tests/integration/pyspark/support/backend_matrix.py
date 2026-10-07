@@ -73,7 +73,20 @@ def spark(pytestconfig, monkeypatch):
     packages = os.environ.get("STRUCTURE_SPARK_JARS_PACKAGES")
     if packages and not remote:
         builder = builder.config("spark.jars.packages", packages)
-        builder = builder.config("spark.sql.extensions", "org.apache.sedona.sql.SedonaSqlExtensions")
+    extensions = []
+    if packages and "sedona" in packages:
+        extensions.append("org.apache.sedona.sql.SedonaSqlExtensions")
+    if os.environ.get("STRUCTURE_ICEBERG_TESTS") == "1" and not remote:
+        extensions.append("org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions")
+        shared = Path(pytestconfig.rootpath) / ".pytest-workspace-tmp" / "integration"
+        warehouse = shared / "iceberg-warehouse"
+        builder = (
+            builder.config("spark.sql.catalog.structure_iceberg", "org.apache.iceberg.spark.SparkCatalog")
+            .config("spark.sql.catalog.structure_iceberg.type", "hadoop")
+            .config("spark.sql.catalog.structure_iceberg.warehouse", warehouse.as_uri())
+        )
+    if extensions and not remote:
+        builder = builder.config("spark.sql.extensions", ",".join(extensions))
     if not remote:
         builder = (
             builder.config(

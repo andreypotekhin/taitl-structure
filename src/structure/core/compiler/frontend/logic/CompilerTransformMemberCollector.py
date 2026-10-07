@@ -5,6 +5,7 @@ from collections import defaultdict
 
 from structure.core.compiler.diagnostics.api import Diagnostics, StructureCompileError
 from structure.core.compiler.frontend.logic.CompilerTransformMember import CompilerTransformMember
+from structure.core.dsl.model.transforms.StreamingTransform import StreamingTransform
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
 
@@ -43,7 +44,7 @@ class CompilerTransformMemberCollector:
         visited: set[type[Transform]] = set()
 
         def visit(cls: type[Transform]) -> None:
-            if cls in visited or cls is Transform:
+            if cls in visited or cls in {Transform, StreamingTransform}:
                 return
             for base in cls.__bases__:
                 if isinstance(base, type) and issubclass(base, Transform):

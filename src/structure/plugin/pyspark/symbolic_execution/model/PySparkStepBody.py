@@ -7,6 +7,7 @@ from structure.plugin.pyspark.dsl.aggregation.ProjectAssignment import ProjectAs
 from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.joins.JoinPlan import JoinPlan
 from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
+from structure.plugin.pyspark.iceberg.model import IcebergMutation
 from structure.plugin.pyspark.symbolic_execution.model.PySparkResultBody import PySparkResultBody
 
 
@@ -18,7 +19,7 @@ class PySparkStepBody:
     filters: tuple[Expression, ...] = ()
     joins: tuple[JoinPlan, ...] = ()
     operations: tuple[OperationPlan, ...] = ()
-    delta_mutations: tuple[DeltaMutation, ...] = ()
+    delta_mutations: tuple[DeltaMutation | IcebergMutation, ...] = ()
     aggregate_keys: tuple[tuple[str, Expression], ...] | None = None
     aggregate_levels: tuple[tuple[str, ...], ...] = ()
     aggregate_grouping: str = "group_by"

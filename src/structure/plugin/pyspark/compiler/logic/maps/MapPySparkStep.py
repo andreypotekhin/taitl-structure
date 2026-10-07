@@ -81,9 +81,16 @@ class MapPySparkStep:
     ) -> PySparkStepRecipe:
         body = self._body(step)
         for mutation in body.delta_mutations:
-            capabilities.require(CapabilityRequirement(group="delta", name=mutation.kind.removeprefix("delta_"), docs="docs/compatibility/DeltaTables.compat.md"))
+            iceberg = mutation.kind.startswith("iceberg_")
+            prefix = "iceberg_" if iceberg else "delta_"
+            group = "iceberg" if iceberg else "delta"
+            docs = "docs/compatibility/DeltaIceberg.compat.md"
+            capability = mutation.kind.removeprefix(prefix)
+            if mutation.kind == "iceberg_maintenance":
+                capability = "rollback" if mutation.action in {"rollback_to_snapshot", "rollback_to_timestamp"} else str(mutation.action)
+            capabilities.require(CapabilityRequirement(group=group, name=capability, docs=docs))
             if mutation.schema_evolution:
-                capabilities.require(CapabilityRequirement(group="delta", name="schema_evolution", docs="docs/compatibility/DeltaTables.compat.md"))
+                capabilities.require(CapabilityRequirement(group=group, name="schema_evolution", docs=docs))
         input_alias = self._names.alias(step.input_schema.__name__)
         output_alias = self._names.alias(step.output_schema.__name__)
         operations = self._operations(body, input_alias=input_alias, capabilities=capabilities, step_name=step.name)
@@ -159,7 +166,10 @@ class MapPySparkStep:
             input_sources=tuple(binding.source for binding in step.inputs),
             origin=step.origin,
             effect=step.effect or any(
-                mutation.kind not in {"delta_snapshot", "delta_changes", "delta_history", "delta_detail"}
+                mutation.kind not in {
+                    "delta_snapshot", "delta_changes", "delta_history", "delta_detail",
+                    "iceberg_snapshot", "iceberg_history", "iceberg_snapshots", "iceberg_metadata",
+                }
                 for mutation in body.delta_mutations
             ),
             delta_mutations=body.delta_mutations,

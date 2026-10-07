@@ -192,6 +192,31 @@ class RenderPySparkTransformModule:
                 lines.append(
                     f"from {schema.__module__} import {schema.__name__} as _StructureDeltaOutputSchema_{schema.__name__}"
                 )
+        iceberg_inputs = [item for item in plan.inputs if item.binding in {"iceberg", "iceberg_table"}]
+        if iceberg_inputs:
+            lines.append(
+                "from structure.plugin.pyspark.iceberg.runtime import ("
+                "append_iceberg_table, bind_iceberg_predicate_variables, execute_iceberg_procedure, "
+                "quote_iceberg_column, quote_table_name, "
+                "read_iceberg_relation, validate_evolved_iceberg_table, validate_iceberg_table)"
+            )
+            for index, item in enumerate(iceberg_inputs):
+                lines.append(
+                    f"from {item.schema.__module__} import {item.schema.__name__} as _StructureIcebergSchema_{index}"
+                )
+            iceberg_output_schemas = tuple(
+                dict.fromkeys(
+                    mutation.output_schema
+                    for step in plan.steps
+                    for mutation in step.delta_mutations
+                    if mutation.output_schema is not None
+                    and any(mutation.kind.startswith("iceberg_") for mutation in step.delta_mutations)
+                )
+            )
+            for schema in iceberg_output_schemas:
+                lines.append(
+                    f"from {schema.__module__} import {schema.__name__} as _StructureIcebergOutputSchema_{schema.__name__}"
+                )
         return "\n".join(lines)
 
     def _unique(self, lines: list[str]) -> str:
@@ -274,7 +299,11 @@ class RenderPySparkTransformModule:
         class_name = f"{plan.transform}Generated"
         source_name = source_transform.rsplit(".", 1)[1]
         fields = self._mirror_fields(plan)
-        variable_argument = " _structure_variables=None," if self._has_runtime_variables(plan) else ""
+        has_runtime_variables = self._has_runtime_variables(plan)
+        has_iceberg_operations = any(
+            mutation.kind.startswith("iceberg_") for step in plan.steps for mutation in step.delta_mutations
+        )
+        variable_argument = " _structure_variables=None," if has_runtime_variables or has_iceberg_operations else ""
         lines = [f"class {class_name}:", "", f"    def __init__(self, *, spark: SparkSession, ctx=None,{variable_argument}"]
         for input in self._public_inputs(plan):
             suffix = " = None" if input.optional else ""
@@ -284,7 +313,7 @@ class RenderPySparkTransformModule:
                 else f"        {input.name}: DataFrame,"
             )
         lines.extend(["    ):", "        self.spark = spark", "        self.ctx = ctx"])
-        if self._has_runtime_variables(plan):
+        if has_runtime_variables or has_iceberg_operations:
             lines.append("        self._structure_variables = _structure_variables or {}")
         lines.append("        self._ran = False")
         for input in plan.inputs:
@@ -325,12 +354,21 @@ class RenderPySparkTransformModule:
         )
         if any(item.binding in {"delta", "delta_table"} for item in plan.inputs):
             lines.append("        self._delta_tables = {}")
+        if any(item.binding in {"iceberg", "iceberg_table"} for item in plan.inputs):
+            lines.append("        self._iceberg_tables = {}")
         for input in plan.inputs:
             current = fields[input.name]
             original = fields[f"input:{input.name}"]
             lines.append(f"        self.{current} = self.{original}")
             if input.binding in {"delta", "delta_table"}:
                 lines.extend(self._delta_input_lines(plan, input, variable=f"self.{current}"))
+            elif input.binding in {"iceberg", "iceberg_table"}:
+                index = [source for source in plan.inputs if source.binding in {"iceberg", "iceberg_table"}].index(input)
+                lines.append(f"        self._iceberg_tables[{input.name!r}] = self.{current}")
+                lines.append(
+                    f"        self.{current} = validate_iceberg_table(self.spark, self.{current}, "
+                    f"_StructureIcebergSchema_{index}, validation={input.validation.mode.value!r})"
+                )
             else:
                 lines.extend(self._validation(input.validation, target=f"self.{current}"))
         for step in plan.steps:
@@ -533,6 +571,8 @@ class RenderPySparkTransformModule:
             lines.append("        self._structure_variables = _structure_variables or {}")
         if any(item.binding in {"delta", "delta_table"} for item in plan.inputs):
             lines.append("        self._delta_tables = {}")
+        if any(item.binding in {"iceberg", "iceberg_table"} for item in plan.inputs):
+            lines.append("        self._iceberg_tables = {}")
         for input in plan.inputs:
             if input.internal:
                 lines.append(
@@ -545,6 +585,13 @@ class RenderPySparkTransformModule:
                 )
             if input.binding in {"delta", "delta_table"}:
                 lines.extend(self._delta_input_lines(plan, input, variable=input.name))
+            elif input.binding in {"iceberg", "iceberg_table"}:
+                index = [source for source in plan.inputs if source.binding in {"iceberg", "iceberg_table"}].index(input)
+                lines.append(f"        self._iceberg_tables[{input.name!r}] = {input.name}")
+                lines.append(
+                    f"        {input.name} = validate_iceberg_table(self.spark, {input.name}, "
+                    f"_StructureIcebergSchema_{index}, validation={input.validation.mode.value!r})"
+                )
             else:
                 lines.extend(self._validation(input.validation))
         for input in plan.inputs:
@@ -1162,7 +1209,12 @@ class RenderPySparkTransformModule:
         return tuple(found)
 
     def _has_temporal_literal(self, plan: PySparkExecutionPlan) -> bool:
-        return any(self._has_temporal_literal_expression(expression) for expression in self._expressions(plan))
+        return any(self._has_temporal_literal_expression(expression) for expression in self._expressions(plan)) or any(
+            isinstance(value, (date, datetime))
+            for step in plan.steps
+            for mutation in step.delta_mutations
+            for _, value in mutation.procedure_args
+        )
 
     def _has_temporal_literal_expression(self, expression) -> bool:
         return (
@@ -1209,6 +1261,7 @@ class RenderPySparkTransformModule:
 
         return contains(plan.steps) or any(
             mutation.kind in {"replace_where", "delta_snapshot", "delta_changes", "delta_history"}
+            or mutation.kind.startswith("iceberg_")
             for step in plan.steps
             for mutation in step.delta_mutations
         )

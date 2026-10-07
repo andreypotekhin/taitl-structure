@@ -77,7 +77,7 @@ class ComposeTransformGraph:
             stage_outputs=tuple(public_stage_outputs),
             allow_stage_outputs=allow_stage_outputs,
             internal_inputs=tuple(internal_inputs),
-            options=Transform.resolve_transform_options(
+            options=wrapper_class.resolve_transform_options(
                 wrapper_class.__dict__.get("_structure_transform_options", {}),
                 inputs=inputs,
                 transform_name=wrapper_class.__name__,

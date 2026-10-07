@@ -439,7 +439,7 @@ rules are data-quality constraints and are not silently enabled by a schema decl
 
 `schema_and_constraints` is explicit opt-in for declared constraints at eligible DataFrame validation phases.
 Caller-bound Delta tables have a separate `Schema.constraints = (check(...),)` metadata check before mutation; it does
-not depend on this validation mode. See the [Delta tables API](../api/DeltaTables.api.md). Generated schemas remain
+not depend on this validation mode. See the [Delta and Iceberg tables API](../api/DeltaIceberg.api.md). Generated schemas remain
 shape-only, and table setup remains application-controlled.
 
 ## Diagnostics

@@ -37,74 +37,13 @@ Structure does not generate or call `readStream`, `writeStream`, `outputMode`, `
 `awaitTermination()`, checkpoint, trigger, or sink APIs inside a transform. A streaming-compatible result is still a
 DataFrame plan; it is not a running query.
 
-## Attach a batch transform to a foreachBatch sink
-
-Declare a schema sink for the rows that the caller intends to send. The sink handoff points to the selected final
-streaming output, while its `schema` names the expected output from the caller-selected batch transform:
-
-```python
-class PublishAlerts(Transform):
-    events = input(Event, streaming=True)
-    alerts = output(Alert)
-    send_alerts = sink(AlertMessage)
-
-    @step(output=alerts)
-    def publish(self, event: Event, sink: AlertMessage) -> Alert:
-        alert = Alert(event_id=event.event_id, message=event.message)
-        foreach_batch(alert, sink)
-        return alert
-
-
-class PrepareAlertBatch(Transform):
-    alerts = input(Alert)
-    messages = output(AlertMessage)
-
-    def prepare(self, alert: Alert) -> AlertMessage:
-        return AlertMessage(event_id=alert.event_id, payload=alert.message)
-```
-
-The sink parameter is an effect dependency selected by its declared schema type. `foreach_batch` requires both the
-symbolic row and that parameter. The helper records the handoff during compilation; it does not create a DataFrame,
-write data, or start a query. A separate sink-effect step may return `AlertMessage` while taking `sink: AlertMessage`
-and returning `foreach_batch(alert, sink)`. That return marks an effect, not another relation. Both forms require a
-class-level `sink(AlertMessage)` declaration.
-
-At runtime, the caller selects and constructs the batch transform. Its input must match the streaming output schema,
-and its one selected result must match the sink schema:
-
-```python
-with StructureSession(spark=spark, config=config) as session:
-    result = PublishAlerts(events=events).run(session)
-    handoff = result.send_alerts
-
-    def send_batch(batch_df, batch_id: int) -> None:
-        with session.spawn() as batch_session:
-            prepared = PrepareAlertBatch(alerts=batch_df).run_batch(batch_session, handoff)
-            alert_writer.write(prepared.messages, stream_id="alerts-v1", batch_id=batch_id)
-
-    query = handoff.dataframe.writeStream.foreachBatch(send_batch).option(
-        "checkpointLocation", checkpoint
-    ).start()
-    try:
-        query.awaitTermination()
-    finally:
-        query.stop()
-```
-
-The caller owns callback selection, write configuration, checkpoints, query lifecycle, and retry policy. A durable
-destination should deduplicate atomically by a stable stream identity and `batch_id`; Spark may retry a batch after a
-failure. Keep the parent session open until the query stops. `session.spawn()` creates a child with the parent's
-runtime and resolved configuration and scopes Structure temporary-view cleanup to that callback. See the complete
-[alert example](../../examples/streams/transforms/foreach_batch_alerts.py).
-
 ## Declare streaming inputs
 
 An input declared with `streaming=True` tells the compiler that the relation may carry streaming lineage. An input
 without the option is static, which is the usual declaration for reference data used by a lookup join.
 
 ```python
-@transform(streaming=True)
-class CleanEvents(Transform):
+class CleanEvents(StreamingTransform):
     events = input(RawEvent, streaming=True)
     clean = output(CleanEvent)
 
@@ -124,10 +63,13 @@ The decorator and input option serve different purposes:
 | `input(Event, streaming=True)` | Declare streaming lineage for one input |
 | `input(Event)` | Declare a static input, including a lookup relation |
 | `@transform(streaming=True)` | Require every compiled step to satisfy streaming compatibility |
+| `StreamingTransform` | Require compatibility for this class and every descendant |
 | `@transform(allow_stream_to_batch=True)` | Permit a deliberate undeclared composed boundary |
 
-The transform marker does not turn a batch DataFrame into a stream. The concrete DataFrame supplied at runtime still
-determines whether the result is streaming.
+`StreamingTransform` does not imply streaming input lineage. A decorated child of an ordinary transform can opt in
+with `@transform(streaming=True)`, including below a parent declared `streaming=False`; decorator options remain
+class-local. Neither declaration turns a batch DataFrame into a stream. The concrete DataFrame supplied at runtime
+still determines whether the result is streaming.
 
 
 ## Configure compatibility checks
@@ -161,8 +103,7 @@ Composition passes the child transform's output lineage to the downstream transf
 the downstream stage is expected to continue processing a stream:
 
 ```python
-@transform(streaming=True)
-class NormalizeEvents(Transform):
+class NormalizeEvents(StreamingTransform):
     events = input(RawEvent, streaming=True)
     normalized = output(NormalizedEvent)
 
@@ -173,8 +114,7 @@ class NormalizeEvents(Transform):
         )
 
 
-@transform(streaming=True)
-class PublishEvents(Transform):
+class PublishEvents(StreamingTransform):
     events = input(NormalizedEvent, streaming=True)
     published = output(PublishedEvent)
 
@@ -182,8 +122,7 @@ class PublishEvents(Transform):
         return PublishedEvent.project(event)
 
 
-@transform(streaming=True)
-class EventPipeline(Transform):
+class EventPipeline(StreamingTransform):
     events = input(RawEvent, streaming=True)
     published = output(PublishedEvent)
 
@@ -203,8 +142,7 @@ Row-local projections and filters do not retain cross-row state. They are the si
 each output row depends only on the current input row:
 
 ```python
-@transform(streaming=True)
-class NormalizeEvents(Transform):
+class NormalizeEvents(StreamingTransform):
     events = input(RawEvent, streaming=True)
     normalized = output(NormalizedEvent)
 
@@ -228,8 +166,7 @@ A watermark tells Spark how much event-time lateness the stateful operation may 
 field before the aggregate, deduplication, or join that uses the field:
 
 ```python
-@transform(streaming=True)
-class RecentEvents(Transform):
+class RecentEvents(StreamingTransform):
     events = input(RawEvent, streaming=True)
     recent = output(CleanEvent)
 
@@ -249,8 +186,7 @@ Use a time window when the result should contain one aggregate row per event-tim
 combination. A fixed or sliding event-time window requires a preceding watermark on that same event-time field:
 
 ```python
-@transform(streaming=True)
-class GateProgress(Transform):
+class GateProgress(StreamingTransform):
     passages = input(Passage, streaming=True)
     progress = output(GateProgressRow)
 
@@ -283,8 +219,7 @@ Use a session window when records belong to one activity period separated by a f
 aggregate needs a watermark on the same event-time field and at least one ordinary grouping key:
 
 ```python
-@transform(streaming=True)
-class PaddlerSessions(Transform):
+class PaddlerSessions(StreamingTransform):
     passages = input(Passage, streaming=True)
     sessions = output(PaddlerSession)
 
@@ -310,8 +245,7 @@ session grouped without an ordinary key is rejected before the query starts.
 it only after a watermarked first event-time aggregate and stateless work between the two aggregates:
 
 ```python
-@transform(streaming=True)
-class RollUpWindows(Transform):
+class RollUpWindows(StreamingTransform):
     events = input(RawEvent, streaming=True)
     totals = output(WindowTotal)
 
@@ -335,8 +269,7 @@ Use watermark-bounded deduplication when a stable event identifier should be acc
 possible. The explicit helper makes the streaming requirement visible:
 
 ```python
-@transform(streaming=True)
-class UniqueEvents(Transform):
+class UniqueEvents(StreamingTransform):
     events = input(RawEvent, streaming=True)
     unique = output(CleanEvent)
 
@@ -357,8 +290,7 @@ window aggregate in Append mode. Set limits adjacent to each operator, then let 
 checkpoint:
 
 ```python
-@transform(streaming=True)
-class EventSummary(Transform):
+class EventSummary(StreamingTransform):
     events = input(RawEvent, streaming=True)
     summary = output(WindowSummary)
     memory_budget = budget(memory_source="prefer_spark", fallback_mb=768)
@@ -388,8 +320,7 @@ Use a stream-static join when the current relation is streaming and the lookup r
 input without `streaming=True`, then project nullable lookup fields deliberately:
 
 ```python
-@transform(streaming=True)
-class EnrichEvents(Transform):
+class EnrichEvents(StreamingTransform):
     events = input(RawEvent, streaming=True)
     accounts = input(Account)
     enriched = output(EnrichedEvent)
@@ -416,8 +347,7 @@ Use a stream-stream join only when both inputs are declared streaming, both even
 predicate bounds the time relationship:
 
 ```python
-@transform(streaming=True)
-class CorrelateEvents(Transform):
+class CorrelateEvents(StreamingTransform):
     events = input(RawEvent, streaming=True)
     acknowledgements = input(Acknowledgement, streaming=True)
     correlated = output(CorrelatedEvent)
@@ -452,8 +382,7 @@ Use `exists(...)` when the right relation decides whether a current streaming ro
 belong in the result:
 
 ```python
-@transform(streaming=True)
-class AdmitEvents(Transform):
+class AdmitEvents(StreamingTransform):
     events = input(RawEvent, streaming=True)
     allowed_accounts = input(AllowedAccount)
     admitted = output(CleanEvent)
@@ -500,8 +429,7 @@ effects, and unmodeled state:
 from pyspark.sql import functions as F
 
 
-@transform(streaming=True)
-class WithValidNames(Transform):
+class WithValidNames(StreamingTransform):
     events = input(RawEvent, streaming=True)
     valid = output(CleanEvent)
 
@@ -567,6 +495,66 @@ inspect the callback or make its writes idempotent; the callback must honor the 
 Applications can also configure the native `DataStreamWriter.foreachBatch(...)` directly when they validate these
 assumptions themselves.
 
+## Attach a batch transform to a foreachBatch sink
+
+Declare a schema sink for the rows that the caller intends to send. The sink handoff points to the selected final
+streaming output, while its `schema` names the expected output from the caller-selected batch transform:
+
+```python
+class PublishAlerts(StreamingTransform):
+    events = input(Event, streaming=True)
+    alerts = output(Alert)
+    send_alerts = sink(AlertMessage)
+
+    @step(output=alerts)
+    def publish(self, event: Event, sink: AlertMessage) -> Alert:
+        alert = Alert(event_id=event.event_id, message=event.message)
+        foreach_batch(alert, sink)
+        return alert
+
+
+class PrepareAlertBatch(Transform):
+    alerts = input(Alert)
+    messages = output(AlertMessage)
+
+    def prepare(self, alert: Alert) -> AlertMessage:
+        return AlertMessage(event_id=alert.event_id, payload=alert.message)
+```
+
+The sink parameter is an effect dependency selected by its declared schema type. `foreach_batch` requires both the
+symbolic row and that parameter. The helper records the handoff during compilation; it does not create a DataFrame,
+write data, or start a query. A separate sink-effect step may return `AlertMessage` while taking `sink: AlertMessage`
+and returning `foreach_batch(alert, sink)`. That return marks an effect, not another relation. Both forms require a
+class-level `sink(AlertMessage)` declaration.
+
+At runtime, the caller selects and constructs the batch transform. Its input must match the streaming output schema,
+and its one selected result must match the sink schema:
+
+```python
+with StructureSession(spark=spark, config=config) as session:
+    result = PublishAlerts(events=events).run(session)
+    handoff = result.send_alerts
+
+    def send_batch(batch_df, batch_id: int) -> None:
+        with session.spawn() as batch_session:
+            prepared = PrepareAlertBatch(alerts=batch_df).run_batch(batch_session, handoff)
+            alert_writer.write(prepared.messages, stream_id="alerts-v1", batch_id=batch_id)
+
+    query = handoff.dataframe.writeStream.foreachBatch(send_batch).option(
+        "checkpointLocation", checkpoint
+    ).start()
+    try:
+        query.awaitTermination()
+    finally:
+        query.stop()
+```
+
+The caller owns callback selection, write configuration, checkpoints, query lifecycle, and retry policy. A durable
+destination should deduplicate atomically by a stable stream identity and `batch_id`; Spark may retry a batch after a
+failure. Keep the parent session open until the query stops. `session.spawn()` creates a child with the parent's
+runtime and resolved configuration and scopes Structure temporary-view cleanup to that callback. See the complete
+[alert example](../../examples/streams/transforms/foreach_batch_alerts.py).
+
 ## Attach a transform-declared row-level sink
 
 For row-wise writes, declare an opaque writer on a transform and attach it to a declared final output:
@@ -580,7 +568,7 @@ For row-wise writes, declare an opaque writer on a transform and attach it to a 
         def process(self, row: Row) -> None:
             write_alert(self.destination, row)
 
-    class PublishAlerts(Transform):
+    class PublishAlerts(StreamingTransform):
         events = input(Event, streaming=True)
         alerts = output(Alert)
         publish_alerts = sink(AlertWriter)
@@ -711,7 +699,7 @@ class CustomerTotals(StateProcessor[Event, CustomerKey, TotalOutput]):
             yield TotalOutput(account_id=key.account_id, total=current.total)
 
 
-class CustomerTotalsTransform(Transform):
+class CustomerTotalsTransform(StreamingTransform):
     events = input(Event, streaming=True)
     initial = input(InitialTotal)
     totals = output(TotalOutput)
@@ -743,8 +731,8 @@ declared schemas, grouping keys, timeout and initialization choices, and checkpo
 run a processor, start a query, or migrate checkpoint data. You do not need it when using
 `transform_with_state(...)`.
 
-Pandas `transform_with_state_in_pandas(...)` is a separate API. Structure does not currently support it on ordinary
-PySpark 4.0 or 4.1. Its typed processor subclasses `PandasStateProcessor[Input, Key, State, Output]` and implements
+Pandas `transform_with_state_in_pandas(...)` is a separate supported API on ordinary PySpark 4.0 and 4.1. Its typed
+processor subclasses `PandasStateProcessor[Input, Key, State, Output]` and implements
 `on_batches(self, key, batches, state, timers)`. The callback receives Pandas batches, a typed `ValueState[State]`, and
 timer context, then yields Pandas output frames.
 The runtime requires pandas, PyArrow, and protobuf on the driver and workers. Spark and the caller control its native
@@ -788,8 +776,7 @@ class AccountTotals(PandasGroupStateProcessor[AmountEvent, AccountKey, AccountTo
         yield pd.DataFrame({"account_id": [key.account_id], "total": [total]})
 
 
-@transform(streaming=True)
-class AccountTotalsTransform(Transform):
+class AccountTotalsTransform(StreamingTransform):
     events = input(AmountEvent, streaming=True)
     totals = output(AccountTotal)
 

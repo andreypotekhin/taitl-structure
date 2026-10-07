@@ -5,8 +5,8 @@ outputs, expresses rowset operations in ordinary Python, and can run directly or
 meaning feeds execution, generation, diagnostics, explain output, traceability, and streaming compatibility analysis.
 
 The [Transforms API](../api/Transforms.api.md) and related API tables provide the callable inventory. The
-[Delta tables API](../api/DeltaTables.api.md) describes effect steps against caller-owned persistent tables. This page gathers
-authoring, composition, and compiler-visible rules in reader order: declaration, invocation, operations, reuse, and
+[Delta and Iceberg tables API](../api/DeltaIceberg.api.md) describes effect steps against caller-owned persistent
+tables. This page gathers authoring, composition, and compiler-visible rules in reader order: declaration, invocation, operations, reuse, and
 compilation boundaries.
 The normative sources are [DSL](../dev/specifications/DSL.spec.md),
 [Typed Relation Operations](../dev/specifications/TypedRelationOperations.spec.md),
@@ -839,11 +839,15 @@ Direct execution and generated PySpark consume the same checked plan and schema 
 reviewable, and free of implicit RDD conversion or lifecycle ownership. Explicit relation assertions and ambiguity
 policies can launch validation jobs during `run()`; ordinary transformations remain lazy. Structure does not load data,
 create Spark sessions, or manage streaming queries and checkpoints. Explicit
-[Delta mutation steps](DeltaTables.back.md) commit to caller-owned tables during `run()`; general storage publishing
+[Delta mutation steps](DeltaIceberg.back.md) commit to caller-owned tables during `run()`; general storage publishing
 remains with the caller.
 
 Streaming compatibility is a separate analysis of concrete input lineage and operation support. A transform marker such
 as `streaming=True` is a compatibility contract, not a switch that starts streaming execution.
+
+Use `StreamingTransform` as the base when the requirement should apply throughout an inheritance hierarchy. An
+ordinary `Transform` child can also opt in with `@transform(streaming=True)` even when its parent has
+`streaming=False`; that decorator option remains local to the decorated class.
 
 ### Online And Generated Invocation
 

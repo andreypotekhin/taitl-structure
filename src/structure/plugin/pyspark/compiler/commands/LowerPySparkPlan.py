@@ -49,11 +49,13 @@ class LowerPySparkPlan:
         for entry in (*plan.inputs, *plan.outputs):
             binding = cast(InputPlan | OutputPlan, entry)
             if binding.binding.startswith("delta"):
-                target.require(CapabilityRequirement(group="delta", name="binding", docs="docs/compatibility/DeltaTables.compat.md"))
+                target.require(CapabilityRequirement(group="delta", name="binding", docs="docs/compatibility/DeltaIceberg.compat.md"))
                 if getattr(binding.schema, "constraints", ()):
-                    target.require(CapabilityRequirement(group="delta", name="check", docs="docs/compatibility/DeltaTables.compat.md"))
+                    target.require(CapabilityRequirement(group="delta", name="check", docs="docs/compatibility/DeltaIceberg.compat.md"))
                 if getattr(binding.schema, "delta_columns", ()):
-                    target.require(CapabilityRequirement(group="delta", name="columns", docs="docs/compatibility/DeltaTables.compat.md"))
+                    target.require(CapabilityRequirement(group="delta", name="columns", docs="docs/compatibility/DeltaIceberg.compat.md"))
+            elif binding.binding.startswith("iceberg"):
+                target.require(CapabilityRequirement(group="iceberg", name="binding", docs="docs/compatibility/DeltaIceberg.compat.md"))
         inputs = tuple(
             self._inputs.map(
                 input.name,

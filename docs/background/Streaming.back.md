@@ -73,6 +73,11 @@ class EnrichOrders(Transform):
     ...
 ```
 
+Use `StreamingTransform` in the class declaration to make the requirement apply to all descendants. Decorator options
+remain class-local, so a child of an ordinary transform can opt in with `@transform(streaming=True)` even when its
+parent is explicitly batch-only. `StreamingTransform` does not declare input lineage; use
+`input(..., streaming=True)` for each relation that may contain streaming data.
+
 The configuration seed is:
 
 ```toml
@@ -115,8 +120,7 @@ Composition carries effective streaming lineage from a child result into the dow
 allows an undeclared downstream boundary only when the downstream compiler-visible operations are proven compatible:
 
 ```python
-@transform(streaming=True)
-class NormalizeEvents(Transform):
+class NormalizeEvents(StreamingTransform):
     events = input(RawEvent, streaming=True)
     normalized = output(NormalizedEvent)
 
@@ -127,8 +131,7 @@ class NormalizeEvents(Transform):
         )
 
 
-@transform(streaming=True)
-class PublishEvents(Transform):
+class PublishEvents(StreamingTransform):
     events = input(NormalizedEvent, streaming=True)
     published = output(PublishedEvent)
 
@@ -136,8 +139,7 @@ class PublishEvents(Transform):
         return PublishedEvent.project(event)
 
 
-@transform(streaming=True)
-class EventPipeline(Transform):
+class EventPipeline(StreamingTransform):
     events = input(RawEvent, streaming=True)
     published = output(PublishedEvent)
 
@@ -224,8 +226,7 @@ Use a bounded stream-stream join when two event-time relations must be correlate
 matching horizon.
 
 ```python
-@transform(streaming=True)
-class AttributeClicks(Transform):
+class AttributeClicks(StreamingTransform):
     impressions = input(Impression, streaming=True)
     clicks = input(Click, streaming=True)
     attributed = output(AttributedClick)
@@ -449,7 +450,7 @@ class AlertWriter(Sink):
         write_alert(self.destination, row)
 
 
-class PublishAlerts(Transform):
+class PublishAlerts(StreamingTransform):
     events = input(Event, streaming=True)
     alerts = output(Alert)
     publish_alerts = sink(AlertWriter)

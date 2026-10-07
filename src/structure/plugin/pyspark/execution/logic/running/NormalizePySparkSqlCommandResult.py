@@ -7,11 +7,11 @@ def normalize_sql_command_result(result, *, label: str | None, schema, functions
     label_field = next(field for field in fields if field.name == "label")
     metric_fields = tuple(field for field in fields if field.name != "label")
     key = "__structure_sql_command_result_key"
+    metric_names = {field.name: f"{key}_{field.name}" for field in metric_fields}
 
     defaults = result.sparkSession.range(1).select(
         functions.lit(1).alias(key),
         functions.lit(label).cast(label_field.dataType).alias(label_field.name),
-        *(functions.lit(None).cast(field.dataType).alias(field.name) for field in metric_fields),
     )
     available = set(result.columns)
     metrics = result.limit(1).select(
@@ -21,8 +21,12 @@ def normalize_sql_command_result(result, *, label: str | None, schema, functions
                 functions.col(field.name).cast(field.dataType)
                 if field.name in available
                 else functions.lit(None).cast(field.dataType)
-            ).alias(field.name)
+            ).alias(metric_names[field.name])
             for field in metric_fields
         ),
     )
-    return defaults.join(metrics, on=key, how="left").select(*(field.name for field in fields))
+    joined = defaults.join(metrics, on=key, how="left")
+    return joined.select(
+        functions.col(label_field.name),
+        *(functions.col(metric_names[field.name]).alias(field.name) for field in metric_fields),
+    )

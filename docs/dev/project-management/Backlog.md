@@ -495,6 +495,17 @@ future documents are not V10 backlog commitments.
 - Implement the separately planned typed, ordered, bounded `scan(...)` feature and Fibonacci evidence.
 - Keep global/unbounded/streaming scans and synthetic source frames explicitly unsupported.
 
+### Epic: Apache Iceberg Table Transforms
+
+Status: complete. The four selected runtime lanes passed native SQL and online/generated typed-helper evidence; see
+`docs/compatibility/DeltaIceberg.compat.md`.
+
+- Prove typed `sql(...)` against caller-configured Iceberg catalogs on classic Spark 3.5/4.0/4.1 and Connect 4.1.
+- Add caller-bound Iceberg table inputs/outputs and typed update, delete, append, merge, snapshot/metadata reads, and
+  native maintenance procedures with generated/direct parity.
+- Support explicitly requested additive nullable append evolution through Iceberg's WriterV2 contract.
+- Admit only exact runtime lanes with live evidence; preserve caller ownership of catalogs, tables, retention, and retries.
+
 ### Epic: Challenge and Release Closure
 
 - Audit C27 analytical-join status against the current implementation and correct stale challenge wording.

@@ -6,7 +6,7 @@ For exhaustive reference on supported APIs, PySpark parity, examples and semanti
 [sketches and bitmaps](api/Aggregations.api.md#sketches-and-bitmaps), [windows](api/Windows.api.md),
 [collections](api/Collections.api.md),
 [relations](api/Relations.api.md), [streaming](api/Streaming.api.md), and
-[Delta tables](api/DeltaTables.api.md) (implemented; release-gated).
+[Delta and Iceberg tables](api/DeltaIceberg.api.md) (see the combined compatibility ledger for admitted runtimes).
 Target-gated spatial provider guidance is in the [Geospatial reference](reference/Geospatial.ref.md).
 
 ## Schema Classes
@@ -41,7 +41,8 @@ Reference: [schemas API](api/Schemas.api.md), [schema declaration syntax](refere
 
 ## Transform Classes
 
-A transform class is declared by inheriting `Transform`.
+A transform class is declared by inheriting `Transform`. Inherit `StreamingTransform` when all descendants must
+retain the streaming compatibility requirement; `@transform(streaming=True)` remains class-local.
 
 ```python
 from structure import *

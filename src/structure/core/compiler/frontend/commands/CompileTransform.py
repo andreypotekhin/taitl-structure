@@ -714,10 +714,10 @@ class CompileTransform:
         )
         delta_result = len(output_lanes) == 1 and (
             (declaration := transform_class._structure_outputs.get(output_lanes[0])) is not None
-            and declaration.binding in {"delta", "delta_table"}
+            and declaration.binding in {"delta", "delta_table", "iceberg", "iceberg_table"}
         )
         effect_candidate = effect_schema is not None or (
-            delta_result and any(binding.binding in {"delta", "delta_input", "delta_output", "delta_table"} for binding in bindings)
+            delta_result and any(binding.binding in {"delta", "delta_input", "delta_output", "delta_table", "iceberg", "iceberg_table"} for binding in bindings)
         )
         options = self._step_options(item.owner, metadata)
         parent_call: dict[str, object] = {}
@@ -753,7 +753,7 @@ class CompileTransform:
                     binding=(
                         transform_class._structure_outputs[lane].binding
                         if transform_class._structure_outputs.get(lane) is not None
-                        and transform_class._structure_outputs[lane].binding in {"delta", "delta_table"}
+                        and transform_class._structure_outputs[lane].binding in {"delta", "delta_table", "iceberg", "iceberg_table"}
                         else "dataframe"
                     ),
                 )
@@ -936,7 +936,7 @@ class CompileTransform:
                 "source": result.frame,
                 "scope": result.schema.__name__,
                 "streaming": streaming,
-                "binding": declaration.binding if declaration is not None and declaration.binding in {"delta", "delta_table"} else "dataframe",
+                "binding": declaration.binding if declaration is not None and declaration.binding in {"delta", "delta_table", "iceberg", "iceberg_table"} else "dataframe",
             }
         return tuple(result_plans)
 
@@ -1219,7 +1219,7 @@ class CompileTransform:
                 "source": source_name,
                 "scope": input_plan.name,
                 "streaming": input_plan.streaming,
-                "binding": "delta_output" if input_plan.name in transform_class._structure_outputs and input_plan.binding == "delta" else "delta_table" if input_plan.binding == "delta_table" else "delta_input" if input_plan.binding == "delta" else "dataframe",
+                "binding": "delta_output" if input_plan.name in transform_class._structure_outputs and input_plan.binding == "delta" else "delta_table" if input_plan.binding == "delta_table" else "delta_input" if input_plan.binding == "delta" else "iceberg_output" if input_plan.name in transform_class._structure_outputs and input_plan.binding == "iceberg" else "iceberg_table" if input_plan.binding == "iceberg_table" else "iceberg_input" if input_plan.binding == "iceberg" else "dataframe",
             }
             if input_plan.schema is schema and (input_plan.name, source_name) not in used:
                 candidates.append((input_plan.name, source))
@@ -1328,7 +1328,7 @@ class CompileTransform:
         *,
         member: str,
     ) -> tuple[str, dict[str, object]]:
-        if declaration.binding == "delta":
+        if declaration.binding in {"delta", "iceberg"}:
             raise self._error(
                 "DSL-E0402",
                 transform_class=transform_class,
@@ -1337,7 +1337,7 @@ class CompileTransform:
                 use="Use delta_input(...) for the old schema and delta_table(...) for same-schema reads and mutations.",
                 context={"output": declaration.name},
             )
-        if declaration.binding == "delta_table" and declaration.name not in lanes:
+        if declaration.binding in {"delta_table", "iceberg_table"} and declaration.name not in lanes:
             return declaration.name, {
                 "kind": "input",
                 "schema": declaration.schema,
@@ -1400,7 +1400,7 @@ class CompileTransform:
                 "source": source,
                 "scope": declaration.name,
                 "streaming": declaration.streaming,
-                "binding": "delta_table" if declaration.binding == "delta_table" else "delta_input" if declaration.binding == "delta" else "dataframe",
+                "binding": "delta_table" if declaration.binding == "delta_table" else "delta_input" if declaration.binding == "delta" else "iceberg_table" if declaration.binding == "iceberg_table" else "iceberg_input" if declaration.binding == "iceberg" else "dataframe",
             }
         if lane_source is not None:
             return declaration.name, lane_source
@@ -1514,7 +1514,7 @@ class CompileTransform:
                 delta_matches = [
                     item
                     for item in transform_class._structure_outputs.values()
-                    if item.binding in {"delta", "delta_table"} and item.schema is output_schemas[0]
+                    if item.binding in {"delta", "delta_table", "iceberg", "iceberg_table"} and item.schema is output_schemas[0]
                 ]
                 if len(delta_matches) == 1:
                     declaration = delta_matches[0]
@@ -1591,7 +1591,7 @@ class CompileTransform:
         outputs = tuple(cast(tuple[object, ...], metadata.get("outputs", ())))
         if len(outputs) != 1 or not isinstance(outputs[0], OutputDeclaration):
             return None
-        return outputs[0].schema if outputs[0].binding in {"delta", "delta_table"} else None
+        return outputs[0].schema if outputs[0].binding in {"delta", "delta_table", "iceberg", "iceberg_table"} else None
 
     def _inferred_delta_table_schema(
         self,
@@ -1607,7 +1607,7 @@ class CompileTransform:
         targets = [
             declaration
             for declaration in transform_class._structure_outputs.values()
-            if declaration.binding == "delta_table" and declaration.schema in parameter_schemas
+            if declaration.binding in {"delta_table", "iceberg_table"} and declaration.schema in parameter_schemas
         ]
         return targets[0].schema if len(targets) == 1 else None
 
@@ -1667,7 +1667,7 @@ class CompileTransform:
             "source": input_plan.name,
             "scope": input_plan.name,
             "streaming": input_plan.streaming,
-            "binding": "delta_output" if input_plan.name in transform_class._structure_outputs and input_plan.binding == "delta" else "delta_table" if input_plan.binding == "delta_table" else "delta_input" if input_plan.binding == "delta" else "dataframe",
+            "binding": "delta_output" if input_plan.name in transform_class._structure_outputs and input_plan.binding == "delta" else "delta_table" if input_plan.binding == "delta_table" else "delta_input" if input_plan.binding == "delta" else "iceberg_output" if input_plan.name in transform_class._structure_outputs and input_plan.binding == "iceberg" else "iceberg_table" if input_plan.binding == "iceberg_table" else "iceberg_input" if input_plan.binding == "iceberg" else "dataframe",
         }
 
     def _output_lane(
@@ -1705,7 +1705,7 @@ class CompileTransform:
     def _check_output_assignment(
         self, transform_class: type[Transform], declaration: WriteDeclaration, *, member: str
     ) -> None:
-        if isinstance(declaration, OutputDeclaration) and declaration.binding in {"delta", "delta_table"}:
+        if isinstance(declaration, OutputDeclaration) and declaration.binding in {"delta", "delta_table", "iceberg", "iceberg_table"}:
             return
         if not self._writes_output(declaration) or declaration.name not in self._assigned_output_names():
             return
@@ -1735,7 +1735,17 @@ class CompileTransform:
         for ordinal, declaration in enumerate(declarations):
             output_lanes = lanes
             if declaration.name not in explicit_outputs:
-                _, source = self._implicit_output_lane(transform_class, declaration, lanes)
+                if declaration.binding == "iceberg_table" and declaration.name not in lanes:
+                    source = {
+                        "kind": "input",
+                        "schema": declaration.schema,
+                        "source": declaration.name,
+                        "scope": declaration.name,
+                        "streaming": False,
+                        "binding": declaration.binding,
+                    }
+                else:
+                    _, source = self._implicit_output_lane(transform_class, declaration, lanes)
                 output_lanes = {declaration.name: source}
             outputs.append(
                 self._lane_output(

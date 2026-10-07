@@ -32,6 +32,7 @@ class DeltaMutation:
     action: str | None = None
     columns: tuple[str, ...] = ()
     allow_short_retention: bool = False
+    procedure_args: tuple[tuple[str, object], ...] = ()
 
 
 @dataclass(frozen=True)

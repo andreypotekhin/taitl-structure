@@ -30,7 +30,7 @@ metadata. `Schema.delta_columns` can declare expected generated, identity, and d
 account for values the native table produces. Structure validates CHECK constraints for both ordinary PySpark and
 Connect 4.1. It checks generated, identity, and default feature metadata on ordinary PySpark; Connect delegates those
 values and errors to Delta. These declarations do not change an ordinary DataFrame schema. See the
-[Delta tables API](DeltaTables.api.md). This is separate from ordinary
+[Delta and Iceberg tables API](DeltaIceberg.api.md). This is separate from ordinary
 DataFrame validation modes.
 
 **Details And Differences**

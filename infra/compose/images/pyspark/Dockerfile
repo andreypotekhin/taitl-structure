@@ -31,6 +31,7 @@ RUN pip install --no-cache-dir --timeout=120 --retries=5 \
 
 RUN if [ -n "${DELTA_SPARK_VERSION}" ]; then \
     pip install --no-cache-dir --timeout=120 --retries=5 "delta-spark==${DELTA_SPARK_VERSION}"; \
+    pip install --no-cache-dir --timeout=120 --retries=5 "pyspark[connect]==${PYSPARK_VERSION}"; \
     fi
 
 COPY infra/compose/images/pyspark/log4j2-integration.properties /etc/spark/log4j2-integration.properties

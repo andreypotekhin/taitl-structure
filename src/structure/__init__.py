@@ -5,10 +5,10 @@ Import PySpark expressions, joins, field factories, and concrete types from
 Structure lifecycle and artifact concepts.
 """
 
-from structure.core.compiler.artifacts.model.CompiledArtifactPool import CompiledArtifactPool
 from structure.core.compiler.artifacts.model.ArtifactCacheReport import ArtifactCacheReport
-from structure.core.compiler.artifacts.model.CompileKey import CompileKey
+from structure.core.compiler.artifacts.model.CompiledArtifactPool import CompiledArtifactPool
 from structure.core.compiler.artifacts.model.CompiledTransform import CompiledTransform
+from structure.core.compiler.artifacts.model.CompileKey import CompileKey
 from structure.core.compiler.artifacts.model.CompilerOptions import CompilerOptions
 from structure.core.compiler.artifacts.model.GeneratedTransform import GeneratedTransform
 from structure.core.compiler.artifacts.storage import DiskStorage, MemoryStorage, PackageImportStorage
@@ -16,6 +16,7 @@ from structure.core.compiler.diagnostics.api import StructureCompileError
 from structure.core.configuration.api import StructureConfig
 from structure.core.dsl.model.schemas.Schema import Schema
 from structure.core.dsl.model.transforms.SchemaMode import SchemaMode
+from structure.core.dsl.model.transforms.StreamingTransform import StreamingTransform
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.dsl.model.transforms.transform_api import (
     input,
@@ -32,12 +33,12 @@ from structure.core.dsl.model.transforms.transform_api import (
 )
 from structure.core.runtime.api import (
     ResultSchemas,
-    StageResult,
     SinkResult,
-    StructureRuntimeError,
-    StructureSession,
+    StageResult,
     StateBudgetExceeded,
     StateBudgetGuard,
+    StructureRuntimeError,
+    StructureSession,
     TransformResult,
     TransformSchemas,
 )
@@ -69,6 +70,7 @@ __all__ = [
     "StateBudgetGuard",
     "StructureSources",
     "StructureTools",
+    "StreamingTransform",
     "Transform",
     "TransformResult",
     "TransformSchemas",

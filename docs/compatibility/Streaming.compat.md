@@ -34,12 +34,12 @@ started.
 ## Stateful processor operations
 
 These processor APIs are separate from the shared PySpark 3.5/4.0 compatibility baseline. Row
-`transform_with_state(...)` is supported on ordinary PySpark 4.1. The Pandas processor operations have separate
-contracts and are not currently supported by Structure on their listed profiles. All use a caller-supplied streaming
+`transform_with_state(...)` is supported on ordinary PySpark 4.1, and `transform_with_state_in_pandas(...)` is supported
+on ordinary PySpark 4.0 and 4.1. The legacy Pandas processor operation remains independently gated. All use a caller-supplied streaming
 DataFrame and leave query lifecycle and checkpoint ownership with the application.
 
 | Structure API | PySpark parity | Example | PySpark 3 | PySpark 4 | Details |
 | --- | --- | --- | --- | --- | --- |
 | `transform_with_state(...)` | `GroupedData.transformWithState` | `transform_with_state(key=event.account_id, processor=Counter, output_mode="Update", time_mode="ProcessingTime")` | no | 4.1 only | Status: `structure-supported` for ordinary PySpark `>=4.1,<4.2`. Typed processors declare named Value/List/Map state attributes on `StateProcessor[Input, Key, Output]`; factories accept persisted names and TTL. Typed initial state uses a paired callback and relation. TTL requires ProcessingTime. Complete is rejected during compilation. Use `external_state_processor(...)` for Python constructs or native features outside the typed interface. State declaration changes are checkpoint-sensitive; Structure does not migrate state. PySpark 4.1 requires pandas, PyArrow, and Protobuf on the driver and workers. |
-| `transform_with_state_in_pandas(...)` | `GroupedData.transformWithStateInPandas` | `transform_with_state_in_pandas(key=event.account_id, processor=Counter, output_mode="Update", time_mode="ProcessingTime")` | no | 4.0 and 4.1 | Status: `design-gated`. This is a separate Pandas callback API with its own processor and checkpoint contract. Use caller-owned PySpark state processing until Structure lists this operation as supported. |
+| `transform_with_state_in_pandas(...)` | `GroupedData.transformWithStateInPandas` | `transform_with_state_in_pandas(key=event.account_id, processor=Counter, output_mode="Update", time_mode="ProcessingTime")` | no | 4.0 and 4.1 | Status: `structure-supported` for ordinary PySpark `>=4.0,<4.1` and `>=4.1,<4.2`. Typed/native online/generated parity, timers, composite keys, initial state, TTL, restart, and tested native checkpoint evolution pass on the pinned profiles. Spark and the caller control native state/checkpoint evolution; Structure does not migrate state. |
 | `apply_in_pandas_with_state(...)` | `GroupedData.applyInPandasWithState` | `apply_in_pandas_with_state(key=event.account_id, processor=Counter, output_mode="Update", timeout="none")` | 3.5 | 4.0 and 4.1 | Status: `design-gated`. This legacy API uses a separate `PandasGroupState` callback and checkpoint format. See the [Streaming reference](../reference/Streaming.ref.md) for its callback shape; use caller-owned PySpark state processing until Structure lists it as supported. |

@@ -4,6 +4,7 @@ import pytest
 
 from structure import *
 from structure.core.compiler.api import Compiler
+from structure.core.compiler.compileability.streaming_compatibility.api import StreamingSupport
 from structure.plugin.pyspark import *
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
@@ -82,6 +83,155 @@ def test_class_level_decorator_options_do_not_leak_to_undecorated_children() -> 
             return Published(id=row.id, value=row.value, audit="plain")
 
     assert _analysis(Publish).options == {}
+
+
+def test_streaming_transform_requirement_is_inherited_by_descendants() -> None:
+    class StreamingBase(StreamingTransform):
+        rows = input(Raw)
+        normalized = lane(Normalized)
+
+        @step(output=normalized)
+        def normalize(self, row: Raw) -> Normalized:
+            return Normalized(id=row.id, value=row.value)
+
+    class Publish(StreamingBase):
+        published = output(Published)
+
+        def publish(self, row: Normalized) -> Published:
+            return Published(id=row.id, value=row.value, audit="streaming")
+
+    class FinalPublish(Publish):
+        pass
+
+    assert StreamingBase.effective_transform_options()["streaming"] is True
+    assert _analysis(Publish).options["streaming"] is True
+    assert _analysis(FinalPublish).options["streaming"] is True
+
+
+def test_streaming_transform_rejects_known_incompatible_descendant_step() -> None:
+    class StreamingRandom(StreamingTransform):
+        rows = input(Raw)
+        randomized = output(Published)
+
+        def add_random_value(self, row: Raw) -> Published:
+            checkpoint()
+            return Published(id=row.id, value=row.value, audit="streaming")
+
+    plan = _analysis(StreamingRandom)
+    report = Compiler.compileability.streaming()(
+        _recipe(StreamingRandom), required=True, streaming_contract=True
+    )
+
+    assert plan.options["streaming"] is True
+    assert report.support is StreamingSupport.BATCH_ONLY
+    assert report.findings[0].code == "STREAM-E0801"
+
+
+def test_streaming_transform_rejects_false_decorator_option() -> None:
+    with pytest.raises(TypeError, match="inherits from StreamingTransform.*streaming=False"):
+        @transform(streaming=False)
+        class BatchChild(StreamingTransform):
+            pass
+
+
+def test_decorator_can_opt_in_below_explicit_batch_parent_and_remains_local() -> None:
+    @transform(streaming=False)
+    class BatchBase(Transform):
+        rows = input(Raw)
+        normalized = lane(Normalized)
+
+        @step(output=normalized)
+        def normalize(self, row: Raw) -> Normalized:
+            return Normalized(id=row.id, value=row.value)
+
+    @transform(streaming=True)
+    class StreamingChild(BatchBase):
+        published = output(Published)
+
+        def publish(self, row: Normalized) -> Published:
+            return Published(id=row.id, value=row.value, audit="streaming")
+
+    class UndecoratedGrandchild(StreamingChild):
+        pass
+
+    assert BatchBase.effective_transform_options()["streaming"] is False
+    assert _analysis(StreamingChild).options["streaming"] is True
+    assert _analysis(UndecoratedGrandchild).options == {}
+
+
+def test_decorator_can_opt_in_below_unmarked_parent() -> None:
+    class PlainBase(Transform):
+        rows = input(Raw)
+        normalized = lane(Normalized)
+
+        @step(output=normalized)
+        def normalize(self, row: Raw) -> Normalized:
+            return Normalized(id=row.id, value=row.value)
+
+    @transform(streaming=True)
+    class StreamingChild(PlainBase):
+        published = output(Published)
+
+        def publish(self, row: Normalized) -> Published:
+            return Published(id=row.id, value=row.value, audit="streaming")
+
+    assert _analysis(StreamingChild).options["streaming"] is True
+
+
+def test_streaming_transform_contract_survives_multiple_inheritance_order() -> None:
+    class BatchMixin(Transform):
+        pass
+
+    class StreamingFirst(StreamingTransform, BatchMixin):
+        pass
+
+    class BatchFirst(BatchMixin, StreamingTransform):
+        pass
+
+    class StreamingRoot(StreamingTransform):
+        pass
+
+    class StreamingLeft(StreamingRoot):
+        pass
+
+    class StreamingRight(StreamingRoot):
+        pass
+
+    class StreamingDiamond(StreamingLeft, StreamingRight):
+        pass
+
+    @transform(streaming=True)
+    class RedundantTrue(StreamingTransform):
+        pass
+
+    @transform(target="pyspark")
+    class UnrelatedOption(StreamingTransform):
+        pass
+
+    assert StreamingFirst.effective_transform_options()["streaming"] is True
+    assert BatchFirst.effective_transform_options()["streaming"] is True
+    assert StreamingDiamond.effective_transform_options()["streaming"] is True
+    assert RedundantTrue.effective_transform_options()["streaming"] is True
+    assert UnrelatedOption.effective_transform_options() == {"target": "pyspark", "streaming": True}
+
+
+def test_streaming_transform_is_not_emitted_as_a_generated_runtime_base() -> None:
+    class Publish(StreamingTransform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(id=row.id, value=row.value, audit="streaming")
+
+    text = PySpark.render.transform()(
+        _recipe(Publish),
+        source_transform=f"{__name__}.Publish",
+        runtime_module="testing.model.structure_generated.runtime.schema_assert",
+        schema_modules={Raw: __name__, Published: __name__},
+    )
+
+    assert "class PublishGenerated:" in text
+    assert "StreamingTransform" not in text
 
 
 def test_undecorated_child_analyzes_inherited_streaming_input_without_option() -> None:

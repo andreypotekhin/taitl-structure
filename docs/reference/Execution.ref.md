@@ -73,7 +73,7 @@ automatic `df` alias unless an output is explicitly named `df`.
 | `list(result)` | Canonical output names, in declaration order |
 
 The result is read-only. Structure does not write, cache, publish, collect, or convert a returned DataFrame. Declared
-[Delta mutation steps](../api/DeltaTables.api.md) commit to a caller-owned table during `run()`. A caller
+[Delta mutation steps](../api/DeltaIceberg.api.md) commit to a caller-owned table during `run()`. A caller
 may persist a result, start a streaming sink, or pass it to another transform after `run(...)` returns.
 
 An output boundary alias is a synonym:

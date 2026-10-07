@@ -70,6 +70,25 @@ DELTA_CAPABILITIES = frozenset(
         ("delta", "vacuum"),
     }
 )
+ICEBERG_CAPABILITIES = frozenset(
+    {
+        ("iceberg", "binding"),
+        ("iceberg", "delete"),
+        ("iceberg", "update"),
+        ("iceberg", "append"),
+        ("iceberg", "merge"),
+        ("iceberg", "schema_evolution"),
+        ("iceberg", "snapshot"),
+        ("iceberg", "history"),
+        ("iceberg", "snapshots"),
+        ("iceberg", "metadata"),
+        ("iceberg", "rollback"),
+        ("iceberg", "rewrite_data_files"),
+        ("iceberg", "rewrite_manifests"),
+        ("iceberg", "expire_snapshots"),
+        ("iceberg", "remove_orphan_files"),
+    }
+)
 VARIANT_FAMILIES = {
     "ordinary": "ordinary_pyspark",
     "spark-connect": "spark_connect_dataframe",
@@ -394,6 +413,10 @@ class PySparkCapabilities:
             ">=4.1,<4.2",
         }:
             base_capabilities |= DELTA_CAPABILITIES
+        if target_profile in {">=3.5,<4.1", ">=3.5,<4.0", ">=4.0,<4.1", ">=4.1,<4.2"} and self.id.variant == "ordinary":
+            base_capabilities |= ICEBERG_CAPABILITIES
+        if target_profile == ">=4.1,<4.2" and self.id.variant == "spark-connect":
+            base_capabilities |= ICEBERG_CAPABILITIES
         if self.id.variant == "ordinary" and target_profile in MATERIALIZATION_PROFILES | {">=4.1,<4.2"}:
             base_capabilities |= MATERIALIZATION_CAPABILITIES
         elif self.id.variant == "spark-connect" and target_profile == ">=4.0,<4.1":
@@ -447,7 +470,21 @@ class PySparkCapabilities:
                 ),
                 use=(
                     'Choose an admitted ordinary PySpark profile and install its pinned delta-spark version. '
-                    'See docs/compatibility/DeltaTables.compat.md.'
+                    'See docs/compatibility/DeltaIceberg.compat.md.'
+                ),
+            )
+
+        if requirement.group == "iceberg":
+            return CapabilityDecision.unsupported_capability(
+                backend=self.id,
+                requirement=requirement,
+                rationale=(
+                    f"Iceberg {requirement.name} is not admitted for PySpark {self.id.target} "
+                    f"with variant {self.id.variant}."
+                ),
+                use=(
+                    "Choose a live-tested Iceberg profile and install its matching Spark runtime and SQL extensions. "
+                    "See docs/compatibility/DeltaIceberg.compat.md."
                 ),
             )
 

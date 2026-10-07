@@ -61,18 +61,6 @@ does not expose the row processor entry point. See the
 [typed parity design](../design/V11TransformWithStateTypedParity.design.md), and
 [row processor plan](../planning/past/P10042603.V11-transform-with-state.plan.md).
 
-### Pandas `transformWithStateInPandas` — `design-gated`
-
-The typed and native compiler surfaces are implemented for ordinary PySpark 4.0 and 4.1. Feature-specific evidence
-passes on both profiles for online/generated execution, processing- and event-time timers, composite keys, initial
-state, native Value/List/Map state, TTL expiry, zero and multiple output frames, output-mode acceptance, and
-same-checkpoint restart. The row/Pandas differential passes on 4.1, and tested native checkpoint state/schema evolution
-passes on both profiles. The canonical 4.1 integration lane passes. The canonical 4.0 lane completes with 10 broad-phase failures; its focused Pandas module and V11 selection pass
-independently, and a fresh reproduction confirms three existing plan-boundary/enrichment failures. Keep the support claim
-gated until the full lane is repeatably green. Spark and the caller control native state/checkpoint evolution; Structure does
-not promise checkpoint migration. The runtime requires pandas, PyArrow, and protobuf on the driver and workers. See the
-[Pandas processor plan](../planning/P10042604.V11-transform-with-state-in-pandas.plan.md).
-
 ### Legacy `applyInPandasWithState` — `design-gated`
 
 The separate `apply_in_pandas_with_state(...)` compiler surface targets ordinary PySpark 3.5, 4.0, and 4.1 through

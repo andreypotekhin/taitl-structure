@@ -11,7 +11,7 @@ evolution, generated/identity/default field declarations, restore, optimize, and
 bindings. Structure has live online/generated evidence for PySpark 3.5.3 / Delta 3.3.3, PySpark 4.0.0 / Delta 4.0.1,
 and PySpark 4.1.0 / Delta 4.1.0. These are tested Structure pairs, distinct from upstream compatibility claims. The
 classic ordinary profiles admit these helpers; Spark Connect and PySpark 4.2 remain outside this admission. See the
-[compatibility ledger](../../compatibility/DeltaTables.compat.md) for the exact scope.
+[compatibility ledger](../../compatibility/DeltaIceberg.compat.md) for the exact scope.
 
 ## Deferred table administration
 

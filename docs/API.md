@@ -27,7 +27,7 @@ PySpark correspondence and boundary details.
 | --- | --- | --- |
 | Aggregations and sketches | [Aggregations API](api/Aggregations.api.md) | [Aggregations compatibility](compatibility/Aggregations.compat.md) |
 | Collections | [Collections API](api/Collections.api.md) | [Collections compatibility](compatibility/Collections.compat.md) |
-| Delta tables | [Delta tables API](api/DeltaTables.api.md) | [Delta tables compatibility](compatibility/DeltaTables.compat.md) |
+| Delta and Apache Iceberg tables | [Delta and Iceberg API](api/DeltaIceberg.api.md) | [Delta and Iceberg compatibility](compatibility/DeltaIceberg.compat.md) |
 | Expressions and SQL functions | [Expressions API](api/Expressions.api.md) | [Expressions compatibility](compatibility/Expressions.compat.md) |
 | Joins | [Joins API](api/Joins.api.md) | [Joins compatibility](compatibility/Joins.compat.md) |
 | Relations | [Relations API](api/Relations.api.md) | [Relations compatibility](compatibility/Relations.compat.md) |
@@ -102,7 +102,8 @@ schedule; these compatibility documents are the source for versioned API claims.
 The [API compatibility overview](compatibility/APICompatibility.md) classifies the current PySpark transformation
 baseline, with detailed family contracts in the linked compatibility ledgers. The rows below remain a compact
 orientation aid. General loading, storage publishing, actions, and orchestration stay outside the transform API;
-declared [Delta mutation steps](api/DeltaTables.api.md) are its explicit persistent-table exception.
+declared [Delta and Iceberg table operations](api/DeltaIceberg.api.md) are explicit persistent-table exceptions;
+each provider remains optional and gated to its tested runtime profiles.
 
 | API Area | Status | PySpark Parity | Details |
 | --- | --- | --- | --- |

@@ -32,7 +32,7 @@ Core retains structural ordering, bindings, lanes, hook placement, artifact iden
 presentation. PySpark retains expression semantics, target validation, lowering, schema materialization, online
 execution, generated rendering, and Spark Connect behavior. The caller retains Spark lifecycle, data loading and
 general output publishing, streaming queries, triggers, checkpoints, sinks, and orchestration. The explicit
-[Delta mutation API](../api/DeltaTables.api.md) lets a compiled step commit to a caller-owned table.
+[Delta mutation API](../api/DeltaIceberg.api.md) lets a compiled step commit to a caller-owned table.
 
 The detailed execution semantics below apply through this boundary. Target selection and target behavior follow the
 plugin model above and [Plugin API](../dev/specifications/PluginAPI.spec.md).
@@ -142,7 +142,7 @@ assert result.schema.plans == plans.schema
 ```
 
 The result object is read-only. For ordinary DataFrame outputs, the caller decides when to write, cache, or publish
-them. A declared [Delta mutation step](DeltaTables.back.md) is an explicit effect during `run()` and returns the
+them. A declared [Delta mutation step](DeltaIceberg.back.md) is an explicit effect during `run()` and returns the
 caller's table handle as its named result.
 
 If an output declaration has a transform boundary alias, the alias is an additional lookup name, not an extra mapping

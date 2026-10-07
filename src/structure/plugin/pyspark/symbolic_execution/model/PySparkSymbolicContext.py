@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from structure.plugin.pyspark.dsl.Expression import Expression
     from structure.plugin.pyspark.dsl.joins.JoinPlan import JoinPlan
     from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
+    from structure.plugin.pyspark.iceberg.model import IcebergMutation
     from structure.plugin.pyspark.symbolic_execution.model.PySparkForeachCapture import PySparkForeachCapture
 
 
@@ -31,7 +32,7 @@ class PySparkSymbolicContext:
         self.filters: list[Expression] = []
         self.joins: list[JoinPlan] = []
         self.operations: list[OperationPlan] = []
-        self.delta_mutations: list[DeltaMutation] = []
+        self.delta_mutations: list[DeltaMutation | IcebergMutation] = []
         self.step_output_schema = step_output_schema
         self.aggregate_keys: tuple[tuple[str, Expression], ...] | None = None
         self.aggregate_requested = False

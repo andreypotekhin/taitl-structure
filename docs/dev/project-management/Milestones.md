@@ -461,8 +461,8 @@ so `is_valid_variant(...)` retains capability-only evidence without a positive r
 helpers remain design-gated until released profiles exist. Global selected-row and broad analytic-window helpers are
 streaming-ineligible; finite grouped selected-value aggregates are admitted. Row `transform_with_state(...)` is
 supported on ordinary PySpark 4.1 with typed named state, timer, online/generated parity, and restart evidence.
-Pandas `transform_with_state_in_pandas(...)` is implemented but remains design-gated because the complete 4.0 lane
-reports broad-phase failures.
+Pandas `transform_with_state_in_pandas(...)` is supported for ordinary PySpark 4.0 and 4.1 after both canonical full
+lanes passed; see the completed [ExecPlan](../planning/past/P10042604.V11-transform-with-state-in-pandas.plan.md).
 The dated execution schedule is
 `docs/dev/planning/past/P07302603.V9-closeout-and-release.plan.md`.
 - Diagnostics and explain output tell users whether a streaming issue should be fixed in Structure source,
@@ -526,8 +526,8 @@ Status: planned. V11 follows the V10 closeout and runs from Sprint 55 through Sp
   ordinary 4.1 evidence.
 - Complex observations, sketches, and Arrow UDF/UDTFs have implemented contracts or stable gates with caller-owned
   remedies. Row `transform_with_state` is supported on ordinary PySpark 4.1 with its own profile, mode, timer, and
-  restart evidence. Pandas `transform_with_state_in_pandas` and legacy `apply_in_pandas_with_state` remain separate
-  evidence gates with their own target profiles and owners; Dataset/Scala arbitrary state remains outside the V11 claim.
+  restart evidence. Pandas `transform_with_state_in_pandas` is supported on ordinary PySpark 4.0/4.1; legacy
+  `apply_in_pandas_with_state` remains a separate evidence gate, and Dataset/Scala arbitrary state remains outside V11.
 - Row `foreach` and `foreach_batch` have caller-owned handoffs, safety declarations, and classic 3.5/4.0 evidence;
   Structure does not start queries or own external effects.
 - The Delta package has a normative transform design/specification, caller-bound Delta inputs/outputs,
@@ -549,7 +549,7 @@ Status: planned. V11 follows the V10 closeout and runs from Sprint 55 through Sp
 - `docs/dev/planning/past/P10062601.V11-delta-connect-admission.plan.md`
 - `docs/dev/planning/P10062602.V11-apply-in-pandas-with-state.plan.md`
 - `docs/dev/planning/past/P10062603.V11-transform-with-state-admission-and-typed-parity.plan.md`
-- `docs/dev/planning/P10042604.V11-transform-with-state-in-pandas.plan.md`
+- `docs/dev/planning/past/P10042604.V11-transform-with-state-in-pandas.plan.md`
 - `docs/dev/planning/past/P10042602.Row-level-foreach-sinks.plan.md`
 - `docs/dev/planning/past/P10052601.Schema-declared-foreach-batch-sinks.plan.md`
 - `docs/dev/planning/P08042603.V11-retained-v9-design-gates.plan.md`
@@ -559,5 +559,33 @@ Status: planned. V11 follows the V10 closeout and runs from Sprint 55 through Sp
 - `docs/dev/specifications/V11DeltaSchemaBoundMutations.spec.md`
 - `docs/dev/design/V11RetainedV9DesignGates.design.md`
 - `docs/dev/specifications/V11RetainedV9DesignGates.spec.md`
+
+## +M17: Apache Iceberg Table Transforms
+
+Status: complete. All selected Iceberg runtime lanes passed native SQL, typed SQL, table mutation, snapshot/metadata,
+schema evolution, and maintenance evidence in online/generated modes. The full repository test step reports four
+pre-existing PySpark coverage-ledger drift failures outside this milestone; formatting, lint, mypy, and package builds
+pass.
+
+### Exit criteria
+
+- Typed `sql(...)` behavior is verified against the configured Iceberg catalog on classic Spark 3.5, 4.0, 4.1, and
+  Spark Connect 4.1, including command/procedure result lifetimes.
+- Caller-bound declarations and typed mutation helpers match native Iceberg row, schema, snapshot, and metadata
+  behavior in direct and generated execution.
+- Append schema evolution uses WriterV2 and requires the caller's `write.spark.accept-any-schema=true` table property.
+- History/snapshot/metadata reads and rollback, file rewriting, snapshot expiration, and orphan cleanup preserve native
+  Iceberg procedure semantics and retention safeguards.
+- Only tested profiles and variants are admitted; selected live lanes, formatting, lint, typing, and package build pass.
+  The full `make build` test phase reports 2,322 passed, 322 skipped, and four unrelated existing coverage-ledger
+  failures in Structured Streaming and Transformation catalog tests.
+
+### Governing documents
+
+- `docs/dev/planning/P10072601.Iceberg-SQL-and-typed-helpers.plan.md`
+- `docs/dev/design/IcebergTables.design.md`
+- `docs/dev/specifications/IcebergTables.spec.md`
+- `docs/api/DeltaIceberg.api.md`
+- `docs/compatibility/DeltaIceberg.compat.md`
 - `docs/dev/design/DeltaTables.design.md`
 - `docs/dev/specifications/DeltaTables.spec.md`

@@ -267,6 +267,8 @@ narrower use cases and roadmap features.
   PySpark `applyInPandasWithState` is available on ordinary PySpark 3.5 and later without changing query ownership.
 - + As a developer, I receive an early diagnostic when a composed streaming output reaches an undeclared or explicitly
   batch-only downstream input, with `allow_stream_to_batch` available for intentional undeclared boundaries.
+- + As a streaming developer, I can subclass `StreamingTransform` so descendants inherit a required streaming
+  compatibility check without repeating a decorator.
 
 ## 17A. Versioning and Compatibility
 
@@ -452,6 +454,23 @@ the first analytical join slice.
   omitted values only when the bound table's native metadata confirms how those values are produced.
 - + As a developer, I can restore, optimize, and vacuum a caller-bound Delta table through explicit transform effects so
   that commits and file maintenance are visible in the compiled plan.
+
+## 22G. Iceberg table transforms
+
+- + As a developer, I can execute typed Spark SQL against my configured Iceberg catalog so that native Iceberg
+  statements and procedure results can participate in online and generated transforms.
+- + As a developer, I can bind an Iceberg table by catalog name with an expected Structure schema so that typed reads
+  and mutations operate on the table I supplied at invocation time.
+- + As a developer, I can append, update, delete, and merge rows through typed Iceberg helpers so that common table
+  operations do not require handwritten SQL.
+- + As a developer, I can read a selected Iceberg snapshot and inspect history, snapshots, and metadata relations so
+  that table state is typed and reproducible.
+- + As a developer, I can explicitly evolve an Iceberg schema during append so that additive nullable columns can be
+  introduced with the native writer's opt-in.
+- + As a developer, I can roll back to an allowed Iceberg snapshot and explicitly rewrite files, expire snapshots, or
+  remove orphan files so that table maintenance follows Iceberg semantics.
+- + As a developer, I can target admitted classic Spark and Spark Connect versions and receive capability diagnostics
+  elsewhere so that runtime support is based on live evidence.
 
 ## 23. Streaming Transformation Roadmap
 

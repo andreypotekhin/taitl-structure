@@ -7,7 +7,7 @@ read operations. Table creation, constraint installation, arbitrary SQL, and gen
 caller-owned. The classic PySpark 3.5, 4.0, and 4.1 profiles admit the helpers with per-profile capability checks;
 the exact Spark Connect 4.1 Delta package is also admitted, while other Connect profiles and PySpark 4.2 are outside
 this admission. Exact tested pairs are listed in the
-[compatibility ledger](../../compatibility/DeltaTables.compat.md).
+[compatibility ledger](../../compatibility/DeltaIceberg.compat.md).
 
 ## Declarations
 

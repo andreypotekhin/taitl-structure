@@ -1,11 +1,10 @@
-# Delta Tables Compatibility
+# Delta and Iceberg Compatibility
 
-This page follows the shared compatibility matrix format. Delta integration is optional and separate from the ordinary
-DataFrame API baseline. Live admission is tracked independently for ordinary PySpark 3.5, 4.0, and 4.1, plus the exact
-PySpark 4.1 Spark Connect Delta package. PySpark 4.2 and other Connect profiles are outside this admission. See the
-[Delta API](../api/DeltaTables.api.md) for usage and the
-[design](../dev/design/DeltaTables.design.md) and [specification](../dev/specifications/DeltaTables.spec.md) for
-contracts.
+This page follows the shared compatibility matrix format. Delta and Iceberg integrations are optional and separate
+from the ordinary DataFrame API baseline. Live admission is tracked by provider and exact runtime pair. PySpark 4.2,
+other Connect profiles, and unlisted provider/runtime combinations are outside these claims. See the
+[combined API](../api/DeltaIceberg.api.md) for usage and the separate provider designs and specifications under
+`docs/dev/` for developer contracts.
 
 | Structure API | PySpark parity | Example | PySpark 3.5 | PySpark 4.0 | PySpark 4.1 | Connect 4.1 | Details |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -40,3 +39,45 @@ lifecycle remain caller-owned. Structure does not retry commits or provide a tra
 steps. CDF still requires `delta.enableChangeDataFeed=true` on the table and a functional Delta session extension and
 catalog, even if `delta_cdf_checks=False` disables Structure's preflight. Schema evolution is explicit and scoped to
 the individual merge or append operation.
+
+## Apache Iceberg
+
+Iceberg helper admission requires live evidence for the exact PySpark and Apache Iceberg runtime pair. A published
+upstream pairing alone does not establish Structure support. The admitted helpers currently target format-version 2.
+Table cells name the tested Spark and Iceberg pair; `—` means that the profile is not admitted.
+
+| Structure API | PySpark parity | Example | PySpark 3.5 | PySpark 4.0 | PySpark 4.1 | Connect 4.1 | Details |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `iceberg_input(Schema)` | Catalog table read binding | `orders = iceberg_input(Order)` | 3.5.3 / 1.12.0 | 4.0.0 / 1.12.0 | 4.1.0 / 1.12.0 | 4.1.0 / 1.12.0 | Read-only except as the source for explicit evolving append. |
+| `iceberg_table(Schema)` | Catalog table read/write binding | `orders = iceberg_table(Order)` | 3.5.3 / 1.12.0 | 4.0.0 / 1.12.0 | 4.1.0 / 1.12.0 | 4.1.0 / 1.12.0 | Caller supplies the catalog identifier at invocation. |
+| `iceberg_output(Schema)` | Evolved schema result binding | `orders = iceberg_output(OrderV2)` | 3.5.3 / 1.12.0 | 4.0.0 / 1.12.0 | 4.1.0 / 1.12.0 | 4.1.0 / 1.12.0 | Used for an explicit schema transition; returns the supplied table name. |
+| `sql(...)` with Iceberg | Spark SQL queries and commands | `return sql(query, to=Result)` | 3.5.3 / 1.12.0 | 4.0.0 / 1.12.0 | 4.1.0 / 1.12.0 | 4.1.0 / 1.12.0 | Tested with configured catalog, extension, typed results, and command/procedure receipts. Other SQL delegates to Spark. |
+| `iceberg_append`, `iceberg_update`, `iceberg_delete` | Spark SQL DML / Iceberg writes | `iceberg_update(order, where=..., set=...)` | 3.5.3 / 1.12.0 | 4.0.0 / 1.12.0 | 4.1.0 / 1.12.0 | 4.1.0 / 1.12.0 | Typed row mutations; effects are explicit and native commits remain independent. |
+| `iceberg_merge` | Iceberg `MERGE INTO` | `iceberg_merge(order, change, on=...)` | 3.5.3 / 1.12.0 | 4.0.0 / 1.12.0 | 4.1.0 / 1.12.0 | 4.1.0 / 1.12.0 | Ordered clauses; finish with `.execute()`. |
+| `.with_schema_evolution(to=Schema)` | WriterV2 schema merge | `iceberg_append(...).with_schema_evolution(to=V2)` | 3.5.3 / 1.12.0 | 4.0.0 / 1.12.0 | 4.1.0 / 1.12.0 | 4.1.0 / 1.12.0 | Additive nullable fields; requires table property `write.spark.accept-any-schema=true`. |
+| `iceberg_snapshot` | Snapshot and timestamp reads | `iceberg_snapshot(order, snapshot_id=id)` | 3.5.3 / 1.12.0 | 4.0.0 / 1.12.0 | 4.1.0 / 1.12.0 | 4.1.0 / 1.12.0 | Snapshot IDs are opaque Iceberg IDs, not Delta versions. |
+| `iceberg_history`, `iceberg_snapshots`, `iceberg_metadata` | Metadata tables and relations | `iceberg_history(order, limit=5)` | 3.5.3 / 1.12.0 | 4.0.0 / 1.12.0 | 4.1.0 / 1.12.0 | 4.1.0 / 1.12.0 | Typed projections over native metadata relations. |
+| `iceberg_rollback` | `system.rollback_to_snapshot` / timestamp | `iceberg_rollback(order, snapshot_id=id)` | 3.5.3 / 1.12.0 | 4.0.0 / 1.12.0 | 4.1.0 / 1.12.0 | 4.1.0 / 1.12.0 | Native ancestry restrictions apply. |
+| `iceberg_rewrite_data_files`, `iceberg_rewrite_manifests` | Iceberg rewrite procedures | `iceberg_rewrite_data_files(order).execute()` | 3.5.3 / 1.12.0 | 4.0.0 / 1.12.0 | 4.1.0 / 1.12.0 | 4.1.0 / 1.12.0 | Explicit file-layout effects; native metrics remain available through typed SQL. |
+| `iceberg_expire_snapshots`, `iceberg_remove_orphan_files` | Iceberg retention procedures | `iceberg_expire_snapshots(order).execute()` | 3.5.3 / 1.12.0 | 4.0.0 / 1.12.0 | 4.1.0 / 1.12.0 | 4.1.0 / 1.12.0 | Retention and file-reference safeguards remain native. |
+
+Live evidence used Iceberg 1.12.0 with Spark 3.5.3 / Scala 2.12, Spark 4.0.0 / Scala 2.13, Spark 4.1.0 / Scala
+2.13, and Spark Connect 4.1.0. All 15 native SQL, typed SQL, and helper cases passed in online/generated modes on
+each selected lane. The Connect server loaded the Iceberg runtime, extension, and Hadoop catalog. The Spark 3.5 Delta
+regression suite passed 31 tests with 3 skips; broader Delta evidence is detailed in the table above.
+
+After rebuilding integration images when runner configuration or Spark pins change, run:
+
+    make integration BACKEND=pyspark35
+    make integration BACKEND=pyspark40
+    make integration BACKEND=pyspark41
+    make integration BACKEND=spark-connect41
+
+The Iceberg table property `write.spark.accept-any-schema=true` and per-write `mergeSchema=true` are required for
+evolving append; Structure never sets the table property. Snapshot expiration and orphan removal retain native
+retention and reference rules. Changelog helpers, branch/tag administration, and non-v2 formats are not admitted.
+
+The Spark-free `make build` quality gates passed formatting, lint, and mypy. Its full pytest step reported 2,322
+passed, 322 skipped, and four existing Structured Streaming and Transformation coverage-ledger failures outside these
+provider integrations. `poetry build` succeeded. SQL delegates to Spark and Iceberg; untested SQL behavior does not
+imply admission of a corresponding Structure helper.

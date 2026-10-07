@@ -53,7 +53,7 @@ PySpark `Column` surface; functions such as `trim` and `lower` remain function-f
 - URL helpers accept String expressions and preserve input nullability. `url_decode(...)` is strict: malformed encoded
   input follows Spark's error behavior. `try_url_decode(...)` returns null for malformed input and requires PySpark 4.0+.
 
-## General Column Transformations
+## Column Transformations
 
 | Structure API | PySpark parity | Example |
 | --- | --- | --- |

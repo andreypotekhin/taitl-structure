@@ -31,6 +31,17 @@ Streaming compatibility does not mean Structure starts a streaming query. Struct
 at compile time, using concrete step inputs and propagated lanes to decide which operations are on streaming data,
 reports required output modes where relevant, and leaves query lifecycle choices to the caller-owned shape.
 
+Declare an inherited all-step compatibility requirement by subclassing `StreamingTransform` instead of repeating
+`@transform(streaming=True)`. The requirement applies to every descendant, including inherited steps and overrides.
+An explicit `@transform(streaming=False)` on such a descendant is an error. The class does not imply streaming input
+lineage: inputs still use `input(..., streaming=True)` when they may carry streaming DataFrames, and static lookup
+inputs remain ordinary inputs.
+
+`@transform(streaming=True)` remains a class-local alternative. A child of an ordinary `Transform` hierarchy may use it
+to opt into streaming compatibility even when its parent uses `@transform(streaming=False)`. Decorator options do not
+propagate to that child's undecorated descendants. A decorated child opts its effective steps into analysis; it does
+not make unsupported operations compatible.
+
 ## Composed Boundaries
 
 Streaming lineage is derived from actual input declarations and compiler-visible step bindings. A class-level

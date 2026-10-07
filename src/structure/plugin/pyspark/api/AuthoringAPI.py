@@ -10,6 +10,7 @@ from structure.plugin.pyspark.api.PySpark import PySpark
 from structure.plugin.pyspark.delta.operations import DeltaScope
 from structure.plugin.pyspark.dsl.InputScope import InputScope
 from structure.plugin.pyspark.dsl.RowScope import RowScope
+from structure.plugin.pyspark.iceberg.operations import IcebergScope
 from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 
 
@@ -73,7 +74,14 @@ class PySparkStepSession:
                 body=body,
                 diagnostics=(),
                 sinks=body.sinks,
-                effect=bool(self._request.effect),
+                effect=bool(
+                    self._request.effect
+                    or any(
+                        mutation.kind.startswith("iceberg_")
+                        and mutation.kind not in {"iceberg_snapshot", "iceberg_history", "iceberg_snapshots", "iceberg_metadata"}
+                        for mutation in body.delta_mutations
+                    )
+                ),
             )
         finally:
             if self._capture_pending:
@@ -90,7 +98,12 @@ class PySparkStepSession:
             if not isinstance(schema, type):
                 raise TypeError(f"PLUGIN-E2708: PySpark step {self._request.name!r} has an invalid schema binding.")
             argument: RowScope
-            if binding.binding in {"delta_input", "delta_output", "delta_table", "delta"}:
+            if binding.binding in {"iceberg", "iceberg_input", "iceberg_table"}:
+                argument = IcebergScope(
+                    name=binding.scope, schema=schema, source=binding.source,
+                    binding="iceberg_input" if binding.binding in {"iceberg", "iceberg_input"} else binding.binding,
+                )
+            elif binding.binding in {"delta_input", "delta_output", "delta_table", "delta"}:
                 argument = DeltaScope(
                     name=binding.scope, schema=schema, source=binding.source,
                     binding="delta_input" if binding.binding in {"delta_input", "delta"} else binding.binding,

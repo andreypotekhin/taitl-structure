@@ -2,10 +2,10 @@
 
 > Historical V11 design record. The current API uses `delta_table(Schema)` for the common same-schema read/write
 > binding; see the durable [Delta Tables design](DeltaTables.design.md), [specification](../specifications/DeltaTables.spec.md),
-> and [public reference](../../reference/DeltaTables.ref.md).
+> and [public reference](../../reference/DeltaIceberg.ref.md).
 
-Public usage and target status: [Delta tables API](../../api/DeltaTables.api.md) and
-[Delta compatibility](../../compatibility/DeltaTables.compat.md).
+Public usage and target status: [Delta tables API](../../api/DeltaIceberg.api.md) and
+[Delta compatibility](../../compatibility/DeltaIceberg.compat.md).
 
 ## Purpose
 
