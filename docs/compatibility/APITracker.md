@@ -81,16 +81,17 @@ function coverage ExecPlan](../dev/planning/P08222601.PySpark-SQL-function-cover
 These rows track the planned `>=4.1,<4.2` target profile; they do not widen the default `>=3.5,<4.1` baseline. The
 primary target is ordinary PySpark. Spark Connect is admitted only with separate 4.1 runtime evidence. See the
 [adoption design](../dev/design/V11PySpark41Adoption.design.md), [parity specification](../dev/specifications/V11PySpark41Parity.spec.md),
-and [V11 project tracker](../dev/project-management/V11.md).
+and [V11 project tracker](../dev/project-management/V11.md). The pinned
+[Python API delta](../../src/structure/plugin/pyspark/resources/pyspark-4.1-python-api-delta.json) classifies each
+4.1 function-index addition and the changed SQL methods.
 
 | PySpark 4.1 surface | Status | Structure contract or boundary | Admission evidence or caller remedy |
 | --- | --- | --- | --- |
-| `Column.transform` | supported (ordinary 4.1) | One typed whole-expression callback returns a typed expression; its result type and nullability are inferred, and row cardinality is preserved. Array element mapping remains `arr_transform(...)`. | PySpark 4.1.0 online/generated parity passes for inline and bound `@special(type="expr")` callbacks. Spark Connect remains gated. |
-| Other PySpark 4.1 higher-order additions | design-gated | Each API needs a typed callback and explicit result, cardinality, and scope contract. | Admit each API separately after design, tests, and target evidence. |
-| New deterministic scalar, string, binary, temporal, and collection functions | design-gated | Each admitted helper needs explicit type, nullability, generated spelling, and streaming behavior. | Reconcile the 4.0-to-4.1 inventory and add capability, tests, and evidence per function family. |
-| Random and seeded helpers such as `random`, `uuid`, and `uniform` | design-gated | Must define seed, determinism, result type, and streaming policy; baseline `rand(...)` is tracked separately. | Keep newer helpers caller-owned until a versioned contract and target evidence are admitted. |
-| `DataFrame.exists` and IN-subquery operations | design-gated | Correlated Boolean relation predicate with explicit aliases and null semantics. | Design and test duplicate, empty, null, and correlation cases; establish explain traceability and ordinary/Connect evidence. |
-| `DataFrame.lateralJoin` | design-gated | Typed output schema, correlation scope, cardinality, and streaming classification. | Use caller-owned PySpark until the typed relation contract and evidence are complete. |
+| `Column.transform` | supported (ordinary and Connect 4.1) | One typed whole-expression callback returns a typed expression; its result type and nullability are inferred, and row cardinality is preserved. Array element mapping remains `arr_transform(...)`. | PySpark and Spark Connect 4.1.0 online/generated parity passes for inline and bound `@special(type="expr")` callbacks, including nullable inputs and changed result types. |
+| New string, temporal, and geospatial function-index entries | design-gated | Each admitted helper needs explicit type, nullability, generated spelling, and streaming behavior; native geospatial values need an SRID and provider contract. | The 43-row Python function delta names each owner. Use native PySpark around a Structure transform until a row is admitted. |
+| Random and seeded helpers `random` and `uuid` | design-gated | Must define seed, determinism, result type, and streaming policy; `uniform` and `randstr` are already in the 4.0 index. | Keep these helpers caller-owned until a versioned contract and target evidence are admitted. |
+| `DataFrame.exists` (4.0) and `Column.isin(DataFrame)` (4.1 extension) | design-gated | Correlated Boolean relation predicate with explicit aliases and null semantics; literal/list `isin(...)` is already supported. | Design and test duplicate, empty, null, and correlation cases; establish explain traceability and ordinary/Connect evidence. |
+| `DataFrame.lateralJoin` (4.0) | design-gated | Typed output schema, correlation scope, cardinality, and streaming classification. | Use caller-owned PySpark until the typed relation contract and evidence are complete. |
 | Complex-valued `DataFrame.observe` metrics | design-gated | Observation is a metric side channel, not an implicit output-field mutation. | Keep caller-owned until metric typing, retrieval, and parity are specified. |
 | KLL and Theta approximate sketches | design-gated | Opaque branded Binary types under the 4.1 profile; consumers require separate admission. | Use caller-owned PySpark until merge, dependency, determinism, and consumer semantics are specified and evidenced. |
 | Arrow-optimized Python UDF/UDTF APIs | caller-owned-guided | Worker Python and callback-defined UDTF cardinality remain outside the symbolic compiler contract. | Use explicit raw/caller-owned hooks; no generated UDF/UDTF claim. |

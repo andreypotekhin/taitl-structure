@@ -29,8 +29,9 @@ Run one backend's test selection:
     make integration BACKEND=spark-connect41
 
 The ordinary PySpark 4.1 runner executes only the backend version check and `tests/integration/pyspark/v11`. It does
-not run the 3.5/4.0 regression tree or the concept tests. The Connect 4.1 runner uses the same V11 selection, with
-the Delta module in a separate process. The tracked
+not run the 3.5/4.0 regression tree or the concept tests. The Connect 4.1 runner runs the full integration and live
+concept suites after separate Iceberg and Delta provider passes. Those providers are excluded from the general pass.
+The tracked
 environment template pins PySpark 4.1.0 and separate 4.1 ports; Compose uses those values as defaults if an existing
 untracked `.env` predates this lane. The 4.1 image also uses Protobuf 6.33.0 to match the generated state protocol
 bundled with PySpark 4.1; 3.5 and 4.0 keep the shared Protobuf 5.29.3 pin. The PySpark 4.0 Pandas state API and both

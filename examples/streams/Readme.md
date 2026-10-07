@@ -108,36 +108,37 @@ query = start_foreach_batch_query(
 )
 ```
 
-Structure does not call `foreachBatch` from transform methods or generated transform modules. A transform may capture an
-opt-in row-level sink for one of its declared final outputs; it returns the writer class and DataFrame on a named
-handoff. The caller still creates the writer instance and starts a separate query. PySpark retries may repeat writes,
+Structure does not call `foreachBatch` from generated transform modules. A transform may capture a row-level sink for
+one of its declared final outputs; the named handoff carries that DataFrame and its consumed schema. The caller
+constructs a typed writer and attaches it to the handoff. PySpark retries may repeat writes,
 so external sink identity, idempotence, checkpoint, and recovery remain caller-owned.
 
-`examples.streams.transforms.foreach_alerts.PublishAlerts` shows the typed step form. The existing output query stays
-unchanged; start the additional row sink only when the caller opts in:
+`examples.streams.transforms.foreach_alerts.PublishAlerts` shows the typed step form. The caller constructs the
+writer explicitly when attaching the additional row sink:
 
 ```python
+from examples.streams.transforms.foreach_alerts import AlertWriter, PublishAlerts
+
 result = PublishAlerts(events=events).run(session)
 primary = result.alerts.writeStream.format("parquet").option(
     "checkpointLocation", primary_checkpoint
 ).start(alerts_path)
 
 handoff = result.publish_alerts
-side_sink = handoff.dataframe.writeStream.foreach(
-    handoff.writer(destination=alert_json_path)
-).option("checkpointLocation", foreach_checkpoint).start()
+side_sink = AlertWriter(destination=alert_json_path).write_stream(handoff).option(
+    "checkpointLocation", foreach_checkpoint
+).start()
 ```
 
 Give the two queries distinct checkpoints and manage both query handles. They can progress and fail independently. The
-sample writer uses `open/process/close` on streaming workers; a batch sink instead passes the configured writer's
-`process` method to `DataFrame.foreach` and does not use streaming lifecycle methods.
+sample writer uses `open/process/close` on streaming workers; a batch sink invokes the configured writer's `write(...)`
+method and does not use streaming lifecycle methods.
 
 ## Prepare and send alerts in each micro-batch
 
-The foreachBatch handoff names the expected batch output with a schema sink. `PublishAlerts` still returns the
-streaming `Alert` relation. The caller chooses `PrepareAlertBatch`, which runs once for each callback DataFrame and
-produces `AlertMessage` rows. See [foreach_batch_alerts.py](transforms/foreach_batch_alerts.py) for the complete
-transform declarations.
+The foreachBatch handoff names the consumed row schema. `PublishAlerts` returns the streaming `Alert` relation, and
+the caller chooses `PrepareAlertBatch` to turn each callback DataFrame into `AlertMessage` rows. `AlertMessage` stays
+inside that batch transform. See [foreach_batch_alerts.py](transforms/foreach_batch_alerts.py) for the declarations.
 
 ```python
 from examples.streams.transforms.foreach_batch_alerts import PrepareAlertBatch, PublishAlerts

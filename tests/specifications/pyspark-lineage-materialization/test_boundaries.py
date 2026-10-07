@@ -207,18 +207,22 @@ def test_close_removes_only_owned_views_and_is_idempotent():
     spark.stop.assert_not_called()
 
 
-@pytest.mark.parametrize("variant", ["ordinary", "spark-connect"])
-def test_checkpoint_staging_is_independent_of_compiler_boundaries(variant):
-    plan = compile_fork(CheckpointRows, variant=variant, profile=">=4.0,<4.1", plan_boundaries="off").lowered
+@pytest.mark.parametrize(
+    ("variant", "profile"),
+    [("ordinary", ">=4.0,<4.1"), ("spark-connect", ">=4.0,<4.1"), ("spark-connect", ">=4.1,<4.2")],
+)
+def test_checkpoint_staging_is_independent_of_compiler_boundaries(variant, profile):
+    plan = compile_fork(CheckpointRows, variant=variant, profile=profile, plan_boundaries="off").lowered
     assert not any(boundaries(plan))
     recipe = plan.steps[0].operations[0].checkpoint
     assert recipe.stage_input is (variant == "spark-connect")
     assert recipe.eager is False
 
 
+@pytest.mark.parametrize("profile", [">=4.0,<4.1", ">=4.1,<4.2"])
 @pytest.mark.parametrize("streaming", [False, True])
-def test_connect_checkpoint_stages_before_operations_and_preserves_alias(streaming):
-    plan = compile_fork(CheckpointRows, variant="spark-connect", profile=">=4.0,<4.1", plan_boundaries="off").lowered
+def test_connect_checkpoint_stages_before_operations_and_preserves_alias(profile, streaming):
+    plan = compile_fork(CheckpointRows, variant="spark-connect", profile=profile, plan_boundaries="off").lowered
     recipe = replace(plan.steps[0], projection=(), validations=())
     spark = Mock()
     frame = Mock(isStreaming=streaming, sparkSession=spark)

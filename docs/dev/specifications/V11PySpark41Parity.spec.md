@@ -11,27 +11,32 @@ safe to implement yet. `caller-owned-guided` means callers may use the upstream 
 
 ## Feature 1: 4.1 expressions and Column transformation
 
-The implementation inventory compares the PySpark 4.0 and 4.1 Python references and records every newly added or
-signature-changed row-preserving function. Deterministic numeric, string, binary, temporal, and collection functions
-with explicit scalar input/output types are candidates for `supported`. `Column.transform` has a typed
-whole-expression implementation for ordinary PySpark 4.1: the callback receives the complete symbolic expression and
-returns one symbolic expression. The result may have a different type and nullability from the input. Ordinary PySpark
-4.1 live online/generated evidence passes, so this surface is `supported` for `>=4.1,<4.2`; Spark Connect remains
-separately gated. Streaming compatibility continues to be determined by the returned expression and its existing
-streaming checks. This is distinct from array
-`functions.transform`, represented by Structure's `arr_transform(...)`, whose callback receives an array element.
-Random functions such as `random`, `uniform`, `randstr`, and `uuid` require an explicit seed
-policy; without one they are `design-gated` or `streaming-ineligible` rather than silently treated as deterministic.
+The [versioned inventory](../../../src/structure/plugin/pyspark/resources/pyspark-4.1-python-api-delta.json) compares
+the pinned PySpark 4.0 and 4.1 Python indexes. It records 43 new function-index names and one new SQL-index symbol;
+`Column.isin(DataFrame)` and complex-valued observations are separately recorded semantic extensions. Index addition
+does not necessarily mean first implementation: the 4.1 pages for `random` and `try_to_date` report earlier versions.
+String and temporal expressions need scalar type and nullability contracts. Geospatial functions and KLL/Theta sketches
+have separate typed-value contracts. `Column.transform` has a typed
+whole-expression implementation for PySpark 4.1: the callback receives the complete symbolic expression and returns
+one symbolic expression. The result may have a different type and nullability from the input. Ordinary PySpark and
+Spark Connect 4.1 live online/generated evidence passes, so this surface is `supported` for `>=4.1,<4.2` on both
+variants. Streaming compatibility continues to be determined by the returned expression and its existing
+streaming checks. This is distinct from array `functions.transform`, represented by Structure's `arr_transform(...)`,
+whose callback receives an array element. Random functions such as `random`, `uniform`, `randstr`, and `uuid` require an
+explicit seed policy; without one they are `design-gated` or `streaming-ineligible` rather than silently treated as
+deterministic.
 
 Acceptance requires schema/type inference, nullability tests, compiler capability diagnostics, online and generated
 ordinary-PySpark parity, generated-source inspection, and Connect evidence for each row claimed in both variants.
 
 ## Feature 2: relational query operations
 
-`DataFrame.exists` and the IN-subquery addition are represented as boolean relation predicates with named correlation
-scope. The compiler must reject accidental outer-column capture, ambiguous aliases, and unsupported multi-row scalar
-assumptions. `lateralJoin` is admitted only with an explicit row-cardinality and output-schema contract. A raw Python
-function returning a DataFrame is not compiler-visible and remains caller-owned unless a future typed relation-lambda
+`DataFrame.exists` first appeared in PySpark 4.0 and remains in the V11 parity backlog. The 4.1 IN-subquery extension
+is `Column.isin(DataFrame)`; literal/list `isin(...)` remains the existing Structure contract. Both subquery forms
+require boolean relation predicates with named correlation scope. The compiler must reject accidental outer-column
+capture, ambiguous aliases, and unsupported multi-row scalar assumptions. `DataFrame.lateralJoin` also first appeared
+in 4.0 and is admitted only with an explicit row-cardinality and output-schema contract. A raw Python function returning
+a DataFrame is not compiler-visible and remains caller-owned unless a future typed relation-lambda
 design is approved.
 
 Acceptance requires positive correlated and uncorrelated cases, empty and duplicate right-side cases, null behavior,
@@ -80,7 +85,7 @@ operation. The Pandas and legacy families do not inherit the row family's status
 Typed `close` callbacks and schema evolution are deferred because cleanup is not guaranteed after worker failure and
 checkpoint migration needs its own contract.
 
-The ordinary `pyspark41` integration lane initially runs the runtime-version assertion and the V11 test directory only.
+The ordinary `pyspark41` integration lane runs the runtime-version assertion and the V11 test directory only.
 Its image uses Protobuf 6.33.0 for PySpark 4.1's generated state protocol; 3.5 and 4.0 retain Protobuf 5.29.3. The Spark
 test session uses RocksDB because the default HDFS-backed state store rejects TransformWithState's multiple column
 families. Both 4.1 state processor APIs also require pandas, PyArrow, and Protobuf on the driver and workers; the Pandas
@@ -92,18 +97,19 @@ native capabilities claimed by their profile.
 
 ## Feature 5: target and evidence matrix
 
-The eventual release matrix has six backends: `pyspark35`, `pyspark40`, `pyspark41`, `spark-connect35`,
-`spark-connect40`, and `spark-connect41`. General Connect 4.1 coverage remains deferred, while the separately
-evidenced Delta Connect package is admitted only for its exact Delta rows. Each configured backend reports the exact
+The release matrix has six backends: `pyspark35`, `pyspark40`, `pyspark41`, `spark-connect35`,
+`spark-connect40`, and `spark-connect41`. Connect 4.1 runs the full integration and live concept suites, with the
+Iceberg and Delta providers kept in isolated passes. The exact Delta Connect package and batch checkpointing are
+admitted for their proven 4.1 rows; other Connect profiles remain gated. Each configured backend reports the exact
 PySpark and Spark version, target profile, target variant, image digest or pinned package version, and test selection.
 The 4.1 profile is `>=4.1,<4.2`. The initial ordinary 4.1 selection is limited to
 the backend version check and V11 integration tests. Ordinary 4.1 is release-blocking for every supported row after its
 profile-specific evidence is complete; Connect 4.1 is release-blocking only for rows whose catalog entry claims Connect
 support.
 
-The staged matrix runs through `make integration`; the configured 4.1 lane runs through
-`make integration BACKEND=pyspark41`. Add general Connect 4.1 coverage only after a separate API and test selection is reviewed. The
-Spark-free `make build` remains mandatory and must not require Docker, Java, or an installed PySpark package.
+The staged matrix runs through `make integration`; run ordinary and Connect 4.1 through
+`make integration BACKEND=pyspark41` and `make integration BACKEND=spark-connect41`. The Spark-free `make build` remains
+mandatory and must not require Docker, Java, or an installed PySpark package.
 
 ## Cross-cutting requirements
 

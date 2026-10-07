@@ -40,7 +40,7 @@ _CLASS_OPTIONS = {
     "delta_cdf_checks",
 }
 _STEP_METHOD_OPTIONS = {"target", "target_platform", "target_profile", "delta_check_match", "delta_cdf_checks"}
-_METHOD_BINDING_OPTIONS = {"input", "output", "inout", "sink"}
+_METHOD_BINDING_OPTIONS = {"input", "output", "inout"}
 _METHOD_OPTIMIZATION_OPTIONS = {"cache"}
 
 
@@ -175,7 +175,7 @@ def output(
 
 
 def sink(sink_type: type) -> SinkDeclaration:
-    """Declare a row writer or batch output schema that a compiled step may reference."""
+    """Declare the Structure Schema consumed by a caller-owned sink."""
     return SinkDeclaration(sink_type=sink_type)
 
 
@@ -346,7 +346,7 @@ def special(function: Callable | None = None, *, type: str, **kwargs):
         def normalized_email(value):
             return lower(trim(value))
     """
-    allowed = {"expr", "udf", "ignore", "opaque"}
+    allowed = {"expr", "udf", "ignore", "opaque", "state_processor"}
     if type not in allowed:
         raise TypeError(f"@special(type=...) must use one of: {', '.join(sorted(allowed))}")
     if type == "expr" and kwargs:
@@ -364,12 +364,17 @@ def special(function: Callable | None = None, *, type: str, **kwargs):
 
     def decorate(target: Callable) -> SpecialFunction | Callable:
         if inspect.isclass(target):
-            if type not in {"expr", "ignore", "opaque"}:
-                raise TypeError('@special can decorate classes only with type="expr", type="ignore", or type="opaque"')
+            if type not in {"expr", "ignore", "opaque", "state_processor"}:
+                raise TypeError(
+                    '@special can decorate classes only with type="expr", type="ignore", '
+                    'type="opaque", or type="state_processor"'
+                )
             setattr(target, "_structure_special_type", type)
             if type in {"ignore", "opaque"}:
                 _guard_excluded_class(target, mode=type)
             return target
+        if type == "state_processor":
+            raise TypeError('@special(type="state_processor") can decorate classes only')
         return SpecialFunction(
             target,
             type=type,
@@ -409,7 +414,7 @@ def _decorate_transform_method(function, kwargs):
     if unknown:
         raise TypeError(f"@step got unknown method option(s): {', '.join(sorted(unknown))}")
     if not kwargs:
-        raise TypeError("@step on a method requires input=..., output=..., sink=..., or inout=...")
+        raise TypeError("@step on a method requires input=..., output=..., or inout=...")
     if "inout" in kwargs and ("input" in kwargs or "output" in kwargs):
         raise TypeError("@step on a method cannot combine inout=... with input=... or output=...")
 
@@ -425,7 +430,6 @@ def _decorate_transform_method(function, kwargs):
         bare=(LaneDeclaration, OutputDeclaration),
         roles={"lane", "output"},
     )
-    sinks = _step_sink_declarations(kwargs.get("sink"))
     if "inout" in kwargs:
         binding = kwargs["inout"]
         if not isinstance(binding, InOutBinding):
@@ -452,25 +456,12 @@ def _decorate_transform_method(function, kwargs):
         {
             "inputs": inputs,
             "outputs": outputs,
-            "sinks": sinks,
+            "sinks": (),
             "options": _step_method_options(kwargs),
             "reserved_operations": _reserved_operations(kwargs),
         },
     )
     return function
-
-
-def _step_sink_declarations(value: object | None) -> tuple[SinkDeclaration, ...]:
-    if value is None:
-        return ()
-    if isinstance(value, SinkDeclaration):
-        return (value,)
-    values = _declaration_sequence(value, option="@step(sink=...)")
-    if not all(isinstance(item, SinkDeclaration) for item in values):
-        raise TypeError("@step(sink=...) requires sink(...) declarations")
-    if len({id(item) for item in values}) != len(values):
-        raise TypeError("@step(sink=...) cannot repeat a declaration")
-    return cast(tuple[SinkDeclaration, ...], values)
 
 
 def _normalize_method_options(kwargs: dict[str, object]) -> dict[str, object]:

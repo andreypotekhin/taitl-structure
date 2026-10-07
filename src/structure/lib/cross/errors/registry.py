@@ -78,7 +78,7 @@ diagnostic_registry = DiagnosticRegistry(
             docs="docs/Diagnostics.md#dsl-e0406",
             introduced="1.0.0",
             problem_template="A foreach sink is undeclared, ambiguous, or does not target a declared final output.",
-            use_template="Declare sink(WriterClass), bind its typed step parameter, and call foreach(row, sink) on a returned final output row.",
+            use_template="Declare sink(Schema) and call foreach(row, self.sink_name) on a returned final output row.",
         ),
         DiagnosticEntry(
             code="DSL-W0403",

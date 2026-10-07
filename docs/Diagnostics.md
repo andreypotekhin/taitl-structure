@@ -79,8 +79,8 @@ See [Diagnostics.md](background/Diagnostics.back.md#dsl-e0404).
 `@special(type="udf")` for scalar Python execution, or use an explicit hook for DataFrame logic.
 
 ### DSL-E0406
-Declare the writer with `sink(WriterClass)`, bind it to a typed step parameter, and call `foreach(row, sink)` with a
-row returned by that step and mapped to a declared final output. See the
+Declare the consumed row type with `sink(Schema)`, reference it as `self.sink_name` in `foreach(row, self.sink_name)`,
+and capture a row returned by that step and mapped to a declared final output. See the
 [row-level foreach specification](dev/specifications/V11RetainedV9DesignGates.spec.md#row-level-foreach).
 
 ### DSL-W0403

@@ -25,6 +25,10 @@ family is impossible or unsafe on streaming DataFrames for the supported PySpark
 that family as streaming-ineligible with evidence and remove it from the streaming denominator. A streaming-ineligible
 family is not a hidden gap; it is an explicit Spark limitation or an explicit Structure non-goal.
 
+The v8 measurement is scoped to the shared `>=3.5,<4.1` API inventory. Catalog entries explicitly registered as
+target-only APIs are outside that denominator and need their own streaming evidence before any streaming-support
+claim is made. A later Spark profile must not silently change the v8 numerator or denominator.
+
 ## Required Ledger
 
 V8 adds a checked streaming coverage ledger beside the existing catalog. The ledger must classify every supported batch

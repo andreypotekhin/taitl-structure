@@ -396,7 +396,7 @@ This is the compatibility companion to the [API reference](../api/Expressions.ap
 | — | String aggregation | — | no | yes | Status: `target-gated`. PySpark 4.0-only `string_agg`/`listagg` are outside the 3.5/4.0 intersection baseline. Migration: Use native PySpark on the 4.0 target or await a target-profile admission. |
 | — | Profile evidence | — | — | — | Status: `target-gated`. Admission requires a released profile plus classic, Connect, generated/online, and streaming evidence. Migration: Use an admitted profile or native PySpark. |
 | — | Geospatial providers | — | no | no | Status: `target-gated`. Native root `st_*` is 4.1+; external providers are namespaced and scope-matched. Migration: Use native PySpark or an explicit Binary boundary. |
-| `transform(function)` | `Column.transform` | `o.name.transform(lambda value: upper(trim(value)))` | no | yes | Status: `supported` for ordinary PySpark `>=4.1,<4.2`. The typed callback determines result type/nullability and preserves row cardinality; PySpark 4.1.0 online/generated evidence passes. Spark Connect remains gated. |
+| `transform(function)` | `Column.transform` | `o.name.transform(lambda value: upper(trim(value)))` | no | yes | Status: `supported` for PySpark `>=4.1,<4.2` on ordinary and Spark Connect variants. The typed callback determines result type/nullability and preserves row cardinality; online/generated evidence passes on both variants. |
 
 ## Typed field and expression helpers
 

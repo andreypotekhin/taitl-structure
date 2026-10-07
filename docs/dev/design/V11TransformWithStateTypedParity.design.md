@@ -21,7 +21,7 @@ and retains typed execution in the shared operation recipe. It does not translat
 The typed base has three schema parameters: input, grouping key, and output. The state schema is declared at each state
 attribute, where it can be named and independently typed.
 
-    @state_processor
+    @special(type="state_processor")
     class AccountProcessor(StateProcessor[Event, AccountKey, AccountOutput]):
         total: ValueState[Total]
         recent_events: ListState[Event]
@@ -47,7 +47,9 @@ attribute, where it can be named and independently typed.
         ) -> Iterator[AccountOutput]:
             ...
 
-`@state_processor` remains parameterless. State declarations are class annotations rather than decorator arguments or
+`@special(type="state_processor")` is an optional role marker. Inheritance from `StateProcessor[...]` is enough to
+discover a typed processor, and the compiler validates schemas and callbacks when the processor is used. State
+declarations are class annotations rather than decorator arguments or
 `transform_with_state(...)` parameters. A declaration factory is needed only when the default attribute name or no-TTL
 policy is insufficient. The factory returns immutable declaration metadata at class-definition time; it is not a live
 Spark handle.

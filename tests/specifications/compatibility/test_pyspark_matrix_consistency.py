@@ -50,6 +50,47 @@ def test_pyspark_4_1_runner_selects_v11_only(tmp_path) -> None:
     assert "/workspace/tests/concepts/live_pyspark" not in arguments
 
 
+def test_spark_connect_4_1_runner_runs_isolated_providers_then_full_suite(tmp_path) -> None:
+    calls = tmp_path / "timeout-calls"
+    checkpoint = tmp_path / "connect-checkpoint"
+    checkpoint.mkdir()
+    wrappers = {
+        "timeout": '#!/bin/sh\nprintf "%s\\n" "$*" >> "$STRUCTURE_CAPTURED_CALLS"\nsleep 0.1\n',
+        "spark-submit": '#!/bin/sh\nprintf "%s\\n" "$*" > "$STRUCTURE_CAPTURED_SUBMIT"\n',
+        "mkdir": "#!/bin/sh\nexit 0\n",
+        "mktemp": '#!/bin/sh\nprintf "%s\\n" "$STRUCTURE_FAKE_CHECKPOINT_DIR"\n',
+    }
+    for name, content in wrappers.items():
+        wrapper = tmp_path / name
+        wrapper.write_text(content, encoding="utf-8")
+        wrapper.chmod(0o755)
+    environment = {
+        **os.environ,
+        "PATH": f"{tmp_path}:{os.environ['PATH']}",
+        "SPARK_HOME": str(tmp_path / "spark"),
+        "STRUCTURE_CAPTURED_CALLS": str(calls),
+        "STRUCTURE_CAPTURED_SUBMIT": str(tmp_path / "spark-submit-args"),
+        "STRUCTURE_FAKE_CHECKPOINT_DIR": str(checkpoint),
+        "STRUCTURE_EXPECTED_SPARK": "4.1.0",
+        "STRUCTURE_EXPECTED_DELTA": "4.1.0",
+    }
+    runner = Path("infra/compose/images/pyspark/run-integration.sh").resolve()
+
+    subprocess.run(["bash", str(runner), "spark-connect41"], check=True, env=environment)
+
+    phases = calls.read_text(encoding="utf-8").splitlines()
+    assert len(phases) == 3
+    assert "/workspace/tests/integration/pyspark/iceberg/test_native_iceberg.py" in phases[0]
+    assert "/workspace/tests/integration/pyspark/v11/test_delta_transform_live.py" in phases[1]
+    assert "/workspace/tests/integration" in phases[2]
+    assert "/workspace/tests/concepts/live_pyspark" in phases[2]
+    assert "--ignore=/workspace/tests/integration/pyspark/iceberg" in phases[2]
+    assert "--ignore=/workspace/tests/integration/pyspark/v11/test_delta_transform_live.py" in phases[2]
+    assert "--integration-backend=spark-connect41" in phases[2]
+    assert not checkpoint.exists()
+    assert "spark.checkpoint.dir=" in (tmp_path / "spark-submit-args").read_text(encoding="utf-8")
+
+
 def test_public_docs_use_target_variant_and_do_not_claim_v4_only_spark_connect() -> None:
     paths = [
         Path("Readme.md"),

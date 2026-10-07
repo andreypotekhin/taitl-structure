@@ -30,8 +30,10 @@ runtime evidence. The detailed row-by-row inventory is maintained in the [API tr
 
 The current V11 state and side-effect boundaries are:
 
-- 4.1 expressions, relational query additions, observations, and KLL/Theta sketches remain `design-gated` until their
-  typed contracts and target evidence are complete.
+- `Column.transform` is supported on ordinary PySpark and Spark Connect 4.1 with typed online/generated parity. Other new expressions,
+  subquery forms, complex observations, and KLL/Theta sketches remain `design-gated` until their typed contracts and
+  target evidence are complete. The [versioned Python delta](../../src/structure/plugin/pyspark/resources/pyspark-4.1-python-api-delta.json)
+  separates actual 4.1 index additions from older APIs retained for V11 work.
 - Arrow UDF/UDTFs remain `caller-owned-guided`; generated Structure transforms do not own worker Python or callback
   cardinality.
 - Row `transform_with_state` and Pandas `transform_with_state_in_pandas` are supported on their admitted ordinary

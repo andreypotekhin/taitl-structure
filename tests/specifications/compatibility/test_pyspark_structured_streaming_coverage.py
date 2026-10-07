@@ -7,6 +7,7 @@ ROOT = Path(__file__).resolve().parents[3]
 RESOURCES = ROOT / "src/structure/plugin/pyspark/resources"
 BATCH_CATALOG = RESOURCES / "pyspark-transformation-coverage.json"
 STREAMING_LEDGER = RESOURCES / "pyspark-structured-streaming-coverage.json"
+BASELINE_INVENTORY = RESOURCES / "pyspark-transformation-inventory.json"
 SUPPORTED = {"streaming-supported", "streaming-partial"}
 VALID_STATUSES = SUPPORTED | {"streaming-ineligible", "streaming-deferred"}
 
@@ -100,7 +101,7 @@ def test_target_gated_variant_streaming_family_has_live_profile_evidence() -> No
 
 
 def _measure() -> Measurement:
-    batch_catalog = _load(BATCH_CATALOG)["entries"]
+    batch_catalog = _baseline_catalog_entries()
     ledger = _ledger_entries()
     supported_entries = [entry for entry in batch_catalog if entry["status"] == "supported"]
     supported_ledger = [entry for entry in ledger if entry["status"] in SUPPORTED]
@@ -116,7 +117,12 @@ def _measure() -> Measurement:
 
 
 def _supported_batch_entries() -> list[dict[str, Any]]:
-    return [entry for entry in _load(BATCH_CATALOG)["entries"] if entry["status"] == "supported"]
+    return [entry for entry in _baseline_catalog_entries() if entry["status"] == "supported"]
+
+
+def _baseline_catalog_entries() -> list[dict[str, Any]]:
+    baseline_ids = {entry["id"] for entry in _load(BASELINE_INVENTORY)["apis"]}
+    return [entry for entry in _load(BATCH_CATALOG)["entries"] if entry["id"] in baseline_ids]
 
 
 def _ledger_entries() -> list[dict[str, Any]]:

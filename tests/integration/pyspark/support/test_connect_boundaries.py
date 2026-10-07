@@ -71,7 +71,7 @@ def test_deep_checkpoint_input_preserves_alias_and_cleanup_with_boundaries_off(s
                 result = CheckpointValues(rows=source).run(runtime).result
                 assert [row.value for row in result.orderBy("value").collect()] == [61, 62, 63]
                 created = {table.name for table in spark.catalog.listTables()} - before
-                assert len(created) == (1 if backend_name() == "spark-connect40" else 0)
+                assert len(created) == (1 if backend_name() in {"spark-connect40", "spark-connect41"} else 0)
             finally:
                 runtime.close()
             assert {table.name for table in spark.catalog.listTables()} == before

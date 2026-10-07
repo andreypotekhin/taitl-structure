@@ -61,8 +61,8 @@ persisted data and also leaves lineage unchanged. `checkpoint()` writes through 
 directory and truncates the logical plan. `local_checkpoint()` uses executor-local cached storage, so it is a
 lineage boundary but not a reliable recovery boundary. Both checkpoint helpers are batch-only.
 
-Reliable `checkpoint()` is supported on ordinary PySpark 3.5/4.0 and the explicit Spark Connect 4.0 profile
-(`>=4.0,<4.1`). For Connect, configure `spark.checkpoint.dir` when starting the server, not through session settings.
+Reliable `checkpoint()` is supported on ordinary PySpark 3.5/4.0 and the explicit Spark Connect 4.0 and 4.1 profiles
+(`>=4.0,<4.2`). For Connect, configure `spark.checkpoint.dir` when starting the server, not through session settings.
 Connect 3.5 and the mixed-version Connect profile remain gated; Connect local checkpointing is not admitted by this
 support claim. The caller owns checkpoint storage and cleanup. No checkpoint is inserted implicitly.
 

@@ -14,7 +14,7 @@ narrow typed contract must specify input/output schemas, nullability, batching, 
 ## Row-based transformWithState
 
 Structure supports `transform_with_state(...)` for ordinary PySpark `>=4.1,<4.2`. It captures a typed processor
-declared by inheriting `StateProcessor[Input, Key, Output]` (with optional `@state_processor` validation), or an
+declared by inheriting `StateProcessor[Input, Key, Output]` (with optional `@special(type="state_processor")` marking), or an
 opaque native PySpark processor bound with `external_state_processor(...)`. Typed processors declare named Value,
 List, and Map states and access their wrappers through `self`; processor bodies remain ordinary worker Python. The compiler lowers the operation to a shared
 recipe used by online and generated execution and classifies it as one stateful stage.

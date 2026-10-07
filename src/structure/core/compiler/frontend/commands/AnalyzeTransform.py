@@ -213,7 +213,7 @@ class AnalyzeTransform(CompileTransform):
             effect_schema = self._inferred_delta_table_schema(transform_class, member, hints, metadata)
         if effect_schema is not None:
             output_schemas = (effect_schema,)
-        if not output_schemas and not self._is_sink_class(return_annotation):
+        if not output_schemas:
             if get_origin(hints.get("return")) is tuple:
                 raise self._error(
                     "DSL-E0402",
@@ -223,10 +223,11 @@ class AnalyzeTransform(CompileTransform):
                     use="Use a fixed tuple of Schema classes, such as tuple[Accepted, Audited].",
                 )
             return None
-        parameters, sink_bindings = self._step_parameters(transform_class, member, hints, metadata)
-        if any(binding.sink_type is return_annotation for binding in sink_bindings):
-            return None
-        if not output_schemas:
+        parameters = self._step_parameters(transform_class, member, hints)
+        if metadata is None and any(
+            declaration.schema is return_annotation
+            for declaration in transform_class._structure_sinks.values()
+        ) and any(hints.get(parameter.name) is return_annotation for parameter in parameters):
             return None
         try:
             bindings = self._input_bindings(transform_class, metadata, lanes, inputs, parameters, member=item.name)

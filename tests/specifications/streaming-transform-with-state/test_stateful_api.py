@@ -13,7 +13,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from structure import Schema, Transform, input, output, step
+from structure import Schema, Transform, input, output, special, step
 from structure.core.compiler.api import Compiler
 from structure.core.compiler.artifacts.commands.BuildArtifactFingerprint import BuildArtifactFingerprint
 from structure.core.compiler.diagnostics.model.StructureCompileError import StructureCompileError
@@ -136,7 +136,7 @@ class UnresolvedCounter(GenericCounter):
     pass
 
 
-@state_processor
+@special(type="state_processor")
 class DecoratedCounter(StateProcessor[Input, Key, Output]):
     total: ValueState[State]
 
@@ -181,7 +181,8 @@ def test_typed_processor_schema_hints_are_the_source_of_truth() -> None:
     from structure.plugin.pyspark.dsl.Stateful import _processor_schemas
 
     assert _processor_schemas(Counter, StateProcessor) == (Input, Key, Output)
-    assert DecoratedCounter.__structure_state_processor__ == (Input, Key, Output)
+    assert not hasattr(Counter, "_structure_special_type")
+    assert getattr(DecoratedCounter, "_structure_special_type") == "state_processor"
 
 
 def test_transform_with_state_lowers_for_spark_4_1() -> None:

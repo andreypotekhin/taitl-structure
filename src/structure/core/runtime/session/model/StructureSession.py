@@ -190,36 +190,26 @@ class StructureSession:
             sink_results = {}
             for sink in artifact.transform_plan.sinks:
                 if sink.sink_module is None or sink.sink_qualname is None:
-                    raise TypeError(f"Sink plan {sink.name!r} is missing its importable sink type.")
-                sink_type: object = import_module(sink.sink_module)
+                    raise TypeError(f"Sink plan {sink.name!r} is missing its importable Schema type.")
+                sink_schema: object = import_module(sink.sink_module)
                 for part in sink.sink_qualname.split("."):
-                    sink_type = getattr(sink_type, part)
-                if not isinstance(sink_type, type):
-                    raise TypeError(f"Declared sink type {sink.sink_qualname!r} is no longer a class.")
-                if sink.kind == "batch":
-                    source_schema = next(
-                        (output.schema for output in artifact.transform_plan.outputs if output.name == sink.output),
-                        None,
-                    )
-                    if source_schema is None:
-                        raise TypeError(f"Batch sink {sink.name!r} refers to missing output {sink.output!r}.")
-                    sink_results[sink.name] = SinkResult(
-                        dataframe=result[sink.output],
-                        schema=sink_type,
-                        output=sink.output,
-                        input_schema=source_schema,
-                    )
-                else:
-                    sink_results[sink.name] = SinkResult(
-                        dataframe=result[sink.output], writer=sink_type, output=sink.output
-                    )
+                    sink_schema = getattr(sink_schema, part)
+                if not isinstance(sink_schema, type):
+                    raise TypeError(f"Declared sink Schema {sink.sink_qualname!r} is no longer a class.")
+                sink_results[sink.name] = SinkResult(
+                    dataframe=result[sink.output],
+                    schema=sink_schema,
+                    output=sink.output,
+                    kind=sink.kind,
+                    name=sink.name,
+                )
             result._structure_with_sinks(sink_results)
         return result
 
     def run_batch(self, handoff: SinkResult, invocation: Transform) -> TransformResult:
         """Run a fully constructed batch transform for a declared batch sink."""
-        if not isinstance(handoff, SinkResult) or handoff.kind != "batch" or handoff.schema is None:
-            raise TypeError("run_batch(handoff, invocation) requires a schema-declared foreachBatch handoff.")
+        if not isinstance(handoff, SinkResult) or handoff.kind != "batch":
+            raise TypeError("run_batch(handoff, invocation) requires a foreach_batch handoff.")
         if not isinstance(invocation, Transform):
             raise TypeError("run_batch(handoff, invocation) requires a constructed Transform invocation.")
         handoff_frame = handoff.dataframe
@@ -232,10 +222,10 @@ class StructureSession:
         inputs = artifact.transform_plan.inputs
         if any(input.streaming for input in inputs):
             raise ValueError("run_batch requires batch transform inputs; remove streaming=True from the invocation.")
-        matching_inputs = [input for input in inputs if input.schema is handoff.input_schema]
+        matching_inputs = [input for input in inputs if input.schema is handoff.schema]
         if len(matching_inputs) != 1:
             raise ValueError(
-                "run_batch requires exactly one batch input whose Structure Schema matches the sink handoff output."
+                "run_batch requires exactly one batch input whose Structure Schema matches the sink declaration."
             )
         batch_input = matching_inputs[0]
         batch_frame = invocation._structure_bound_inputs.get(batch_input.name)
@@ -254,14 +244,7 @@ class StructureSession:
             if frame is not None and bool(getattr(frame, "isStreaming", False)):
                 raise ValueError(f"Batch transform input {input.name!r} is a streaming DataFrame.")
 
-        result = self.run(invocation)
-        matching_outputs = [output.name for output in artifact.transform_plan.outputs if output.schema is handoff.schema]
-        if len(matching_outputs) != 1:
-            raise ValueError(
-                f"Batch transform must expose exactly one output with schema {handoff.schema.__name__}; "
-                f"matched: {', '.join(matching_outputs) or 'none'}."
-            )
-        return result
+        return self.run(invocation)
 
     def state_budget_guard(self, result: TransformResult) -> StateBudgetGuard:
         """Create a guard that the caller may attach to its own streaming query."""

@@ -442,7 +442,7 @@ does not construct the writer or run callbacks:
 from structure.plugin.pyspark import Sink
 
 
-class AlertWriter(Sink):
+class AlertWriter(Sink[Alert]):
     def __init__(self, destination: str) -> None:
         self.destination = destination
 
@@ -453,21 +453,21 @@ class AlertWriter(Sink):
 class PublishAlerts(StreamingTransform):
     events = input(Event, streaming=True)
     alerts = output(Alert)
-    publish_alerts = sink(AlertWriter)
+    publish_alerts = sink(Alert)
 
     @step(output=alerts)
-    def publish(self, event: Event, sink: AlertWriter) -> Alert:
+    def publish(self, event: Event) -> Alert:
         alert = Alert(id=event.id)
-        foreach(alert, sink)
+        foreach(alert, self.publish_alerts)
         return alert
 
 
 result = PublishAlerts(events=events).run(session)
 handoff = result.publish_alerts
 assert handoff.dataframe is result.alerts
-query = handoff.dataframe.writeStream.foreach(
-    handoff.writer(destination="alerts-service")
-).option("checkpointLocation", foreach_checkpoint).start()
+query = AlertWriter(destination="alerts-service").write_stream(handoff).option(
+    "checkpointLocation", foreach_checkpoint
+).start()
 ```
 
 Import `Sink` from `structure.plugin.pyspark`; its subclasses are opaque during compilation and implement
@@ -479,7 +479,7 @@ only the compiled DataFrame transformation; they do not contain `foreach`, `writ
 `.start()` calls.
 
 For batch output, invoke the callback explicitly with
-`handoff.dataframe.foreach(handoff.writer(...).process)`. Batch processing calls `process(Row)` without streaming
+`AlertWriter(...).write(handoff)`. Batch processing calls `process(Row)` without streaming
 `open` or `close`; a batch writer that defines either lifecycle method is rejected. A streaming writer instance must
 be noncallable and expose `process(Row)`, with optional `open(partition_id, epoch_id)` and `close(error)` methods. The
 caller starts the added sink as a second `StreamingQuery`, using a distinct checkpoint from any existing output query.

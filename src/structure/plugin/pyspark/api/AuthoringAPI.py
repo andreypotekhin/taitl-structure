@@ -11,6 +11,7 @@ from structure.plugin.pyspark.delta.operations import DeltaScope
 from structure.plugin.pyspark.dsl.InputScope import InputScope
 from structure.plugin.pyspark.dsl.RowScope import RowScope
 from structure.plugin.pyspark.iceberg.operations import IcebergScope
+from structure.plugin.pyspark.symbolic_execution.model.PySparkSinkEffect import PySparkSinkEffect
 from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 
 
@@ -74,6 +75,7 @@ class PySparkStepSession:
                 body=body,
                 diagnostics=(),
                 sinks=body.sinks,
+                sink_effect=isinstance(body.value, PySparkSinkEffect),
                 effect=bool(
                     self._request.effect
                     or any(

@@ -253,8 +253,8 @@ Rules:
 - Outputs are immutable DataFrame branches, not consumed sinks. A produced output may feed a later step when
   `allow_output_to_input` is enabled (the PySpark default). A later write to the same output is independently governed
   by `allow_to_reassign_output` and means rebinding the output to a new lazy plan, not mutating the earlier one.
-- A declared `Sink` subclass may observe one declared final output without consuming or changing that output. Its
-  `sink(WriterClass)` and `foreach(row, sink)` contract is owned by the
+- A declared `Sink[Schema]` may observe one declared final output without consuming or changing that output. Its
+  `sink(Schema)` and `foreach(row, self.sink_name)` contract is owned by the
   [V11 retained-gates specification](V11RetainedV9DesignGates.spec.md#row-level-foreach).
 - Method-level `input=[...]` and `output=[...]` bind multiple parameters or returned values in order.
 - Method-level `inout=source | target` is shorthand for one explicit source and target; one side may be a list.

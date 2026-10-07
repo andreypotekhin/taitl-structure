@@ -172,14 +172,14 @@
       "kind": "class",
       "module": "structure.core.runtime.session.model.SinkResult",
       "qualname": "SinkResult",
-      "signature": "(dataframe: object, writer: type | None = None, schema: type | None = None, output: str | None = None, input_schema: type | None = None) -> None",
+      "signature": "(dataframe: object, schema: type, output: str, kind: str, name: str) -> None",
       "enum_members": [],
       "dataclass_fields": [
         "dataframe",
-        "writer",
         "schema",
         "output",
-        "input_schema"
+        "kind",
+        "name"
       ]
     },
     "SourceTransformAddress": {

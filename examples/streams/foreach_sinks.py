@@ -6,13 +6,11 @@ import json
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from structure.plugin.pyspark import Sink
-
 if TYPE_CHECKING:
     from pyspark.sql import Row
 
 
-class JsonLinesAlertWriter(Sink):
+class JsonLinesAlertWriterBehavior:
     """Append streaming rows and lifecycle markers to one file per task epoch."""
 
     def __init__(self, destination: str | Path) -> None:
@@ -38,7 +36,7 @@ class JsonLinesAlertWriter(Sink):
             stream.write(json.dumps(value, sort_keys=True) + "\n")
 
 
-class FailWhileMarkedAlertWriter(Sink):
+class FailWhileMarkedAlertWriterBehavior:
     """Append rows and fail while a caller-owned marker exists, for retry proofs."""
 
     def __init__(self, destination: str | Path, failure_marker: str | Path) -> None:

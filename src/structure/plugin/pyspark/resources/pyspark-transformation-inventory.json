@@ -28,6 +28,9 @@
     {"version":"3.5.6","pyspark":["approxCountDistinct","countDistinct","sumDistinct","toDegrees","toRadians"],"reason":"Deprecated camel-case or compatibility aliases with snake-case equivalents in the shared baseline; migrate to the listed equivalent in the per-function gap register."},
     {"version":"4.0.0","pyspark":["collate","collation","dayname","from_xml","is_valid_utf8","listagg","listagg_distinct","make_valid_utf8","monthname","nullifzero","randstr","schema_of_xml","session_user","string_agg","string_agg_distinct","timestamp_add","timestamp_diff","to_xml","try_make_interval","try_make_timestamp","try_make_timestamp_ltz","try_make_timestamp_ntz","try_mod","try_parse_url","try_reflect","try_validate_utf8","uniform","validate_utf8"],"reason":"Target-line additions remain gated from the shared >=3.5,<4.1 baseline; per-function target and migration dispositions are in the gap register."}
   ],
+  "target_only_apis": [
+    {"id":"column.transform","version":"4.1.0","profile":"ordinary PySpark and Spark Connect >=4.1,<4.2","reason":"The typed Column.transform callback is admitted for both PySpark 4.1 variants after online/generated parity; it remains outside the shared 3.5/4.0 transformation baseline and its v8 streaming parity measurement."}
+  ],
   "source_modules": [
     {"name":"partitioning","version":"4.0.0","members":["years","months","days","hours","bucket"],"reason":"A namespace export, not a scalar SQL function; the writer partition transforms are separately inventoried as caller-owned output-layout APIs."}
   ],

@@ -31,7 +31,6 @@ from structure.core.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.core.dsl.model.transforms.OutputDeclaration import OutputDeclaration
 from structure.core.dsl.model.transforms.SchemaMode import SchemaMode
 from structure.core.dsl.model.transforms.SinkDeclaration import SinkDeclaration
-from structure.core.dsl.model.transforms.SinkReference import SinkReference
 from structure.core.dsl.model.transforms.SpecialFunction import IgnoredCompilerCode, OpaqueCompilerCode
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline
@@ -646,7 +645,7 @@ class CompileTransform:
             effect_schema = self._inferred_delta_table_schema(transform_class, member, hints, metadata)
         if effect_schema is not None:
             output_schemas = (effect_schema,)
-        if not output_schemas and not self._is_sink_class(return_annotation):
+        if not output_schemas:
             if get_origin(hints.get("return")) is tuple:
                 raise self._error(
                     "DSL-E0402",
@@ -666,27 +665,8 @@ class CompileTransform:
                     use="Keep the Schema return annotation or rename the helper method.",
                 )
             return None
-        parameters, sink_bindings = self._step_parameters(transform_class, member, hints, metadata)
-        sink_returns = [binding for binding in sink_bindings if binding.sink_type is return_annotation]
-        if len(sink_returns) > 1:
-            raise self._error(
-                "DSL-E0402",
-                transform_class=transform_class,
-                member=name,
-                problem=f"{transform_class.__name__}.{name} has an ambiguous sink-effect return type.",
-                use="Select exactly one declared sink with @step(sink=...).",
-            )
-        sink_effect = bool(sink_returns)
-        if sink_effect:
-            output_schemas = ()
-        elif not output_schemas:
-            raise self._error(
-                "DSL-E0402",
-                transform_class=transform_class,
-                member=name,
-                problem=f"{transform_class.__name__}.{name} returns a sink type without a matching sink parameter.",
-                use="Pass the declared sink as a method parameter and return foreach(row, sink) or foreach_batch(row, sink).",
-            )
+        parameters = self._step_parameters(transform_class, member, hints)
+        sink_effect = False
         bindings = self._input_bindings(
             transform_class,
             metadata,
@@ -768,7 +748,13 @@ class CompileTransform:
             ),
             plugin_options=plugin_options,
             effect=effect_candidate,
-            sinks=tuple(sink_bindings),
+            sinks=tuple(
+                StepAuthoringSink(
+                    name=declaration.name,
+                    schema=declaration.schema,
+                )
+                for declaration in transform_class._structure_sinks.values()
+            ),
             sink_effect=sink_effect,
         )
         authoring_session = authoring_api.open_step(request)
@@ -781,7 +767,7 @@ class CompileTransform:
                 problem=f"Plugin {target!r} supplied {len(authoring_arguments)} symbolic arguments for {len(bindings)} bindings.",
                 use="Update the plugin authoring facet to return one argument per step input.",
             )
-        arguments = self._ordered_step_arguments(member, bindings, authoring_arguments, sink_bindings)
+        arguments = self._ordered_step_arguments(member, bindings, authoring_arguments)
         try:
             with self._step_call_guards(transform_class, members, active=item):
                 with self._parent_step_calls(
@@ -846,8 +832,7 @@ class CompileTransform:
         if not isinstance(capture, StepAuthoringCapture):
             raise TypeError("Plugin authoring capture must return StepAuthoringCapture")
         authoring_body = capture.body
-        if sink_effect:
-            sink_return_type = cast(type, return_annotation)
+        if capture.sink_effect:
             if len(capture.sinks) != 1 or capture.sinks[0].input_ordinal is None:
                 raise self._error(
                     "DSL-E0406",
@@ -855,17 +840,6 @@ class CompileTransform:
                     member=name,
                     problem=f"Sink-effect step {name} must return one foreach(row, sink) effect using one of its inputs.",
                     use="Return foreach(row, sink) or foreach_batch(row, sink) from the sink-effect step.",
-                )
-            if capture.sinks[0].kind != sink_returns[0].kind:
-                raise self._error(
-                    "DSL-E0406",
-                    transform_class=transform_class,
-                    member=name,
-                    problem=(
-                        f"Sink-effect return type {sink_return_type.__name__} does not match the "
-                        f"{capture.sinks[0].kind} helper used in {name}."
-                    ),
-                    use="Use foreach(...) for a row Sink return and foreach_batch(...) for a Schema sink return.",
                 )
             steps.append(
                 StepPlan(
@@ -1018,14 +992,7 @@ class CompileTransform:
             annotation = get_type_hints(member).get("return")
         except NameError:
             return False
-        return bool(self._return_schemas(annotation)) or self._is_sink_class(annotation)
-
-    @staticmethod
-    def _is_sink_class(annotation: object) -> bool:
-        return (
-            isinstance(annotation, type)
-            and any(base.__dict__.get("_structure_sink_role", False) for base in annotation.__mro__)
-        )
+        return bool(self._return_schemas(annotation))
 
     def _step_options(
         self,
@@ -1801,15 +1768,7 @@ class CompileTransform:
                         transform_class=transform_class,
                         member=step.name,
                         problem=f"Step {step.name} references undeclared sink {capture.sink!r}.",
-                        use="Declare this sink with sink(SinkSubclass) or sink(Schema) on the transform.",
-                    )
-                if declaration.kind != capture.kind:
-                    raise self._error(
-                        "DSL-E0406",
-                        transform_class=transform_class,
-                        member=step.name,
-                        problem=f"Sink {capture.sink!r} is declared for {declaration.kind} foreach, not {capture.kind}.",
-                        use="Use foreach(...) for row sinks and foreach_batch(...) for schema sinks.",
+                        use="Declare this sink with sink(Schema) on the transform.",
                     )
                 if capture.sink in seen_sinks:
                     raise self._error(
@@ -1871,52 +1830,18 @@ class CompileTransform:
                         use="Declare a streaming input and attach foreach_batch to its streaming output.",
                     )
 
-                sink_type = declaration.sink_type
-                module = sink_type.__module__
-                qualname = sink_type.__qualname__
+                sink_schema = declaration.schema
+                module = sink_schema.__module__
+                qualname = sink_schema.__qualname__
                 if module in {"__main__", "builtins"} or "<locals>" in qualname:
-                    label = "schema" if capture.kind == "batch" else "writer"
                     raise self._error(
                         "DSL-E0406",
                         transform_class=transform_class,
                         member=step.name,
-                        problem=f"Sink {label} {sink_type.__name__} is local and cannot be imported by generated execution.",
-                        use="Move the declared sink type to module scope.",
+                        problem=f"Sink Schema {sink_schema.__name__} is local and cannot be imported by generated execution.",
+                        use="Move the declared Schema to module scope.",
                         context={"sink": capture.sink, "type": qualname},
                     )
-                if capture.kind == "row":
-                    writer_type = cast(type, declaration.writer_type)
-                    self._validate_sink_writer(
-                        transform_class,
-                        step.name,
-                        capture.sink,
-                        writer_type,
-                        streaming=output.streaming,
-                    )
-                    has_open = any("open" in owner.__dict__ for owner in writer_type.__mro__ if owner is not object)
-                    has_close = any("close" in owner.__dict__ for owner in writer_type.__mro__ if owner is not object)
-                    if output.streaming:
-                        callable_instance = any(
-                            "__call__" in owner.__dict__ for owner in writer_type.__mro__ if owner is not object
-                        )
-                        if callable_instance:
-                            raise self._error(
-                                "DSL-E0406",
-                                transform_class=transform_class,
-                                member=step.name,
-                                problem=f"Streaming foreach writer {writer_type.__name__} is callable.",
-                                use="Remove __call__; PySpark must receive a noncallable writer object.",
-                                context={"sink": capture.sink, "writer": writer_type.__name__},
-                            )
-                    elif has_open or has_close:
-                        raise self._error(
-                            "DSL-E0406",
-                            transform_class=transform_class,
-                            member=step.name,
-                            problem=f"Batch foreach writer {writer_type.__name__} declares streaming open/close methods.",
-                            use="Use a batch processor whose process(row) manages its own resources.",
-                            context={"sink": capture.sink, "writer": writer_type.__name__},
-                        )
                 result.append(
                     SinkPlan(
                         name=capture.sink,
@@ -1928,58 +1853,6 @@ class CompileTransform:
                     )
                 )
         return result
-
-    def _validate_sink_writer(
-        self,
-        transform_class: type[Transform],
-        step_name: str,
-        sink_name: str,
-        writer_type: type,
-        *,
-        streaming: bool,
-    ) -> None:
-        self._validate_sink_method(transform_class, step_name, sink_name, writer_type, "process", 1)
-        if streaming:
-            for method, arity in (("open", 2), ("close", 1)):
-                if callable(getattr(writer_type, method, None)):
-                    self._validate_sink_method(transform_class, step_name, sink_name, writer_type, method, arity)
-
-    def _validate_sink_method(
-        self,
-        transform_class: type[Transform],
-        step_name: str,
-        sink_name: str,
-        writer_type: type,
-        method_name: str,
-        expected_arity: int,
-    ) -> None:
-        method = getattr(writer_type, method_name, None)
-        try:
-            parameters = list(inspect.signature(method).parameters.values()) if callable(method) else []
-        except (TypeError, ValueError):
-            parameters = []
-        if parameters and parameters[0].name in {"self", "cls"}:
-            parameters.pop(0)
-        valid = len(parameters) == expected_arity and all(
-            parameter.kind in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD)
-            and parameter.default is inspect.Parameter.empty
-            for parameter in parameters
-        )
-        if valid:
-            return
-        expected = {
-            "process": "process(self, row)",
-            "open": "open(self, partition_id, epoch_id)",
-            "close": "close(self, error)",
-        }[method_name]
-        raise self._error(
-            "DSL-E0406",
-            transform_class=transform_class,
-            member=step_name,
-            problem=f"Sink {sink_name!r} writer {writer_type.__name__} has an invalid {method_name} signature.",
-            use=f"Define {expected} with the documented positional arguments.",
-            context={"sink": sink_name, "writer": writer_type.__name__, "method": method_name},
-        )
 
     def _implicit_output_lane(
         self,
@@ -2240,8 +2113,7 @@ class CompileTransform:
         transform_class: type[Transform],
         method,
         hints: dict[str, object],
-        metadata: dict[str, object] | None,
-    ) -> tuple[tuple[inspect.Parameter, ...], tuple[StepAuthoringSink, ...]]:
+    ) -> tuple[inspect.Parameter, ...]:
         parameters = list(inspect.signature(method).parameters.values())
         row_parameters = [parameter for parameter in parameters if parameter.name != "self"]
         if not row_parameters:
@@ -2253,122 +2125,28 @@ class CompileTransform:
                 use="Declare a non-self parameter annotated with the driving input or previous output schema.",
             )
 
-        declared = transform_class._structure_sinks
-        explicit = tuple(cast(tuple[SinkDeclaration, ...], metadata.get("sinks", ()))) if metadata else ()
         schemas: list[inspect.Parameter] = []
-        assigned: list[StepAuthoringSink] = []
-        remaining = list(declared.values())
-        used_explicit: set[str] = set()
-        for position, parameter in enumerate(row_parameters):
+        for parameter in row_parameters:
             annotation = hints.get(parameter.name)
-            if not isinstance(annotation, type):
+            if not isinstance(annotation, type) or not self._is_schema(annotation):
                 raise self._error(
                     "DSL-E0402",
                     transform_class=transform_class,
                     member=method.__name__,
-                    problem=f"{method.__qualname__}.{parameter.name} must have a Schema or sink type annotation.",
-                    use="Annotate relation parameters with a Schema and sink parameters with their sink type.",
+                    problem=f"{method.__qualname__}.{parameter.name} must have a Structure Schema annotation.",
+                    use="Annotate relation parameters with a Structure Schema and reference sinks directly as self.name.",
                     context={"parameter": parameter.name},
                 )
-
-            schema_type = self._is_schema(annotation)
-            explicit_candidates = [item for item in explicit if item.sink_type is annotation and item.name not in used_explicit]
-            matching = [item for item in remaining if item.sink_type is annotation]
-            if explicit_candidates:
-                candidates = explicit_candidates
-            elif not schema_type:
-                candidates = matching
-            else:
-                # Schema annotations may name either a relation or a batch sink. Infer
-                # the sink role only when this method also has another relation input.
-                relation_count = sum(
-                    1
-                    for candidate in row_parameters
-                    if self._is_schema(hints.get(candidate.name))
-                    and not any(
-                        item.kind == "batch" and item.sink_type is hints.get(candidate.name)
-                        for item in remaining
-                    )
-                )
-                candidates = matching if matching and relation_count > 0 else []
-
-            if candidates:
-                if len(candidates) != 1:
-                    names = ", ".join(item.name for item in candidates)
-                    raise self._error(
-                        "DSL-E0402",
-                        transform_class=transform_class,
-                        member=method.__name__,
-                        problem=f"Cannot bind sink parameter {parameter.name!r}; matching declarations: {names}.",
-                        use="Add @step(sink=...) to select one declared sink.",
-                        context={"parameter": parameter.name},
-                    )
-                declaration = candidates[0]
-                if schema_type and declaration.kind != "batch":
-                    raise self._error(
-                        "DSL-E0402",
-                        transform_class=transform_class,
-                        member=method.__name__,
-                        problem=f"Schema parameter {parameter.name!r} cannot bind row sink {declaration.name!r}.",
-                        use="Use the declared Sink subclass as the parameter type for a row sink.",
-                    )
-                if explicit_candidates:
-                    used_explicit.add(declaration.name)
-                assigned.append(
-                    StepAuthoringSink(
-                        parameter=parameter.name,
-                        name=declaration.name,
-                        sink_type=declaration.sink_type,
-                        ordinal=position,
-                        kind=declaration.kind,
-                    )
-                )
-                if declaration in remaining:
-                    remaining.remove(declaration)
-                continue
-            if explicit and any(item.sink_type is annotation for item in explicit):
-                continue
-            if schema_type:
-                schemas.append(parameter.replace(annotation=annotation))
-                continue
-            matched = ", ".join(item.name for item in matching) or "none"
-            raise self._error(
-                "DSL-E0402",
-                transform_class=transform_class,
-                member=method.__name__,
-                problem=(
-                    f"Cannot bind sink parameter {parameter.name!r} of type {annotation.__name__}; "
-                    f"matching declarations: {matched}."
-                ),
-                use="Declare sink(WriterClass) on the transform with a type matching this parameter.",
-                context={"parameter": parameter.name, "sink_type": annotation.__name__},
-            )
-
-        if explicit and used_explicit != {declaration.name for declaration in explicit}:
-            missing = ", ".join(declaration.name for declaration in explicit if declaration.name not in used_explicit)
-            raise self._error(
-                "DSL-E0402",
-                transform_class=transform_class,
-                member=method.__name__,
-                problem=f"@step(sink=...) declarations do not match sink parameters: {missing}.",
-                use="Add one sink-typed parameter for each selected declaration.",
-            )
-        return tuple(schemas), tuple(assigned)
+            schemas.append(parameter.replace(annotation=annotation))
+        return tuple(schemas)
 
     @staticmethod
     def _ordered_step_arguments(
         method,
         bindings: list[StepInputPlan],
         arguments: tuple[object, ...],
-        sinks: tuple[StepAuthoringSink, ...],
     ) -> tuple[object, ...]:
         values = {binding.parameter: value for binding, value in zip(bindings, arguments, strict=True)}
-        values.update(
-            {
-                binding.parameter: SinkReference(binding.name, binding.sink_type, kind=binding.kind)
-                for binding in sinks
-            }
-        )
         return tuple(values[parameter.name] for parameter in inspect.signature(method).parameters.values() if parameter.name != "self")
 
     def _input_for_schema(

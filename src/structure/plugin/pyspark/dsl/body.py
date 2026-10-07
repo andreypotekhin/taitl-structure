@@ -28,18 +28,17 @@ Projected = TypeVar("Projected", bound=Schema)
 
 
 def foreach(row: object, sink: object) -> Any:
-    """Associate a returned final row with a declared opaque sink.
+    """Associate a returned final row with a declared sink schema.
 
     This records compiler metadata only. It does not call the writer or start
     a Spark action/query.
     """
     context = _context("foreach")
     if not _is_sink_reference(sink):
-        raise TypeError("foreach(row, sink) requires a sink-typed step parameter")
-    if getattr(sink, "kind", None) != "row":
-        raise TypeError("foreach(row, sink) requires a sink(WriterClass) declaration")
+        raise TypeError("foreach(row, sink) requires a declared sink reference such as self.send_alerts")
     if not isinstance(row, (Schema, RowScope, Projection)):
         raise TypeError("foreach(row, sink) requires a Structure row or projection returned by this step")
+    _validate_sink_schema(row, sink, "foreach")
     capture = PySparkForeachCapture(row=row, sink=sink, kind="row")
     context.foreach.append(capture)
     return PySparkSinkEffect(capture)
@@ -48,16 +47,15 @@ def foreach(row: object, sink: object) -> Any:
 def foreach_batch(row: object, sink: object) -> Any:
     """Associate a final streaming row with a caller-owned batch processor.
 
-    The named sink declares the processor output schema. Spark callback and
+    The named sink declares the consumed row schema. Spark callback and
     batch execution remain caller-owned; this records compiler metadata only.
     """
     context = _context("foreach_batch")
     if not _is_sink_reference(sink):
-        raise TypeError("foreach_batch(row, sink) requires a sink-typed step parameter")
-    if getattr(sink, "kind", None) != "batch":
-        raise TypeError("foreach_batch(row, sink) requires a sink(AlertMessage) declaration")
+        raise TypeError("foreach_batch(row, sink) requires a declared sink reference such as self.send_alerts")
     if not isinstance(row, (Schema, RowScope, Projection)):
         raise TypeError("foreach_batch(row, sink) requires a Structure row or projection")
+    _validate_sink_schema(row, sink, "foreach_batch")
     capture = PySparkForeachCapture(row=row, sink=sink, kind="batch")
     context.foreach.append(capture)
     return PySparkSinkEffect(capture)
@@ -224,9 +222,27 @@ def _project_fields(value: object) -> tuple[str, ...]:
 
 
 def _is_sink_reference(value: object) -> bool:
-    """Recognize the public sink-reference shape without importing Core types."""
+    """Recognize a named sink declaration or compiler reference."""
     return (
-        type(value).__name__ == "SinkReference"
+        type(value).__name__ == "SinkDeclaration"
         and isinstance(getattr(value, "name", None), str)
         and isinstance(getattr(value, "sink_type", None), type)
+        and getattr(value, "kind", "schema") == "schema"
     )
+
+
+def _validate_sink_schema(row: object, sink: object, operation: str) -> None:
+    row_schema: type[Schema] | None
+    if isinstance(row, Schema):
+        row_schema = type(row)
+    elif isinstance(row, RowScope):
+        row_schema = row._structure_scope_schema
+    elif isinstance(row, Projection):
+        row_schema = row.target
+    else:
+        row_schema = None
+    sink_schema = getattr(sink, "sink_type", None)
+    if row_schema is not sink_schema:
+        actual = row_schema.__name__ if isinstance(row_schema, type) else "an untyped projection"
+        expected = sink_schema.__name__ if isinstance(sink_schema, type) else "an invalid sink"
+        raise TypeError(f"{operation}(row, sink) requires row schema {expected}; received {actual}.")

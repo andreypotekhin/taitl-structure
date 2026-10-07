@@ -7,11 +7,19 @@ Structure remains an intermediate-representation-first library: source operation
 against declared schemas and capabilities, and rendered into ordinary PySpark or Spark Connect code. The design keeps
 the user-visible promise small enough to verify and keeps opaque execution at an explicit boundary.
 
-The upstream 4.1 release adds a large SQL-function surface, a Column transformation API, IN-subquery and lateral-join
-query APIs, richer observations, Python Arrow UDF/UDTF facilities, row-based streaming state, and several APIs outside
+The upstream 4.1 release adds a large SQL-function surface, a Column transformation API, IN-subquery behavior,
+richer observations, Python Arrow UDF/UDTF facilities, row-based streaming state, and several APIs outside
 Structure's transformation boundary. The upstream release notes and 4.1 Python reference are the inventory inputs:
-`https://spark.apache.org/releases/spark-release-4-1-0.html` and
+`https://spark.apache.org/releases/spark-release-4.1.0.html` and
 `https://spark.apache.org/docs/4.1.0/api/python/reference/`.
+
+The pinned [Python API delta](../../../src/structure/plugin/pyspark/resources/pyspark-4.1-python-api-delta.json)
+compares the 4.0.0 and 4.1.0 SQL and function indexes. It records 43 newly listed function names and one new SQL-index
+symbol, `Column.transform`. `Column.isin(DataFrame)` and complex-valued `DataFrame.observe` are 4.1 semantic extensions
+of existing methods. `DataFrame.exists` and `DataFrame.lateralJoin` were introduced in 4.0; V11 keeps them as query
+parity work without treating them as 4.1 additions. The release note's 77 SQL built-ins are a broader SQL count, not
+the Python function-index difference. `random` and `try_to_date` have earlier introduction annotations on their 4.1
+pages despite being absent from the 4.0 function index, so the delta labels them as index additions.
 
 ## Target variants
 

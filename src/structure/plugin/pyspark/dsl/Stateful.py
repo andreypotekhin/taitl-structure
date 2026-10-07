@@ -300,9 +300,15 @@ class StatefulResult:
 
 
 def state_processor(processor: type[StateProcessor[Input, Key, Output]]) -> type:
-    """Mark a top-level typed processor class for Structure compilation."""
+    """Validate and mark a typed processor; inheritance alone is also supported."""
 
-    return _mark_processor(processor, StateProcessor, "__structure_state_processor__", "StateProcessor")
+    setattr(processor, "_structure_special_type", "state_processor")
+    return _mark_processor(
+        processor,
+        StateProcessor,
+        "__structure_state_processor__",
+        "StateProcessor",
+    )
 
 
 def pandas_state_processor(processor: type[PandasStateProcessor[Input, Key, State, Output]]) -> type:

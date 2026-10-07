@@ -208,14 +208,17 @@ def test_lineage_warning_can_be_disabled_at_project_and_transform_scope() -> Non
 def test_mixed_version_connect_profile_does_not_claim_materialization() -> None:
     ordinary = PySparkCapabilities(target_variant="ordinary")
     connect = PySparkCapabilities(target_variant="spark-connect")
+    connect35 = PySparkCapabilities(target_profile=">=3.5,<4.0", target_variant="spark-connect")
     for name in ("persist", "unpersist", "checkpoint", "local_checkpoint"):
         requirement = CapabilityRequirement(group="optimization", name=name)
         assert ordinary.supports(requirement).supported
         assert not connect.supports(requirement).supported
+        assert not connect35.supports(requirement).supported
 
 
-def test_connect40_claims_only_the_proven_reliable_checkpoint() -> None:
-    connect = PySparkCapabilities(target_profile=">=4.0,<4.1", target_variant="spark-connect")
+@pytest.mark.parametrize("profile", [">=4.0,<4.1", ">=4.1,<4.2"])
+def test_connect_profiles_claim_only_the_proven_reliable_checkpoint(profile: str) -> None:
+    connect = PySparkCapabilities(target_profile=profile, target_variant="spark-connect")
     assert connect.supports(CapabilityRequirement(group="optimization", name="checkpoint")).supported
     for name in ("persist", "unpersist", "local_checkpoint"):
         assert not connect.supports(CapabilityRequirement(group="optimization", name=name)).supported

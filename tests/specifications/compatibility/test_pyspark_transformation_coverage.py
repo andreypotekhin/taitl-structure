@@ -19,10 +19,12 @@ def test_pyspark_transformation_catalog_classifies_the_entire_local_inventory() 
     catalog = _load(CATALOG)
     inventory_ids = [entry["id"] for entry in inventory["apis"]]
     catalog_ids = [entry["id"] for entry in catalog["entries"]]
+    target_only_ids = [entry["id"] for entry in inventory["target_only_apis"]]
 
     assert len(inventory_ids) == len(set(inventory_ids))
     assert len(catalog_ids) == len(set(catalog_ids))
-    assert set(catalog_ids) == set(inventory_ids)
+    assert len(target_only_ids) == len(set(target_only_ids))
+    assert set(catalog_ids) == set(inventory_ids) | set(target_only_ids)
     assert inventory["excluded_categories"]
     extensions = {extension["name"] for extension in inventory["structure_extensions"]}
     pyspark_functions = {
@@ -45,6 +47,11 @@ def test_every_inventory_scope_boundary_has_a_named_reason() -> None:
         assert category["version"] in {"3.5.6", "4.0.0"}
         assert category["pyspark"]
         assert category["reason"]
+    for entry in inventory["target_only_apis"]:
+        assert entry["id"]
+        assert entry["version"]
+        assert entry["profile"]
+        assert entry["reason"]
     for module in inventory["source_modules"]:
         assert module["name"]
         assert module["version"]
@@ -246,6 +253,8 @@ def test_target_only_function_exports_have_exact_gap_remedies() -> None:
 
 
 def test_pyspark_transformation_catalog_entries_are_actionable() -> None:
+    inventory = _load(INVENTORY)
+    target_only_profiles = {entry["id"]: entry["profile"] for entry in inventory["target_only_apis"]}
     for entry in _load(CATALOG)["entries"]:
         assert entry["status"] in VALID_STATUSES
         assert entry["structure"]
@@ -253,7 +262,10 @@ def test_pyspark_transformation_catalog_entries_are_actionable() -> None:
         assert entry["contract"]
         assert entry["notes"]
         assert entry["evidence"]
-        assert "4.1" not in entry["profile"]
+        if entry["id"] in target_only_profiles:
+            assert entry["profile"] == target_only_profiles[entry["id"]]
+        else:
+            assert "4.1" not in entry["profile"]
         for evidence in entry["evidence"]:
             assert (ROOT / evidence).is_file(), f"{entry['id']} evidence is missing: {evidence}"
 

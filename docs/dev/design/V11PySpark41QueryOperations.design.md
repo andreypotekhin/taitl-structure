@@ -7,13 +7,18 @@ DataFrame callbacks into hidden code generation.
 
 ## Correlated existence
 
+`DataFrame.exists` was introduced in PySpark 4.0; V11 carries it forward as parity work. PySpark 4.1 extends the
+existing `Column.isin(*cols)` method to accept one DataFrame as an IN subquery. Structure's current literal/list
+`isin(...)` contract does not admit that subquery form.
+
 An existence predicate names its outer relation, inner relation, correlation keys, null policy, and expected boolean
 result. Scope resolution is explicit: a field must belong to the declared relation alias, and a field from another
 relation is rejected before lowering. Duplicate inner rows do not multiply the outer result.
 
 ## Lateral relations
 
-`lateralJoin` is a relation-shape operation, so admission requires a declared output schema, cardinality class, join
+`DataFrame.lateralJoin` also began in PySpark 4.0 and remains in the V11 parity backlog. It is a relation-shape
+operation, so admission requires a declared output schema, cardinality class, join
 kind, correlation scope, and streaming classification. The first implementation may support only a typed, bounded
 relation expression; raw Python functions returning DataFrames remain a caller-owned hook. If Spark Connect differs,
 the capability ledger records the difference instead of sharing an unsupported renderer.

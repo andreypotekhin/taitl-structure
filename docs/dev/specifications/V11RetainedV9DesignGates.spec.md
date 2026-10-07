@@ -46,24 +46,21 @@ stateful-operation chaining.
 
 ## Row-level `foreach`
 
-Subclass `structure.plugin.pyspark.Sink` for a module-level writer whose Python implementation Structure does not inspect
-or execute during compilation. The inherited role also guards calls to writer methods during step compilation. Declare
-a named writer on a transform with `sink(WriterClass)`. A step takes the writer as a typed parameter; a unique declared
-writer type binds automatically, while `@step(sink=declaration)` disambiguates
-multiple declarations of the same class. The step calls `foreach(returned_row, writer_parameter)` and returns that same
-row value. The row must map to a declared final output of that transform. Intermediate rows and rows created after the
-sink call are rejected with `DSL-E0406`.
+Subclass `structure.plugin.pyspark.Sink[Schema]` for a module-level writer whose Python implementation Structure does
+not inspect or execute during compilation. The inherited role also guards calls to writer methods during step
+compilation. Declare the consumed row type on a transform with `sink(Schema)`. A step references that named declaration
+directly with `foreach(returned_row, self.sink_name)` and returns that same row value. The row must map to a declared
+final output of that transform. Intermediate rows and rows created after the sink call are rejected with `DSL-E0406`.
 
-The result exposes a read-only named handoff directly, such as `result.publish_alerts`. It contains the matching final
-output DataFrame as `.dataframe` and the writer class as `.writer`. Structure does not instantiate the writer, call its
-methods, start an action or query, or attach it to the caller's existing output query. A batch caller passes
-`handoff.writer(...).process` to `handoff.dataframe.foreach(...)`. A streaming caller passes a configured noncallable
-writer instance to `handoff.dataframe.writeStream.foreach(...)` and starts the returned writer using ordinary PySpark
-APIs.
+The result exposes a read-only named handoff such as `result.publish_alerts`, containing the matching final output
+DataFrame and consumed schema. The caller constructs the `Sink[Schema]` implementation and attaches it with
+`write(handoff)` for a batch DataFrame or `write_stream(handoff)` for a streaming DataFrame. The latter returns Spark's
+native writer so the caller can set options and start the query. Structure does not instantiate the writer or start an
+action or query.
 
 The batch writer defines `process(row: pyspark.sql.Row) -> None`; it receives PySpark `Row` objects, not instances of
 the declared Structure schema. Batch `DataFrame.foreach` invokes `process` only and does not provide streaming
-`open`/`close` lifecycle. A batch writer that declares either method is rejected. A streaming writer defines
+`open`/`close` lifecycle. A batch writer that declares either method is rejected by `write(...)`. A streaming writer defines
 `process(row: Row) -> None`, may define `open(partition_id, epoch_id)` and `close(error)`, and must be noncallable so
 PySpark dispatches to the writer protocol. The caller creates a serializable writer instance; it should open external
 connections on workers rather than in the driver-side constructor.

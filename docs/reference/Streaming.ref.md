@@ -497,19 +497,19 @@ assumptions themselves.
 
 ## Attach a batch transform to a foreachBatch sink
 
-Declare a schema sink for the rows that the caller intends to send. The sink handoff points to the selected final
-streaming output, while its `schema` names the expected output from the caller-selected batch transform:
+Declare a schema sink for the rows consumed by the caller-selected batch transform. The sink handoff points to the
+selected final streaming output, and its schema identifies the batch transform's input:
 
 ```python
 class PublishAlerts(StreamingTransform):
     events = input(Event, streaming=True)
     alerts = output(Alert)
-    send_alerts = sink(AlertMessage)
+    send_alerts = sink(Alert)
 
     @step(output=alerts)
-    def publish(self, event: Event, sink: AlertMessage) -> Alert:
+    def publish(self, event: Event) -> Alert:
         alert = Alert(event_id=event.event_id, message=event.message)
-        foreach_batch(alert, sink)
+        foreach_batch(alert, self.send_alerts)
         return alert
 
 
@@ -521,14 +521,12 @@ class PrepareAlertBatch(Transform):
         return AlertMessage(event_id=alert.event_id, payload=alert.message)
 ```
 
-The sink parameter is an effect dependency selected by its declared schema type. `foreach_batch` requires both the
-symbolic row and that parameter. The helper records the handoff during compilation; it does not create a DataFrame,
-write data, or start a query. A separate sink-effect step may return `AlertMessage` while taking `sink: AlertMessage`
-and returning `foreach_batch(alert, sink)`. That return marks an effect, not another relation. Both forms require a
-class-level `sink(AlertMessage)` declaration.
+`foreach_batch` references the named sink directly. The helper records the handoff during compilation; it does not
+create a DataFrame, write data, or start a query. It can also be returned from a sink-effect step that captures an
+input row instead of returning a transformed relation.
 
-At runtime, the caller selects and constructs the batch transform. Its input must match the streaming output schema,
-and its one selected result must match the sink schema:
+At runtime, the caller selects and constructs the batch transform. Its input must match the sink schema; the caller
+selects its output schemas through that transform:
 
 ```python
 with StructureSession(spark=spark, config=config) as session:
@@ -557,11 +555,11 @@ runtime and resolved configuration and scopes Structure temporary-view cleanup t
 
 ## Attach a transform-declared row-level sink
 
-For row-wise writes, declare an opaque writer on a transform and attach it to a declared final output:
+For row-wise writes, declare the consumed schema on the transform and implement a caller-owned `Sink[Schema]` writer:
 
     from structure.plugin.pyspark import Sink
 
-    class AlertWriter(Sink):
+    class AlertWriter(Sink[Alert]):
         def __init__(self, destination: str) -> None:
             self.destination = destination
 
@@ -571,19 +569,19 @@ For row-wise writes, declare an opaque writer on a transform and attach it to a 
     class PublishAlerts(StreamingTransform):
         events = input(Event, streaming=True)
         alerts = output(Alert)
-        publish_alerts = sink(AlertWriter)
+        publish_alerts = sink(Alert)
 
         @step(output=alerts)
-        def publish(self, event: Event, sink: AlertWriter) -> Alert:
+        def publish(self, event: Event) -> Alert:
             alert = Alert(id=event.id)
-            foreach(alert, sink)
+            foreach(alert, self.publish_alerts)
             return alert
 
     result = PublishAlerts(events=events).run(session)
     handoff = result.publish_alerts
-    query = handoff.dataframe.writeStream.foreach(
-        handoff.writer(destination="alert-service")
-    ).option("checkpointLocation", foreach_checkpoint).start()
+    query = AlertWriter(destination="alert-service").write_stream(handoff).option(
+        "checkpointLocation", foreach_checkpoint
+    ).start()
 
 For row-wise writes, import `Sink` from `structure.plugin.pyspark`; subclasses receive the compiler call guard through
 inheritance and implement `process(row: Row) -> None` without an opaque decorator. The caller starts and stops this
@@ -593,8 +591,8 @@ independently and needs its own checkpoint. PySpark serializes writer copies for
 side effects, and `close(error)` is not guaranteed after worker failure. Make the external write idempotent and open
 connections in worker lifecycle methods. A streaming writer must not define `__call__`, because PySpark otherwise
 selects its plain callback branch instead of `process/open/close`. For batch outputs, call
-`handoff.dataframe.foreach(handoff.writer(destination="alert-service").process)`; batch processing does not invoke
-`open` or `close`, so a batch writer that defines those methods is rejected. The `row` passed to `process` is a
+`AlertWriter(destination="alert-service").write(handoff)`; batch processing does not invoke `open` or `close`, so a
+batch writer that defines those methods is rejected. The `row` passed to `process` is a
 `pyspark.sql.Row`, not an instance of the Structure `Alert` schema.
 
 ## Use state processors
@@ -654,7 +652,7 @@ class TotalOutput(Schema):
     total = integer(nullable=False)
 
 
-@state_processor
+@special(type="state_processor")
 class CustomerTotals(StateProcessor[Event, CustomerKey, TotalOutput]):
     total: ValueState[CustomerTotal]
     recent: ListState[Event] = list_state(ttl=timedelta(hours=2))
@@ -714,6 +712,10 @@ class CustomerTotalsTransform(StreamingTransform):
             initial_state=self.initial,
         )
 ```
+
+The `@special(type="state_processor")` marker is optional for typed processors. Inheriting from
+`StateProcessor[Input, Key, Output]` is sufficient for Structure to recognize and validate the processor. Use the marker
+when you want the role to be explicit in the class declaration.
 
 `ValueState` supports `exists()`, `get()`, `update(value)`, and `clear()`. `ListState` adds lazy `get()`, `put(values)`,
 `append_value(value)`, and `append_list(values)`. `MapState` provides `get_value(key)`, `contains_key(key)`,

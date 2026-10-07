@@ -13,9 +13,9 @@ from integration.pyspark.support.backend_matrix import (
     session,
 )
 
-from examples.streams.foreach_sinks import FailWhileMarkedAlertWriter, JsonLinesAlertWriter
+from examples.streams.foreach_sinks import FailWhileMarkedAlertWriterBehavior, JsonLinesAlertWriterBehavior
 from structure import Schema, Transform, input, output, sink, special, step
-from structure.plugin.pyspark import foreach, string
+from structure.plugin.pyspark import Sink, foreach, string
 
 pytestmark: pytest.MarkDecorator | list[pytest.MarkDecorator] = (
     [pytest.mark.integration, pytest.mark.skip(reason="row foreach writer evidence requires classic PySpark")]
@@ -35,27 +35,35 @@ class PublishedEvent(Schema):
     event_id = string(nullable=False)
 
 
+class JsonLinesPublishedWriter(JsonLinesAlertWriterBehavior, Sink[PublishedEvent]):
+    pass
+
+
+class FailWhileMarkedPublishedWriter(FailWhileMarkedAlertWriterBehavior, Sink[PublishedEvent]):
+    pass
+
+
 class PublishStream(Transform):
     events = input(StreamEvent, streaming=True)
     published = output(PublishedEvent)
-    row_sink = sink(JsonLinesAlertWriter)
+    row_sink = sink(PublishedEvent)
 
     @step(output=published)
-    def publish(self, event: StreamEvent, sink: JsonLinesAlertWriter) -> PublishedEvent:
+    def publish(self, event: StreamEvent) -> PublishedEvent:
         published = PublishedEvent(event_id=event.event_id)
-        foreach(published, sink)
+        foreach(published, self.row_sink)
         return published
 
 
 class RetryPublishStream(Transform):
     events = input(StreamEvent, streaming=True)
     published = output(PublishedEvent)
-    row_sink = sink(FailWhileMarkedAlertWriter)
+    row_sink = sink(PublishedEvent)
 
     @step(output=published)
-    def publish(self, event: StreamEvent, sink: FailWhileMarkedAlertWriter) -> PublishedEvent:
+    def publish(self, event: StreamEvent) -> PublishedEvent:
         published = PublishedEvent(event_id=event.event_id)
-        foreach(published, sink)
+        foreach(published, self.row_sink)
         return published
 
 
@@ -84,15 +92,15 @@ def test_row_foreach_handoff_runs_as_an_independent_streaming_query(spark, tmp_p
             )
             handoff = result.row_sink
             assert handoff.dataframe is result.published
-            assert handoff.writer is JsonLinesAlertWriter
+            assert handoff.schema is PublishedEvent
 
             primary = handoff.dataframe.writeStream.format("parquet").option(
                 "path", str(root / mode / "primary")
             ).option("checkpointLocation", str(root / mode / "primary-checkpoint")).trigger(
                 availableNow=True
             ).start()
-            secondary = handoff.dataframe.writeStream.foreach(
-                handoff.writer(destination=str(root / mode / "foreach-data"))
+            secondary = JsonLinesPublishedWriter(destination=str(root / mode / "foreach-data")).write_stream(
+                handoff
             ).option("checkpointLocation", str(root / mode / "foreach-checkpoint")).trigger(
                 availableNow=True
             ).start()
@@ -154,9 +162,11 @@ def test_row_foreach_can_repeat_side_effects_when_a_failed_query_restarts(spark,
                     )
 
                 failed_result = build_result()
-                failed_query = failed_result.row_sink.dataframe.writeStream.foreach(
-                    failed_result.row_sink.writer(destination=str(destination), failure_marker=str(failure_marker))
-                ).option("checkpointLocation", str(checkpoint)).trigger(availableNow=True).start()
+                failed_query = FailWhileMarkedPublishedWriter(
+                    destination=str(destination), failure_marker=str(failure_marker)
+                ).write_stream(failed_result.row_sink).option("checkpointLocation", str(checkpoint)).trigger(
+                    availableNow=True
+                ).start()
                 try:
                     with pytest.raises(Exception):
                         failed_query.awaitTermination(120)
@@ -165,9 +175,11 @@ def test_row_foreach_can_repeat_side_effects_when_a_failed_query_restarts(spark,
 
                 failure_marker.unlink()
                 resumed_result = build_result()
-                resumed_query = resumed_result.row_sink.dataframe.writeStream.foreach(
-                    resumed_result.row_sink.writer(destination=str(destination), failure_marker=str(failure_marker))
-                ).option("checkpointLocation", str(checkpoint)).trigger(availableNow=True).start()
+                resumed_query = FailWhileMarkedPublishedWriter(
+                    destination=str(destination), failure_marker=str(failure_marker)
+                ).write_stream(resumed_result.row_sink).option("checkpointLocation", str(checkpoint)).trigger(
+                    availableNow=True
+                ).start()
                 try:
                     assert resumed_query.awaitTermination(120), "foreach query did not finish after restart"
                 finally:

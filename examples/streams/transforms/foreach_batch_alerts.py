@@ -22,12 +22,12 @@ class AlertMessage(Schema):
 class PublishAlerts(Transform):
     events = input(Event, streaming=True)
     alerts = output(Alert)
-    send_alerts = sink(AlertMessage)
+    send_alerts = sink(Alert)
 
     @step(output=alerts)
-    def publish(self, event: Event, sink: AlertMessage) -> Alert:
+    def publish(self, event: Event) -> Alert:
         alert = Alert(event_id=event.event_id, message=event.message)
-        foreach_batch(alert, sink)
+        foreach_batch(alert, self.send_alerts)
         return alert
 
 

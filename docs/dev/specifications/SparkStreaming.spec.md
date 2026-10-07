@@ -220,9 +220,9 @@ Structure transformation support.
 
 `foreachBatch` is caller-owned-guided: the caller receives Structure's transformed DataFrame and applies the writer
 chain, checkpoint, trigger, output mode, and lifecycle in caller code. Row-level `foreach` is also caller-owned-guided:
-the transform declares `sink(WriterClass)`, captures `foreach(returned_row, sink_parameter)`, and returns a named handoff
-for a declared final output. The caller creates the writer and attaches it using native `DataFrame.foreach` or
-`DataStreamWriter.foreach`; each streaming sink is an independent query with its own checkpoint. The generated transform
+the transform declares `sink(Schema)`, captures `foreach(returned_row, self.sink_name)`, and returns a named handoff for
+a declared final output. The caller constructs a matching `Sink[Schema]` and attaches it with `write(...)` or
+`write_stream(...)`; each streaming sink is an independent query with its own checkpoint. The generated transform
 must not include the callback or query lifecycle. Classic PySpark 3.5, 4.0, and 4.1 pass batch, streaming, restart, and
 online/generated evidence; Spark Connect is unclaimed. See the [V11 row sink contract](V11RetainedV9DesignGates.spec.md#row-level-foreach).
 Structure has explicit row `transform_with_state(...)` and Pandas `transform_with_state_in_pandas(...)` compiler surfaces with typed

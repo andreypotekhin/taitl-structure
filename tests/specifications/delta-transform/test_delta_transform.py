@@ -114,18 +114,18 @@ def test_delta_capabilities_are_available_on_admitted_classic_profiles(profile, 
     ).supported
 
 
-def test_delta_capability_is_not_claimed_for_spark_connect() -> None:
+def test_delta_capability_is_gated_before_the_admitted_spark_connect_profile() -> None:
     from structure.plugin.api.v1.model import CapabilityRequirement
     from structure.plugin.pyspark.capabilities.model.PySparkCapabilities import PySparkCapabilities
 
-    decision = PySparkCapabilities(
-        target_profile=">=4.0,<4.1", target_variant="spark-connect"
-    ).supports(CapabilityRequirement(group="delta", name="binding"))
+    decision = PySparkCapabilities(target_profile=">=4.0,<4.1", target_variant="spark-connect").supports(
+        CapabilityRequirement(group="delta", name="binding")
+    )
     assert not decision.supported
     assert "ordinary PySpark" in decision.use
 
 
-@pytest.mark.parametrize("profile", [">=3.5,<4.1", ">=3.5,<4.0", ">=4.0,<4.1", ">=4.1,<4.2"])
+@pytest.mark.parametrize("profile", [">=3.5,<4.1", ">=3.5,<4.0", ">=4.0,<4.1"])
 def test_delta_spark_connect_profiles_fail_before_plan_lowering(profile) -> None:
     from structure.plugin.api.v1.model import BackendCapabilityError
 
@@ -139,8 +139,32 @@ def test_delta_spark_connect_profiles_fail_before_plan_lowering(profile) -> None
     with pytest.raises(BackendCapabilityError) as raised:
         _compile(Delete, profile=profile, variant="spark-connect")
     assert "delta.binding" in str(raised.value)
-    if profile == ">=4.1,<4.2":
-        assert "ordinary PySpark" in raised.value.diagnostic.use
+
+
+def test_delta_41_spark_connect_profile_is_admitted() -> None:
+    from structure.plugin.api.v1.model import CapabilityRequirement
+    from structure.plugin.pyspark.capabilities.model.PySparkCapabilities import PySparkCapabilities
+
+    connect = PySparkCapabilities(target_profile=">=4.1,<4.2", target_variant="spark-connect")
+    for name in (
+        "binding",
+        "check",
+        "columns",
+        "delete",
+        "update",
+        "merge",
+        "append",
+        "replace_where",
+        "schema_evolution",
+        "snapshot",
+        "changes",
+        "history",
+        "detail",
+        "restore",
+        "optimize",
+        "vacuum",
+    ):
+        assert connect.supports(CapabilityRequirement(group="delta", name=name)).supported
 
 
 @pytest.mark.parametrize(

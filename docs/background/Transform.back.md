@@ -911,9 +911,10 @@ query = (
 not create `readStream` or `writeStream`, start or stop the query, set checkpoints, select output modes, or provide
 recovery logic. Watermarks and event-time bounds must be declared before the stateful operation they support.
 
-A transform may also declare `sink(WriterClass)` and use `foreach(returned_row, sink_parameter)` to expose a named
-handoff such as `result.publish_alerts`. The handoff contains the exact declared output DataFrame and writer class; it is
-not part of the result mapping's output keys. The caller constructs the writer and attaches it with native PySpark. For
+A transform may also declare `sink(Schema)` and use `foreach(returned_row, self.sink_name)` to expose a named
+handoff such as `result.publish_alerts`. The handoff contains the exact declared output DataFrame and consumed schema; it is
+not part of the result mapping's output keys. The caller constructs a matching `Sink[Schema]` writer and attaches it
+with `write(...)` or `write_stream(...)`. For
 streaming, that creates an independent query with a separate checkpoint, so retries can repeat side effects. Structure
 does not start or coordinate either query. See the [Streaming API](../api/Streaming.api.md#lifecycle-boundaries) for
 batch and streaming examples.

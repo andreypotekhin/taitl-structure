@@ -506,13 +506,15 @@ def test_try_url_decode_requires_the_pyspark_4_profile() -> None:
         MapPySparkExpression().map(try_url_decode("x"), capabilities=PySparkCapabilities())
 
 
-def test_column_transform_requires_ordinary_pyspark_41() -> None:
+def test_column_transform_requires_pyspark_41() -> None:
     requirement = CapabilityRequirement(group="expression", name="column_transform")
 
     assert not PySparkCapabilities().supports(requirement).supported
     assert not PySparkCapabilities(target_profile=">=4.0,<4.1").supports(requirement).supported
+    for profile in (">=3.5,<4.0", ">=4.0,<4.1"):
+        assert not PySparkCapabilities(target_profile=profile, target_variant="spark-connect").supports(requirement).supported
     assert PySparkCapabilities(target_profile=">=4.1,<4.2").supports(requirement).supported
-    assert not PySparkCapabilities(
+    assert PySparkCapabilities(
         target_profile=">=4.1,<4.2", target_variant="spark-connect"
     ).supports(requirement).supported
     with pytest.raises(BackendCapabilityError) as raised:
@@ -529,7 +531,7 @@ def test_column_transform_requires_ordinary_pyspark_41() -> None:
             capabilities=PySparkCapabilities(),
         )
     assert ">=4.1,<4.2" in raised.value.diagnostic.use
-    assert "target_variant = \"ordinary\"" in raised.value.diagnostic.use
+    assert 'target_variant to "ordinary" or "spark-connect"' in raised.value.diagnostic.use
     assert MapPySparkExpression().map(
         try_url_decode("x"), capabilities=PySparkCapabilities(target_profile=">=4.0,<4.1")
     ).data["function"] == "try_url_decode"

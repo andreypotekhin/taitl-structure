@@ -351,8 +351,9 @@ make integration BACKEND=spark-connect40
 make integration BACKEND=spark-connect41
 ```
 
-The ordinary and Connect PySpark 4.1 lanes run `tests/integration/pyspark/backend/test_runtime_versions.py` and
-`tests/integration/pyspark/v11` only. Each runs the Delta module first in a separate process. Other integration tests
+The ordinary PySpark 4.1 lane runs `tests/integration/pyspark/backend/test_runtime_versions.py` and
+`tests/integration/pyspark/v11` only. Connect 4.1 runs the full integration tree and live concept tests after isolated
+Iceberg and Delta provider passes; those provider modules are excluded from the general pass. Other integration tests
 continue to run on their existing backends.
 
 The Delta suite is `tests/integration/pyspark/v11/test_delta_transform_live.py`. It uses disposable native tables and

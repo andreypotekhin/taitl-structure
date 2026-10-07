@@ -39,12 +39,13 @@ class CapturePySparkStep:
         context: PySparkSymbolicContext,
         request: StepAuthoringRequest,
     ) -> PySparkStepBody:
+        sink_effect = request.sink_effect or isinstance(value, PySparkSinkEffect)
         context.operations.extend(self._reserved_operations(request))
         provider = "Iceberg" if any(
             mutation.kind.startswith("iceberg_") for mutation in context.delta_mutations
         ) else "Delta"
         results: tuple[PySparkResultBody, ...]
-        if request.sink_effect:
+        if sink_effect:
             if context.operations or context.filters or context.joins or len(context.foreach) != 1:
                 raise TypeError("A sink-effect step must contain exactly one foreach(row, sink) call.")
             if not isinstance(value, PySparkSinkEffect) or value.capture is not context.foreach[0]:
@@ -211,7 +212,7 @@ class CapturePySparkStep:
                     results = (PySparkResultBody(),)
                 else:
                     results = BuildPySparkResultBodies(request)(value, context=context)
-        sink_captures = self._sink_captures(value, context.foreach, request)
+        sink_captures = self._sink_captures(value, context.foreach, request, sink_effect=sink_effect)
         first = results[0]
         if first.aggregate is not None:
             context.record_aggregate(first.aggregate, context.aggregate_state_budget)
@@ -236,17 +237,19 @@ class CapturePySparkStep:
             results=results,
             sinks=sink_captures,
         )
-        if not request.sink_effect:
+        if not sink_effect:
             ValidatePySparkAggregationUse()(body, request=request)
             ValidatePySparkAggregates()(body, request=request)
         ValidatePySparkComparisons()(self._expressions(body), request=request)
         ValidatePySparkRelationReads()(body, request=request)
         return body
 
-    def _sink_captures(self, value: object, captures: list, request: StepAuthoringRequest) -> tuple[StepSinkCapture, ...]:
+    def _sink_captures(
+        self, value: object, captures: list, request: StepAuthoringRequest, *, sink_effect: bool
+    ) -> tuple[StepSinkCapture, ...]:
         if not captures:
             return ()
-        values = () if request.sink_effect else ValidatePySparkResultReturn(request, self._raise)(value)
+        values = () if sink_effect else ValidatePySparkResultReturn(request, self._raise)(value)
         declared = {sink.name for sink in request.sinks}
         result: list[StepSinkCapture] = []
         for capture in captures:
@@ -255,7 +258,7 @@ class CapturePySparkStep:
                 raise TypeError(f"foreach(row, sink) references undeclared sink {sink_name!r} in step {request.name}.")
             ordinal = next((index for index, candidate in enumerate(values) if capture.row is candidate), None)
             input_ordinal = None
-            if request.sink_effect and isinstance(capture.row, RowScope):
+            if sink_effect and isinstance(capture.row, RowScope):
                 input_ordinal = next(
                     (
                         index

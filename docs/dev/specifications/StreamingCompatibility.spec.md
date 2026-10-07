@@ -202,12 +202,11 @@ These operations are not streaming-compatible:
 
 ## Declared row-level sinks
 
-`sink(WriterClass)` requires a PySpark `Sink` subclass; `foreach(returned_row, sink_parameter)` declares a side-effect
-association on a transform's exact returned final output. This is not a streaming transformation operation: symbolic
-execution records metadata only, and
-the result exposes the matching output DataFrame and writer class. The caller constructs and attaches the writer using
-ordinary PySpark. Batch uses `DataFrame.foreach(writer.process)`; streaming uses a noncallable writer instance with
-`process(row)` passed to `DataStreamWriter.foreach`. A batch writer cannot declare streaming `open` or `close` methods.
+`sink(Schema)` declares the consumed row type; `foreach(returned_row, self.sink_name)` records an association with a
+transform's exact returned final output. This is not a streaming transformation operation: symbolic execution records
+metadata only, and the result exposes the matching output DataFrame and schema. The caller constructs a matching
+`Sink[Schema]` and attaches it through `write(...)` or `write_stream(...)`. A batch writer cannot declare streaming
+`open` or `close` methods.
 
 The caller starts the streaming sink as a separate query with a separate checkpoint. Queries progress and fail
 independently, and a failed/restarted query may replay rows and duplicate external effects. The caller owns idempotence,

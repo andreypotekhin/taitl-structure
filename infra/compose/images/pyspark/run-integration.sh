@@ -43,7 +43,7 @@ if [[ "${backend}" == spark-connect* ]]; then
         --conf "spark.sql.artifact.dir=/tmp/spark-artifacts"
     )
 
-    if [[ "${backend}" == "spark-connect40" ]]; then
+    if [[ "${backend}" == "spark-connect40" || "${backend}" == "spark-connect41" ]]; then
         mkdir -p /workspace/.pytest-workspace-tmp/integration
         connect_checkpoints=$(mktemp -d /workspace/.pytest-workspace-tmp/integration/connect-checkpoints.XXXXXX)
         connect_args+=(--conf "spark.checkpoint.dir=${connect_checkpoints}")
@@ -168,7 +168,7 @@ if [[ "${backend}" == "pyspark35" || "${backend}" == "pyspark40" || "${backend}"
     pytest_args+=(--ignore=/workspace/tests/integration/pyspark/v11/test_delta_transform_live.py)
 fi
 
-if [[ "${backend}" == "pyspark41" || "${backend}" == "spark-connect41" ]]; then
+if [[ "${backend}" == "pyspark41" ]]; then
     test_paths=(
         /workspace/tests/integration/pyspark/backend/test_runtime_versions.py
         /workspace/tests/integration/pyspark/v11

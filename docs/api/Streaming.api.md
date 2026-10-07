@@ -87,9 +87,10 @@ catalog; the [Streaming background](../background/Streaming.back.md) explains th
 Structure returns a transformed DataFrame; the application creates sources and owns writers, checkpoints, triggers,
 query start/stop, and recovery. Generated modules do not start queries or attach external sinks.
 
-A transform may declare a row sink with `sink(WriterClass)` and `foreach(row, sink)`, or a schema-based batch sink with
-`sink(Schema)` and `foreach_batch(row, sink)`. The caller attaches the returned handoff with PySpark's `foreach(...)` or
-`foreachBatch(...)`. See the [Streaming reference](../reference/Streaming.ref.md) for the
+A transform declares the consumed row type with `sink(Schema)` and captures it with either
+`foreach(row, self.sink_name)` or `foreach_batch(row, self.sink_name)`. The caller constructs a typed `Sink[Schema]`
+writer and attaches row handoffs with `write(...)` or `write_stream(...)`; batch handoffs go to a constructed transform
+through `run_batch(...)`. The caller still controls query options and lifecycle. See the [Streaming reference](../reference/Streaming.ref.md) for the
 [batch-transform handoff](../reference/Streaming.ref.md#attach-a-batch-transform-to-a-foreachbatch-sink),
 [caller-controlled `foreachBatch`](../reference/Streaming.ref.md#attach-a-caller-controlled-foreachbatch-sink), and
 [row-level sink](../reference/Streaming.ref.md#attach-a-transform-declared-row-level-sink) examples.
