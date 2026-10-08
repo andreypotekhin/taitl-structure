@@ -1,5 +1,12 @@
 # Troubleshooting
 
+## Generated Delta Optimize Fails with `_structure_variables`
+
+Older generated code can raise `AttributeError` for `_structure_variables` when `delta_optimize(where=...)` uses a
+literal predicate and the transform declares no runtime variables. Update Structure and regenerate the transform.
+Literal predicates work without a `variable()` declaration. An optimize predicate must still use partition columns;
+see [compaction and Z-ordering](docs/reference/DeltaIceberg.ref.md#compaction-and-z-ordering).
+
 ## Large batch plans with small inputs
 
 Repeated branches can grow Spark's logical plan even when the input contains only a few rows. Under

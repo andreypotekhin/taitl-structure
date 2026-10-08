@@ -28,6 +28,7 @@ class PySparkOutputRecipe:
     operations: tuple[PySparkOperationRecipe, ...] = ()
     aliases: tuple[str, ...] = ()
     binding: str = "dataframe"
+    table_source: str | None = None
 
     @property
     def before_hooks(self) -> tuple[PySparkHookRecipe, ...]:

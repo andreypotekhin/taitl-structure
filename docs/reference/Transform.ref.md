@@ -9,6 +9,9 @@ The [Transform background](../background/Transform.back.md) explains the source 
 operation inventories. For persistent table mutation and catalog-table steps, see the
 [Delta and Iceberg tables API](../api/DeltaIceberg.api.md).
 
+For typed scalar helpers, including PySpark 4.1 character, quoting, date parsing, random values, and UUIDs, see the
+[Expression reference](Expressions.ref.md).
+
 Examples use the `OrderRaw`, `OrderNormalized`, and related schemas introduced in the [Schema reference](Schema.ref.md).
 Replace them with the schemas in your own application.
 
@@ -472,6 +475,35 @@ published = PublishOrders.to(NormalizedOrders)
 
 Inheritance keeps one scheduled graph. The `.to(...)` form composes two complete transforms and keeps their input and
 output boundaries separate.
+
+The same rules apply to Delta and Iceberg effects. Inherited provider declarations keep their exact provider, role, and
+schema. A child override replaces the parent method at its inherited position; `super()` schedules the full parent step
+immediately before the child step. A caller-owned table can also flow between composed stages when the provider and
+schema match:
+
+```python
+class CleanOrders(Transform):
+    orders = delta_table(Order)
+
+    def clean(self, order: Order) -> None:
+        delta_delete(order, where=order.status == "legacy")
+
+
+class ReadOrders(Transform):
+    orders = delta_input(Order)
+    selected = output(Order)
+
+    def select(self, order: Order) -> Order:
+        return Order.project(order)
+
+
+pipeline = CleanOrders(orders=table_handle).to(ReadOrders())
+```
+
+The second stage validates and reads the table after the first stage commits. Renaming a stage output does not replace
+the caller's table identity. Explicit schema-evolution outputs can feed a later input with the evolved schema after the
+commit. Each step commits separately, and a later failure leaves earlier commits in place. Use provider snapshot
+helpers when a historical view is required; ordinary composed table references follow the live table.
 
 ## Relation operation families
 

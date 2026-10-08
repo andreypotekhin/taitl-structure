@@ -314,6 +314,11 @@ Rules:
 - A public method with a `Structure` return annotation is a compiled step method.
 - Public schema-returning methods inherited from `Transform` ancestors are compiled as parent step methods before
   local child step methods.
+- A child may override an inherited method with the same replacement and `super()` scheduling rules used by
+  DataFrame methods. A parent call schedules the complete parent table effect immediately before the child step.
+- Inherited table declarations retain their provider, input/output/mutable-table role, and exact schema. A child may
+  add a separately named table, but cannot convert an inherited DataFrame declaration to a table or change Delta to
+  Iceberg, a read-only input to a mutable table, or the declared table schema.
 - A compiled step method has one or more parameters after `self`; every parameter annotation must be a `Structure`
   subclass.
 - The first parameter is the driving row. Later parameters are symbolic relations that must be joined before their
@@ -352,6 +357,13 @@ Rules:
   symbolically compiled when reached from a compiled step. Use `@special(type="expr")` only for optional explicit
   expression metadata; use `@special(type="ignore")` for code that must remain outside compiler-visible logic.
 - Async step methods, generator step methods, classmethods, and staticmethods are out of scope for v1 compiled DSL.
+
+Table references are caller-owned values. Composition may pass a Delta output to a same-schema Delta input or
+mutable-table stage input, and likewise for Iceberg. Provider and schema mismatches fail during compilation. A
+read-only wrapper input cannot be escalated to a mutable stage input. Composed table results retain the caller's
+native Delta handle or Iceberg identifier through output renames and nested stages. Composition does not adapt a
+DataFrame into a table, persist intermediate DataFrames, or make one transaction across stage effects. A schema
+transition becomes visible to a later table consumer after its native commit; separate steps commit separately.
 
 The body of a compiled step method is symbolically executed. It must return a symbolic schema construction expression:
 

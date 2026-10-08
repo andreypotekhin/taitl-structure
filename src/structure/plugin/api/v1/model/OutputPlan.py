@@ -15,3 +15,4 @@ class OutputPlan:
     aliases: tuple[str, ...] = ()
     streaming: bool = False
     binding: str = "dataframe"
+    table_source: str | None = None

@@ -470,3 +470,8 @@ docker compose --env-file infra/compose/.env -f infra/compose/docker-compose.yam
 
 Replace both backend names to select another lane. Run memory-sensitive lanes sequentially when the Docker VM
 cannot accommodate their combined driver heaps. A timeout is a failure, not a skip or evidence of support.
+
+For a focused provider run, set `INTEGRATION_PYTEST_ARGS` and skip unrelated phases when necessary. For example, to
+run only the Delta 4.1 Connect tests selected by `-k liquid_clustering`, set
+`STRUCTURE_SKIP_ICEBERG_PHASE=1` and `STRUCTURE_SKIP_GENERAL_PHASE=1`. The Delta phase still runs first with the
+configured Connect server and dependencies.

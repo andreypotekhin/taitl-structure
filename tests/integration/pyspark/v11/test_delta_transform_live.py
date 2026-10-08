@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import json
+import os
+import shutil
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -15,6 +18,7 @@ from integration.pyspark.support.backend_matrix import (
 
 from structure import Schema, Transform, input, output, step, transform, variable
 from structure.plugin.pyspark import (
+    array,
     check,
     delta_append,
     delta_changes,
@@ -49,6 +53,41 @@ class Order(Schema):
     constraints = (check(status != "invalid", name="valid_status"),)
 
 
+@transform
+class BaseCleanup(Transform):
+    orders = delta_table(Order)
+
+    def clean(self, order: Order) -> None:
+        delta_delete(order, where=order.status == "legacy")
+
+
+@transform
+class ReplaceCleanup(BaseCleanup):
+    def clean(self, order: Order) -> None:
+        delta_delete(order, where=order.status == "archived")
+
+
+@transform
+class ExtendCleanup(BaseCleanup):
+    def clean(self, order: Order) -> None:
+        super().clean(order)
+        delta_delete(order, where=order.status == "archived")
+
+
+@transform
+class ReadCleanedOrders(Transform):
+    orders = delta_input(Order)
+    selected = output(Order)
+
+    def select(self, order: Order) -> Order:
+        return Order.project(order)
+
+
+class CleanupThenRead(Transform):
+    orders = delta_table(Order)
+    pipeline = BaseCleanup(orders=orders).to(ReadCleanedOrders())
+
+
 class Change(Schema):
     id = string(nullable=False)
     status = string(nullable=False)
@@ -78,6 +117,16 @@ class OrderCommit(Schema):
 class OrderDetail(Schema):
     format = string()
     location = string()
+
+
+class LiquidOrderDetail(OrderDetail):
+    clustering_columns = array(string(), contains_null=False, alias="clusteringColumns")
+
+
+class LayoutOrder(Schema):
+    customer_id = string(nullable=False)
+    product_id = string(nullable=False)
+    order_date = string(nullable=False)
 
 
 class GeneratedColumnSchema(Schema):
@@ -221,6 +270,16 @@ class ReadOrderMetadata(Transform):
 
 
 @transform
+class ReadLiquidOrderMetadata(Transform):
+    orders = delta_input(LayoutOrder)
+    details = output(LiquidOrderDetail)
+
+    @step(input=orders, output=details)
+    def detail(self, order: LayoutOrder) -> LiquidOrderDetail:
+        return delta_detail(order)
+
+
+@transform
 class RestoreOrders(Transform):
     orders = delta_table(Order)
     version = variable(int)
@@ -255,6 +314,125 @@ class ZOrderOrders(Transform):
     @step(inout=orders | orders)
     def optimize(self, order: Order) -> None:
         delta_optimize(order).execute_zorder(by=(order.id,))
+
+
+class ZOrderLayout(Transform):
+    orders = delta_table(LayoutOrder)
+
+    def optimize(self, order: LayoutOrder) -> None:
+        delta_optimize(order).execute_zorder(by=(order.customer_id, order.product_id))
+
+
+class ZOrderPartition(Transform):
+    orders = delta_table(LayoutOrder)
+    selected_date = variable(str)
+
+    def optimize(self, order: LayoutOrder) -> None:
+        delta_optimize(order, where=order.order_date == self.selected_date).execute_zorder(
+            by=(order.customer_id, order.product_id),
+        )
+
+
+@transform
+class IncrementalClusteredOrders(Transform):
+    orders = delta_table(LayoutOrder)
+
+    @step(inout=orders | orders)
+    def optimize(self, order: LayoutOrder) -> None:
+        delta_optimize(order).execute_compaction()
+
+
+@transform
+class FullReclusterOrders(Transform):
+    orders = delta_table(LayoutOrder)
+
+    @step(inout=orders | orders)
+    def recluster(self, order: LayoutOrder) -> None:
+        delta_optimize(order).full()
+
+
+@transform
+class OptimizeClusteredWhere(Transform):
+    orders = delta_table(LayoutOrder)
+
+    @step(inout=orders | orders)
+    def optimize(self, order: LayoutOrder) -> None:
+        delta_optimize(order, where=order.order_date == "2026-10-08").execute_compaction()
+
+
+@transform
+class ZOrderClusteredOrders(Transform):
+    orders = delta_table(LayoutOrder)
+
+    @step(inout=orders | orders)
+    def optimize(self, order: LayoutOrder) -> None:
+        delta_optimize(order).execute_zorder(by=(order.customer_id,))
+
+
+@transform
+class AppendLiquidOrders(Transform):
+    rows = input(LayoutOrder)
+    orders = delta_table(LayoutOrder)
+
+    @step(input=(rows, orders), output=orders)
+    def append(self, row: LayoutOrder, order: LayoutOrder) -> None:
+        delta_append(order, row).execute()
+
+
+@transform
+class UpdateLiquidOrders(Transform):
+    orders = delta_table(LayoutOrder)
+
+    @step(inout=orders | orders)
+    def update(self, order: LayoutOrder) -> None:
+        delta_update(order, where=order.customer_id == "c0", set=LayoutOrder(product_id="updated"))
+
+
+@transform
+class MergeLiquidOrders(Transform):
+    changes = input(LayoutOrder)
+    orders = delta_table(LayoutOrder)
+
+    @step(input=(changes, orders), output=orders)
+    def merge(self, change: LayoutOrder, order: LayoutOrder) -> None:
+        (
+            delta_merge(
+                order,
+                change,
+                on=(order.customer_id == change.customer_id) & (order.order_date == change.order_date),
+            )
+            .when_matched_update(set=LayoutOrder(product_id=change.product_id))
+            .when_not_matched_insert_all()
+            .execute()
+        )
+
+
+@transform
+class DeleteLiquidOrders(Transform):
+    orders = delta_table(LayoutOrder)
+
+    @step(inout=orders | orders)
+    def delete(self, order: LayoutOrder) -> None:
+        delta_delete(order, where=order.customer_id == "c0")
+
+
+@transform
+class ReadLiquidOrders(Transform):
+    orders = delta_input(LayoutOrder)
+    rows = output(LayoutOrder)
+
+    @step(input=orders, output=rows)
+    def read(self, order: LayoutOrder) -> LayoutOrder:
+        return LayoutOrder.project(order)
+
+
+class ZOrderInvalidPartition(Transform):
+    orders = delta_table(LayoutOrder)
+
+    def optimize(self, order: LayoutOrder) -> None:
+        delta_optimize(order, where=order.customer_id == "c1").execute_zorder(
+            by=(order.customer_id, order.product_id),
+        )
 
 
 @transform
@@ -452,8 +630,6 @@ def delta_spark(pytestconfig):
     if actual != expected:
         pytest.fail(f"Delta evidence for {backend} requires PySpark/Delta {expected}, got {actual}")
     if backend == "spark-connect41":
-        import os
-
         from pyspark.sql import SparkSession
 
         spark = SparkSession.builder.remote(os.environ["STRUCTURE_SPARK_REMOTE"]).getOrCreate()
@@ -466,6 +642,7 @@ def delta_spark(pytestconfig):
     active = SparkSession.getActiveSession() or getattr(SparkSession, "_instantiatedSession", None)
     if active is not None:
         active.stop()
+    artifact_root = tempfile.mkdtemp(prefix="structure-delta-artifacts-")
     builder = (
         SparkSession.builder.master("local[2]")
         .appName("structure-delta-transform")
@@ -474,9 +651,17 @@ def delta_spark(pytestconfig):
         .config("spark.sql.shuffle.partitions", "1")
         .config("spark.ui.enabled", "false")
     )
-    spark = configure_spark_with_delta_pip(builder).getOrCreate()
+    working_directory = os.getcwd()
+    try:
+        # Spark 4.0 creates SQL artifacts relative to its working directory, but
+        # the integration container mounts the repository read-only.
+        os.chdir(artifact_root)
+        spark = configure_spark_with_delta_pip(builder).getOrCreate()
+    finally:
+        os.chdir(working_directory)
     yield spark
     spark.stop()
+    shutil.rmtree(artifact_root)
 
 
 def _table(
@@ -754,9 +939,7 @@ def test_native_check_rejects_invalid_update(delta_spark, tmp_path, mode) -> Non
     )
     with generated_project(tmp_path, PACKAGE, files):
         with pytest.raises(Exception, match="valid_status"):
-            InvalidUpdate(orders=table).run(
-                session(delta_spark, execution_mode=mode, generated_package=PACKAGE)
-            )
+            InvalidUpdate(orders=table).run(session(delta_spark, execution_mode=mode, generated_package=PACKAGE))
     assert sorted(tuple(row) for row in table.toDF().collect()) == before
 
 
@@ -848,6 +1031,282 @@ def test_restore_optimize_and_vacuum_effects_on_disposable_table(delta_spark, tm
     after_files = set(path.rglob("*.parquet"))
     assert len(after_files) < len(before_files)
     assert DeltaTable.forPath(delta_spark, str(path)).toDF().count() == 1
+
+
+def _layout_table(spark, path):
+    from delta.tables import DeltaTable  # type: ignore[import-not-found]
+
+    spark.sql(
+        f"""
+        CREATE TABLE delta.`{path}` (
+            customer_id STRING NOT NULL,
+            product_id STRING NOT NULL,
+            order_date STRING NOT NULL
+        ) USING DELTA PARTITIONED BY (order_date)
+        TBLPROPERTIES ('delta.dataSkippingNumIndexedCols' = '3')
+    """
+    )
+    for batch in range(3):
+        spark.sql(
+            f"""INSERT INTO delta.`{path}` VALUES
+            ('c{batch}', 'p2', '2026-10-07'), ('c{batch}', 'p1', '2026-10-08'),
+            ('c{batch + 3}', 'p1', '2026-10-07'), ('c{batch + 3}', 'p2', '2026-10-08')"""
+        )
+    table = DeltaTable.forPath(spark, str(path))
+    # Prove the fixture supplies statistics for both requested keys before maintenance.
+    adds = [
+        entry["add"]
+        for log in sorted((path / "_delta_log").glob("*.json"))
+        for line in log.read_text().splitlines()
+        if "add" in (entry := json.loads(line))
+    ]
+    assert len(adds) >= 6
+    for add in adds:
+        statistics = json.loads(add["stats"])
+        assert {"customer_id", "product_id"} <= statistics["minValues"].keys()
+        assert {"customer_id", "product_id"} <= statistics["maxValues"].keys()
+    return table
+
+
+def _liquid_clustered_table(spark, path):
+    from delta.tables import DeltaTable  # type: ignore[import-not-found]
+
+    spark.sql(
+        f"""CREATE TABLE delta.`{path}` (
+            customer_id STRING NOT NULL,
+            product_id STRING NOT NULL,
+            order_date STRING NOT NULL
+        ) USING DELTA"""
+    )
+    for batch in range(3):
+        spark.sql(
+            f"""INSERT INTO delta.`{path}` VALUES
+            ('c{batch}', 'p2', '2026-10-07'), ('c{batch}', 'p1', '2026-10-08'),
+            ('c{batch + 3}', 'p1', '2026-10-07'), ('c{batch + 3}', 'p2', '2026-10-08')"""
+        )
+    spark.sql(f"ALTER TABLE delta.`{path}` CLUSTER BY (order_date)")
+    return DeltaTable.forPath(spark, str(path))
+
+
+@pytest.mark.parametrize("mode", ["online", "generated"])
+def test_liquid_clustering_metadata_and_full_recluster_preserve_rows(delta_spark, tmp_path, mode) -> None:
+    from delta.tables import DeltaTable  # type: ignore[import-not-found]
+
+    path = tmp_path / f"liquid-full-{mode}"
+    table = _liquid_clustered_table(delta_spark, path)
+    before = sorted(tuple(row) for row in table.toDF().collect())
+    detail = table.detail().first().asDict(recursive=True)
+    assert detail["clusteringColumns"] == ["order_date"]
+    assert "clustering" in {feature.casefold() for feature in detail["tableFeatures"]}
+    typed_detail_files = render_generated_project(
+        ReadLiquidOrderMetadata,
+        source_transform=f"{ReadLiquidOrderMetadata.__module__}.ReadLiquidOrderMetadata",
+        generated_package=PACKAGE,
+        source_schema_modules={LayoutOrder.__module__: [LayoutOrder, OrderDetail, LiquidOrderDetail]},
+    )
+    with generated_project(tmp_path, PACKAGE, typed_detail_files):
+        typed_detail = (
+            ReadLiquidOrderMetadata(orders=table)
+            .run(session(delta_spark, execution_mode=mode, generated_package=PACKAGE))
+            .details.first()
+        )
+        assert typed_detail["clusteringColumns"] == ["order_date"]
+    incremental_files = render_generated_project(
+        IncrementalClusteredOrders,
+        source_transform=f"{IncrementalClusteredOrders.__module__}.IncrementalClusteredOrders",
+        generated_package=PACKAGE,
+        source_schema_modules={LayoutOrder.__module__: [LayoutOrder]},
+    )
+    with generated_project(tmp_path, PACKAGE, incremental_files):
+        IncrementalClusteredOrders(orders=table).run(
+            session(delta_spark, execution_mode=mode, generated_package=PACKAGE)
+        )
+    assert sorted(tuple(row) for row in table.toDF().collect()) == before
+    incremental_history = table.history(1).first()
+    assert incremental_history["operation"] == "OPTIMIZE"
+    assert str(incremental_history["operationParameters"]["isFull"]).casefold() == "false"
+    delta_spark.sql(f"INSERT INTO delta.`{path}` VALUES ('c9', 'p9', '2026-10-09')")
+    before_full = sorted([*before, ("c9", "p9", "2026-10-09")])
+    files = render_generated_project(
+        FullReclusterOrders,
+        source_transform=f"{FullReclusterOrders.__module__}.FullReclusterOrders",
+        generated_package=PACKAGE,
+        source_schema_modules={LayoutOrder.__module__: [LayoutOrder]},
+    )
+    with generated_project(tmp_path, PACKAGE, files):
+        result = FullReclusterOrders(orders=table).run(
+            session(delta_spark, execution_mode=mode, generated_package=PACKAGE)
+        )
+    assert result.orders is table
+    reopened = DeltaTable.forPath(delta_spark, str(path))
+    assert sorted(tuple(row) for row in reopened.toDF().collect()) == before_full
+    history = reopened.history(1).first()
+    assert history["operation"] == "OPTIMIZE"
+    assert str(history["operationParameters"]["isFull"]).casefold() == "true"
+
+
+@pytest.mark.parametrize("mode", ["online", "generated"])
+def test_liquid_clustered_tables_support_typed_row_reads_and_mutations(delta_spark, tmp_path, mode) -> None:
+    from delta.tables import DeltaTable  # type: ignore[import-not-found]
+
+    path = tmp_path / f"liquid-rows-{mode}"
+    table = _liquid_clustered_table(delta_spark, path)
+    run_session = session(delta_spark, execution_mode=mode, generated_package=PACKAGE)
+
+    def run(subject, *, schema_modules=None, **inputs):
+        if mode == "generated":
+            files = render_generated_project(
+                subject,
+                source_transform=f"{subject.__module__}.{subject.__name__}",
+                generated_package=PACKAGE,
+                source_schema_modules=schema_modules or {LayoutOrder.__module__: [LayoutOrder]},
+            )
+            with generated_project(tmp_path, PACKAGE, files):
+                return subject(**inputs).run(run_session)
+        return subject(**inputs).run(run_session)
+
+    original_rows = sorted(tuple(row) for row in table.toDF().collect())
+    append_rows = delta_spark.createDataFrame(
+        [("c9", "p9", "2026-10-09")],
+        "customer_id string, product_id string, order_date string",
+    )
+    run(AppendLiquidOrders, rows=append_rows, orders=table)
+    run(UpdateLiquidOrders, orders=table)
+    merge_rows = delta_spark.createDataFrame(
+        [("c0", "merged", "2026-10-07"), ("c8", "new", "2026-10-08")],
+        "customer_id string, product_id string, order_date string",
+    )
+    run(MergeLiquidOrders, changes=merge_rows, orders=table)
+    read = run(ReadLiquidOrders, orders=table).rows
+    assert read.count() == len(original_rows) + 2
+    assert read.where("customer_id = 'c0' AND product_id = 'merged'").count() == 1
+    assert read.where("customer_id = 'c8' AND product_id = 'new'").count() == 1
+    run(DeleteLiquidOrders, orders=table)
+    final = DeltaTable.forPath(delta_spark, str(path)).toDF()
+    assert final.where("customer_id = 'c0'").count() == 0
+    assert final.count() == len(original_rows)
+
+
+@pytest.mark.parametrize("subject", [OptimizeClusteredWhere, ZOrderClusteredOrders])
+@pytest.mark.parametrize("mode", ["online", "generated"])
+def test_liquid_clustering_rejects_where_and_zorder_before_commit(delta_spark, tmp_path, subject, mode) -> None:
+    from delta.tables import DeltaTable  # type: ignore[import-not-found]
+
+    path = tmp_path / f"liquid-invalid-{subject.__name__}-{mode}"
+    table = _liquid_clustered_table(delta_spark, path)
+    before_version = table.history(1).first()["version"]
+    if mode == "generated":
+        files = render_generated_project(
+            subject,
+            source_transform=f"{subject.__module__}.{subject.__name__}",
+            generated_package=PACKAGE,
+            source_schema_modules={LayoutOrder.__module__: [LayoutOrder]},
+        )
+        with generated_project(tmp_path, PACKAGE, files):
+            with pytest.raises(ValueError, match="[Ll]iquid-clustered Delta tables"):
+                subject(orders=table).run(session(delta_spark, execution_mode=mode, generated_package=PACKAGE))
+    else:
+        with pytest.raises(ValueError, match="[Ll]iquid-clustered Delta tables"):
+            subject(orders=table).run(session(delta_spark, execution_mode=mode))
+    reopened = DeltaTable.forPath(delta_spark, str(path))
+    assert reopened.history(1).first()["version"] == before_version
+    assert reopened.toDF().count() == 12
+
+
+@pytest.mark.parametrize("mode", ["online", "generated"])
+def test_liquid_clustering_feature_still_blocks_zorder_after_keys_cleared(delta_spark, tmp_path, mode) -> None:
+    from delta.tables import DeltaTable  # type: ignore[import-not-found]
+
+    path = tmp_path / f"liquid-none-{mode}"
+    _liquid_clustered_table(delta_spark, path)
+    delta_spark.sql(f"ALTER TABLE delta.`{path}` CLUSTER BY NONE")
+    current = DeltaTable.forPath(delta_spark, str(path))
+    detail = current.detail().first().asDict(recursive=True)
+    assert not detail["clusteringColumns"]
+    assert "clustering" in {feature.casefold() for feature in detail["tableFeatures"]}
+    before_version = current.history(1).first()["version"]
+    if mode == "generated":
+        files = render_generated_project(
+            ZOrderClusteredOrders,
+            source_transform=f"{ZOrderClusteredOrders.__module__}.ZOrderClusteredOrders",
+            generated_package=PACKAGE,
+            source_schema_modules={LayoutOrder.__module__: [LayoutOrder]},
+        )
+        with generated_project(tmp_path, PACKAGE, files):
+            with pytest.raises(ValueError, match="[Ll]iquid-clustered Delta tables"):
+                ZOrderClusteredOrders(orders=current).run(
+                    session(delta_spark, execution_mode=mode, generated_package=PACKAGE)
+                )
+    else:
+        with pytest.raises(ValueError, match="[Ll]iquid-clustered Delta tables"):
+            ZOrderClusteredOrders(orders=current).run(session(delta_spark, execution_mode=mode))
+    assert DeltaTable.forPath(delta_spark, str(path)).history(1).first()["version"] == before_version
+
+
+@pytest.mark.parametrize("mode", ["online", "generated"])
+@pytest.mark.parametrize("scoped", [False, True], ids=["full-table", "partition"])
+def test_zorder_multiple_keys_preserves_rows_and_partition_files(delta_spark, tmp_path, mode, scoped) -> None:
+    from delta.tables import DeltaTable  # type: ignore[import-not-found]
+
+    path = tmp_path / f"zorder-{scoped}-{mode}"
+    table = _layout_table(delta_spark, path)
+    frame = table.toDF()
+    before_rows = sorted(tuple(row) for row in frame.collect())
+    before_schema = frame.schema
+    before_files = set(frame.inputFiles())
+    excluded = {name for name in before_files if "/order_date=2026-10-07/" in name}
+    selected = before_files - excluded
+    assert len(excluded) >= 3 and len(selected) >= 3
+
+    subject = ZOrderPartition if scoped else ZOrderLayout
+    inputs = {"orders": table, **({"selected_date": "2026-10-08"} if scoped else {})}
+    files = render_generated_project(
+        subject,
+        source_transform=f"{subject.__module__}.{subject.__name__}",
+        generated_package=PACKAGE,
+        source_schema_modules={LayoutOrder.__module__: [LayoutOrder]},
+    )
+    with generated_project(tmp_path, PACKAGE, files):
+        result = subject(**inputs).run(session(delta_spark, execution_mode=mode, generated_package=PACKAGE))
+    assert result.orders is table
+    reopened = DeltaTable.forPath(delta_spark, str(path))
+    after = reopened.toDF()
+    assert sorted(tuple(row) for row in after.collect()) == before_rows
+    assert after.schema == before_schema
+    history = reopened.history(1).first()
+    assert history["operation"] == "OPTIMIZE"
+    assert json.loads(history["operationParameters"]["zOrderBy"]) == ["customer_id", "product_id"]
+    after_files = set(after.inputFiles())
+    assert not selected & after_files
+    if scoped:
+        assert {name for name in after_files if "/order_date=2026-10-07/" in name} == excluded
+    else:
+        assert not excluded & after_files
+
+
+@pytest.mark.parametrize("mode", ["online", "generated"])
+def test_zorder_rejects_non_partition_filter_without_commit(delta_spark, tmp_path, mode) -> None:
+    from delta.tables import DeltaTable  # type: ignore[import-not-found]
+
+    path = tmp_path / f"invalid-zorder-{mode}"
+    table = _layout_table(delta_spark, path)
+    before_version = table.history(1).first()["version"]
+    before_files = set(table.toDF().inputFiles())
+    files = render_generated_project(
+        ZOrderInvalidPartition,
+        source_transform=f"{ZOrderInvalidPartition.__module__}.{ZOrderInvalidPartition.__name__}",
+        generated_package=PACKAGE,
+        source_schema_modules={LayoutOrder.__module__: [LayoutOrder]},
+    )
+    with generated_project(tmp_path, PACKAGE, files):
+        with pytest.raises(ValueError, match="only partition columns; invalid: customer_id"):
+            ZOrderInvalidPartition(orders=table).run(
+                session(delta_spark, execution_mode=mode, generated_package=PACKAGE)
+            )
+    reopened = DeltaTable.forPath(delta_spark, str(path))
+    assert reopened.history(1).first()["version"] == before_version
+    assert set(reopened.toDF().inputFiles()) == before_files
+    assert reopened.toDF().count() == 12
 
 
 @pytest.mark.parametrize("mode", ["online", "generated"])
@@ -1042,9 +1501,7 @@ def test_connect_declaration_drift_delegates_values_to_delta(delta_spark, tmp_pa
     DeltaTable.create(delta_spark).tableName(identity_name).location(str(identity_path)).addColumn(
         "id", dataType=LongType(), generatedAlwaysAs=IdentityGenerator()
     ).addColumn("value", "STRING", nullable=False).execute()
-    delta_spark.createDataFrame([("direct",)], ["value"]).write.format("delta").mode("append").save(
-        str(identity_path)
-    )
+    delta_spark.createDataFrame([("direct",)], ["value"]).write.format("delta").mode("append").save(str(identity_path))
     identity = DeltaTable.forPath(delta_spark, str(identity_path))
 
     default_path = tmp_path / f"drift-default-{mode}"
@@ -1105,9 +1562,9 @@ def test_connect_binding_request_count_against_direct_delta_write(delta_spark, t
     from structure.plugin.pyspark.delta import runtime
 
     path = tmp_path / "binding-requests"
-    DeltaTable.create(delta_spark).location(str(path)).addColumn(
-        "base", dataType=LongType(), nullable=False
-    ).addColumn("derived", dataType=LongType(), generatedAlwaysAs="base + 1").execute()
+    DeltaTable.create(delta_spark).location(str(path)).addColumn("base", dataType=LongType(), nullable=False).addColumn(
+        "derived", dataType=LongType(), generatedAlwaysAs="base + 1"
+    ).execute()
     table = DeltaTable.forPath(delta_spark, str(path))
     rows = delta_spark.createDataFrame([(3,)], ["base"])
     calls = {"execute": 0, "analyze": 0, "refresh": 0}
@@ -1127,7 +1584,9 @@ def test_connect_binding_request_count_against_direct_delta_write(delta_spark, t
         )
         patch.setattr(SparkConnectClient, "_analyze", count("analyze", SparkConnectClient._analyze))
         patch.setattr(runtime, "fresh_delta_frame", count("refresh", runtime.fresh_delta_frame))
-        patch.setattr(runtime, "_delta_log_field_metadata", lambda _: pytest.fail("Connect requested client JVM metadata"))
+        patch.setattr(
+            runtime, "_delta_log_field_metadata", lambda _: pytest.fail("Connect requested client JVM metadata")
+        )
         started = perf_counter()
         runtime.validated_delta_frame(table, WrongGeneratedColumnSchema)
         binding_seconds = perf_counter() - started
@@ -1145,3 +1604,67 @@ def test_connect_binding_request_count_against_direct_delta_write(delta_spark, t
         f"Connect binding: {binding_calls}, {binding_seconds:.3f}s; "
         f"direct Delta append: {direct_calls}, {direct_seconds:.3f}s"
     )
+
+
+@pytest.mark.parametrize("mode", ["online", "generated"])
+@pytest.mark.parametrize(
+    ("subject", "expected"),
+    [
+        (ReplaceCleanup, {("A", "open"), ("B", "legacy")}),
+        (ExtendCleanup, {("A", "open")}),
+    ],
+)
+def test_table_inheritance_overrides_and_super_match_live_rows(delta_spark, tmp_path, mode, subject, expected) -> None:
+    from delta.tables import DeltaTable  # type: ignore[import-not-found]
+
+    path = tmp_path / f"inherit-{subject.__name__}-{mode}"
+    table = _table(
+        delta_spark,
+        path,
+        native_check=True,
+        rows=(("A", "open"), ("B", "legacy"), ("C", "archived")),
+    )
+    package = f"tests.generated_delta_{subject.__name__.lower()}"
+    files = render_generated_project(
+        subject,
+        source_transform=f"{subject.__module__}.{subject.__name__}",
+        generated_package=package,
+        source_schema_modules={Order.__module__: [Order]},
+    )
+    try:
+        with generated_project(tmp_path, package, files):
+            result = subject(orders=table).run(session(delta_spark, execution_mode=mode, generated_package=package))
+        assert result.orders is table
+        rows = DeltaTable.forPath(delta_spark, str(path)).toDF().collect()
+        assert {(row.id, row.status) for row in rows} == expected
+    finally:
+        shutil.rmtree(str(path), ignore_errors=True)
+
+
+@pytest.mark.parametrize("mode", ["online", "generated"])
+def test_composed_delta_stages_read_after_the_parent_commit(delta_spark, tmp_path, mode) -> None:
+    path = tmp_path / f"compose-table-{mode}"
+    table = _table(
+        delta_spark,
+        path,
+        native_check=True,
+        rows=(("A", "open"), ("B", "legacy"), ("C", "archived")),
+    )
+    package = f"tests.generated_delta_compose_{mode}"
+    files = render_generated_project(
+        CleanupThenRead,
+        source_transform=f"{CleanupThenRead.__module__}.{CleanupThenRead.__name__}",
+        generated_package=package,
+        source_schema_modules={Order.__module__: [Order]},
+    )
+    try:
+        with generated_project(tmp_path, package, files):
+            result = CleanupThenRead(orders=table).run(
+                session(delta_spark, execution_mode=mode, generated_package=package)
+            )
+        assert {(row.id, row.status) for row in result.selected.collect()} == {
+            ("A", "open"),
+            ("C", "archived"),
+        }
+    finally:
+        shutil.rmtree(str(path), ignore_errors=True)

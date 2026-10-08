@@ -34,12 +34,11 @@ def main() -> None:
     backends = BACKENDS if args.backend == "all" else (args.backend,)
 
     build = ("--build",) if args.build else ()
+    if args.build:
+        run("build", *(f"structure-integration-{backend}" for backend in backends))
     services = _services(backends)
     if services:
         run("up", "-d", *build, *services)
-    elif args.build:
-        for backend in backends:
-            run("build", f"structure-integration-{backend}")
     for backend in backends:
         print(f"\n=== Structure integration: {backend} ===", flush=True)
         run("run", "--rm", f"structure-integration-{backend}")

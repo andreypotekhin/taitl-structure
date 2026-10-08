@@ -3,6 +3,7 @@ from typing import cast
 from structure.plugin.api.v1.model import BackendCapabilities, CapabilityRequirement
 from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.plugin.pyspark.dsl.Expression import Expression
+from structure.plugin.pyspark.dsl.types import ArrayType, MapType, StructType, TimeType
 
 
 class MapPySparkExpression:
@@ -10,6 +11,7 @@ class MapPySparkExpression:
     def map(self, expression: Expression, *, capabilities: BackendCapabilities) -> PySparkExpressionRecipe:
         group, name = self._requirement(expression)
         capabilities.require(CapabilityRequirement(group=group, name=name))
+        self._type_capability(expression.type, capabilities=capabilities)
         data = dict(expression.data or {})
         if expression.kind == "special_expr":
             data["body"] = self.map(cast(Expression, data["body"]), capabilities=capabilities)
@@ -25,6 +27,20 @@ class MapPySparkExpression:
             data=data,
             args=tuple(self.map(argument, capabilities=capabilities) for argument in expression.args),
         )
+
+    def _type_capability(self, type, *, capabilities: BackendCapabilities) -> None:
+        if type is None:
+            return
+        if isinstance(type, TimeType):
+            capabilities.require(CapabilityRequirement(group="schema", name="time"))
+        elif isinstance(type, ArrayType):
+            self._type_capability(type.element, capabilities=capabilities)
+        elif isinstance(type, MapType):
+            self._type_capability(type.key, capabilities=capabilities)
+            self._type_capability(type.value, capabilities=capabilities)
+        elif isinstance(type, StructType):
+            for field in type.schema._structure_fields.values():
+                self._type_capability(field.type, capabilities=capabilities)
 
     def _requirement(self, expression: Expression) -> tuple[str, str]:
         if expression.kind == "transform_expression":
@@ -56,6 +72,8 @@ class MapPySparkExpression:
             return "expression", "bitwise"
         if expression.kind == "call":
             function = (expression.data or {}).get("function")
+            if function in {"chr", "quote", "try_to_date", "random", "uuid", "current_time", "make_time", "to_time", "try_to_time", "time_diff", "time_trunc"}:
+                return "expression", str(function)
             if function == "is_valid_variant":
                 return "expression", "is_valid_variant"
             if function == "try_url_decode":

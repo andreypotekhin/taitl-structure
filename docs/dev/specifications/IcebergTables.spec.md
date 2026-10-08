@@ -34,6 +34,11 @@
 5. The runtime verifies the binding is an Iceberg table and validates its schema against the declaration. It uses
    public Spark SQL/catalog APIs and does not require a client JVM or PyIceberg.
 6. A table binding and table result preserve the identifier string. A normal `output(Schema)` remains a DataFrame.
+7. A transform child retains an inherited Iceberg declaration's provider, role, and exact schema. Overridden methods
+   replace inherited methods in place, while `super()` schedules the parent table step immediately before the child.
+8. Composition can pass a same-schema Iceberg table result to an `iceberg_input` or `iceberg_table` consumer. Stage
+   names and output aliases do not change the caller's catalog identifier. A DataFrame, Delta table, or read-only
+   wrapper input cannot be adapted or escalated into a mutable Iceberg table.
 
 ## 4. Row operations
 
@@ -92,6 +97,8 @@
    bindings fail before commit when Structure can determine the condition.
 4. A commit failure remains a native error. A network error or later validation failure may leave commit status
    unknown. Structure does not retry.
+5. Composed table consumers validate and read the table after prior steps commit. Effects in separate steps commit
+   separately; a later failure leaves earlier commits in place. An explicit snapshot remains historical.
 5. Changelog helpers, incremental read helpers, branch/tag management, and table provisioning are outside this API.
    Incremental reads exposed by Spark/Iceberg do not include all mutation kinds and are not represented as a change
    feed. Supported upstream SQL remains available through `sql(...)`.

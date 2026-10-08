@@ -30,6 +30,53 @@ nondeterminism marker and are batch-only until a streaming policy exists. Sketch
 observations-and-sketches design. Any function whose result depends on session configuration, collation, locale, or
 opaque SQL text needs a separate type and configuration contract.
 
+## Admitted scalar contract
+
+The first scalar slice uses existing `call` expression nodes and scalar types:
+
+| Function | Typed operands | Result | Nullability | Determinism / streaming |
+| --- | --- | --- | --- | --- |
+| `chr` | Integer or Long, including integer literals | String | Input nullability | Deterministic; stateless, compatible by design |
+| `quote` | String, including string literals | String | Always nullable, matching native Spark | Deterministic; stateless, compatible by design |
+| `try_to_date` | String, Date, or LTZ Timestamp; optional non-empty pattern literal | Date | Always conservatively nullable | Deterministic for fixed session configuration; stateless, compatible by design |
+| `random` | Literal integer seed or `reproducible=False` | Double | Non-null | Nondeterministic; batch-only |
+| `uuid` | Literal integer seed or `reproducible=False` | String | Non-null | Nondeterministic; batch-only |
+
+All five require exact `>=4.1,<4.2` ordinary or Connect admission. Names use native generated spelling and individual
+`expression.<name>` capability requirements. `chr` shares `char`'s typed constructor; `random` and `uuid` share the
+existing random seed policy. Seeded results have parity for the same input partitioning; no cross-partition or
+cross-version stability promise is made. Random recipes carry the nondeterminism marker so projection/union
+optimization cannot certify them as deterministic. Streaming classification checks nested recipes, projections,
+filters, and special expression bodies for the batch-only helpers.
+
+`try_to_date` keeps parse-failure nullability even after a non-null source filter. A literal pattern is rendered as
+a Python string, matching the native API. A pattern on Date/LTZ Timestamp input emits `PYSPARK-W2705` because Spark
+ignores it. Invalid pattern definitions remain Spark errors. LTZ conversion follows the session time zone; NTZ inputs
+remain outside this helper's admitted operand set. Ordinary and Connect batch evidence is required before promotion;
+the deterministic helpers' streaming classification is compatible by design, with no live streaming claim.
+
+## TIME contract
+
+The public TIME contract is approved for V11. `time(precision=6, ...)` declares Spark TIME with precision 0 through 6;
+precision is part of type/schema identity and survives nested schema rendering, materialization, and schema reads.
+Python `datetime.time` literals preserve their clock fields, including for timezone-aware values (Spark ignores
+`tzinfo`).
+
+The admitted 4.1 helpers are `current_time(precision=6)`, `make_time(hour, minute, second)`,
+`to_time(value, format=None)`, `try_to_time(value, format=None)`, `time_diff(unit, start, end)`, and
+`time_trunc(unit, value)`. `current_time` is non-null and query-stable; `make_time`, `to_time`, and `try_to_time` return
+nullable TIME(6); `time_diff` returns nullable Long; `time_trunc` returns nullable TIME at the input precision. Formats
+and units accept literal or typed String inputs; `time_diff` units are HOUR, MINUTE, SECOND, MILLISECOND, and
+MICROSECOND, case-insensitive. Spark owns input validation and parse errors, including strict `to_time` failures in
+both ANSI modes.
+
+TIME comparisons require matching precisions, while ordering accepts TIME values at any precision. TIME-to-TIME
+precision casts and TIME/String casts are supported. Date and
+timestamp casts and TIME arithmetic remain outside scope. Spark's `spark.sql.timeType.enabled` flag is caller-owned;
+Structure neither enables nor checks it and exposes Spark's native disabled-type failure. Each helper and the schema
+type require exact `>=4.1,<4.2` ordinary or Connect capability. Batch live evidence is required for both variants;
+this contract makes no streaming claim.
+
 ## Evidence
 
 For every supported function group, test null input, boundary values, nested arrays/maps where applicable, malformed

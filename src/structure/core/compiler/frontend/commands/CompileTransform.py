@@ -17,6 +17,9 @@ from structure.core.compiler.frontend.logic.ComposeTransformPlans import Compose
 from structure.core.compiler.frontend.logic.DeltaEvolution import evolving_delta_outputs
 from structure.core.compiler.frontend.logic.GuardTransformStepCalls import GuardTransformStepCalls
 from structure.core.compiler.frontend.logic.PatchParentStepCalls import ParentStepInvocation, PatchParentStepCalls
+from structure.core.compiler.frontend.logic.ValidateInheritedTransformDeclarations import (
+    ValidateInheritedTransformDeclarations,
+)
 from structure.core.compiler.ir.model.HookPlan import HookPlan
 from structure.core.compiler.ir.model.InputPlan import InputPlan
 from structure.core.compiler.ir.model.OutputPlan import OutputPlan
@@ -75,6 +78,7 @@ class CompileTransform:
         self._diagnostic_source = Diagnostics().source()
         self._input_collector = CompilerInputCollector()
         self._member_collector = CompilerTransformMemberCollector()
+        self._inherited_declarations = ValidateInheritedTransformDeclarations(self._error)
         self._step_call_guards = GuardTransformStepCalls(error=self._error, is_step=self._compiled)
         self._parent_step_calls = PatchParentStepCalls()
 
@@ -143,6 +147,7 @@ class CompileTransform:
                 problem=f"{getattr(transform_class, '__name__', transform_class)} is not a Transform subclass.",
                 use="Compile a class that inherits from structure.Transform or a pipeline built with invocation.to(...).",
             )
+        self._inherited_declarations(transform_class)
         self._require_module_level_schemas(transform_class)
         pipeline = getattr(transform_class, "_structure_pipeline", None)
         if pipeline is not None:
@@ -692,13 +697,7 @@ class CompileTransform:
             explicit_outputs=explicit_outputs,
             default_lane=bindings[0].lane,
         )
-        delta_result = len(output_lanes) == 1 and (
-            (declaration := transform_class._structure_outputs.get(output_lanes[0])) is not None
-            and declaration.binding in {"delta", "delta_table", "iceberg", "iceberg_table"}
-        )
-        effect_candidate = effect_schema is not None or (
-            delta_result and any(binding.binding in {"delta", "delta_input", "delta_output", "delta_table", "iceberg", "iceberg_table"} for binding in bindings)
-        )
+        effect_candidate = effect_schema is not None
         options = self._step_options(item.owner, metadata)
         parent_call: dict[str, object] = {}
         authoring_body: object | None = None
@@ -721,6 +720,7 @@ class CompileTransform:
                     ordinal=binding.ordinal,
                     driving=binding.driving,
                     binding=binding.binding,
+                    table_source=binding.table_source,
                 )
                 for binding in bindings
             ),
@@ -822,8 +822,25 @@ class CompileTransform:
             ) from error
 
         diagnostics.extend(cast(tuple[Diagnostic, ...], authoring_session.validate()))
+        if parent_call and effect_candidate and result is None:
+            forward_parent_table = getattr(authoring_session, "forward_parent_table", None)
+            if callable(forward_parent_table):
+                parent_source = cast(Mapping[str, object], parent_call.get("source", {}))
+                forward_parent_table(table_source=parent_source.get("table_source"))
+                effect_candidate = False
         result_plans = [
-            StepResultPlan(schema=schema, lane=lane, frame=lane, ordinal=ordinal, after_hooks=())
+            StepResultPlan(
+                schema=schema,
+                lane=lane,
+                frame=lane,
+                ordinal=ordinal,
+                after_hooks=(),
+                binding=(
+                    transform_class._structure_outputs[lane].binding
+                    if lane in transform_class._structure_outputs
+                    else "dataframe"
+                ),
+            )
             for ordinal, (schema, lane) in enumerate(zip(output_schemas, output_lanes, strict=True))
         ]
         bindings = self._parent_call_bindings(bindings, parent_call)
@@ -832,6 +849,24 @@ class CompileTransform:
         if not isinstance(capture, StepAuthoringCapture):
             raise TypeError("Plugin authoring capture must return StepAuthoringCapture")
         authoring_body = capture.body
+        table_sources = {
+            target: next(
+                (
+                    binding.table_source
+                    for binding in bindings
+                    if binding.source == target and binding.table_source is not None
+                ),
+                target,
+            )
+            for _, target in capture.table_sources
+        }
+        table_sources_by_lane = dict(capture.table_sources)
+        result_plans = [
+            replace(result, table_source=table_sources[table_sources_by_lane[result.lane]])
+            if result.lane in table_sources_by_lane
+            else result
+            for result in result_plans
+        ]
         if capture.sink_effect:
             if len(capture.sinks) != 1 or capture.sinks[0].input_ordinal is None:
                 raise self._error(
@@ -911,6 +946,7 @@ class CompileTransform:
                 "scope": result.schema.__name__,
                 "streaming": streaming,
                 "binding": declaration.binding if declaration is not None and declaration.binding in {"delta", "delta_table", "iceberg", "iceberg_table"} else "dataframe",
+                "table_source": result.table_source,
             }
         return tuple(result_plans)
 
@@ -933,7 +969,8 @@ class CompileTransform:
                 lane=str(source["lane"]),
                 ordinal=driver.ordinal,
                 driving=True,
-                binding=driver.binding,
+                binding=str(source.get("binding", driver.binding)),
+                table_source=cast(str | None, source.get("table_source", driver.table_source)),
             ),
             *bindings[1:],
         ]
@@ -973,7 +1010,14 @@ class CompileTransform:
             raise RuntimeError("Core authoring requires a selected platform authoring facet.")
         values = authoring_api.result_arguments(
             tuple(
-                StepAuthoringResult(schema=item.schema, lane=item.lane, frame=item.frame, ordinal=item.ordinal)
+                StepAuthoringResult(
+                    schema=item.schema,
+                    lane=item.lane,
+                    frame=item.frame,
+                    ordinal=item.ordinal,
+                    binding=item.binding,
+                    table_source=item.table_source,
+                )
                 for item in result
             )
         )
@@ -984,6 +1028,8 @@ class CompileTransform:
                 "schema": first.schema,
                 "source": first.frame,
                 "scope": first.schema.__name__,
+                "binding": first.binding,
+                "table_source": first.table_source,
             },
         )
 
@@ -1073,6 +1119,7 @@ class CompileTransform:
                     ordinal=0,
                     driving=True,
                     binding=str(source.get("binding", "dataframe")),
+                    table_source=self._table_source(source),
                 )
             ]
 
@@ -1124,9 +1171,51 @@ class CompileTransform:
                     ordinal=ordinal,
                     driving=ordinal == 0,
                     binding=str(source.get("binding", "dataframe")),
+                    table_source=self._table_source(source),
                 )
             )
         return bindings
+
+    @staticmethod
+    def _table_source(source: Mapping[str, object]) -> str | None:
+        binding = str(source.get("binding", "dataframe"))
+        if not binding.startswith(("delta", "iceberg")):
+            return None
+        return cast(str, source.get("table_source") or source["source"])
+
+    @staticmethod
+    def _input_declaration_binding(
+        transform_class: type[Transform], declaration: InputDeclaration
+    ) -> str:
+        if declaration.name in transform_class._structure_outputs:
+            if declaration.binding == "delta":
+                return "delta_output"
+            if declaration.binding == "iceberg":
+                return "iceberg_output"
+        if declaration.binding == "delta_table":
+            return "delta_table"
+        if declaration.binding == "delta":
+            return "delta_input"
+        if declaration.binding == "iceberg_table":
+            return "iceberg_table"
+        if declaration.binding == "iceberg":
+            return "iceberg_input"
+        return "dataframe"
+
+    @classmethod
+    def _input_binding(cls, transform_class: type[Transform], input_plan: InputPlan) -> str:
+        return cls._input_declaration_binding(
+            transform_class,
+            InputDeclaration(
+                schema=cast(type[Schema], input_plan.schema),
+                name=input_plan.name,
+                streaming=input_plan.streaming,
+                optional=input_plan.optional,
+                aliases=input_plan.aliases,
+                streaming_declared=input_plan.streaming_declared,
+                binding=input_plan.binding,
+            ),
+        )
 
     def _parameter_source(
         self,
@@ -1186,7 +1275,8 @@ class CompileTransform:
                 "source": source_name,
                 "scope": input_plan.name,
                 "streaming": input_plan.streaming,
-                "binding": "delta_output" if input_plan.name in transform_class._structure_outputs and input_plan.binding == "delta" else "delta_table" if input_plan.binding == "delta_table" else "delta_input" if input_plan.binding == "delta" else "iceberg_output" if input_plan.name in transform_class._structure_outputs and input_plan.binding == "iceberg" else "iceberg_table" if input_plan.binding == "iceberg_table" else "iceberg_input" if input_plan.binding == "iceberg" else "dataframe",
+                "binding": self._input_binding(transform_class, input_plan),
+                "table_source": input_plan.name if input_plan.binding.startswith(("delta", "iceberg")) else None,
             }
             if input_plan.schema is schema and (input_plan.name, source_name) not in used:
                 candidates.append((input_plan.name, source))
@@ -1312,6 +1402,7 @@ class CompileTransform:
                 "scope": declaration.name,
                 "streaming": False,
                 "binding": declaration.binding,
+                "table_source": declaration.name,
             }
         allow, _ = self._output_policy()
         if not allow:
@@ -1367,7 +1458,8 @@ class CompileTransform:
                 "source": source,
                 "scope": declaration.name,
                 "streaming": declaration.streaming,
-                "binding": "delta_table" if declaration.binding == "delta_table" else "delta_input" if declaration.binding == "delta" else "iceberg_table" if declaration.binding == "iceberg_table" else "iceberg_input" if declaration.binding == "iceberg" else "dataframe",
+                "binding": self._input_declaration_binding(transform_class, declaration),
+                "table_source": declaration.name if declaration.binding.startswith(("delta", "iceberg")) else None,
             }
         if lane_source is not None:
             return declaration.name, lane_source
@@ -1377,6 +1469,8 @@ class CompileTransform:
             "source": declaration.name,
             "scope": declaration.name,
             "streaming": declaration.streaming,
+            "binding": self._input_declaration_binding(transform_class, declaration),
+            "table_source": declaration.name if declaration.binding.startswith(("delta", "iceberg")) else None,
         }
 
     def _selected_input_source(
@@ -1402,6 +1496,8 @@ class CompileTransform:
             "source": f"input:{declaration.name}",
             "scope": declaration.name,
             "streaming": declaration.streaming,
+            "binding": self._input_declaration_binding(transform_class, declaration),
+            "table_source": declaration.name if declaration.binding.startswith(("delta", "iceberg")) else None,
         }
 
     def _declared_lane_source(
@@ -1634,7 +1730,8 @@ class CompileTransform:
             "source": input_plan.name,
             "scope": input_plan.name,
             "streaming": input_plan.streaming,
-            "binding": "delta_output" if input_plan.name in transform_class._structure_outputs and input_plan.binding == "delta" else "delta_table" if input_plan.binding == "delta_table" else "delta_input" if input_plan.binding == "delta" else "iceberg_output" if input_plan.name in transform_class._structure_outputs and input_plan.binding == "iceberg" else "iceberg_table" if input_plan.binding == "iceberg_table" else "iceberg_input" if input_plan.binding == "iceberg" else "dataframe",
+            "binding": self._input_binding(transform_class, input_plan),
+            "table_source": input_plan.name if input_plan.binding.startswith(("delta", "iceberg")) else None,
         }
 
     def _output_lane(
@@ -1914,6 +2011,23 @@ class CompileTransform:
                 use="Update the final step method return annotation or the output contract schema.",
                 context={"expected": schema.__name__, "actual": actual_schema.__name__},
             )
+        declaration = transform_class._structure_outputs.get(name)
+        binding = declaration.binding if declaration is not None else "dataframe"
+        table_source = cast(str | None, source.get("table_source"))
+        if binding.endswith("_table") and table_source is None:
+            table_source = name
+        if (
+            binding in {"delta", "iceberg"}
+            and table_source is None
+            and _authoring.get()[0] is not None
+        ):
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                problem=f"Table output {name} has no caller-bound table provenance.",
+                use="Return a declared table relation or an explicit provider mutation result; row projections do not write tables.",
+                context={"output": name, "binding": binding},
+            )
         return OutputPlan(
             name=name,
             schema=schema,
@@ -1923,7 +2037,8 @@ class CompileTransform:
             ordinal=ordinal,
             aliases=aliases,
             streaming=bool(source.get("streaming", False)),
-            binding=declaration.binding if (declaration := transform_class._structure_outputs.get(name)) else "dataframe",
+            binding=binding,
+            table_source=table_source,
         )
 
     def _source_streaming(

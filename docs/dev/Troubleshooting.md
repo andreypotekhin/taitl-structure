@@ -149,6 +149,28 @@ Fix: Rebuild the affected image with `make integration-rebuild BACKEND=pyspark40
 build selects Protobuf 6.33.0 for 4.1, leaves the 4.0 Protobuf 5.29.3 pin unchanged, and the V11 fixture selects
 `RocksDBStateStoreProvider` for both profiles.
 
+### Problem (integration): a cached runner selects outdated tests
+
+When: The Connect 4.1 general phase reports only the version check and V11 tests despite the checked-in launcher
+selecting the full integration and live concept suites.
+Cause: Older Compose commands invoked /usr/local/bin/run-integration baked into a cached image, so editing the source
+launcher did not change the running selection. The historical six-pass/27-skip run exercised V11 only.
+Fix: Use the current Compose configuration, whose six runner commands invoke the repository-mounted Bash launcher.
+Check the launcher checksum, phase selections, collected test counts, and exit status in the run output. Image
+rebuilds are required for dependency or image-configuration changes, not launcher edits. Compare a fresh collection
+with the live run and keep Iceberg/Delta results separate from the general phase.
+See [integration runner behavior](../../infra/compose/README.md#run-tests).
+
+### Problem (integration): Connect 4.1 cannot resolve ST_GeomFromWKT
+
+When: A Sedona geometry provider test is included in the general Connect 4.1 selection.
+Error: UNRESOLVED_ROUTINE for ST_GeomFromWKT.
+Cause: The 4.1 gateway configures Delta and Iceberg, without Sedona's SQL extension. The existing V9 geometry
+specification scopes optional-provider live evidence to Spark 3.5/4.0.
+Fix: Run the geometry provider test in its configured 3.5/4.0 lanes. It is marked as excluded at collection time on
+4.1, with the specification named in the skip reason. This exclusion does not establish geometry support on 4.1.
+See [provider target rules](specifications/V9ApiCatalogDesignGatedFeatures.spec.md#provider-neutral-geometry-slice).
+
 ### Problem (integration): Delta Connect 4.1 fails while decoding a server response
 
 When: Starting the `spark-connect41` Delta lane with an older cached server dependency set.
@@ -165,8 +187,16 @@ When: Running `transformWithStateInPandas` in the ordinary PySpark 4.0 Compose l
 Error: The state driver worker fails while unpickling the processor with `ModuleNotFoundError: No module named 'integration'`.
 Cause: Spark's state driver worker inherits the integration runner's `PYTHONPATH`; executor `PYTHONPATH` settings and
 `SparkContext.addPyFile` do not populate this special worker's import path.
-Fix: Use the Compose launcher, which adds `/workspace/tests` to `PYTHONPATH`. Rebuild the runner image after editing
-`run-integration.sh` because the launcher script is copied into the image.
+Fix: Use the Compose launcher, which adds `/workspace/tests` to `PYTHONPATH`. All runners invoke the repository-mounted
+`run-integration.sh` through Bash, so launcher edits take effect immediately. Rebuild images for dependency changes.
+
+### Problem (integration): a 4.1 quote result has unexpected nullability
+
+Spark 4.1 marks `quote` results nullable even for a non-null input or literal. Preserve that native schema in the
+Structure expression and declare the output field with `string(nullable=True)`. A source `is_not_null()` filter does
+not change the helper's result nullability. `chr` retains input nullability; `try_to_date` remains conservatively
+nullable because malformed text can become null. The V11 scalar parity fixture compares native, online, and generated
+schemas on ordinary and Connect 4.1 to catch this distinction.
 
 ### Problem (integration): Spark did not become ready
 
@@ -248,12 +278,11 @@ When: A Spark Connect 3.5 integration lane finishes a test or the full pytest ru
 Error: The Connect server logs `Spark Connect RPC error during: releaseExecute` followed by
 `[INVALID_HANDLE.SESSION_CLOSED]`. The pytest progress line may still end in dots and `[100%]`.
 Cause: PySpark 3.5 can send a best-effort execution-release request after the corresponding Spark Connect session has
-already closed. This is a server-side cleanup race, not a failed Structure transform. A stale integration image can
+already closed. This is a server-side cleanup race, not a failed Structure transform. An older launcher can
 also expose the server's cleanup output directly.
-Fix: If pytest has no `F`, `FAILED`, or nonzero exit status, treat the message as non-fatal. Rebuild the integration
-image once to use the quiet Connect runner:
-`make integration-rebuild BACKEND=spark-connect35`. Subsequent `make integration BACKEND=spark-connect35` runs reuse
-the image and cache. If pytest actually fails, retain the reported traceback; the runner prints the last 200 Connect
+Fix: If pytest has no `F`, `FAILED`, or nonzero exit status, treat the message as non-fatal. Use the current Compose configuration and repository-mounted launcher. Rebuild after changes to the image
+logging configuration with `make integration-rebuild BACKEND=spark-connect35`. Subsequent
+`make integration BACKEND=spark-connect35` runs reuse the image and cache. If pytest actually fails, retain the reported traceback; the runner prints the last 200 Connect
 server log lines only for a failing test run.
 
 ### Problem (integration): Spark Connect hangs entering `test_file_streams.py`
@@ -346,3 +375,20 @@ Windows can hide this because its default filesystem is case-insensitive.
 Fix: Make the import path match the actual filename exactly. For example, import
 `structure.app.target.capabilities.api.capabilities` instead of
 `structure.app.target.capabilities.api.Capabilities`.
+
+### Problem (PySpark 4.1 TIME): Spark reports that the TIME type is disabled
+
+When: A transform declares `time(...)` or uses `current_time`, `make_time`, `to_time`, `try_to_time`, `time_diff`, or
+`time_trunc` on Spark 4.1.
+
+Error: Spark reports that TIME is disabled or that `spark.sql.timeType.enabled` must be enabled.
+
+Cause: Spark 4.1 disables its TIME type by default. Structure keeps the flag under the caller's Spark-session control.
+
+Fix: Enable the native Spark setting in the session before executing TIME work, for example:
+
+```python
+spark = SparkSession.builder.config("spark.sql.timeType.enabled", "true").getOrCreate()
+```
+
+The caller's Spark installation must support Spark 4.1 TIME. Structure does not change this setting automatically.

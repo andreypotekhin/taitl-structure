@@ -220,6 +220,7 @@ class OptimizePySparkProjectionUnions:
         return (
             expression.kind not in {"python_udf", "special_expr"}
             and function != "rand"
+            and not expression.data.get("nondeterministic", False)
             and all(self._deterministic_expression(argument) for argument in expression.args)
         )
 

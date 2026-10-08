@@ -45,7 +45,7 @@ Other orientation: [API compatibility overview](compatibility/APICompatibility.m
 | --- | --- | --- | --- |
 | Schemas | supported | `StructType`, SQL types | [Schema reference](reference/Schema.ref.md) |
 | Transforms and hooks | supported | DataFrame pipeline | [Transforms API](api/Transforms.api.md) |
-| Expressions | supported | Column and SQL-function subset | [Expressions API](api/Expressions.api.md) |
+| Expressions | supported | Column and SQL-function subset | [Expression reference](reference/Expressions.ref.md) and [API](api/Expressions.api.md) |
 | Geospatial | target-gated | Native PySpark 4.1+ and provider namespaces | [Geospatial reference](reference/Geospatial.ref.md) |
 
 **Details And Differences**

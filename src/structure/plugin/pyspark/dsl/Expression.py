@@ -31,10 +31,11 @@ from structure.plugin.pyspark.dsl.types import (
     StructureType,
     TimestampNTZType,
     TimestampType,
+    TimeType,
 )
 
 _ORDERABLE_TYPES = frozenset(
-    {"date", "decimal", "double", "float", "integer", "long", "string", "timestamp", "timestamp_ntz"}
+    {"date", "decimal", "double", "float", "integer", "long", "string", "time", "timestamp", "timestamp_ntz"}
 )
 _ORDER_DIRECTIONS = frozenset(
     {"asc", "desc", "asc_nulls_first", "asc_nulls_last", "desc_nulls_first", "desc_nulls_last"}
@@ -68,6 +69,8 @@ def _same_type(left: StructureType | None, right: StructureType | None) -> bool:
         return False
     if isinstance(left, DecimalType) and isinstance(right, DecimalType):
         return left.precision == right.precision and left.scale == right.scale
+    if isinstance(left, TimeType) and isinstance(right, TimeType):
+        return left.precision == right.precision
     if isinstance(left, ArrayType) and isinstance(right, ArrayType):
         return left.contains_null == right.contains_null and _same_type(left.element, right.element)
     if isinstance(left, MapType) and isinstance(right, MapType):
@@ -209,14 +212,17 @@ class Expression:
 
     def cast(self, target: StructureType) -> "Expression":
         """Cast to a scalar Structure type with Spark ``cast`` semantics."""
+        self._validate_time_cast(target, "cast")
         return self._cast(target)
 
     def astype(self, target: StructureType) -> "Expression":
         """Alias for :meth:`cast`, mirroring common DataFrame naming."""
+        self._validate_time_cast(target, "astype")
         return self._cast(target)
 
     def try_cast(self, target: StructureType) -> "Expression":
         """Cast to a scalar Structure type while preserving failed parses as null."""
+        self._validate_time_cast(target, "try_cast")
         cast_expression = self._cast(target)
         return Expression(
             kind="try_cast",
@@ -520,6 +526,12 @@ class Expression:
         return self._compatible_comparison_types(self.type, other.type)
 
     def _compatible_comparison_types(self, left: StructureType, right: StructureType) -> bool:
+        if isinstance(left, TimeType) or isinstance(right, TimeType):
+            return (
+                isinstance(left, TimeType)
+                and isinstance(right, TimeType)
+                and left.precision == right.precision
+            )
         if isinstance(left, TimestampNTZType) or isinstance(right, TimestampNTZType):
             return isinstance(left, TimestampNTZType) and isinstance(right, TimestampNTZType)
         if isinstance(left, (IntegerType, LongType, FloatType, DoubleType, DecimalType)) and isinstance(
@@ -717,6 +729,8 @@ class Expression:
         )
 
     def _spark_type(self, target: StructureType) -> str:
+        if isinstance(target, TimeType):
+            return f"time({target.precision})"
         if target.name == "integer":
             return "int"
         if target.name == "long":
@@ -728,3 +742,12 @@ class Expression:
         if isinstance(target, SketchType):
             return "binary"
         return target.name
+
+    def _validate_time_cast(self, target: StructureType, call: str) -> None:
+        if not isinstance(target, TimeType) and not isinstance(self.type, TimeType):
+            return
+        if isinstance(target, TimeType) and (self.type is None or isinstance(self.type, (StringType, TimeType))):
+            return
+        if isinstance(self.type, TimeType) and isinstance(target, (StringType, TimeType)):
+            return
+        raise TypeError(f"{call}(...) supports TIME casts only to or from String or TIME")

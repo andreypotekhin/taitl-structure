@@ -506,6 +506,17 @@ Status: complete. The four selected runtime lanes passed native SQL and online/g
 - Support explicitly requested additive nullable append evolution through Iceberg's WriterV2 contract.
 - Admit only exact runtime lanes with live evidence; preserve caller ownership of catalogs, tables, retention, and retries.
 
+### Epic: Table Transform Inheritance and Composition
+
+Status: complete. Delta and Iceberg inheritance and composed stage handoff passed Spark-free contracts, focused
+online/generated live cases on the selected classic and Connect lanes, and `make build`; see
+`docs/compatibility/DeltaIceberg.compat.md` and the archived execution plan.
+
+- Preserve provider and role declarations across table-transform inheritance, with DataFrame-style method replacement,
+  `super()` extension, and pure delegation.
+- Preserve canonical table identity through class-body graphs and `.to(...)` composition, including committed updates,
+  schema validation, generated execution, and public output routing.
+
 ### Epic: Challenge and Release Closure
 
 - Audit C27 analytical-join status against the current implementation and correct stale challenge wording.

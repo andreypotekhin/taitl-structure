@@ -6,6 +6,7 @@ from dataclasses import replace
 
 from structure.core.compiler.diagnostics.api import StructureCompileError
 from structure.core.compiler.frontend.logic.ValidateStreamingInputBinding import validate_streaming_input_binding
+from structure.core.compiler.frontend.logic.ValidateTransformBinding import compatible_bindings
 from structure.core.compiler.ir.model.HookPlan import HookPlan
 from structure.core.compiler.ir.model.OutputPlan import OutputPlan
 from structure.core.compiler.ir.model.StageOutputPlan import StageOutputPlan
@@ -175,6 +176,7 @@ class ComposeTransformGraph:
                         aliases=input_plan.aliases,
                         streaming_declared=input_plan.streaming_declared,
                         optional=True,
+                        binding=input_plan.binding,
                     )
                     input_modes[input_plan.name] = bool(input_plan.streaming)
                     continue
@@ -189,6 +191,12 @@ class ComposeTransformGraph:
                     producer = effective_outputs.get(value.stage.name, {}).get(value.name)
                     if producer is None:
                         producer = next(output for output in producer_plan.outputs if output.name == value.name)
+                    if not compatible_bindings(producer.binding, input_plan.binding):
+                        raise self._error(
+                            wrapper_class.__name__,
+                            f"{value.stage.name}.{value.name} uses {producer.binding}, but {stage.name}.{input_plan.name} expects {input_plan.binding}.",
+                            "Connect outputs and inputs from the same provider, or keep both sides as DataFrames.",
+                        )
                     input_modes[input_plan.name] = bool(producer.streaming)
                     consumer_options = plan.options or {}
                     local_allow = bool(consumer_options.get("allow_stream_to_batch"))
@@ -254,6 +262,7 @@ class ComposeTransformGraph:
                     aliases=aliases,
                     streaming_declared=streaming_declared,
                     optional=optional,
+                    binding=input_plan.binding,
                 )
             effective_outputs[stage.name] = {
                 output.name: output
@@ -277,14 +286,17 @@ class ComposeTransformGraph:
         input_plan: InputPlan,
         value: object,
     ) -> str:
-        if not isinstance(value, InputDeclaration):
+        if not isinstance(value, (InputDeclaration, OutputDeclaration)):
             raise self._error(
                 wrapper_class.__name__,
                 f"{stage.name}.{input_plan.name} is bound to an unsupported value.",
                 "Bind graph stage inputs to wrapper input(...) fields or earlier stage outputs.",
             )
-        declared = wrapper_class._structure_inputs.get(value.name)
-        if declared is not value:
+        declared = (
+            wrapper_class._structure_inputs.get(value.name) is value
+            or wrapper_class._structure_outputs.get(value.name) is value
+        )
+        if not declared:
             raise self._error(
                 wrapper_class.__name__,
                 f"{value.name or '<unnamed>'} is not an input on {wrapper_class.__name__}.",
@@ -295,6 +307,18 @@ class ComposeTransformGraph:
                 wrapper_class.__name__,
                 f"{value.name} declares {self._schema_name(value.schema)}, but {type(stage.invocation).__name__}.{input_plan.name} expects {self._schema_name(input_plan.schema)}.",
                 "Bind only inputs with the same schema.",
+            )
+        if not compatible_bindings(value.binding, input_plan.binding):
+            raise self._error(
+                wrapper_class.__name__,
+                f"{value.name} uses {value.binding}, but {stage.name}.{input_plan.name} expects {input_plan.binding}.",
+                "Bind a stage input only to the same provider family.",
+            )
+        if value.binding in {"delta", "iceberg"} and input_plan.binding.endswith("_table"):
+            raise self._error(
+                wrapper_class.__name__,
+                f"Read-only input {value.name} cannot supply mutable role {input_plan.binding}.",
+                "Declare the wrapper binding with delta_table(...) or iceberg_table(...).",
             )
         return value.name
 
@@ -345,6 +369,7 @@ class ComposeTransformGraph:
                     output,
                     source=frame_map[output.source],
                     ordinal=len(stage_outputs),
+                    table_source=None if output.table_source is None else frame_map.get(f"__table__:{output.table_source}", frame_map.get(output.table_source, output.table_source)),
                 )
                 output_sources[(stage, output.name)] = rewritten_output
                 stage_outputs.append(rewritten_output)
@@ -359,6 +384,7 @@ class ComposeTransformGraph:
                             nested.output,
                             source=frame_map.get(nested.output.source, nested.output.source),
                             ordinal=len(public_stage_outputs),
+                            table_source=(None if nested.output.table_source is None else frame_map.get(f"__table__:{nested.output.table_source}", frame_map.get(nested.output.table_source, nested.output.table_source))),
                         ),
                     )
                 )
@@ -408,6 +434,8 @@ class ComposeTransformGraph:
                 source = self._internal_name(stage, input_plan.name)
                 sources[input_plan.name] = source
                 sources[f"input:{input_plan.name}"] = source
+                if input_plan.binding.startswith(("delta", "iceberg")):
+                    sources[f"__table__:{input_plan.name}"] = source
                 continue
             if isinstance(value, StageOutputReference):
                 upstream = output_sources.get((stage_by_name.get(value.stage.name, value.stage), value.name))
@@ -419,8 +447,10 @@ class ComposeTransformGraph:
                     )
                 sources[input_plan.name] = upstream.source
                 sources[f"input:{input_plan.name}"] = upstream.source
+                if upstream.table_source is not None:
+                    sources[f"__table__:{input_plan.name}"] = upstream.table_source
                 continue
-            if not isinstance(value, InputDeclaration):
+            if not isinstance(value, (InputDeclaration, OutputDeclaration)):
                 raise self._error(
                     wrapper_class.__name__,
                     f"{stage.name}.{input_plan.name} is bound to an unsupported value.",
@@ -429,6 +459,8 @@ class ComposeTransformGraph:
             source = value.name
             sources[input_plan.name] = source
             sources[f"input:{input_plan.name}"] = source
+            if input_plan.binding.startswith(("delta", "iceberg")):
+                sources[f"__table__:{input_plan.name}"] = value.name
         return sources
 
     def _step(
@@ -439,7 +471,7 @@ class ComposeTransformGraph:
         frame_map: dict[str, str],
         rewrite_body: RewriteBody,
     ) -> StepPlan:
-        results = tuple(self._result(result, label=label) for result in step.results)
+        results = tuple(self._result(result, label=label, frame_map=frame_map) for result in step.results)
         primary = results[0]
         result_frames = {
             key: result.frame
@@ -464,14 +496,16 @@ class ComposeTransformGraph:
             input,
             source=frame_map.get(input.source, self._frame(label, input.source)),
             lane=frame_map.get(input.lane, self._frame(label, input.lane)),
+            table_source=None if input.table_source is None else frame_map.get(f"__table__:{input.table_source}", frame_map.get(input.table_source, input.table_source)),
         )
 
-    def _result(self, result: StepResultPlan, *, label: str) -> StepResultPlan:
+    def _result(self, result: StepResultPlan, *, label: str, frame_map: dict[str, str]) -> StepResultPlan:
         frame = self._frame(label, result.frame)
         return replace(
             result,
             lane=frame,
             frame=frame,
+            table_source=None if result.table_source is None else frame_map.get(f"__table__:{result.table_source}", frame_map.get(result.table_source, result.table_source)),
             after_hooks=tuple(
                 self._hook(hook, label=label, frame_map={result.lane: frame, result.frame: frame})
                 for hook in result.after_hooks
@@ -502,6 +536,12 @@ class ComposeTransformGraph:
             source = self._declared_output(
                 wrapper_class, declaration, stage_outputs, output_sources, stage_by_name=stage_by_name
             )
+            if declaration.binding != source.binding:
+                raise self._error(
+                    wrapper_class.__name__,
+                    f"Output {declaration.name} has binding {declaration.binding}, but its stage source has binding {source.binding}.",
+                    "Preserve the selected stage output provider and role in the wrapper output.",
+                )
             outputs.append(
                 OutputPlan(
                     name=declaration.name,
@@ -512,6 +552,8 @@ class ComposeTransformGraph:
                     ordinal=ordinal,
                     aliases=declaration.aliases,
                     streaming=source.streaming,
+                    binding=declaration.binding,
+                    table_source=source.table_source,
                 )
             )
         return outputs
@@ -546,6 +588,12 @@ class ComposeTransformGraph:
                     wrapper_class.__name__,
                     f"Output {declaration.name} declares {declaration.schema.__name__}, but bound stage output carries {output.schema.__name__}.",
                     "Bind wrapper outputs only to matching schemas.",
+                )
+            if output.binding != declaration.binding:
+                raise self._error(
+                    wrapper_class.__name__,
+                    f"Output {declaration.name} has binding {declaration.binding}, but the selected stage output has binding {output.binding}.",
+                    "Preserve the selected stage output provider and role in the wrapper output.",
                 )
             return output
         matches = [

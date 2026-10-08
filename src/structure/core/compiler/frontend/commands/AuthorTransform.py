@@ -49,11 +49,46 @@ class AuthorTransform:
             # path.  A subsequent P072 change authors only after structural pipeline
             # composition and removes this escape hatch.
             return authored
+        authored_stage_outputs = {item.path: item.output for item in authored.stage_outputs}
         return replace(
             plan,
             steps=tuple(
-                replace(structural, plugin_body=captured.plugin_body, sinks=captured.sinks)
+                replace(
+                    structural,
+                    results=tuple(
+                        replace(
+                            result,
+                            binding=authored_result.binding,
+                            table_source=authored_result.table_source,
+                        )
+                        for result, authored_result in zip(structural.results, captured.results, strict=True)
+                    ),
+                    plugin_body=captured.plugin_body,
+                    sinks=captured.sinks,
+                    effect=captured.effect,
+                )
                 for structural, captured in zip(plan.steps, authored.steps, strict=True)
+            ),
+            outputs=tuple(
+                replace(
+                    output,
+                    binding=authored_output.binding,
+                    table_source=authored_output.table_source,
+                )
+                for output, authored_output in zip(plan.outputs, authored.outputs, strict=True)
+            ),
+            stage_outputs=tuple(
+                replace(
+                    stage_output,
+                    output=replace(
+                        stage_output.output,
+                        binding=authored_stage_outputs[stage_output.path].binding,
+                        table_source=authored_stage_outputs[stage_output.path].table_source,
+                    ),
+                )
+                if stage_output.path in authored_stage_outputs
+                else stage_output
+                for stage_output in plan.stage_outputs
             ),
             sinks=authored.sinks,
             diagnostics=(*plan.diagnostics, *authored.diagnostics),

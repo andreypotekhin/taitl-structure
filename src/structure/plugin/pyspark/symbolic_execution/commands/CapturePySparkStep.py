@@ -45,6 +45,8 @@ class CapturePySparkStep:
             mutation.kind.startswith("iceberg_") for mutation in context.delta_mutations
         ) else "Delta"
         results: tuple[PySparkResultBody, ...]
+        table_forward = False
+        forwarded_source: str | None = None
         if sink_effect:
             if context.operations or context.filters or context.joins or len(context.foreach) != 1:
                 raise TypeError("A sink-effect step must contain exactly one foreach(row, sink) call.")
@@ -52,8 +54,10 @@ class CapturePySparkStep:
                 raise TypeError("A sink-effect step must return foreach(row, sink) directly.")
             results = (PySparkResultBody(),)
         elif request.effect or any(
-            mutation.kind.startswith("iceberg_")
-            and mutation.kind not in {"iceberg_snapshot", "iceberg_history", "iceberg_snapshots", "iceberg_metadata"}
+            mutation.kind not in {
+                "delta_snapshot", "delta_changes", "delta_history", "delta_detail",
+                "iceberg_snapshot", "iceberg_history", "iceberg_snapshots", "iceberg_metadata",
+            }
             for mutation in context.delta_mutations
         ):
             if context.operations or context.filters or context.joins or not context.delta_mutations:
@@ -159,10 +163,46 @@ class CapturePySparkStep:
                         else DeltaMutationResult(mutation)
                     )
             else:
-                raise TypeError(f"Delta effect step {request.name} must return None or a Delta mutation result")
+                table_source = getattr(value, "_structure_table_source", None)
+                table_result = request.results[0] if request.results else None
+                matching_mutation = any(mutation.target == table_source for mutation in context.delta_mutations)
+                provider_binding = (
+                    "delta_table" if hasattr(value, "_structure_delta_binding") else "iceberg_table"
+                )
+                if (
+                    table_source is None
+                    or not matching_mutation
+                    or table_result is None
+                    or table_result.binding != provider_binding
+                ):
+                    raise TypeError(f"Delta effect step {request.name} must return None or a matching table mutation result")
             results = (PySparkResultBody(),)
             if context.foreach:
                 raise TypeError("foreach(row, sink) cannot be used in a Delta effect step")
+        elif getattr(value, "_structure_table_source", None) is not None:
+            if len(request.results) != 1:
+                raise TypeError("A forwarded table relation requires exactly one declared result")
+            result = request.results[0]
+            source = cast(str, getattr(value, "_structure_table_source"))
+            table_provider = "delta" if hasattr(value, "_structure_delta_binding") else "iceberg"
+            if result.binding != f"{table_provider}_table":
+                raise TypeError("A forwarded table must retain its provider's mutable table output role")
+            if getattr(value, "_structure_input_schema", None) is not result.schema:
+                raise TypeError("A forwarded table must retain its declared schema")
+            matching_input = next(
+                (
+                    item for item in request.inputs
+                    if item.table_source == source and item.binding == f"{table_provider}_table"
+                ),
+                None,
+            )
+            if matching_input is None:
+                raise TypeError("A forwarded table must come from a matching caller-bound mutable table")
+            if context.operations or context.filters or context.joins or context.delta_mutations:
+                raise TypeError("A forwarded table step cannot also read, project, or mutate relations")
+            results = (PySparkResultBody(),)
+            table_forward = True
+            forwarded_source = source
         else:
             if any(
                 mutation.kind not in {"delta_snapshot", "delta_changes", "delta_history", "delta_detail", "iceberg_snapshot", "iceberg_history", "iceberg_snapshots", "iceberg_metadata"}
@@ -228,6 +268,8 @@ class CapturePySparkStep:
             joins=tuple(context.joins),
             operations=operations,
             delta_mutations=tuple(context.delta_mutations),
+            table_forward=table_forward,
+            table_source=forwarded_source,
             aggregate_keys=context.aggregate_keys,
             aggregate_levels=context.aggregate_levels,
             aggregate_grouping=context.aggregate_grouping,

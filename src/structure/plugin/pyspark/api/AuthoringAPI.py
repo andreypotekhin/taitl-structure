@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import cast
 
 from structure.plugin.api.v1 import AuthoringAPI as AuthoringAPIV1
@@ -21,9 +21,29 @@ class AuthoringAPI(AuthoringAPIV1):
         return PySparkStepSession(request)
 
     def result_arguments(self, results: tuple[StepAuthoringResult, ...]) -> tuple[object, ...]:
-        return tuple(
-            RowScope(name=cast(type, result.schema).__name__, schema=cast(type, result.schema)) for result in results
-        )
+        from structure.plugin.pyspark.delta.operations import DeltaScope
+        from structure.plugin.pyspark.iceberg.operations import IcebergScope
+
+        values = []
+        for result in results:
+            schema = cast(type, result.schema)
+            value: RowScope
+            if result.binding in {"delta", "delta_table", "delta_input", "delta_output"}:
+                value = DeltaScope(
+                    name=schema.__name__, schema=schema, source=result.frame,
+                    binding="delta_table" if result.binding == "delta_table" else "delta_input",
+                )
+                value._structure_table_source = result.table_source
+            elif result.binding in {"iceberg", "iceberg_table", "iceberg_input", "iceberg_output"}:
+                value = IcebergScope(
+                    name=schema.__name__, schema=schema, source=result.frame,
+                    binding="iceberg_table" if result.binding == "iceberg_table" else "iceberg_input",
+                )
+                value._structure_table_source = result.table_source
+            else:
+                value = RowScope(name=schema.__name__, schema=schema)
+            values.append(value)
+        return tuple(values)
 
     def rewrite_body(self, body: object, *, frames: Mapping[str, str]) -> object:
         return PySpark.symbolic_execution.rewrite()(body, frames=frames)
@@ -39,6 +59,7 @@ class PySparkStepSession:
             step_output_schema=(request.results[0].schema if len(request.results) == 1 else None),
         )
         self._capture_pending = False
+        self._forwarded_table_scope: object | None = None
 
     def __enter__(self) -> PySparkStepSession:
         self._context.__enter__()
@@ -70,17 +91,31 @@ class PySparkStepSession:
 
     def capture(self, value: object) -> StepAuthoringCapture:
         try:
+            if self._forwarded_table_scope is not None and value is None:
+                value = self._forwarded_table_scope
             body = PySpark.symbolic_execution.capture()(value, context=self._context, request=self._request)
+            table_sources = tuple(
+                (result.lane, mutation.target)
+                for result in self._request.results
+                if result.binding.startswith(("delta", "iceberg"))
+                for mutation in body.delta_mutations
+                if mutation.output == result.lane or (mutation.output is None and mutation.target == result.lane)
+            )
+            if body.table_forward and body.table_source is not None and self._request.results:
+                table_sources = (*table_sources, (self._request.results[0].lane, body.table_source))
             return StepAuthoringCapture(
                 body=body,
                 diagnostics=(),
                 sinks=body.sinks,
                 sink_effect=isinstance(body.value, PySparkSinkEffect),
+                table_sources=table_sources,
                 effect=bool(
                     self._request.effect
                     or any(
-                        mutation.kind.startswith("iceberg_")
-                        and mutation.kind not in {"iceberg_snapshot", "iceberg_history", "iceberg_snapshots", "iceberg_metadata"}
+                        mutation.kind not in {
+                            "delta_snapshot", "delta_changes", "delta_history", "delta_detail",
+                            "iceberg_snapshot", "iceberg_history", "iceberg_snapshots", "iceberg_metadata",
+                        }
                         for mutation in body.delta_mutations
                     )
                 ),
@@ -89,6 +124,21 @@ class PySparkStepSession:
             if self._capture_pending:
                 self._close_context()
                 self._capture_pending = False
+
+    def forward_parent_table(self, *, table_source: object) -> None:
+        if not isinstance(table_source, str):
+            raise TypeError("A delegated table effect must resolve to one caller-bound table")
+        self._forwarded_table_scope = next(
+            (
+                argument
+                for argument in self._arguments
+                if getattr(argument, "_structure_table_source", None) == table_source
+            ),
+            None,
+        )
+        if self._forwarded_table_scope is None:
+            raise TypeError("A delegated table effect has no matching local table input")
+        self._request = replace(self._request, effect=False)
 
     def _close_context(self) -> None:
         self._context.__exit__(None, None, None)
@@ -105,11 +155,13 @@ class PySparkStepSession:
                     name=binding.scope, schema=schema, source=binding.source,
                     binding="iceberg_input" if binding.binding in {"iceberg", "iceberg_input"} else binding.binding,
                 )
+                argument._structure_table_source = binding.table_source
             elif binding.binding in {"delta_input", "delta_output", "delta_table", "delta"}:
                 argument = DeltaScope(
                     name=binding.scope, schema=schema, source=binding.source,
                     binding="delta_input" if binding.binding in {"delta_input", "delta"} else binding.binding,
                 )
+                argument._structure_table_source = binding.table_source
             elif binding.driving:
                 argument = RowScope(name=binding.scope, schema=schema)
             else:

@@ -36,6 +36,41 @@ class Order(Schema):
     status = string(nullable=False)
 
 
+@transform
+class BaseCleanup(Transform):
+    orders = iceberg_table(Order)
+
+    def clean(self, order: Order) -> None:
+        iceberg_delete(order, where=order.status == "legacy")
+
+
+@transform
+class ReplaceCleanup(BaseCleanup):
+    def clean(self, order: Order) -> None:
+        iceberg_delete(order, where=order.status == "archived")
+
+
+@transform
+class ExtendCleanup(BaseCleanup):
+    def clean(self, order: Order) -> None:
+        super().clean(order)
+        iceberg_delete(order, where=order.status == "archived")
+
+
+@transform
+class ReadCleanedOrders(Transform):
+    orders = iceberg_input(Order)
+    selected = output(Order)
+
+    def select(self, order: Order) -> Order:
+        return Order.project(order)
+
+
+class CleanupThenRead(Transform):
+    orders = iceberg_table(Order)
+    pipeline = BaseCleanup(orders=orders).to(ReadCleanedOrders())
+
+
 class Change(Schema):
     id = string(nullable=False)
     status = string(nullable=False)
@@ -296,6 +331,61 @@ def test_iceberg_append_evolution_requires_property_and_returns_new_schema(spark
         assert {(row.id, row.note) for row in spark.table(name).collect()} == {
             ("A", "first"),
             ("B", "second"),
+        }
+    finally:
+        spark.sql(f"DROP TABLE IF EXISTS {name}")
+
+
+@pytest.mark.parametrize("mode", ["online", "generated"])
+@pytest.mark.parametrize(
+    ("subject", "expected"),
+    [
+        (ReplaceCleanup, {("A", "open"), ("B", "legacy")}),
+        (ExtendCleanup, {("A", "open")}),
+    ],
+)
+def test_table_inheritance_overrides_and_super_match_live_rows(spark, tmp_path, mode, subject, expected) -> None:
+    name = f"structure_iceberg.default.inherit_{uuid4().hex}"
+    spark.sql(f"CREATE TABLE {name} (id STRING NOT NULL, status STRING NOT NULL) USING iceberg")
+    spark.sql(f"INSERT INTO {name} VALUES ('A', 'open'), ('B', 'legacy'), ('C', 'archived')")
+    package = f"tests.generated_iceberg_{subject.__name__.lower()}"
+    files = render_generated_project(
+        subject,
+        source_transform=f"{subject.__module__}.{subject.__name__}",
+        generated_package=package,
+        source_schema_modules={Order.__module__: [Order]},
+    )
+    try:
+        with generated_project(tmp_path, package, files):
+            result = subject(orders=name).run(
+                session(spark, execution_mode=mode, generated_package=package)
+            )
+        assert result.orders == name
+        assert {(row.id, row.status) for row in spark.table(name).collect()} == expected
+    finally:
+        spark.sql(f"DROP TABLE IF EXISTS {name}")
+
+
+@pytest.mark.parametrize("mode", ["online", "generated"])
+def test_composed_iceberg_stages_read_after_the_parent_commit(spark, tmp_path, mode) -> None:
+    name = f"structure_iceberg.default.compose_{uuid4().hex}"
+    spark.sql(f"CREATE TABLE {name} (id STRING NOT NULL, status STRING NOT NULL) USING iceberg")
+    spark.sql(f"INSERT INTO {name} VALUES ('A', 'open'), ('B', 'legacy'), ('C', 'archived')")
+    package = f"tests.generated_iceberg_compose_{mode}"
+    files = render_generated_project(
+        CleanupThenRead,
+        source_transform=f"{CleanupThenRead.__module__}.{CleanupThenRead.__name__}",
+        generated_package=package,
+        source_schema_modules={Order.__module__: [Order]},
+    )
+    try:
+        with generated_project(tmp_path, package, files):
+            result = CleanupThenRead(orders=name).run(
+                session(spark, execution_mode=mode, generated_package=package)
+            )
+        assert {(row.id, row.status) for row in result.selected.collect()} == {
+            ("A", "open"),
+            ("C", "archived"),
         }
     finally:
         spark.sql(f"DROP TABLE IF EXISTS {name}")

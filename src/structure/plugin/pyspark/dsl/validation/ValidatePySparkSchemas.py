@@ -6,6 +6,7 @@ import builtins
 from collections.abc import Mapping
 from dataclasses import replace
 from datetime import date, datetime
+from datetime import time as python_time
 from decimal import Decimal
 from types import UnionType
 from typing import Union, get_args, get_origin, get_type_hints
@@ -38,6 +39,7 @@ from structure.plugin.pyspark.dsl.types import (
     StructureType,
     Timestamp,
     TimestampType,
+    TimeType,
 )
 
 
@@ -175,6 +177,8 @@ class ValidatePySparkSchemas:
             return isinstance(type, DateType)
         if hint is datetime:
             return isinstance(type, TimestampType)
+        if hint is python_time:
+            return isinstance(type, TimeType)
 
         origin, args = get_origin(hint), get_args(hint)
         if origin in {Union, UnionType}:

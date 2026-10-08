@@ -86,7 +86,7 @@ def _validate_schema(frame, schema):
 
     from structure.plugin.pyspark.api.PySpark import PySpark
 
-    expected = PySpark.schema.materialize()(schema, types=T)
+    expected = schema if isinstance(schema, T.StructType) else PySpark.schema.materialize()(schema, types=T)
     actual = {field.name: field for field in frame.schema}
     if {field.name for field in expected} != set(actual):
         raise ValueError(f"Iceberg table for {schema.__name__} has different columns")

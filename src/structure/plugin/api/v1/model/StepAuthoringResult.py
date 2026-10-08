@@ -8,3 +8,4 @@ class StepAuthoringResult:
     frame: str
     ordinal: int
     binding: str = "dataframe"
+    table_source: str | None = None

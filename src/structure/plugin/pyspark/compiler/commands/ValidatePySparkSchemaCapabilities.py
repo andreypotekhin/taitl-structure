@@ -10,6 +10,7 @@ from structure.plugin.pyspark.dsl.types import (
     StructType,
     StructureType,
     ThetaSketchType,
+    TimeType,
     VariantType,
 )
 
@@ -41,7 +42,9 @@ class ValidatePySparkSchemaCapabilities:
             self._type(field.type, capabilities=capabilities, visited=visited)
 
     def _type(self, type: StructureType, *, capabilities: BackendCapabilities, visited: set[type[Schema]]) -> None:
-        if isinstance(type, VariantType):
+        if isinstance(type, TimeType):
+            capabilities.require(CapabilityRequirement(group="schema", name="time"))
+        elif isinstance(type, VariantType):
             capabilities.require(CapabilityRequirement(group="schema", name="variant"))
         elif isinstance(type, SketchType):
             capabilities.require(CapabilityRequirement(group="schema", name="sketches"))

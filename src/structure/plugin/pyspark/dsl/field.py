@@ -33,6 +33,7 @@ from structure.plugin.pyspark.dsl.types import (
     Struct,
     StructureType,
     ThetaSketch,
+    Time,
     Timestamp,
     TimestampNTZ,
     Variant,
@@ -168,6 +169,8 @@ if TYPE_CHECKING:
 
     class date(python_date):
         def __new__(cls, *args: object, **kwargs: object) -> Any: ...
+
+    def time(precision: int = 6, **options: object) -> Any: ...
 else:
     def float(**options: object) -> Any:
         """Declare a Spark ``float`` field."""
@@ -176,6 +179,10 @@ else:
     def date(**options: object) -> Any:
         """Declare a Spark ``date`` field."""
         return _declare(Date(), options)
+
+    def time(precision: int = 6, **options: object) -> Any:
+        """Declare a Spark ``time`` field with the requested fractional precision."""
+        return _declare(Time(precision), options)
 
 
 def array(element: FieldDeclaration, *, contains_null: bool = True, **options: object) -> Any:
@@ -285,6 +292,7 @@ __all__ = [
     "struct",
     "timestamp",
     "timestamp_ntz",
+    "time",
     "interval",
     "variant",
 ]

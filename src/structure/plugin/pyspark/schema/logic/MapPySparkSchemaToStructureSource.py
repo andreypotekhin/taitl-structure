@@ -62,6 +62,8 @@ class MapPySparkSchemaToStructureSource:
             return scalar
         if name == "DecimalType":
             return f"decimal({type.precision}, {type.scale})"
+        if name == "TimeType":
+            return f"time({type.precision})"
         if name == "ArrayType":
             contains_null = "True" if bool(type.containsNull) else "False"
             element = self._type(type.elementType, root=root, path=(*path, "item"))

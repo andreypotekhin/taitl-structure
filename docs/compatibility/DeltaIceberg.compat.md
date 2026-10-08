@@ -21,7 +21,7 @@ other Connect profiles, and unlisted provider/runtime combinations are outside t
 | `delta_history`, `delta_detail` | `DeltaTable.history`, `DeltaTable.detail` | `delta_history(order, limit=5)` | 3.5.3 / 3.3.3* | 4.0.0 / 4.0.1* | 4.1.0 / 4.1.0* | 4.1.0 / 4.1.0* | Typed subset of evolving native metadata schemas; positive runtime history limit. |
 | `delta_generated`, `delta_identity`, `delta_default` | Delta field metadata and writer omission | `delta_columns = (delta_identity(id),)` | 3.5.3 / 3.3.3* | 4.0.0 / 4.0.1* | 4.1.0 / 4.1.0* | 4.1.0 / 4.1.0* | Declaration metadata is checked before writing. Identity supports LongType only. |
 | `delta_restore` | `restoreToVersion`, `restoreToTimestamp` | `delta_restore(order, version=v).execute()` | 3.5.3 / 3.3.3* | 4.0.0 / 4.0.1* | 4.1.0 / 4.1.0* | 4.1.0 / 4.1.0* | New restore commit; native metrics are not exposed as a transform result. |
-| `delta_optimize` | `optimize().executeCompaction/executeZOrderBy` | `delta_optimize(order).execute_compaction()` | 3.5.3 / 3.3.3* | 4.0.0 / 4.0.1* | 4.1.0 / 4.1.0* | 4.1.0 / 4.1.0* | Explicit layout effect; optional predicate must use partition columns; metrics are not exposed. |
+| `delta_optimize` | `optimize().executeCompaction/executeZOrderBy`, `OPTIMIZE FULL` | `delta_optimize(order).full()` | 3.5.3 / 3.3.3* | 4.0.0 / 4.0.1* | 4.1.0 / 4.1.0* | 4.1.0 / 4.1.0* | Full reclustering uses caller-configured active keys. Incremental clustering uses `execute_compaction()`; these profiles reject clustered-table predicates and Z-order. Metrics are not exposed. |
 | `delta_vacuum` | `DeltaTable.vacuum` | `delta_vacuum(order).execute()` | 3.5.3 / 3.3.3* | 4.0.0 / 4.0.1* | 4.1.0 / 4.1.0* | 4.1.0 / 4.1.0* | Defaults to 168 hours; shorter retention requires explicit opt-in and respects Delta's native safety check. |
 | `check(...)` in `Schema.constraints` | Native Delta CHECK metadata | `check(status != "invalid")` | 3.5.3 / 3.3.3* | 4.0.0 / 4.0.1* | 4.1.0 / 4.1.0* | 4.1.0 / 4.1.0* | Structure validates matching constraints but does not install them. |
 
@@ -31,6 +31,11 @@ and one ordinary-only JVM inspection skip. Delta upstream compatibility alone do
 Connect validates native shape and CHECK metadata but delegates generated, identity, and default behavior to Delta; it
 does not inherit ordinary feature-metadata bridge checks. PySpark 4.2 and other Connect profiles remain unadmitted. See
 the [Delta Connect admission plan](../dev/planning/past/P10062601.V11-delta-connect-admission.plan.md).
+
+Delta table inheritance replacement/extension and composed post-commit reads passed in online and generated execution
+on classic Spark 3.5.3 / Delta 3.3.3, Spark 4.0.0 / Delta 4.0.1, Spark 4.1.0 / Delta 4.1.0, and Spark Connect
+4.1.0 with the separately admitted Delta Connect package. These focused cases cover the new table behavior and do not
+represent a rerun of each full integration suite.
 
 ## Caller-owned behavior
 
@@ -66,6 +71,11 @@ Live evidence used Iceberg 1.12.0 with Spark 3.5.3 / Scala 2.12, Spark 4.0.0 / S
 each selected lane. The Connect server loaded the Iceberg runtime, extension, and Hadoop catalog. The Spark 3.5 Delta
 regression suite passed 31 tests with 3 skips; broader Delta evidence is detailed in the table above.
 
+Iceberg table inheritance replacement/extension and composed post-commit reads passed in both online and generated
+modes on all four selected lanes: classic Spark 3.5.3, 4.0.0, 4.1.0, and Spark Connect 4.1.0, each with Iceberg 1.12.0.
+The focused cases preserve the supplied catalog identifier across the handoff and do not widen the existing runtime
+admission.
+
 After rebuilding integration images when runner configuration or Spark pins change, run:
 
     make integration BACKEND=pyspark35
@@ -77,7 +87,8 @@ The Iceberg table property `write.spark.accept-any-schema=true` and per-write `m
 evolving append; Structure never sets the table property. Snapshot expiration and orphan removal retain native
 retention and reference rules. Changelog helpers, branch/tag administration, and non-v2 formats are not admitted.
 
-The Spark-free `make build` quality gates passed formatting, lint, and mypy. Its full pytest step reported 2,322
-passed, 322 skipped, and four existing Structured Streaming and Transformation coverage-ledger failures outside these
-provider integrations. `poetry build` succeeded. SQL delegates to Spark and Iceberg; untested SQL behavior does not
-imply admission of a corresponding Structure helper.
+The 2026-10-08 `make build` run passed formatting, lint, mypy, both full pytest phases, and package creation: the main
+suite reported 2,576 passed and 360 skipped; the final quality suite reported 151 passed and 7 skipped. The focused
+table inheritance and composition live cases also passed in online/generated modes on all four selected runtime
+lanes. SQL delegates to Spark and Iceberg; untested SQL behavior does not imply admission of a corresponding Structure
+helper.

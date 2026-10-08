@@ -589,3 +589,27 @@ pass.
 - `docs/compatibility/DeltaIceberg.compat.md`
 - `docs/dev/design/DeltaTables.design.md`
 - `docs/dev/specifications/DeltaTables.spec.md`
+
+## +M18: Table Transform Inheritance and Composition
+
+Status: complete. Delta and Iceberg table declarations retain their provider and role across inheritance and composition.
+Method replacement, parent scheduling through `super()`, pure table forwarding, and same-table stage handoff pass Spark-free
+contracts and focused online/generated live cases on classic PySpark 3.5/4.0/4.1 and Spark Connect 4.1. `make build`
+passes, including the full test suite and package build.
+
+### Exit criteria
+
+- Inherited table declarations cannot silently change provider, role, or table schema, while method overrides follow
+  DataFrame-style scheduling.
+- Class-body and `.to(...)` composition preserve caller table identity, validate each later stage after earlier commits,
+  and route table outputs correctly in online and generated execution.
+- Delta and Iceberg focused live tests pass on all selected runtime lanes, and `make build` succeeds.
+
+### Governing documents
+
+- `docs/dev/planning/past/P10082601.Table-inheritance-and-composition.plan.md`
+- `docs/dev/specifications/DSL.spec.md`
+- `docs/dev/specifications/DeltaTables.spec.md`
+- `docs/dev/specifications/IcebergTables.spec.md`
+- `docs/reference/DeltaIceberg.ref.md`
+- `docs/compatibility/DeltaIceberg.compat.md`

@@ -1,12 +1,14 @@
 from collections.abc import Mapping
 from dataclasses import replace
 
+from structure.plugin.pyspark.delta.model import DeltaMutationResult
 from structure.plugin.pyspark.dsl.aggregation import AggregateAssignment, AggregateKey, AggregatePlan, ProjectAssignment
 from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.joins.JoinPlan import JoinPlan
 from structure.plugin.pyspark.dsl.operations.DuplicateRowsPlan import DuplicateRowsPlan
 from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
 from structure.plugin.pyspark.dsl.operations.SelectedRowsPlan import SelectedRowsPlan
+from structure.plugin.pyspark.iceberg.model import IcebergMutationResult
 from structure.plugin.pyspark.symbolic_execution.model.PySparkResultBody import PySparkResultBody
 from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 
@@ -17,14 +19,38 @@ class RewritePySparkStepBody:
     def __call__(self, body: object, *, frames: Mapping[str, str]) -> object:
         if not isinstance(body, PySparkStepBody):
             return body
+        mutations = tuple(self._mutation(mutation, frames=frames) for mutation in body.delta_mutations)
+        rewritten = {
+            id(original): mutation
+            for original, mutation in zip(body.delta_mutations, mutations, strict=True)
+        }
+        value = body.value
+        if isinstance(value, (DeltaMutationResult, IcebergMutationResult)):
+            value = replace(value, mutation=rewritten[id(value.mutation)])
         return replace(
             body,
+            value=value,
             filters=tuple(self._expression(expression) for expression in body.filters),
             joins=tuple(self._join(join, frames=frames) for join in body.joins),
             operations=tuple(self._operation(operation, frames=frames) for operation in body.operations),
+            table_source=(
+                None
+                if body.table_source is None
+                else frames.get(f"__table__:{body.table_source}", frames.get(body.table_source, body.table_source))
+            ),
             projection=tuple(self._projection(assignment) for assignment in body.projection),
             aggregate=None if body.aggregate is None else self._aggregate(body.aggregate),
             results=tuple(self._result(result) for result in body.results),
+            delta_mutations=mutations,
+        )
+
+    @staticmethod
+    def _mutation(mutation, *, frames: Mapping[str, str]):
+        return replace(
+            mutation,
+            target=frames.get(f"__table__:{mutation.target}", frames.get(mutation.target, mutation.target)),
+            source=None if mutation.source is None else frames.get(mutation.source, mutation.source),
+            output=None if mutation.output is None else frames.get(mutation.output, mutation.output),
         )
 
     def _result(self, result: PySparkResultBody) -> PySparkResultBody:

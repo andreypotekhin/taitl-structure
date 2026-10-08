@@ -6,6 +6,7 @@ from dataclasses import replace
 
 from structure.core.compiler.diagnostics.api import StructureCompileError
 from structure.core.compiler.frontend.logic.ValidateStreamingInputBinding import validate_streaming_input_binding
+from structure.core.compiler.frontend.logic.ValidateTransformBinding import compatible_bindings
 from structure.core.compiler.ir.model.HookPlan import HookPlan
 from structure.core.compiler.ir.model.OutputPlan import OutputPlan
 from structure.core.compiler.ir.model.StageOutputPlan import StageOutputPlan
@@ -152,6 +153,7 @@ class ComposeTransformPlans:
                         aliases=aliases,
                         streaming_declared=streaming_declared,
                         optional=optional,
+                        binding=input_plan.binding,
                     )
                     external[(index, input_plan.name)] = source
                     continue
@@ -207,6 +209,7 @@ class ComposeTransformPlans:
                         aliases=input_plan.aliases,
                         streaming_declared=input_plan.streaming_declared,
                         optional=True,
+                        binding=input_plan.binding,
                     )
                     external[(index, input_plan.name)] = source
                     continue
@@ -249,7 +252,15 @@ class ComposeTransformPlans:
         return f"__optional_stage_{index}_{input_name}"
 
     def _matching_outputs(self, input_plan: InputPlan, outputs: tuple[OutputPlan, ...]) -> tuple[OutputPlan, ...]:
-        matches = [output for output in outputs if output.schema is input_plan.schema]
+        same_schema = [output for output in outputs if output.schema is input_plan.schema]
+        matches = [output for output in same_schema if compatible_bindings(output.binding, input_plan.binding)]
+        if same_schema and not matches:
+            providers = ", ".join(sorted({output.binding for output in same_schema}))
+            raise self._error(
+                input_plan.name,
+                f"No upstream output has a compatible table provider for {input_plan.name}; found {providers}.",
+                "Connect outputs and inputs from the same provider, or keep both sides as DataFrames.",
+            )
         for name in (*input_plan.aliases, input_plan.name):
             aliased = [output for output in matches if name in output.aliases]
             if len(aliased) == 1:
@@ -288,11 +299,32 @@ class ComposeTransformPlans:
                 "Composition can bind only constructor inputs, declared transform inputs, and declared transform outputs.",
             )
         if isinstance(value, OutputDeclaration):
-            raise self._error(
-                pipeline_name,
-                f"{stage.transform_class.__name__}.{input_plan.name} is bound to an output declaration.",
-                "Use output declarations only as upstream composition results, not constructor arguments.",
-            )
+            if wrapper_class is None or not value.binding.endswith("_table"):
+                raise self._error(
+                    pipeline_name,
+                    f"{stage.transform_class.__name__}.{input_plan.name} is bound to an output declaration.",
+                    "Use only a declared mutable table as an external table input.",
+                )
+            declared = wrapper_class._structure_outputs.get(value.name)
+            if declared is not value or value.schema is not input_plan.schema:
+                raise self._error(
+                    pipeline_name,
+                    f"{value.name or '<unnamed>'} does not match the declared mutable table input.",
+                    "Use a declared table with the exact schema expected by the stage.",
+                )
+            if not compatible_bindings(value.binding, input_plan.binding):
+                raise self._error(
+                    pipeline_name,
+                    f"{value.name} uses {value.binding}, but {stage.transform_class.__name__}.{input_plan.name} expects {input_plan.binding}.",
+                    "Bind stage inputs only to the same provider family.",
+                )
+            if value.binding in {"delta", "iceberg"} and input_plan.binding.endswith("_table"):
+                raise self._error(
+                    pipeline_name,
+                    f"Read-only input {value.name} cannot supply mutable role {input_plan.binding}.",
+                    "Declare the wrapper binding with delta_table(...) or iceberg_table(...).",
+                )
+            return value.name
         if isinstance(value, InputDeclaration):
             if wrapper_class is None:
                 raise self._error(
@@ -300,8 +332,8 @@ class ComposeTransformPlans:
                     f"{stage.transform_class.__name__}.{input_plan.name} is bound to an input declaration outside a transform class.",
                     "Use declaration bindings only in a generated-capable wrapper transform class.",
                 )
-            declared = wrapper_class._structure_inputs.get(value.name)
-            if declared is not value:
+            declared_input = wrapper_class._structure_inputs.get(value.name)
+            if declared_input is not value:
                 raise self._error(
                     pipeline_name,
                     f"{value.name or '<unnamed>'} is not an input on {wrapper_class.__name__}.",
@@ -312,6 +344,12 @@ class ComposeTransformPlans:
                     pipeline_name,
                     f"{value.name} declares {value.schema.__name__}, but {stage.transform_class.__name__}.{input_plan.name} expects {getattr(input_plan.schema, '__name__', input_plan.schema)}.",
                     "Bind only inputs with the same schema.",
+                )
+            if not compatible_bindings(value.binding, input_plan.binding):
+                raise self._error(
+                    pipeline_name,
+                    f"{value.name} uses {value.binding}, but {stage.transform_class.__name__}.{input_plan.name} expects {input_plan.binding}.",
+                    "Bind stage inputs only to the same provider family.",
                 )
             return value.name
         return input_plan.name
@@ -386,6 +424,7 @@ class ComposeTransformPlans:
                             nested.output,
                             source=frame_map.get(nested.output.source, nested.output.source),
                             ordinal=len(public_stage_outputs),
+                            table_source=(None if nested.output.table_source is None else frame_map.get(f"__table__:{nested.output.table_source}", nested.output.table_source)),
                         ),
                     )
                 )
@@ -413,6 +452,8 @@ class ComposeTransformPlans:
             if external_name is not None:
                 sources[input_plan.name] = external_name
                 sources[f"input:{input_plan.name}"] = external_name
+                if input_plan.binding.startswith(("delta", "iceberg")):
+                    sources[f"__table__:{input_plan.name}"] = external_name
                 continue
             matches = self._matching_outputs(input_plan, tuple(current_outputs.values()))
             if len(matches) != 1:
@@ -423,6 +464,8 @@ class ComposeTransformPlans:
                 )
             sources[input_plan.name] = matches[0].source
             sources[f"input:{input_plan.name}"] = matches[0].source
+            if matches[0].table_source is not None:
+                sources[f"__table__:{input_plan.name}"] = matches[0].table_source
         return sources
 
     def _step(
@@ -434,7 +477,10 @@ class ComposeTransformPlans:
         final_names: set[str],
         rewrite_body: RewriteBody,
     ) -> StepPlan:
-        results = tuple(self._result(result, label=label, final_names=final_names) for result in step.results)
+        results = tuple(
+            self._result(result, label=label, final_names=final_names, frame_map=frame_map)
+            for result in step.results
+        )
         primary = results[0]
         result_frames = {
             key: result.frame
@@ -459,14 +505,23 @@ class ComposeTransformPlans:
             input,
             source=frame_map.get(input.source, self._frame(label, input.source)),
             lane=frame_map.get(input.lane, self._frame(label, input.lane)),
+            table_source=(None if input.table_source is None else frame_map.get(f"__table__:{input.table_source}", frame_map.get(input.table_source, input.table_source))),
         )
 
-    def _result(self, result: StepResultPlan, *, label: str, final_names: set[str]) -> StepResultPlan:
+    def _result(
+        self,
+        result: StepResultPlan,
+        *,
+        label: str,
+        final_names: set[str],
+        frame_map: dict[str, str],
+    ) -> StepResultPlan:
         frame = result.frame if result.frame in final_names else self._frame(label, result.frame)
         return replace(
             result,
             lane=frame,
             frame=frame,
+            table_source=(None if result.table_source is None else frame_map.get(f"__table__:{result.table_source}", frame_map.get(result.table_source, result.table_source))),
             after_hooks=tuple(
                 self._hook(hook, label=label, frame_map={result.lane: frame, result.frame: frame})
                 for hook in result.after_hooks
@@ -489,6 +544,7 @@ class ComposeTransformPlans:
             output,
             source=frame_map[output.source],
             ordinal=ordinal,
+            table_source=(None if output.table_source is None else frame_map.get(f"__table__:{output.table_source}", frame_map.get(output.table_source, output.table_source))),
         )
 
     def _stage_outputs(

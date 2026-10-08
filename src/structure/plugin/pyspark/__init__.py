@@ -153,6 +153,7 @@ if TYPE_CHECKING:
         struct,
         timestamp,
         timestamp_ntz,
+        time,
         variant,
     )
     from structure.plugin.pyspark.dsl.InputScope import *  # type: ignore  # noqa: F403
@@ -162,6 +163,8 @@ if TYPE_CHECKING:
     from structure.plugin.pyspark.dsl.TimeWindow import TimeWindow
     from structure.plugin.pyspark.dsl.types.BinaryType import BinaryType
     from structure.plugin.pyspark.dsl.types.DecimalType import DecimalType
+    from structure.plugin.pyspark.dsl.types.TimeType import TimeType
+    from structure.plugin.pyspark.dsl.types.Time import Time
 
 
 _DSL_EXPORTS = """
@@ -169,7 +172,7 @@ AsOf BinaryType CsvOptions DecimalType Join JoinDedupe JoinHint JoinStrategy Jso
 approx_count_distinct approx_percentile any_value array_agg arr_aggregate arr_append arr_compact arr_distinct arr_exists arr_filter
 arr_flatten arr_forall arr_position arr_prepend arr_reverse arr_insert arr_remove arr_sort arr_sort_by arr_transform
 arr_zip_with array array_contains array_except array_intersect array_join array_max array_min array_repeat array_size array_union arrays_overlap avg as_of_one bit_and bit_or bit_xor bit_length bool_and bool_or every
-collect_list collect_set concat_ws coalesce ceil char_length character_length count count_if count_distinct corr covar covar_pop cos cosh cot csc cross_join cube current_row conv date_add btrim char soundex regexp_count regexp_extract_all regexp_instr regexp_substr bit_count bit_get getbit equal_null mean regr_avgx regr_avgy regr_count regr_intercept regr_r2 regr_slope regr_sxx regr_sxy regr_syy
+collect_list collect_set concat_ws coalesce ceil char_length character_length count count_if count_distinct corr covar covar_pop cos cosh cot csc cross_join cube current_row conv date_add btrim char chr quote soundex regexp_count regexp_extract_all regexp_instr regexp_substr bit_count bit_get getbit equal_null mean regr_avgx regr_avgy regr_count regr_intercept regr_r2 regr_slope regr_sxx regr_sxy regr_syy
 date_sub date_trunc date_format date_from_unix_date unix_date dayofmonth dayofweek weekday dayofyear datediff decode cume_dist cbrt bin shiftleft shiftright shiftrightunsigned dedupe_earliest_by dedupe_latest_by dense_rank degrees distinct months_between
 drop_duplicates drop_duplicates_within_watermark budget earliest_by element_at encode event_time_between exactly_one except_all e exp expm1 factorial exists floor from_csv from_json get hash hour hypot last_day left
 initcap ifnull instr intersect intersect_all first first_value following full_join greatest grouping grouping_id grouping_sets having inner_join isnan
@@ -177,11 +180,11 @@ isnotnull isnull is_grouped kurtosis lag last last_value left_join latest_by lea
 ltrim ln locate log log10 log1p log2 least limit md5 create_map map_from_arrays str_to_map named_struct map_entries map_concat map_contains_key map_filter map_from_entries map_keys map_transform_keys max_by median min_by
 map_transform_values map_values map_zip_with max min minute mode month nanvl nvl nvl2 nullif pow not_exists nth_value product
 ntile offset order_by param_join percent_rank percentile pi posexplode_array posexplode_outer_array posexplode_struct posexplode_outer_struct posexplode_map posexplode_outer_map explode_array explode_outer_array explode_struct explode_outer_struct explode_map explode_outer_map inline_struct inline_outer_struct variant_explode variant_explode_outer preceding pmod project quarter raise_error rank range_between relation_alias regexp_extract regexp_replace regexp regexp_like rlike like ilike startswith endswith require_all require_parent_hierarchy require_reference require_unique hierarchy_closure hierarchy_fallbacks reverse rtrim round
-sample sec select_first_qualified signum sin sinh slice sha1 sha2 second rand randn radians rint right_join rollup row_number rowset_join rows_between rolling_avg rolling_max position repartition sort_array split_part elt format_string printf substr
+sample sec select_first_qualified signum sin sinh slice sha1 sha2 second rand randn random uuid radians rint right_join rollup row_number rowset_join rows_between rolling_avg rolling_max position repartition sort_array split_part elt format_string printf substr
 rolling_min rolling_sum scan subtract sum sum_distinct std stddev sqrt size sequence session_window skewness some split translate substring temporal_one next_day
-to_binary to_csv to_decimal to_date to_json to_timestamp from_unixtime unix_timestamp to_utc_timestamp from_utc_timestamp date_part datepart TimeWindow trim trunc try_element_at try_to_binary unbase64 union_all union_by_name upper ucase unbounded_following unbounded_preceding hex unhex cardinality weekofyear
+to_binary to_csv to_decimal to_date try_to_date to_json to_timestamp from_unixtime unix_timestamp to_utc_timestamp from_utc_timestamp date_part datepart TimeWindow trim trunc try_element_at try_to_binary unbase64 union_all union_by_name upper ucase unbounded_following unbounded_preceding hex unhex cardinality weekofyear
 variance var_pop var_samp stddev_pop stddev_samp when width_bucket year xxhash64 zeroifnull where watermark window window_avg window_bool_and window_bool_or rpad repeat replace right sign tan tanh json_tuple stack
-window_time current_date curdate current_timestamp now localtimestamp current_timezone aes_encrypt aes_decrypt try_aes_decrypt hll_sketch_agg hll_union_agg hll_sketch_estimate hll_union bitmap_construct_agg bitmap_or_agg bitmap_bit_position bitmap_bucket_number bitmap_count url_encode url_decode try_url_decode convert_timezone make_date make_timestamp make_timestamp_ltz make_timestamp_ntz to_timestamp_ntz to_timestamp_ltz try_to_timestamp to_unix_timestamp timestamp_seconds timestamp_millis timestamp_micros unix_seconds unix_millis unix_micros interval make_interval make_ym_interval make_dt_interval extract date_diff dateadd day histogram_numeric Temporal Interval
+window_time current_date curdate current_timestamp current_time make_time to_time try_to_time time_diff time_trunc now localtimestamp current_timezone aes_encrypt aes_decrypt try_aes_decrypt hll_sketch_agg hll_union_agg hll_sketch_estimate hll_union bitmap_construct_agg bitmap_or_agg bitmap_bit_position bitmap_bucket_number bitmap_count url_encode url_decode try_url_decode convert_timezone make_date make_timestamp make_timestamp_ltz make_timestamp_ntz to_timestamp_ntz to_timestamp_ltz try_to_timestamp to_unix_timestamp timestamp_seconds timestamp_millis timestamp_micros unix_seconds unix_millis unix_micros interval make_interval make_ym_interval make_dt_interval extract date_diff dateadd day histogram_numeric Temporal Interval
 window_collect_list window_collect_set window_count window_count_distinct window_max window_min window_sum
 window_stddev window_variance is_valid_variant is_variant_null octet_length parse_json schema_of_csv schema_of_json schema_of_variant schema_of_variant_agg substring_index
 to_variant_object try_parse_json try_variant_get variant_get
@@ -203,6 +206,7 @@ _FIELD_FACTORIES = {
     "struct",
     "timestamp",
     "timestamp_ntz",
+    "time",
     "variant",
     "geometry",
     "hll_sketch",
@@ -277,6 +281,8 @@ __all__ = [  # noqa: F405
     "bin",
     "btrim",
     "char",
+    "chr",
+    "quote",
     "bround",
     "approx_count_distinct",
     "approx_percentile",
@@ -505,6 +511,8 @@ __all__ = [  # noqa: F405
     "quarter",
     "rand",
     "randn",
+    "random",
+    "uuid",
     "raise_error",
     "radians",
     "reduce",
@@ -613,6 +621,7 @@ __all__ = [  # noqa: F405
     "to_binary",
     "to_decimal",
     "to_date",
+    "try_to_date",
     "to_json",
     "to_timestamp",
     "from_unixtime",
@@ -728,7 +737,16 @@ __all__ = [  # noqa: F405
     "struct",
     "timestamp",
     "timestamp_ntz",
+    "time",
     "variant",
+    "Time",
+    "TimeType",
+    "current_time",
+    "make_time",
+    "to_time",
+    "try_to_time",
+    "time_diff",
+    "time_trunc",
     "geometry",
     "hll_sketch",
     "bitmap",
@@ -793,6 +811,8 @@ def __getattr__(name: str):
         return getattr(import_module("structure.plugin.pyspark.dsl.field"), name)
     if name in {"Expression", "InputScope", "RowScope", "TimeWindow"}:
         return getattr(import_module(f"structure.plugin.pyspark.dsl.{name}"), name)
+    if name in {"Time", "TimeType"}:
+        return getattr(import_module(f"structure.plugin.pyspark.dsl.types.{name}"), name)
     if name in {"SqlResult", "SqlCommandResult"}:
         return getattr(import_module("structure.plugin.pyspark.dsl.SqlResult"), name)
     if name == "sql":

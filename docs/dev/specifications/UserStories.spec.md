@@ -454,6 +454,14 @@ the first analytical join slice.
   omitted values only when the bound table's native metadata confirms how those values are produced.
 - + As a developer, I can restore, optimize, and vacuum a caller-bound Delta table through explicit transform effects so
   that commits and file maintenance are visible in the compiled plan.
+- + As a developer, I can explicitly Z-order a caller-bound Delta table by typed fields, optionally selecting
+  partitions with runtime values, with the same behavior in online and generated execution.
+- + As a developer, I can inspect liquid-clustering keys and request full reclustering on a caller-configured Delta
+  table so that file maintenance uses the current keys in online and generated execution.
+- + As a developer, I can inherit a Delta transform, replace a table method, or extend it with `super()` so that table
+  effects follow the same method ordering as DataFrame transforms without changing the inherited table contract.
+- + As a developer, I can pass a caller-owned Delta table between composed stages so that later stages see committed
+  updates or an explicitly declared schema transition while preserving the native table handle.
 
 ## 22G. Iceberg table transforms
 
@@ -471,6 +479,10 @@ the first analytical join slice.
   remove orphan files so that table maintenance follows Iceberg semantics.
 - + As a developer, I can target admitted classic Spark and Spark Connect versions and receive capability diagnostics
   elsewhere so that runtime support is based on live evidence.
+- + As a developer, I can inherit an Iceberg transform, replace a table method, or extend it with `super()` so that
+  table effects follow the same method ordering as DataFrame transforms without changing the inherited table contract.
+- + As a developer, I can pass a caller-owned Iceberg table between composed stages so that later stages see committed
+  updates or an explicitly declared schema transition while preserving the catalog identifier.
 
 ## 23. Streaming Transformation Roadmap
 

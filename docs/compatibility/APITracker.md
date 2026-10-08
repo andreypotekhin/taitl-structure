@@ -78,7 +78,7 @@ function coverage ExecPlan](../dev/planning/P08222601.PySpark-SQL-function-cover
 
 ## PySpark 4.1 Adoption Tracker
 
-These rows track the planned `>=4.1,<4.2` target profile; they do not widen the default `>=3.5,<4.1` baseline. The
+These rows track the opt-in `>=4.1,<4.2` target profile; they do not widen the default `>=3.5,<4.1` baseline. The
 primary target is ordinary PySpark. Spark Connect is admitted only with separate 4.1 runtime evidence. See the
 [adoption design](../dev/design/V11PySpark41Adoption.design.md), [parity specification](../dev/specifications/V11PySpark41Parity.spec.md),
 and [V11 project tracker](../dev/project-management/V11.md). The pinned
@@ -88,8 +88,10 @@ and [V11 project tracker](../dev/project-management/V11.md). The pinned
 | PySpark 4.1 surface | Status | Structure contract or boundary | Admission evidence or caller remedy |
 | --- | --- | --- | --- |
 | `Column.transform` | supported (ordinary and Connect 4.1) | One typed whole-expression callback returns a typed expression; its result type and nullability are inferred, and row cardinality is preserved. Array element mapping remains `arr_transform(...)`. | PySpark and Spark Connect 4.1.0 online/generated parity passes for inline and bound `@special(type="expr")` callbacks, including nullable inputs and changed result types. |
-| New string, temporal, and geospatial function-index entries | design-gated | Each admitted helper needs explicit type, nullability, generated spelling, and streaming behavior; native geospatial values need an SRID and provider contract. | The 43-row Python function delta names each owner. Use native PySpark around a Structure transform until a row is admitted. |
-| Random and seeded helpers `random` and `uuid` | design-gated | Must define seed, determinism, result type, and streaming policy; `uniform` and `randstr` are already in the 4.0 index. | Keep these helpers caller-owned until a versioned contract and target evidence are admitted. |
+| `chr`, `quote`, and `try_to_date` | supported (ordinary and Connect 4.1) | Typed String/Date results, native nullability and generated spelling; literal date patterns; malformed text returns null in either ANSI mode. Stateless streaming compatibility is by design; runtime evidence is batch. | See the [Expression reference](../reference/Expressions.ref.md#pyspark-41-scalar-helpers) and Sprint 56 parity evidence. |
+| TIME type and six helpers | supported (ordinary and Connect 4.1; batch evidence) | `time(precision=6)`, `Time`/`TimeType`, and typed current/make/parse/difference/truncation expressions; Spark's feature flag is caller-configured. | Ordinary and Connect PySpark/Spark 4.1.0 online/generated parity passed; see the [TIME reference](../reference/Expressions.ref.md#spark-41-time-values). |
+| Native geospatial function-index entries | design-gated | Native geospatial values need an SRID and provider contract. | The Python delta names the owner. Use native PySpark until the typed contract is admitted. |
+| Random helpers `random` and `uuid` | supported (ordinary and Connect 4.1; batch-only) | Reuse the explicit integer-seed/reproducibility policy; non-null Double/String; marked nondeterministic; streaming reports `STREAM-E0801`. | Seeded parity and unseeded value/schema checks use one and two partitions. `uniform` and `randstr` remain separate 4.0-index work. |
 | `DataFrame.exists` (4.0) and `Column.isin(DataFrame)` (4.1 extension) | design-gated | Correlated Boolean relation predicate with explicit aliases and null semantics; literal/list `isin(...)` is already supported. | Design and test duplicate, empty, null, and correlation cases; establish explain traceability and ordinary/Connect evidence. |
 | `DataFrame.lateralJoin` (4.0) | design-gated | Typed output schema, correlation scope, cardinality, and streaming classification. | Use caller-owned PySpark until the typed relation contract and evidence are complete. |
 | Complex-valued `DataFrame.observe` metrics | design-gated | Observation is a metric side channel, not an implicit output-field mutation. | Keep caller-owned until metric typing, retrieval, and parity are specified. |

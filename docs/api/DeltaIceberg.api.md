@@ -15,11 +15,15 @@ Import table declarations and operations from `structure.plugin.pyspark` alongsi
 | `delta_append`, `delta_delete`, `delta_update`, `delta_merge`, `delta_replace_where` | Typed row mutations. |
 | `delta_snapshot`, `delta_changes` | Historical and change-feed reads. |
 | `delta_history`, `delta_detail` | Typed metadata reads. |
-| `delta_restore`, `delta_optimize`, `delta_vacuum` | Explicit maintenance effects. |
+| `delta_restore`, `delta_optimize`, `delta_vacuum` | Explicit maintenance effects; `.full()` reclusters a caller-configured liquid-clustered table. |
 | `check`, `delta_generated`, `delta_identity`, `delta_default` | Declare expectations for existing table constraints and column features. |
 
 See the [Delta reference](../reference/DeltaIceberg.ref.md#delta-tables) for signatures, constraints, and examples, or
 the [Delta background](../background/DeltaIceberg.back.md#delta-tables) for effect and lifecycle semantics.
+
+For file layout, see [compaction and Z-ordering](../reference/DeltaIceberg.ref.md#compaction-and-z-ordering),
+[choosing Z-order columns](../background/DeltaIceberg.back.md#choosing-z-order-columns), and the
+[runnable maintenance examples](../recipes/DeltaInspectionAndMaintenance.md#compaction-and-z-ordering).
 
 ## Apache Iceberg
 

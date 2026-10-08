@@ -48,6 +48,7 @@ class RenderPySparkStep:
         from structure.plugin.pyspark.api.PySpark import PySpark
 
         self._schema = PySpark.schema.render(schema_names)
+        self.delta_schema_names: Mapping[type[Schema], str] = {}
 
     def __call__(
         self,
@@ -62,14 +63,32 @@ class RenderPySparkStep:
         delta_check_match: str = "expression",
         delta_cdf_checks: bool = True,
     ) -> str:
+        if isinstance(step, PySparkStepRecipe) and step.table_forward:
+            lines = [
+                *self._table_input_lines(step, sources or {}),
+                f"        # Forward caller-owned table in step: {step.name}",
+            ]
+            for result in step.results:
+                target = (sources or {}).get(result.frame, result.frame)
+                if result.binding in {"delta", "delta_table"}:
+                    lines.append(f"        {target} = fresh_delta_frame(self._delta_tables[{result.table_source!r}])")
+                elif result.binding in {"iceberg", "iceberg_table"}:
+                    lines.append(f"        {target} = self.spark.table(self._iceberg_tables[{result.table_source!r}])")
+            return "\n".join(lines)
         if isinstance(step, PySparkStepRecipe) and step.effect:
+            prefix = self._table_input_lines(step, sources or {})
             if any(mutation.kind.startswith("iceberg_") for mutation in step.delta_mutations):
-                return self._iceberg_effect(step, sources or {})
-            return self._delta_effect(step, sources or {}, delta_check_match=delta_check_match)
-        if isinstance(step, PySparkOutputRecipe) and step.binding in {"delta", "delta_table", "iceberg", "iceberg_table"}:
+                return "\n".join((*prefix, self._iceberg_effect(step, sources or {})))
+            return "\n".join((*prefix, self._delta_effect(step, sources or {}, delta_check_match=delta_check_match)))
+        if isinstance(step, PySparkOutputRecipe) and step.binding in {
+            "delta",
+            "delta_table",
+            "iceberg",
+            "iceberg_table",
+        }:
             if step.binding in {"iceberg", "iceberg_table"}:
-                return f"        {step.name} = self._iceberg_tables[{step.name!r}]"
-            return f"        {step.name} = self._delta_tables[{step.name!r}]"
+                return f"        {step.name} = self._iceberg_tables[{(step.table_source or step.name)!r}]"
+            return f"        {step.name} = self._delta_tables[{(step.table_source or step.name)!r}]"
         if isinstance(step, PySparkStepRecipe) and len(step.results) > 1:
             return self._multiple(
                 step,
@@ -81,13 +100,11 @@ class RenderPySparkStep:
                 frame_mapping=frame_mapping,
             )
         target = self._target(step)
-        lines = [f"        # Step method: {step.name}"]
+        lines = [*self._table_input_lines(step, sources or {}), f"        # Step method: {step.name}"]
         for index, mutation in enumerate(step.delta_mutations if isinstance(step, PySparkStepRecipe) else ()):
             if mutation.kind in {"iceberg_snapshot", "iceberg_history", "iceberg_snapshots", "iceberg_metadata"}:
                 source = (sources or {}).get(mutation.target, mutation.target)
-                lines.append(
-                    f"        _StructureIcebergRead_{index} = {self._iceberg_read_payload(mutation)!r}"
-                )
+                lines.append(f"        _StructureIcebergRead_{index} = {self._iceberg_read_payload(mutation)!r}")
                 lines.append(
                     f"        {source} = read_iceberg_relation(_StructureIcebergRead_{index}, "
                     f"tables=self._iceberg_tables, spark=self.spark)"
@@ -100,7 +117,9 @@ class RenderPySparkStep:
             source = (sources or {}).get(mutation.target, mutation.target)
             start = self._render_delta_selector(mutation.selector)
             end = self._render_delta_selector(mutation.end_selector)
-            selector_type = mutation.selector.type.name if mutation.selector is not None and mutation.selector.type else ""
+            selector_type = (
+                mutation.selector.type.name if mutation.selector is not None and mutation.selector.type else ""
+            )
             output_schema = (
                 f", output_schema=_StructureDeltaOutputSchema_{mutation.output_schema.__name__}"
                 if mutation.output_schema is not None
@@ -152,18 +171,46 @@ class RenderPySparkStep:
                 lines.extend(self._command_result_accumulation(result, frame_mapping=frame_mapping))
         return "\n".join(lines)
 
+    def _table_input_lines(
+        self, step: PySparkStepRecipe | PySparkOutputRecipe, sources: Mapping[str, str]
+    ) -> list[str]:
+        lines: list[str] = []
+        if not isinstance(step, PySparkStepRecipe):
+            return lines
+        for binding in step.table_inputs:
+            table_source = binding.table_source
+            if table_source is None:
+                raise ValueError(f"Table input {binding.parameter!r} in {step.name!r} has no provenance")
+            relation = sources.get(binding.source, binding.source)
+            schema_type = cast(type[Schema], binding.schema)
+            schema = self._schema.constant_name(schema_type)
+            if binding.binding.startswith("delta"):
+                schema = self.delta_schema_names.get(schema_type, schema)
+                lines.append(
+                    f"        validate_delta_table(self._delta_tables[{table_source!r}], {schema}, "
+                    f"mode={(step.delta_check_match or 'expression')!r})"
+                )
+                lines.append(f"        {relation} = fresh_delta_frame(self._delta_tables[{table_source!r}])")
+            else:
+                lines.append(
+                    f"        {relation} = validate_iceberg_table(self.spark, self._iceberg_tables[{table_source!r}], {schema})"
+                )
+        return lines
+
     @staticmethod
     def _iceberg_read_payload(mutation):
         return {
             "kind": mutation.kind,
             "target": mutation.target,
-            "selector": None
-            if mutation.selector is None
-            else {
-                "kind": mutation.selector.kind,
-                "type": mutation.selector.type.name if mutation.selector.type else None,
-                "data": dict(mutation.selector.data or {}),
-            },
+            "selector": (
+                None
+                if mutation.selector is None
+                else {
+                    "kind": mutation.selector.kind,
+                    "type": mutation.selector.type.name if mutation.selector.type else None,
+                    "data": dict(mutation.selector.data or {}),
+                }
+            ),
             "action": mutation.action,
         }
 
@@ -246,7 +293,7 @@ class RenderPySparkStep:
                     template = render_delta_predicate_template(mutation.predicate)
                     lines.append(
                         f"        _delta_optimize_where_{index} = bind_delta_predicate_variables("
-                        f"{template!r}, self._structure_variables)"
+                        f"{template!r}, getattr(self, '_structure_variables', {{}}))"
                     )
                     predicate = f"_delta_optimize_where_{index}"
                     predicate_columns = self._delta_expression_fields(mutation.predicate)
@@ -256,9 +303,7 @@ class RenderPySparkStep:
                 )
             elif mutation.kind == "vacuum":
                 retention = self._render_delta_selector(mutation.selector)
-                lines.append(
-                    f"        execute_delta_vacuum({table}, {retention}, {mutation.allow_short_retention!r})"
-                )
+                lines.append(f"        execute_delta_vacuum({table}, {retention}, {mutation.allow_short_retention!r})")
             elif mutation.kind == "merge":
                 assert mutation.source is not None and mutation.source_scope is not None
                 assert predicate is not None
@@ -348,15 +393,18 @@ class RenderPySparkStep:
             if mutation.kind == "iceberg_delete":
                 assert mutation.predicate is not None
                 template = render_iceberg_predicate_template(mutation.predicate)
-                lines.append(f"        _iceberg_where_{index} = bind_iceberg_predicate_variables({template!r}, self._structure_variables)")
+                lines.append(
+                    f"        _iceberg_where_{index} = bind_iceberg_predicate_variables({template!r}, self._structure_variables)"
+                )
                 lines.append(f"        self.spark.sql(f'DELETE FROM {{{table}}} WHERE {{_iceberg_where_{index}}}')")
             elif mutation.kind == "iceberg_update":
                 assert mutation.predicate is not None
                 template = render_iceberg_predicate_template(mutation.predicate)
-                lines.append(f"        _iceberg_where_{index} = bind_iceberg_predicate_variables({template!r}, self._structure_variables)")
+                lines.append(
+                    f"        _iceberg_where_{index} = bind_iceberg_predicate_variables({template!r}, self._structure_variables)"
+                )
                 assignment_templates = [
-                    (name, render_iceberg_predicate_template(expression))
-                    for name, expression in mutation.assignments
+                    (name, render_iceberg_predicate_template(expression)) for name, expression in mutation.assignments
                 ]
                 lines.append(
                     f"        _iceberg_set_{index} = bind_iceberg_predicate_variables("
@@ -379,10 +427,19 @@ class RenderPySparkStep:
                 source = sources.get(mutation.source, mutation.source)
                 view = f"_structure_iceberg_merge_{index}"
                 lines.append(f"        {source}.createOrReplaceTempView({view!r})")
-                predicate = render_iceberg_predicate_template(mutation.predicate, {mutation.target_scope: "target", mutation.source_scope: "source"})
+                predicate = render_iceberg_predicate_template(
+                    mutation.predicate, {mutation.target_scope: "target", mutation.source_scope: "source"}
+                )
                 clauses = []
                 for clause in mutation.clauses:
-                    condition = "" if clause.condition is None else " AND " + render_iceberg_predicate_template(clause.condition, {mutation.target_scope: "target", mutation.source_scope: "source"})
+                    condition = (
+                        ""
+                        if clause.condition is None
+                        else " AND "
+                        + render_iceberg_predicate_template(
+                            clause.condition, {mutation.target_scope: "target", mutation.source_scope: "source"}
+                        )
+                    )
                     if clause.action == "matched_update_all":
                         clauses.append(f"WHEN MATCHED{condition} THEN UPDATE SET *")
                     elif clause.action == "matched_delete":
@@ -390,16 +447,26 @@ class RenderPySparkStep:
                     elif clause.action == "unmatched_insert_all":
                         clauses.append(f"WHEN NOT MATCHED{condition} THEN INSERT *")
                     elif clause.action in {"matched_update", "unmatched_source_update"}:
-                        values = ", ".join(f"`{name}` = {render_iceberg_predicate_template(value, {mutation.target_scope: 'target', mutation.source_scope: 'source'})}" for name, value in clause.assignments)
+                        values = ", ".join(
+                            f"`{name}` = {render_iceberg_predicate_template(value, {mutation.target_scope: 'target', mutation.source_scope: 'source'})}"
+                            for name, value in clause.assignments
+                        )
                         prefix = "WHEN MATCHED" if clause.action == "matched_update" else "WHEN NOT MATCHED BY SOURCE"
                         clauses.append(f"{prefix}{condition} THEN UPDATE SET {values}")
                     elif clause.action == "unmatched_source_delete":
                         clauses.append(f"WHEN NOT MATCHED BY SOURCE{condition} THEN DELETE")
                     elif clause.action == "unmatched_insert":
                         names = ", ".join(f"`{name}`" for name, _ in clause.assignments)
-                        values = ", ".join(render_iceberg_predicate_template(value, {mutation.target_scope: 'target', mutation.source_scope: 'source'}) for _, value in clause.assignments)
+                        values = ", ".join(
+                            render_iceberg_predicate_template(
+                                value, {mutation.target_scope: 'target', mutation.source_scope: 'source'}
+                            )
+                            for _, value in clause.assignments
+                        )
                         clauses.append(f"WHEN NOT MATCHED{condition} THEN INSERT ({names}) VALUES ({values})")
-                statement = f"MERGE INTO {{{table}}} AS target USING `{view}` AS source ON {predicate} {' '.join(clauses)}"
+                statement = (
+                    f"MERGE INTO {{{table}}} AS target USING `{view}` AS source ON {predicate} {' '.join(clauses)}"
+                )
                 lines.append(
                     f"        _iceberg_merge_sql_{index} = bind_iceberg_predicate_variables("
                     f"{statement!r}, self._structure_variables).format(table={table})"
@@ -412,9 +479,7 @@ class RenderPySparkStep:
                 arguments = tuple(
                     (
                         name,
-                        render_iceberg_predicate_template(value)
-                        if hasattr(value, "kind")
-                        else value,
+                        render_iceberg_predicate_template(value) if hasattr(value, "kind") else value,
                     )
                     for name, value in mutation.procedure_args
                 )
@@ -817,18 +882,25 @@ class RenderPySparkStep:
                 )
                 state_attribute_refs = "()"
                 if state.state_attributes:
-                    state_attribute_refs = "(" + ", ".join(
-                        "StateAttribute("
-                        f"{attribute.attribute_name!r}, {attribute.name!r}, {attribute.kind!r}, "
-                        f"{f'{attribute.value_schema.__module__}:{attribute.value_schema.__qualname__}'!r}, "
-                        f"{None if attribute.key_schema is None else f'{attribute.key_schema.__module__}:{attribute.key_schema.__qualname__}'!r}, "
-                        f"{attribute.ttl_ms!r})"
-                        for attribute in state.state_attributes
-                    ) + ("," if len(state.state_attributes) == 1 else "") + ")"
+                    state_attribute_refs = (
+                        "("
+                        + ", ".join(
+                            "StateAttribute("
+                            f"{attribute.attribute_name!r}, {attribute.name!r}, {attribute.kind!r}, "
+                            f"{f'{attribute.value_schema.__module__}:{attribute.value_schema.__qualname__}'!r}, "
+                            f"{None if attribute.key_schema is None else f'{attribute.key_schema.__module__}:{attribute.key_schema.__qualname__}'!r}, "
+                            f"{attribute.ttl_ms!r})"
+                            for attribute in state.state_attributes
+                        )
+                        + ("," if len(state.state_attributes) == 1 else "")
+                        + ")"
+                    )
                 key_expression = (
-                    "(" + ", ".join(
+                    "("
+                    + ", ".join(
                         render_pyspark_expression(key, scope_aliases=self._scope_aliases(step)) for key in state.key
-                    ) + ",)"
+                    )
+                    + ",)"
                     if isinstance(state.key, tuple)
                     else render_pyspark_expression(state.key, scope_aliases=self._scope_aliases(step))
                 )
@@ -855,7 +927,11 @@ class RenderPySparkStep:
                 )
             if operation.kind == "apply_in_pandas_with_state" and operation.legacy_pandas_state is not None:
                 legacy_state = operation.legacy_pandas_state
-                processor = legacy_state.processor.function if legacy_state.processor_mode == "native" else legacy_state.processor
+                processor = (
+                    legacy_state.processor.function
+                    if legacy_state.processor_mode == "native"
+                    else legacy_state.processor
+                )
                 processor_ref = f"{processor.__module__}:{processor.__qualname__}"
                 schema_refs = {
                     name: repr(f"{schema.__module__}:{schema.__qualname__}")

@@ -264,6 +264,15 @@ class AnalyzeTransform(CompileTransform):
                 frame=lane,
                 ordinal=ordinal,
                 after_hooks=(),
+                binding=(
+                    transform_class._structure_outputs[lane].binding
+                    if lane in transform_class._structure_outputs
+                    else "dataframe"
+                ),
+                table_source=(
+                    cast(str | None, lanes.get(lane, {}).get("table_source"))
+                    or (lane if transform_class._structure_outputs.get(lane) is not None and transform_class._structure_outputs[lane].binding.endswith("_table") else None)
+                ),
             )
             for ordinal, (schema, lane) in enumerate(zip(output_schemas, output_lanes, strict=True))
         )

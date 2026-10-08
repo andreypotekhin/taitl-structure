@@ -103,8 +103,7 @@ def require_compatible_delta_runtime(table) -> None:
     )
     if not compatible:
         supported = (
-            "PySpark 3.5.3+ with Delta 3.3.x, PySpark 4.0.x with Delta 4.0.x, "
-            "or PySpark 4.1.x with Delta 4.1.x"
+            "PySpark 3.5.3+ with Delta 3.3.x, PySpark 4.0.x with Delta 4.0.x, " "or PySpark 4.1.x with Delta 4.1.x"
         )
         raise RuntimeError(
             f"Unsupported Spark/Delta runtime pair: PySpark {spark_version} with delta-spark {delta_version}. "
@@ -228,9 +227,7 @@ def execute_delta_mutation(mutation, *, tables, frames, functions):
             raise ValueError("Delta replaceWhere mutation is missing its source or predicate")
         location = table.detail().select("location").first()["location"]
         predicate = delta_predicate_sql(mutation.predicate)
-        frames[mutation.source].write.format("delta").mode("overwrite").option(
-            "replaceWhere", predicate
-        ).save(location)
+        frames[mutation.source].write.format("delta").mode("overwrite").option("replaceWhere", predicate).save(location)
         return
     if mutation.kind == "restore":
         execute_delta_restore(table, _selector_value(mutation.selector), mutation.selector_type)
@@ -291,16 +288,13 @@ def execute_delta_mutation(mutation, *, tables, frames, functions):
     builder.execute()
 
 
-def read_delta_relation(
-    mutation, *, tables, spark, evaluator, functions, check_cdf_configuration=True
-):
+def read_delta_relation(mutation, *, tables, spark, evaluator, functions, check_cdf_configuration=True):
     """Open a snapshot or bounded CDF range from a caller-owned Delta handle."""
     table = tables[mutation.target]
     selector = _selector_value(mutation.selector)
     end = _selector_value(mutation.end_selector) if mutation.end_selector is not None else None
-    selector_type = (
-        mutation.selector_type
-        or (mutation.selector.type.name if mutation.selector is not None and mutation.selector.type else "")
+    selector_type = mutation.selector_type or (
+        mutation.selector.type.name if mutation.selector is not None and mutation.selector.type else ""
     )
     return open_delta_relation(
         table,
@@ -368,7 +362,9 @@ def open_delta_relation(
             frame = table.detail()
         return validate_delta_relation(frame, output_schema) if output_schema is not None else frame
     details = table.detail().first().asDict(recursive=True)
-    properties = {str(key).casefold(): str(value).casefold() for key, value in (details.get("properties") or {}).items()}
+    properties = {
+        str(key).casefold(): str(value).casefold() for key, value in (details.get("properties") or {}).items()
+    }
     if kind == "delta_changes" and check_cdf_configuration:
         _validate_delta_cdf_configuration(properties, spark)
     if selector_type == "timestamp":
@@ -376,22 +372,28 @@ def open_delta_relation(
             selector = datetime.fromisoformat(selector)
         if not isinstance(selector, datetime) or selector.tzinfo is None or selector.utcoffset() is None:
             raise TypeError("Delta timestamp selectors must be timezone-aware datetime values")
-        selector = selector.astimezone(ZoneInfo(spark.conf.get("spark.sql.session.timeZone", "UTC"))).replace(
-            tzinfo=None
-        ).isoformat(sep=" ")
+        selector = (
+            selector.astimezone(ZoneInfo(spark.conf.get("spark.sql.session.timeZone", "UTC")))
+            .replace(tzinfo=None)
+            .isoformat(sep=" ")
+        )
         if isinstance(end, datetime):
             if end.tzinfo is None or end.utcoffset() is None:
                 raise TypeError("Delta timestamp selectors must be timezone-aware datetime values")
-            end = end.astimezone(ZoneInfo(spark.conf.get("spark.sql.session.timeZone", "UTC"))).replace(
-                tzinfo=None
-            ).isoformat(sep=" ")
+            end = (
+                end.astimezone(ZoneInfo(spark.conf.get("spark.sql.session.timeZone", "UTC")))
+                .replace(tzinfo=None)
+                .isoformat(sep=" ")
+            )
         elif isinstance(end, str):
             parsed_end = datetime.fromisoformat(end)
             if parsed_end.tzinfo is None or parsed_end.utcoffset() is None:
                 raise TypeError("Delta timestamp selectors must be timezone-aware datetime values")
-            end = parsed_end.astimezone(ZoneInfo(spark.conf.get("spark.sql.session.timeZone", "UTC"))).replace(
-                tzinfo=None
-            ).isoformat(sep=" ")
+            end = (
+                parsed_end.astimezone(ZoneInfo(spark.conf.get("spark.sql.session.timeZone", "UTC")))
+                .replace(tzinfo=None)
+                .isoformat(sep=" ")
+            )
     elif isinstance(selector, bool) or not isinstance(selector, int):
         raise TypeError("Delta version selectors must be integers")
     elif end is not None and (isinstance(end, bool) or not isinstance(end, int)):
@@ -450,7 +452,29 @@ def execute_delta_restore(table, selector, selector_type):
 
 
 def execute_delta_optimize(table, predicate, action, columns, predicate_columns=()):
-    partition_columns = set(table.detail().first().asDict(recursive=True).get("partitionColumns") or ())
+    details = table.detail().first().asDict(recursive=True)
+    clustering_columns = details.get("clusteringColumns") or ()
+    clustered = bool(clustering_columns) or "clustering" in {
+        str(feature).casefold() for feature in details.get("tableFeatures") or ()
+    }
+    if clustered and (predicate is not None or action == "zorder"):
+        raise ValueError(
+            "Liquid-clustered Delta tables do not support optimize where= or Z-order on the admitted open-source "
+            "Delta profiles; omit where= and use execute_compaction() or full(). "
+            "See docs/reference/DeltaIceberg.ref.md#liquid-clustering"
+        )
+    if action == "full":
+        if predicate is not None:
+            raise ValueError("Delta full reclustering does not support where= on the admitted open-source profiles")
+        if not clustered or not clustering_columns:
+            raise ValueError(
+                "Delta full reclustering requires active clustering keys; configure CLUSTER BY on the table first. "
+                "See docs/reference/DeltaIceberg.ref.md#liquid-clustering"
+            )
+        location = details["location"].replace("`", "``")
+        table.toDF().sparkSession.sql(f"OPTIMIZE delta.`{location}` FULL").collect()
+        return None
+    partition_columns = set(details.get("partitionColumns") or ())
     invalid = set(predicate_columns) - partition_columns
     if invalid:
         raise ValueError(
@@ -496,8 +520,19 @@ def delta_predicate_sql(expression, *, variables=None) -> str:
     if expression.kind in unary:
         return f"{unary[expression.kind]} ({delta_predicate_sql(expression.args[0], variables=variables)})"
     binary = {
-        "and": "AND", "or": "OR", "eq": "=", "ne": "<>", "gt": ">", "lt": "<",
-        "ge": ">=", "le": "<=", "add": "+", "sub": "-", "mul": "*", "div": "/", "mod": "%",
+        "and": "AND",
+        "or": "OR",
+        "eq": "=",
+        "ne": "<>",
+        "gt": ">",
+        "lt": "<",
+        "ge": ">=",
+        "le": "<=",
+        "add": "+",
+        "sub": "-",
+        "mul": "*",
+        "div": "/",
+        "mod": "%",
     }
     if expression.kind in binary:
         left, right = (delta_predicate_sql(item, variables=variables) for item in expression.args)
@@ -520,8 +555,19 @@ def render_delta_predicate_template(expression) -> str:
     if expression.kind in unary:
         return f"{unary[expression.kind]} ({render_delta_predicate_template(expression.args[0])})"
     binary = {
-        "and": "AND", "or": "OR", "eq": "=", "ne": "<>", "gt": ">", "lt": "<",
-        "ge": ">=", "le": "<=", "add": "+", "sub": "-", "mul": "*", "div": "/", "mod": "%",
+        "and": "AND",
+        "or": "OR",
+        "eq": "=",
+        "ne": "<>",
+        "gt": ">",
+        "lt": "<",
+        "ge": ">=",
+        "le": "<=",
+        "add": "+",
+        "sub": "-",
+        "mul": "*",
+        "div": "/",
+        "mod": "%",
     }
     if expression.kind in binary:
         left, right = (render_delta_predicate_template(item) for item in expression.args)
@@ -548,7 +594,11 @@ def _sql_literal(value) -> str:
     if isinstance(value, (int, float, Decimal)):
         return str(value)
     if isinstance(value, (date, datetime)):
-        return "TIMESTAMP '" + value.isoformat(sep=" ") + "'" if isinstance(value, datetime) else "DATE '" + value.isoformat() + "'"
+        return (
+            "TIMESTAMP '" + value.isoformat(sep=" ") + "'"
+            if isinstance(value, datetime)
+            else "DATE '" + value.isoformat() + "'"
+        )
     if isinstance(value, (str, bytes)):
         text = value.decode("utf-8") if isinstance(value, bytes) else value
         return "'" + text.replace("'", "''") + "'"

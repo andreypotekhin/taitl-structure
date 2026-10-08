@@ -139,6 +139,8 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
 | `trim(...)` | `trim` | `trim(o.name)` |
 | `btrim(...)` | `btrim` | `btrim(o.name, trim=o.trim_chars)` |
 | `char(...)` | `char` | `char(o.code_point)` |
+| `chr(...)` | `chr` (4.1 profile) | `chr(o.code_point)` |
+| `quote(...)` | `quote` (4.1 profile) | `quote(o.note)` |
 | `substring(...)` | `substring` | `substring(o.code, start=1, length=3)` |
 | `substr(...)` | `substr` | `substr(o.code, start=1, length=3)` |
 | `elt(...)` | `elt` | `elt(2, o.primary, o.fallback)` |
@@ -202,6 +204,9 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
 | `to_date(...)` | `to_date` | `to_date(o.raw_day, format="yyyy-MM-dd")` |
 | `to_timestamp(...)` | `to_timestamp` | `to_timestamp(o.raw_at, format="yyyy-MM-dd HH:mm:ss")` |
 | `try_to_timestamp(...)` | `try_to_timestamp` | `try_to_timestamp(o.raw_at, format=o.pattern)` |
+| `try_to_date(...)` | `try_to_date` (4.1 profile) | `try_to_date(o.raw_date, format="dd/MM/yyyy")` |
+| `time(precision=6)`, `Time` / `TimeType` | TIME field/type (4.1 profile) | `time(precision=3, nullable=False)` |
+| `current_time(...)`, `make_time(...)`, `to_time(...)`, `try_to_time(...)`, `time_diff(...)`, `time_trunc(...)` | TIME expressions (4.1 profile) | `time_diff("microsecond", o.start, o.end)` |
 | `to_timestamp_ltz(...)` | `to_timestamp_ltz` | `to_timestamp_ltz(o.raw_at, format=o.pattern)` |
 | `to_timestamp_ntz(...)` | `to_timestamp_ntz` | `to_timestamp_ntz(o.raw_at, format=o.pattern)` |
 | `make_timestamp(...)`, `make_timestamp_ltz(...)`, `make_timestamp_ntz(...)` | Component construction | `make_timestamp_ltz(o.year, o.month, o.day, o.hour, o.minute, o.second, timezone=o.zone)` |
@@ -215,6 +220,7 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
 | `acos(...)` | `acos` | `acos(o.total)` |
 | `hypot(...)` | `hypot` | `hypot(o.x, o.y)` |
 | `rand(...)`, `randn(...)` | `rand`, `randn` | `rand(seed=42)`; `randn(seed=42)` |
+| `random(...)`, `uuid(...)` | `random`, `uuid` (4.1 profile) | `random(seed=42)`; `uuid(reproducible=False)` |
 | `round(...)` | `round` | `round(o.total, scale=2)` |
 | `bround(...)` | `bround` | `bround(o.total, scale=2)` |
 | `ceil(...)` | `ceil` | `ceil(o.total)` |
@@ -361,6 +367,18 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
   ledger and is not implied by batch support.
 - `randn(...)` uses the same explicit seed/reproducibility policy and returns a non-null standard-normal Double. It is
   nondeterministic and streaming evidence remains target-specific.
+- `chr`, `quote`, `try_to_date`, `random`, and `uuid` require exact `>=4.1,<4.2` ordinary or Connect targets.
+  `chr` shares `char`'s integral input rules; `quote` returns nullable String even for required input. `try_to_date` accepts String,
+  Date, or LTZ Timestamp and an optional non-empty pattern literal, always declaring a nullable Date. Malformed
+  text returns null regardless of ANSI mode; invalid pattern definitions can still raise Spark errors.
+  `random` and `uuid` use the existing literal seed policy and are batch-only (`STREAM-E0801` on streaming input).
+  See the [Expression reference](../reference/Expressions.ref.md#pyspark-41-scalar-helpers) for examples.
+- TIME requires a public `time(precision=6)` field/type and `Time`/`TimeType` declarations on exact `>=4.1,<4.2`
+  ordinary or Connect targets. Spark disables its TIME type by default; configure
+  `spark.sql.timeType.enabled=true` in the Spark session. Structure does not enable the flag. `current_time`,
+  `make_time`, `to_time`, `try_to_time`, `time_diff`, and `time_trunc` preserve Spark's TIME semantics, with
+  `to_time` errors independent of ANSI mode and `try_to_time` returning null for malformed input. See the
+  [TIME reference](../reference/Expressions.ref.md#spark-41-time-values) for precision, casts, and examples.
 - `hash(...)` and `xxhash64(...)` accept scalar inputs. `crc32(...)` accepts String or Binary input and returns a
   nullable Long checksum. These are Spark hash/checksum functions, not cryptographic identifiers;
   do not use them for security, cross-engine interchange, or persistent identifiers. `md5(...)`, `sha1(...)`, and

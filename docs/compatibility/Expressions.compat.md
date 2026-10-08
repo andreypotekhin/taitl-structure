@@ -396,7 +396,35 @@ This is the compatibility companion to the [API reference](../api/Expressions.ap
 | — | String aggregation | — | no | yes | Status: `target-gated`. PySpark 4.0-only `string_agg`/`listagg` are outside the 3.5/4.0 intersection baseline. Migration: Use native PySpark on the 4.0 target or await a target-profile admission. |
 | — | Profile evidence | — | — | — | Status: `target-gated`. Admission requires a released profile plus classic, Connect, generated/online, and streaming evidence. Migration: Use an admitted profile or native PySpark. |
 | — | Geospatial providers | — | no | no | Status: `target-gated`. Native root `st_*` is 4.1+; external providers are namespaced and scope-matched. Migration: Use native PySpark or an explicit Binary boundary. |
-| `transform(function)` | `Column.transform` | `o.name.transform(lambda value: upper(trim(value)))` | no | yes | Status: `supported` for PySpark `>=4.1,<4.2` on ordinary and Spark Connect variants. The typed callback determines result type/nullability and preserves row cardinality; online/generated evidence passes on both variants. |
+| `transform(function)` | `Column.transform` | `o.name.transform(lambda value: upper(trim(value)))` | no | yes | Status: `supported` for PySpark `>=4.1,<4.2` on ordinary and Spark Connect variants. The typed callback determines result type/nullability and preserves row cardinality. Pinned 4.1.0 online/generated evidence covers inline and bound `@special(type="expr")` callbacks, nullable inputs, changed result types, values/schema, and generated spelling on both variants. |
+
+## PySpark 4.1 scalar helpers
+
+These helpers require the exact `>=4.1,<4.2` profile on ordinary PySpark or Spark Connect. Earlier and unproven later
+profiles reject them with `BACKEND-E2402`. `try_to_date` and `random` retain the upstream chronology recorded in the
+Python delta ledger; Structure admission here is restricted to the evidenced 4.1 profile.
+
+| Structure API | PySpark parity | Result and rules | Streaming |
+| --- | --- | --- | --- |
+| `chr(value)` | `chr` | Integer/Long to String; same byte-range semantics and nullability as `char`; native spelling preserved | Compatible by design; batch evidence |
+| `quote(value)` | `quote` | String to String; wraps text in single quotes and escapes embedded quotes with a backslash; always nullable in Spark | Compatible by design; batch evidence |
+| `try_to_date(value, format=None)` | `try_to_date` | String/Date/LTZ Timestamp to nullable Date; optional non-empty pattern literal; invalid text returns null regardless of ANSI mode | Compatible by design; batch evidence |
+| `random(seed=None, reproducible=True)` | `random` alias | Non-null Double; reuses `rand`'s integer seed policy; remains nondeterministic | Batch-only; `STREAM-E0801` |
+| `uuid(seed=None, reproducible=True)` | `uuid` | Non-null UUID String; literal seed or explicit `reproducible=False`; symbolic seeds rejected | Batch-only; `STREAM-E0801` |
+
+See the [Expression reference](../reference/Expressions.ref.md#pyspark-41-scalar-helpers) for examples and format rules.
+Live admission evidence is recorded in Sprint 56; unsupported profiles and generated spelling are covered by
+`test_v11_scalar_helpers.py`.
+
+## Spark 4.1 TIME
+
+| Structure API | PySpark parity | Example | PySpark 3 | PySpark 4 | Details |
+| --- | --- | --- | --- | --- | --- |
+| `time(precision=6)`, `Time` / `TimeType` | `TimeType` and TIME expressions | `time_diff("microsecond", row.start, row.end)` | no | yes | Supported only for exact `>=4.1,<4.2` ordinary and Spark Connect targets. Precision 0–6 is part of schema identity. `current_time`, `make_time`, `to_time`, `try_to_time`, `time_diff`, and `time_trunc` follow Spark's value, nullability, and error semantics. Spark disables TIME by default; callers must set `spark.sql.timeType.enabled=true`. Batch online/generated parity passed on ordinary and Connect Spark/PySpark 4.1.0. No streaming claim. |
+
+TIME comparisons require matching precisions; ordering accepts all TIME precisions. TIME-to-TIME casts preserve Spark's precision conversion; TIME/String casts use
+native Spark behavior (including String parsing that may retain microseconds beyond the declared TIME precision). Date
+and timestamp casts and TIME arithmetic are excluded. See the [TIME reference](../reference/Expressions.ref.md#spark-41-time-values).
 
 ## Typed field and expression helpers
 

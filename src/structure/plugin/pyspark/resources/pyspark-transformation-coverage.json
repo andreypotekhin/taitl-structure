@@ -1,66 +1,1586 @@
 {
   "catalog_version": 1,
   "entries": [
-    {"id":"functions.stack","status":"supported","structure":"stack(rows, *values, to=Schema, scope=None)","public_symbols":["stack"],"profile":"pyspark>=3.5; Connect=batch verified on 3.5/4.0; streaming=compatible by design","contract":"Fixed row-multiplying generator; positive row count; each declared output field uses the position-wise common input type and must be nullable when inputs or trailing padding can be null","notes":"Matches PySpark trailing-NULL padding while keeping output names, types, nullability, and row multiplication compiler-visible.","evidence":["docs/dev/design/PySparkSQLBoundaryContracts.design.md","docs/api/Collections.api.md","tests/specifications/v6-api-ledger/test_v6_stack.py","tests/integration/pyspark/v7/test_runtime_matrix_closeout.py","tests/user_stories/10_generated_code/shared_pyspark_semantic_contract/test_online_recipe_runtime.py"]},
-    {"id":"functions.map-generators","status":"supported","structure":"explode_map(...), explode_outer_map(...), posexplode_map(...), posexplode_outer_map(...)","public_symbols":["explode_map","explode_outer_map","posexplode_map","posexplode_outer_map"],"profile":"pyspark>=3.5; connect=batch; streaming=caller-owned","contract":"Primitive map expansion requires an explicit generated Schema, key_field, value_field, and optional long ordinal; inner forms preserve map value nullability and outer forms require nullable generated fields","notes":"Nested map values, structs, variants, and indexed callbacks remain deferred. Opt-in integration coverage runs the same fixture on ordinary PySpark and Spark Connect profiles.","evidence":["docs/api/Collections.api.md","tests/specifications/v6-api-ledger/test_v6_map_generators.py","tests/specifications/v7-api-ledger/test_v7_generator_parity_matrix.py","tests/integration/pyspark/v7/test_collection_generator_conformance.py"]},
-    {"id":"functions.scalar-generators","status":"supported","structure":"explode_array(...), explode_outer_array(...), posexplode_array(...), posexplode_outer_array(...)","public_symbols":["explode_array","explode_outer_array","posexplode_array","posexplode_outer_array"],"profile":"pyspark>=3.5; connect=batch; streaming=caller-owned","contract":"Primitive scalar-array expansion requires an explicit generated Schema, value_field, and optional long ordinal; inner forms require non-null arrays and elements, outer forms require nullable generated fields","notes":"Nested arrays, structs, variants, and indexed callbacks remain deferred; primitive map generators are admitted separately. Opt-in integration coverage runs the same fixture on ordinary PySpark and Spark Connect profiles.","evidence":["docs/api/Collections.api.md","tests/specifications/v6-api-ledger/test_v6_scalar_array_generators.py","tests/specifications/v7-api-ledger/test_v7_generator_parity_matrix.py","tests/integration/pyspark/v7/test_collection_generator_conformance.py"]},
-    {"id":"column.comparison","status":"supported","structure":"symbolic comparison operators, between(...), isin(...)","public_symbols":["field"],"profile":"pyspark>=3.5; connect=batch","contract":"typed scalar predicates; nullable Boolean; preserves rows","notes":"Use symbolic operators, not Python truthiness. isin accepts variadic values or one list and preserves authored order.","evidence":["docs/api/Expressions.api.md","tests/specifications/execution-semantic-contract/test_v3_transform_expression_dispatch.py"]},
-    {"id":"column.boolean","status":"supported","structure":"&, |, ~, is_null(), is_not_null(), isnan(), isnan(...)","public_symbols":["isnan","isnotnull","isnull"],"profile":"pyspark>=3.5; connect=batch","contract":"Boolean expression; conservative nullability; preserves rows","notes":"Null and NaN stay distinct. Float and Double expressions support chained isnan().","evidence":["docs/api/Expressions.api.md","tests/specifications/execution-semantic-contract/test_v3_transform_expression_dispatch.py"]},
-    {"id":"column.arithmetic","status":"supported","structure":"symbolic +, -, *, /, %, unary -","public_symbols":["field"],"profile":"pyspark>=3.5; connect=batch","contract":"typed numeric expression; preserves rows","notes":"Operand types determine the result type.","evidence":["docs/api/Expressions.api.md","tests/specifications/execution-semantic-contract/test_v3_transform_expression_dispatch.py"]},
-    {"id":"column.bitwise","status":"supported","structure":"Expression.bitwise_and(...), bitwise_or(...), bitwise_xor(...), bitwise_not()","public_symbols":["field"],"profile":"pyspark>=3.5; connect=batch","contract":"integer/long expressions; mixed pair returns long; input nullability propagates; preserves rows","notes":"Typed methods avoid Python's ambiguous & and | operators, which remain Boolean composition.","evidence":["docs/api/Expressions.api.md","tests/specifications/backend-capabilities/test_backend_capabilities.py","tests/specifications/pyspark-code-generation/test_v1_pyspark_expression_rendering.py","tests/user_stories/10_generated_code/shared_pyspark_semantic_contract/test_online_recipe_runtime.py"]},
-    {"id":"column.string-predicates","status":"supported","structure":"contains(...), startswith(...), endswith(...), like(...), ilike(...), rlike(...)","public_symbols":["field"],"profile":"pyspark>=3.5; connect=batch","contract":"Boolean expression; input nullability propagates; preserves rows","notes":"Plain, case-insensitive, regex, prefix, and suffix matching remain compiler-visible. contains, startswith, and endswith accept literal or String-expression operands.","evidence":["docs/api/Expressions.api.md","tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py","tests/specifications/pyspark-code-generation/test_v1_pyspark_expression_rendering.py","tests/user_stories/10_generated_code/shared_pyspark_semantic_contract/test_online_recipe_runtime.py"]},
-    {"id":"column.cast","status":"supported","structure":"cast(...), try_cast(...)","public_symbols":["field"],"profile":"cast:pyspark>=3.5; try_cast:pyspark>=4.0; connect=batch","contract":"declared scalar result; try_cast nullable; preserves rows","notes":"try_cast is capability checked.","evidence":["docs/api/Expressions.api.md","tests/specifications/execution-semantic-contract/test_v3_transform_expression_dispatch.py"]},
-    {"id":"column.nested-access","status":"supported","structure":"typed attributes, get_field(...), indexing","public_symbols":["field"],"profile":"pyspark>=3.5; connect=batch","contract":"typed struct/array/map selection; lookup nullable; preserves rows","notes":"Physical aliases remain schema-owned.","evidence":["docs/api/Expressions.api.md","tests/specifications/execution-semantic-contract/test_v3_transform_expression_dispatch.py"]},
-    {"id":"column.struct-mutation","status":"supported","structure":"Expression.with_field(..., schema=...) and drop_fields(..., schema=...)","public_symbols":["field"],"profile":"pyspark>=3.5; connect=batch for admitted helpers","contract":"exact declared Struct result; preserves rows","notes":"The declared result Schema must preserve the source shape except for the named replacement or removals.","evidence":["docs/api/Expressions.api.md","tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py"]},
-    {"id":"column.sort","status":"supported","structure":"asc()/desc() order descriptors","public_symbols":["field"],"profile":"pyspark>=3.5; connect=batch","contract":"sort-key descriptor; preserves rows","notes":"Used by typed windows and admitted ordered operations.","evidence":["docs/api/Windows.api.md","tests/specifications/execution-semantic-contract/test_v3_transform_expression_dispatch.py"]},
-    {"id":"column.transform","status":"supported","structure":"Expression.transform(function)","public_symbols":["transform"],"profile":"ordinary PySpark and Spark Connect >=4.1,<4.2","contract":"One typed whole-expression callback returns a typed expression; result type and nullability follow the callback; preserves rows","notes":"The callback runs during symbolic authoring and must return a Structure expression. Streaming eligibility is checked from the returned expression. Ordinary PySpark and Spark Connect 4.1.0 online/generated parity passes, including nullable inputs and changed result types.","evidence":["docs/api/Expressions.api.md","docs/reference/Transform.ref.md","docs/compatibility/Expressions.compat.md","tests/specifications/pyspark-code-generation/test_v11_column_transform.py","tests/integration/pyspark/v11/test_column_transform.py"]},
-    {"id":"column.alias","status":"unsupported","structure":"Schema field aliases","public_symbols":[],"profile":"n/a","contract":"schema constructors own names","notes":"Use Schema fields and aliases rather than Column alias().","evidence":["docs/reference/Schema.ref.md"]},
-    {"id":"column.window","status":"unsupported","structure":"typed window helpers","public_symbols":[],"profile":"n/a","contract":"compiler-visible Window contract","notes":"Raw WindowSpec is an explicit hook boundary.","evidence":["docs/api/Windows.api.md"]},
-    {"id":"functions.conditional","status":"supported","structure":"when(...), coalesce(...), nvl(...), ifnull(...), nvl2(...), nullif(...), zeroifnull(...)","public_symbols":["coalesce","ifnull","nullif","nvl","nvl2","when","zeroifnull"],"profile":"pyspark>=3.5; connect=batch for admitted helpers","contract":"typed scalar result; preserves rows","notes":"Fallback and branch nullability are analyzed symbolically; nullif remains nullable because a match becomes null.","evidence":["docs/api/Expressions.api.md","tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py","tests/specifications/pyspark-code-generation/test_v1_pyspark_expression_rendering.py","tests/user_stories/10_generated_code/shared_pyspark_semantic_contract/test_online_recipe_runtime.py"]},
-    {"id":"functions.assertion","status":"supported","structure":"assert_true(...), raise_error(...)","public_symbols":["assert_true","raise_error"],"profile":"pyspark>=3.5; connect=batch","contract":"typed non-null Boolean guard; assertion failure raises during Spark evaluation","notes":"Structure adapts PySpark's null-on-success assertion result with .isNull(), so successful assert_true can be used in where(...). Messages are compiler-visible string literals; assertion aliases remain ordinary predicate composition.","evidence":["docs/api/Expressions.api.md","docs/dev/specifications/PySparkScalarAssertions.spec.md","tests/specifications/pyspark-scalar-assertions/test_pyspark_scalar_assertions.py","tests/integration/pyspark/v11/test_scalar_assertions.py"]},
-    {"id":"functions.predicate","status":"supported","structure":"equal_null(...), like(...), ilike(...), regexp(...), regexp_like(...), rlike(...) ","public_symbols":["equal_null","like","ilike","regexp","regexp_like","rlike"],"profile":"pyspark>=3.5; connect=batch","contract":"typed nullable Boolean predicates; equal_null is non-null and treats two nulls as equal; String match helpers require String operands and preserve input nullability","notes":"Function-form String predicates accept typed String expressions for both operands; patterns may therefore be literal or column-derived.","evidence":["docs/api/Expressions.api.md","tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py","tests/specifications/pyspark-code-generation/test_v1_pyspark_expression_rendering.py"]},
-    {"id":"functions.null","status":"supported","structure":"isnull(...), isnotnull(...), isnan(...), nanvl(...)","public_symbols":["isnan","isnotnull","isnull","nanvl"],"profile":"pyspark>=3.5; connect=batch for admitted helpers","contract":"Boolean/scalar expression; preserves rows","notes":"Null and NaN remain distinct; nanvl replaces only NaN values.","evidence":["docs/api/Expressions.api.md","tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py","tests/specifications/pyspark-code-generation/test_v1_pyspark_expression_rendering.py","tests/user_stories/10_generated_code/shared_pyspark_semantic_contract/test_online_recipe_runtime.py"]},
-    {"id":"functions.string","status":"supported","structure":"typed string helpers","public_symbols":["ascii","bit_length","btrim","char","char_length","character_length","concat_ws","contains","elt","endswith","find_in_set","format_number","format_string","initcap","instr","left","length","levenshtein","locate","lower","lcase","lpad","ltrim","mask","octet_length","overlay","position","printf","regexp_count","regexp_extract","regexp_extract_all","regexp_instr","regexp_replace","regexp_substr","repeat","replace","reverse","right","rpad","rtrim","soundex","split","split_part","startswith","substr","substring","substring_index","translate","trim","upper","ucase","try_url_decode","url_decode","url_encode"],"profile":"pyspark>=3.5; connect=batch for admitted helpers","contract":"typed String, Binary, or scalar result; preserves rows","notes":"String padding, masking, slicing, repetition, formatting, regex, and position counts use validated literal arguments where the DSL owns them; btrim accepts a typed String expression for its trim set and propagates both input nullabilities; bit_length accepts String or Binary and returns Integer; startswith and endswith accept String/Binary operands, preserve nullable Boolean behavior, and allow Spark's mixed-type coercion; function-form contains and find_in_set accept typed String operands; elt selects a compatible one-based scalar value; format_string and printf require a literal format with scalar arguments; regexp_extract_all returns a typed array<string>; octet_length accepts String or Binary; mask character replacements are optional single-character literals; overlay requires same-family String/Binary values and integral position/length expressions; character_length preserves its PySpark spelling; lcase and ucase preserve alias spellings; replace currently uses literal search/replacement strings, while PySpark permits ColumnOrName operands; URL helpers require String and strict decode retains Spark failure behavior; try_url_decode is limited to PySpark 4.0+.","evidence":["docs/api/Expressions.api.md","tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py","tests/specifications/pyspark-code-generation/test_v1_pyspark_expression_rendering.py"]},
-    {"id":"functions.string-specialized","status":"design-gated","structure":"parse_url(...), sentences(...), to_char(...), to_number(...), to_varchar(...), try_to_number(...)","public_symbols":[],"profile":"pyspark>=3.5; Connect behavior and streaming contracts not yet admitted","contract":"typed scalar or nested-array result; preserves rows","notes":"The common API names are in both official target indexes. parse_url accepts typed URL/part/key inputs but needs explicit malformed-URL and dynamic-part semantics; sentences returns array<array<string>> and needs locale/input-nullability contract; picture-format functions need a compiler-visible picture-mask grammar, result precision/scale analysis, and strict versus try failure semantics. Keep these functions design-gated until the contracts are specified and verified.","evidence":["docs/dev/gaps/PySpark-SQL-baseline.gaps.md","tests/specifications/compatibility/test_pyspark_transformation_coverage.py"]},
-    {"id":"functions.numeric","status":"supported","structure":"typed deterministic numeric, base-conversion, and histogram helpers","public_symbols":["abs","acos","acosh","asin","asinh","atan","atan2","atanh","bin","bround","cbrt","ceil","ceiling","conv","cos","cosh","cot","csc","degrees","e","exp","expm1","factorial","floor","greatest","hex","hypot","least","ln","log","log10","log1p","log2","negate","negative","positive","power","pmod","pi","pow","radians","rint","round","sec","sign","signum","sin","sinh","sqrt","tan","tanh","unhex","width_bucket"],"profile":"pyspark>=3.5; connect=batch for admitted helpers","contract":"typed numeric result; preserves rows; bin/hex/conv return String, unhex returns nullable Binary, and width_bucket returns nullable Long","notes":"Rounding preserves numeric precision rules; transcendental and constant helpers return Double values; factorial returns nullable Long for integral inputs; greatest/least preserve the compatible common type and return null only when all arguments are null; pmod preserves the common numeric type and propagates operand nullability; exact-name aliases ceiling, power, negate, negative, and positive preserve their PySpark SQL spelling; conv requires validated base literals and width_bucket requires a positive bucket-count literal.","evidence":["docs/api/Expressions.api.md","tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py","tests/specifications/pyspark-code-generation/test_v1_pyspark_expression_rendering.py"]},
-    {"id":"functions.numeric-safe-arithmetic","status":"design-gated","structure":"try_add(...), try_divide(...), try_multiply(...), try_subtract(...), try_avg(...), try_sum(...) ","public_symbols":[],"profile":"pyspark>=3.5; Connect and streaming contracts not yet admitted","contract":"typed arithmetic and aggregates that return null on overflow; try_divide also returns null for a zero divisor","notes":"The 3.5.6/4.0.0 APIs are common baseline names. Define numeric widening, ANSI behavior, nullability and filters; try_divide additionally supports interval operands and always uses floating-point division for numeric inputs. Validate classic/Connect runtime and streaming behavior before admission.","evidence":["docs/dev/gaps/PySpark-SQL-baseline.gaps.md"]},
-    {"id":"writer-v2.partitioning","status":"caller-owned-guided","structure":"PySpark DataFrameWriterV2 partition transforms","public_symbols":[],"profile":"pyspark>=3.5; native writer boundary","contract":"years(col), months(col), days(col), hours(col), and bucket(numBuckets, col) construct output-layout transforms for DataFrameWriterV2.partitionedBy","notes":"These helpers affect physical table/file layout rather than a compiler-visible DataFrame transformation. They remain caller-owned with native PySpark; do not confuse them with Structure's row-preserving repartition/coalesce APIs.","evidence":["docs/dev/design/PySparkSQLBoundaryContracts.design.md","docs/dev/deferred/ApiCatalog.deferred.md"]},
-    {"id":"functions.bitwise","status":"supported","structure":"typed SQL bitwise complement, bit-count, bit-position, and shift helpers","public_symbols":["bitwise_not","bit_count","bit_get","getbit","shiftleft","shiftright","shiftrightunsigned"],"profile":"pyspark>=3.5; connect=batch for admitted helpers","contract":"bitwise_not preserves integral type/nullability; bit_count returns nullable Long for integral input; bit_get and getbit return nullable Integer for integral value and position expressions; shift helpers return nullable Long for integral input and an integer literal bit count; preserves rows","notes":"The SQL aliases are explicit and shift counts remain compiler-visible integer literals.","evidence":["docs/api/Expressions.api.md","tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py","tests/specifications/pyspark-code-generation/test_v1_pyspark_expression_rendering.py"]},
-    {"id":"functions.random","status":"supported","structure":"typed nondeterministic random scalar","public_symbols":["rand","randn"],"profile":"pyspark>=3.5; connect=batch and streaming only where target evidence passes","contract":"non-null Double; rand is uniform in [0,1) and randn is standard-normal; integer seed required by default; reproducible=False explicitly permits an omitted seed","notes":"Seeded use is auditable but does not promise exact values across repartitioning, retries, versions, or query restarts. Streaming status is separately ledgered.","evidence":["docs/api/Expressions.api.md","tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py","tests/specifications/pyspark-code-generation/test_v1_pyspark_expression_rendering.py"]},
-{"id":"functions.temporal","status":"supported","structure":"typed date arithmetic, formatting, truncation, extraction, Unix-day conversion, and conversion helpers","public_symbols":["add_months","convert_timezone","date_add","date_diff","date_format","date_from_unix_date","date_part","date_sub","date_trunc","dateadd","datediff","datepart","day","dayofmonth","dayofweek","dayofyear","extract","from_unixtime","from_utc_timestamp","hour","interval","last_day","make_date","make_dt_interval","make_interval","make_timestamp","make_timestamp_ltz","make_timestamp_ntz","make_ym_interval","minute","month","months_between","next_day","quarter","second","timestamp_micros","timestamp_millis","timestamp_seconds","to_date","to_timestamp","to_timestamp_ltz","to_timestamp_ntz","to_unix_timestamp","to_utc_timestamp","trunc","try_to_timestamp","unix_date","unix_micros","unix_millis","unix_seconds","unix_timestamp","weekday","weekofyear","year"],"profile":"pyspark>=3.5; Connect 3.5/4.0 verified for generic timestamp configuration, parser ANSI behavior, interval arithmetic, and row-valued date_sub; other overloads remain individually unverified","contract":"typed date, timestamp, integer, or String result; preserves rows","notes":"Classic and Connect runtime checks confirm generic timestamp configuration and parser ANSI behavior plus YearMonth/DayTime arithmetic parity. Row-valued date_sub offsets also pass classic and Connect on PySpark 3.5 and 4.0. Date plus CalendarInterval returns Date. Calendar Schema is rejected on PySpark 3.5 and works on PySpark 4.0 classic/Connect; DayTime converts to timedelta, YearMonth conversion varies by target, and Calendar Row/Arrow conversion fails on tested 4.0 paths. Date/timestamp subtraction follows spark.sql.legacy.interval.enabled. date_sub accepts literal or typed row-dependent Integer/Long day counts.","evidence":["docs/api/Expressions.api.md","tests/integration/pyspark/v7/test_temporal_unix.py","tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py","tests/specifications/pyspark-code-generation/test_v1_pyspark_expression_rendering.py","tests/specifications/v6-api-ledger/test_v6_convert_timezone.py","tests/specifications/v6-api-ledger/test_v6_make_date.py","tests/specifications/v6-api-ledger/test_v6_to_timestamp_ntz.py"]},
-    {"id":"functions.query-clock","status":"supported","structure":"typed query-clock and session-timezone helpers","public_symbols":["current_date","curdate","current_timestamp","now","localtimestamp","current_timezone"],"profile":"pyspark>=3.5; connect=batch/streaming","contract":"The five clock expressions are non-null, query-stable, and nondeterministic across query evaluations; current_timezone is a non-null session-configuration read.","notes":"Retries and streaming micro-batches are not promised to share a value.","evidence":["docs/dev/design/PySparkSQLBoundaryContracts.design.md","tests/specifications/pyspark-sql-boundary-contracts/test_boundary_contracts.py"]},
-    {"id":"functions.hash","status":"supported","structure":"typed scalar hashes, CRC-32, and String digests","public_symbols":["hash","xxhash64","crc32","md5","sha1","sha2"],"profile":"pyspark>=3.5; connect=batch for admitted helpers","contract":"hashes accept scalar expressions and preserve nullability; crc32 accepts String or Binary and returns nullable Long; String digests preserve String nullability","notes":"Hash output is not a cryptographic or cross-engine identity contract. CRC-32 is a checksum, not a cryptographic digest. String digests are not password-storage primitives. PySpark sha is equivalent to Structure sha1.","evidence":["docs/api/Expressions.api.md","tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py","tests/specifications/pyspark-code-generation/test_v1_pyspark_expression_rendering.py","tests/user_stories/10_generated_code/shared_pyspark_semantic_contract/test_online_recipe_runtime.py"]},
-    {"id":"functions.literal","status":"supported","structure":"literal(value)","public_symbols":["literal"],"profile":"pyspark>=3.5; connect=batch","contract":"typed constant expression; preserves its inferred or declared scalar type","notes":"PySpark lit(value) maps to Structure literal(value).","evidence":["docs/api/Expressions.api.md","tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py","tests/specifications/pyspark-code-generation/test_v1_pyspark_expression_rendering.py"]},
-    {"id":"functions.relation-hint","status":"caller-owned-guided","structure":"lookup_join(..., hint=\"broadcast\")","public_symbols":[],"profile":"pyspark>=3.5; Connect support follows join capability","contract":"relation-level optimization hint; does not alter row values or schema","notes":"PySpark functions.broadcast(df) is a relation marker. Structure expresses the same choice on the join with hint=\"broadcast\"; keep distribution decisions at the join boundary.","evidence":["docs/api/Joins.api.md","docs/dev/gaps/PySpark-SQL-baseline.gaps.md","tests/specifications/compatibility/test_api_catalog_design_gates.py"]},
-    {"id":"functions.time-window","status":"supported","structure":"window(event_time, duration, slide=None, start=None), window_time(window_value)","public_symbols":["window","window_time"],"profile":"pyspark>=3.5; connect=batch","contract":"typed TimeWindow key or end-time expression; preserves row shape until grouped aggregation","notes":"The positional event-time function is distinct from the keyword-only analytic WindowSpec builder; event-time state and watermark rules remain caller-owned at the streaming boundary.","evidence":["docs/api/Streaming.api.md","tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py","tests/specifications/streaming-compatibility/test_v1_streaming_compatibility.py"]},
-    {"id":"functions.xml","status":"design-gated","structure":"xpath, xpath_boolean, xpath_double, xpath_float, xpath_int, xpath_long, xpath_number, xpath_short, xpath_string","public_symbols":[],"profile":"pyspark>=3.5; XML parity not admitted","contract":"requires an explicit XPath grammar, XML null/malformed-input behavior, and return-type/struct schema rules","notes":"Keep the XML family gated until its typed output and parser contracts are specified; use native PySpark at the XML boundary.","evidence":["docs/dev/gaps/PySpark-SQL-baseline.gaps.md","docs/dev/design/PySparkSQLBoundaryContracts.design.md","tests/specifications/compatibility/test_pyspark_transformation_coverage.py"]},
-    {"id":"functions.encoding","status":"supported","structure":"typed Binary encoding helpers","public_symbols":["base64","binary","decode","encode","to_binary","try_to_binary","unbase64"],"profile":"pyspark>=3.5; connect=batch","contract":"Binary Structure fields and bytes literals support Base64, charset conversion, and literal-format text conversion; encoding helpers preserve row cardinality and Spark null behavior","notes":"base64/decode accept Binary expressions; unbase64/encode/to_binary/try_to_binary accept String expressions. encode/decode charsets and binary conversion formats are non-empty literals passed to Spark. try_to_binary returns nullable Binary on conversion failure.","evidence":["docs/dev/design/AdvancedAnalyticalOperations.design.md","tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py","tests/specifications/pyspark-code-generation/test_v1_pyspark_expression_rendering.py","tests/integration/pyspark/v7/test_binary_encoding.py"]},
-    {"id":"functions.crypto","status":"supported","structure":"typed AES-GCM helpers","public_symbols":["aes_encrypt","aes_decrypt","try_aes_decrypt"],"profile":"pyspark>=3.5; connect=batch/streaming","contract":"String/Binary payloads and symbolic String/Binary keys return Binary; optional AAD is typed, explicit encryption IVs emit CRYPTO-W0801, and strict versus nullable decrypt behavior is preserved.","notes":"Non-GCM modes, literal keys, and key storage/rotation remain caller-owned.","evidence":["docs/dev/design/PySparkSQLBoundaryContracts.design.md","tests/specifications/pyspark-sql-boundary-contracts/test_boundary_contracts.py"]},
-    {"id":"functions.sketches","status":"supported","structure":"opaque HLL and Bitmap sketch helpers","public_symbols":["hll_sketch_agg","hll_union_agg","hll_union","hll_sketch_estimate","bitmap_bit_position","bitmap_bucket_number","bitmap_construct_agg","bitmap_or_agg","bitmap_count"],"profile":"pyspark>=3.5; connect=batch/streaming","contract":"Branded opaque Binary state supports HLL construction, pairwise/aggregate union, and estimate plus Bitmap construction/OR/count and position helpers; mismatched HLL precision rejects unless explicitly enabled.","notes":"hll_union_agg preserves the declared HLL precision by default and warns with SKETCH-W0802 when mixed precision is explicitly allowed; KLL and Theta remain profile-gated; Count-Min and observation metrics remain caller-owned.","evidence":["docs/dev/design/SketchBitmap.design.md","docs/dev/specifications/SketchBitmap.spec.md","tests/specifications/pyspark-sql-boundary-contracts/test_boundary_contracts.py","tests/specifications/pyspark-code-generation/test_v2_aggregation_rendering.py"]},
-    {"id":"functions.parsing","status":"supported","structure":"typed JSON and CSV conversion, inspection, literal schema-inference, and multi-column tuple extraction helpers","public_symbols":["CsvOptions","JsonOptions","from_csv","from_json","to_csv","to_json","get_json_object","json_array_length","json_object_keys","json_tuple","schema_of_csv","schema_of_json"],"profile":"pyspark>=3.5; connect=batch","contract":"from_json/from_csv accept String expressions plus a nullable-field Schema class and return the declared Struct; to_json/to_csv accept Struct expressions and return nullable String; get_json_object uses a non-empty literal path and returns nullable String; json_array_length returns nullable Integer; json_object_keys returns nullable array<string>; json_tuple accepts a String expression, a declared schema of nullable String fields, and optional literal output-to-member mappings while preserving one output row per input row; schema_of_json/schema_of_csv accept non-empty text literals and return non-nullable SQL-format schema Strings; options are immutable literal records","notes":"Permissive parser schemas must declare parsed fields nullable because Spark materializes parsed struct fields as nullable. CSV parser schemas render as DDL strings; JSON parser schemas render as StructType values. Dynamic schema inference remains rejected at the typed boundary. json_tuple is top-level, string-only, and compiler-schema-driven; nested or typed extraction remains the responsibility of get_json_object or from_json.","evidence":["docs/dev/design/AdvancedAnalyticalOperations.design.md","tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py","tests/specifications/pyspark-code-generation/test_v1_pyspark_expression_rendering.py","tests/specifications/v7-api-ledger/test_v7_json_tuple.py","tests/integration/pyspark/v7/test_json_tuple.py"]},
-    {"id":"functions.variant","status":"supported","structure":"typed PySpark 4 Variant parsing, validated literals, equality, extraction, schema inspection, conversion, null testing, validation, and TVF row expansion","public_symbols":["is_valid_variant","is_variant_null","parse_json","schema_of_variant","schema_of_variant_agg","to_variant_object","try_parse_json","try_variant_get","variant_get","variant_literal","variant_explode","variant_explode_outer"],"profile":"pyspark4.0+; is_valid_variant requires pyspark4.2; variant_explode* require pyspark4.0; connect=batch","contract":"strict/safe JSON parsing returns Variant; variant_literal validates JSON and lowers through parse_json; equality uses typed operators; literal-path extraction returns the declared nullable type; schema helpers return SQL-format strings; Array/Map/Struct conversion returns Variant; variant_explode* returns typed pos/key/value scopes through a lateral TVF join","notes":"Paths start with $ and extraction target paths are explicit literals. variant_literal rejects non-standard JSON constants and does not expose VariantVal. to_variant_object rejects non-String Map keys at every nesting level. TVF row expansion uses the public spark.tvf and DataFrame.lateralJoin APIs.","evidence":["docs/api/Expressions.api.md","tests/specifications/v9-api-catalog/test_v9_variant_field.py"]},
-    {"id":"functions.variant-mutation","status":"design-gated","structure":"future-profile Variant mutation helpers","public_symbols":["variant_array_append","try_variant_array_append","variant_insert","try_variant_insert","variant_set","try_variant_set","variant_delete"],"profile":"not admitted until released PySpark 4.3+ profiles exist","contract":"literal-path Variant mutation contract is reserved for a later released Spark profile","notes":"Current PySpark 4.2 compilation rejects these helpers before lowering; do not claim runtime support until the corresponding Spark profile is added.","evidence":["docs/api/Expressions.api.md","docs/dev/design/ApiCatalogDesignGates.design.md","tests/specifications/v9-api-catalog/test_v9_variant_field.py"]},
-    {"id":"functions.array-construction","status":"supported","structure":"array(...), array_repeat(...), sequence(...), and typed mutation helpers","public_symbols":["arr_append","arr_compact","arr_insert","arr_prepend","arr_remove","array","array_repeat","sequence"],"profile":"pyspark>=3.5; connect=batch for admitted helpers","contract":"typed array result; preserves rows","notes":"sequence supports Integer/Long values; arr_insert positions and arr_remove values stay literal for the PySpark 3.5 baseline.","evidence":["docs/api/Collections.api.md","tests/specifications/pyspark-code-generation/test_v3_collection_helper_rendering.py"]},
-    {"id":"functions.array-lookup","status":"supported","structure":"size(...), cardinality(...), array_size(...), array_contains(...), arr_position(...), get(...), element_at(...), try_element_at(...), slice(...)","public_symbols":["arr_position","array_contains","cardinality","element_at","get","size","array_size","slice","try_element_at"],"profile":"pyspark>=3.5; connect=batch","contract":"typed scalar/nullable lookup; preserves rows; get uses zero-based array indexing while element_at remains one-based","notes":"Array indices are one-based for element_at and zero-based for get; slice rejects negative literal lengths.","evidence":["docs/api/Collections.api.md","tests/specifications/pyspark-code-generation/test_v3_collection_helper_rendering.py"]},
-    {"id":"functions.array-advanced","status":"supported","structure":"typed concat, array join, extrema, overlap, sorting, and shuffle helpers","public_symbols":["concat","array_join","array_max","array_min","arrays_overlap","sort_array","shuffle"],"profile":"pyspark>=3.5; connect=batch","contract":"concat accepts homogeneous strings, binary values, or compatible arrays; array<string> joins return nullable String; array extrema return nullable orderable element types; arrays_overlap returns nullable Boolean; sort_array preserves the typed array and accepts a Boolean literal direction; shuffle preserves the typed array and is explicitly nondeterministic","notes":"Concat rejects mixed families and preserves array element nullability; extrema and sorting require orderable scalar elements; arrays_overlap conservatively preserves nullability when arrays or elements may be null; shuffle does not promise an exact order.","evidence":["docs/api/Collections.api.md","tests/specifications/execution-semantic-contract/test_v3_collection_type_contracts.py","tests/specifications/pyspark-code-generation/test_v3_collection_helper_rendering.py"]},
-    {"id":"functions.array-transform","status":"supported","structure":"typed higher-order array helpers","public_symbols":["arr_aggregate","reduce","arr_distinct","arr_exists","arr_filter","arr_flatten","arr_forall","arr_reverse","arr_sort","arr_sort_by","arr_transform","arr_zip_with","arrays_zip","array_except","array_intersect","array_union"],"profile":"pyspark>=3.5; connect=batch","contract":"typed array/scalar result; preserves rows; reduce and arr_aggregate require a type-stable accumulator and symbolic callbacks; arrays_zip returns array<struct> with nullable array_N fields","notes":"Sort accepts orderable scalar elements; callbacks remain symbolic. `reduce` renders the exact PySpark reducer spelling while `arr_aggregate` remains the portable aggregate spelling. `arrays_zip` uses stable array_0, array_1, ... field names so its result remains schema-visible without an untyped escape hatch.","evidence":["docs/api/Collections.api.md","tests/specifications/execution-semantic-contract/test_v3_collection_type_contracts.py","tests/specifications/pyspark-code-generation/test_v3_collection_helper_rendering.py"]},
-    {"id":"functions.map","status":"supported","structure":"typed map and struct constructors/helpers","public_symbols":["create_map","map_concat","map_contains_key","map_entries","map_filter","map_from_arrays","map_from_entries","map_keys","map_values","map_zip_with","named_struct","str_to_map","map_transform_keys","map_transform_values"],"profile":"pyspark>=3.5; connect=batch","contract":"typed map/struct/scalar result; preserves rows; map keys are non-null and constructor field names are literal and unique","notes":"Map callbacks stay symbolic; map constructors preserve typed key/value nullability; str_to_map uses non-empty literal delimiters and returns a String-to-String map; named_struct uses unique literal field names; map_concat requires compatible types and rejects duplicate runtime keys under the Spark exception policy.","evidence":["docs/api/Collections.api.md","docs/dev/gaps/PySpark-SQL-baseline.gaps.md","tests/specifications/compatibility/test_pyspark_transformation_coverage.py","tests/specifications/execution-semantic-contract/test_v3_collection_type_contracts.py","tests/specifications/pyspark-code-generation/test_v3_collection_helper_rendering.py"]},
-    {"id":"functions.generators","status":"supported","structure":"posexplode_struct(...), posexplode_outer_struct(...), explode_struct(...), explode_outer_struct(...), inline_struct(...), inline_outer_struct(...)","public_symbols":["posexplode_struct","posexplode_outer_struct","explode_struct","explode_outer_struct","inline_struct","inline_outer_struct"],"profile":"pyspark>=3.5; connect=batch; streaming=caller-owned","contract":"row expansion requires a declared generated scope schema and cardinality model","notes":"The admitted generators cover the PySpark struct generator family over array<struct> with contains_null=False. Primitive scalar-array and map generators have separate explicit output naming contracts. Opt-in integration coverage includes null and empty outer rows.","evidence":["docs/dev/design/TypedRelationOperations.design.md","docs/dev/design/V7PySparkGeneratorExpansion.design.md","tests/specifications/v6-api-ledger/test_v6_posexplode_struct.py","tests/specifications/v7-api-ledger/test_v7_explode_struct.py","tests/specifications/v7-api-ledger/test_v7_generator_parity_matrix.py","tests/integration/pyspark/v7/test_struct_generators.py","tests/integration/pyspark/v7/test_collection_generator_conformance.py","tests/user_stories/10_generated_code/shared_pyspark_semantic_contract/test_online_recipe_runtime.py","tests/specifications/streaming-compatibility/test_v1_streaming_compatibility.py"]},
-    {"id":"dataframe.projection","status":"supported","structure":"@step Schema projection and where(...)","public_symbols":["project","where"],"profile":"pyspark>=3.5; connect=batch","contract":"declared schema; preserves or filters rows","notes":"Schema constructors own column replacement and names.","evidence":["docs/api/Transforms.api.md","tests/specifications/execution-semantic-contract/test_v3_transform_expression_dispatch.py"]},
-    {"id":"dataframe.join","status":"supported","structure":"rowset_join(...), inner_join(...), exists(...), relation_alias(...), temporal_one(...), as_of_one(...), param_join(...), join hints","public_symbols":["as_of_one","cross_join","exists","inner_join","param_join","relation_alias","rowset_join","temporal_one"],"profile":"pyspark>=3.5; connect=batch","contract":"explicit join cardinality and schema; may multiply rows; nearest as-of uses distance ranking and fails equidistant ties","notes":"Cross joins require allow_cartesian=True. param_join adds a runtime batch-only singleton assertion. Self joins require named relation aliases. Nearest as-of supports ties=\"error\"; directional nearest tie preferences remain outside the public API.","evidence":["docs/api/Joins.api.md","tests/specifications/execution-semantic-contract/test_v3_transform_expression_dispatch.py","tests/specifications/symbolic-execution/test_ordered_step_method_operations.py","tests/specifications/v6-api-ledger/test_v6_relation_alias.py"]},
-    {"id":"dataframe.set","status":"supported","structure":"union_all(...), union_by_name(...), intersect(...), intersect_all(...), subtract(...), except_all(...)","public_symbols":["union_all","union_by_name","intersect","intersect_all","subtract","except_all"],"profile":"pyspark>=3.5; connect=batch; streaming=partial","contract":"Exact-schema relation set composition uses Spark duplicate/distinct semantics and makes no ordering claim; batch union_by_name(..., allow_missing_columns=True) fills nullable fields and typed defaults for missing top-level and nested struct fields while preserving aliases","notes":"V8 admits union_all(...) and union_by_name(...) only for stream-stream exact-schema append composition. V9 admits nullable top-level missing-column union for batch. V10 admits literal defaults for missing non-nullable fields and nested struct paths. Intersect, intersect_all, subtract, except_all, array/map element evolution, and streaming missing-column union remain streaming-ineligible or gated.","evidence":["docs/api/Relations.api.md","docs/dev/specifications/TypedRelationOperations.spec.md","docs/dev/specifications/V9ApiCatalogDesignGatedFeatures.spec.md","tests/specifications/v6-api-ledger/test_v6_relation_union.py","tests/user_stories/10_generated_code/shared_pyspark_semantic_contract/test_online_recipe_runtime.py","tests/specifications/streaming-compatibility/test_v1_streaming_compatibility.py"]},
-    {"id":"dataframe.deduplication","status":"supported","structure":"distinct(), drop_duplicates(...), drop_duplicates_within_watermark(...)","public_symbols":["distinct","drop_duplicates","drop_duplicates_within_watermark"],"profile":"pyspark>=3.5; connect=batch where applicable","contract":"reduces rows; watermark variant is streaming-classified","notes":"Key semantics are explicit.","evidence":["docs/api/Aggregations.api.md","tests/specifications/execution-semantic-contract/test_v3_transform_expression_dispatch.py"]},
-    {"id":"dataframe.ordering","status":"supported","structure":"order_by(...), repartition_by_range(...), limit(...), offset(...), sample(...)","public_symbols":["order_by","repartition_by_range","limit","offset","sample"],"profile":"pyspark>=3.5; connect=batch; streaming=ineligible","contract":"Relation ordering uses typed order descriptors; range repartitioning preserves rows while selecting a positive literal partition count and typed range keys; literal limit/offset bounds require the current relation state to be ordered; sampling requires explicit reproducibility policy","notes":"Order is observable at materialized output boundaries. Set, join, generator, aggregate, repartitioning, sampling, and selected-row operations break the current ordered-state claim unless followed by another order_by(...). V8 keeps ordering and bounds batch-only for unbounded streaming relations. V9 admits sample(...) as a batch-only relation operation with seed required unless reproducible=False. Range repartitioning is batch-only because Spark does not support it for streaming DataFrames.","evidence":["docs/api/Relations.api.md","docs/dev/specifications/TypedRelationOperations.spec.md","docs/dev/specifications/V9ApiCatalogDesignGatedFeatures.spec.md","tests/specifications/v6-api-ledger/test_v6_relation_ordering.py","tests/specifications/v6-api-ledger/test_v6_relation_range_partitioning.py","tests/specifications/v9-api-catalog/test_v9_relation_sampling.py","tests/user_stories/10_generated_code/shared_pyspark_semantic_contract/test_online_recipe_runtime.py"]},
-    {"id":"dataframe.priority-selection","status":"supported","structure":"select_first_qualified(...)","public_symbols":["select_first_qualified"],"profile":"pyspark>=3.5; connect=batch; streaming=ineligible","contract":"Declared business keys, eligibility predicate, and priority order select at most one row per key","notes":"Configured missing or tied candidates fail with REL-E0705. Keys must be declared field references; surrogate row identifiers remain unsupported. V8 keeps priority selection batch-only because it lowers through ranking and validation aggregates.","evidence":["docs/dev/specifications/TypedRelationOperations.spec.md","tests/specifications/v6-api-ledger/test_v6_priority_selection.py"]},
-    {"id":"dataframe.grouping","status":"supported","structure":"group_by(...), rollup(...), cube(...), grouping_sets(...) ","public_symbols":["cube","group_by","grouping_sets","rollup"],"profile":"pyspark>=3.5; connect=batch","contract":"aggregate cardinality; declared output schema","notes":"Post-aggregate filtering uses having(...).","evidence":["docs/api/Aggregations.api.md","tests/specifications/execution-semantic-contract/test_v3_transform_expression_dispatch.py"]},
-    {"id":"functions.aggregate-grouping-metadata","status":"supported","structure":"grouping(key), grouping_id()","public_symbols":["grouping","grouping_id"],"profile":"pyspark>=3.5; connect=batch","contract":"non-null Integer subtotal metadata tied to declared rollup, cube, or grouping-set levels","notes":"grouping(key) returns 1 for an omitted subtotal key and 0 otherwise; is_grouped(key) is the Boolean alternative.","evidence":["docs/api/Aggregations.api.md","tests/specifications/pyspark-code-generation/test_v2_aggregation_rendering.py"]},
-    {"id":"grouped.aggregates","status":"supported","structure":"typed aggregate helpers","public_symbols":["avg","count","max","min","sum"],"profile":"pyspark>=3.5; connect=batch","contract":"aggregate scalar result; declared output schema","notes":"Dictionary aggregate syntax is intentionally unsupported.","evidence":["docs/api/Aggregations.api.md","tests/specifications/execution-semantic-contract/test_v3_transform_expression_dispatch.py"]},
-    {"id":"functions.aggregate-core","status":"supported","structure":"avg(...), count(...), collect_list(...), collect_set(...), max(...), min(...), sum(...) with typed aggregation contracts","public_symbols":["avg","count","collect_list","collect_set","max","min","sum"],"profile":"pyspark>=3.5; connect=batch","contract":"typed aggregate result; preserves declared output schema and filtering","notes":"Collection aggregates skip nulls; collect_list has explicit ordering support and collect_set has no order guarantee.","evidence":["docs/api/Aggregations.api.md","docs/reference/Aggregations.ref.md","tests/specifications/execution-semantic-contract/test_v3_numeric_aggregate_contracts.py","tests/specifications/execution-semantic-contract/test_v3_collection_type_contracts.py","tests/specifications/pyspark-code-generation/test_v2_aggregation_rendering.py"]},
-    {"id":"functions.aggregate-advanced","status":"supported","structure":"typed advanced aggregate helpers","public_symbols":["any_value","approx_count_distinct","approx_percentile","array_agg","bit_and","bit_or","bit_xor","bool_and","bool_or","some","every","corr","count_if","covar","covar_pop","histogram_numeric","mean","std","first","kurtosis","last","max_by","median","min_by","mode","percentile","product","regr_avgx","regr_avgy","regr_count","regr_intercept","regr_r2","regr_slope","regr_sxx","regr_sxy","regr_syy","skewness","stddev","stddev_pop","stddev_samp","sum_distinct","var_pop","var_samp","variance"],"profile":"pyspark>=3.5; connect=batch for admitted helpers; mode=batch-only; histogram Decimal input=PySpark 4.0 only","contract":"aggregate result; declared output schema; candidate-preserving helpers retain candidate type; histogram_numeric requires numeric input, a foldable Integer literal bin count from 2 through INT_MAX, and an exact nullable x/y bucket Schema; Decimal input is PySpark 4.0-only; collection and bitwise helpers have explicit result nullability and integral constraints; regression helpers require paired numeric inputs and return nullable Double except regr_count's non-null Long; sum_distinct applies numeric Spark widening after duplicate removal","notes":"bool_and and every have an all-values-true contract; bool_or and some have an any-value-true contract. every and some preserve their PySpark function spellings in generated code. mean aliases avg with Spark numeric widening; std aliases sample standard deviation; mode(value, deterministic=False) matches PySpark spelling. deterministic=True requires an orderable scalar candidate and uses a portable Spark higher-order aggregate lowering so ties return the lowest candidate across PySpark 3.5 and 4.0. covar_pop returns nullable Double population covariance; covar remains the sample-covariance alias. histogram_numeric returns nullable array/element/fields and preserves x's input type; Spark 3.5.0 fails at execution for Decimal input, which is capability-gated to exact PySpark 4.0. any_value, first, last, max_by, and min_by preserve Spark's order-sensitive or nondeterministic semantics.","evidence":["docs/api/Aggregations.api.md","docs/dev/design/AdvancedAnalyticalOperations.design.md","tests/specifications/execution-semantic-contract/test_v3_numeric_aggregate_contracts.py","tests/specifications/pyspark-code-generation/test_v2_aggregation_rendering.py","tests/integration/pyspark/v7/test_histogram_numeric.py","tests/integration/pyspark/v7/test_deterministic_mode.py"]},
-    {"id":"functions.window","status":"supported","structure":"typed ranking, distribution, selection, and aggregate window helpers","public_symbols":["cume_dist","dense_rank","first_value","lag","last_value","lead","nth_value","ntile","percent_rank","rank","row_number","window_avg","window_sum"],"profile":"pyspark>=3.5; connect=batch","contract":"preserves rows; typed window result; ranking/distribution results have declared Long, Integer, or Double types; selection functions preserve the input type","notes":"The 11 common SQL window functions have per-function baseline dispositions. Raw WindowSpec remains outside the DSL. lag/lead defaults and value-function ignore_nulls controls must be literals; expression-valued options remain caller-owned.","evidence":["docs/api/Windows.api.md","docs/dev/gaps/PySpark-SQL-baseline.gaps.md","tests/specifications/compatibility/test_pyspark_transformation_coverage.py","tests/specifications/execution-semantic-contract/test_v3_transform_expression_dispatch.py"]},
-    {"id":"streaming.watermark","status":"supported","structure":"watermark(...)","public_symbols":["watermark"],"profile":"pyspark>=3.5 ordinary PySpark; connect=excluded","contract":"adds streaming state metadata; preserves rows","notes":"Caller retains lifecycle ownership.","evidence":["docs/api/Streaming.api.md","tests/specifications/execution-semantic-contract/test_v3_transform_expression_dispatch.py"]},
-    {"id":"streaming.session-window","status":"supported","structure":"session_window(event_time, gap)","public_symbols":["session_window"],"profile":"pyspark>=3.5; connect=batch","contract":"typed TimeWindow grouping key; aggregate cardinality","notes":"The gap is a positive fixed Spark interval; the result is a TimeWindow Struct grouping key.","evidence":["docs/api/Streaming.api.md","tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py"]},
-    {"id":"dataframe.coalescing","status":"supported","structure":"coalesce(partitions=...) ","public_symbols":["coalesce"],"profile":"pyspark>=3.5; Connect runtime confirmation pending; streaming=compatible with advisory","contract":"Row-preserving relation operation with a positive keyword-only partition count; no output-order or partition-identity promise","notes":"STREAM-W0803 advises that streaming partition count is a throughput-tuning choice. Scalar coalesce requires at least two values.","evidence":["docs/api/Relations.api.md","docs/dev/design/PySparkSQLBoundaryContracts.design.md","tests/specifications/v6-api-ledger/test_v6_relation_coalesce.py","tests/user_stories/10_generated_code/shared_pyspark_semantic_contract/test_online_recipe_runtime.py"]},
-    {"id":"dataframe.repartitioning","status":"supported","structure":"repartition(count, *keys) / repartition(*keys)","public_symbols":["repartition"],"profile":"pyspark>=3.5; Connect runtime confirmation pending; streaming=compatible with advisory","contract":"Hash-shuffles the current relation, preserving rows and schema; leading positive integer selects the count; omitted count delegates to Spark configuration; no output-order or stable partition-identity promise","notes":"STREAM-W0804 warns that repartitioning shuffles streaming rows and partition count/hash keys are deployment tuning choices. Range repartitioning remains batch-only.","evidence":["docs/api/Relations.api.md","docs/dev/design/PySparkSQLBoundaryContracts.design.md","tests/specifications/v6-api-ledger/test_v6_relation_repartition.py","tests/user_stories/10_generated_code/shared_pyspark_semantic_contract/test_online_recipe_runtime.py"]}
+    {
+      "id": "functions.v11-chr",
+      "status": "supported",
+      "structure": "chr(...)",
+      "public_symbols": [
+        "chr"
+      ],
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "contract": "Integer/Long to String; preserves input nullability; native byte-range semantics match char",
+      "notes": "Native/online/generated batch values and schemas pass on both pinned PySpark/Spark 4.1.0 variants. Streaming is compatible by design; live streaming is unclaimed.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "docs/reference/Expressions.ref.md",
+        "docs/dev/design/V11PySpark41ExpressionParity.design.md",
+        "tests/specifications/pyspark-code-generation/test_v11_scalar_helpers.py",
+        "tests/integration/pyspark/v11/test_scalar_helpers.py"
+      ]
+    },
+    {
+      "id": "functions.v11-quote",
+      "status": "supported",
+      "structure": "quote(...)",
+      "public_symbols": [
+        "quote"
+      ],
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "contract": "String to nullable String, including required input; encloses in single quotes and backslash-escapes embedded single quotes",
+      "notes": "Native/online/generated batch values and schemas pass on both pinned PySpark/Spark 4.1.0 variants. Streaming is compatible by design; live streaming is unclaimed.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "docs/reference/Expressions.ref.md",
+        "docs/dev/design/V11PySpark41ExpressionParity.design.md",
+        "tests/specifications/pyspark-code-generation/test_v11_scalar_helpers.py",
+        "tests/integration/pyspark/v11/test_scalar_helpers.py"
+      ]
+    },
+    {
+      "id": "functions.v11-try-to-date",
+      "status": "supported",
+      "structure": "try_to_date(...)",
+      "public_symbols": [
+        "try_to_date"
+      ],
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "contract": "String/Date/LTZ Timestamp to conservatively nullable Date; optional non-empty datetime pattern literal; malformed text becomes null in either ANSI mode",
+      "notes": "Native/online/generated batch values and schemas pass on both pinned PySpark/Spark 4.1.0 variants. Streaming is compatible by design; live streaming is unclaimed.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "docs/reference/Expressions.ref.md",
+        "docs/dev/design/V11PySpark41ExpressionParity.design.md",
+        "tests/specifications/pyspark-code-generation/test_v11_scalar_helpers.py",
+        "tests/integration/pyspark/v11/test_scalar_helpers.py"
+      ]
+    },
+    {
+      "id": "functions.v11-random",
+      "status": "supported",
+      "structure": "random(...)",
+      "public_symbols": [
+        "random"
+      ],
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "contract": "Non-null uniform Double; literal integer seed or explicit reproducible=False; marked nondeterministic and batch-only",
+      "notes": "Native/online/generated batch values and schemas pass on both pinned PySpark/Spark 4.1.0 variants. Streaming is batch-only.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "docs/reference/Expressions.ref.md",
+        "docs/dev/design/V11PySpark41ExpressionParity.design.md",
+        "tests/specifications/pyspark-code-generation/test_v11_scalar_helpers.py",
+        "tests/integration/pyspark/v11/test_scalar_helpers.py"
+      ]
+    },
+    {
+      "id": "functions.v11-uuid",
+      "status": "supported",
+      "structure": "uuid(...)",
+      "public_symbols": [
+        "uuid"
+      ],
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "contract": "Non-null canonical UUID String; literal integer seed or explicit reproducible=False; marked nondeterministic and batch-only",
+      "notes": "Native/online/generated batch values and schemas pass on both pinned PySpark/Spark 4.1.0 variants. Streaming is batch-only.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "docs/reference/Expressions.ref.md",
+        "docs/dev/design/V11PySpark41ExpressionParity.design.md",
+        "tests/specifications/pyspark-code-generation/test_v11_scalar_helpers.py",
+        "tests/integration/pyspark/v11/test_scalar_helpers.py"
+      ]
+    },
+    {
+      "id": "functions.stack",
+      "status": "supported",
+      "structure": "stack(rows, *values, to=Schema, scope=None)",
+      "public_symbols": [
+        "stack"
+      ],
+      "profile": "pyspark>=3.5; Connect=batch verified on 3.5/4.0; streaming=compatible by design",
+      "contract": "Fixed row-multiplying generator; positive row count; each declared output field uses the position-wise common input type and must be nullable when inputs or trailing padding can be null",
+      "notes": "Matches PySpark trailing-NULL padding while keeping output names, types, nullability, and row multiplication compiler-visible.",
+      "evidence": [
+        "docs/dev/design/PySparkSQLBoundaryContracts.design.md",
+        "docs/api/Collections.api.md",
+        "tests/specifications/v6-api-ledger/test_v6_stack.py",
+        "tests/integration/pyspark/v7/test_runtime_matrix_closeout.py",
+        "tests/user_stories/10_generated_code/shared_pyspark_semantic_contract/test_online_recipe_runtime.py"
+      ]
+    },
+    {
+      "id": "functions.map-generators",
+      "status": "supported",
+      "structure": "explode_map(...), explode_outer_map(...), posexplode_map(...), posexplode_outer_map(...)",
+      "public_symbols": [
+        "explode_map",
+        "explode_outer_map",
+        "posexplode_map",
+        "posexplode_outer_map"
+      ],
+      "profile": "pyspark>=3.5; connect=batch; streaming=caller-owned",
+      "contract": "Primitive map expansion requires an explicit generated Schema, key_field, value_field, and optional long ordinal; inner forms preserve map value nullability and outer forms require nullable generated fields",
+      "notes": "Nested map values, structs, variants, and indexed callbacks remain deferred. Opt-in integration coverage runs the same fixture on ordinary PySpark and Spark Connect profiles.",
+      "evidence": [
+        "docs/api/Collections.api.md",
+        "tests/specifications/v6-api-ledger/test_v6_map_generators.py",
+        "tests/specifications/v7-api-ledger/test_v7_generator_parity_matrix.py",
+        "tests/integration/pyspark/v7/test_collection_generator_conformance.py"
+      ]
+    },
+    {
+      "id": "functions.scalar-generators",
+      "status": "supported",
+      "structure": "explode_array(...), explode_outer_array(...), posexplode_array(...), posexplode_outer_array(...)",
+      "public_symbols": [
+        "explode_array",
+        "explode_outer_array",
+        "posexplode_array",
+        "posexplode_outer_array"
+      ],
+      "profile": "pyspark>=3.5; connect=batch; streaming=caller-owned",
+      "contract": "Primitive scalar-array expansion requires an explicit generated Schema, value_field, and optional long ordinal; inner forms require non-null arrays and elements, outer forms require nullable generated fields",
+      "notes": "Nested arrays, structs, variants, and indexed callbacks remain deferred; primitive map generators are admitted separately. Opt-in integration coverage runs the same fixture on ordinary PySpark and Spark Connect profiles.",
+      "evidence": [
+        "docs/api/Collections.api.md",
+        "tests/specifications/v6-api-ledger/test_v6_scalar_array_generators.py",
+        "tests/specifications/v7-api-ledger/test_v7_generator_parity_matrix.py",
+        "tests/integration/pyspark/v7/test_collection_generator_conformance.py"
+      ]
+    },
+    {
+      "id": "column.comparison",
+      "status": "supported",
+      "structure": "symbolic comparison operators, between(...), isin(...)",
+      "public_symbols": [
+        "field"
+      ],
+      "profile": "pyspark>=3.5; connect=batch",
+      "contract": "typed scalar predicates; nullable Boolean; preserves rows",
+      "notes": "Use symbolic operators, not Python truthiness. isin accepts variadic values or one list and preserves authored order.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "tests/specifications/execution-semantic-contract/test_v3_transform_expression_dispatch.py"
+      ]
+    },
+    {
+      "id": "column.boolean",
+      "status": "supported",
+      "structure": "&, |, ~, is_null(), is_not_null(), isnan(), isnan(...)",
+      "public_symbols": [
+        "isnan",
+        "isnotnull",
+        "isnull"
+      ],
+      "profile": "pyspark>=3.5; connect=batch",
+      "contract": "Boolean expression; conservative nullability; preserves rows",
+      "notes": "Null and NaN stay distinct. Float and Double expressions support chained isnan().",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "tests/specifications/execution-semantic-contract/test_v3_transform_expression_dispatch.py"
+      ]
+    },
+    {
+      "id": "column.arithmetic",
+      "status": "supported",
+      "structure": "symbolic +, -, *, /, %, unary -",
+      "public_symbols": [
+        "field"
+      ],
+      "profile": "pyspark>=3.5; connect=batch",
+      "contract": "typed numeric expression; preserves rows",
+      "notes": "Operand types determine the result type.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "tests/specifications/execution-semantic-contract/test_v3_transform_expression_dispatch.py"
+      ]
+    },
+    {
+      "id": "column.bitwise",
+      "status": "supported",
+      "structure": "Expression.bitwise_and(...), bitwise_or(...), bitwise_xor(...), bitwise_not()",
+      "public_symbols": [
+        "field"
+      ],
+      "profile": "pyspark>=3.5; connect=batch",
+      "contract": "integer/long expressions; mixed pair returns long; input nullability propagates; preserves rows",
+      "notes": "Typed methods avoid Python's ambiguous & and | operators, which remain Boolean composition.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "tests/specifications/backend-capabilities/test_backend_capabilities.py",
+        "tests/specifications/pyspark-code-generation/test_v1_pyspark_expression_rendering.py",
+        "tests/user_stories/10_generated_code/shared_pyspark_semantic_contract/test_online_recipe_runtime.py"
+      ]
+    },
+    {
+      "id": "column.string-predicates",
+      "status": "supported",
+      "structure": "contains(...), startswith(...), endswith(...), like(...), ilike(...), rlike(...)",
+      "public_symbols": [
+        "field"
+      ],
+      "profile": "pyspark>=3.5; connect=batch",
+      "contract": "Boolean expression; input nullability propagates; preserves rows",
+      "notes": "Plain, case-insensitive, regex, prefix, and suffix matching remain compiler-visible. contains, startswith, and endswith accept literal or String-expression operands.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py",
+        "tests/specifications/pyspark-code-generation/test_v1_pyspark_expression_rendering.py",
+        "tests/user_stories/10_generated_code/shared_pyspark_semantic_contract/test_online_recipe_runtime.py"
+      ]
+    },
+    {
+      "id": "column.cast",
+      "status": "supported",
+      "structure": "cast(...), try_cast(...)",
+      "public_symbols": [
+        "field"
+      ],
+      "profile": "cast:pyspark>=3.5; try_cast:pyspark>=4.0; connect=batch",
+      "contract": "declared scalar result; try_cast nullable; preserves rows",
+      "notes": "try_cast is capability checked.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "tests/specifications/execution-semantic-contract/test_v3_transform_expression_dispatch.py"
+      ]
+    },
+    {
+      "id": "column.nested-access",
+      "status": "supported",
+      "structure": "typed attributes, get_field(...), indexing",
+      "public_symbols": [
+        "field"
+      ],
+      "profile": "pyspark>=3.5; connect=batch",
+      "contract": "typed struct/array/map selection; lookup nullable; preserves rows",
+      "notes": "Physical aliases remain schema-owned.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "tests/specifications/execution-semantic-contract/test_v3_transform_expression_dispatch.py"
+      ]
+    },
+    {
+      "id": "column.struct-mutation",
+      "status": "supported",
+      "structure": "Expression.with_field(..., schema=...) and drop_fields(..., schema=...)",
+      "public_symbols": [
+        "field"
+      ],
+      "profile": "pyspark>=3.5; connect=batch for admitted helpers",
+      "contract": "exact declared Struct result; preserves rows",
+      "notes": "The declared result Schema must preserve the source shape except for the named replacement or removals.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py"
+      ]
+    },
+    {
+      "id": "column.sort",
+      "status": "supported",
+      "structure": "asc()/desc() order descriptors",
+      "public_symbols": [
+        "field"
+      ],
+      "profile": "pyspark>=3.5; connect=batch",
+      "contract": "sort-key descriptor; preserves rows",
+      "notes": "Used by typed windows and admitted ordered operations.",
+      "evidence": [
+        "docs/api/Windows.api.md",
+        "tests/specifications/execution-semantic-contract/test_v3_transform_expression_dispatch.py"
+      ]
+    },
+    {
+      "id": "column.transform",
+      "status": "supported",
+      "structure": "Expression.transform(function)",
+      "public_symbols": [
+        "transform"
+      ],
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "contract": "One typed whole-expression callback returns a typed expression; result type and nullability follow the callback; preserves rows",
+      "notes": "The callback runs during symbolic authoring and must return a Structure expression. Streaming eligibility is checked from the returned expression. Ordinary PySpark and Spark Connect 4.1.0 online/generated parity passes, including nullable inputs and changed result types.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "docs/reference/Transform.ref.md",
+        "docs/compatibility/Expressions.compat.md",
+        "tests/specifications/pyspark-code-generation/test_v11_column_transform.py",
+        "tests/integration/pyspark/v11/test_column_transform.py"
+      ]
+    },
+    {
+      "id": "column.alias",
+      "status": "unsupported",
+      "structure": "Schema field aliases",
+      "public_symbols": [],
+      "profile": "n/a",
+      "contract": "schema constructors own names",
+      "notes": "Use Schema fields and aliases rather than Column alias().",
+      "evidence": [
+        "docs/reference/Schema.ref.md"
+      ]
+    },
+    {
+      "id": "column.window",
+      "status": "unsupported",
+      "structure": "typed window helpers",
+      "public_symbols": [],
+      "profile": "n/a",
+      "contract": "compiler-visible Window contract",
+      "notes": "Raw WindowSpec is an explicit hook boundary.",
+      "evidence": [
+        "docs/api/Windows.api.md"
+      ]
+    },
+    {
+      "id": "functions.conditional",
+      "status": "supported",
+      "structure": "when(...), coalesce(...), nvl(...), ifnull(...), nvl2(...), nullif(...), zeroifnull(...)",
+      "public_symbols": [
+        "coalesce",
+        "ifnull",
+        "nullif",
+        "nvl",
+        "nvl2",
+        "when",
+        "zeroifnull"
+      ],
+      "profile": "pyspark>=3.5; connect=batch for admitted helpers",
+      "contract": "typed scalar result; preserves rows",
+      "notes": "Fallback and branch nullability are analyzed symbolically; nullif remains nullable because a match becomes null.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py",
+        "tests/specifications/pyspark-code-generation/test_v1_pyspark_expression_rendering.py",
+        "tests/user_stories/10_generated_code/shared_pyspark_semantic_contract/test_online_recipe_runtime.py"
+      ]
+    },
+    {
+      "id": "functions.assertion",
+      "status": "supported",
+      "structure": "assert_true(...), raise_error(...)",
+      "public_symbols": [
+        "assert_true",
+        "raise_error"
+      ],
+      "profile": "pyspark>=3.5; connect=batch",
+      "contract": "typed non-null Boolean guard; assertion failure raises during Spark evaluation",
+      "notes": "Structure adapts PySpark's null-on-success assertion result with .isNull(), so successful assert_true can be used in where(...). Messages are compiler-visible string literals; assertion aliases remain ordinary predicate composition.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "docs/dev/specifications/PySparkScalarAssertions.spec.md",
+        "tests/specifications/pyspark-scalar-assertions/test_pyspark_scalar_assertions.py",
+        "tests/integration/pyspark/v11/test_scalar_assertions.py"
+      ]
+    },
+    {
+      "id": "functions.predicate",
+      "status": "supported",
+      "structure": "equal_null(...), like(...), ilike(...), regexp(...), regexp_like(...), rlike(...) ",
+      "public_symbols": [
+        "equal_null",
+        "like",
+        "ilike",
+        "regexp",
+        "regexp_like",
+        "rlike"
+      ],
+      "profile": "pyspark>=3.5; connect=batch",
+      "contract": "typed nullable Boolean predicates; equal_null is non-null and treats two nulls as equal; String match helpers require String operands and preserve input nullability",
+      "notes": "Function-form String predicates accept typed String expressions for both operands; patterns may therefore be literal or column-derived.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py",
+        "tests/specifications/pyspark-code-generation/test_v1_pyspark_expression_rendering.py"
+      ]
+    },
+    {
+      "id": "functions.null",
+      "status": "supported",
+      "structure": "isnull(...), isnotnull(...), isnan(...), nanvl(...)",
+      "public_symbols": [
+        "isnan",
+        "isnotnull",
+        "isnull",
+        "nanvl"
+      ],
+      "profile": "pyspark>=3.5; connect=batch for admitted helpers",
+      "contract": "Boolean/scalar expression; preserves rows",
+      "notes": "Null and NaN remain distinct; nanvl replaces only NaN values.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py",
+        "tests/specifications/pyspark-code-generation/test_v1_pyspark_expression_rendering.py",
+        "tests/user_stories/10_generated_code/shared_pyspark_semantic_contract/test_online_recipe_runtime.py"
+      ]
+    },
+    {
+      "id": "functions.string",
+      "status": "supported",
+      "structure": "typed string helpers",
+      "public_symbols": [
+        "ascii",
+        "bit_length",
+        "btrim",
+        "char",
+        "char_length",
+        "character_length",
+        "concat_ws",
+        "contains",
+        "elt",
+        "endswith",
+        "find_in_set",
+        "format_number",
+        "format_string",
+        "initcap",
+        "instr",
+        "left",
+        "length",
+        "levenshtein",
+        "locate",
+        "lower",
+        "lcase",
+        "lpad",
+        "ltrim",
+        "mask",
+        "octet_length",
+        "overlay",
+        "position",
+        "printf",
+        "regexp_count",
+        "regexp_extract",
+        "regexp_extract_all",
+        "regexp_instr",
+        "regexp_replace",
+        "regexp_substr",
+        "repeat",
+        "replace",
+        "reverse",
+        "right",
+        "rpad",
+        "rtrim",
+        "soundex",
+        "split",
+        "split_part",
+        "startswith",
+        "substr",
+        "substring",
+        "substring_index",
+        "translate",
+        "trim",
+        "upper",
+        "ucase",
+        "try_url_decode",
+        "url_decode",
+        "url_encode"
+      ],
+      "profile": "pyspark>=3.5; connect=batch for admitted helpers",
+      "contract": "typed String, Binary, or scalar result; preserves rows",
+      "notes": "String padding, masking, slicing, repetition, formatting, regex, and position counts use validated literal arguments where the DSL owns them; btrim accepts a typed String expression for its trim set and propagates both input nullabilities; bit_length accepts String or Binary and returns Integer; startswith and endswith accept String/Binary operands, preserve nullable Boolean behavior, and allow Spark's mixed-type coercion; function-form contains and find_in_set accept typed String operands; elt selects a compatible one-based scalar value; format_string and printf require a literal format with scalar arguments; regexp_extract_all returns a typed array<string>; octet_length accepts String or Binary; mask character replacements are optional single-character literals; overlay requires same-family String/Binary values and integral position/length expressions; character_length preserves its PySpark spelling; lcase and ucase preserve alias spellings; replace currently uses literal search/replacement strings, while PySpark permits ColumnOrName operands; URL helpers require String and strict decode retains Spark failure behavior; try_url_decode is limited to PySpark 4.0+.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py",
+        "tests/specifications/pyspark-code-generation/test_v1_pyspark_expression_rendering.py"
+      ]
+    },
+    {
+      "id": "functions.string-specialized",
+      "status": "design-gated",
+      "structure": "parse_url(...), sentences(...), to_char(...), to_number(...), to_varchar(...), try_to_number(...)",
+      "public_symbols": [],
+      "profile": "pyspark>=3.5; Connect behavior and streaming contracts not yet admitted",
+      "contract": "typed scalar or nested-array result; preserves rows",
+      "notes": "The common API names are in both official target indexes. parse_url accepts typed URL/part/key inputs but needs explicit malformed-URL and dynamic-part semantics; sentences returns array<array<string>> and needs locale/input-nullability contract; picture-format functions need a compiler-visible picture-mask grammar, result precision/scale analysis, and strict versus try failure semantics. Keep these functions design-gated until the contracts are specified and verified.",
+      "evidence": [
+        "docs/dev/gaps/PySpark-SQL-baseline.gaps.md",
+        "tests/specifications/compatibility/test_pyspark_transformation_coverage.py"
+      ]
+    },
+    {
+      "id": "functions.numeric",
+      "status": "supported",
+      "structure": "typed deterministic numeric, base-conversion, and histogram helpers",
+      "public_symbols": [
+        "abs",
+        "acos",
+        "acosh",
+        "asin",
+        "asinh",
+        "atan",
+        "atan2",
+        "atanh",
+        "bin",
+        "bround",
+        "cbrt",
+        "ceil",
+        "ceiling",
+        "conv",
+        "cos",
+        "cosh",
+        "cot",
+        "csc",
+        "degrees",
+        "e",
+        "exp",
+        "expm1",
+        "factorial",
+        "floor",
+        "greatest",
+        "hex",
+        "hypot",
+        "least",
+        "ln",
+        "log",
+        "log10",
+        "log1p",
+        "log2",
+        "negate",
+        "negative",
+        "positive",
+        "power",
+        "pmod",
+        "pi",
+        "pow",
+        "radians",
+        "rint",
+        "round",
+        "sec",
+        "sign",
+        "signum",
+        "sin",
+        "sinh",
+        "sqrt",
+        "tan",
+        "tanh",
+        "unhex",
+        "width_bucket"
+      ],
+      "profile": "pyspark>=3.5; connect=batch for admitted helpers",
+      "contract": "typed numeric result; preserves rows; bin/hex/conv return String, unhex returns nullable Binary, and width_bucket returns nullable Long",
+      "notes": "Rounding preserves numeric precision rules; transcendental and constant helpers return Double values; factorial returns nullable Long for integral inputs; greatest/least preserve the compatible common type and return null only when all arguments are null; pmod preserves the common numeric type and propagates operand nullability; exact-name aliases ceiling, power, negate, negative, and positive preserve their PySpark SQL spelling; conv requires validated base literals and width_bucket requires a positive bucket-count literal.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py",
+        "tests/specifications/pyspark-code-generation/test_v1_pyspark_expression_rendering.py"
+      ]
+    },
+    {
+      "id": "functions.numeric-safe-arithmetic",
+      "status": "design-gated",
+      "structure": "try_add(...), try_divide(...), try_multiply(...), try_subtract(...), try_avg(...), try_sum(...) ",
+      "public_symbols": [],
+      "profile": "pyspark>=3.5; Connect and streaming contracts not yet admitted",
+      "contract": "typed arithmetic and aggregates that return null on overflow; try_divide also returns null for a zero divisor",
+      "notes": "The 3.5.6/4.0.0 APIs are common baseline names. Define numeric widening, ANSI behavior, nullability and filters; try_divide additionally supports interval operands and always uses floating-point division for numeric inputs. Validate classic/Connect runtime and streaming behavior before admission.",
+      "evidence": [
+        "docs/dev/gaps/PySpark-SQL-baseline.gaps.md"
+      ]
+    },
+    {
+      "id": "writer-v2.partitioning",
+      "status": "caller-owned-guided",
+      "structure": "PySpark DataFrameWriterV2 partition transforms",
+      "public_symbols": [],
+      "profile": "pyspark>=3.5; native writer boundary",
+      "contract": "years(col), months(col), days(col), hours(col), and bucket(numBuckets, col) construct output-layout transforms for DataFrameWriterV2.partitionedBy",
+      "notes": "These helpers affect physical table/file layout rather than a compiler-visible DataFrame transformation. They remain caller-owned with native PySpark; do not confuse them with Structure's row-preserving repartition/coalesce APIs.",
+      "evidence": [
+        "docs/dev/design/PySparkSQLBoundaryContracts.design.md",
+        "docs/dev/deferred/ApiCatalog.deferred.md"
+      ]
+    },
+    {
+      "id": "functions.bitwise",
+      "status": "supported",
+      "structure": "typed SQL bitwise complement, bit-count, bit-position, and shift helpers",
+      "public_symbols": [
+        "bitwise_not",
+        "bit_count",
+        "bit_get",
+        "getbit",
+        "shiftleft",
+        "shiftright",
+        "shiftrightunsigned"
+      ],
+      "profile": "pyspark>=3.5; connect=batch for admitted helpers",
+      "contract": "bitwise_not preserves integral type/nullability; bit_count returns nullable Long for integral input; bit_get and getbit return nullable Integer for integral value and position expressions; shift helpers return nullable Long for integral input and an integer literal bit count; preserves rows",
+      "notes": "The SQL aliases are explicit and shift counts remain compiler-visible integer literals.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py",
+        "tests/specifications/pyspark-code-generation/test_v1_pyspark_expression_rendering.py"
+      ]
+    },
+    {
+      "id": "functions.random",
+      "status": "supported",
+      "structure": "typed nondeterministic random scalar",
+      "public_symbols": [
+        "rand",
+        "randn"
+      ],
+      "profile": "pyspark>=3.5; connect=batch and streaming only where target evidence passes",
+      "contract": "non-null Double; rand is uniform in [0,1) and randn is standard-normal; integer seed required by default; reproducible=False explicitly permits an omitted seed",
+      "notes": "Seeded use is auditable but does not promise exact values across repartitioning, retries, versions, or query restarts. Streaming status is separately ledgered.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py",
+        "tests/specifications/pyspark-code-generation/test_v1_pyspark_expression_rendering.py"
+      ]
+    },
+    {
+      "id": "functions.temporal",
+      "status": "supported",
+      "structure": "typed date arithmetic, formatting, truncation, extraction, Unix-day conversion, and conversion helpers",
+      "public_symbols": [
+        "add_months",
+        "convert_timezone",
+        "date_add",
+        "date_diff",
+        "date_format",
+        "date_from_unix_date",
+        "date_part",
+        "date_sub",
+        "date_trunc",
+        "dateadd",
+        "datediff",
+        "datepart",
+        "day",
+        "dayofmonth",
+        "dayofweek",
+        "dayofyear",
+        "extract",
+        "from_unixtime",
+        "from_utc_timestamp",
+        "hour",
+        "interval",
+        "last_day",
+        "make_date",
+        "make_dt_interval",
+        "make_interval",
+        "make_timestamp",
+        "make_timestamp_ltz",
+        "make_timestamp_ntz",
+        "make_ym_interval",
+        "minute",
+        "month",
+        "months_between",
+        "next_day",
+        "quarter",
+        "second",
+        "timestamp_micros",
+        "timestamp_millis",
+        "timestamp_seconds",
+        "to_date",
+        "to_timestamp",
+        "to_timestamp_ltz",
+        "to_timestamp_ntz",
+        "to_unix_timestamp",
+        "to_utc_timestamp",
+        "trunc",
+        "try_to_timestamp",
+        "unix_date",
+        "unix_micros",
+        "unix_millis",
+        "unix_seconds",
+        "unix_timestamp",
+        "weekday",
+        "weekofyear",
+        "year"
+      ],
+      "profile": "pyspark>=3.5; Connect 3.5/4.0 verified for generic timestamp configuration, parser ANSI behavior, interval arithmetic, and row-valued date_sub; other overloads remain individually unverified",
+      "contract": "typed date, timestamp, integer, or String result; preserves rows",
+      "notes": "Classic and Connect runtime checks confirm generic timestamp configuration and parser ANSI behavior plus YearMonth/DayTime arithmetic parity. Row-valued date_sub offsets also pass classic and Connect on PySpark 3.5 and 4.0. Date plus CalendarInterval returns Date. Calendar Schema is rejected on PySpark 3.5 and works on PySpark 4.0 classic/Connect; DayTime converts to timedelta, YearMonth conversion varies by target, and Calendar Row/Arrow conversion fails on tested 4.0 paths. Date/timestamp subtraction follows spark.sql.legacy.interval.enabled. date_sub accepts literal or typed row-dependent Integer/Long day counts.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "tests/integration/pyspark/v7/test_temporal_unix.py",
+        "tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py",
+        "tests/specifications/pyspark-code-generation/test_v1_pyspark_expression_rendering.py",
+        "tests/specifications/v6-api-ledger/test_v6_convert_timezone.py",
+        "tests/specifications/v6-api-ledger/test_v6_make_date.py",
+        "tests/specifications/v6-api-ledger/test_v6_to_timestamp_ntz.py"
+      ]
+    },
+    {
+      "id": "functions.query-clock",
+      "status": "supported",
+      "structure": "typed query-clock and session-timezone helpers",
+      "public_symbols": [
+        "current_date",
+        "curdate",
+        "current_timestamp",
+        "now",
+        "localtimestamp",
+        "current_timezone"
+      ],
+      "profile": "pyspark>=3.5; connect=batch/streaming",
+      "contract": "The five clock expressions are non-null, query-stable, and nondeterministic across query evaluations; current_timezone is a non-null session-configuration read.",
+      "notes": "Retries and streaming micro-batches are not promised to share a value.",
+      "evidence": [
+        "docs/dev/design/PySparkSQLBoundaryContracts.design.md",
+        "tests/specifications/pyspark-sql-boundary-contracts/test_boundary_contracts.py"
+      ]
+    },
+    {
+      "id": "functions.hash",
+      "status": "supported",
+      "structure": "typed scalar hashes, CRC-32, and String digests",
+      "public_symbols": [
+        "hash",
+        "xxhash64",
+        "crc32",
+        "md5",
+        "sha1",
+        "sha2"
+      ],
+      "profile": "pyspark>=3.5; connect=batch for admitted helpers",
+      "contract": "hashes accept scalar expressions and preserve nullability; crc32 accepts String or Binary and returns nullable Long; String digests preserve String nullability",
+      "notes": "Hash output is not a cryptographic or cross-engine identity contract. CRC-32 is a checksum, not a cryptographic digest. String digests are not password-storage primitives. PySpark sha is equivalent to Structure sha1.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py",
+        "tests/specifications/pyspark-code-generation/test_v1_pyspark_expression_rendering.py",
+        "tests/user_stories/10_generated_code/shared_pyspark_semantic_contract/test_online_recipe_runtime.py"
+      ]
+    },
+    {
+      "id": "functions.literal",
+      "status": "supported",
+      "structure": "literal(value)",
+      "public_symbols": [
+        "literal"
+      ],
+      "profile": "pyspark>=3.5; connect=batch",
+      "contract": "typed constant expression; preserves its inferred or declared scalar type",
+      "notes": "PySpark lit(value) maps to Structure literal(value).",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py",
+        "tests/specifications/pyspark-code-generation/test_v1_pyspark_expression_rendering.py"
+      ]
+    },
+    {
+      "id": "functions.relation-hint",
+      "status": "caller-owned-guided",
+      "structure": "lookup_join(..., hint=\"broadcast\")",
+      "public_symbols": [],
+      "profile": "pyspark>=3.5; Connect support follows join capability",
+      "contract": "relation-level optimization hint; does not alter row values or schema",
+      "notes": "PySpark functions.broadcast(df) is a relation marker. Structure expresses the same choice on the join with hint=\"broadcast\"; keep distribution decisions at the join boundary.",
+      "evidence": [
+        "docs/api/Joins.api.md",
+        "docs/dev/gaps/PySpark-SQL-baseline.gaps.md",
+        "tests/specifications/compatibility/test_api_catalog_design_gates.py"
+      ]
+    },
+    {
+      "id": "functions.time-window",
+      "status": "supported",
+      "structure": "window(event_time, duration, slide=None, start=None), window_time(window_value)",
+      "public_symbols": [
+        "window",
+        "window_time"
+      ],
+      "profile": "pyspark>=3.5; connect=batch",
+      "contract": "typed TimeWindow key or end-time expression; preserves row shape until grouped aggregation",
+      "notes": "The positional event-time function is distinct from the keyword-only analytic WindowSpec builder; event-time state and watermark rules remain caller-owned at the streaming boundary.",
+      "evidence": [
+        "docs/api/Streaming.api.md",
+        "tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py",
+        "tests/specifications/streaming-compatibility/test_v1_streaming_compatibility.py"
+      ]
+    },
+    {
+      "id": "functions.xml",
+      "status": "design-gated",
+      "structure": "xpath, xpath_boolean, xpath_double, xpath_float, xpath_int, xpath_long, xpath_number, xpath_short, xpath_string",
+      "public_symbols": [],
+      "profile": "pyspark>=3.5; XML parity not admitted",
+      "contract": "requires an explicit XPath grammar, XML null/malformed-input behavior, and return-type/struct schema rules",
+      "notes": "Keep the XML family gated until its typed output and parser contracts are specified; use native PySpark at the XML boundary.",
+      "evidence": [
+        "docs/dev/gaps/PySpark-SQL-baseline.gaps.md",
+        "docs/dev/design/PySparkSQLBoundaryContracts.design.md",
+        "tests/specifications/compatibility/test_pyspark_transformation_coverage.py"
+      ]
+    },
+    {
+      "id": "functions.encoding",
+      "status": "supported",
+      "structure": "typed Binary encoding helpers",
+      "public_symbols": [
+        "base64",
+        "binary",
+        "decode",
+        "encode",
+        "to_binary",
+        "try_to_binary",
+        "unbase64"
+      ],
+      "profile": "pyspark>=3.5; connect=batch",
+      "contract": "Binary Structure fields and bytes literals support Base64, charset conversion, and literal-format text conversion; encoding helpers preserve row cardinality and Spark null behavior",
+      "notes": "base64/decode accept Binary expressions; unbase64/encode/to_binary/try_to_binary accept String expressions. encode/decode charsets and binary conversion formats are non-empty literals passed to Spark. try_to_binary returns nullable Binary on conversion failure.",
+      "evidence": [
+        "docs/dev/design/AdvancedAnalyticalOperations.design.md",
+        "tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py",
+        "tests/specifications/pyspark-code-generation/test_v1_pyspark_expression_rendering.py",
+        "tests/integration/pyspark/v7/test_binary_encoding.py"
+      ]
+    },
+    {
+      "id": "functions.crypto",
+      "status": "supported",
+      "structure": "typed AES-GCM helpers",
+      "public_symbols": [
+        "aes_encrypt",
+        "aes_decrypt",
+        "try_aes_decrypt"
+      ],
+      "profile": "pyspark>=3.5; connect=batch/streaming",
+      "contract": "String/Binary payloads and symbolic String/Binary keys return Binary; optional AAD is typed, explicit encryption IVs emit CRYPTO-W0801, and strict versus nullable decrypt behavior is preserved.",
+      "notes": "Non-GCM modes, literal keys, and key storage/rotation remain caller-owned.",
+      "evidence": [
+        "docs/dev/design/PySparkSQLBoundaryContracts.design.md",
+        "tests/specifications/pyspark-sql-boundary-contracts/test_boundary_contracts.py"
+      ]
+    },
+    {
+      "id": "functions.sketches",
+      "status": "supported",
+      "structure": "opaque HLL and Bitmap sketch helpers",
+      "public_symbols": [
+        "hll_sketch_agg",
+        "hll_union_agg",
+        "hll_union",
+        "hll_sketch_estimate",
+        "bitmap_bit_position",
+        "bitmap_bucket_number",
+        "bitmap_construct_agg",
+        "bitmap_or_agg",
+        "bitmap_count"
+      ],
+      "profile": "pyspark>=3.5; connect=batch/streaming",
+      "contract": "Branded opaque Binary state supports HLL construction, pairwise/aggregate union, and estimate plus Bitmap construction/OR/count and position helpers; mismatched HLL precision rejects unless explicitly enabled.",
+      "notes": "hll_union_agg preserves the declared HLL precision by default and warns with SKETCH-W0802 when mixed precision is explicitly allowed; KLL and Theta remain profile-gated; Count-Min and observation metrics remain caller-owned.",
+      "evidence": [
+        "docs/dev/design/SketchBitmap.design.md",
+        "docs/dev/specifications/SketchBitmap.spec.md",
+        "tests/specifications/pyspark-sql-boundary-contracts/test_boundary_contracts.py",
+        "tests/specifications/pyspark-code-generation/test_v2_aggregation_rendering.py"
+      ]
+    },
+    {
+      "id": "functions.parsing",
+      "status": "supported",
+      "structure": "typed JSON and CSV conversion, inspection, literal schema-inference, and multi-column tuple extraction helpers",
+      "public_symbols": [
+        "CsvOptions",
+        "JsonOptions",
+        "from_csv",
+        "from_json",
+        "to_csv",
+        "to_json",
+        "get_json_object",
+        "json_array_length",
+        "json_object_keys",
+        "json_tuple",
+        "schema_of_csv",
+        "schema_of_json"
+      ],
+      "profile": "pyspark>=3.5; connect=batch",
+      "contract": "from_json/from_csv accept String expressions plus a nullable-field Schema class and return the declared Struct; to_json/to_csv accept Struct expressions and return nullable String; get_json_object uses a non-empty literal path and returns nullable String; json_array_length returns nullable Integer; json_object_keys returns nullable array<string>; json_tuple accepts a String expression, a declared schema of nullable String fields, and optional literal output-to-member mappings while preserving one output row per input row; schema_of_json/schema_of_csv accept non-empty text literals and return non-nullable SQL-format schema Strings; options are immutable literal records",
+      "notes": "Permissive parser schemas must declare parsed fields nullable because Spark materializes parsed struct fields as nullable. CSV parser schemas render as DDL strings; JSON parser schemas render as StructType values. Dynamic schema inference remains rejected at the typed boundary. json_tuple is top-level, string-only, and compiler-schema-driven; nested or typed extraction remains the responsibility of get_json_object or from_json.",
+      "evidence": [
+        "docs/dev/design/AdvancedAnalyticalOperations.design.md",
+        "tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py",
+        "tests/specifications/pyspark-code-generation/test_v1_pyspark_expression_rendering.py",
+        "tests/specifications/v7-api-ledger/test_v7_json_tuple.py",
+        "tests/integration/pyspark/v7/test_json_tuple.py"
+      ]
+    },
+    {
+      "id": "functions.variant",
+      "status": "supported",
+      "structure": "typed PySpark 4 Variant parsing, validated literals, equality, extraction, schema inspection, conversion, null testing, validation, and TVF row expansion",
+      "public_symbols": [
+        "is_valid_variant",
+        "is_variant_null",
+        "parse_json",
+        "schema_of_variant",
+        "schema_of_variant_agg",
+        "to_variant_object",
+        "try_parse_json",
+        "try_variant_get",
+        "variant_get",
+        "variant_literal",
+        "variant_explode",
+        "variant_explode_outer"
+      ],
+      "profile": "pyspark4.0+; is_valid_variant requires pyspark4.2; variant_explode* require pyspark4.0; connect=batch",
+      "contract": "strict/safe JSON parsing returns Variant; variant_literal validates JSON and lowers through parse_json; equality uses typed operators; literal-path extraction returns the declared nullable type; schema helpers return SQL-format strings; Array/Map/Struct conversion returns Variant; variant_explode* returns typed pos/key/value scopes through a lateral TVF join",
+      "notes": "Paths start with $ and extraction target paths are explicit literals. variant_literal rejects non-standard JSON constants and does not expose VariantVal. to_variant_object rejects non-String Map keys at every nesting level. TVF row expansion uses the public spark.tvf and DataFrame.lateralJoin APIs.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "tests/specifications/v9-api-catalog/test_v9_variant_field.py"
+      ]
+    },
+    {
+      "id": "functions.variant-mutation",
+      "status": "design-gated",
+      "structure": "future-profile Variant mutation helpers",
+      "public_symbols": [
+        "variant_array_append",
+        "try_variant_array_append",
+        "variant_insert",
+        "try_variant_insert",
+        "variant_set",
+        "try_variant_set",
+        "variant_delete"
+      ],
+      "profile": "not admitted until released PySpark 4.3+ profiles exist",
+      "contract": "literal-path Variant mutation contract is reserved for a later released Spark profile",
+      "notes": "Current PySpark 4.2 compilation rejects these helpers before lowering; do not claim runtime support until the corresponding Spark profile is added.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "docs/dev/design/ApiCatalogDesignGates.design.md",
+        "tests/specifications/v9-api-catalog/test_v9_variant_field.py"
+      ]
+    },
+    {
+      "id": "functions.array-construction",
+      "status": "supported",
+      "structure": "array(...), array_repeat(...), sequence(...), and typed mutation helpers",
+      "public_symbols": [
+        "arr_append",
+        "arr_compact",
+        "arr_insert",
+        "arr_prepend",
+        "arr_remove",
+        "array",
+        "array_repeat",
+        "sequence"
+      ],
+      "profile": "pyspark>=3.5; connect=batch for admitted helpers",
+      "contract": "typed array result; preserves rows",
+      "notes": "sequence supports Integer/Long values; arr_insert positions and arr_remove values stay literal for the PySpark 3.5 baseline.",
+      "evidence": [
+        "docs/api/Collections.api.md",
+        "tests/specifications/pyspark-code-generation/test_v3_collection_helper_rendering.py"
+      ]
+    },
+    {
+      "id": "functions.array-lookup",
+      "status": "supported",
+      "structure": "size(...), cardinality(...), array_size(...), array_contains(...), arr_position(...), get(...), element_at(...), try_element_at(...), slice(...)",
+      "public_symbols": [
+        "arr_position",
+        "array_contains",
+        "cardinality",
+        "element_at",
+        "get",
+        "size",
+        "array_size",
+        "slice",
+        "try_element_at"
+      ],
+      "profile": "pyspark>=3.5; connect=batch",
+      "contract": "typed scalar/nullable lookup; preserves rows; get uses zero-based array indexing while element_at remains one-based",
+      "notes": "Array indices are one-based for element_at and zero-based for get; slice rejects negative literal lengths.",
+      "evidence": [
+        "docs/api/Collections.api.md",
+        "tests/specifications/pyspark-code-generation/test_v3_collection_helper_rendering.py"
+      ]
+    },
+    {
+      "id": "functions.array-advanced",
+      "status": "supported",
+      "structure": "typed concat, array join, extrema, overlap, sorting, and shuffle helpers",
+      "public_symbols": [
+        "concat",
+        "array_join",
+        "array_max",
+        "array_min",
+        "arrays_overlap",
+        "sort_array",
+        "shuffle"
+      ],
+      "profile": "pyspark>=3.5; connect=batch",
+      "contract": "concat accepts homogeneous strings, binary values, or compatible arrays; array<string> joins return nullable String; array extrema return nullable orderable element types; arrays_overlap returns nullable Boolean; sort_array preserves the typed array and accepts a Boolean literal direction; shuffle preserves the typed array and is explicitly nondeterministic",
+      "notes": "Concat rejects mixed families and preserves array element nullability; extrema and sorting require orderable scalar elements; arrays_overlap conservatively preserves nullability when arrays or elements may be null; shuffle does not promise an exact order.",
+      "evidence": [
+        "docs/api/Collections.api.md",
+        "tests/specifications/execution-semantic-contract/test_v3_collection_type_contracts.py",
+        "tests/specifications/pyspark-code-generation/test_v3_collection_helper_rendering.py"
+      ]
+    },
+    {
+      "id": "functions.array-transform",
+      "status": "supported",
+      "structure": "typed higher-order array helpers",
+      "public_symbols": [
+        "arr_aggregate",
+        "reduce",
+        "arr_distinct",
+        "arr_exists",
+        "arr_filter",
+        "arr_flatten",
+        "arr_forall",
+        "arr_reverse",
+        "arr_sort",
+        "arr_sort_by",
+        "arr_transform",
+        "arr_zip_with",
+        "arrays_zip",
+        "array_except",
+        "array_intersect",
+        "array_union"
+      ],
+      "profile": "pyspark>=3.5; connect=batch",
+      "contract": "typed array/scalar result; preserves rows; reduce and arr_aggregate require a type-stable accumulator and symbolic callbacks; arrays_zip returns array<struct> with nullable array_N fields",
+      "notes": "Sort accepts orderable scalar elements; callbacks remain symbolic. `reduce` renders the exact PySpark reducer spelling while `arr_aggregate` remains the portable aggregate spelling. `arrays_zip` uses stable array_0, array_1, ... field names so its result remains schema-visible without an untyped escape hatch.",
+      "evidence": [
+        "docs/api/Collections.api.md",
+        "tests/specifications/execution-semantic-contract/test_v3_collection_type_contracts.py",
+        "tests/specifications/pyspark-code-generation/test_v3_collection_helper_rendering.py"
+      ]
+    },
+    {
+      "id": "functions.map",
+      "status": "supported",
+      "structure": "typed map and struct constructors/helpers",
+      "public_symbols": [
+        "create_map",
+        "map_concat",
+        "map_contains_key",
+        "map_entries",
+        "map_filter",
+        "map_from_arrays",
+        "map_from_entries",
+        "map_keys",
+        "map_values",
+        "map_zip_with",
+        "named_struct",
+        "str_to_map",
+        "map_transform_keys",
+        "map_transform_values"
+      ],
+      "profile": "pyspark>=3.5; connect=batch",
+      "contract": "typed map/struct/scalar result; preserves rows; map keys are non-null and constructor field names are literal and unique",
+      "notes": "Map callbacks stay symbolic; map constructors preserve typed key/value nullability; str_to_map uses non-empty literal delimiters and returns a String-to-String map; named_struct uses unique literal field names; map_concat requires compatible types and rejects duplicate runtime keys under the Spark exception policy.",
+      "evidence": [
+        "docs/api/Collections.api.md",
+        "docs/dev/gaps/PySpark-SQL-baseline.gaps.md",
+        "tests/specifications/compatibility/test_pyspark_transformation_coverage.py",
+        "tests/specifications/execution-semantic-contract/test_v3_collection_type_contracts.py",
+        "tests/specifications/pyspark-code-generation/test_v3_collection_helper_rendering.py"
+      ]
+    },
+    {
+      "id": "functions.generators",
+      "status": "supported",
+      "structure": "posexplode_struct(...), posexplode_outer_struct(...), explode_struct(...), explode_outer_struct(...), inline_struct(...), inline_outer_struct(...)",
+      "public_symbols": [
+        "posexplode_struct",
+        "posexplode_outer_struct",
+        "explode_struct",
+        "explode_outer_struct",
+        "inline_struct",
+        "inline_outer_struct"
+      ],
+      "profile": "pyspark>=3.5; connect=batch; streaming=caller-owned",
+      "contract": "row expansion requires a declared generated scope schema and cardinality model",
+      "notes": "The admitted generators cover the PySpark struct generator family over array<struct> with contains_null=False. Primitive scalar-array and map generators have separate explicit output naming contracts. Opt-in integration coverage includes null and empty outer rows.",
+      "evidence": [
+        "docs/dev/design/TypedRelationOperations.design.md",
+        "docs/dev/design/V7PySparkGeneratorExpansion.design.md",
+        "tests/specifications/v6-api-ledger/test_v6_posexplode_struct.py",
+        "tests/specifications/v7-api-ledger/test_v7_explode_struct.py",
+        "tests/specifications/v7-api-ledger/test_v7_generator_parity_matrix.py",
+        "tests/integration/pyspark/v7/test_struct_generators.py",
+        "tests/integration/pyspark/v7/test_collection_generator_conformance.py",
+        "tests/user_stories/10_generated_code/shared_pyspark_semantic_contract/test_online_recipe_runtime.py",
+        "tests/specifications/streaming-compatibility/test_v1_streaming_compatibility.py"
+      ]
+    },
+    {
+      "id": "dataframe.projection",
+      "status": "supported",
+      "structure": "@step Schema projection and where(...)",
+      "public_symbols": [
+        "project",
+        "where"
+      ],
+      "profile": "pyspark>=3.5; connect=batch",
+      "contract": "declared schema; preserves or filters rows",
+      "notes": "Schema constructors own column replacement and names.",
+      "evidence": [
+        "docs/api/Transforms.api.md",
+        "tests/specifications/execution-semantic-contract/test_v3_transform_expression_dispatch.py"
+      ]
+    },
+    {
+      "id": "dataframe.join",
+      "status": "supported",
+      "structure": "rowset_join(...), inner_join(...), exists(...), relation_alias(...), temporal_one(...), as_of_one(...), param_join(...), join hints",
+      "public_symbols": [
+        "as_of_one",
+        "cross_join",
+        "exists",
+        "inner_join",
+        "param_join",
+        "relation_alias",
+        "rowset_join",
+        "temporal_one"
+      ],
+      "profile": "pyspark>=3.5; connect=batch",
+      "contract": "explicit join cardinality and schema; may multiply rows; nearest as-of uses distance ranking and fails equidistant ties",
+      "notes": "Cross joins require allow_cartesian=True. param_join adds a runtime batch-only singleton assertion. Self joins require named relation aliases. Nearest as-of supports ties=\"error\"; directional nearest tie preferences remain outside the public API.",
+      "evidence": [
+        "docs/api/Joins.api.md",
+        "tests/specifications/execution-semantic-contract/test_v3_transform_expression_dispatch.py",
+        "tests/specifications/symbolic-execution/test_ordered_step_method_operations.py",
+        "tests/specifications/v6-api-ledger/test_v6_relation_alias.py"
+      ]
+    },
+    {
+      "id": "dataframe.set",
+      "status": "supported",
+      "structure": "union_all(...), union_by_name(...), intersect(...), intersect_all(...), subtract(...), except_all(...)",
+      "public_symbols": [
+        "union_all",
+        "union_by_name",
+        "intersect",
+        "intersect_all",
+        "subtract",
+        "except_all"
+      ],
+      "profile": "pyspark>=3.5; connect=batch; streaming=partial",
+      "contract": "Exact-schema relation set composition uses Spark duplicate/distinct semantics and makes no ordering claim; batch union_by_name(..., allow_missing_columns=True) fills nullable fields and typed defaults for missing top-level and nested struct fields while preserving aliases",
+      "notes": "V8 admits union_all(...) and union_by_name(...) only for stream-stream exact-schema append composition. V9 admits nullable top-level missing-column union for batch. V10 admits literal defaults for missing non-nullable fields and nested struct paths. Intersect, intersect_all, subtract, except_all, array/map element evolution, and streaming missing-column union remain streaming-ineligible or gated.",
+      "evidence": [
+        "docs/api/Relations.api.md",
+        "docs/dev/specifications/TypedRelationOperations.spec.md",
+        "docs/dev/specifications/V9ApiCatalogDesignGatedFeatures.spec.md",
+        "tests/specifications/v6-api-ledger/test_v6_relation_union.py",
+        "tests/user_stories/10_generated_code/shared_pyspark_semantic_contract/test_online_recipe_runtime.py",
+        "tests/specifications/streaming-compatibility/test_v1_streaming_compatibility.py"
+      ]
+    },
+    {
+      "id": "dataframe.deduplication",
+      "status": "supported",
+      "structure": "distinct(), drop_duplicates(...), drop_duplicates_within_watermark(...)",
+      "public_symbols": [
+        "distinct",
+        "drop_duplicates",
+        "drop_duplicates_within_watermark"
+      ],
+      "profile": "pyspark>=3.5; connect=batch where applicable",
+      "contract": "reduces rows; watermark variant is streaming-classified",
+      "notes": "Key semantics are explicit.",
+      "evidence": [
+        "docs/api/Aggregations.api.md",
+        "tests/specifications/execution-semantic-contract/test_v3_transform_expression_dispatch.py"
+      ]
+    },
+    {
+      "id": "dataframe.ordering",
+      "status": "supported",
+      "structure": "order_by(...), repartition_by_range(...), limit(...), offset(...), sample(...)",
+      "public_symbols": [
+        "order_by",
+        "repartition_by_range",
+        "limit",
+        "offset",
+        "sample"
+      ],
+      "profile": "pyspark>=3.5; connect=batch; streaming=ineligible",
+      "contract": "Relation ordering uses typed order descriptors; range repartitioning preserves rows while selecting a positive literal partition count and typed range keys; literal limit/offset bounds require the current relation state to be ordered; sampling requires explicit reproducibility policy",
+      "notes": "Order is observable at materialized output boundaries. Set, join, generator, aggregate, repartitioning, sampling, and selected-row operations break the current ordered-state claim unless followed by another order_by(...). V8 keeps ordering and bounds batch-only for unbounded streaming relations. V9 admits sample(...) as a batch-only relation operation with seed required unless reproducible=False. Range repartitioning is batch-only because Spark does not support it for streaming DataFrames.",
+      "evidence": [
+        "docs/api/Relations.api.md",
+        "docs/dev/specifications/TypedRelationOperations.spec.md",
+        "docs/dev/specifications/V9ApiCatalogDesignGatedFeatures.spec.md",
+        "tests/specifications/v6-api-ledger/test_v6_relation_ordering.py",
+        "tests/specifications/v6-api-ledger/test_v6_relation_range_partitioning.py",
+        "tests/specifications/v9-api-catalog/test_v9_relation_sampling.py",
+        "tests/user_stories/10_generated_code/shared_pyspark_semantic_contract/test_online_recipe_runtime.py"
+      ]
+    },
+    {
+      "id": "dataframe.priority-selection",
+      "status": "supported",
+      "structure": "select_first_qualified(...)",
+      "public_symbols": [
+        "select_first_qualified"
+      ],
+      "profile": "pyspark>=3.5; connect=batch; streaming=ineligible",
+      "contract": "Declared business keys, eligibility predicate, and priority order select at most one row per key",
+      "notes": "Configured missing or tied candidates fail with REL-E0705. Keys must be declared field references; surrogate row identifiers remain unsupported. V8 keeps priority selection batch-only because it lowers through ranking and validation aggregates.",
+      "evidence": [
+        "docs/dev/specifications/TypedRelationOperations.spec.md",
+        "tests/specifications/v6-api-ledger/test_v6_priority_selection.py"
+      ]
+    },
+    {
+      "id": "dataframe.grouping",
+      "status": "supported",
+      "structure": "group_by(...), rollup(...), cube(...), grouping_sets(...) ",
+      "public_symbols": [
+        "cube",
+        "group_by",
+        "grouping_sets",
+        "rollup"
+      ],
+      "profile": "pyspark>=3.5; connect=batch",
+      "contract": "aggregate cardinality; declared output schema",
+      "notes": "Post-aggregate filtering uses having(...).",
+      "evidence": [
+        "docs/api/Aggregations.api.md",
+        "tests/specifications/execution-semantic-contract/test_v3_transform_expression_dispatch.py"
+      ]
+    },
+    {
+      "id": "functions.aggregate-grouping-metadata",
+      "status": "supported",
+      "structure": "grouping(key), grouping_id()",
+      "public_symbols": [
+        "grouping",
+        "grouping_id"
+      ],
+      "profile": "pyspark>=3.5; connect=batch",
+      "contract": "non-null Integer subtotal metadata tied to declared rollup, cube, or grouping-set levels",
+      "notes": "grouping(key) returns 1 for an omitted subtotal key and 0 otherwise; is_grouped(key) is the Boolean alternative.",
+      "evidence": [
+        "docs/api/Aggregations.api.md",
+        "tests/specifications/pyspark-code-generation/test_v2_aggregation_rendering.py"
+      ]
+    },
+    {
+      "id": "grouped.aggregates",
+      "status": "supported",
+      "structure": "typed aggregate helpers",
+      "public_symbols": [
+        "avg",
+        "count",
+        "max",
+        "min",
+        "sum"
+      ],
+      "profile": "pyspark>=3.5; connect=batch",
+      "contract": "aggregate scalar result; declared output schema",
+      "notes": "Dictionary aggregate syntax is intentionally unsupported.",
+      "evidence": [
+        "docs/api/Aggregations.api.md",
+        "tests/specifications/execution-semantic-contract/test_v3_transform_expression_dispatch.py"
+      ]
+    },
+    {
+      "id": "functions.aggregate-core",
+      "status": "supported",
+      "structure": "avg(...), count(...), collect_list(...), collect_set(...), max(...), min(...), sum(...) with typed aggregation contracts",
+      "public_symbols": [
+        "avg",
+        "count",
+        "collect_list",
+        "collect_set",
+        "max",
+        "min",
+        "sum"
+      ],
+      "profile": "pyspark>=3.5; connect=batch",
+      "contract": "typed aggregate result; preserves declared output schema and filtering",
+      "notes": "Collection aggregates skip nulls; collect_list has explicit ordering support and collect_set has no order guarantee.",
+      "evidence": [
+        "docs/api/Aggregations.api.md",
+        "docs/reference/Aggregations.ref.md",
+        "tests/specifications/execution-semantic-contract/test_v3_numeric_aggregate_contracts.py",
+        "tests/specifications/execution-semantic-contract/test_v3_collection_type_contracts.py",
+        "tests/specifications/pyspark-code-generation/test_v2_aggregation_rendering.py"
+      ]
+    },
+    {
+      "id": "functions.aggregate-advanced",
+      "status": "supported",
+      "structure": "typed advanced aggregate helpers",
+      "public_symbols": [
+        "any_value",
+        "approx_count_distinct",
+        "approx_percentile",
+        "array_agg",
+        "bit_and",
+        "bit_or",
+        "bit_xor",
+        "bool_and",
+        "bool_or",
+        "some",
+        "every",
+        "corr",
+        "count_if",
+        "covar",
+        "covar_pop",
+        "histogram_numeric",
+        "mean",
+        "std",
+        "first",
+        "kurtosis",
+        "last",
+        "max_by",
+        "median",
+        "min_by",
+        "mode",
+        "percentile",
+        "product",
+        "regr_avgx",
+        "regr_avgy",
+        "regr_count",
+        "regr_intercept",
+        "regr_r2",
+        "regr_slope",
+        "regr_sxx",
+        "regr_sxy",
+        "regr_syy",
+        "skewness",
+        "stddev",
+        "stddev_pop",
+        "stddev_samp",
+        "sum_distinct",
+        "var_pop",
+        "var_samp",
+        "variance"
+      ],
+      "profile": "pyspark>=3.5; connect=batch for admitted helpers; mode=batch-only; histogram Decimal input=PySpark 4.0 only",
+      "contract": "aggregate result; declared output schema; candidate-preserving helpers retain candidate type; histogram_numeric requires numeric input, a foldable Integer literal bin count from 2 through INT_MAX, and an exact nullable x/y bucket Schema; Decimal input is PySpark 4.0-only; collection and bitwise helpers have explicit result nullability and integral constraints; regression helpers require paired numeric inputs and return nullable Double except regr_count's non-null Long; sum_distinct applies numeric Spark widening after duplicate removal",
+      "notes": "bool_and and every have an all-values-true contract; bool_or and some have an any-value-true contract. every and some preserve their PySpark function spellings in generated code. mean aliases avg with Spark numeric widening; std aliases sample standard deviation; mode(value, deterministic=False) matches PySpark spelling. deterministic=True requires an orderable scalar candidate and uses a portable Spark higher-order aggregate lowering so ties return the lowest candidate across PySpark 3.5 and 4.0. covar_pop returns nullable Double population covariance; covar remains the sample-covariance alias. histogram_numeric returns nullable array/element/fields and preserves x's input type; Spark 3.5.0 fails at execution for Decimal input, which is capability-gated to exact PySpark 4.0. any_value, first, last, max_by, and min_by preserve Spark's order-sensitive or nondeterministic semantics.",
+      "evidence": [
+        "docs/api/Aggregations.api.md",
+        "docs/dev/design/AdvancedAnalyticalOperations.design.md",
+        "tests/specifications/execution-semantic-contract/test_v3_numeric_aggregate_contracts.py",
+        "tests/specifications/pyspark-code-generation/test_v2_aggregation_rendering.py",
+        "tests/integration/pyspark/v7/test_histogram_numeric.py",
+        "tests/integration/pyspark/v7/test_deterministic_mode.py"
+      ]
+    },
+    {
+      "id": "functions.window",
+      "status": "supported",
+      "structure": "typed ranking, distribution, selection, and aggregate window helpers",
+      "public_symbols": [
+        "cume_dist",
+        "dense_rank",
+        "first_value",
+        "lag",
+        "last_value",
+        "lead",
+        "nth_value",
+        "ntile",
+        "percent_rank",
+        "rank",
+        "row_number",
+        "window_avg",
+        "window_sum"
+      ],
+      "profile": "pyspark>=3.5; connect=batch",
+      "contract": "preserves rows; typed window result; ranking/distribution results have declared Long, Integer, or Double types; selection functions preserve the input type",
+      "notes": "The 11 common SQL window functions have per-function baseline dispositions. Raw WindowSpec remains outside the DSL. lag/lead defaults and value-function ignore_nulls controls must be literals; expression-valued options remain caller-owned.",
+      "evidence": [
+        "docs/api/Windows.api.md",
+        "docs/dev/gaps/PySpark-SQL-baseline.gaps.md",
+        "tests/specifications/compatibility/test_pyspark_transformation_coverage.py",
+        "tests/specifications/execution-semantic-contract/test_v3_transform_expression_dispatch.py"
+      ]
+    },
+    {
+      "id": "streaming.watermark",
+      "status": "supported",
+      "structure": "watermark(...)",
+      "public_symbols": [
+        "watermark"
+      ],
+      "profile": "pyspark>=3.5 ordinary PySpark; connect=excluded",
+      "contract": "adds streaming state metadata; preserves rows",
+      "notes": "Caller retains lifecycle ownership.",
+      "evidence": [
+        "docs/api/Streaming.api.md",
+        "tests/specifications/execution-semantic-contract/test_v3_transform_expression_dispatch.py"
+      ]
+    },
+    {
+      "id": "streaming.session-window",
+      "status": "supported",
+      "structure": "session_window(event_time, gap)",
+      "public_symbols": [
+        "session_window"
+      ],
+      "profile": "pyspark>=3.5; connect=batch",
+      "contract": "typed TimeWindow grouping key; aggregate cardinality",
+      "notes": "The gap is a positive fixed Spark interval; the result is a TimeWindow Struct grouping key.",
+      "evidence": [
+        "docs/api/Streaming.api.md",
+        "tests/specifications/execution-semantic-contract/test_v3_scalar_type_contracts.py"
+      ]
+    },
+    {
+      "id": "dataframe.coalescing",
+      "status": "supported",
+      "structure": "coalesce(partitions=...) ",
+      "public_symbols": [
+        "coalesce"
+      ],
+      "profile": "pyspark>=3.5; Connect runtime confirmation pending; streaming=compatible with advisory",
+      "contract": "Row-preserving relation operation with a positive keyword-only partition count; no output-order or partition-identity promise",
+      "notes": "STREAM-W0803 advises that streaming partition count is a throughput-tuning choice. Scalar coalesce requires at least two values.",
+      "evidence": [
+        "docs/api/Relations.api.md",
+        "docs/dev/design/PySparkSQLBoundaryContracts.design.md",
+        "tests/specifications/v6-api-ledger/test_v6_relation_coalesce.py",
+        "tests/user_stories/10_generated_code/shared_pyspark_semantic_contract/test_online_recipe_runtime.py"
+      ]
+    },
+    {
+      "id": "dataframe.repartitioning",
+      "status": "supported",
+      "structure": "repartition(count, *keys) / repartition(*keys)",
+      "public_symbols": [
+        "repartition"
+      ],
+      "profile": "pyspark>=3.5; Connect runtime confirmation pending; streaming=compatible with advisory",
+      "contract": "Hash-shuffles the current relation, preserving rows and schema; leading positive integer selects the count; omitted count delegates to Spark configuration; no output-order or stable partition-identity promise",
+      "notes": "STREAM-W0804 warns that repartitioning shuffles streaming rows and partition count/hash keys are deployment tuning choices. Range repartitioning remains batch-only.",
+      "evidence": [
+        "docs/api/Relations.api.md",
+        "docs/dev/design/PySparkSQLBoundaryContracts.design.md",
+        "tests/specifications/v6-api-ledger/test_v6_relation_repartition.py",
+        "tests/user_stories/10_generated_code/shared_pyspark_semantic_contract/test_online_recipe_runtime.py"
+      ]
+    },
+    {
+      "id": "functions.v11-time-current_time",
+      "status": "supported",
+      "structure": "current_time(...)",
+      "public_symbols": [
+        "current_time"
+      ],
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "contract": "Non-null TIME at precision 0–6, stable within one query; caller configures spark.sql.timeType.enabled.",
+      "notes": "Ordinary and Connect PySpark/Spark 4.1.0 online/generated/native batch parity passes. No streaming claim.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "docs/reference/Expressions.ref.md",
+        "docs/dev/design/V11PySpark41ExpressionParity.design.md",
+        "tests/specifications/pyspark-code-generation/test_v11_time_helpers.py",
+        "tests/integration/pyspark/v11/test_time_helpers.py"
+      ]
+    },
+    {
+      "id": "functions.v11-time-make_time",
+      "status": "supported",
+      "structure": "make_time(...)",
+      "public_symbols": [
+        "make_time"
+      ],
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "contract": "Nullable TIME(6) from numeric hour, minute, and fractional-second inputs; Spark validates runtime component ranges.",
+      "notes": "Ordinary and Connect PySpark/Spark 4.1.0 online/generated/native batch parity passes. No streaming claim.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "docs/reference/Expressions.ref.md",
+        "docs/dev/design/V11PySpark41ExpressionParity.design.md",
+        "tests/specifications/pyspark-code-generation/test_v11_time_helpers.py",
+        "tests/integration/pyspark/v11/test_time_helpers.py"
+      ]
+    },
+    {
+      "id": "functions.v11-time-to_time",
+      "status": "supported",
+      "structure": "to_time(...)",
+      "public_symbols": [
+        "to_time"
+      ],
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "contract": "Nullable TIME(6); accepts a literal or typed String format and preserves Spark parse errors in either ANSI mode.",
+      "notes": "Ordinary and Connect PySpark/Spark 4.1.0 online/generated/native batch parity passes. No streaming claim.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "docs/reference/Expressions.ref.md",
+        "docs/dev/design/V11PySpark41ExpressionParity.design.md",
+        "tests/specifications/pyspark-code-generation/test_v11_time_helpers.py",
+        "tests/integration/pyspark/v11/test_time_helpers.py"
+      ]
+    },
+    {
+      "id": "functions.v11-time-try_to_time",
+      "status": "supported",
+      "structure": "try_to_time(...)",
+      "public_symbols": [
+        "try_to_time"
+      ],
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "contract": "Nullable TIME(6); malformed values become null, independent of ANSI mode.",
+      "notes": "Ordinary and Connect PySpark/Spark 4.1.0 online/generated/native batch parity passes. No streaming claim.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "docs/reference/Expressions.ref.md",
+        "docs/dev/design/V11PySpark41ExpressionParity.design.md",
+        "tests/specifications/pyspark-code-generation/test_v11_time_helpers.py",
+        "tests/integration/pyspark/v11/test_time_helpers.py"
+      ]
+    },
+    {
+      "id": "functions.v11-time-time_diff",
+      "status": "supported",
+      "structure": "time_diff(...)",
+      "public_symbols": [
+        "time_diff"
+      ],
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "contract": "Nullable Long from TIME start/end values; unit is HOUR, MINUTE, SECOND, MILLISECOND, or MICROSECOND.",
+      "notes": "Ordinary and Connect PySpark/Spark 4.1.0 online/generated/native batch parity passes. No streaming claim.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "docs/reference/Expressions.ref.md",
+        "docs/dev/design/V11PySpark41ExpressionParity.design.md",
+        "tests/specifications/pyspark-code-generation/test_v11_time_helpers.py",
+        "tests/integration/pyspark/v11/test_time_helpers.py"
+      ]
+    },
+    {
+      "id": "functions.v11-time-time_trunc",
+      "status": "supported",
+      "structure": "time_trunc(...)",
+      "public_symbols": [
+        "time_trunc"
+      ],
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "contract": "Nullable TIME preserving input precision; unit is HOUR, MINUTE, SECOND, MILLISECOND, or MICROSECOND.",
+      "notes": "Ordinary and Connect PySpark/Spark 4.1.0 online/generated/native batch parity passes. No streaming claim.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "docs/reference/Expressions.ref.md",
+        "docs/dev/design/V11PySpark41ExpressionParity.design.md",
+        "tests/specifications/pyspark-code-generation/test_v11_time_helpers.py",
+        "tests/integration/pyspark/v11/test_time_helpers.py"
+      ]
+    },
+    {
+      "id": "types.v11-time",
+      "status": "supported",
+      "structure": "time(precision=6) / Time / TimeType",
+      "public_symbols": [
+        "time",
+        "Time",
+        "TimeType"
+      ],
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "contract": "TIME precision is an integer from 0 through 6 and participates in schema identity; the Spark feature flag remains caller-configured.",
+      "notes": "Schema rendering, materialization, schema reads, and Spark-free rejection on unsupported profiles are covered. Spark raises its native error when TIME is disabled.",
+      "evidence": [
+        "docs/api/Expressions.api.md",
+        "docs/reference/Expressions.ref.md",
+        "docs/dev/design/V11PySpark41ExpressionParity.design.md",
+        "tests/specifications/pyspark-code-generation/test_v11_time_helpers.py",
+        "tests/integration/pyspark/v11/test_time_helpers.py"
+      ]
+    }
   ]
 }

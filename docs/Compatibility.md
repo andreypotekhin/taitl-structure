@@ -117,6 +117,15 @@ transforms remain caller-owned ordinary PySpark work. The streaming API coverage
 Streaming transform shapes while callers retain source, sink, checkpoint, trigger, output-mode, and query lifecycle
 ownership.
 
+The opt-in `>=4.1,<4.2` Connect profile has full integration and live concept evidence on pinned PySpark/Spark
+4.1.0: 215 passed and 57 skipped, plus separate Iceberg (15 passed) and Delta (33 passed, one skipped) provider
+passes. Skips retain ordinary-only streaming/state/sink ownership, the 3.5-specific interval rejection check, and
+Sedona's separately scoped 3.5/4.0 provider evidence. This does not change the default profile or admit other V11 API
+families. The separately evidenced scalar slice admits `chr`, `quote`, `try_to_date`, `random`, `uuid`, the TIME type,
+and its six helpers on exact ordinary and Connect 4.1 profiles. Spark's `spark.sql.timeType.enabled` flag remains
+caller-configured; see the [Expression reference](reference/Expressions.ref.md).
+See [the V11 evidence record](dev/project-management/sprints/Sprint59_V11IntegrationMatrix.md#corrected-full-connect-evidence-2026-10-07).
+
 Spark Connect must not change public DSL syntax, generated class APIs, transform `run(...)` signatures, generated-code
 review shape, or streaming orchestration semantics. It must also avoid classic-only internals such as SparkContext,
 RDDs, direct JVM/Py4J access, `_jdf`, and private classic PySpark fields.

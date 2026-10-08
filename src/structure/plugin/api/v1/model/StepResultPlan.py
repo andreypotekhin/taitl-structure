@@ -13,6 +13,8 @@ class StepResultPlan:
     frame: str
     ordinal: int
     after_hooks: tuple[HookPlan, ...] = ()
+    binding: str = "dataframe"
+    table_source: str | None = None
 
     if TYPE_CHECKING:
         # See StepPlan's compatibility note.

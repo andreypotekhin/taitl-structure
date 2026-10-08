@@ -350,6 +350,7 @@ class ValidatePySparkJoins:
             "integer",
             "long",
             "string",
+            "time",
             "timestamp",
             "timestamp_ntz",
         }

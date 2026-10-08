@@ -3,7 +3,7 @@ from __future__ import annotations
 import importlib
 import os
 import sys
-import time
+import time as time_module
 from collections.abc import Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from dataclasses import replace as dataclass_replace
@@ -113,7 +113,7 @@ def spark(pytestconfig, monkeypatch):
             last_error = error
             if session is not None:
                 session.stop()
-            time.sleep(2)
+            time_module.sleep(2)
 
     if session is None:
         endpoint = remote or master

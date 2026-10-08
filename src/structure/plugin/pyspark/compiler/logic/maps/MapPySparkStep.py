@@ -132,6 +132,8 @@ class MapPySparkStep:
                     if body_result.aggregate is None
                     else self._aggregate(body_result.aggregate, capabilities=capabilities)
                 ),
+                binding=result.binding,
+                table_source=result.table_source,
             )
             for result, body_result in zip(step.results, body.results, strict=True)
         )
@@ -175,6 +177,8 @@ class MapPySparkStep:
             delta_mutations=body.delta_mutations,
             delta_check_match=cast(str | None, (step.options or {}).get("delta_check_match")),
             delta_cdf_checks=cast(bool | None, (step.options or {}).get("delta_cdf_checks")),
+            table_inputs=tuple(input for input in step.inputs if input.binding.startswith(("delta", "iceberg"))),
+            table_forward=body.table_forward,
         )
 
     @staticmethod

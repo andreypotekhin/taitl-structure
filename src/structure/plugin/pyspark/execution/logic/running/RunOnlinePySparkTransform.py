@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import cast
+
 from structure.dsl import Transform
 from structure.plugin.api.v1.model import RuntimeDiagnostic, StructureRuntimeError, TransformResult
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
@@ -143,6 +145,41 @@ class RunOnlinePySparkTransform:
         frames.update({f"input:{name}": frame for name, frame in inputs.items()})
         command_result_frames: set[str] = set()
         for step in plan.steps:
+            for table_input in step.table_inputs:
+                table_source = table_input.table_source
+                if table_source is None:
+                    raise ValueError(f"Table input {table_input.parameter!r} in {step.name!r} has no provenance")
+                if table_input.binding.startswith("delta"):
+                    table = delta_tables[table_source]
+                    validate_delta_table(
+                        table,
+                        table_input.schema,
+                        mode=step.delta_check_match or plan.delta_check_match,
+                    )
+                    relation = fresh_delta_frame(table)
+                else:
+                    relation = validate_iceberg_table(
+                        session.spark,
+                        iceberg_tables[table_source],
+                        cast(type, table_input.schema),
+                    )
+                frames[table_input.source] = relation
+                frames[f"input:{table_input.source}"] = relation
+                frames[table_input.lane] = relation
+            if step.table_forward:
+                for result in step.results:
+                    table_source = result.table_source
+                    if table_source is None:
+                        raise ValueError(f"Table-forward step {step.name!r} has no table provenance")
+                    if result.binding in {"delta", "delta_table"}:
+                        frames[result.frame] = fresh_delta_frame(delta_tables[table_source])
+                    elif result.binding in {"iceberg", "iceberg_table"}:
+                        frames[result.frame] = validate_iceberg_table(
+                            session.spark, iceberg_tables[table_source], result.schema
+                        )
+                    else:
+                        raise ValueError(f"Table-forward step {step.name!r} does not declare a table result")
+                continue
             if step.effect:
                 if any(mutation.kind.startswith("iceberg_") for mutation in step.delta_mutations):
                     for mutation in step.delta_mutations:
@@ -239,9 +276,12 @@ class RunOnlinePySparkTransform:
 
         outputs = {}
         for output in plan.outputs:
+            table_source = output.table_source
+            if output.binding.startswith(("delta", "iceberg")) and table_source is None:
+                raise ValueError(f"Table output {output.name!r} has no table provenance")
             outputs[output.name] = (
-                delta_tables[output.name] if output.binding in {"delta", "delta_table"}
-                else iceberg_tables[output.name] if output.binding in {"iceberg", "iceberg_table"}
+                delta_tables[cast(str, table_source)] if output.binding in {"delta", "delta_table"}
+                else iceberg_tables[cast(str, table_source)] if output.binding in {"iceberg", "iceberg_table"}
                 else self._output(
                     output,
                     source=frames[output.source],
@@ -256,17 +296,26 @@ class RunOnlinePySparkTransform:
         if plan.allow_stage_outputs:
             for stage_output in plan.stage_outputs:
                 output = stage_output.output
+                table_source = output.table_source
+                if output.binding.startswith(("delta", "iceberg")) and table_source is None:
+                    raise ValueError(f"Stage table output {stage_output.path!r} has no table provenance")
                 stage_records.append(
                     (
                         stage_output.path,
-                        self._output(
-                            output,
-                            source=frames[output.source],
-                            inputs=inputs,
-                            session=session,
-                            functions=F,
-                            window=Window,
-                            types=T,
+                        (
+                            delta_tables[cast(str, table_source)]
+                            if output.binding in {"delta", "delta_table"}
+                            else iceberg_tables[cast(str, table_source)]
+                            if output.binding in {"iceberg", "iceberg_table"}
+                            else self._output(
+                                output,
+                                source=frames[output.source],
+                                inputs=inputs,
+                                session=session,
+                                functions=F,
+                                window=Window,
+                                types=T,
+                            )
                         ),
                         output.output_schema,
                         output.aliases,

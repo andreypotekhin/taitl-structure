@@ -12,3 +12,4 @@ class StepAuthoringCapture:
     sinks: tuple[StepSinkCapture, ...] = ()
     effect: bool = False
     sink_effect: bool = False
+    table_sources: tuple[tuple[str, str], ...] = ()

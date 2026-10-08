@@ -31,6 +31,8 @@ Run one backend's test selection:
 The ordinary PySpark 4.1 runner executes only the backend version check and `tests/integration/pyspark/v11`. It does
 not run the 3.5/4.0 regression tree or the concept tests. The Connect 4.1 runner runs the full integration and live
 concept suites after separate Iceberg and Delta provider passes. Those providers are excluded from the general pass.
+The optional Sedona geometry test remains scoped to the configured 3.5/4.0 provider lanes; 4.1 does not configure its
+SQL extension. Ordinary-only streaming, state processor, and sink tests keep their existing exclusions.
 The tracked
 environment template pins PySpark 4.1.0 and separate 4.1 ports; Compose uses those values as defaults if an existing
 untracked `.env` predates this lane. The 4.1 image also uses Protobuf 6.33.0 to match the generated state protocol
@@ -59,9 +61,17 @@ diagnostic run, set it in `infra/compose/.env` or pass it to the runner, for exa
 this before launching PySpark through `PYSPARK_SUBMIT_ARGS`; changing `spark.driver.memory` after the session starts is
 too late to enlarge the driver JVM.
 
+All six Compose runners invoke the repository-mounted Bash launcher. Launcher changes take effect without rebuilding
+the cached dependency image. See [cached runner troubleshooting](../../docs/dev/Troubleshooting.md#problem-integration-a-cached-runner-selects-outdated-tests)
+if a run selects fewer modules than expected. Each run records the launcher checksum and runtime package versions; each test phase
+records its selection, exit status, and pytest skip reasons. Iceberg and Delta run in separate processes before the
+general suite. Connect 4.0 and 4.1 each receive a unique temporary checkpoint directory, removed together with their
+gateway when the runner exits, including after test failure or timeout.
+
 The test runner is removed after every run, while the Spark master/worker services and the versioned Spark Connect Ivy
 caches are retained locally. This avoids repeat image builds, Spark startup, and Spark Connect dependency downloads.
-Use `make integration-rebuild` after changing a Compose image, and `make integration-down` to stop the retained
+Use `make integration-rebuild` after changing image dependencies or configuration; it explicitly builds the selected
+runner images before starting their required services and running tests. Use `make integration-down` to stop retained
 services without deleting the dependency caches. Docker's normal `docker compose ... down -v` removes those caches and
 forces the Spark Connect dependencies to download again.
 

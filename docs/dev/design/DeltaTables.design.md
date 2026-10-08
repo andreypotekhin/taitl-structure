@@ -54,11 +54,15 @@ property and case-insensitive `delta` substrings in the session extension and ca
 `@transform`, or `@step` option `delta_cdf_checks=False` disables both CDF preflight checks without changing the read.
 The current release remains gated to the compatibility ledger's tested profile.
 
-History and detail use the same typed relation-result path as snapshots and CDF. Restore, optimize, and vacuum are
-explicit effect steps: a restore return annotation declares the restored table shape, optimize rewrites files, and
-vacuum deletes unreferenced files subject to Delta's retention guard. Their native metric DataFrames are not exposed
-as transform outputs in this contract. A vacuum retention under 168 hours requires an explicit source opt-in and still respects Delta's native
-safety setting.
+History and detail use the same typed relation-result path as snapshots and CDF. A caller can expose Delta's
+`clusteringColumns` detail field through a typed output schema. Restore, optimize, and vacuum are explicit effect
+steps: a restore return annotation declares the restored table shape, optimize rewrites files, and vacuum deletes
+unreferenced files subject to Delta's retention guard. For caller-configured liquid clustering, ordinary optimize
+delegates incremental clustering to Delta; `delta_optimize(...).full()` explicitly reclusters all existing data using
+the active keys. Admitted open-source profiles reject optimize predicates and Z-order on clustering-enabled tables,
+including tables with clustering keys cleared. Databricks partial reclustering with `FULL WHERE` is outside admission.
+Native metric DataFrames are not exposed as transform outputs. A vacuum retention under 168 hours requires explicit
+source opt-in and still respects Delta's native safety setting.
 
 ## Related contracts
 

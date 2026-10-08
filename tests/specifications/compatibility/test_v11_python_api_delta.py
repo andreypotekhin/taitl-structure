@@ -7,6 +7,13 @@ ROOT = Path(__file__).resolve().parents[3]
 RESOURCES = ROOT / "src/structure/plugin/pyspark/resources"
 DELTA = json.loads((RESOURCES / "pyspark-4.1-python-api-delta.json").read_text())
 BASELINE = json.loads((RESOURCES / "pyspark-function-index-crosswalk.json").read_text())
+ADMITTED = {"pyspark.sql.Column.transform"} | {
+    f"pyspark.sql.functions.{name}"
+    for name in (
+        "chr", "quote", "try_to_date", "random", "uuid", "current_time", "make_time", "to_time",
+        "try_to_time", "time_diff", "time_trunc",
+    )
+}
 
 
 def test_every_new_documented_python_symbol_has_one_disposition() -> None:
@@ -27,25 +34,21 @@ def test_every_new_documented_python_symbol_has_one_disposition() -> None:
     assert len(new_sql) == 363
     assert new_sql - old_sql == {"pyspark.sql.Column.transform"}
     assert old_sql - new_sql == set()
-    assert {row["symbol"] for row in DELTA["entries"] if row["change"] == "sql-index-addition"} == (
-        new_sql - old_sql
-    )
+    assert {row["symbol"] for row in DELTA["entries"] if row["change"] == "sql-index-addition"} == (new_sql - old_sql)
 
 
 def test_each_delta_row_has_an_owner_and_honest_admission_evidence() -> None:
     """Catalog inclusion alone cannot promote a PySpark API to Structure support."""
     rows = DELTA["entries"] + DELTA["v11_carry_forward_from_4_0"]
     assert len(rows) == len({(row["symbol"], row["change"]) for row in rows})
-    assert {row["structure_status"] for row in rows} <= {
-        "supported", "design-gated", "caller-owned-guided"
-    }
+    assert {row["structure_status"] for row in rows} <= {"supported", "design-gated", "caller-owned-guided"}
     for row in rows:
         assert row["family"] and isinstance(row["transformation"], bool)
         assert row["source_url"].startswith("https://spark.apache.org/docs/")
         assert (ROOT / row["design"]).is_file()
         assert (ROOT / row["specification"]).is_file()
         if row["structure_connect_status"] == "supported":
-            assert row["symbol"] == "pyspark.sql.Column.transform"
+            assert row["symbol"] in ADMITTED
             assert row["structure_status"] == "supported"
         assert row["streaming_status"]
         if row["structure_status"] == "supported":
@@ -80,10 +83,10 @@ def test_v11_chronology_and_baseline_reconciliation() -> None:
 
     coverage = json.loads((RESOURCES / "pyspark-transformation-coverage.json").read_text())
     supported = [row for row in DELTA["entries"] if row["structure_status"] == "supported"]
-    assert len(supported) == 1
+    assert {row["symbol"] for row in supported} == ADMITTED
     connect_supported = [row for row in DELTA["entries"] if row["structure_connect_status"] == "supported"]
-    assert [row["symbol"] for row in connect_supported] == ["pyspark.sql.Column.transform"]
-    assert any(
-        entry["id"] == supported[0]["coverage_id"] and entry["status"] == "supported"
-        for entry in coverage["entries"]
-    )
+    assert {row["symbol"] for row in connect_supported} == ADMITTED
+    for row in supported:
+        assert any(
+            entry["id"] == row["coverage_id"] and entry["status"] == "supported" for entry in coverage["entries"]
+        )

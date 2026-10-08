@@ -29,6 +29,21 @@ deterministic.
 Acceptance requires schema/type inference, nullability tests, compiler capability diagnostics, online and generated
 ordinary-PySpark parity, generated-source inspection, and Connect evidence for each row claimed in both variants.
 
+The first scalar admission is `chr`, `quote`, `try_to_date`, `random`, and `uuid`, on exact `>=4.1,<4.2` ordinary and
+Connect targets. The expression design's [scalar contract](../design/V11PySpark41ExpressionParity.design.md#admitted-scalar-contract)
+defines operands, results, nullability, seed policy, generated spelling, and streaming classification. Each helper
+requires its own `expression.<name>` capability. Parse-failure nullability must survive source non-null narrowing.
+Random/UUID recipes remain nondeterministic even when seeded and report `STREAM-E0801` for streaming use anywhere
+within the step. The approved TIME contract adds `time(precision=6)`, public `Time`/`TimeType` exports, and six typed
+helpers: `current_time`, `make_time`, `to_time`, `try_to_time`, `time_diff`, and `time_trunc`. Precision is an integer
+from 0 through 6 and participates in schema identity. Python `datetime.time` values follow Spark's clock-field
+conversion, ignoring timezone metadata. Comparisons require matching TIME precision; ordering accepts any TIME
+precision. Casts are restricted to String and TIME, and TIME arithmetic is excluded. Formats and units may be typed
+String expressions. The Spark
+feature flag `spark.sql.timeType.enabled` remains caller-configured, with native Spark failures when disabled.
+Admission requires the exact `>=4.1,<4.2` ordinary and Connect variants, Spark-free gate/schema checks, generated
+schema inspection, and online/generated runtime parity. No streaming claim is implied by batch evidence.
+
 ## Feature 2: relational query operations
 
 `DataFrame.exists` first appeared in PySpark 4.0 and remains in the V11 parity backlog. The 4.1 IN-subquery extension

@@ -8,6 +8,9 @@ For exhaustive reference on supported APIs, PySpark parity, examples and semanti
 [relations](api/Relations.api.md), [streaming](api/Streaming.api.md), and
 [Delta and Iceberg tables](api/DeltaIceberg.api.md) (see the combined compatibility ledger for admitted runtimes).
 Target-gated spatial provider guidance is in the [Geospatial reference](reference/Geospatial.ref.md).
+For Delta file layout, see [compaction and Z-ordering](reference/DeltaIceberg.ref.md#compaction-and-z-ordering),
+[choosing columns](background/DeltaIceberg.back.md#choosing-z-order-columns), and
+[runnable examples](recipes/DeltaInspectionAndMaintenance.md#compaction-and-z-ordering).
 
 ## Schema Classes
 

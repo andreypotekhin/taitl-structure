@@ -19,6 +19,7 @@ class IcebergScope(InputScope):
     def __init__(self, *, name: str, schema: type[Schema], source: str, binding: str) -> None:
         super().__init__(name=name, schema=schema, source=source)
         self._structure_iceberg_binding = binding
+        self._structure_table_source: str | None = None
 
 
 def _context():

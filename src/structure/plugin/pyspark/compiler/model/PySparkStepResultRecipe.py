@@ -20,3 +20,5 @@ class PySparkStepResultRecipe:
     after_hooks: tuple[PySparkHookRecipe, ...]
     validations: tuple[PySparkValidationRecipe, ...]
     aggregate: PySparkAggregateRecipe | None = None
+    binding: str = "dataframe"
+    table_source: str | None = None

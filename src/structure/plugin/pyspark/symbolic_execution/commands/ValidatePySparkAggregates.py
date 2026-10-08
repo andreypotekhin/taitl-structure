@@ -142,6 +142,7 @@ class ValidatePySparkAggregates:
             "integer",
             "long",
             "string",
+            "time",
             "timestamp",
             "timestamp_ntz",
         }

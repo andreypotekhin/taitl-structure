@@ -1,12 +1,18 @@
 from __future__ import annotations
 
 import pytest
-from integration.pyspark.support.backend_matrix import session
+from integration.pyspark.support.backend_matrix import backend_name, session
 
 from structure import Schema, Transform, input, output, transform
 from structure.plugin.pyspark import geometry, geometry_as_wkt, string
 
-pytestmark = pytest.mark.integration
+pytestmark = [
+    pytest.mark.integration,
+    pytest.mark.skipif(
+        backend_name().endswith("41"),
+        reason="Sedona 1.9 geometry provider evidence is scoped to Spark 3.5/4.0; V9ApiCatalogDesignGatedFeatures.spec.md",
+    ),
+]
 
 
 class GeometryInput(Schema):

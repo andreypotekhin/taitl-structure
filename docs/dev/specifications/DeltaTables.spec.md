@@ -24,6 +24,13 @@ this admission. Exact tested pairs are listed in the
    and `delta_default(field, value)` declarations. They describe existing native table metadata; they do not create or
    alter Delta features. A declaration must reference a field of the declaring Schema. Identity fields use Structure
    `long`.
+6. A transform child retains an inherited Delta declaration's exact role and schema. Method overrides follow the
+   DataFrame inheritance rules: an override replaces the inherited step in place, and `super()` schedules the parent
+   step immediately before the child step.
+7. Composition can hand the same caller-owned Delta table from a `delta_table` or schema-transition result to a
+   same-schema `delta_input` or `delta_table` consumer. The caller's native `DeltaTable` handle remains the table
+   identity across stage names and output aliases. A DataFrame, Iceberg table, or read-only wrapper input cannot be
+   adapted or escalated into a mutable Delta table.
 
 ## Step effects and typing
 
@@ -80,6 +87,11 @@ this admission. Exact tested pairs are listed in the
   restore metrics are not an output in this contract.
 - `delta_optimize(...).execute_compaction()` and `.execute_zorder(by=(...))` are explicit file-layout effects. A
   `where=` predicate is validated against native partition columns. Native metric DataFrames are not exposed.
+- For a caller-configured liquid-clustered table, `delta_optimize(...).execute_compaction()` delegates incremental
+  clustering to Delta, and `.full()` forces reclustering of existing data using the current keys. `.full()` is a
+  terminal effect, requires active clustering keys, and rejects `where=`. On admitted open-source Delta profiles,
+  predicates and Z-order are rejected for tables with the clustering feature, including tables whose keys are cleared.
+  Databricks-only `OPTIMIZE FULL WHERE` is outside this admission.
 - `delta_vacuum(...).execute()` defaults to 168 hours. A shorter retention requires `allow_short_retention=True` and
   remains subject to Delta's native retention safety check. Vacuum deletes unreferenced files and may make old snapshots
   unreadable.
@@ -92,3 +104,5 @@ this admission. Exact tested pairs are listed in the
 Compilation does not import PySpark/Delta, open a session, or access table data. Runtime mutation failures retain native
 exception types. Structure does not retry uncertain commits or provide multi-step transactions. Streaming CDF ingestion
 uses a caller-created streaming DataFrame; the caller owns query startup, checkpointing, sink, and shutdown.
+Each composed effect commits separately. A later stage validates and reads the table after preceding commits, while an
+already selected snapshot remains historical. A later-stage failure does not roll back earlier commits.

@@ -25,6 +25,7 @@ from structure.plugin.pyspark.dsl.types import (
     StructureType,
     TimestampNTZType,
     TimestampType,
+    TimeType,
 )
 
 _embed_exprs: ContextVar[bool] = ContextVar("structure_embed_exprs", default=False)
@@ -633,6 +634,10 @@ class RenderPySparkExpression:
             )
         if function in {"current_date", "curdate", "current_timestamp", "now", "localtimestamp", "current_timezone"}:
             return f"F.{function}()"
+        if function == "current_time":
+            return f"F.current_time({cast(TimeType, expression.type).precision})"
+        if function in {"make_time", "to_time", "try_to_time", "time_diff", "time_trunc"}:
+            return f"F.{function}({', '.join(args)})"
         if function in {"aes_encrypt", "aes_decrypt", "try_aes_decrypt"}:
             return f"F.{function}({', '.join(args)})"
         if function == "hll_sketch_estimate":
@@ -758,7 +763,7 @@ class RenderPySparkExpression:
             return f"F.regexp_substr({args[0]}, {expression.data['pattern']!r})"
         if function in {"lpad", "rpad"}:
             return f"F.{function}({args[0]}, {expression.data['length']}, {expression.data['pad']!r})"
-        if function in {"ascii", "bit_length", "char", "char_length", "character_length", "length", "octet_length", "soundex"}:
+        if function in {"ascii", "bit_length", "char", "chr", "quote", "char_length", "character_length", "length", "octet_length", "soundex"}:
             return f"F.{function}({args[0]})"
         if function in {"left", "right", "repeat"}:
             parameter = "length" if function in {"left", "right"} else "count"
@@ -864,7 +869,7 @@ class RenderPySparkExpression:
             return f"F.overlay({', '.join(args)})"
         if function in {"to_timestamp_ntz", "to_timestamp_ltz", "try_to_timestamp"}:
             return f"F.{function}({', '.join(args)})"
-        if function in {"to_date", "to_timestamp"}:
+        if function in {"to_date", "try_to_date", "to_timestamp"}:
             if len(args) == 2:
                 return f"F.call_function('to_timestamp', {', '.join(args)})"
             return (
@@ -904,7 +909,7 @@ class RenderPySparkExpression:
             return f"F.{function}({', '.join(args)})"
         if function == "width_bucket":
             return f"F.width_bucket({args[0]}, {args[1]}, {args[2]}, {expression.data['num_buckets']})"
-        if function in {"rand", "randn"}:
+        if function in {"rand", "randn", "random", "uuid"}:
             seed = expression.data.get("seed")
             return f"F.{function}()" if seed is None else f"F.{function}(seed={seed})"
         if function == "round":
@@ -978,6 +983,8 @@ class RenderPySparkExpression:
             return "T.TimestampType()"
         if isinstance(type, TimestampNTZType):
             return "T.TimestampNTZType()"
+        if isinstance(type, TimeType):
+            return f"T.TimeType({type.precision})"
         if isinstance(type, IntervalType):
             if type.kind == "calendar":
                 return "T.CalendarIntervalType()"
@@ -1032,6 +1039,8 @@ class RenderPySparkExpression:
             return "TIMESTAMP"
         if isinstance(type, TimestampNTZType):
             return "TIMESTAMP_NTZ"
+        if isinstance(type, TimeType):
+            return f"TIME({type.precision})"
         if isinstance(type, IntervalType):
             return type.sql.upper()
         if isinstance(type, DecimalType):

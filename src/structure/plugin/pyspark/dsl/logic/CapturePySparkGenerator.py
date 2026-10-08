@@ -30,6 +30,7 @@ from structure.plugin.pyspark.dsl.types import (
     StructureType,
     TimestampNTZType,
     TimestampType,
+    TimeType,
     VariantType,
 )
 
@@ -706,6 +707,8 @@ class CapturePySparkGenerator:
             return False
         if isinstance(left, DecimalType) and isinstance(right, DecimalType):
             return left.precision == right.precision and left.scale == right.scale
+        if isinstance(left, TimeType) and isinstance(right, TimeType):
+            return left.precision == right.precision
         return True
 
     def variant_explode(

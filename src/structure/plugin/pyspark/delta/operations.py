@@ -20,6 +20,7 @@ class DeltaScope(InputScope):
         super().__init__(name=name, schema=schema, source=source)
         self._structure_delta_binding = binding
         self._structure_delta_mutable = binding == "delta_table"
+        self._structure_table_source: str | None = None
 
 
 def _context():
@@ -126,11 +127,7 @@ def _validate_evolution_schema(
                 f"Delta column {field.name}; preserve its type and do not make a nullable column required"
             )
 
-    assignment_columns = {
-        column
-        for clause in clauses
-        for column, _ in clause.assignments
-    }
+    assignment_columns = {column for clause in clauses for column, _ in clause.assignments}
     has_all_clause = any(clause.action.endswith("_all") for clause in clauses)
     if (has_all_clause or require_source_fields) and not source_fields.keys() <= output_fields.keys():
         extra = ", ".join(sorted(source_fields.keys() - output_fields.keys()))
@@ -158,9 +155,7 @@ def _validate_evolution_schema(
 
     if any(clause.action == "unmatched_insert_all" for clause in clauses):
         missing = [
-            field.name
-            for column, field in output_fields.items()
-            if not field.nullable and column not in source_fields
+            field.name for column, field in output_fields.items() if not field.nullable and column not in source_fields
         ]
         if missing:
             raise TypeError(
@@ -232,7 +227,9 @@ class DeltaMerge:
                 source=self.target._structure_source,
                 binding="delta_input",
             )
-        assignments = () if values is None else _assignments(assignment_target, values, insert=action == "unmatched_insert")
+        assignments = (
+            () if values is None else _assignments(assignment_target, values, insert=action == "unmatched_insert")
+        )
         predicate = None if condition is None else _predicate("Delta merge condition", condition)
         allowed = {self.target._structure_scope_name, self.source._structure_scope_name}
         if phase == "unmatched":
@@ -434,7 +431,12 @@ def _read_result(target: DeltaScope, *, kind: str, selector: object, end_selecto
     ending = None if end_selector is None else literal(end_selector)
     if ending is not None and ending.kind not in {"literal", "variable"}:
         raise TypeError(f"{kind} end selectors must be literals or runtime variable references")
-    if ending is not None and ending.type is not None and selected.type is not None and ending.type.name != selected.type.name:
+    if (
+        ending is not None
+        and ending.type is not None
+        and selected.type is not None
+        and ending.type.name != selected.type.name
+    ):
         raise TypeError("delta_changes start and end selectors must use the same version or timestamp type")
     context.delta_mutations.append(
         DeltaMutation(
@@ -578,7 +580,20 @@ class DeltaOptimize:
         )
 
     def execute_compaction(self) -> None:
+        """Optimize the native layout, including incremental liquid clustering when enabled."""
         self._execute("compaction")
+
+    def full(self) -> None:
+        """Execute full reclustering using the caller-configured clustering keys.
+
+        Raises:
+            TypeError: If a predicate is supplied or this builder has already executed.
+        """
+        if self.where is not None:
+            raise TypeError(
+                "delta_optimize(...).full() does not support where= on the admitted open-source Delta profiles"
+            )
+        self._execute("full")
 
     def execute_zorder(self, *, by: tuple[Expression, ...]) -> None:
         if not isinstance(by, tuple) or not by:
@@ -598,7 +613,7 @@ class DeltaOptimize:
 
 
 def delta_optimize(target: DeltaScope, *, where: object | None = None) -> DeltaOptimize:
-    """Build an explicit compaction or Z-order maintenance effect."""
+    """Build an explicit native optimization, full reclustering, or Z-order effect."""
     target = _maintenance_target(target, "delta_optimize")
     if target._structure_delta_binding != "delta_table":
         raise TypeError("delta_optimize(...) requires a delta_table(...) relation")
@@ -643,7 +658,11 @@ def delta_vacuum(
     if not isinstance(allow_short_retention, bool):
         raise TypeError("allow_short_retention must be a Boolean")
     retention = literal(retention_hours)
-    if retention.kind not in {"literal", "variable"} or retention.type is None or retention.type.name not in {"integer", "long", "float", "double", "decimal"}:
+    if (
+        retention.kind not in {"literal", "variable"}
+        or retention.type is None
+        or retention.type.name not in {"integer", "long", "float", "double", "decimal"}
+    ):
         raise TypeError("delta_vacuum(retention_hours=...) requires a numeric literal or variable")
     if retention.kind == "literal":
         value = (retention.data or {}).get("value")

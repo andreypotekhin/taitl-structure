@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 from structure.dsl import Schema
 from structure.plugin.api.v1 import TransformMemberOrigin
+from structure.plugin.api.v1.model.StepInputPlan import StepInputPlan
 from structure.plugin.pyspark.compiler.model.PySparkAggregateRecipe import PySparkAggregateRecipe
 from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.plugin.pyspark.compiler.model.PySparkHookRecipe import PySparkHookRecipe
@@ -41,3 +42,5 @@ class PySparkStepRecipe:
     delta_mutations: tuple[DeltaMutation | IcebergMutation, ...] = ()
     delta_check_match: str | None = None
     delta_cdf_checks: bool | None = None
+    table_inputs: tuple[StepInputPlan, ...] = ()
+    table_forward: bool = False

@@ -135,7 +135,7 @@ services:
       args:
         PYSPARK_VERSION: ${PYSPARK35_VERSION}
         DELTA_SPARK_VERSION: ${DELTA_SPARK35_VERSION:-3.3.3}
-    command: run-integration pyspark35
+    command: [bash, /workspace/infra/compose/images/pyspark/run-integration.sh, pyspark35]
     depends_on:
       - spark35-master
       - spark35-worker
@@ -165,7 +165,7 @@ services:
       args:
         PYSPARK_VERSION: ${PYSPARK40_VERSION}
         DELTA_SPARK_VERSION: ${DELTA_SPARK40_VERSION:-4.0.1}
-    command: run-integration pyspark40
+    command: [bash, /workspace/infra/compose/images/pyspark/run-integration.sh, pyspark40]
     depends_on:
       - spark40-master
       - spark40-worker
@@ -196,7 +196,7 @@ services:
         PYSPARK_VERSION: ${PYSPARK41_VERSION:-4.1.0}
         PROTOBUF_VERSION: ${PROTOBUF41_VERSION:-6.33.0}
         DELTA_SPARK_VERSION: ${DELTA_SPARK41_VERSION:-4.1.0}
-    command: run-integration pyspark41
+    command: [bash, /workspace/infra/compose/images/pyspark/run-integration.sh, pyspark41]
     depends_on:
       - spark41-master
       - spark41-worker
@@ -225,7 +225,7 @@ services:
       args:
         PYSPARK_VERSION: ${PYSPARK35_VERSION}
         DELTA_SPARK_VERSION: ${DELTA_SPARK35_VERSION:-3.3.3}
-    command: run-integration spark-connect35
+    command: [bash, /workspace/infra/compose/images/pyspark/run-integration.sh, spark-connect35]
     depends_on:
       - spark35-master
       - spark35-worker
@@ -262,7 +262,7 @@ services:
       args:
         PYSPARK_VERSION: ${PYSPARK40_VERSION}
         DELTA_SPARK_VERSION: ${DELTA_SPARK40_VERSION:-4.0.1}
-    command: run-integration spark-connect40
+    command: [bash, /workspace/infra/compose/images/pyspark/run-integration.sh, spark-connect40]
     depends_on:
       - spark40-master
       - spark40-worker
@@ -300,7 +300,7 @@ services:
         PYSPARK_VERSION: ${PYSPARK41_VERSION:-4.1.0}
         PROTOBUF_VERSION: ${PROTOBUF41_VERSION:-6.33.0}
         DELTA_SPARK_VERSION: ${DELTA_SPARK41_VERSION:-4.1.0}
-    command: run-integration spark-connect41
+    command: [bash, /workspace/infra/compose/images/pyspark/run-integration.sh, spark-connect41]
     environment:
       STRUCTURE_EXPECTED_PYSPARK: ${PYSPARK41_VERSION:-4.1.0}
       STRUCTURE_EXPECTED_SPARK: ${PYSPARK41_VERSION:-4.1.0}

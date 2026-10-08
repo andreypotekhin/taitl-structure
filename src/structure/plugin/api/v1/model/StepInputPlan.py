@@ -13,3 +13,4 @@ class StepInputPlan:
     ordinal: int
     driving: bool
     binding: str = "dataframe"
+    table_source: str | None = None

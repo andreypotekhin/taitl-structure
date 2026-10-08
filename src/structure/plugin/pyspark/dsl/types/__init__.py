@@ -34,6 +34,8 @@ from structure.plugin.pyspark.dsl.types.TimestampType import TimestampType
 from structure.plugin.pyspark.dsl.types.Timestamp import Timestamp
 from structure.plugin.pyspark.dsl.types.TimestampNTZType import TimestampNTZType
 from structure.plugin.pyspark.dsl.types.TimestampNTZ import TimestampNTZ
+from structure.plugin.pyspark.dsl.types.TimeType import TimeType
+from structure.plugin.pyspark.dsl.types.Time import Time
 from structure.plugin.pyspark.dsl.types.IntervalType import IntervalType
 from structure.plugin.pyspark.dsl.Interval import Interval
 from structure.plugin.pyspark.dsl.types.VariantType import VariantType
@@ -57,6 +59,7 @@ def boolean() -> StructureType: return Boolean()
 def date() -> StructureType: return Date()
 def timestamp() -> StructureType: return Timestamp()
 def timestamp_ntz() -> StructureType: return TimestampNTZ()
+def time(precision: int = 6) -> StructureType: return TimeType(precision)
 def interval(*, type: str | None = None, unit: str | None = None) -> IntervalType:
     """Declare one exact Spark interval qualifier or unit."""
     if (type is None) == (unit is None):
@@ -86,7 +89,7 @@ def struct(schema: type[Schema]) -> StructureType: return Struct(schema)
 __all__ = [
     "Array", "ArrayType", "Binary", "BinaryType", "Boolean", "BooleanType", "Date", "DateType", "Decimal", "DecimalType", "Double",
     "DoubleType", "Float", "FloatType", "Integer", "IntegerType", "Long", "LongType", "Map", "MapType",
-    "Geometry", "GeometryType", "ScalarType", "SketchType", "HllSketch", "HllSketchType", "Bitmap", "BitmapType", "KllSketch", "KllSketchType", "ThetaSketch", "ThetaSketchType", "String", "StringType", "Struct", "StructType", "StructureType", "Timestamp", "TimestampType", "TimestampNTZ", "TimestampNTZType", "Variant", "VariantType",
-    "array", "binary", "boolean", "date", "decimal", "double", "float", "geometry", "hll_sketch", "bitmap", "kll_sketch", "theta_sketch", "integer", "long", "map", "string", "struct", "timestamp", "timestamp_ntz", "variant",
+    "Geometry", "GeometryType", "ScalarType", "SketchType", "HllSketch", "HllSketchType", "Bitmap", "BitmapType", "KllSketch", "KllSketchType", "ThetaSketch", "ThetaSketchType", "String", "StringType", "Struct", "StructType", "StructureType", "Time", "TimeType", "Timestamp", "TimestampType", "TimestampNTZ", "TimestampNTZType", "Variant", "VariantType",
+    "array", "binary", "boolean", "date", "decimal", "double", "float", "geometry", "hll_sketch", "bitmap", "kll_sketch", "theta_sketch", "integer", "long", "map", "string", "struct", "time", "timestamp", "timestamp_ntz", "variant",
     "interval", "IntervalType",
 ]

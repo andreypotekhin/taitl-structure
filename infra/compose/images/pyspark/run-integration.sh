@@ -6,6 +6,59 @@ connect_pid=""
 connect_log=""
 connect_checkpoints=""
 
+cleanup() {
+    local status=$?
+    if [[ -n "${connect_pid}" ]]; then
+        kill "${connect_pid}" >/dev/null 2>&1 || true
+        wait "${connect_pid}" 2>/dev/null || true
+    fi
+    if [[ -n "${connect_checkpoints}" ]]; then
+        rm -rf -- "${connect_checkpoints}"
+    fi
+    exit "${status}"
+}
+trap cleanup EXIT
+
+printf "Integration launcher: backend=%s; checksum=" "${backend}"
+cksum "${BASH_SOURCE[0]}"
+python - <<'VERSIONS'
+import platform
+from importlib.metadata import PackageNotFoundError, version
+
+print(f"Runtime: Python={platform.python_version()}")
+for package in ("pyspark", "delta-spark", "pandas", "pyarrow", "protobuf"):
+    try:
+        print(f"Runtime: {package}={version(package)}")
+    except PackageNotFoundError:
+        print(f"Runtime: {package}=not installed")
+VERSIONS
+
+run_phase() {
+    local name="${1}"
+    shift
+    printf "\n=== Integration phase: %s; backend=%s ===\n" "${name}" "${backend}"
+    printf "Selection: %s\n" "$*"
+    printf "Pytest overrides: %s\n" "${INTEGRATION_PYTEST_ARGS:-<none>}"
+    local status=0
+    timeout --signal=TERM --kill-after=15s "${STRUCTURE_INTEGRATION_TIMEOUT:-3600}" \
+        python -m pytest "$@" \
+        --rootdir=/workspace -p no:cacheprovider --run-integration \
+        "--integration-backend=${backend}" -ra \
+        -W 'ignore:distutils Version classes are deprecated:DeprecationWarning' \
+        -W 'ignore:The copy keyword is deprecated:Warning' \
+        -W 'ignore:ReleaseExecute failed with exception:UserWarning' \
+        ${INTEGRATION_PYTEST_ARGS:-} || status=$?
+    printf "Phase result: %s; backend=%s; exit=%s\n" "${name}" "${backend}" "${status}"
+    if (( status == 124 || status == 137 )); then
+        echo "Integration deadline reached (${STRUCTURE_INTEGRATION_TIMEOUT:-3600}s); backend=${backend}." >&2
+    fi
+    if (( status != 0 )) && [[ -n "${connect_log}" && -f "${connect_log}" ]]; then
+        echo "Spark Connect server output (last 200 lines):" >&2
+        tail -n 200 "${connect_log}" >&2
+    fi
+    return "${status}"
+}
+
 # Include source modules used by pickled UDFs, including with older cached images.
 export PYTHONPATH="/workspace:/workspace/src:/workspace/res:/workspace/tests${PYTHONPATH:+:${PYTHONPATH}}"
 
@@ -24,7 +77,10 @@ mkdir -p /tmp/artifacts /tmp/spark-artifacts
 cd /tmp
 
 if [[ "${backend}" == spark-connect* ]]; then
-    : "${STRUCTURE_EXPECTED_SPARK:?STRUCTURE_EXPECTED_SPARK is required for Spark Connect integration}"
+    if [[ -z "${STRUCTURE_EXPECTED_SPARK:-}" ]]; then
+        echo "STRUCTURE_EXPECTED_SPARK is required for Spark Connect integration." >&2
+        exit 2
+    fi
 
     connect_port="${STRUCTURE_SPARK_CONNECT_PORT:-15002}"
     connect_master="${STRUCTURE_SPARK_CONNECT_MASTER:-${STRUCTURE_SPARK_MASTER:-local[2]}}"
@@ -49,6 +105,10 @@ if [[ "${backend}" == spark-connect* ]]; then
         connect_args+=(--conf "spark.checkpoint.dir=${connect_checkpoints}")
     fi
 
+    if [[ -z "${SPARK_HOME:-}" ]]; then
+        echo "SPARK_HOME is required for Spark Connect integration." >&2
+        exit 2
+    fi
     connect_jars=("${SPARK_HOME}"/jars/spark-connect_*.jar)
     connect_packages=()
     connect_resource=""
@@ -98,16 +158,6 @@ if [[ "${backend}" == spark-connect* ]]; then
     connect_pid="$!"
 fi
 
-cleanup() {
-    if [[ -n "${connect_pid}" ]]; then
-        kill "${connect_pid}" >/dev/null 2>&1 || true
-        wait "${connect_pid}" 2>/dev/null || true
-    fi
-    if [[ -n "${connect_checkpoints}" ]]; then
-        rm -rf -- "${connect_checkpoints}"
-    fi
-}
-trap cleanup EXIT
 
 if [[ "${backend}" == "pyspark35" ]]; then
     iceberg_runtime="org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.12.0"
@@ -117,20 +167,13 @@ elif [[ "${backend}" == "pyspark41" || "${backend}" == "spark-connect41" ]]; the
     iceberg_runtime="org.apache.iceberg:iceberg-spark-runtime-4.1_2.13:1.12.0"
 fi
 
-if [[ -n "${iceberg_runtime:-}" ]]; then
+if [[ -n "${iceberg_runtime:-}" && "${STRUCTURE_SKIP_ICEBERG_PHASE:-0}" != "1" ]]; then
     echo "Running native Iceberg evidence with ${iceberg_runtime}" >&2
     STRUCTURE_ICEBERG_TESTS=1 STRUCTURE_SPARK_JARS_PACKAGES="${iceberg_runtime}" \
-        timeout --signal=TERM --kill-after=15s "${STRUCTURE_INTEGRATION_TIMEOUT:-3600}" \
-        python -m pytest \
+        run_phase iceberg \
         /workspace/tests/integration/pyspark/iceberg/test_native_iceberg.py \
         /workspace/tests/integration/pyspark/iceberg/test_iceberg_sql.py \
-        /workspace/tests/integration/pyspark/iceberg/test_iceberg_transform.py \
-        --rootdir=/workspace \
-        -p no:cacheprovider \
-        --run-integration \
-        "--integration-backend=${backend}" \
-        -W 'ignore:distutils Version classes are deprecated:DeprecationWarning' \
-        ${INTEGRATION_PYTEST_ARGS:-}
+        /workspace/tests/integration/pyspark/iceberg/test_iceberg_transform.py
 fi
 
 if [[ "${STRUCTURE_ICEBERG_ONLY:-0}" == "1" ]]; then
@@ -141,7 +184,6 @@ if [[ "${STRUCTURE_ICEBERG_ONLY:-0}" == "1" ]]; then
     exit 0
 fi
 
-pytest_status=0
 pytest_args=()
 if [[ -n "${iceberg_runtime:-}" ]]; then
     # The dedicated pass above has the Iceberg-only jars and catalog. Do not
@@ -152,19 +194,7 @@ test_paths=(/workspace/tests/integration /workspace/tests/concepts/live_pyspark)
 if [[ "${backend}" == "pyspark35" || "${backend}" == "pyspark40" || "${backend}" == "pyspark41" || "${backend}" == "spark-connect41" ]]; then
     # Keep Delta's pinned live evidence in its own process before the broader
     # PySpark tests initialize a driver or Connect client.
-    timeout --signal=TERM --kill-after=15s "${STRUCTURE_INTEGRATION_TIMEOUT:-3600}" \
-        python -m pytest /workspace/tests/integration/pyspark/v11/test_delta_transform_live.py \
-        --rootdir=/workspace \
-        -p no:cacheprovider \
-        --run-integration \
-        "--integration-backend=${backend}" \
-        -W 'ignore:distutils Version classes are deprecated:DeprecationWarning' \
-        -W 'ignore:The copy keyword is deprecated:Warning' \
-        -W 'ignore:ReleaseExecute failed with exception:UserWarning' \
-        ${INTEGRATION_PYTEST_ARGS:-} || pytest_status=$?
-    if (( pytest_status != 0 )); then
-        exit "${pytest_status}"
-    fi
+    run_phase delta /workspace/tests/integration/pyspark/v11/test_delta_transform_live.py
     pytest_args+=(--ignore=/workspace/tests/integration/pyspark/v11/test_delta_transform_live.py)
 fi
 
@@ -174,25 +204,9 @@ if [[ "${backend}" == "pyspark41" ]]; then
         /workspace/tests/integration/pyspark/v11
     )
 fi
-timeout --signal=TERM --kill-after=15s "${STRUCTURE_INTEGRATION_TIMEOUT:-3600}" \
-    python -m pytest "${test_paths[@]}" \
-    --rootdir=/workspace \
-    -p no:cacheprovider \
-    --run-integration \
-    "--integration-backend=${backend}" \
-    -W 'ignore:distutils Version classes are deprecated:DeprecationWarning' \
-    -W 'ignore:The copy keyword is deprecated:Warning' \
-    -W 'ignore:ReleaseExecute failed with exception:UserWarning' \
-    "${pytest_args[@]}" \
-    ${INTEGRATION_PYTEST_ARGS:-} || pytest_status=$?
-
-if (( pytest_status == 124 || pytest_status == 137 )); then
-    echo "Integration deadline reached (${STRUCTURE_INTEGRATION_TIMEOUT:-3600}s); backend=${backend}." >&2
+if [[ "${STRUCTURE_SKIP_GENERAL_PHASE:-0}" != "1" ]]; then
+    if (( ${#pytest_args[@]} > 0 )); then
+        test_paths+=("${pytest_args[@]}")
+    fi
+    run_phase general "${test_paths[@]}"
 fi
-
-if (( pytest_status != 0 )) && [[ -n "${connect_log}" && -f "${connect_log}" ]]; then
-    echo "Spark Connect server output (last 200 lines):" >&2
-    tail -n 200 "${connect_log}" >&2
-fi
-
-exit "${pytest_status}"

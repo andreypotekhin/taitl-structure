@@ -30,6 +30,7 @@ class TransformInput(Schema):
 
 class TransformOutput(Schema):
     value = string(nullable=True)
+    inline_value = string(nullable=True)
     code_text = string(nullable=False)
 
 
@@ -49,6 +50,7 @@ class NormalizeValue(Transform):
     def normalize(self, row: TransformInput) -> TransformOutput:
         return TransformOutput(
             value=row.value.transform(self.normalize_text),
+            inline_value=row.value.transform(lambda value: upper(trim(value))),
             code_text=row.code.transform(self.stringify),
         )
 
@@ -66,7 +68,9 @@ def test_column_transform_matches_online_and_generated_execution(spark, tmp_path
     )
     transform_path = f"{PACKAGE}/pyspark/transforms/integration/pyspark/v11/test_column_transform.py"
     generated = "".join(files[transform_path].split())
-    assert '.transform(lambda_column:F.upper(F.trim(F.col("transform_input.value"))))' in generated
+    assert generated.count('.transform(lambda_column:F.upper(F.trim(F.col("transform_input.value"))))') == 2
+    assert ".transform(lambda_column:F.col(\"transform_input.code\").cast('string'))" in generated
+    assert not any(token in generated for token in ("SparkContext", "sparkContext", "_jdf", "_jvm", ".rdd"))
 
     with generated_project(tmp_path, PACKAGE, files):
         schemas = importlib.import_module(f"{PACKAGE}.pyspark.schemas.test_column_transform")
@@ -77,5 +81,8 @@ def test_column_transform_matches_online_and_generated_execution(spark, tmp_path
         )
 
         assert_online_generated_parity(lambda: online, lambda: generated)
-        assert rows(generated.normalized) == [{"value": "HELLO", "code_text": "1"}, {"value": None, "code_text": "2"}]
+        assert rows(generated.normalized) == [
+            {"value": "HELLO", "inline_value": "HELLO", "code_text": "1"},
+            {"value": None, "inline_value": None, "code_text": "2"},
+        ]
         assert generated.normalized.schema == online.normalized.schema

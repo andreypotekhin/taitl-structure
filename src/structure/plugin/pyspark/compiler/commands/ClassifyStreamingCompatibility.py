@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 
 from structure.plugin.api.v1.model import StreamingFinding, StreamingReport, StreamingStateStage
+from structure.plugin.pyspark.compiler.logic.RemovalSafety import recipe_values
 from structure.plugin.pyspark.compiler.logic.streaming.ClassifyGeneratorStreamingCompatibility import (
     ClassifyGeneratorStreamingCompatibility,
 )
@@ -47,6 +48,8 @@ class ClassifyStreamingCompatibility:
             streaming_source = bool(input_modes.get(step.source))
             uses_streaming_input = self._uses_streaming_input(step, input_modes)
             streaming_step = streaming_contract or streaming_source or uses_streaming_input
+            if streaming_step:
+                findings.extend(self._batch_random(step))
             expressions = tuple(assignment.expression for assignment in step.projection)
             findings.extend(self._window_projection(step.name, expressions, streaming=streaming_step))
             for result in step.results:
@@ -1009,6 +1012,25 @@ class ClassifyStreamingCompatibility:
                 ),
                 use="Keep this transform batch-only or move streaming window state management outside Structure.",
             ),
+        )
+
+    def _batch_random(self, step) -> tuple[StreamingFinding, ...]:
+        functions = {
+            str(value.data["function"])
+            for value in recipe_values(step)
+            if isinstance(value, PySparkExpressionRecipe)
+            and value.kind == "call" and value.data.get("function") in {"random", "uuid"}
+        }
+        return tuple(
+            StreamingFinding(
+                code="STREAM-E0801",
+                support=StreamingSupport.BATCH_ONLY,
+                step=step.name,
+                operation=str(function),
+                problem=f"{function}(...) is batch-only until its streaming seed and replay policy is defined.",
+                use="Keep this helper on batch input; see docs/compatibility/Expressions.compat.md.",
+            )
+            for function in sorted(functions)
         )
 
     def _has_window(self, expression: PySparkExpressionRecipe) -> bool:

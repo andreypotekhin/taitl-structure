@@ -650,7 +650,7 @@ class BuildPySparkResultBodies:
                 return False
             if function == "concat_ws":
                 return False
-            if function == "to_decimal":
+            if function in {"to_decimal", "try_to_date", "quote", "make_time", "to_time", "try_to_time", "time_diff", "time_trunc"}:
                 return expression.nullable
             return any(self._nullable(argument, filters) for argument in expression.args)
         if expression.args:

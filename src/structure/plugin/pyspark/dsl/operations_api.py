@@ -12,6 +12,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import replace
 from datetime import date, datetime
+from datetime import time as time_value
 from decimal import Decimal
 from functools import cache as cached
 from inspect import Parameter, signature
@@ -56,6 +57,7 @@ from structure.plugin.pyspark.dsl.types import (
     StructType,
     StructureType,
     TimestampType,
+    TimeType,
     VariantType,
 )
 from structure.plugin.pyspark.dsl.windows.GroupedRows import GroupedRows
@@ -1858,7 +1860,7 @@ def _boolean_option(call: str, name: str, value: object) -> None:
 def _window_default(call: str, value: Expression, default: object) -> None:
     if default is None:
         return
-    if not isinstance(default, (bool, int, float, str, Decimal, date, datetime)):
+    if not isinstance(default, (bool, int, float, str, Decimal, date, datetime, time_value)):
         raise TypeError(f"{call} default must be a Python scalar literal or None")
     default_type = _typed_type(f"{call} default", literal(default))
     value_type = _typed_type(f"{call} value", value)
@@ -3257,7 +3259,7 @@ def _map_key_type(call: str, map_type: MapType, key: Expression) -> None:
 
 def _sortable_type(call: str, expression: Expression) -> None:
     type = _typed_type(call, expression)
-    if type.name not in {"date", "decimal", "double", "float", "integer", "long", "string", "timestamp", "timestamp_ntz"}:
+    if type.name not in {"date", "decimal", "double", "float", "integer", "long", "string", "time", "timestamp", "timestamp_ntz"}:
         raise TypeError(f"{call} must return an orderable scalar expression; received {type.name}")
 
 
@@ -3352,6 +3354,8 @@ def _same_type(left: StructureType, right: StructureType) -> bool:
         return getattr(left, "precision") == getattr(right, "precision") and getattr(left, "scale") == getattr(
             right, "scale"
         )
+    if isinstance(left, TimeType) and isinstance(right, TimeType):
+        return left.precision == right.precision
     return True
 
 

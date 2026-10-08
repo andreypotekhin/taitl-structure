@@ -12,6 +12,7 @@ import builtins
 import json
 from dataclasses import dataclass
 from datetime import date, datetime
+from datetime import time as time_value
 from decimal import Decimal
 from math import isfinite
 from re import fullmatch
@@ -39,6 +40,7 @@ from structure.plugin.pyspark.dsl.types import (
     StructureType,
     TimestampNTZType,
     TimestampType,
+    TimeType,
     VariantType,
 )
 
@@ -46,6 +48,7 @@ if TYPE_CHECKING:
     from structure.plugin.pyspark.dsl.RowScope import RowScope
 
 __all__ = [
+    "chr", "quote", "try_to_date", "random", "uuid", "current_time", "make_time", "to_time", "try_to_time", "time_diff", "time_trunc",
     "abs", "assert_true", "base64", "bit_length", "bin", "bround", "ceil", "coalesce", "concat_ws", "conv", "date_add", "date_sub", "date_trunc", "datediff",
     "dayofmonth", "dayofweek", "dayofyear", "event_time_between", "exp", "floor", "from_csv", "from_json", "hash", "hour", "ifnull", "initcap",
     "instr", "isnan", "isnotnull", "isnull", "CsvOptions", "JsonOptions", "length", "levenshtein", "literal", "log",
@@ -211,6 +214,9 @@ def literal(value: object) -> Expression:
 
     if isinstance(value, datetime):
         return Expression(kind="literal", type=TimestampType(), nullable=False, data={"value": value})
+
+    if isinstance(value, time_value):
+        return Expression(kind="literal", type=TimeType(), nullable=False, data={"value": value})
 
     if isinstance(value, date):
         return Expression(kind="literal", type=DateType(), nullable=False, data={"value": value})
@@ -514,6 +520,72 @@ def current_timezone() -> Expression:
             "capability_name": "query_clock",
         },
     )
+
+
+def current_time(precision: int = 6) -> Expression:
+    """Return the query-start time of day at a precision from zero through six."""
+    if isinstance(precision, bool) or not isinstance(precision, int) or not 0 <= precision <= 6:
+        raise ValueError("current_time(...) precision must be an integer from 0 through 6")
+    return _query_clock("current_time", TimeType(precision))
+
+
+def make_time(hour: object, minute: object, second: object) -> Expression:
+    """Build a nullable time of day from integral hours/minutes and numeric seconds."""
+    arguments = tuple(literal(value) for value in (hour, minute, second))
+    if any(not isinstance(argument.type, (IntegerType, LongType)) for argument in arguments[:2]):
+        raise TypeError("make_time(...) hour and minute must be Integer or Long expressions")
+    if arguments[2].type is None or arguments[2].type.name not in {"decimal", "double", "float", "integer", "long"}:
+        raise TypeError("make_time(...) second must be a numeric Structure expression")
+    return Expression(kind="call", type=TimeType(), nullable=True, data={"function": "make_time"}, args=arguments)
+
+
+def _time_unit(value: object, call: str) -> Expression:
+    supported = {"hour", "minute", "second", "millisecond", "microsecond"}
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized not in supported:
+            raise ValueError(f"{call} unit must be one of {', '.join(sorted(supported))}")
+        return literal(normalized)
+    unit = literal(value)
+    if not isinstance(unit.type, StringType):
+        raise TypeError(f"{call} unit must be a String literal or expression")
+    if unit.kind == "literal":
+        return _time_unit((unit.data or {}).get("value"), call)
+    return unit
+
+
+def to_time(value: object, *, format: object | None = None) -> Expression:
+    """Parse String input into nullable TIME; malformed values follow Spark's strict error behavior."""
+    source = _string_argument(value, "to_time(...)")
+    arguments = (source,) if format is None else (source, _string_argument(format, "to_time(...) format"))
+    return Expression(kind="call", type=TimeType(), nullable=True, data={"function": "to_time"}, args=arguments)
+
+
+def try_to_time(value: object, *, format: object | None = None) -> Expression:
+    """Parse String input into nullable TIME, returning null for invalid values."""
+    source = _string_argument(value, "try_to_time(...)")
+    arguments = (source,) if format is None else (source, _string_argument(format, "try_to_time(...) format"))
+    return Expression(kind="call", type=TimeType(), nullable=True, data={"function": "try_to_time"}, args=arguments)
+
+
+def time_diff(unit: object, start: object, end: object) -> Expression:
+    """Return the signed Long difference between two TIME expressions in the selected unit."""
+    unit_argument = _time_unit(unit, "time_diff(...)")
+    start_argument, end_argument = literal(start), literal(end)
+    if not isinstance(start_argument.type, TimeType) or not isinstance(end_argument.type, TimeType):
+        raise TypeError("time_diff(...) start and end must be TIME expressions")
+    return Expression(kind="call", type=LongType(), nullable=True, data={"function": "time_diff"},
+                      args=(unit_argument, start_argument, end_argument))
+
+
+def time_trunc(unit: object, value: object) -> Expression:
+    """Truncate a TIME expression to the selected unit, retaining its declared precision."""
+    unit_argument = _time_unit(unit, "time_trunc(...)")
+    argument = literal(value)
+    if not isinstance(argument.type, TimeType):
+        raise TypeError("time_trunc(...) value must be a TIME expression")
+    return Expression(kind="call", type=argument.type, nullable=True, data={"function": "time_trunc"},
+                      args=(unit_argument, argument))
 
 
 def aes_encrypt(
@@ -1126,9 +1198,42 @@ def ascii(value: object) -> Expression:
 
 def char(value: object) -> Expression:
     """Return the character represented by an integral expression."""
-    argument = _integral_argument(value, "char(...)")
+    return _character_call("char", value)
+
+
+def chr(value: object) -> Expression:
+    """Return a character using PySpark 4.1's ``chr`` spelling.
+
+    Args:
+        value: Integer/Long expression or integer literal. Spark reduces positive
+            values modulo 256 and returns an empty string for negative values.
+
+    Returns:
+        String with the input's nullability, matching ``char(...)``.
+    """
+    return _character_call("chr", value)
+
+
+def _character_call(function: str, value: object) -> Expression:
+    argument = _integral_argument(value, f"{function}(...)")
     return Expression(
-        kind="call", type=StringType(), nullable=argument.nullable, data={"function": "char"}, args=(argument,)
+        kind="call", type=StringType(), nullable=argument.nullable, data={"function": function}, args=(argument,)
+    )
+
+
+def quote(value: object) -> Expression:
+    """Enclose text in single quotes using PySpark 4.1 ``quote``.
+
+    Args:
+        value: String expression or string literal. Embedded single quotes are
+            preceded by a backslash; existing backslashes are preserved.
+
+    Returns:
+        Nullable String, matching Spark's schema even for non-null input.
+    """
+    argument = _string_argument(value, "quote(...)")
+    return Expression(
+        kind="call", type=StringType(), nullable=True, data={"function": "quote"}, args=(argument,)
     )
 
 
@@ -1938,6 +2043,28 @@ def to_date(value: object, *, format: str | None = None) -> Expression:
     )
 
 
+def try_to_date(value: object, *, format: str | None = None) -> Expression:
+    """Convert to Date, returning null for invalid text on PySpark 4.1.
+
+    Args:
+        value: String, Date, or LTZ Timestamp expression, or a supported literal.
+        format: Optional non-empty Spark datetime pattern literal. Spark ignores
+            this pattern on Date/Timestamp input, emitting ``PYSPARK-W2705``.
+
+    Returns:
+        Nullable Date. Malformed text returns null regardless of ANSI mode;
+        invalid datetime patterns still follow Spark's error rules.
+    """
+    argument = _temporal_conversion_argument(value, "try_to_date(...)")
+    format = _temporal_format(format, "try_to_date(...)")
+    data: dict[str, object] = {"function": "try_to_date"}
+    if format is not None:
+        data["format"] = format
+        if not isinstance(argument.type, StringType):
+            data["warnings"] = ("PYSPARK-W2705",)
+    return Expression(kind="call", type=DateType(), nullable=True, data=data, args=(argument,))
+
+
 def to_timestamp(value: object, *, format: object | None = None) -> Expression:
     """Convert a String, Date, or Timestamp expression to Timestamp."""
     argument = _temporal_conversion_argument(value, "to_timestamp(...)")
@@ -2366,6 +2493,35 @@ def randn(*, seed: int | None = None, reproducible: bool = True) -> Expression:
     return _random_call("randn", seed=seed, reproducible=reproducible)
 
 
+def random(*, seed: int | None = None, reproducible: bool = True) -> Expression:
+    """Generate uniform Double values using PySpark 4.1's ``random`` alias.
+
+    Args:
+        seed: Integer literal, required unless ``reproducible=False``.
+        reproducible: Explicit seed policy, matching ``rand(...)``.
+
+    Returns:
+        Non-null Double in [0, 1). Batch-only; a seed does not guarantee identical
+        values across repartitioning, retries, versions, or query restarts.
+    """
+    return _random_call("random", seed=seed, reproducible=reproducible)
+
+
+def uuid(*, seed: int | None = None, reproducible: bool = True) -> Expression:
+    """Generate UUID strings on PySpark 4.1 with an explicit seed policy.
+
+    Args:
+        seed: Integer literal, required unless ``reproducible=False``. Symbolic
+            seeds are not admitted.
+        reproducible: Explicit seed policy, matching ``rand(...)``.
+
+    Returns:
+        Non-null String in canonical 36-character UUID form. Batch-only; values
+        depend on partitioning and are not stable identifiers across reruns.
+    """
+    return _random_call("uuid", seed=seed, reproducible=reproducible)
+
+
 def _random_call(function: str, *, seed: int | None, reproducible: bool) -> Expression:
     if not isinstance(reproducible, bool):
         raise TypeError(f"{function}(...) reproducible must be a Boolean")
@@ -2375,7 +2531,7 @@ def _random_call(function: str, *, seed: int | None, reproducible: bool) -> Expr
         raise TypeError(f"{function}(...) seed is required unless reproducible=False")
     return Expression(
         kind="call",
-        type=DoubleType(),
+        type=StringType() if function == "uuid" else DoubleType(),
         nullable=False,
         data={
             "function": function,
@@ -3601,6 +3757,8 @@ def _same_type(left: StructureType, right: StructureType) -> bool:
         return left.schema is right.schema
     if isinstance(left, DecimalType) and isinstance(right, DecimalType):
         return left.precision == right.precision and left.scale == right.scale
+    if isinstance(left, TimeType) and isinstance(right, TimeType):
+        return left.precision == right.precision
     return True
 
 

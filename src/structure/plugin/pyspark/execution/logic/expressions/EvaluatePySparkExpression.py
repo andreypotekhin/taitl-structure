@@ -19,6 +19,7 @@ from structure.plugin.pyspark.dsl.types import (
     StructureType,
     TimestampNTZType,
     TimestampType,
+    TimeType,
 )
 
 
@@ -872,6 +873,10 @@ class EvaluatePySparkExpression:
             )
         if function in {"current_date", "curdate", "current_timestamp", "now", "localtimestamp", "current_timezone"}:
             return getattr(functions, function)()
+        if function == "current_time":
+            return functions.current_time(cast(TimeType, expression.type).precision)
+        if function in {"make_time", "to_time", "try_to_time", "time_diff", "time_trunc"}:
+            return getattr(functions, function)(*args)
         if function in {"aes_encrypt", "aes_decrypt", "try_aes_decrypt"}:
             return getattr(functions, function)(*args)
         if function == "hll_sketch_estimate":
@@ -989,7 +994,7 @@ class EvaluatePySparkExpression:
             return functions.regexp_substr(args[0], expression.data["pattern"])
         if function in {"lpad", "rpad"}:
             return getattr(functions, function)(args[0], expression.data["length"], expression.data["pad"])
-        if function in {"ascii", "bit_length", "char", "char_length", "character_length", "length", "octet_length", "soundex"}:
+        if function in {"ascii", "bit_length", "char", "chr", "quote", "char_length", "character_length", "length", "octet_length", "soundex"}:
             return getattr(functions, function)(args[0])
         if function in {"left", "right", "repeat"}:
             parameter = "length" if function in {"left", "right"} else "count"
@@ -1092,7 +1097,7 @@ class EvaluatePySparkExpression:
             return functions.overlay(args[0], args[1], args[2], args[3])
         if function in {"to_timestamp_ntz", "to_timestamp_ltz", "try_to_timestamp"}:
             return getattr(functions, function)(*args)
-        if function in {"to_date", "to_timestamp"}:
+        if function in {"to_date", "try_to_date", "to_timestamp"}:
             if len(args) == 2:
                 return functions.call_function("to_timestamp", *args)
             return (
@@ -1132,7 +1137,7 @@ class EvaluatePySparkExpression:
             return getattr(functions, function)(*args)
         if function == "width_bucket":
             return functions.width_bucket(args[0], args[1], args[2], expression.data["num_buckets"])
-        if function in {"rand", "randn"}:
+        if function in {"rand", "randn", "random", "uuid"}:
             seed = expression.data.get("seed")
             call = getattr(functions, function)
             return call() if seed is None else call(seed=seed)
@@ -1248,6 +1253,8 @@ class EvaluatePySparkExpression:
             return "TIMESTAMP"
         if isinstance(type, TimestampNTZType):
             return "TIMESTAMP_NTZ"
+        if isinstance(type, TimeType):
+            return f"TIME({type.precision})"
         if isinstance(type, IntervalType):
             return type.sql.upper()
         if isinstance(type, DecimalType):

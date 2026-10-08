@@ -20,6 +20,8 @@ class PySparkStepBody:
     joins: tuple[JoinPlan, ...] = ()
     operations: tuple[OperationPlan, ...] = ()
     delta_mutations: tuple[DeltaMutation | IcebergMutation, ...] = ()
+    table_forward: bool = False
+    table_source: str | None = None
     aggregate_keys: tuple[tuple[str, Expression], ...] | None = None
     aggregate_levels: tuple[tuple[str, ...], ...] = ()
     aggregate_grouping: str = "group_by"

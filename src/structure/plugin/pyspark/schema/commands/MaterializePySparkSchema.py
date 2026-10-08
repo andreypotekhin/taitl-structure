@@ -20,6 +20,7 @@ from structure.plugin.pyspark.dsl.types import (
     StructureType,
     TimestampNTZType,
     TimestampType,
+    TimeType,
     VariantType,
 )
 
@@ -60,6 +61,8 @@ class MaterializePySparkSchema:
             return spark_types.TimestampType()
         if isinstance(type, TimestampNTZType):
             return spark_types.TimestampNTZType()
+        if isinstance(type, TimeType):
+            return spark_types.TimeType(type.precision)
         if isinstance(type, IntervalType):
             if type.kind == "calendar":
                 calendar = getattr(spark_types, "CalendarIntervalType", None)
