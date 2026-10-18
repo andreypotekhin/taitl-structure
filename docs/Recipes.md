@@ -25,10 +25,22 @@ the API, and the [Reference](Reference.md), which defines detailed behavior.
 ## Integration Boundary Recipes
 
 - [Geospatial Provider Bridge](recipes/GeospatialProviderBridge.md): make a provider-specific Binary handoff explicit.
+
+## Delta Table Recipes
+
 - [Delta Table Mutations](recipes/DeltaTableMutations.md): mutate a caller-owned table from a typed transform.
-- [Delta Schema Evolution](recipes/DeltaSchemaEvolution.md): declare and check a table's expected schema transition.
-- [Delta Change Data Feed](recipes/DeltaChangeDataFeed.md): read batch CDF through a typed transform.
-- [Delta Inspection and Maintenance](recipes/DeltaInspectionAndMaintenance.md): inspect history and perform restore, optimize, or vacuum effects.
+- [Delta Table Schema Evolution](recipes/DeltaTableSchemaEvolution.md): declare and check a schema transition.
+- [Delta Table Change Data Feed](recipes/DeltaTableChangeDataFeed.md): read batch CDF through a typed transform.
+- [Delta Table Inspection and Maintenance](recipes/DeltaTableInspectionAndMaintenance.md): inspect history and perform
+  restore, optimize, or vacuum effects.
+
+## Iceberg Table Recipes
+
+- [Iceberg Table Mutations](recipes/IcebergTableMutations.md): apply typed row changes to a catalog table.
+- [Iceberg Table Schema Evolution](recipes/IcebergTableSchemaEvolution.md): append with an explicit result schema.
+- [Iceberg Table Change Data Feed](recipes/IcebergTableChangeDataFeed.md): process a caller-created native changelog.
+- [Iceberg Table Inspection and Maintenance](recipes/IcebergTableInspectionAndMaintenance.md): inspect snapshots and
+  invoke rollback, rewrites, expiration, or orphan cleanup.
 
 More recipes should cover one recognizable outcome, make their data assumptions explicit, and link to the API or
 reference pages that define their behavior. They should use ordinary Structure source rather than hand-written PySpark

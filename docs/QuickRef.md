@@ -10,7 +10,7 @@ For exhaustive reference on supported APIs, PySpark parity, examples and semanti
 Target-gated spatial provider guidance is in the [Geospatial reference](reference/Geospatial.ref.md).
 For Delta file layout, see [compaction and Z-ordering](reference/DeltaIceberg.ref.md#compaction-and-z-ordering),
 [choosing columns](background/DeltaIceberg.back.md#choosing-z-order-columns), and
-[runnable examples](recipes/DeltaInspectionAndMaintenance.md#compaction-and-z-ordering).
+[runnable examples](recipes/DeltaTableInspectionAndMaintenance.md#compaction-and-z-ordering).
 
 ## Schema Classes
 

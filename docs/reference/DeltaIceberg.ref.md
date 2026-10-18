@@ -336,8 +336,8 @@ run the same checked operations. The returned `DeltaTable` is the caller's origi
 materialized earlier, reopen the table to inspect the latest snapshot.
 
 For rationale and lifecycle details, see [Delta table background](../background/DeltaIceberg.back.md). For recipes, see
-[same-schema mutations](../recipes/DeltaTableMutations.md), [schema evolution](../recipes/DeltaSchemaEvolution.md), and
-[change data feed](../recipes/DeltaChangeDataFeed.md). For the exact
+[same-schema mutations](../recipes/DeltaTableMutations.md), [schema evolution](../recipes/DeltaTableSchemaEvolution.md), and
+[change data feed](../recipes/DeltaTableChangeDataFeed.md). For the exact
 release and target limits, see [Delta and Iceberg compatibility](../compatibility/DeltaIceberg.compat.md).
 
 ### Inheritance and composition
@@ -465,7 +465,7 @@ A builder may be executed once. Delta enforces its own requirements for Z-order 
 Both operations preserve logical rows and schema and return no metric relation. The transform result retains the
 caller's original table handle. Z-ordering does not guarantee query-result ordering; use an explicit query sort when
 needed. See [choosing columns](../background/DeltaIceberg.back.md#choosing-z-order-columns) and the
-[runnable maintenance examples](../recipes/DeltaInspectionAndMaintenance.md#compaction-and-z-ordering).
+[runnable maintenance examples](../recipes/DeltaTableInspectionAndMaintenance.md#compaction-and-z-ordering).
 
 #### Liquid clustering
 
@@ -829,4 +829,8 @@ arbitrary DDL, and procedures without helpers remain caller-owned SQL. Generic S
 for every provider operation. Iceberg changelog helpers and non-v2 table formats are outside this convenience API.
 
 See the [table background](../background/DeltaIceberg.back.md#apache-iceberg-tables) for rationale and lifecycle
-details, and the [Iceberg API](../api/DeltaIceberg.api.md#apache-iceberg) for the operation inventory.
+details, and the [Iceberg API](../api/DeltaIceberg.api.md#apache-iceberg) for the operation inventory. For hands-on
+examples, see [mutations](../recipes/IcebergTableMutations.md),
+[schema evolution](../recipes/IcebergTableSchemaEvolution.md),
+[native changelog processing](../recipes/IcebergTableChangeDataFeed.md), and
+[inspection and maintenance](../recipes/IcebergTableInspectionAndMaintenance.md).

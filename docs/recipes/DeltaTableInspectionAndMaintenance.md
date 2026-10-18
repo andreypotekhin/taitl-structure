@@ -1,14 +1,19 @@
-# Inspecting and maintaining Delta tables in transforms
+# Inspect and Maintain a Delta Table in Transforms
 
-Inspect recent commits or improve file layout on an existing Delta table without changing its logical rows.
-Use typed relation returns for history and detail, and invoke maintenance through explicit effect steps.
-The caller configures a Delta-capable Spark session and supplies the native `DeltaTable` handle.
+**Problem:** An existing orders table needs its commit history inspected, files reorganized, or retained data cleaned
+up without hiding those operations inside ordinary row transformations.
 
-## Inspect history and detail
+**Solution:** Return typed metadata relations and invoke restore, optimization, and vacuum as separate effect
+transforms.
+
+The caller configures a Delta-capable Spark session and supplies an existing native `DeltaTable` handle matching
+`Order`. The file-layout example below creates a separate disposable table with its own schema.
+
+## Define the table and metadata schemas
 
 ```python
-from structure import Schema, Transform, output, variable
-from structure.plugin.pyspark import array, delta_detail, delta_history, delta_input, long, string
+from structure import *
+from structure.plugin.pyspark import *
 
 
 class Order(Schema):
@@ -25,23 +30,57 @@ class Detail(Schema):
     format = string()
     location = string()
     clustering_columns = array(string(), contains_null=False, alias="clusteringColumns")
+```
 
+## Inspect history and detail
 
+Bind both metadata methods to the original table input rather than chaining the detail read after the history result:
+
+```python
 class InspectOrders(Transform):
     orders = delta_input(Order)
     limit = variable(int, default=10)
     commits = output(Commit)
     details = output(Detail)
 
+    @step(input=orders, output=commits)
     def history(self, order: Order) -> Commit:
         return delta_history(order, limit=self.limit)
 
+    @step(input=orders, output=details)
     def detail(self, order: Order) -> Detail:
         return delta_detail(order)
+
+
+session = StructureSession(spark=spark)
+table = delta_table_handle
+inspection = InspectOrders(orders=table, limit=5).run(session)
+recent_commits = inspection.commits
+table_details = inspection.details
 ```
 
 History is newest first. The typed output may expose a subset of Delta's metadata columns. The limit can vary at runtime
 without recompiling; it must be positive. `delta_detail` returns one metadata row.
+
+## Read a retained version
+
+Return snapshot contents as an ordinary DataFrame when the consumer needs rows from a retained historical version:
+
+```python
+class ReadOrderSnapshot(Transform):
+    orders = delta_input(Order)
+    version = variable(int)
+    snapshot = output(Order)
+
+    def read(self, order: Order) -> Order:
+        return delta_snapshot(order, version=self.version)
+
+
+prior_orders = ReadOrderSnapshot(orders=table, version=retained_version).run(session).snapshot
+```
+
+The return annotation must describe the schema at the selected version. `timestamp=` is an alternative to `version=`;
+supply exactly one selector. Snapshot reads do not change the current table.
 
 ## Compaction and Z-ordering
 
@@ -59,34 +98,33 @@ and schedule the maintenance they need.
 from tempfile import TemporaryDirectory
 
 from delta.tables import DeltaTable
-from structure import Schema, StructureSession, Transform, variable
-from structure.plugin.pyspark import delta_optimize, delta_table, string
 
 
-class Order(Schema):
+class LayoutOrder(Schema):
     customer_id = string(nullable=False)
     product_id = string(nullable=False)
     order_date = string(nullable=False)
 
 
 class CompactOrders(Transform):
-    orders = delta_table(Order)
+    orders = delta_table(LayoutOrder)
 
-    def compact(self, order: Order) -> None:
+    def compact(self, order: LayoutOrder) -> None:
         delta_optimize(order).execute_compaction()
 
-class ZOrderOrders(Transform):
-    orders = delta_table(Order)
 
-    def optimize(self, order: Order) -> None:
+class ZOrderOrders(Transform):
+    orders = delta_table(LayoutOrder)
+
+    def optimize(self, order: LayoutOrder) -> None:
         delta_optimize(order).execute_zorder(by=(order.customer_id, order.product_id))
 
 
 class ZOrderPartition(Transform):
-    orders = delta_table(Order)
+    orders = delta_table(LayoutOrder)
     selected_date = variable(str)
 
-    def optimize(self, order: Order) -> None:
+    def optimize(self, order: LayoutOrder) -> None:
         delta_optimize(order, where=order.order_date == self.selected_date).execute_zorder(
             by=(order.customer_id, order.product_id),
         )
@@ -109,17 +147,17 @@ with TemporaryDirectory(prefix="structure-zorder-") as table_path:
         ('c1', 'p2', '2026-10-07'), ('c2', 'p1', '2026-10-08')""")
     spark.sql(f"""INSERT INTO delta.`{table_path}` VALUES
         ('c2', 'p2', '2026-10-07'), ('c1', 'p1', '2026-10-08')""")
-    table = DeltaTable.forPath(spark, table_path)
+    layout_table = DeltaTable.forPath(spark, table_path)
 
     # Full-table Z-ordering; this transform does not run compaction as another step.
-    result = ZOrderOrders(orders=table).run(session)
-    assert result.orders is table
+    result = ZOrderOrders(orders=layout_table).run(session)
+    assert result.orders is layout_table
 
     # Alternatively, select a partition with a runtime value.
-    scoped = ZOrderPartition(orders=table, selected_date="2026-10-08").run(session)
-    assert scoped.orders is table
+    scoped = ZOrderPartition(orders=layout_table, selected_date="2026-10-08").run(session)
+    assert scoped.orders is layout_table
 
-    # Invoke CompactOrders(orders=table).run(session) separately when compaction is wanted.
+    # Invoke CompactOrders(orders=layout_table).run(session) separately when compaction is wanted.
     assert DeltaTable.forPath(spark, table_path).toDF().count() == 4
 ```
 
@@ -141,16 +179,25 @@ On admitted open-source Delta profiles, clustering-enabled tables reject optimiz
 keys are cleared. Databricks `OPTIMIZE FULL WHERE` is outside this admission. See the
 [liquid-clustering reference](../reference/DeltaIceberg.ref.md#liquid-clustering).
 
-## Restore and vacuum
-
-Restore and vacuum remain independently invoked maintenance effects. Using the `Order` schema and table appropriate
-to your application:
+For a separate caller-owned table matching `Order` with active clustering keys, declare full reclustering explicitly:
 
 ```python
-from structure import Transform, variable
-from structure.plugin.pyspark import delta_restore, delta_table, delta_vacuum
+class ReclusterOrders(Transform):
+    orders = delta_table(Order)
 
+    def optimize(self, order: Order) -> None:
+        delta_optimize(order).full()
+```
 
+Invoke this transform with that clustered table's handle. Structure does not configure its keys or convert the
+disposable partitioned example into a clustered table.
+
+## Restore and vacuum
+
+Restore and vacuum remain independently invoked maintenance effects. These transforms use the original `Order`
+schema and caller-owned table:
+
+```python
 class RestoreOrders(Transform):
     orders = delta_table(Order)
     version = variable(int)
@@ -166,10 +213,17 @@ class VacuumOrders(Transform):
         delta_vacuum(order).execute()
 ```
 
+Invoke `RestoreOrders(orders=table, version=retained_version).run(session)` to restore a selected version whose schema
+matches `Order`. A cross-schema restore requires separate current and result declarations; see the
+[maintenance reference](../reference/DeltaIceberg.ref.md#history-detail-and-maintenance).
+
 Restore creates a new commit. Optimize rewrites files while preserving logical rows. Their native metric DataFrames are
 not exposed as transform outputs. An optimize predicate may use only table partition columns. Vacuum defaults to 168
 hours; a shorter retention requires `allow_short_retention=True`, and Delta's native retention safety check remains
 active. Vacuum removes files that older snapshots may need, so ensure no reader or stream still depends on them.
+
+Invoke `VacuumOrders(orders=table).run(session)` when those retention conditions are met. Each maintenance call commits
+independently; Structure does not roll back earlier successes or retry uncertain commits.
 
 See [Delta Tables API](../api/DeltaIceberg.api.md) for table metadata declarations and
 [compatibility](../compatibility/DeltaIceberg.compat.md) for the runtime admission status.

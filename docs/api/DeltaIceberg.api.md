@@ -23,7 +23,7 @@ the [Delta background](../background/DeltaIceberg.back.md#delta-tables) for effe
 
 For file layout, see [compaction and Z-ordering](../reference/DeltaIceberg.ref.md#compaction-and-z-ordering),
 [choosing Z-order columns](../background/DeltaIceberg.back.md#choosing-z-order-columns), and the
-[runnable maintenance examples](../recipes/DeltaInspectionAndMaintenance.md#compaction-and-z-ordering).
+[runnable maintenance examples](../recipes/DeltaTableInspectionAndMaintenance.md#compaction-and-z-ordering).
 
 ## Apache Iceberg
 
@@ -43,3 +43,6 @@ See the [Iceberg reference](../reference/DeltaIceberg.ref.md#apache-iceberg-tabl
 contracts, and the [background](../background/DeltaIceberg.back.md#apache-iceberg-tables) for catalogs, SQL, and
 lifecycle semantics. The [compatibility ledger](../compatibility/DeltaIceberg.compat.md#apache-iceberg) lists the
 admitted runtime pairs and tested scope.
+
+The [Iceberg table recipes](../Recipes.md#iceberg-table-recipes) cover mutations, schema evolution, native changelog
+processing, and inspection and maintenance.

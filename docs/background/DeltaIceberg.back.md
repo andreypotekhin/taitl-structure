@@ -374,7 +374,7 @@ Restore, optimize, and vacuum are explicit effect calls. Restore creates a new v
 layout; vacuum removes eligible unreferenced files. Structure does not expose native metric rows as transform results.
 Vacuum defaults to 168 hours, and a shorter retention requires source opt-in while retaining Delta's native safety
 check. Because vacuum can invalidate old time-travel reads, the caller coordinates it with readers and streams. See the
-[inspection and maintenance recipe](../recipes/DeltaInspectionAndMaintenance.md).
+[inspection and maintenance recipe](../recipes/DeltaTableInspectionAndMaintenance.md).
 See [Delta compatibility](../compatibility/DeltaIceberg.compat.md) for the admitted profiles and evidence.
 
 Restoring to a retained version creates a new commit with that version's contents. Vacuum is a separate operation;
@@ -417,7 +417,7 @@ Z-ordering shuffles and rewrites files, and later writes can reduce the benefit 
 can do more work; do not assume the second invocation is free. Run it explicitly when the workload justifies its
 cost, with scheduling and statistics configuration controlled by the caller. Compaction addresses small files
 without requesting Z-order keys. The
-[maintenance examples](../recipes/DeltaInspectionAndMaintenance.md#compaction-and-z-ordering) invoke the operations
+[maintenance examples](../recipes/DeltaTableInspectionAndMaintenance.md#compaction-and-z-ordering) invoke the operations
 separately.
 
 For the example `Order` schema, compaction and Z-ordering can be declared as separate transforms:
@@ -708,3 +708,8 @@ Use a typed helper when its signature captures the intended operation and Struct
 and arguments at compile time. Use `sql(...)` for table creation, catalog administration, branches and tags, uncommon
 procedure options, and future SQL features not covered by helpers. SQL is the complete supported Spark interface at
 the boundary; the helper catalog remains deliberately narrower and Iceberg-specific.
+
+For hands-on workflows, see [Iceberg table mutations](../recipes/IcebergTableMutations.md),
+[schema evolution](../recipes/IcebergTableSchemaEvolution.md),
+[native changelog processing](../recipes/IcebergTableChangeDataFeed.md), and
+[inspection and maintenance](../recipes/IcebergTableInspectionAndMaintenance.md).
