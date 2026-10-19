@@ -30,9 +30,9 @@ runtime evidence. The detailed row-by-row inventory is maintained in the [API tr
 
 The current V11 state and side-effect boundaries are:
 
-- `Column.transform`, typed EXISTS/IN/lateral relation queries, and typed batch observations are supported on ordinary
-  PySpark and Spark Connect 4.1 with focused online/generated/native parity. Other new expressions and KLL/Theta
-  sketches remain `design-gated` until their typed contracts and target evidence are complete. The [versioned Python delta](../../src/structure/plugin/pyspark/resources/pyspark-4.1-python-api-delta.json)
+- `Column.transform`, typed EXISTS/IN/lateral relation queries, typed batch observations, and KLL/Theta sketches are
+  supported on ordinary PySpark and Spark Connect 4.1 with focused online/generated/native parity. Other new
+  expressions remain evidence-gated. The [versioned Python delta](../../src/structure/plugin/pyspark/resources/pyspark-4.1-python-api-delta.json)
   separates actual 4.1 index additions from older APIs retained for V11 work.
 - Relation query consumers are batch-only and limited to exact `>=4.1,<4.2`; the default profile remains
   `>=3.5,<4.1`. Their query body supports filters, projection, ordering, and limits; nested queries, correlated IN,
@@ -103,7 +103,7 @@ function-specific gates are indexed in [Function Gates](../dev/gated/Functions.g
 | JSON and CSV functions | partial | Schema-carrying `from_json`, `to_json`, `from_csv`, `to_csv`, typed `get_json_object`, `json_array_length`, `json_object_keys`, declared-schema `json_tuple`, and literal `schema_of_json`/`schema_of_csv` | Dynamic schema inference remains unsupported; `json_tuple` is top-level and nullable-string-only. | [Expressions API](../api/Expressions.api.md) |
 | Array and higher-order functions | implemented | Typed array construction, lookup, mutation, set, concatenation, size, join, extrema, overlap, sort, shuffle, `arrays_zip`, `reduce`, and callback helpers through `arr_*`, `array_*`, `sequence`, and `slice` | Typed contracts cover array shape, nullability, nondeterminism, and callback accumulator rules; broader aliases still follow the explicit inventory disposition. | [Collections API](../api/Collections.api.md) |
 | Struct and map functions | implemented | Typed `create_map`, `map_from_arrays`, `str_to_map`, `named_struct`, lookup, entries, values, and callback helpers; schema constructors own declared struct shape | Map keys are non-null; string-map delimiters and named-struct field names are validated literals. | [Collections API](../api/Collections.api.md) |
-| Aggregate functions | partial | Core aggregates, boolean/statistical aggregates including `some`, `mean`, `std`, and population covariance, `count_if`, `median`, population/sample standard-deviation and variance aliases, approximate percentiles and typed `histogram_numeric`, collection aggregates, deterministic `mode`, `any_value`, `array_agg`, bitwise aggregates, `first`/`last`, `max_by`/`min_by`, `product`, `sum_distinct`, regression aggregates, and typed opaque HLL/Bitmap aggregates including `hll_union_agg` | PySpark 4.0 `string_agg`, `string_agg_distinct`, `listagg`, and `listagg_distinct` are target-gated; KLL/Theta are design-gated for V11 and require a 4.1 profile; Count-Min remains caller-owned. | [Aggregations API](../api/Aggregations.api.md#advanced-metrics) |
+| Aggregate functions | partial | Core aggregates, statistical and collection aggregates, typed histogram and opaque HLL/Bitmap aggregates, plus exact PySpark 4.1 KLL and Theta helpers | PySpark 4.0 string aggregates remain target-gated; KLL/Theta require exact `>=4.1,<4.2`; Count-Min remains caller-owned. | [Aggregations API](../api/Aggregations.api.md#advanced-metrics) |
 | Window functions | partial | Per-function typed ranking/distribution, lag/lead, value selection, and window aggregate helpers | Raw `Column.over` is unsupported; expression-valued lag/lead defaults and value-function `ignoreNulls` controls remain caller-owned. | [Windows API](../api/Windows.api.md) |
 | Generators and partition transforms | partial | Typed `stack`, array/map/struct generators, and Variant TVF expansion | Generic generator spellings and writer partition transforms remain caller-owned. | [Collections API](../api/Collections.api.md) |
 | Relation distribution | implemented | `coalesce(partitions=...)`, `repartition(count, *keys)`, and `repartition(*keys)` | Hash distribution preserves rows/schema and gives no ordering or stable partition identity; range repartitioning is batch-only and writer partition transforms remain caller-owned. | [Relations API](../api/Relations.api.md) |
@@ -267,7 +267,7 @@ references provide the user-facing operation details.
 | Priority selection | supported | `select_first_qualified` | Declared business keys, eligibility, and priority order select one row per key; configured missing/tie failures report `REL-E0705`. |
 | Distinct and deduplication | supported | `distinct`, `drop_duplicates` | Watermark form is streaming classified. |
 | Grouping and standard aggregates | supported | `group_by`, `rollup`, `cube`, typed aggregates | Declared aggregate output schema. |
-| Opaque sketches/bitmaps | supported | HLL construction, pairwise/aggregate union, estimates, Bitmap construction/OR, and counts | Branded; no Binary interchange. |
+| Opaque sketches/bitmaps | supported | HLL and Bitmap baseline operations; PySpark 4.1 KLL construction/query/merge and Theta construction/set operations/estimates | Branded; metadata carries logical identity; serialized Binary is not a portable interchange format. |
 | Exact percentile and statistics | mixed | `percentile`, approximate and moment helpers, `mode(...)` | Grouped `mode(value, deterministic=False)` uses Spark 4 native deterministic mode and an equivalent typed Spark 3.5 lowering when `deterministic=True`. |
 | Ranking, selection, aggregate windows | supported | Typed window helpers | Raw `WindowSpec` is unsupported. |
 | Watermarks | supported | `watermark` | Caller owns source, sink, trigger, output mode, and lifecycle. |

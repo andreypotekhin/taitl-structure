@@ -861,7 +861,7 @@
       ],
       "profile": "pyspark>=3.5; connect=batch/streaming",
       "contract": "Branded opaque Binary state supports HLL construction, pairwise/aggregate union, and estimate plus Bitmap construction/OR/count and position helpers; mismatched HLL precision rejects unless explicitly enabled.",
-      "notes": "hll_union_agg preserves the declared HLL precision by default and warns with SKETCH-W0802 when mixed precision is explicitly allowed; KLL and Theta remain profile-gated; Count-Min and observation metrics remain caller-owned.",
+      "notes": "hll_union_agg preserves the declared HLL precision by default and warns with SKETCH-W0802 when mixed precision is explicitly allowed; KLL/Theta are classified separately for the exact PySpark 4.1 profile; Count-Min and observation metrics remain caller-owned.",
       "evidence": [
         "docs/dev/design/SketchBitmap.design.md",
         "docs/dev/specifications/SketchBitmap.spec.md",
@@ -1580,6 +1580,35 @@
         "docs/dev/design/V11PySpark41ExpressionParity.design.md",
         "tests/specifications/pyspark-code-generation/test_v11_time_helpers.py",
         "tests/integration/pyspark/v11/test_time_helpers.py"
+      ]
+    },
+    {
+      "id": "functions.v11-sketches",
+      "status": "supported",
+      "structure": "typed KLL and Theta sketch fields and operations",
+      "public_symbols": [
+        "kll_sketch_agg",
+        "kll_sketch_get_n",
+        "kll_sketch_get_quantile",
+        "kll_sketch_get_rank",
+        "kll_sketch_merge",
+        "kll_sketch_to_string",
+        "theta_difference",
+        "theta_intersection",
+        "theta_intersection_agg",
+        "theta_sketch_agg",
+        "theta_sketch_estimate",
+        "theta_union",
+        "theta_union_agg"
+      ],
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "contract": "Versioned metadata preserves opaque Binary sketch identity; KLL retains Long/Float/Double domain. Batch helper support is exact-profile gated.",
+      "notes": "Focused online/generated/native batch parity passes on PySpark/Spark 4.1.0 for ordinary and Connect. Streaming and same-configuration checkpoint restart evidence remain open; Count-Min remains caller-owned.",
+      "evidence": [
+        "docs/dev/specifications/SketchBitmap.spec.md",
+        "docs/dev/planning/P10182603.V11-kll-theta-sketches.plan.md",
+        "tests/specifications/v11-sketches/test_sketch_types.py",
+        "tests/integration/pyspark/v11/test_kll_theta_sketches.py"
       ]
     }
   ]

@@ -89,8 +89,9 @@ as ordinary Binary. Persisted sketch state is compatible only with the relevant 
 general interchange format. Grouped sketches in streaming follow the ordinary watermark and output-mode rules; callers
 remain responsible for sources, sinks, checkpoints, retention, and external exchange.
 
-KLL and Theta declarations are design-gated for V11 on PySpark 4.1; they are not baseline aggregate support. Count-Min and
-observation metrics remain caller-owned.
+KLL and Theta are typed sketch features for exact PySpark 4.1 ordinary and Connect profiles; they are outside the
+default baseline. Their batch parity is verified, while streaming and restart evidence remain open. Count-Min and
+observation lifecycle remain caller-owned.
 
 ### Windowed Enrichment
 

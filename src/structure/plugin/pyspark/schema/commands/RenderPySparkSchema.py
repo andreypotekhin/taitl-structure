@@ -27,6 +27,7 @@ from structure.plugin.pyspark.dsl.types import (
     TimeType,
     VariantType,
 )
+from structure.plugin.pyspark.schema.SketchMetadata import field_metadata
 
 
 class RenderPySparkSchema:
@@ -56,7 +57,9 @@ class RenderPySparkSchema:
 
     def field(self, field: FieldDefinition) -> str:
         nullable = "True" if field.nullable else "False"
-        return f"    T.StructField({json.dumps(field.column)}, {self.type(field.type)}, {nullable}),"
+        metadata = field_metadata(field.type, field.metadata, path=field.name)
+        metadata_argument = "" if not metadata else f", metadata={json.dumps(metadata, sort_keys=True)}"
+        return f"    T.StructField({json.dumps(field.column)}, {self.type(field.type)}, {nullable}{metadata_argument}),"
 
     def type(self, type: StructureType) -> str:
         if isinstance(type, StringType):

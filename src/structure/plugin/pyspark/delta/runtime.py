@@ -41,25 +41,27 @@ def validated_delta_frame(table, schema, *, modes=("expression",)):
     require_compatible_delta_runtime(table)
     from structure.plugin.pyspark.api.PySpark import PySpark
 
-    expected = PySpark.schema.materialize()(schema, types=T)
+    structure_schema = hasattr(schema, "_structure_fields")
+    expected = schema if isinstance(schema, T.StructType) else PySpark.schema.materialize()(schema, types=T)
+    schema_name = getattr(schema, "__name__", "provided Spark schema")
     frame = fresh_delta_frame(table)
     actual = frame.schema
     expected_fields = {field.name: field for field in expected}
     actual_fields = {field.name: field for field in actual}
     if expected_fields.keys() != actual_fields.keys():
         raise ValueError(
-            f"Delta table for {schema.__name__} has different columns: expected {sorted(expected_fields)}, got {sorted(actual_fields)}"
+            f"Delta table for {schema_name} has different columns: expected {sorted(expected_fields)}, got {sorted(actual_fields)}"
         )
     validator = PySpark.execution.validator()
     for name, field in expected_fields.items():
         found = actual_fields[name]
         if not validator._same_data_type(found.dataType, field.dataType) or found.nullable != field.nullable:
-            raise ValueError(f"Delta table for {schema.__name__}.{name} has incompatible type or nullability")
-    if not connect_table:
+            raise ValueError(f"Delta table for {schema_name}.{name} has incompatible type or nullability")
+    if not connect_table and structure_schema:
         _validate_delta_column_metadata(table, schema, actual)
     if set(modes) == {"off"}:
         return frame
-    checks = bind_checks(schema)
+    checks = bind_checks(schema) if structure_schema else ()
     if not checks:
         return frame
     properties = table.detail().select("properties").first()["properties"] or {}

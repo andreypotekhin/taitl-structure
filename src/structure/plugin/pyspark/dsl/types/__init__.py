@@ -49,6 +49,8 @@ from structure.plugin.pyspark.dsl.types.ThetaSketch import ThetaSketch
 if TYPE_CHECKING:
     from structure.dsl import Schema
 
+_PROFILE_UNSET = object()
+
 def string() -> StructureType: return String()
 def binary() -> StructureType: return Binary()
 def integer() -> StructureType: return Integer()
@@ -75,10 +77,28 @@ def interval(*, type: str | None = None, unit: str | None = None) -> IntervalTyp
     kind = "calendar" if choice == "calendar" else "year_month" if choice in {"year", "month", "year_to_month"} else "day_time"
     return IntervalType(kind, choice)
 def variant() -> StructureType: return Variant()
-def hll_sketch(*, profile: str = "baseline", lg_config_k: int = 12) -> StructureType: return HllSketch(profile, lg_config_k)
-def bitmap(*, profile: str = "baseline") -> StructureType: return Bitmap(profile)
-def kll_sketch(*, profile: str = "pyspark4.1") -> StructureType: return KllSketch(profile)
-def theta_sketch(*, profile: str = "pyspark4.1") -> StructureType: return ThetaSketch(profile)
+def hll_sketch(*, lg_config_k: int = 12, profile: object = _PROFILE_UNSET) -> StructureType:
+    if profile is not _PROFILE_UNSET:
+        raise TypeError("types.hll_sketch(profile=...) was removed; set plugin.pyspark.profile instead")
+    return HllSketch(lg_config_k)
+
+
+def bitmap(*, profile: object = _PROFILE_UNSET) -> StructureType:
+    if profile is not _PROFILE_UNSET:
+        raise TypeError("types.bitmap(profile=...) was removed; set plugin.pyspark.profile instead")
+    return Bitmap()
+
+
+def kll_sketch(domain: StructureType | None = None, *, profile: object = _PROFILE_UNSET) -> StructureType:
+    if profile is not _PROFILE_UNSET:
+        raise TypeError("types.kll_sketch(profile=...) was removed; set plugin.pyspark.profile instead")
+    return KllSketch(domain)
+
+
+def theta_sketch(*, profile: object = _PROFILE_UNSET) -> StructureType:
+    if profile is not _PROFILE_UNSET:
+        raise TypeError("types.theta_sketch(profile=...) was removed; set plugin.pyspark.profile instead")
+    return ThetaSketch()
 def geometry(srid: int) -> StructureType: return Geometry(srid)
 def decimal(precision: int, scale: int) -> StructureType: return Decimal(precision, scale)
 def array(element: StructureType, *, contains_null: object = True) -> StructureType: return Array(element, contains_null=contains_null)

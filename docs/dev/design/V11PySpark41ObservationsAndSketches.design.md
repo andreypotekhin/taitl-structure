@@ -24,8 +24,27 @@ capability-gated; earlier and later profiles remain unsupported.
 
 ## Sketch boundary
 
-KLL and Theta functions extend the shared opaque-state model. They use distinct Structure types backed by Spark Binary,
-cannot be cast to ordinary Binary or to another sketch kind, and are available only through their PySpark 4.1 profile.
-KLL types retain their numeric domain; Theta supports its typed union, intersection, difference, and estimate forms.
-Support requires precision parameters, merge rules, deterministic fixtures, dependency diagnostics, and positive
-ordinary-PySpark and Spark Connect evidence. They are not default-baseline claims.
+KLL, Theta, HLL, and Bitmap values use logical types backed by Spark Binary. The `structure.logical_type` field metadata
+stores a versioned Structure descriptor, recursively across schemas. It records sketch kind and identity-bearing
+parameters, never runtime profile or operation precision. Missing metadata may be supplied by an explicit schema;
+malformed, unsupported-version, or conflicting metadata is an error. Untagged Binary remains Binary unless the caller
+declares it as a sketch. Metadata describes intended type, not buffer validity or cross-library portability.
+
+KLL declarations retain an explicit Long, Float, or Double domain. `kll_sketch_agg` infers Integer/Long as Long and
+Float/Double as their corresponding domains; Decimal requires an explicit cast. Six generic KLL helpers map to Spark's
+domain-specific aggregate, count, quantile, rank, pairwise merge, and string functions. Construction `k` defaults to
+200 and is operation configuration, not type identity. Spark 4.1.0 has no KLL merge aggregate.
+
+Theta uses one input-domain-independent type. Seven helpers provide construction, union, intersection, directional
+difference, and Long estimate operations. `lg_nom_entries` defaults to 12 and is operation configuration. Neither
+helper family converts incompatible sketch domains or families. Empty KLL quantile/rank queries preserve Spark's native
+error; callers can guard with the sketch count. No safe variant is provided.
+
+HLL retains its `lg_config_k` identity and mixed-precision opt-in policy; Bitmap and Theta identity contain only kind.
+The former sketch factory `profile=` argument is removed; target support belongs to `plugin.pyspark.profile` and
+capability admission. Batch KLL/Theta parity is evidenced for exact `>=4.1,<4.2` ordinary and Connect profiles.
+Ordinary PySpark 4.1 also passes watermarked KLL/Theta aggregate parity and same-configuration checkpoint restart.
+Spark Connect remains batch-only under the existing Structured Streaming boundary. Existing HLL/Bitmap admission
+remains unchanged. Streaming follows existing grouped aggregate, watermark, output-mode, and caller-owned checkpoint
+rules. See
+[the KLL/Theta implementation ExecPlan](../planning/P10182603.V11-kll-theta-sketches.plan.md).

@@ -144,11 +144,11 @@ final exact count, prefer `count_distinct(...)`; for an immediate approximate co
 | --- | --- | --- |
 | `hll_sketch(lg_config_k=12)` | Branded Binary HLL state | `customers = hll_sketch(lg_config_k=12)` |
 | `bitmap()` | Branded Binary Bitmap state | `features = bitmap()` |
-| `kll_sketch()`, `theta_sketch()` | Design-gated Binary declarations | PySpark 4.1 profile only; merge, dependency, and consumer semantics remain open |
+| `kll_sketch(domain)`, `theta_sketch()` | Branded Binary declarations | Exact PySpark 4.1 ordinary or Connect profile; KLL domain is Long, Float, or Double |
 
 `hll_sketch(...)` retains a literal precision from 4 through 21. HLL and Bitmap values cannot be cast to ordinary
-`binary()` or to each other. KLL and Theta declarations require the PySpark 4.1 profile; they remain design-gated in
-V11 and do not add a baseline aggregate surface.
+`binary()` or to each other. KLL and Theta helpers are available only for exact `>=4.1,<4.2` ordinary and Connect
+profiles; the default profile remains unchanged. Their Binary schema fields carry versioned logical metadata.
 
 ### Operations
 

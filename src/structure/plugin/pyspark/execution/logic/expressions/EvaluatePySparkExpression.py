@@ -1013,6 +1013,16 @@ class EvaluatePySparkExpression:
             return functions.hll_union(args[0], args[1], expression.data["allow_different_lg_config_k"])
         if function in {"bitmap_bit_position", "bitmap_bucket_number", "bitmap_count"}:
             return getattr(functions, function)(args[0])
+        if isinstance(function, str) and function.startswith("kll_sketch_"):
+            domain = str((expression.data or {}).get("domain", "long"))
+            suffix = {"long": "bigint", "float": "float", "double": "double"}[domain]
+            return getattr(functions, f"{function}_{suffix}")(*args)
+        if function in {
+            "theta_union", "theta_intersection", "theta_difference", "theta_sketch_estimate"
+        }:
+            if function == "theta_union":
+                return functions.theta_union(*args, expression.data["lg_nom_entries"])
+            return getattr(functions, function)(*args)
         if function == "from_json":
             schema = self._schema.materialize()(cast(type, expression.data["schema"]))
             options = expression.data["options"]

@@ -1,10 +1,13 @@
 # Sprint 58: V11 Observations, Sketches, Python, and State Gates
 
-Status: planned; target: 2027-02-05.
+Status: in progress; target: 2027-02-05.
 
 Typed batch observations are implemented for ordinary and Spark Connect `>=4.1,<4.2`; exact parity and build evidence
 is recorded in the [completed typed batch observations ExecPlan](../../planning/past/P10182602.V11-batch-observations.plan.md).
-Approximate sketches remain design-gated.
+KLL/Theta helpers and recursive metadata are implemented. Ordinary and Connect 4.1 batch parity passes; ordinary 4.1
+also passes watermarked streaming and same-configuration restart parity. Connect remains batch-only under the existing
+streaming boundary. The [KLL/Theta ExecPlan](../../planning/P10182603.V11-kll-theta-sketches.plan.md) records the
+broader runtime evidence and remaining suite/build work.
 
 ## Sprint goal
 
@@ -20,7 +23,10 @@ API; no gated state or worker-Python API is generated accidentally.
 
 - [x] Implement typed batch observations and admit only ordinary and Spark Connect `>=4.1,<4.2` after per-variant
   online/generated parity.
-- Specify sketch binary/merge/dependency semantics or retain the gate.
+- [x] Implement KLL/Theta helpers and recursive sketch metadata; focused online/generated/native batch parity passes on ordinary and Connect PySpark/Spark 4.1.0.
+- [x] Complete KLL/Theta edge-case and Parquet parity on ordinary and Connect 4.1, plus ordinary 4.1 watermarked streaming and same-configuration restart parity. Retain the existing Connect streaming boundary.
+- [x] Complete final `make build`; ordinary and Connect unfiltered lane evidence is recorded in the linked ExecPlan.
+- [ ] Resolve the single ordinary 4.1 foreachBatch handoff failure with its owning feature contract before closing the broader unfiltered lane.
 - Add stable diagnostics and generated-source boundary checks for Arrow UDF/UDTF and unsupported state APIs. Row-based
   `transformWithState` is admitted for ordinary PySpark 4.1 with independent ledger status and live mode/timer/restart
   evidence. Close the separate `transformWithStateInPandas` evidence gate for PySpark 4.0/4.1; retain the legacy

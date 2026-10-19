@@ -68,7 +68,7 @@ schedule; these compatibility documents are the source for versioned API claims.
 | --- | --- | --- | --- |
 | Joins | supported | DataFrame joins and windowed matching | [Joins API](api/Joins.api.md) |
 | Aggregations and dedupe | supported | `GroupedData` and Window patterns | [Aggregates](api/Aggregations.api.md) |
-| Sketches and bitmaps | supported | Typed opaque HLL/Bitmap state | [Aggregations API](api/Aggregations.api.md#sketches-and-bitmaps) |
+| Sketches and bitmaps | supported | Baseline HLL/Bitmap and exact PySpark 4.1 KLL/Theta state | [Aggregations API](api/Aggregations.api.md#sketches-and-bitmaps) |
 | Inline and reusable windows | supported | `Window` and window functions | [Windows API](api/Windows.api.md) |
 | Array/map helpers | supported | Higher-order and map SQL functions | [Collections API](api/Collections.api.md) |
 | Relation operations | supported | Set composition, ordering, assertions, hierarchy, and sampling | [Relations API](api/Relations.api.md) |

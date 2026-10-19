@@ -107,7 +107,18 @@ def test_runner_cleans_checkpoint_after_setup_failure(tmp_path) -> None:
     assert not pid.exists()
 
 
-def _run_launcher(tmp_path, backend, failing_phase=0, status=0, setup_failure=False):
+def test_runner_keeps_filtered_provider_phases_when_no_tests_match(tmp_path) -> None:
+    result, phases, checkpoint, submit, pid = _run_launcher(
+        tmp_path, "spark-connect41", failing_phase=1, status=5, pytest_args="-k kll_theta"
+    )
+    assert result.returncode == 0
+    assert len(phases) == 3
+    assert "No tests matched the explicit filter in phase iceberg" in result.stdout
+    assert "No tests matched the explicit filter in phase delta" in result.stdout
+    _assert_cleanup("spark-connect41", checkpoint, submit, pid)
+
+
+def _run_launcher(tmp_path, backend, failing_phase=0, status=0, setup_failure=False, pytest_args=""):
     calls = tmp_path / "timeout-calls"
     checkpoint = tmp_path / "connect-checkpoint"
     checkpoint.mkdir()
@@ -119,7 +130,7 @@ def _run_launcher(tmp_path, backend, failing_phase=0, status=0, setup_failure=Fa
             'if [ "$STRUCTURE_HAS_GATEWAY" = "1" ]; then\n'
             '  while [ ! -f "$STRUCTURE_CAPTURED_PID" ]; do sleep 0.01; done\nfi\n'
             'printf "%s\\n" "$*" >> "$STRUCTURE_CAPTURED_CALLS"\n'
-            'if [ "$(wc -l < "$STRUCTURE_CAPTURED_CALLS")" -eq "$STRUCTURE_FAIL_PHASE" ]; then\n'
+            'if [ "$(wc -l < "$STRUCTURE_CAPTURED_CALLS")" -eq "$STRUCTURE_FAIL_PHASE" ] || [ "$STRUCTURE_FAIL_STATUS" -eq 5 ]; then\n'
             '  exit "$STRUCTURE_FAIL_STATUS"\nfi\n'
         ),
         "spark-submit": (
@@ -146,7 +157,7 @@ def _run_launcher(tmp_path, backend, failing_phase=0, status=0, setup_failure=Fa
         "STRUCTURE_EXPECTED_DELTA": "4.1.0",
         "STRUCTURE_FAIL_PHASE": str(failing_phase),
         "STRUCTURE_FAIL_STATUS": str(status),
-        "INTEGRATION_PYTEST_ARGS": "",
+        "INTEGRATION_PYTEST_ARGS": pytest_args,
         "STRUCTURE_ICEBERG_ONLY": "0",
     }
     runner = Path("infra/compose/images/pyspark/run-integration.sh").resolve()

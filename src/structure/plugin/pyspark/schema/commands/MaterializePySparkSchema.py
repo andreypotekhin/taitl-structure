@@ -23,6 +23,7 @@ from structure.plugin.pyspark.dsl.types import (
     TimeType,
     VariantType,
 )
+from structure.plugin.pyspark.schema.SketchMetadata import field_metadata
 
 
 class MaterializePySparkSchema:
@@ -35,7 +36,9 @@ class MaterializePySparkSchema:
 
     def field(self, field: FieldDefinition, *, types=None):
         spark_types = types or self._spark_types()
-        return spark_types.StructField(field.column, self.type(field.type, types=spark_types), field.nullable)
+        metadata = field_metadata(field.type, field.metadata, path=field.name)
+        arguments = (field.column, self.type(field.type, types=spark_types), field.nullable)
+        return spark_types.StructField(*arguments, metadata=metadata) if metadata else spark_types.StructField(*arguments)
 
     def type(self, type: StructureType, *, types=None):
         spark_types = types or self._spark_types()

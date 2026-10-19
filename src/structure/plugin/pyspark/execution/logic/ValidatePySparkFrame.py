@@ -1,5 +1,6 @@
 from structure.plugin.pyspark.compiler.model.PySparkValidationRecipe import PySparkValidationRecipe
 from structure.plugin.pyspark.dsl.types import DecimalType, StructType, StructureType
+from structure.plugin.pyspark.schema.SketchMetadata import field_metadata, validate_field_metadata
 
 
 class ValidatePySparkFrame:
@@ -26,11 +27,46 @@ class ValidatePySparkFrame:
                 raise ValueError(f"{validation.schema.__name__} has unexpected column(s): {names}")
         for expected in schema:
             actual_field = actual[expected.name]
+            definition = next(
+                field for field in validation.schema._structure_fields.values() if field.column == expected.name
+            )
+            self._validate_logical_metadata(actual_field, expected, definition.type, path=expected.name)
             if not self._same_data_type(actual_field.dataType, expected.dataType):
                 raise ValueError(
                     f"{validation.schema.__name__}.{expected.name} expected "
                     f"{expected.dataType}, got {actual_field.dataType}"
                 )
+
+    def _validate_logical_metadata(self, actual_field, expected_field, structure_type, *, path: str) -> None:
+        validate_field_metadata(actual_field.metadata, structure_type, path=path)
+        self._validate_nested_metadata(
+            actual_field.dataType, expected_field.dataType, structure_type, path=path
+        )
+
+    def _validate_nested_metadata(self, actual_type, expected_type, structure_type, *, path: str) -> None:
+        type_name = self._type_name(expected_type)
+        if type_name == "StructType":
+            actual_fields, expected_fields = self._struct_fields(actual_type), self._struct_fields(expected_type)
+            structure_fields = getattr(getattr(structure_type, "schema", None), "_structure_fields", {})
+            for name, expected_nested in expected_fields.items():
+                if name in actual_fields and name in structure_fields:
+                    self._validate_logical_metadata(
+                        actual_fields[name], expected_nested, structure_fields[name].type, path=f"{path}.{name}"
+                    )
+        elif type_name == "ArrayType":
+            self._validate_nested_metadata(
+                self._array_element(actual_type), self._array_element(expected_type),
+                getattr(structure_type, "element", None), path=f"{path}[]",
+            )
+        elif type_name == "MapType":
+            self._validate_nested_metadata(
+                self._map_key(actual_type), self._map_key(expected_type),
+                getattr(structure_type, "key", None), path=f"{path}{{key}}",
+            )
+            self._validate_nested_metadata(
+                self._map_value(actual_type), self._map_value(expected_type),
+                getattr(structure_type, "value", None), path=f"{path}{{value}}",
+            )
 
     def project(self, df, validation: PySparkValidationRecipe, *, types, functions):
         schema = self._schema.materialize()(validation.schema, types=types)
@@ -114,9 +150,10 @@ class ValidatePySparkFrame:
         return type.args[1]
 
     def alias(self, column, field, expression):
-        if not self._needs_alias(field, expression):
-            return column
-        return column.alias(field.column)
+        metadata = field_metadata(field.type, field.metadata, path=field.name)
+        if metadata:
+            return column.alias(field.column, metadata=metadata)
+        return column.alias(field.column) if self._needs_alias(field, expression) else column
 
     def _needs_alias(self, field, expression) -> bool:
         if expression.kind != "field":

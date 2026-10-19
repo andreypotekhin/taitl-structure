@@ -763,6 +763,14 @@ class RenderPySparkExpression:
             return f"F.hll_union({args[0]}, {args[1]}, {expression.data['allow_different_lg_config_k']!r})"
         if function in {"bitmap_bit_position", "bitmap_bucket_number", "bitmap_count"}:
             return f"F.{function}({args[0]})"
+        if isinstance(function, str) and function.startswith("kll_sketch_"):
+            domain = str(expression.data.get("domain", "long"))
+            suffix = {"long": "bigint", "float": "float", "double": "double"}[domain]
+            return f"F.{function}_{suffix}({', '.join(args)})"
+        if function in {"theta_union", "theta_intersection", "theta_difference", "theta_sketch_estimate"}:
+            if function == "theta_union":
+                return f"F.theta_union({args[0]}, {args[1]}, {expression.data['lg_nom_entries']!r})"
+            return f"F.{function}({', '.join(args)})"
         if function == "from_json":
             schema = self._inline_schema(cast(type, expression.data["schema"]))
             options = cast(dict[str, str], expression.data["options"])

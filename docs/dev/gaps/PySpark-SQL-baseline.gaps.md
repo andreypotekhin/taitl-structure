@@ -856,7 +856,7 @@ missing contract or native-PySpark remedy before the status can change.
 | --- | --- | --- | --- |
 | `expr` / `call_function` | `unsupported` | Raw SQL removes typed ownership. | Use a native PySpark boundary. |
 | Dynamic JSON | `caller-owned-guided` | Runtime inference cannot alter Schema. | Use declared parsing or native code. |
-| Sketch/bitmap | `implemented` | Baseline HLL/Bitmap opaque types and consumers are implemented and live-verified; KLL/Theta remain design-gated for V11, with profile-specific runtime evidence pending. | Use native PySpark for unsupported profiles or Count-Min/observation metrics. |
+| Sketch/bitmap | `implemented` | HLL/Bitmap are baseline features. KLL/Theta have ordinary/Connect 4.1 batch parity and ordinary 4.1 watermarked streaming/restart parity; Connect streaming remains outside the backend contract. | Use native PySpark for earlier profiles or Count-Min/observation lifecycle. |
 | Generic generators | `caller-owned-guided` | Only `stack` has a fixed typed result contract; raw generators lack static schema and cardinality. | Use native PySpark at a declared result boundary. |
 | Writer partition transforms | `caller-owned-guided` | Output file layout remains separate from relation distribution and caller-owned. | Use native PySpark writer partition transforms. |
 | Variant mutation | `target-gated` | Released profile plus classic, Connect, generated/online, and streaming evidence. | Use the profile or native PySpark. |

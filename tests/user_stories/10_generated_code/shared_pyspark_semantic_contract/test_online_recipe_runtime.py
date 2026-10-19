@@ -4642,6 +4642,10 @@ class FakeField:
     dataType: "FakeType | FakeSchema"
     nullable: bool
 
+    @property
+    def metadata(self) -> dict[str, object]:
+        return {}
+
 
 @dataclass(frozen=True)
 class FakeType:

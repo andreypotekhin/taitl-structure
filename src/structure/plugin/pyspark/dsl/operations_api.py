@@ -52,11 +52,16 @@ from structure.plugin.pyspark.dsl.types import (
     HllSketch,
     HllSketchType,
     IntegerType,
+    KllSketch,
+    KllSketchType,
     LongType,
     MapType,
+    SketchType,
     StringType,
     StructType,
     StructureType,
+    ThetaSketch,
+    ThetaSketchType,
     TimestampType,
     TimeType,
     VariantType,
@@ -719,6 +724,166 @@ def bitmap_or_agg(value: object, *, where: object | None = None) -> Expression:
     if not isinstance(argument.type, BitmapType):
         raise TypeError("bitmap_or_agg(...) requires an opaque Bitmap Structure expression")
     return _aggregate("bitmap_or_agg", argument, type=Bitmap(), nullable=True, where=where)
+
+
+def kll_sketch_agg(value: object, *, k: int = 200, where: object | None = None) -> Expression:
+    """Build a typed KLL sketch using Spark's native domain dispatch."""
+    if isinstance(k, bool) or not isinstance(k, int) or not 8 <= k <= 65535:
+        raise TypeError("kll_sketch_agg(...) k must be an integer from 8 through 65535")
+    argument = literal(value)
+    if isinstance(argument.type, (IntegerType, LongType)):
+        result_type = KllSketch(LongType())
+    elif isinstance(argument.type, FloatType):
+        result_type = KllSketch(FloatType())
+    elif isinstance(argument.type, DoubleType):
+        result_type = KllSketch(DoubleType())
+    else:
+        raise TypeError("kll_sketch_agg(...) requires long, float, or double input; cast Decimal explicitly")
+    return _aggregate("kll_sketch_agg", argument, type=result_type, nullable=False, where=where,
+                      options=(("k", k),))
+
+
+def theta_sketch_agg(value: object, *, lg_nom_entries: int = 12, where: object | None = None) -> Expression:
+    _theta_precision(lg_nom_entries, "theta_sketch_agg")
+    argument = literal(value)
+    _validate_theta_input(argument, "theta_sketch_agg(...)")
+    return _aggregate("theta_sketch_agg", argument, type=ThetaSketch(), nullable=False, where=where,
+                      options=(("lg_nom_entries", lg_nom_entries),))
+
+
+def theta_union(left: object, right: object, *, lg_nom_entries: int = 12) -> Expression:
+    _theta_precision(lg_nom_entries, "theta_union")
+    first = _require_sketch(left, ThetaSketchType, "theta_union(...)")
+    second = _require_sketch(right, ThetaSketchType, "theta_union(...)")
+    return _sketch_call("theta_union", (first, second), nullable=first.nullable or second.nullable,
+                        options={"lg_nom_entries": lg_nom_entries})
+
+
+def theta_union_agg(value: object, *, lg_nom_entries: int = 12, where: object | None = None) -> Expression:
+    _theta_precision(lg_nom_entries, "theta_union_agg")
+    argument = _require_sketch(value, ThetaSketchType, "theta_union_agg(...)")
+    return _aggregate("theta_union_agg", argument, type=ThetaSketch(), nullable=False, where=where,
+                      options=(("lg_nom_entries", lg_nom_entries),))
+
+
+def theta_intersection(left: object, right: object) -> Expression:
+    first = _require_sketch(left, ThetaSketchType, "theta_intersection(...)")
+    second = _require_sketch(right, ThetaSketchType, "theta_intersection(...)")
+    return _sketch_call("theta_intersection", (first, second), nullable=first.nullable or second.nullable)
+
+
+def theta_intersection_agg(value: object, *, where: object | None = None) -> Expression:
+    argument = _require_sketch(value, ThetaSketchType, "theta_intersection_agg(...)")
+    return _aggregate("theta_intersection_agg", argument, type=ThetaSketch(), nullable=False, where=where)
+
+
+def theta_difference(left: object, right: object) -> Expression:
+    first = _require_sketch(left, ThetaSketchType, "theta_difference(...)")
+    second = _require_sketch(right, ThetaSketchType, "theta_difference(...)")
+    return _sketch_call("theta_difference", (first, second), nullable=first.nullable or second.nullable)
+
+
+def theta_sketch_estimate(value: object) -> Expression:
+    argument = _require_sketch(value, ThetaSketchType, "theta_sketch_estimate(...)")
+    return _sketch_call("theta_sketch_estimate", (argument,), type=LongType(), nullable=argument.nullable)
+
+
+def kll_sketch_get_n(value: object) -> Expression:
+    argument = _require_sketch(value, KllSketchType, "kll_sketch_get_n(...)")
+    sketch_type = cast(KllSketchType, argument.type)
+    return _sketch_call("kll_sketch_get_n", (argument,), type=LongType(), nullable=argument.nullable,
+                        options={"domain": sketch_type.domain})
+
+
+def kll_sketch_get_quantile(value: object, rank: object) -> Expression:
+    argument = _require_sketch(value, KllSketchType, "kll_sketch_get_quantile(...)")
+    sketch_type = cast(KllSketchType, argument.type)
+    rank_expression = _kll_query_expression(rank, "kll_sketch_get_quantile(...)")
+    domain_type = _kll_domain_type(sketch_type)
+    result_type: StructureType
+    if isinstance(rank_expression.type, ArrayType):
+        if not isinstance(rank_expression.type.element, (IntegerType, LongType, FloatType, DoubleType)):
+            raise TypeError("kll_sketch_get_quantile(...) rank array must contain numeric values")
+        result_type = ArrayType(domain_type, contains_null=False)
+    else:
+        result_type = domain_type
+    return _sketch_call("kll_sketch_get_quantile", (argument, rank_expression), type=result_type,
+                        nullable=argument.nullable or rank_expression.nullable, options={"domain": sketch_type.domain})
+
+
+def kll_sketch_get_rank(value: object, quantile: object) -> Expression:
+    argument = _require_sketch(value, KllSketchType, "kll_sketch_get_rank(...)")
+    sketch_type = cast(KllSketchType, argument.type)
+    quantile_expression = _kll_query_expression(quantile, "kll_sketch_get_rank(...)")
+    result_type: StructureType
+    if isinstance(quantile_expression.type, ArrayType):
+        if not isinstance(quantile_expression.type.element, (IntegerType, LongType, FloatType, DoubleType)):
+            raise TypeError("kll_sketch_get_rank(...) quantile array must contain numeric values")
+        result_type = ArrayType(DoubleType(), contains_null=False)
+    else:
+        result_type = DoubleType()
+    return _sketch_call("kll_sketch_get_rank", (argument, quantile_expression), type=result_type,
+                        nullable=argument.nullable or quantile_expression.nullable, options={"domain": sketch_type.domain})
+
+
+def kll_sketch_merge(left: object, right: object) -> Expression:
+    first = _require_sketch(left, KllSketchType, "kll_sketch_merge(...)")
+    second = _require_sketch(right, KllSketchType, "kll_sketch_merge(...)")
+    first_type = cast(KllSketchType, first.type)
+    second_type = cast(KllSketchType, second.type)
+    if first_type.domain != second_type.domain:
+        raise TypeError("kll_sketch_merge(...) requires matching KLL domains")
+    return _sketch_call("kll_sketch_merge", (first, second), type=first_type,
+                        nullable=first.nullable or second.nullable, options={"domain": first_type.domain})
+
+
+def kll_sketch_to_string(value: object) -> Expression:
+    argument = _require_sketch(value, KllSketchType, "kll_sketch_to_string(...)")
+    sketch_type = cast(KllSketchType, argument.type)
+    return _sketch_call("kll_sketch_to_string", (argument,), type=StringType(), nullable=argument.nullable,
+                        options={"domain": sketch_type.domain})
+
+
+def _theta_precision(value: int, call: str) -> None:
+    if isinstance(value, bool) or not isinstance(value, int) or not 4 <= value <= 26:
+        raise TypeError(f"{call}(...) lg_nom_entries must be an integer from 4 through 26")
+
+
+def _validate_theta_input(argument: Expression, call: str) -> None:
+    if isinstance(argument.type, (IntegerType, LongType, FloatType, DoubleType, StringType, BinaryType)):
+        return
+    if isinstance(argument.type, ArrayType) and isinstance(argument.type.element, (IntegerType, LongType)):
+        return
+    raise TypeError(f"{call} requires integer, long, float, double, string, binary, or an array of integers/longs")
+
+
+def _sketch_call(function: str, arguments: tuple[Expression, ...], *, nullable: bool, type=None, options=None):
+    data = {"function": function, "capability_group": "expression", "capability_name": function}
+    if options:
+        data.update(options)
+    return Expression(kind="call", type=type or ThetaSketch(), nullable=nullable, data=data, args=arguments)
+
+
+def _kll_domain_type(type: KllSketchType) -> StructureType:
+    return {"long": LongType, "float": FloatType, "double": DoubleType}[type.domain]()
+
+
+def _require_sketch(value: object, expected: type[SketchType], call: str) -> Expression:
+    argument = literal(value)
+    if not isinstance(argument.type, expected):
+        raise TypeError(f"{call} requires a typed {expected.__name__} value")
+    return argument
+
+
+def _kll_query_expression(value: object, call: str) -> Expression:
+    argument = literal(value)
+    if isinstance(argument.type, ArrayType):
+        member_type = argument.type.element
+        if isinstance(member_type, (IntegerType, LongType, FloatType, DoubleType)):
+            return argument
+    elif isinstance(argument.type, (IntegerType, LongType, FloatType, DoubleType)):
+        return argument
+    raise TypeError(f"{call} requires a numeric scalar or array expression")
 
 
 def approx_percentile(

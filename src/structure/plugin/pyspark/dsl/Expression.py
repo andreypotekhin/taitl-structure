@@ -80,7 +80,11 @@ def _same_type(left: StructureType | None, right: StructureType | None) -> bool:
             and _same_type(left.value, right.value)
         )
     if isinstance(left, SketchType) and isinstance(right, SketchType):
-        return left.algorithm == right.algorithm and left.profile == right.profile and getattr(left, "lg_config_k", None) == getattr(right, "lg_config_k", None)
+        return (
+            left.algorithm == right.algorithm
+            and getattr(left, "lg_config_k", None) == getattr(right, "lg_config_k", None)
+            and getattr(left, "domain", None) == getattr(right, "domain", None)
+        )
     return not isinstance(left, StructType) or not isinstance(right, StructType) or left.schema is right.schema
 
 

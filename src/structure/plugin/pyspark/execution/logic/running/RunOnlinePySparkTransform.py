@@ -1938,7 +1938,11 @@ class RunOnlinePySparkTransform:
                 columns.append(options["lg_config_k"])
             if assignment.function == "hll_union_agg":
                 columns.append(options["allow_different_lg_config_k"])
-            result = self._aggregate_function(functions, assignment.function)(*columns)
+            if assignment.function == "kll_sketch_agg":
+                columns.append(options["k"])
+            if assignment.function in {"theta_sketch_agg", "theta_union_agg"}:
+                columns.append(options["lg_nom_entries"])
+            result = self._aggregate_function(functions, assignment.function, assignment.field.type)(*columns)
             if not self._keeps_struct_collection_type(assignment):
                 result = result.cast(self._spark_type(assignment.field.type, types))
             return result.alias(assignment.field.column)
@@ -2098,9 +2102,16 @@ class RunOnlinePySparkTransform:
             "histogram_numeric",
             "bitmap_construct_agg",
             "bitmap_or_agg",
+            "kll_sketch_agg",
+            "theta_sketch_agg",
+            "theta_union_agg",
+            "theta_intersection_agg",
         }
 
-    def _aggregate_function(self, functions, function: str):
+    def _aggregate_function(self, functions, function: str, result_type=None):
+        if function == "kll_sketch_agg":
+            suffix = {"long": "bigint", "float": "float", "double": "double"}[result_type.domain]
+            return getattr(functions, f"kll_sketch_agg_{suffix}")
         name = {
             "approx_count_distinct": "approx_count_distinct",
             "approx_percentile": "percentile_approx",
@@ -2156,6 +2167,9 @@ class RunOnlinePySparkTransform:
             "histogram_numeric": "histogram_numeric",
             "bitmap_construct_agg": "bitmap_construct_agg",
             "bitmap_or_agg": "bitmap_or_agg",
+            "theta_sketch_agg": "theta_sketch_agg",
+            "theta_union_agg": "theta_union_agg",
+            "theta_intersection_agg": "theta_intersection_agg",
         }[function]
         return getattr(functions, name)
 

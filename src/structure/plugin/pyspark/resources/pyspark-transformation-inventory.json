@@ -239,6 +239,34 @@
       "pyspark": [
         "TimeType"
       ]
+    },
+    {
+      "id": "functions.v11-sketches",
+      "version": "4.1.0",
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "reason": "KLL/Theta helpers require the exact 4.1 profile; helper calls have focused batch online/generated/native parity, while streaming and checkpoint restart remain evidence-gated.",
+      "pyspark": [
+        "kll_sketch_agg_bigint",
+        "kll_sketch_agg_float",
+        "kll_sketch_agg_double",
+        "kll_sketch_get_n_bigint",
+        "kll_sketch_get_n_float",
+        "kll_sketch_get_n_double",
+        "kll_sketch_get_quantile_bigint",
+        "kll_sketch_get_quantile_float",
+        "kll_sketch_get_quantile_double",
+        "kll_sketch_get_rank_bigint",
+        "kll_sketch_get_rank_float",
+        "kll_sketch_get_rank_double",
+        "kll_sketch_merge_bigint",
+        "kll_sketch_merge_float",
+        "kll_sketch_merge_double",
+        "kll_sketch_to_string_bigint",
+        "kll_sketch_to_string_float",
+        "kll_sketch_to_string_double",
+        "theta_sketch_agg",
+        "theta_sketch_estimate"
+      ]
     }
   ],
   "source_modules": [

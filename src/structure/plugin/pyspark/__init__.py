@@ -184,7 +184,7 @@ sample sec select_first_qualified signum sin sinh slice sha1 sha2 second rand ra
 rolling_min rolling_sum scan subtract sum sum_distinct std stddev sqrt size sequence session_window skewness some split translate substring temporal_one next_day
 to_binary to_csv to_decimal to_date try_to_date to_json to_timestamp from_unixtime unix_timestamp to_utc_timestamp from_utc_timestamp date_part datepart TimeWindow trim trunc try_element_at try_to_binary unbase64 union_all union_by_name upper ucase unbounded_following unbounded_preceding hex unhex cardinality weekofyear
 variance var_pop var_samp stddev_pop stddev_samp when width_bucket year xxhash64 zeroifnull where watermark window window_avg window_bool_and window_bool_or rpad repeat replace right sign tan tanh json_tuple stack
-window_time current_date curdate current_timestamp current_time make_time to_time try_to_time time_diff time_trunc now localtimestamp current_timezone aes_encrypt aes_decrypt try_aes_decrypt hll_sketch_agg hll_union_agg hll_sketch_estimate hll_union bitmap_construct_agg bitmap_or_agg bitmap_bit_position bitmap_bucket_number bitmap_count url_encode url_decode try_url_decode convert_timezone make_date make_timestamp make_timestamp_ltz make_timestamp_ntz to_timestamp_ntz to_timestamp_ltz try_to_timestamp to_unix_timestamp timestamp_seconds timestamp_millis timestamp_micros unix_seconds unix_millis unix_micros interval make_interval make_ym_interval make_dt_interval extract date_diff dateadd day histogram_numeric Temporal Interval observe
+window_time current_date curdate current_timestamp current_time make_time to_time try_to_time time_diff time_trunc now localtimestamp current_timezone aes_encrypt aes_decrypt try_aes_decrypt hll_sketch_agg hll_union_agg hll_sketch_estimate hll_union bitmap_construct_agg bitmap_or_agg bitmap_bit_position bitmap_bucket_number bitmap_count kll_sketch_agg kll_sketch_get_n kll_sketch_get_quantile kll_sketch_get_rank kll_sketch_merge kll_sketch_to_string theta_sketch_agg theta_union theta_union_agg theta_intersection theta_intersection_agg theta_difference theta_sketch_estimate url_encode url_decode try_url_decode convert_timezone make_date make_timestamp make_timestamp_ltz make_timestamp_ntz to_timestamp_ntz to_timestamp_ltz try_to_timestamp to_unix_timestamp timestamp_seconds timestamp_millis timestamp_micros unix_seconds unix_millis unix_micros interval make_interval make_ym_interval make_dt_interval extract date_diff dateadd day histogram_numeric Temporal Interval observe
 window_collect_list window_collect_set window_count window_count_distinct window_max window_min window_sum
 window_stddev window_variance is_valid_variant is_variant_null octet_length parse_json schema_of_csv schema_of_json schema_of_variant schema_of_variant_agg substring_index
 to_variant_object try_parse_json try_variant_get variant_get
@@ -666,6 +666,19 @@ __all__ = [  # noqa: F405
     "hll_union_agg",
     "hll_sketch_estimate",
     "hll_union",
+    "kll_sketch_agg",
+    "kll_sketch_get_n",
+    "kll_sketch_get_quantile",
+    "kll_sketch_get_rank",
+    "kll_sketch_merge",
+    "kll_sketch_to_string",
+    "theta_sketch_agg",
+    "theta_union",
+    "theta_union_agg",
+    "theta_intersection",
+    "theta_intersection_agg",
+    "theta_difference",
+    "theta_sketch_estimate",
     "bitmap_construct_agg",
     "bitmap_or_agg",
     "bitmap_bit_position",

@@ -195,19 +195,62 @@ return TenantSketches(
 )
 ```
 
-`hll_sketch_agg(...)`, `hll_union_agg(...)`, `bitmap_construct_agg(...)`, and `bitmap_or_agg(...)` are grouped metrics. Their resulting
-state can be read in a later row-preserving projection with `hll_sketch_estimate(...)` or `bitmap_count(...)`.
+KLL keeps a numeric domain in the field type. Cast Decimal inputs explicitly, then use the generic query helpers:
+
+```python
+class LatencySketch(Schema):
+    service = string(nullable=False)
+    distribution = kll_sketch(double(), nullable=False)
+
+
+group_by(service=event.service)
+return LatencySketch(
+    service=event.service,
+    distribution=kll_sketch_agg(cast(event.latency, double()), k=200),
+)
+
+# In a later row-preserving transform:
+p50 = kll_sketch_get_quantile(sketch.distribution, 0.5)
+```
+
+Theta supports cardinality and set composition when a later transform needs the underlying sketch state:
+
+```python
+class CustomerSketches(Schema):
+    current = theta_sketch(nullable=False)
+    previous = theta_sketch(nullable=False)
+
+
+class CustomerSketchMetrics(Schema):
+    distinct_customers = long(nullable=False)
+    combined = theta_sketch(nullable=False)
+
+
+return CustomerSketchMetrics(
+    distinct_customers=theta_sketch_estimate(customer.current),
+    combined=theta_union(customer.current, customer.previous),
+)
+```
+
+KLL and Theta helpers require exact PySpark 4.1 ordinary or Connect profiles. KLL `k` and Theta `lg_nom_entries` are
+operation settings; they do not change the logical field type.
+
+`hll_sketch_agg(...)`, `hll_union_agg(...)`, `bitmap_construct_agg(...)`, `bitmap_or_agg(...)`,
+`kll_sketch_agg(...)`, `theta_sketch_agg(...)`, and `theta_union_agg(...)` are grouped metrics. Their resulting
+state can be read in a later row-preserving projection with family-specific query helpers.
 `hll_union(left, right)` and `hll_union_agg(value)` require matching HLL precision by default. An external
 compatibility case may explicitly set `allow_different_lg_config_k=True`; it emits `SKETCH-W0802` because Spark can
 reduce the result precision.
 
 Spark's Binary representation is not a portable interchange format. Applications own compatibility testing whenever
-state is persisted or transferred. HLL and Bitmap are default-baseline features; KLL and Theta declarations require a
-PySpark 4.1 profile and remain design-gated in V11; they do not imply baseline aggregate support. Count-Min and
-observations remain caller-owned.
+state is persisted or transferred. HLL and Bitmap are default-baseline features. KLL and Theta declarations and their
+typed helpers require the exact `>=4.1,<4.2` ordinary or Spark Connect profile. Count-Min and observation lifecycle
+remain caller-owned.
 
-Scalar sketch consumers preserve rows. Construction and Bitmap OR follow the ordinary grouped-streaming watermark,
-state, and output-mode rules; a transform does not own the source, sink, checkpoint, or retention policy.
+Scalar sketch consumers preserve rows. Baseline HLL/Bitmap construction and Bitmap OR follow the ordinary
+grouped-streaming watermark, state, and output-mode rules. Ordinary PySpark 4.1 passes watermarked KLL/Theta aggregate
+parity and same-configuration checkpoint restart. Spark Connect remains outside streaming support under the existing
+backend boundary. A transform does not own the source, sink, checkpoint, or retention policy.
 
 ```python
 return ProductStats(

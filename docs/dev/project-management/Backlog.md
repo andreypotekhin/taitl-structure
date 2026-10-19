@@ -474,8 +474,9 @@ future documents are not V10 backlog commitments.
 - Add the exact `>=4.1,<4.2` ordinary and Spark Connect capability profiles while preserving 3.5/4.0 regression lanes.
 - + Implemented typed 4.1 expression helpers, `Column.transform`, EXISTS/IN-subquery, and lateral-relation slices for
   their evidenced ordinary and Connect profiles; see Sprints 56 and 57 for results.
-- Decide KLL/Theta sketch aggregate semantics; typed batch observations are implemented for ordinary and Connect 4.1.
-  Retain explicit sketch gates until merge, dependency, determinism, and typed-consumer behavior are specified.
+- + Implement KLL/Theta sketch helpers and logical metadata for ordinary and Connect 4.1 batch use, with ordinary 4.1
+  watermarked streaming and same-configuration restart parity. Connect streaming remains outside the backend contract.
+  Typed batch observations are implemented for both variants.
 - Document and test caller-owned boundaries for Arrow UDF/UDTFs, row-based `transformWithState`, Declarative Pipelines,
   SQL Scripting, Python Data Sources, readers, writers, sessions, and catalogs.
 - + Keep row `transform_with_state`, Pandas `transform_with_state_in_pandas`, legacy

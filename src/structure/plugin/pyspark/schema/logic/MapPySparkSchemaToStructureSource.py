@@ -10,6 +10,7 @@ from structure.plugin.api.v1.model import (
     StructureToolError,
     ValidateSchemaToolRequest,
 )
+from structure.plugin.pyspark.schema.SketchMetadata import DESCRIPTOR_VERSION, METADATA_KEY
 
 
 class MapPySparkSchemaToStructureSource:
@@ -36,15 +37,19 @@ class MapPySparkSchemaToStructureSource:
     def _field(self, field, *, root: str, path: tuple[str, ...], used: set[str]) -> GeneratedSchemaField:
         column = str(getattr(field, "name", None))
         self._validate.field(column, path=".".join((*path, column)))
+        metadata = getattr(field, "metadata", {}) or {}
+        descriptor = metadata.get(METADATA_KEY)
         return GeneratedSchemaField(
             name=self._field_name(column, used=used),
-            type=self._type(getattr(field, "dataType", None), root=root, path=(*path, column)),
+            type=self._type(getattr(field, "dataType", None), root=root, path=(*path, column), descriptor=descriptor),
             nullable=bool(getattr(field, "nullable", True)),
             alias=None if self._identifier(column) else column,
         )
 
-    def _type(self, type, *, root: str, path: tuple[str, ...]) -> str:
+    def _type(self, type, *, root: str, path: tuple[str, ...], descriptor=None) -> str:
         name = type.__class__.__name__
+        if descriptor is not None:
+            return self._tagged_type(type, descriptor, root=root, path=path)
         scalar = {
             "StringType": "string()",
             "BinaryType": "binary()",
@@ -77,6 +82,67 @@ class MapPySparkSchemaToStructureSource:
             nested = self._struct(type, class_name=self._nested_name(root, path), root=root, path=path)
             return f"struct({nested})"
         raise StructureToolError(f"Unsupported Spark type at {'.'.join(path)}: {name}.")
+
+    def _tagged_type(self, physical, descriptor, *, root: str, path: tuple[str, ...]) -> str:
+        location = ".".join(path) or "schema"
+        if not isinstance(descriptor, dict):
+            raise StructureToolError(f"Malformed {METADATA_KEY} metadata at {location}.")
+        version = descriptor.get("version")
+        if version != DESCRIPTOR_VERSION:
+            raise StructureToolError(f"Unsupported {METADATA_KEY} version {version!r} at {location}.")
+        kind = descriptor.get("kind")
+        if not isinstance(kind, str):
+            raise StructureToolError(f"Malformed {METADATA_KEY} descriptor at {location}.")
+        expected_keys = {
+            "kll_sketch": {"version", "kind", "domain"},
+            "theta_sketch": {"version", "kind"},
+            "bitmap": {"version", "kind"},
+            "hll_sketch": {"version", "kind", "lg_config_k"},
+            "array": {"version", "kind", "element"},
+            "map": {"version", "kind", "key", "value"},
+        }.get(kind)
+        if expected_keys is None or set(descriptor) != expected_keys:
+            raise StructureToolError(f"Malformed {METADATA_KEY} descriptor at {location}.")
+        physical_name = physical.__class__.__name__
+        if kind == "kll_sketch" and physical_name == "BinaryType":
+            domain = descriptor.get("domain")
+            if domain not in {"long", "float", "double"}:
+                raise StructureToolError(f"Invalid KLL domain metadata at {location}.")
+            return f"kll_sketch({domain}())"
+        if kind == "theta_sketch" and physical_name == "BinaryType":
+            return "theta_sketch()"
+        if kind == "bitmap" and physical_name == "BinaryType":
+            return "bitmap()"
+        if kind == "hll_sketch" and physical_name == "BinaryType":
+            precision = descriptor.get("lg_config_k")
+            if isinstance(precision, bool) or not isinstance(precision, int) or not 4 <= precision <= 21:
+                raise StructureToolError(f"Invalid HLL precision metadata at {location}.")
+            return f"hll_sketch(lg_config_k={precision})"
+        if kind == "array" and physical_name == "ArrayType":
+            element_descriptor = descriptor.get("element")
+            element = (
+                self._type(physical.elementType, root=root, path=(*path, "item"))
+                if element_descriptor is None
+                else self._tagged_type(physical.elementType, element_descriptor, root=root, path=(*path, "item"))
+            )
+            contains_null = "True" if bool(physical.containsNull) else "False"
+            return f"array({element}, contains_null={contains_null})"
+        if kind == "map" and physical_name == "MapType":
+            key_descriptor = descriptor.get("key")
+            value_descriptor = descriptor.get("value")
+            key = (
+                self._type(physical.keyType, root=root, path=(*path, "key"))
+                if key_descriptor is None
+                else self._tagged_type(physical.keyType, key_descriptor, root=root, path=(*path, "key"))
+            )
+            value = (
+                self._type(physical.valueType, root=root, path=(*path, "value"))
+                if value_descriptor is None
+                else self._tagged_type(physical.valueType, value_descriptor, root=root, path=(*path, "value"))
+            )
+            value_contains_null = "True" if bool(physical.valueContainsNull) else "False"
+            return f"map({key}, {value}, value_contains_null={value_contains_null})"
+        raise StructureToolError(f"{METADATA_KEY} metadata at {location} conflicts with physical {physical_name}.")
 
     def _fields(self, schema) -> tuple:
         return tuple(getattr(schema, "fields", ()))

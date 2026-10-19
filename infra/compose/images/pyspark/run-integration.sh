@@ -48,6 +48,10 @@ run_phase() {
         -W 'ignore:The copy keyword is deprecated:Warning' \
         -W 'ignore:ReleaseExecute failed with exception:UserWarning' \
         ${INTEGRATION_PYTEST_ARGS:-} || status=$?
+    if (( status == 5 )) && [[ -n "${INTEGRATION_PYTEST_ARGS:-}" ]]; then
+        printf "No tests matched the explicit filter in phase %s; continuing to the next phase.\n" "${name}"
+        status=0
+    fi
     printf "Phase result: %s; backend=%s; exit=%s\n" "${name}" "${backend}" "${status}"
     if (( status == 124 || status == 137 )); then
         echo "Integration deadline reached (${STRUCTURE_INTEGRATION_TIMEOUT:-3600}s); backend=${backend}." >&2

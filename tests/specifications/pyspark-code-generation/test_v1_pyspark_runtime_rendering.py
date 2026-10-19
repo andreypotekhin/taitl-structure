@@ -34,7 +34,9 @@ def test_v1_runtime_module_renderer_contains_schema_helpers() -> None:
     assert "def _same_data_type(actual, expected) -> bool:" in text
     assert 'if mode == "strict":' in text
     assert "def project_schema(df, schema):" in text
-    assert "return df.select(*(F.col(field.name) for field in schema))" in text
+    assert "def _validate_runtime_metadata(actual, expected, *, path):" in text
+    assert 'descriptor = actual.metadata.get(METADATA_KEY)' in text
+    assert 'columns.append(column.alias(field.name, metadata=metadata) if metadata else column)' in text
     assert "HookInputs" not in text
     assert "class ResultSchemas(Mapping):" in text
     assert "object.__setattr__(self, 'schema', ResultSchemas(schema, aliases=output_aliases))" in text

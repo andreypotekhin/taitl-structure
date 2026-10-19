@@ -149,7 +149,7 @@ class MapPySparkExpression:
             return "expression", "bitwise"
         if expression.kind == "call":
             function = (expression.data or {}).get("function")
-            if function in {"chr", "quote", "try_to_date", "random", "uuid", "current_time", "make_time", "to_time", "try_to_time", "time_diff", "time_trunc"}:
+            if function in {"chr", "quote", "try_to_date", "random", "uuid", "current_time", "make_time", "to_time", "try_to_time", "time_diff", "time_trunc", "kll_sketch_get_n", "kll_sketch_get_quantile", "kll_sketch_get_rank", "kll_sketch_merge", "kll_sketch_to_string", "theta_union", "theta_intersection", "theta_difference", "theta_sketch_estimate"}:
                 return "expression", str(function)
             if function == "is_valid_variant":
                 return "expression", "is_valid_variant"

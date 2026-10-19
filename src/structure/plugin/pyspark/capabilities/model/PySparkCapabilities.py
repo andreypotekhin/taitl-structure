@@ -29,7 +29,6 @@ PYSPARK_4_CAPABILITIES = frozenset(
         ("expression", "try_url_decode"),
         ("expression", "variant"),
         ("schema", "variant"),
-        ("schema", "sketches_profile_4_1"),
     }
 )
 PYSPARK_4_0_CAPABILITIES = frozenset(
@@ -49,6 +48,24 @@ PYSPARK_4_1_TIME_CAPABILITIES = frozenset(
      ("expression", "time_trunc")}
 )
 PYSPARK_4_1_OBSERVATION_CAPABILITIES = frozenset({("observation", "batch")})
+PYSPARK_4_1_SKETCH_CAPABILITIES = frozenset(
+    {
+        ("schema", "sketches_profile_4_1"),
+        ("aggregate", "kll_sketch_agg"),
+        ("aggregate", "theta_sketch_agg"),
+        ("aggregate", "theta_union_agg"),
+        ("aggregate", "theta_intersection_agg"),
+        ("expression", "kll_sketch_get_n"),
+        ("expression", "kll_sketch_get_quantile"),
+        ("expression", "kll_sketch_get_rank"),
+        ("expression", "kll_sketch_merge"),
+        ("expression", "kll_sketch_to_string"),
+        ("expression", "theta_union"),
+        ("expression", "theta_intersection"),
+        ("expression", "theta_difference"),
+        ("expression", "theta_sketch_estimate"),
+    }
+)
 PYSPARK_4_1_SCALAR_CAPABILITIES |= PYSPARK_4_1_TIME_CAPABILITIES
 PYSPARK_4_1_QUERY_CAPABILITIES = frozenset(
     {
@@ -62,11 +79,13 @@ PYSPARK_4_1_ORDINARY_CAPABILITIES = (
     PYSPARK_4_1_SCALAR_CAPABILITIES
     | PYSPARK_4_1_QUERY_CAPABILITIES
     | PYSPARK_4_1_OBSERVATION_CAPABILITIES
+    | PYSPARK_4_1_SKETCH_CAPABILITIES
     | frozenset({("expression", "column_transform")})
 )
 PYSPARK_4_1_CONNECT_CAPABILITIES = frozenset(
     {("expression", "column_transform"), ("optimization", "checkpoint")}
 ) | PYSPARK_4_1_SCALAR_CAPABILITIES | PYSPARK_4_1_QUERY_CAPABILITIES | PYSPARK_4_1_OBSERVATION_CAPABILITIES
+PYSPARK_4_1_CONNECT_CAPABILITIES |= PYSPARK_4_1_SKETCH_CAPABILITIES
 LEGACY_PANDAS_STATE_PROFILES = frozenset({">=3.5,<4.1", ">=3.5,<4.0", ">=4.0,<4.1", ">=4.1,<4.2"})
 LEGACY_PANDAS_STATE_CAPABILITY = frozenset({("streaming", "apply_in_pandas_with_state")})
 PYSPARK_4_2_CAPABILITIES = frozenset({("expression", "is_valid_variant")})

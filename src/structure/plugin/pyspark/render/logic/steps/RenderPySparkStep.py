@@ -2094,7 +2094,7 @@ class RenderPySparkStep:
             if assignment.filter is not None:
                 predicate = render_pyspark_expression(assignment.filter, scope_aliases=self._scope_aliases(step))
                 rendered_arguments[0] = f"F.when({predicate}, {rendered_arguments[0]})"
-            function = self._aggregate_function(assignment.function)
+            function = self._aggregate_function(assignment.function, assignment.field.type)
             options = dict(assignment.options)
             if assignment.function == "approx_count_distinct" and "relative_sd" in options:
                 rendered_arguments.append(repr(options["relative_sd"]))
@@ -2110,6 +2110,10 @@ class RenderPySparkStep:
                 rendered_arguments.append(repr(options["lg_config_k"]))
             if assignment.function == "hll_union_agg":
                 rendered_arguments.append(repr(options["allow_different_lg_config_k"]))
+            if assignment.function == "kll_sketch_agg":
+                rendered_arguments.append(repr(options["k"]))
+            if assignment.function in {"theta_sketch_agg", "theta_union_agg"}:
+                rendered_arguments.append(repr(options["lg_nom_entries"]))
             expression = f"{function}({', '.join(rendered_arguments)})"
             if not self._keeps_struct_collection_type(assignment, backend_target=backend_target):
                 expression = f"{expression}.cast({self._schema.type(assignment.field.type)})"
@@ -2239,9 +2243,16 @@ class RenderPySparkStep:
             "histogram_numeric",
             "bitmap_construct_agg",
             "bitmap_or_agg",
+            "kll_sketch_agg",
+            "theta_sketch_agg",
+            "theta_union_agg",
+            "theta_intersection_agg",
         }
 
-    def _aggregate_function(self, function: str) -> str:
+    def _aggregate_function(self, function: str, result_type=None) -> str:
+        if function == "kll_sketch_agg":
+            suffix = {"long": "bigint", "float": "float", "double": "double"}[result_type.domain]
+            return f"F.kll_sketch_agg_{suffix}"
         return {
             "approx_count_distinct": "F.approx_count_distinct",
             "approx_percentile": "F.percentile_approx",
@@ -2297,6 +2308,9 @@ class RenderPySparkStep:
             "histogram_numeric": "F.histogram_numeric",
             "bitmap_construct_agg": "F.bitmap_construct_agg",
             "bitmap_or_agg": "F.bitmap_or_agg",
+            "theta_sketch_agg": "F.theta_sketch_agg",
+            "theta_union_agg": "F.theta_union_agg",
+            "theta_intersection_agg": "F.theta_intersection_agg",
         }[function]
 
     def _aggregate_select(

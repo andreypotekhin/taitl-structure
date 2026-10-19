@@ -108,6 +108,5 @@ This is the compatibility companion to the [API reference](../api/Aggregations.a
 | --- | --- | --- | --- | --- | --- |
 | `hll_sketch(...)` | HLL sketch state | `customers = hll_sketch(lg_config_k=12)` | yes | yes | Declares branded Binary HLL state; precision is a literal from 4 through 21. HLL state is not interchangeable with ordinary Binary or Bitmap state. |
 | `bitmap(...)` | Bitmap state | `features = bitmap()` | yes | yes | Declares branded Binary Bitmap state. Bitmap state is not interchangeable with ordinary Binary or HLL state. |
-| `kll_sketch(...)` | KLL sketch state | `kll_sketch()` | no | no | Status: `target-gated`. Requires the PySpark 4.1 profile; outside the PySpark 3.5/4.0 baseline. |
-| `theta_sketch(...)` | Theta sketch state | `theta_sketch()` | no | no | Status: `target-gated`. Requires the PySpark 4.1 profile; outside the PySpark 3.5/4.0 baseline. |
-
+| `kll_sketch(domain)`, `kll_sketch_agg(...)` | KLL sketch state and helpers | `kll_sketch_agg(order.total, k=200)` | no | 4.1 only | Exact `>=4.1,<4.2` ordinary and Spark Connect batch profiles. Ordinary PySpark 4.1 also passes watermarked streaming and same-configuration restart parity; Connect streaming remains unsupported by the backend boundary. Domain is Long, Float, or Double. |
+| `theta_sketch()`, `theta_sketch_agg(...)` | Theta sketch state and helpers | `theta_sketch_agg(order.customer_id)` | no | 4.1 only | Exact `>=4.1,<4.2` ordinary and Spark Connect batch profiles. Seven typed helpers expose construction, set operations, and Long estimates. Ordinary PySpark 4.1 also passes watermarked streaming and same-configuration restart parity; Connect streaming remains unsupported by the backend boundary. |

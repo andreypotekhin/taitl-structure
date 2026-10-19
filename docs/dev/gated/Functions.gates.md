@@ -24,7 +24,7 @@ the gate register searchable without duplicating the full PySpark inventory.
 | Current-time functions | `implemented` | Typed query-clock metadata is implemented; ordinary target evidence remains a release check. |
 | AES-GCM helpers | `implemented` | Typed GCM calls and explicit-IV warning are implemented; ordinary target evidence remains a release check. |
 | Dynamic JSON schemas | `caller-owned-guided` | Runtime inference cannot alter a compiled Schema. |
-| Sketch and bitmap aggregates | `implemented` | Baseline HLL/Bitmap opaque types and merge consumers are implemented; KLL/Theta remain design-gated for V11 and evidence-bound. |
+| Sketch and bitmap aggregates | `implemented` | HLL/Bitmap are baseline features. KLL/Theta batch helpers are gated to exact PySpark 4.1 profiles; ordinary 4.1 also has watermarked streaming and same-configuration restart evidence. Connect streaming remains outside the backend contract; see the sketch ExecPlan. |
 | `stack` | `implemented` | Fixed row multiplication and trailing-NULL padding use an explicit result Schema; classic and Connect batch parity is verified on PySpark 3.5 and 4.0. |
 | Generic generators and writer partition transforms | `caller-owned-guided` | No compiler-visible schema/cardinality or output-layout contract. |
 | Relation distribution | `implemented` | `coalesce(partitions=...)`, typed hash repartitioning, and batch-only range repartitioning are implemented. Writer partition transforms remain caller-owned; scalar `coalesce(...)` requires at least two values. |

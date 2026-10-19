@@ -9,6 +9,7 @@ from structure.plugin.api.v1.model import ObservationResult
 from structure.plugin.pyspark.execution.logic.PlanBoundary import apply_plan_boundary, close_plan_boundaries
 from structure.plugin.pyspark.execution.logic.PolicyChecks import reuse_policy_checks, singleton_policy
 from structure.plugin.pyspark.execution.logic.ValidatePySparkOrderedAggregate import ordered_aggregate_guard
+from structure.plugin.pyspark.schema.SketchMetadata import METADATA_KEY
 
 
 def assert_schema(df, schema, *, name: str, mode: str) -> None:
@@ -26,8 +27,23 @@ def assert_schema(df, schema, *, name: str, mode: str) -> None:
             raise ValueError(f"{name} has unexpected column(s): {names}")
     for expected in schema:
         actual_field = actual[expected.name]
+        _validate_runtime_metadata(actual_field, expected, path=f"{name}.{expected.name}")
         if not _same_data_type(actual_field.dataType, expected.dataType):
             raise ValueError(f"{name}.{expected.name} expected {expected.dataType}, got {actual_field.dataType}")
+
+
+def _validate_runtime_metadata(actual, expected, *, path):
+    descriptor = actual.metadata.get(METADATA_KEY)
+    if descriptor is None:
+        return
+    expected_descriptor = expected.metadata.get(METADATA_KEY)
+    if expected_descriptor is None:
+        raise ValueError(f"{path} carries unexpected {METADATA_KEY} metadata")
+    if not isinstance(descriptor, Mapping) or descriptor.get("version") != 1:
+        version = descriptor.get("version") if isinstance(descriptor, Mapping) else None
+        raise ValueError(f"{path} has malformed or unsupported {METADATA_KEY} version {version!r}")
+    if dict(descriptor) != expected_descriptor:
+        raise ValueError(f"{path} declares {dict(descriptor)!r}, expected {expected_descriptor!r}")
 
 
 def _same_data_type(actual, expected) -> bool:
@@ -57,7 +73,12 @@ def _same_data_type(actual, expected) -> bool:
 
 
 def project_schema(df, schema):
-    return df.select(*(F.col(field.name) for field in schema))
+    columns = []
+    for field in schema:
+        column = F.col(field.name)
+        metadata = field.metadata
+        columns.append(column.alias(field.name, metadata=metadata) if metadata else column)
+    return df.select(*columns)
 
 
 class TransformResult:

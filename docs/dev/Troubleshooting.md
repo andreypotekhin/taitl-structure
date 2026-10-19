@@ -181,6 +181,16 @@ Fix: Use the Connect 4.1 launcher in `infra/compose/images/pyspark/run-integrati
 `com.google.protobuf:protobuf-java:4.33.0` beside `delta-connect-server_4.1_2.13:4.1.0`. Rerun
 `make integration BACKEND=spark-connect41`; rebuild the image if the launcher itself was changed.
 
+### Problem (integration): generated Delta validation receives a PySpark `StructType`
+
+When: Running a generated Delta transform whose output schema is materialized into a Spark `StructType`.
+Error: Delta validation fails while looking for `_structure_fields` on the supplied schema.
+Cause: Generated schemas may pass a ready-to-use Spark schema, while Structure schema classes carry
+`_structure_fields` and require materialization.
+Fix: The Delta runtime accepts both forms. Keep generated schemas as `StructType` values; pass Structure schema classes
+when Structure field metadata or declared checks are needed. The ordinary and Connect 4.1 Delta phases exercise both
+paths.
+
 ### Problem (integration): PySpark 4.0 cannot import a test processor in the state driver worker
 
 When: Running `transformWithStateInPandas` in the ordinary PySpark 4.0 Compose lane.
@@ -296,6 +306,13 @@ skip at collection time on Spark Connect, so no Connect session is created for t
 with `docker compose --env-file infra/compose/.env -f infra/compose/docker-compose.yaml run --rm -e
 INTEGRATION_PYTEST_ARGS='/workspace/tests/integration/pyspark/v3/streams/test_file_streams.py -q'
 structure-integration-spark-connect40`; an expected result is eight skipped stream tests rather than a stalled run.
+
+### Problem (Spark 4.1 KLL): rank or quantile fails on an empty sketch
+
+Spark raises its native `KLL_SKETCH_INVALID_INPUT` error when `kll_sketch_get_rank(...)` or
+`kll_sketch_get_quantile(...)` receives an empty sketch. Structure preserves that error. Check
+`kll_sketch_get_n(sketch) > 0` before querying when a group may have no values. A null sketch and a non-null empty
+sketch have different native behavior.
 
 ### Problem (context): `message` during [when]
 
