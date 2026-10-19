@@ -861,7 +861,7 @@
       ],
       "profile": "pyspark>=3.5; connect=batch/streaming",
       "contract": "Branded opaque Binary state supports HLL construction, pairwise/aggregate union, and estimate plus Bitmap construction/OR/count and position helpers; mismatched HLL precision rejects unless explicitly enabled.",
-      "notes": "hll_union_agg preserves the declared HLL precision by default and warns with SKETCH-W0802 when mixed precision is explicitly allowed; KLL/Theta are classified separately for the exact PySpark 4.1 profile; Count-Min and observation metrics remain caller-owned.",
+      "notes": "hll_union_agg preserves the declared HLL precision by default and warns with SKETCH-W0802 when mixed precision is explicitly allowed; KLL/Theta are classified separately for the exact PySpark 4.1 profile; Count-Min remains caller-owned; exact 4.1 typed batch observations are classified separately.",
       "evidence": [
         "docs/dev/design/SketchBitmap.design.md",
         "docs/dev/specifications/SketchBitmap.spec.md",
@@ -1603,7 +1603,7 @@
       ],
       "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
       "contract": "Versioned metadata preserves opaque Binary sketch identity; KLL retains Long/Float/Double domain. Batch helper support is exact-profile gated.",
-      "notes": "Focused online/generated/native batch parity passes on PySpark/Spark 4.1.0 for ordinary and Connect. Streaming and same-configuration checkpoint restart evidence remain open; Count-Min remains caller-owned.",
+      "notes": "Native/online/generated batch, metadata, and Parquet parity pass on ordinary and Connect PySpark/Spark 4.1.0. Ordinary 4.1 also passes watermarked aggregate and same-configuration checkpoint restart parity; Connect streaming remains unsupported. Count-Min remains caller-owned.",
       "evidence": [
         "docs/dev/specifications/SketchBitmap.spec.md",
         "docs/dev/planning/P10182603.V11-kll-theta-sketches.plan.md",
@@ -1627,6 +1627,72 @@
         "docs/compatibility/Transforms.compat.md",
         "tests/specifications/v11-arrow-udfs/test_arrow_udf_contract.py",
         "tests/integration/pyspark/v11/test_arrow_udfs.py"
+      ]
+    },
+    {
+      "id": "query.v11-exists",
+      "status": "supported",
+      "structure": "RelationQuery.exists()",
+      "public_symbols": [
+        "exists",
+        "RelationQuery"
+      ],
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "contract": "Correlated Boolean EXISTS expressions preserve native null and empty-input semantics; outer fields are explicit.",
+      "notes": "Native/online/generated values and schemas pass on ordinary and Connect PySpark/Spark 4.1.0. Batch-only; default-profile support is unchanged.",
+      "evidence": [
+        "docs/dev/design/V11PySpark41QueryOperations.design.md",
+        "docs/dev/specifications/V11PySpark41Parity.spec.md",
+        "tests/integration/pyspark/v11/test_query_operations.py"
+      ]
+    },
+    {
+      "id": "query.v11-in-subquery",
+      "status": "supported",
+      "structure": "Expression.isin(relation_or_query)",
+      "public_symbols": [
+        "RelationQuery"
+      ],
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "contract": "Uncorrelated scalar or named-struct IN against a projected typed relation preserves Spark SQL three-valued logic.",
+      "notes": "Native/online/generated values and schemas pass on ordinary and Connect PySpark/Spark 4.1.0. Batch-only; default-profile support is unchanged.",
+      "evidence": [
+        "docs/dev/design/V11PySpark41QueryOperations.design.md",
+        "docs/dev/specifications/V11PySpark41Parity.spec.md",
+        "tests/integration/pyspark/v11/test_query_operations.py"
+      ]
+    },
+    {
+      "id": "query.v11-lateral-join",
+      "status": "supported",
+      "structure": "lateral_join(...)",
+      "public_symbols": [
+        "lateral_join"
+      ],
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "contract": "Inner/left lateral joins preserve query operation order, post-query on=, explicit outer references, and Cartesian opt-in.",
+      "notes": "Native/online/generated values and schemas pass on ordinary and Connect PySpark/Spark 4.1.0. Batch-only; default-profile support is unchanged.",
+      "evidence": [
+        "docs/dev/design/V11PySpark41QueryOperations.design.md",
+        "docs/dev/specifications/V11PySpark41Parity.spec.md",
+        "tests/integration/pyspark/v11/test_query_operations.py"
+      ]
+    },
+    {
+      "id": "observation.v11-batch",
+      "status": "supported",
+      "structure": "observation(Schema), observe(...), result.name.get()",
+      "public_symbols": [
+        "observation",
+        "observe"
+      ],
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "contract": "Named typed aggregate snapshots preserve row output and native per-variant action lifecycle without adding an action.",
+      "notes": "Native/online/generated values and schemas pass on ordinary and Connect PySpark/Spark 4.1.0. Batch-only; default-profile support is unchanged.",
+      "evidence": [
+        "docs/dev/design/V11PySpark41ObservationsAndSketches.design.md",
+        "docs/dev/specifications/V11PySpark41Parity.spec.md",
+        "tests/integration/pyspark/v11/test_observations.py"
       ]
     }
   ]

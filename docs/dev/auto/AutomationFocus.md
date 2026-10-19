@@ -1,6 +1,6 @@
 ## Automation Focus
 
-Sprints: docs/dev/project-management/sprints/
+Sprints: docs/dev/project/sprints/
 
 ### Current iteration
-Sprint: 25 relation operations and Search hook retirement
+Sprint: 60 V11 hardening and closeout

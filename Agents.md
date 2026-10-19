@@ -44,14 +44,14 @@ Specifications: [docs/dev/specifications/](docs/dev/specifications/)
 
 #### Project management documentation
 General: [docs/dev/](docs/dev/)
-- Implementation phases: [project-management docs](docs/dev/project-management/)
+- Implementation phases: [project docs](docs/dev/project/)
 - Roadmap: [Roadmap.md](docs/dev/Roadmap.md)
 
-Project management docs: [docs/dev/project-management/](docs/dev/project-management/)
-- [Backlog.md](docs/dev/project-management/Backlog.md): project backlog
-- [Milestones.md](docs/dev/project-management/Milestones.md): development milestones
-- [Roadmap.md](docs/dev/project-management/Roadmap.md): development roadmap
-- [sprints/](docs/dev/project-management/sprints/): sprint documents
+Project docs: [docs/dev/project/](docs/dev/project/)
+- [Backlog.md](docs/dev/project/Backlog.md): project backlog
+- [Milestones.md](docs/dev/project/Milestones.md): development milestones
+- [Roadmap.md](docs/dev/project/Roadmap.md): development roadmap
+- [sprints/](docs/dev/project/sprints/): sprint documents
 
 ## Engineering
 
@@ -101,7 +101,7 @@ Coding Inputs:
 - [UserStories.spec.md](docs/dev/specifications/UserStories.spec.md) (user stories)
 - [Specification docs](docs/dev/specifications/) - more formal, ready to implement
 descriptions of the intended behavior of various aspects of the system.
-- PM documents ([docs/dev/project-management/](docs/dev/project-management/)): milestones, risks,
+- PM documents ([docs/dev/project/](docs/dev/project/)): milestones, risks,
 iterations, sprints
 
 ### Coding Standards
@@ -150,10 +150,11 @@ See the Documenting sections in [Style.md](docs/dev/Style.md) for details.
 See the Documenting design decisions section in [Style.md](docs/dev/Style.md).
 
 #### Documenting progress
-Keep project-management documents - e.g. milestones, sprints, etc. - up to date as we progress with design/development.
+Keep project documents - e.g. milestones, sprints, etc. - up to date as we progress with design/development.
 Move completed plans to [docs/dev/past/planning/](docs/dev/past/planning/).
-Move completed sprints to [close/archive/sprints/](close/archive/sprints/).
-Mark completed milestones ([Milestones.md](docs/dev/project-management/Milestones.md))
+Keep current-version sprints in [docs/dev/project/sprints/](docs/dev/project/sprints/) and move completed sprints from
+before V11 to [docs/dev/past/sprints/](docs/dev/past/sprints/).
+Mark completed milestones ([Milestones.md](docs/dev/project/Milestones.md))
 with + (e.g. M0: Groundwork Ready).
 
 #### Making suggestions

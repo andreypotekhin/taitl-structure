@@ -10,7 +10,7 @@ Verify and close V10 without admitting new feature scope.
 
 Closeout: `make build` and the secondary rigidity/compatibility gate pass, package artifacts build successfully, and
 the release evidence report names every retained gate and unavailable lane. V10 is conditionally closed pending the
-external evidence listed in [V10 Release Evidence](../V10ReleaseEvidence.md).
+external evidence listed in [V10 Release Evidence](../../project/V10ReleaseEvidence.md).
 
 ## User-Facing Outcome
 

@@ -1,8 +1,8 @@
-# Structure Project Management Docs
+# Structure Project Docs
 
-This archive contains sprint-oriented project management documentation for the first implementation iterations of
-**Structure**, a schema-first Python DSL and runtime/compiler toolkit that runs or generates clean PySpark DataFrame
-code.
+This directory contains project planning and tracking documents for **Structure**, a schema-first Python DSL and
+runtime/compiler toolkit that runs or generates clean PySpark DataFrame code. Current sprint records are in `sprints/`;
+completed sprints from before V11 are archived in [past/sprints](../past/sprints/).
 
 The sprint plan assumes the documentation set from the Structure design package already exists, especially:
 
@@ -16,7 +16,7 @@ The sprint plan assumes the documentation set from the Structure design package 
 ## Contents
 
 ```text
-project-management/
+project/
   Roadmap.md
   V11.md
   Milestones.md
@@ -28,17 +28,16 @@ project-management/
   TraceabilityMatrix.md
   RisksAndMitigations.md
   sprints/
-    Sprint00_Groundwork.md
-    Sprint01_VerticalSlice1.md
-    Sprint02_SchemasAndValidation.md
-    Sprint03_SymbolicExpressionsFilteringHelpers.md
-    Sprint04_HooksAndGeneratedClasses.md
-    Sprint05_JoinsTraceabilityBuildIntegration.md
-    Sprint06_V2ScopeAndAnalyticalIR.md
-    Sprint07_AnalyticalJoinCoverage.md
-    Sprint15_V3CollectionHelperParity.md
-    Sprint16_V3StreamingOrchestration.md
+    Sprint55_V11AdmissionAndApiDiff.md
+    Sprint56_V11ExpressionParity.md
+    Sprint57_V11QueryOperations.md
+    Sprint58_V11ObservationsPythonAndState.md
+    Sprint59_V11IntegrationMatrix.md
+    Sprint60_V11HardeningAndCloseout.md
+  ../past/sprints/
+    Sprint17_V4IncrementalCompileCacheDiagnostics.md (postponed)
     Sprint18_V4StreamingMigration.md
+    Sprint45_V9ApiCatalogDesignGates.md
     Sprint46_V9ContractAndFeatureCompletion.md
     Sprint47_V9EvidenceCatalogReconciliation.md
     Sprint48_V9Hardening.md
@@ -48,44 +47,6 @@ project-management/
     Sprint52_V10StreamingStateAndJoins.md
     Sprint53_V10SideEffectsAndArbitraryState.md
     Sprint54_V10Hardening.md
-    Sprint55_V11AdmissionAndApiDiff.md
-    Sprint56_V11ExpressionParity.md
-    Sprint57_V11QueryOperations.md
-    Sprint58_V11ObservationsPythonAndState.md
-    Sprint59_V11IntegrationMatrix.md
-    Sprint60_V11HardeningAndCloseout.md
-    Sprint36_V8StreamingCoverageMeasurement.md
-    Sprint37_V8StatelessStreamingGaps.md
-    Sprint38_V8StatefulAndOrderedStreamingGaps.md
-    Sprint39_V8StreamingHardening.md
-    done/
-      Sprint44_V9StreamingHardening.md
-      Sprint43_V9LifecycleDiagnosticsAndBoundaries.md
-      Sprint42_V9StatefulStreamingApiGaps.md
-      Sprint41_V9CallerOwnedAdoptionRecipes.md
-      Sprint40_V9StreamingApiLedger.md
-      Sprint35_V7SingleStatefulStreamingComposition.md
-      Sprint34_V7StreamStaticOuterLookup.md
-      Sprint33_V7StreamStaticEnrichment.md
-      Sprint32_V7DeterministicMode.md
-      Sprint31_V7SchemaCarryingParsing.md
-      Sprint30_V7BinaryEncoding.md
-      Sprint29_V7GeneratorExpansionAndDelegates.md
-      Sprint28_V7ScopeAndDesign.md
-      Sprint27_V6ReleaseAndChallengeClosure.md
-      Sprint26_V6OrderedTimelineRecurrence.md
-      Sprint25_V6RelationOperationsAndSearchMigration.md
-      Sprint24_V6SecurityReconciliation.md
-      Sprint23_V6ApiLedgerAndPluginDecomposition.md
-      Sprint12_V3JoinParityHardening.md
-      Sprint13_V3AggregationParity.md
-      Sprint14_V3WindowParity.md
-      Sprint17_V4TransformationApiCoverage.md
-      SprintV4_Hardening.md
-      Sprint08_AggregationsWindowsHigherOrderFunctions.md
-      Sprint11_V3DslAndSqlFunctionParity.md
-      Sprint09_OptimizationExplainDocsTooling.md
-      Sprint10_DocsTestingIncrementalCompile.md
   templates/
     SprintReview.md
     ADR.md

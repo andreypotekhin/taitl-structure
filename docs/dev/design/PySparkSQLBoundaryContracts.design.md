@@ -124,7 +124,7 @@ and Connect profile.
 
 The complete default-baseline implementation and documentation contract is maintained in
 [Sketches and Bitmaps design](SketchBitmap.design.md). It separates the supported HLL/Bitmap surface from
-the V11 design-gated KLL/Theta work without treating Spark Binary state as portable interchange data.
+the V11 KLL/Theta features, now implemented for exact ordinary and Connect 4.1 profiles, without treating Spark Binary state as portable interchange data.
 
 ## Typed generators and relation distribution
 

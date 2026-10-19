@@ -503,7 +503,7 @@ lanes whose broad full-selection runs did not complete.
 
 ### Governing Documents
 
-- `docs/dev/project-management/V10.md`
+- `docs/dev/project/V10.md`
 - `docs/dev/past/planning/P08022601.V10-api-catalog-and-schema-evolution.plan.md`
 - `docs/dev/past/planning/P08022602.V10-streaming-state-and-join-contracts.plan.md`
 - `docs/dev/past/planning/P08022603.V10-streaming-side-effects-and-arbitrary-state.plan.md`
@@ -543,7 +543,7 @@ Status: planned. V11 follows the V10 closeout and runs from Sprint 55 through Sp
 
 ### Governing documents
 
-- `docs/dev/project-management/V11.md`
+- `docs/dev/project/V11.md`
 - `docs/dev/planning/P08042601.V11-pyspark-4.1-adoption.plan.md`
 - `docs/dev/past/planning/P10042601.V11-delta-transform-mutations.plan.md`
 - `docs/dev/past/planning/P10062601.V11-delta-connect-admission.plan.md`

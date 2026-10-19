@@ -96,6 +96,6 @@ APIs remain caller-owned or outside the Structure transform contract. See
 - [Streaming deferred work](../deferred/Streaming.deferred.md) owns postponed lifecycle and orchestration direction.
 - [Spark Streaming design](../design/SparkStreaming.design.md) owns the durable transformation boundary.
 - [Streaming API reference](../../api/Streaming.api.md) is the user-facing support surface.
-- [V10 streaming plan](../past/planning/P08022602.V10-streaming-state-and-join-contracts.plan.md) owns active
-  implementation work.
-- [V10 release evidence](../project-management/V10ReleaseEvidence.md) records unavailable proof lanes.
+- Completed V10 streaming scope is summarized in the [V10 project record](../project/V10.md) and
+  [release evidence](../project/V10ReleaseEvidence.md).
+- [V10 release evidence](../project/V10ReleaseEvidence.md) records unavailable proof lanes.

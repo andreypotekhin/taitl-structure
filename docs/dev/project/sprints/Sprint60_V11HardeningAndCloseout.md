@@ -13,7 +13,8 @@ boundary and remedy.
 
 ## Implementation tasks
 
-- Reconcile API Catalog, API Reference, machine inventories, capabilities, diagnostics, compatibility docs, and generated artifacts.
+- [x] Reconcile the supported pinned API delta, target-only inventory, and transformation coverage for query operations, observations, and KLL/Theta; exact-profile capability guards pass.
+- Reconcile remaining API Catalog, API Reference, compatibility docs, generated artifacts, and six-lane evidence.
 - Run `make build`, `make integration`, and `make build INTEGRATION=1`.
 - Review the six-lane evidence report and resolve release blockers or record precise deferrals.
 - [x] Complete Arrow UDF implementation and evidence: Connect batch parity, retained scalar-UDF regressions, both

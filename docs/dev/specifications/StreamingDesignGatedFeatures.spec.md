@@ -236,7 +236,7 @@ The design-gate follow-up was accepted when:
 
 V10 extends the design-gated work through grouped plans rather than one plan per source document. State-stage metadata,
 additional stream-stream join candidates, caller-owned side-effect safety, and arbitrary-state modeling are governed by
-the V10 project-management and planning documents. The caller-owned lifecycle boundary remains unchanged.
+the V10 project and planning documents. The caller-owned lifecycle boundary remains unchanged.
 
 An operation may move to `structure-supported` only when its typed source/IR contract, capability checks, diagnostics,
 explain output, generated/online behavior, PySpark target evidence, and restart behavior agree. Otherwise it remains

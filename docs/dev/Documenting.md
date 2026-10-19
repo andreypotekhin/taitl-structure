@@ -76,7 +76,7 @@ in any documents. Timezone should be specified as abbreviation, rather than city
 #### Changes introduced during planning/design
 Changes during planning and design phases propagate top to bottom
 - Changes are formulated as tasks such as requests for creation of design, documentation.
-- Outputs are design documents, specifications, project-management docs, execution plans.
+- Outputs are design documents, specifications, project docs, execution plans.
 - Changes propagate to other developer documentation (docs/dev/), e.g. as updates to sprints.  
 - Changes propagate to public documentation under `docs/`, including background/, reference/, and recipes.
 

@@ -3,16 +3,32 @@
 import json
 from pathlib import Path
 
+from structure.plugin.api.v1.model import CapabilityRequirement
+from structure.plugin.pyspark.capabilities.model.PySparkCapabilities import PySparkCapabilities
+
 ROOT = Path(__file__).resolve().parents[3]
 RESOURCES = ROOT / "src/structure/plugin/pyspark/resources"
 DELTA = json.loads((RESOURCES / "pyspark-4.1-python-api-delta.json").read_text())
 BASELINE = json.loads((RESOURCES / "pyspark-function-index-crosswalk.json").read_text())
-ADMITTED = {"pyspark.sql.Column.transform"} | {
+CARRY_FORWARD = {"pyspark.sql.DataFrame.exists", "pyspark.sql.DataFrame.lateralJoin"}
+KLL_HELPERS = {
+    "kll_sketch_agg", "kll_sketch_get_n", "kll_sketch_get_quantile", "kll_sketch_get_rank",
+    "kll_sketch_merge", "kll_sketch_to_string",
+}
+THETA_HELPERS = {
+    "theta_difference", "theta_intersection", "theta_intersection_agg", "theta_sketch_agg",
+    "theta_sketch_estimate", "theta_union", "theta_union_agg",
+}
+ADMITTED = CARRY_FORWARD | {
+    "pyspark.sql.Column.transform", "pyspark.sql.Column.isin", "pyspark.sql.DataFrame.observe",
+} | {
     f"pyspark.sql.functions.{name}"
     for name in (
         "chr", "quote", "try_to_date", "random", "uuid", "current_time", "make_time", "to_time",
         "try_to_time", "time_diff", "time_trunc", "arrow_udf",
     )
+} | {f"pyspark.sql.functions.{name}_{domain}" for name in KLL_HELPERS for domain in ("bigint", "float", "double")} | {
+    f"pyspark.sql.functions.{name}" for name in THETA_HELPERS
 }
 
 
@@ -59,6 +75,17 @@ def test_each_delta_row_has_an_owner_and_honest_admission_evidence() -> None:
             assert row["coverage_id"]
             assert (ROOT / row["public_catalog_path"]).is_file()
             assert (ROOT / row["public_reference_path"]).is_file()
+            for capability in row["capability_key"].split("; "):
+                group, name = capability.split(".", 1)
+                requirement = CapabilityRequirement(group=group, name=name)
+                for variant in ("ordinary", "spark-connect"):
+                    capabilities = PySparkCapabilities(target_profile=">=4.1,<4.2", target_variant=variant)
+                    assert capabilities.supports(requirement).supported, (row["symbol"], capability, variant)
+                    for profile in (">=3.5,<4.1", ">=4.2,<4.3"):
+                        earlier_or_later = PySparkCapabilities(target_profile=profile, target_variant=variant)
+                        assert not earlier_or_later.supports(requirement).supported, (
+                            row["symbol"], capability, profile, variant
+                        )
         else:
             assert row["reason"] and row["caller_remedy"]
             assert row["structure_spelling"] is None
@@ -69,7 +96,7 @@ def test_each_delta_row_has_an_owner_and_honest_admission_evidence() -> None:
 def test_v11_chronology_and_baseline_reconciliation() -> None:
     """4.0 query APIs stay in V11 scope without being mislabeled as 4.1 additions."""
     carry = {row["symbol"]: row for row in DELTA["v11_carry_forward_from_4_0"]}
-    assert set(carry) == {"pyspark.sql.DataFrame.exists", "pyspark.sql.DataFrame.lateralJoin"}
+    assert set(carry) == CARRY_FORWARD
     assert all(row["first_documented_version"] == "4.0.0" for row in carry.values())
 
     rows = {row["symbol"]: row for row in DELTA["entries"]}
@@ -82,11 +109,29 @@ def test_v11_chronology_and_baseline_reconciliation() -> None:
     }
 
     coverage = json.loads((RESOURCES / "pyspark-transformation-coverage.json").read_text())
-    supported = [row for row in DELTA["entries"] if row["structure_status"] == "supported"]
+    all_rows = DELTA["entries"] + DELTA["v11_carry_forward_from_4_0"]
+    supported = [row for row in all_rows if row["structure_status"] == "supported"]
     assert {row["symbol"] for row in supported} == ADMITTED
-    connect_supported = [row for row in DELTA["entries"] if row["structure_connect_status"] == "supported"]
+    connect_supported = [row for row in all_rows if row["structure_connect_status"] == "supported"]
     assert {row["symbol"] for row in connect_supported} == ADMITTED
     for row in supported:
         assert any(
             entry["id"] == row["coverage_id"] and entry["status"] == "supported" for entry in coverage["entries"]
         )
+
+
+def test_native_sketch_variants_map_to_generic_typed_public_helpers() -> None:
+    """The source census retains native domains without inventing suffix-based Structure APIs."""
+    coverage = {row["id"]: row for row in json.loads((RESOURCES / "pyspark-transformation-coverage.json").read_text())["entries"]}
+    public_helpers = set(coverage["functions.v11-sketches"]["public_symbols"])
+    assert public_helpers == KLL_HELPERS | THETA_HELPERS
+    rows = [row for row in DELTA["entries"] if row["symbol"].startswith("pyspark.sql.functions.kll_")]
+    assert len(rows) == len(KLL_HELPERS) * 3
+    for row in rows:
+        native_name = row["symbol"].rsplit(".", 1)[-1]
+        generic, domain = native_name.rsplit("_", 1)
+        assert generic in KLL_HELPERS
+        assert domain in {"bigint", "float", "double"}
+        assert row["structure_spelling"] == f"{generic}(...)"
+        assert row["capability_key"].split(".", 1)[1] == generic
+        assert row["coverage_id"] == "functions.v11-sketches"

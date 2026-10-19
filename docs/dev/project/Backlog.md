@@ -359,7 +359,7 @@ unavailable external evidence or an intentionally deferred contract; see [V10 Re
 - Run PySpark 3.5/4.0 live parity and restart lanes for every claimed streaming support row.
 - Run optional-provider evidence only with pinned dependencies and finish Sprint 54 with `make build`.
 
-The V10 backlog is governed by `docs/dev/project-management/V10.md`, the grouped plans P08022601–P08022604, and the
+The V10 backlog is governed by `docs/dev/project/V10.md`, the grouped plans P08022601–P08022604, and the
 Sprint 54 hardening plan P08042601. The explicitly adopted Search application proving slices are governed by
 P08052602.Search-vector-index-and-rrf.plan.md and
 P08082601.Typed-scalar-generators-and-optimizer-visible-search-chunking.plan.md. The explicitly adopted higher-order

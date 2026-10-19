@@ -90,8 +90,9 @@ general interchange format. Grouped sketches in streaming follow the ordinary wa
 remain responsible for sources, sinks, checkpoints, retention, and external exchange.
 
 KLL and Theta are typed sketch features for exact PySpark 4.1 ordinary and Connect profiles; they are outside the
-default baseline. Their batch parity is verified, while streaming and restart evidence remain open. Count-Min and
-observation lifecycle remain caller-owned.
+default baseline. Batch parity is verified on both variants, and ordinary 4.1 has watermarked streaming and
+same-configuration restart evidence. Connect streaming remains outside the backend contract. Count-Min remains
+caller-owned.
 
 ### Windowed Enrichment
 

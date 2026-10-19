@@ -42,8 +42,8 @@ Variant parsing and extraction slice.
 Native Spark `st_*` helpers are a PySpark 4.1+ target slice. External providers use exact-name namespaces such as
 `sedona.st_geomfromwkt` and require matching `geo_provider` scope. Spatial values retain provider dialect, kind, and
 fixed or mixed SRID facts; they cannot cross providers directly. An ordinary Binary field is the explicit handoff, with
-codec compatibility owned by the application. The complete design and adoption requirements are in
-[P10012602](../past/planning/P10012602.Geospatial-provider-boundaries.plan.md).
+codec compatibility owned by the application. The contract is in the active [Geospatial design](../design/Geospatial.design.md),
+and current support status is in the [API tracker](../../compatibility/APITracker.md).
 
 ### Join Reordering
 
@@ -86,7 +86,7 @@ materialization boundaries, and `caller-owned-guided` for runnable caller integr
 
 ## V10 Adoption
 
-The adopted core API slices are governed by the grouped plan
-`docs/dev/past/planning/P08022601.V10-api-catalog-and-schema-evolution.plan.md`. Geospatial provider adoption is now
-tracked separately in P10012602. XML, unreleased Variant mutation profiles, and join reordering remain explicit catalog
-dispositions rather than automatic support claims.
+The adopted core API slices and remaining gates are summarized in the [V10 project record](../project/V10.md),
+[release evidence](../project/V10ReleaseEvidence.md), and current [API Catalog Gates](../gated/ApiCatalog.gates.md).
+Geospatial provider adoption is specified in the [Geospatial design](../design/Geospatial.design.md). XML, unreleased
+Variant mutation profiles, and join reordering remain explicit catalog dispositions rather than automatic support claims.

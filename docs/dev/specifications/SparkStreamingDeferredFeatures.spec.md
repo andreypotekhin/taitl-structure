@@ -117,7 +117,7 @@ outside generated transform modules. A lifecycle API can become Structure-owned 
 records operational semantics, checkpoint/recovery behavior, side-effect idempotence, security review, and live
 evidence.
 
-The v9 design-gated streaming rows now have dedicated design and implementation specifications:
+The V9 design-gated streaming rows have dedicated design and implementation specifications:
 [SparkStreaming.design.md](../design/SparkStreaming.design.md) and
-[SparkStreaming.spec.md](SparkStreaming.spec.md). The broader active execution plan is
-`docs/dev/past/planning/P07302601.V9-api-catalog-design-gates.plan.md`.
+[SparkStreaming.spec.md](SparkStreaming.spec.md). Current streaming and API Catalog dispositions are maintained in
+[Streaming Gates](../gated/Streaming.gates.md) and [API Catalog Gates](../gated/ApiCatalog.gates.md).

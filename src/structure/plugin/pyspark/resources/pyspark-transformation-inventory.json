@@ -172,7 +172,7 @@
       "id": "functions.v11-sketches",
       "version": "4.1.0",
       "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
-      "reason": "KLL/Theta helpers require the exact 4.1 profile; helper calls have focused batch online/generated/native parity, while streaming and checkpoint restart remain evidence-gated.",
+      "reason": "KLL/Theta helpers require the exact 4.1 profile; ordinary and Connect batch parity plus ordinary watermarked streaming/restart parity pass. Connect streaming remains outside the backend contract.",
       "pyspark": [
         "kll_sketch_agg_bigint",
         "kll_sketch_agg_float",
@@ -275,6 +275,42 @@
       "reason": "The public TIME type preserves Spark precision 0\u20136 through schemas, generated code, and schema reads; Spark feature enablement remains caller-owned.",
       "pyspark": [
         "TimeType"
+      ]
+    },
+    {
+      "id": "query.v11-exists",
+      "version": "4.0.0",
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "reason": "Exact 4.1 Structure admission after native/online/generated parity; outside the shared 3.5/4.0 baseline.",
+      "pyspark": [
+        "DataFrame.exists"
+      ]
+    },
+    {
+      "id": "query.v11-in-subquery",
+      "version": "4.1.0",
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "reason": "Exact 4.1 Structure admission after native/online/generated parity; outside the shared 3.5/4.0 baseline.",
+      "pyspark": [
+        "Column.isin(DataFrame)"
+      ]
+    },
+    {
+      "id": "query.v11-lateral-join",
+      "version": "4.0.0",
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "reason": "Exact 4.1 Structure admission after native/online/generated parity; outside the shared 3.5/4.0 baseline.",
+      "pyspark": [
+        "DataFrame.lateralJoin"
+      ]
+    },
+    {
+      "id": "observation.v11-batch",
+      "version": "4.1.0",
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "reason": "Exact 4.1 Structure admission after native/online/generated parity; outside the shared 3.5/4.0 baseline.",
+      "pyspark": [
+        "DataFrame.observe"
       ]
     }
   ],

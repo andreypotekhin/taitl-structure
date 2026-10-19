@@ -20,14 +20,14 @@ although their individual 4.1 pages annotate earlier introduction versions; `uni
 4.0 index. Existing Structure helpers are reused
 when their semantics already match; new names do not create duplicate quasi-equivalent nodes.
 
-## Decisions to make in implementation
+## Recorded implementation contracts
 
 `Column.transform` is admitted as a whole-expression transformation for PySpark 4.1 ordinary and Connect variants. Its callback receives one
 typed expression, executes during symbolic authoring, and returns the typed result expression; the result may have a
 different type and nullability. Generated and online execution lower the callback to PySpark's `Column.transform`.
 Both 4.1 variants have live online/generated evidence, including nullable input and changed result type. Random helpers require a seed or an explicit
-nondeterminism marker and are batch-only until a streaming policy exists. Sketch functions are owned by the
-observations-and-sketches design. Any function whose result depends on session configuration, collation, locale, or
+nondeterminism marker and are batch-only until a streaming policy exists. KLL and Theta functions are implemented under the
+observations-and-sketches design; native geospatial functions remain target-gated under the Geospatial design. Any function whose result depends on session configuration, collation, locale, or
 opaque SQL text needs a separate type and configuration contract.
 
 ## Admitted scalar contract

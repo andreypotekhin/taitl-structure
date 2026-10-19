@@ -124,7 +124,7 @@ Sedona's separately scoped 3.5/4.0 provider evidence. This does not change the d
 families. The separately evidenced scalar slice admits `chr`, `quote`, `try_to_date`, `random`, `uuid`, the TIME type,
 and its six helpers on exact ordinary and Connect 4.1 profiles. Spark's `spark.sql.timeType.enabled` flag remains
 caller-configured; see the [Expression reference](reference/Expressions.ref.md).
-See [the V11 evidence record](dev/project-management/sprints/Sprint59_V11IntegrationMatrix.md#corrected-full-connect-evidence-2026-10-07).
+See [the V11 evidence record](dev/project/sprints/Sprint59_V11IntegrationMatrix.md#corrected-full-connect-evidence-2026-10-07).
 
 Spark Connect must not change public DSL syntax, generated class APIs, transform `run(...)` signatures, generated-code
 review shape, or streaming orchestration semantics. It must also avoid classic-only internals such as SparkContext,
@@ -257,7 +257,7 @@ Traceability schema rules:
 - Structure should keep default compiler traceability compact and stable across patch releases.
 
 Runtime LDJSON traceability is not part of the current compatibility contract. It is tracked as a
-[nice-to-have](dev/project-management/NiceToHave.md).
+[nice-to-have](dev/project/NiceToHave.md).
 
 ## Config Schema Versioning
 

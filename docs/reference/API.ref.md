@@ -69,7 +69,7 @@ The schema, transform, and expression remain visible to compile-time checking an
 
 PySpark 4.1 adoption, feature status, target profiles, and live evidence are maintained in the
 [API Compatibility catalog](../compatibility/APICompatibility.md#pyspark-41-adoption) and its detailed
-[API tracker](../compatibility/APITracker.md). The [V11 charter](../dev/project-management/V11.md) records project
+[API tracker](../compatibility/APITracker.md). The [V11 charter](../dev/project/V11.md) records project
 scope and schedule; these compatibility documents are the source for versioned API claims.
 
 ## Analytical APIs

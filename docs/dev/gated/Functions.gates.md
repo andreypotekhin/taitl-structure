@@ -31,7 +31,7 @@ the gate register searchable without duplicating the full PySpark inventory.
 | Variant mutation helpers | `target-gated` | Released target profile plus classic, Connect, generated/online, and streaming evidence. |
 | URL encode/decode | `partial` | `url_encode` and strict `url_decode` are typed; `try_url_decode` is a 4.0 target gate. |
 | XML helpers | `design-gated` | Declared schema, options, malformed-input behavior, and parse/serialize evidence. |
-| Geospatial providers | `target-gated` | Native 4.1 root APIs and namespaced external providers are tracked in P10012602. |
+| Geospatial providers | `target-gated` | Native 4.1 root APIs and namespaced external providers are specified in the [Geospatial design](../design/Geospatial.design.md); current support status is in the [API tracker](../../compatibility/APITracker.md). |
 | Runtime metadata and reflection | `caller-owned-guided` | Query-clock expressions are the only admitted symbolic runtime reads. |
 | `expr` / `call_function` | `unsupported` | Raw SQL removes typed expression ownership. |
 | UDTFs, pandas UDFs, callbacks | `caller-owned-guided` | Arbitrary runtime behavior is outside typed transforms. |

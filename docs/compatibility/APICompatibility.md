@@ -5,10 +5,10 @@ This catalog is the reference for API compatibility decisions. Use `@raw` or cal
 For extensions on top of PySpark, see [API.md](../API.md#extensions-beyond-pyspark). For Structure-owned APIs such as schemas, transforms, and hooks, see the core API references in the [API documentation map](../API.md#api-documentation-map).
 
 The current open contract register is maintained in [API Catalog Gates](../dev/gated/ApiCatalog.gates.md), with streaming
-gates in [Streaming Gates](../dev/gated/Streaming.gates.md). Planning for remaining actionable rows is grouped in the
-[API catalog and schema-evolution plan](../dev/past/planning/P08022601.V10-api-catalog-and-schema-evolution.plan.md).
-Companion streaming state, side-effect, and evidence plans are linked from the
-[streaming project plan](../dev/project-management/V10.md). An open or gated row is not a support claim;
+gates in [Streaming Gates](../dev/gated/Streaming.gates.md). Current PySpark 4.1 adoption work is coordinated in the
+[V11 adoption plan](../dev/planning/P08042601.V11-pyspark-4.1-adoption.plan.md), with completed V10 scope summarized in
+the [V10 project record](../dev/project/V10.md) and its [release evidence](../dev/project/V10ReleaseEvidence.md).
+An open or gated row is not a support claim;
 each entry must name its owner boundary, evidence, and caller remedy.
 
 ## Delta Tables
@@ -26,7 +26,7 @@ limits.
 This is the compatibility register for the configured `>=4.1,<4.2` target. It does not widen the default
 `>=3.5,<4.1` baseline. The primary target is ordinary PySpark; Spark Connect is claimed only for rows with separate
 runtime evidence. The detailed row-by-row inventory is maintained in the [API tracker](APITracker.md), while the
-[V11 charter](../dev/project-management/V11.md) owns schedule and project scope.
+[V11 charter](../dev/project/V11.md) owns schedule and project scope.
 
 The current V11 state and side-effect boundaries are:
 
