@@ -88,6 +88,10 @@ class EvaluatePySparkExpression:
             return self._assertion(expression, functions=functions, aliases=aliases, window=window)
         if expression.kind == "python_udf":
             return self._python_udf(expression, functions=functions, aliases=aliases, window=window)
+        if expression.kind == "arrow_udf":
+            return self._arrow_udf(expression, functions=functions, aliases=aliases, window=window)
+        if expression.kind == "arrow_udf_window":
+            return self._arrow_udf_window(expression, functions=functions, aliases=aliases, window=window)
         if expression.kind == "time_window":
             arguments = [
                 self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window),
@@ -1320,6 +1324,64 @@ class EvaluatePySparkExpression:
             return_type = self._schema.materialize().type(cast(StructureType, return_type))
         udf = functions.udf(expression.data["function"], returnType=return_type)
         return udf(*args)
+
+    def _arrow_udf(self, expression: PySparkExpressionRecipe, *, functions, aliases, window):
+        from pyspark.sql.functions import ArrowUDFType  # type: ignore[import-not-found]
+
+        data = expression.data
+        args = [
+            self.evaluate(argument, functions=functions, aliases=aliases, window=window) for argument in expression.args
+        ]
+        positional_count = cast(int, data.get("positional_count", len(args)))
+        keyword_names = cast(tuple[str, ...], data.get("keyword_names", ()))
+        named = dict(zip(keyword_names, args[positional_count:], strict=True))
+        return_type = self._schema.materialize().type(cast(StructureType, data["return_type"]))
+        function_type = {
+            "scalar": ArrowUDFType.SCALAR,
+            "scalar_iter": ArrowUDFType.SCALAR_ITER,
+        }[str(data["function_type"])]
+        udf = functions.arrow_udf(data["function"], returnType=return_type, functionType=function_type)
+        if data.get("deterministic") is False:
+            udf = udf.asNondeterministic()
+        return udf(*args[:positional_count], **named)
+
+    def _arrow_udf_window(self, expression: PySparkExpressionRecipe, *, functions, aliases, window):
+        from pyspark.sql import Window  # type: ignore[import-not-found]
+        from pyspark.sql.functions import ArrowUDFType  # type: ignore[import-not-found]
+
+        data = expression.data
+        positional_count = cast(int, data.get("positional_count", 0))
+        keyword_names = cast(tuple[str, ...], data.get("keyword_names", ()))
+        values = [
+            self.evaluate(argument, functions=functions, aliases=aliases, window=window)
+            for argument in expression.args[: positional_count + len(keyword_names)]
+        ]
+        order_count = cast(int, data.get("order_count", 0))
+        partition_count = cast(int, data.get("partition_count", 0))
+        ordering = [
+            self.evaluate(argument, functions=functions, aliases=aliases, window=window)
+            for argument in expression.args[positional_count + len(keyword_names) : positional_count + len(keyword_names) + order_count]
+        ]
+        partition_start = positional_count + len(keyword_names) + order_count
+        partitions = [
+            self.evaluate(argument, functions=functions, aliases=aliases, window=window)
+            for argument in expression.args[partition_start : partition_start + partition_count]
+        ]
+        spec = Window.partitionBy(*partitions).orderBy(*ordering)
+        if "frame_kind" in data:
+            frame = spec.rowsBetween if data["frame_kind"] == "rows" else spec.rangeBetween
+            spec = frame(
+                self._window_bound(data["frame_start"], Window),
+                self._window_bound(data["frame_end"], Window),
+            )
+        named = dict(zip(keyword_names, values[positional_count:], strict=True))
+        result_type = self._schema.materialize().type(cast(StructureType, data["return_type"]))
+        udf = functions.arrow_udf(
+            data["function"], returnType=result_type, functionType=ArrowUDFType.GROUPED_AGG
+        )
+        if data.get("deterministic") is False:
+            udf = udf.asNondeterministic()
+        return udf(*values[:positional_count], **named).over(spec)
 
     def _int_data(self, expression: PySparkExpressionRecipe, key: str, default: int) -> int:
         value = expression.data.get(key, default)

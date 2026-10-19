@@ -127,6 +127,21 @@
   ],
   "target_only_apis": [
     {
+      "id": "column.transform",
+      "version": "4.1.0",
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "reason": "The typed Column.transform callback is admitted for both PySpark 4.1 variants after online/generated parity; it remains outside the shared 3.5/4.0 transformation baseline and its v8 streaming parity measurement."
+    },
+    {
+      "id": "functions.v11-arrow-udfs",
+      "version": "4.1.0",
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "reason": "Typed Arrow UDF execution modes have dedicated capability gates and native/online/generated parity evidence.",
+      "pyspark": [
+        "arrow_udf"
+      ]
+    },
+    {
       "id": "functions.v11-chr",
       "version": "4.1.0",
       "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
@@ -145,99 +160,12 @@
       ]
     },
     {
-      "id": "functions.v11-try-to-date",
-      "version": "4.1.0",
-      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
-      "reason": "Admitted V11 scalar helper with individual capability and parity evidence; outside the shared 3.5/4.0 baseline.",
-      "pyspark": [
-        "try_to_date"
-      ]
-    },
-    {
       "id": "functions.v11-random",
       "version": "4.1.0",
       "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
       "reason": "Admitted V11 scalar helper with individual capability and parity evidence; outside the shared 3.5/4.0 baseline.",
       "pyspark": [
         "random"
-      ]
-    },
-    {
-      "id": "functions.v11-uuid",
-      "version": "4.1.0",
-      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
-      "reason": "Admitted V11 scalar helper with individual capability and parity evidence; outside the shared 3.5/4.0 baseline.",
-      "pyspark": [
-        "uuid"
-      ]
-    },
-    {
-      "id": "column.transform",
-      "version": "4.1.0",
-      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
-      "reason": "The typed Column.transform callback is admitted for both PySpark 4.1 variants after online/generated parity; it remains outside the shared 3.5/4.0 transformation baseline and its v8 streaming parity measurement."
-    },
-    {
-      "id": "functions.v11-time-current_time",
-      "version": "4.1.0",
-      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
-      "reason": "Admitted V11 TIME helper with individual capability and ordinary/Connect parity evidence; outside the shared 3.5/4.0 baseline.",
-      "pyspark": [
-        "current_time"
-      ]
-    },
-    {
-      "id": "functions.v11-time-make_time",
-      "version": "4.1.0",
-      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
-      "reason": "Admitted V11 TIME helper with individual capability and ordinary/Connect parity evidence; outside the shared 3.5/4.0 baseline.",
-      "pyspark": [
-        "make_time"
-      ]
-    },
-    {
-      "id": "functions.v11-time-to_time",
-      "version": "4.1.0",
-      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
-      "reason": "Admitted V11 TIME helper with individual capability and ordinary/Connect parity evidence; outside the shared 3.5/4.0 baseline.",
-      "pyspark": [
-        "to_time"
-      ]
-    },
-    {
-      "id": "functions.v11-time-try_to_time",
-      "version": "4.1.0",
-      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
-      "reason": "Admitted V11 TIME helper with individual capability and ordinary/Connect parity evidence; outside the shared 3.5/4.0 baseline.",
-      "pyspark": [
-        "try_to_time"
-      ]
-    },
-    {
-      "id": "functions.v11-time-time_diff",
-      "version": "4.1.0",
-      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
-      "reason": "Admitted V11 TIME helper with individual capability and ordinary/Connect parity evidence; outside the shared 3.5/4.0 baseline.",
-      "pyspark": [
-        "time_diff"
-      ]
-    },
-    {
-      "id": "functions.v11-time-time_trunc",
-      "version": "4.1.0",
-      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
-      "reason": "Admitted V11 TIME helper with individual capability and ordinary/Connect parity evidence; outside the shared 3.5/4.0 baseline.",
-      "pyspark": [
-        "time_trunc"
-      ]
-    },
-    {
-      "id": "types.v11-time",
-      "version": "4.1.0",
-      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
-      "reason": "The public TIME type preserves Spark precision 0–6 through schemas, generated code, and schema reads; Spark feature enablement remains caller-owned.",
-      "pyspark": [
-        "TimeType"
       ]
     },
     {
@@ -266,6 +194,87 @@
         "kll_sketch_to_string_double",
         "theta_sketch_agg",
         "theta_sketch_estimate"
+      ]
+    },
+    {
+      "id": "functions.v11-time-current_time",
+      "version": "4.1.0",
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "reason": "Admitted V11 TIME helper with individual capability and ordinary/Connect parity evidence; outside the shared 3.5/4.0 baseline.",
+      "pyspark": [
+        "current_time"
+      ]
+    },
+    {
+      "id": "functions.v11-time-make_time",
+      "version": "4.1.0",
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "reason": "Admitted V11 TIME helper with individual capability and ordinary/Connect parity evidence; outside the shared 3.5/4.0 baseline.",
+      "pyspark": [
+        "make_time"
+      ]
+    },
+    {
+      "id": "functions.v11-time-time_diff",
+      "version": "4.1.0",
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "reason": "Admitted V11 TIME helper with individual capability and ordinary/Connect parity evidence; outside the shared 3.5/4.0 baseline.",
+      "pyspark": [
+        "time_diff"
+      ]
+    },
+    {
+      "id": "functions.v11-time-time_trunc",
+      "version": "4.1.0",
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "reason": "Admitted V11 TIME helper with individual capability and ordinary/Connect parity evidence; outside the shared 3.5/4.0 baseline.",
+      "pyspark": [
+        "time_trunc"
+      ]
+    },
+    {
+      "id": "functions.v11-time-to_time",
+      "version": "4.1.0",
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "reason": "Admitted V11 TIME helper with individual capability and ordinary/Connect parity evidence; outside the shared 3.5/4.0 baseline.",
+      "pyspark": [
+        "to_time"
+      ]
+    },
+    {
+      "id": "functions.v11-time-try_to_time",
+      "version": "4.1.0",
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "reason": "Admitted V11 TIME helper with individual capability and ordinary/Connect parity evidence; outside the shared 3.5/4.0 baseline.",
+      "pyspark": [
+        "try_to_time"
+      ]
+    },
+    {
+      "id": "functions.v11-try-to-date",
+      "version": "4.1.0",
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "reason": "Admitted V11 scalar helper with individual capability and parity evidence; outside the shared 3.5/4.0 baseline.",
+      "pyspark": [
+        "try_to_date"
+      ]
+    },
+    {
+      "id": "functions.v11-uuid",
+      "version": "4.1.0",
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "reason": "Admitted V11 scalar helper with individual capability and parity evidence; outside the shared 3.5/4.0 baseline.",
+      "pyspark": [
+        "uuid"
+      ]
+    },
+    {
+      "id": "types.v11-time",
+      "version": "4.1.0",
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "reason": "The public TIME type preserves Spark precision 0\u20136 through schemas, generated code, and schema reads; Spark feature enablement remains caller-owned.",
+      "pyspark": [
+        "TimeType"
       ]
     }
   ],

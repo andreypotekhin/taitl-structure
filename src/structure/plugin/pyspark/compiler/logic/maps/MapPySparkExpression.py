@@ -184,6 +184,14 @@ class MapPySparkExpression:
             return "expression", "standard_helper_call"
         if expression.kind == "python_udf":
             return "expression", "python_udf"
+        if expression.kind == "arrow_udf":
+            data = expression.data or {}
+            return str(data.get("capability_group", "expression")), str(data.get("capability_name", "arrow_udf_scalar"))
+        if expression.kind == "arrow_udf_window":
+            return "window", "arrow_udf_grouped_agg"
+        if expression.kind == "aggregate":
+            data = expression.data or {}
+            return str(data.get("capability_group", "aggregate")), str(data.get("capability_name", data.get("function", "aggregate")))
         if expression.kind == "time_window":
             return "streaming", "time_window"
         if expression.kind == "window_time":

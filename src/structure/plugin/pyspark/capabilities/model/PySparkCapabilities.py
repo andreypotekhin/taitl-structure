@@ -36,6 +36,14 @@ PYSPARK_4_0_CAPABILITIES = frozenset(
 )
 PYSPARK_4_0_STREAMING_CAPABILITIES = frozenset({("streaming", "transform_with_state_in_pandas")})
 PYSPARK_4_1_CAPABILITIES = frozenset({("streaming", "transform_with_state")})
+PYSPARK_4_1_ARROW_UDF_CAPABILITIES = frozenset(
+    {
+        ("expression", "arrow_udf_scalar"),
+        ("expression", "arrow_udf_scalar_iter"),
+        ("aggregate", "arrow_udf_grouped_agg"),
+        ("window", "arrow_udf_grouped_agg"),
+    }
+)
 PYSPARK_4_1_SCALAR_CAPABILITIES = frozenset(
     {("expression", "chr"), ("expression", "quote"), ("expression", "try_to_date"),
      ("expression", "random"), ("expression", "uuid"), ("expression", "current_time"),
@@ -80,12 +88,14 @@ PYSPARK_4_1_ORDINARY_CAPABILITIES = (
     | PYSPARK_4_1_QUERY_CAPABILITIES
     | PYSPARK_4_1_OBSERVATION_CAPABILITIES
     | PYSPARK_4_1_SKETCH_CAPABILITIES
+    | PYSPARK_4_1_ARROW_UDF_CAPABILITIES
     | frozenset({("expression", "column_transform")})
 )
 PYSPARK_4_1_CONNECT_CAPABILITIES = frozenset(
     {("expression", "column_transform"), ("optimization", "checkpoint")}
 ) | PYSPARK_4_1_SCALAR_CAPABILITIES | PYSPARK_4_1_QUERY_CAPABILITIES | PYSPARK_4_1_OBSERVATION_CAPABILITIES
 PYSPARK_4_1_CONNECT_CAPABILITIES |= PYSPARK_4_1_SKETCH_CAPABILITIES
+PYSPARK_4_1_CONNECT_CAPABILITIES |= PYSPARK_4_1_ARROW_UDF_CAPABILITIES
 LEGACY_PANDAS_STATE_PROFILES = frozenset({">=3.5,<4.1", ">=3.5,<4.0", ">=4.0,<4.1", ">=4.1,<4.2"})
 LEGACY_PANDAS_STATE_CAPABILITY = frozenset({("streaming", "apply_in_pandas_with_state")})
 PYSPARK_4_2_CAPABILITIES = frozenset({("expression", "is_valid_variant")})
@@ -495,9 +505,10 @@ class PySparkCapabilities:
         if requirement.key() in self.supported:
             return CapabilityDecision.ok(backend=self.id, requirement=requirement)
 
-        if requirement.key() == ("expression", "column_transform") or requirement.key() in PYSPARK_4_1_SCALAR_CAPABILITIES:
+        if requirement.key() == ("expression", "column_transform") or requirement.key() in PYSPARK_4_1_SCALAR_CAPABILITIES | PYSPARK_4_1_ARROW_UDF_CAPABILITIES:
             operation = (
                 "Column.transform" if requirement.name == "column_transform"
+                else "Arrow UDFs" if requirement.name.startswith("arrow_udf")
                 else "the Spark TIME type" if requirement.key() == ("schema", "time")
                 else f"{requirement.name}(...)"
             )

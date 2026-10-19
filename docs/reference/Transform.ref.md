@@ -730,6 +730,61 @@ class CleanOrders(Transform):
 
 Use a scalar expression helper for row-local reuse; reserve a composed transform for a separate typed relation flow.
 
+## Arrow UDFs
+
+On the exact PySpark `>=4.1,<4.2` profile, `@special(type="arrow_udf")` declares a Python callback that receives
+Arrow batches rather than one Python value per row. Choose `function_type="scalar"` (the default),
+`"scalar_iter"`, or `"grouped_agg"`; every declaration requires a concrete `return_type` from
+`structure.plugin.pyspark.dsl.types`. Input SQL types come from the expressions passed at the call site.
+
+```python
+from structure import *
+from structure.plugin.pyspark import *
+from structure.plugin.pyspark.dsl import types
+
+
+class Raw(Schema):
+    amount = long(nullable=True)
+
+
+class Adjusted(Schema):
+    amount = long(nullable=True)
+
+
+@transform
+class AdjustAmounts(Transform):
+    rows = input(Raw)
+    adjusted = output(Adjusted)
+
+    @special(type="arrow_udf", return_type=types.long())
+    def add_tax(values):
+        import pyarrow as pa
+        import pyarrow.compute as pc
+
+        return pc.add(values, pa.scalar(1, type=pa.int64()))
+
+    def apply(self, row: Raw) -> Adjusted:
+        return Adjusted(amount=self.add_tax(row.amount))
+```
+
+Callbacks may use positional, named, or mixed expression arguments when the Python signature permits them. Use a
+single iterator parameter for `scalar_iter`; calls to that mode take positional expression columns. A grouped callback
+may be used as an aggregate metric or with `over=window(...)` for an analytic window. Keep grouped Arrow metrics
+separate from built-in aggregate metrics in one aggregate. Grouped aggregation retains group data in worker memory, so
+large groups can require substantial memory.
+
+Spark owns callback result conversion, cardinality checks, and worker errors. Structure validates the declaration and
+call shape but does not run the callback during compilation or inspect its returned objects. Import PyArrow inside the
+callback when the compiler environment should not require PyArrow. `deterministic` is optional; omission preserves
+Spark's default, while `False` marks the native UDF nondeterministic. `nullable=True` describes the author contract;
+the physical Spark UDF expression keeps native nullability behavior.
+
+Scalar and iterator forms support batch execution on ordinary PySpark and Spark Connect 4.1. Ordinary PySpark
+streaming supports scalar and iterator forms, including checkpoint restart. Grouped aggregation and analytic windows on
+streaming inputs are rejected; Connect streaming is outside this feature's scope. These APIs require PyArrow on the
+driver and workers. See the [Arrow UDF specification](../dev/specifications/V11ArrowUdfs.spec.md) for exact profile
+and validation rules.
+
 ## Generated files
 
 Generated PySpark is optional build output. When a project commits it, regenerate after source or configuration changes,

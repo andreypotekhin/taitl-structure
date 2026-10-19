@@ -11,7 +11,7 @@ ADMITTED = {"pyspark.sql.Column.transform"} | {
     f"pyspark.sql.functions.{name}"
     for name in (
         "chr", "quote", "try_to_date", "random", "uuid", "current_time", "make_time", "to_time",
-        "try_to_time", "time_diff", "time_trunc",
+        "try_to_time", "time_diff", "time_trunc", "arrow_udf",
     )
 }
 

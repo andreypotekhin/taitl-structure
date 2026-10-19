@@ -16,6 +16,9 @@ boundary and remedy.
 - Reconcile API Catalog, API Reference, machine inventories, capabilities, diagnostics, compatibility docs, and generated artifacts.
 - Run `make build`, `make integration`, and `make build INTEGRATION=1`.
 - Review the six-lane evidence report and resolve release blockers or record precise deferrals.
+- [x] Complete Arrow UDF implementation and evidence: Connect batch parity, retained scalar-UDF regressions, both
+  unfiltered 4.1 lanes, and `make build`. The ordinary lane exposes one independent foreachBatch handoff failure;
+  grouped/analytic streaming and Connect streaming remain explicitly excluded.
 - Decide whether the default profile may include 4.1 and record the decision in the V11 ExecPlan.
 
 ## Acceptance

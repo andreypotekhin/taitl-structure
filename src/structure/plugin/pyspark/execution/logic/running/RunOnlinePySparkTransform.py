@@ -19,7 +19,7 @@ from structure.plugin.pyspark.delta.runtime import (
     validated_delta_frame,
 )
 from structure.plugin.pyspark.dsl.joins.JoinMethod import JoinMethod
-from structure.plugin.pyspark.dsl.types import ArrayType, StructType
+from structure.plugin.pyspark.dsl.types import ArrayType, StructType, StructureType
 from structure.plugin.pyspark.execution.logic.expressions.EvaluatePySparkExpression import EvaluatePySparkExpression
 from structure.plugin.pyspark.execution.logic.InvokePySparkHooks import InvokePySparkHooks
 from structure.plugin.pyspark.execution.logic.PlanBoundary import apply_plan_boundary
@@ -1852,6 +1852,26 @@ class RunOnlinePySparkTransform:
         raise TypeError(f"Missing aggregate key column for {assignment.key}")
 
     def _aggregate_assignment(self, assignment, *, step, aggregate, key_columns, functions, types):
+        if assignment.function == "arrow_udf_grouped_agg":
+            options = dict(assignment.options)
+            from pyspark.sql.functions import ArrowUDFType  # type: ignore[import-not-found]
+
+            return_type = self._spark_type(cast(StructureType, options["arrow_return_type"]), types)
+            udf = functions.arrow_udf(
+                options["arrow_function"],
+                returnType=return_type,
+                functionType=ArrowUDFType.GROUPED_AGG,
+            )
+            if options.get("arrow_deterministic") is False:
+                udf = udf.asNondeterministic()
+            columns = [
+                self._expressions.evaluate(argument, functions=functions, aliases=self._scope_aliases(step))
+                for argument in assignment.arguments
+            ]
+            positional_count = int(options["arrow_positional_count"])
+            keyword_names = cast(tuple[str, ...], options["arrow_keyword_names"])
+            named = dict(zip(keyword_names, columns[positional_count:], strict=True))
+            return udf(*columns[:positional_count], **named).alias(assignment.field.column)
         if assignment.function == "count":
             column = functions.lit(1)
             if assignment.filter is not None:

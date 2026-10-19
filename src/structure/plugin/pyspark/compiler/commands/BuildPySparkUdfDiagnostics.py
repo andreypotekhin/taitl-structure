@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
 from structure.plugin.api.v1.model.TransformPlan import TransformPlan
 from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
@@ -62,7 +64,17 @@ class BuildPySparkUdfDiagnostics:
         )
 
     def _udfs(self, expression: object) -> tuple[object, ...]:
-        found = [expression] if getattr(expression, "kind", None) == "python_udf" else []
+        kind = getattr(expression, "kind", None)
+        data = getattr(expression, "data", None) or {}
+        if kind == "aggregate" and data.get("function") == "arrow_udf_grouped_agg":
+            found: list[object] = [
+                SimpleNamespace(
+                    kind="arrow_udf",
+                    data={"qualname": data.get("arrow_qualname"), "function_name": data.get("arrow_function_name")},
+                )
+            ]
+        else:
+            found = [expression] if kind in {"python_udf", "arrow_udf", "arrow_udf_window"} else []
         for argument in getattr(expression, "args", ()):
             found.extend(self._udfs(argument))
         return tuple(found)

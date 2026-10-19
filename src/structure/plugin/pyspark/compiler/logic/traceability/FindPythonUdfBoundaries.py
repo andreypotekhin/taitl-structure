@@ -1,4 +1,5 @@
 from collections.abc import Iterable
+from types import SimpleNamespace
 
 from structure.plugin.api.v1.model import OpaqueBoundary
 
@@ -22,7 +23,7 @@ class FindPythonUdfBoundaries:
                         step=step,
                         hook=name,
                         phase="expression",
-                        target="python_udf",
+                        target="arrow_udf" if getattr(udf, "kind", None) in {"arrow_udf", "arrow_udf_window"} else "python_udf",
                         schema=schema,
                         reason="python UDF body",
                     )
@@ -31,7 +32,17 @@ class FindPythonUdfBoundaries:
 
     def _expressions(self, expression: object) -> tuple[object, ...]:
         arguments = tuple(getattr(expression, "args", ()))
-        found = [expression] if getattr(expression, "kind", None) == "python_udf" else []
+        kind = getattr(expression, "kind", None)
+        data = getattr(expression, "data", None) or {}
+        if kind == "aggregate" and data.get("function") == "arrow_udf_grouped_agg":
+            found: list[object] = [
+                SimpleNamespace(
+                    kind="arrow_udf",
+                    data={"function_name": data.get("arrow_function_name", "arrow_udf")},
+                )
+            ]
+        else:
+            found = [expression] if kind in {"python_udf", "arrow_udf", "arrow_udf_window"} else []
         for argument in arguments:
             found.extend(self._expressions(argument))
         return tuple(found)

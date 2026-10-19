@@ -1462,7 +1462,7 @@
         "current_time"
       ],
       "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
-      "contract": "Non-null TIME at precision 0–6, stable within one query; caller configures spark.sql.timeType.enabled.",
+      "contract": "Non-null TIME at precision 0\u20136, stable within one query; caller configures spark.sql.timeType.enabled.",
       "notes": "Ordinary and Connect PySpark/Spark 4.1.0 online/generated/native batch parity passes. No streaming claim.",
       "evidence": [
         "docs/api/Expressions.api.md",
@@ -1609,6 +1609,24 @@
         "docs/dev/planning/P10182603.V11-kll-theta-sketches.plan.md",
         "tests/specifications/v11-sketches/test_sketch_types.py",
         "tests/integration/pyspark/v11/test_kll_theta_sketches.py"
+      ]
+    },
+    {
+      "id": "functions.v11-arrow-udfs",
+      "status": "supported",
+      "structure": "@special(type=\"arrow_udf\", return_type=...)",
+      "public_symbols": [
+        "special"
+      ],
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
+      "contract": "Typed scalar batches, scalar iterators, grouped aggregate metrics, and analytic aggregate windows; explicit Structure return type; native callback result conversion and failures.",
+      "notes": "Native/online/generated batch parity passes on ordinary and Connect PySpark/Spark 4.1.0. Ordinary scalar and iterator stream processed-data and same-checkpoint restart parity passes; grouped/analytic streaming and Connect streaming are excluded. PyArrow is required on driver and workers.",
+      "evidence": [
+        "docs/dev/specifications/V11ArrowUdfs.spec.md",
+        "docs/reference/Transform.ref.md",
+        "docs/compatibility/Transforms.compat.md",
+        "tests/specifications/v11-arrow-udfs/test_arrow_udf_contract.py",
+        "tests/integration/pyspark/v11/test_arrow_udfs.py"
       ]
     }
   ]

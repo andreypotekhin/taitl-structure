@@ -87,12 +87,20 @@ for values, schema, empty input, conditional counts, collection snapshots, and C
 and Connect PySpark/Spark 4.1.0. The exact `>=4.1,<4.2` variants are admitted independently; earlier and later profiles
 remain gated. See the [observation ExecPlan](../planning/past/P10182602.V11-batch-observations.plan.md).
 
-KLL and Theta sketch aggregates remain `design-gated` separately. Their binary result type, merge semantics, optional
-dependency behavior, determinism, and typed consumption contract require their own decisions and evidence.
+KLL and Theta sketches are implemented as opaque Spark Binary values with recursive logical metadata. Typed KLL
+construction, query, merge, and rendering helpers and typed Theta construction, set operations, and estimates are
+admitted for exact `>=4.1,<4.2` ordinary and Connect batch profiles. Online/generated/native parity, schema metadata,
+and Parquet readback pass on both variants. Ordinary PySpark 4.1 additionally passes watermarked aggregate and
+same-configuration checkpoint-restart parity. Connect streaming remains outside the backend contract. See the
+[KLL/Theta implementation ExecPlan](../planning/P10182603.V11-kll-theta-sketches.plan.md) for detailed evidence and
+native edge behavior.
 
 ## Feature 4: Arrow UDF/UDTF and state processors
 
-Arrow UDF and UDTF decorators and general vectorized callbacks remain caller-owned boundaries. The explicit state
+The dedicated [Arrow UDF specification](V11ArrowUdfs.spec.md) admits typed scalar, scalar-iterator, grouped-aggregate,
+and analytic-window callbacks on exact ordinary and Connect `>=4.1,<4.2` profiles after online/generated parity. Ordinary
+scalar and iterator streaming pass processed-data and same-checkpoint restart parity; grouped/analytic streaming and
+Connect streaming remain excluded. Arrow UDTF and general vectorized callbacks remain caller-owned boundaries. The explicit state
 processor surfaces are separate families: row-based `transform_with_state(...)` targets ordinary PySpark 4.1;
 `transform_with_state_in_pandas(...)` targets ordinary PySpark 4.0 and 4.1; and legacy
 `apply_in_pandas_with_state(...)` targets ordinary PySpark 3.5, 4.0, and 4.1. Each has its own compiler path,

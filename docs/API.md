@@ -53,7 +53,8 @@ Other orientation: [API compatibility overview](compatibility/APICompatibility.m
 - Schema classes own field names, aliases, types, and nullability instead of exposing raw Spark schema objects.
 - Transform source is compiler-visible. `@raw` remains the honest boundary for caller-owned PySpark behavior.
 - Expression truthiness, raw SQL strings, UDTFs, and arbitrary callback bodies are unsupported. Scalar
-  `@special(type="udf")` remains an ordinary-PySpark row-local feature with its warning policy.
+  `@special(type="udf")` remains an ordinary-PySpark row-local feature. Typed `@special(type="arrow_udf")` is
+  available on exact PySpark 4.1 profiles; see the [Transform reference](reference/Transform.ref.md#arrow-udfs).
 
 ## Version compatibility
 
@@ -114,7 +115,7 @@ each provider remains optional and gated to its tested runtime profiles.
 | Array variants; generators | partial | `slice`, `explode`, `posexplode`, `inline` | Typed struct generators are supported; raw or untyped generators need distinct contracts. |
 | Window order; more aggregates | supported | Window functions and aggregate frames | Sprint 14. |
 | Collection basics | supported | Core arrays/maps | [Collections API](api/Collections.api.md) |
-| Raw APIs/lifecycle | unsupported | `expr`, raw `WindowSpec`, UDTF | Use hooks; caller owns lifecycle. Scalar `@special(type="udf")` is row-local ordinary-PySpark supported. |
+| Raw APIs/lifecycle | unsupported | `expr`, raw `WindowSpec`, UDTF | Use hooks; caller owns lifecycle. Scalar `@special(type="udf")` is row-local ordinary-PySpark supported; typed Arrow UDFs are documented in the 4.1 tracker. |
 
 For detailed restrictions, diagnostics, and feature-admission rationale, consult [APICompatibility.md](compatibility/APICompatibility.md),
 [APITracker.md](compatibility/APITracker.md), [Function Gates](dev/gated/Functions.gates.md), and the linked reference pages.

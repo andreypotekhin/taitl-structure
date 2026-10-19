@@ -112,6 +112,14 @@ are structural; do not use nullness alone to identify a subtotal.
 
 ## Metrics
 
+### Arrow grouped aggregates
+
+PySpark 4.1 Arrow UDFs declared with `function_type="grouped_agg"` can provide a custom grouped metric or an analytic
+window metric. Declare a concrete `return_type`; callback input values arrive as an Arrow array. Spark handles result
+conversion and worker errors. Grouped Arrow metrics cannot be mixed with built-in aggregate metrics in the same
+aggregate, and group data is held in worker memory. See [Arrow UDFs](Transform.ref.md#arrow-udfs) for declaration and
+window examples. Streaming inputs are rejected for grouped and analytic-window forms.
+
 Use metric helpers to name the values calculated for each grouped result.
 
 ```python
@@ -170,10 +178,10 @@ profile.
 
 ### Opaque sketch metrics
 
-Use HLL and Bitmap fields when a later transform must carry compact analytical state rather than only a final number.
-HLL represents approximate cardinality; Bitmap represents integral positions. For a one-off final value, prefer
-`count_distinct(...)` when an exact answer is practical or `approx_count_distinct(...)` when only the approximation is
-needed.
+Use HLL, Bitmap, KLL, and Theta fields when a later transform must carry compact analytical state rather than only a
+final number. HLL and Theta represent approximate cardinality; KLL summarizes a numeric distribution; Bitmap
+represents integral positions. For a one-off final value, prefer `count_distinct(...)` when an exact answer is
+practical or `approx_count_distinct(...)` when only the approximation is needed.
 
 ```python
 class TenantSketches(Schema):
@@ -231,6 +239,38 @@ return CustomerSketchMetrics(
     combined=theta_union(customer.current, customer.previous),
 )
 ```
+
+### KLL operations
+
+| Operation | Contract |
+| --- | --- |
+| `kll_sketch_agg(value, k=200, where=None)` | Grouped KLL construction; `k` is a literal integer from 8 through 65,535 |
+| `kll_sketch_get_n(sketch)` | Number of retained input items, as Long |
+| `kll_sketch_get_quantile(sketch, rank)` | Approximate quantile in the declared Long, Float, or Double domain |
+| `kll_sketch_get_rank(sketch, quantile)` | Approximate rank of a value, as Double |
+| `kll_sketch_merge(left, right)` | Pairwise merge of compatible KLL sketches |
+| `kll_sketch_to_string(sketch)` | Spark's textual sketch rendering for inspection |
+
+Integer and Long input aggregates use a Long KLL domain; Float and Double retain their respective domains. Cast Decimal
+input explicitly. KLL construction precision is operation configuration and is not part of the logical field type.
+Spark 4.1.0 has pairwise merge but no KLL merge aggregate.
+
+### Theta operations
+
+| Operation | Contract |
+| --- | --- |
+| `theta_sketch_agg(value, lg_nom_entries=12, where=None)` | Grouped Theta construction; precision literal is 4 through 26 |
+| `theta_union(left, right, lg_nom_entries=12)` | Pairwise set union |
+| `theta_union_agg(value, lg_nom_entries=12, where=None)` | Grouped set union |
+| `theta_intersection(left, right)` | Pairwise set intersection |
+| `theta_intersection_agg(value, where=None)` | Grouped set intersection |
+| `theta_difference(left, right)` | Directional difference: values in `left` but not `right` |
+| `theta_sketch_estimate(sketch)` | Approximate cardinality, as Long |
+
+Theta construction accepts Integer, Long, Float, Double, String, and Binary values, plus integral arrays. Array
+elements form one input value. `lg_nom_entries` configures construction or union; it does not change the logical Theta
+type. Empty or all-null Theta sketches estimate zero. Neither Theta nor KLL state is interchangeable with HLL, Bitmap,
+or ordinary Binary.
 
 KLL and Theta helpers require exact PySpark 4.1 ordinary or Connect profiles. KLL `k` and Theta `lg_nom_entries` are
 operation settings; they do not change the logical field type.

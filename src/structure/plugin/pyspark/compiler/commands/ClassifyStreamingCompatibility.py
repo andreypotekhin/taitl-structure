@@ -653,6 +653,17 @@ class ClassifyStreamingCompatibility:
     ) -> tuple[StreamingFinding, ...]:
         if not streaming_source:
             return ()
+        if any(assignment.function == "arrow_udf_grouped_agg" for assignment in aggregate.assignments):
+            return (
+                StreamingFinding(
+                    code="STREAM-E0801",
+                    support=StreamingSupport.BATCH_ONLY,
+                    step=step,
+                    operation="grouped Arrow UDF",
+                    problem="Spark rejects grouped Arrow UDF aggregation on streaming inputs when processing data.",
+                    use="Use grouped Arrow UDFs with batch input, or use a scalar or scalar_iter Arrow UDF for streaming rows.",
+                ),
+            )
         session_keys = tuple(key.expression for key in aggregate.keys if self._is_session_window(key.expression))
         if session_keys:
             return self._session_aggregate(
@@ -1079,7 +1090,7 @@ class ClassifyStreamingCompatibility:
         function = data.get("function")
         return (
             expression.kind == "transform_expression" and isinstance(function, str) and function.startswith("window_")
-        ) or any(self._has_window(argument) for argument in expression.args)
+        ) or expression.kind == "arrow_udf_window" or any(self._has_window(argument) for argument in expression.args)
 
     def _join(
         self,

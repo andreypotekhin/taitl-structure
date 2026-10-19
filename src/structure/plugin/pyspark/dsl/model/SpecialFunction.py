@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import inspect
 from datetime import date, datetime
 from inspect import signature
 from typing import Any, Callable, cast, get_type_hints
@@ -35,11 +36,15 @@ class SpecialFunction:
         type: str,
         return_type: object | None = None,
         nullable: bool = True,
+        function_type: str = "scalar",
+        deterministic: bool | None = None,
     ) -> None:
         self.function = function
         self.type = type
         self.return_type = return_type
         self.nullable = nullable
+        self.function_type = function_type
+        self.deterministic = deterministic
         self.__name__ = function.__name__
         self.__qualname__ = function.__qualname__
         self.__module__ = function.__module__
@@ -55,6 +60,10 @@ class SpecialFunction:
             if kwargs:
                 raise TypeError("@special(type=\"udf\") calls only support positional expression arguments")
             return self._udf(args)
+        if self.type == "arrow_udf":
+            if context is None:
+                return self.function(*args, **kwargs)
+            return self._arrow_udf(args, kwargs)
         return self.function(*args, **kwargs)
 
     def _expr(self, args: tuple[object, ...], kwargs: dict[str, object], *, context) -> Expression:
@@ -104,6 +113,96 @@ class SpecialFunction:
             },
             args=tuple(literal(arg) for arg in args),
         )
+
+    def _arrow_udf(self, args: tuple[object, ...], kwargs: dict[str, object]) -> Expression:
+        from structure.plugin.pyspark.dsl.operations_api import _aggregate
+        from structure.plugin.pyspark.dsl.windows.WindowSpec import WindowSpec
+
+        over = kwargs.pop("over", None)
+        if over is not None and (self.function_type != "grouped_agg" or not isinstance(over, WindowSpec)):
+            raise TypeError('Only grouped_agg Arrow UDF calls accept over=WindowSpec')
+        if self.function_type == "scalar_iter":
+            self._bind_iterator(args)
+        else:
+            signature(self.function).bind(*args, **kwargs)
+        if self.function_type == "scalar" and not any(
+            parameter.kind in {
+                parameter.POSITIONAL_ONLY,
+                parameter.POSITIONAL_OR_KEYWORD,
+                parameter.VAR_POSITIONAL,
+            }
+            for parameter in signature(self.function).parameters.values()
+        ):
+            raise TypeError("Spark scalar Arrow UDFs require at least one positional callback parameter")
+
+        return_type = self._arrow_return_type()
+        keyword_names = tuple(kwargs)
+        arguments = tuple(literal(value) for value in (*args, *kwargs.values()))
+        data = {
+            "function": self.function,
+            "function_name": self.function.__name__,
+            "module": self.function.__module__,
+            "qualname": self.function.__qualname__,
+            "udf_name": self._udf_name(),
+            "return_type": return_type,
+            "function_type": self.function_type,
+            "deterministic": self.deterministic,
+            "positional_count": len(args),
+            "keyword_names": keyword_names,
+        }
+        if self.function_type in {"scalar", "scalar_iter"}:
+            data["capability_group"] = "expression"
+            data["capability_name"] = f"arrow_udf_{self.function_type}"
+            return Expression(kind="arrow_udf", type=return_type, nullable=self.nullable, data=data, args=arguments)
+        if over is None:
+            aggregate_options = tuple(
+                (f"arrow_{key}", value)
+                for key, value in data.items()
+                if key not in {"capability_group", "capability_name"}
+            )
+            return _aggregate(
+                "arrow_udf_grouped_agg",
+                *arguments,
+                type=return_type,
+                nullable=self.nullable,
+                options=aggregate_options,
+            )
+        data.update(
+            {
+                "capability_group": "window",
+                "capability_name": "arrow_udf_grouped_agg",
+                "order_count": len(over.order_by),
+                "partition_count": len(over.partition_by),
+            }
+        )
+        if over.frame is not None:
+            data.update(
+                {
+                    "frame_kind": over.frame.kind,
+                    "frame_start": over.frame.start.as_pyspark(),
+                    "frame_end": over.frame.end.as_pyspark(),
+                }
+            )
+        return Expression(
+            kind="arrow_udf_window",
+            type=return_type,
+            nullable=self.nullable,
+            data=data,
+            args=(*arguments, *over.order_by, *over.partition_by),
+        )
+
+    def _bind_iterator(self, args: tuple[object, ...]) -> None:
+        if not args:
+            raise TypeError("scalar_iter Arrow UDF calls require at least one positional column expression")
+        signature(self.function).bind(object())
+
+    def _arrow_return_type(self) -> StructureType:
+        value = self.return_type
+        if isinstance(value, StructureType):
+            return value
+        if isinstance(value, type) and issubclass(value, StructureType):
+            return cast(Any, value)()
+        raise TypeError(f'{self.function.__qualname__} @special(type="arrow_udf") needs a Structure return_type')
 
     def _return_type(self) -> object:
         if self.return_type is not None:

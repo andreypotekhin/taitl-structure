@@ -18,6 +18,17 @@ class ValidatePySparkAggregates:
         schema_name = getattr(schema, "__name__", "Result")
         self._grouping_sets(aggregate, schema_name=schema_name, request=request)
         self._having(aggregate, schema_name=schema_name, request=request)
+        arrow_assignments = [item for item in aggregate.assignments if item.function == "arrow_udf_grouped_agg"]
+        ordinary_assignments = [
+            item for item in aggregate.assignments if item.function not in {"key", "arrow_udf_grouped_agg"}
+        ]
+        if arrow_assignments and ordinary_assignments:
+            self._aggregate_error(
+                request,
+                schema_name,
+                f"{schema_name} mixes a grouped Arrow UDF with built-in aggregate metrics.",
+                "Calculate Arrow and built-in metrics in separate grouped steps, then join their results.",
+            )
         for assignment in aggregate.assignments:
             function = assignment.function
             arguments = assignment.arguments
@@ -26,7 +37,7 @@ class ValidatePySparkAggregates:
             # aggregate for a nested field beneath a grouping key.  Unlike the
             # user-facing ``first_value`` operation it deliberately supports
             # every PySpark field type, including structs.
-            if function in {"key", "count", "grouping_id", "first"} or (
+            if function in {"key", "count", "grouping_id", "first", "arrow_udf_grouped_agg"} or (
                 function in {"grouping", "is_grouped"} and argument is not None
             ):
                 continue

@@ -339,9 +339,10 @@ def special(function: Callable | None = None, *, type: str, **kwargs):
         function: Helper function when used without decorator parentheses.
         type: ``"expr"`` for transparent symbolic expansion, ``"udf"`` for a
             plugin UDF expression, ``"ignore"`` for code deliberately excluded
-            from compiled logic, or ``"opaque"`` for runtime code whose body
-            Structure does not inspect.
-        **kwargs: ``return_type`` and ``nullable`` for UDF helpers.
+            from compiled logic, ``"arrow_udf"`` for PySpark Arrow array callbacks,
+            or ``"opaque"`` for runtime code whose body Structure does not inspect.
+        **kwargs: UDF options; Arrow UDFs accept ``return_type``, ``function_type``,
+            ``nullable``, and optional ``deterministic``.
 
     Returns:
         A callable wrapper for functions, or the original class with metadata
@@ -352,7 +353,7 @@ def special(function: Callable | None = None, *, type: str, **kwargs):
         def normalized_email(value):
             return lower(trim(value))
     """
-    allowed = {"expr", "udf", "ignore", "opaque", "state_processor"}
+    allowed = {"expr", "udf", "arrow_udf", "ignore", "opaque", "state_processor"}
     if type not in allowed:
         raise TypeError(f"@special(type=...) must use one of: {', '.join(sorted(allowed))}")
     if type == "expr" and kwargs:
@@ -367,6 +368,18 @@ def special(function: Callable | None = None, *, type: str, **kwargs):
             raise TypeError(f"@special(type=\"udf\") got unknown option(s): {', '.join(sorted(unknown_options))}")
         if "nullable" in kwargs and not isinstance(kwargs["nullable"], bool):
             raise TypeError("@special(type=\"udf\") nullable must be a Boolean")
+    if type == "arrow_udf":
+        unknown_options = set(kwargs) - {"return_type", "function_type", "nullable", "deterministic"}
+        if unknown_options:
+            raise TypeError(f"@special(type=\"arrow_udf\") got unknown option(s): {', '.join(sorted(unknown_options))}")
+        if "return_type" not in kwargs:
+            raise TypeError('@special(type="arrow_udf") requires return_type=...')
+        if kwargs.get("function_type", "scalar") not in {"scalar", "scalar_iter", "grouped_agg"}:
+            raise TypeError('@special(type="arrow_udf") function_type must be "scalar", "scalar_iter", or "grouped_agg"')
+        if "nullable" in kwargs and not isinstance(kwargs["nullable"], bool):
+            raise TypeError('@special(type="arrow_udf") nullable must be a Boolean')
+        if "deterministic" in kwargs and not isinstance(kwargs["deterministic"], bool):
+            raise TypeError('@special(type="arrow_udf") deterministic must be a Boolean when supplied')
 
     def decorate(target: Callable) -> SpecialFunction | Callable:
         if inspect.isclass(target):
@@ -381,11 +394,17 @@ def special(function: Callable | None = None, *, type: str, **kwargs):
             return target
         if type == "state_processor":
             raise TypeError('@special(type="state_processor") can decorate classes only')
+        if type == "arrow_udf" and (
+            not callable(target) or inspect.iscoroutinefunction(target) or inspect.isasyncgenfunction(target)
+        ):
+            raise TypeError('@special(type="arrow_udf") requires a synchronous callable (not async)')
         return SpecialFunction(
             target,
             type=type,
             return_type=kwargs.get("return_type"),
             nullable=kwargs.get("nullable", True),
+            function_type=kwargs.get("function_type", "scalar"),
+            deterministic=kwargs.get("deterministic"),
         )
 
     if function is None:

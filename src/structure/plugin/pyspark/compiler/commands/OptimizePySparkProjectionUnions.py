@@ -218,7 +218,7 @@ class OptimizePySparkProjectionUnions:
     def _deterministic_expression(self, expression: PySparkExpressionRecipe) -> bool:
         function = expression.data.get("function")
         return (
-            expression.kind not in {"python_udf", "special_expr"}
+            expression.kind not in {"python_udf", "arrow_udf", "arrow_udf_window", "special_expr"}
             and function != "rand"
             and not expression.data.get("nondeterministic", False)
             and all(self._deterministic_expression(argument) for argument in expression.args)

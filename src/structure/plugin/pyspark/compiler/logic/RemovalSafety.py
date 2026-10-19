@@ -84,8 +84,8 @@ class RemovalSafety:
         for value in recipe_values(step):
             if not isinstance(value, PySparkExpressionRecipe):
                 continue
-            if value.kind == "python_udf":
-                return "it contains a Python UDF"
+            if value.kind in {"python_udf", "arrow_udf", "arrow_udf_window"}:
+                return "it contains an opaque Python UDF"
             if value.kind in {"call", "transform_expression"}:
                 if value.data.get("function") not in self._functions:
                     return f"unknown removal safety for function {value.data.get('function')}"

@@ -395,6 +395,10 @@ class AdmitEvents(StreamingTransform):
 For a stream-static existence filter, keep the streaming relation on the left and the side input static. A bounded
 stream-stream semi form also requires both input declarations, watermarks, and an event-time bound.
 
+On ordinary PySpark 4.1, Arrow scalar and scalar-iterator UDFs are supported for streaming projections, including
+checkpoint restart. Grouped Arrow aggregates and analytic Arrow windows are rejected with `STREAM-E0801`; Spark
+Connect streaming is outside the Arrow UDF support claim. See the [Arrow UDF reference](Transform.ref.md#arrow-udfs).
+
 ## Inspect required output modes
 
 `StreamingOutputMode` is Structure's typed vocabulary for modes reported by compatibility and explain output. It does

@@ -135,6 +135,10 @@ class RenderPySparkExpression:
         if expression.kind == "python_udf":
             args = [self._render(argument, aliases) for argument in expression.args]
             return f"self.{expression.data['udf_name']}({', '.join(args)})"
+        if expression.kind == "arrow_udf":
+            return self._arrow_udf_call(expression, aliases)
+        if expression.kind == "arrow_udf_window":
+            return self._arrow_udf_window(expression, aliases)
         if expression.kind == "time_window":
             arguments = [self._render(expression.args[0], aliases), repr(expression.data["duration"])]
             if expression.data.get("slide") is not None:
@@ -297,6 +301,41 @@ class RenderPySparkExpression:
         if expression.type is not None:
             rendered += f".cast({self._inline_type(expression.type)})"
         return rendered
+
+    def _arrow_udf_call(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:
+        args = [self._render(argument, aliases) for argument in expression.args]
+        positional_count = cast(int, expression.data.get("positional_count", len(args)))
+        keyword_names = cast(tuple[str, ...], expression.data.get("keyword_names", ()))
+        named = [f"{name}={value}" for name, value in zip(keyword_names, args[positional_count:], strict=True)]
+        return f"self.{expression.data['udf_name']}({', '.join([*args[:positional_count], *named])})"
+
+    def _arrow_udf_window(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:
+        data = expression.data
+        keyword_names = cast(tuple[str, ...], data.get("keyword_names", ()))
+        positional_count = cast(int, data.get("positional_count", 0))
+        call_count = positional_count + len(keyword_names)
+        values = [self._render(argument, aliases) for argument in expression.args[:call_count]]
+        named = [
+            f"{name}={value}"
+            for name, value in zip(keyword_names, values[positional_count:], strict=True)
+        ]
+        order_count = cast(int, data.get("order_count", 0))
+        partition_count = cast(int, data.get("partition_count", 0))
+        ordering = [
+            self._render(argument, aliases)
+            for argument in expression.args[call_count : call_count + order_count]
+        ]
+        partition_start = call_count + order_count
+        partitions = [
+            self._render(argument, aliases)
+            for argument in expression.args[partition_start : partition_start + partition_count]
+        ]
+        window = f"Window.partitionBy({', '.join(partitions)}).orderBy({', '.join(ordering)})"
+        if "frame_kind" in data:
+            method = "rowsBetween" if data["frame_kind"] == "rows" else "rangeBetween"
+            window += f".{method}({data['frame_start']}, {data['frame_end']})"
+        call = f"self.{data['udf_name']}({', '.join([*values[:positional_count], *named])})"
+        return f"{call}.over({window})"
 
     def _special_expr(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:
         if not _embed_exprs.get():

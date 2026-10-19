@@ -1188,7 +1188,21 @@ class RenderPySparkTransformModule:
                     else f"self.{self._udf_impl_field(udf)}.{function_name}"
                 )
             )
-            lines.append(f"        self.{udf['udf_name']} = F.udf({implementation}, returnType={return_type})")
+            if udf.get("arrow_udf"):
+                mode = {
+                    "scalar": "SCALAR",
+                    "scalar_iter": "SCALAR_ITER",
+                    "grouped_agg": "GROUPED_AGG",
+                }[str(udf["function_type"])]
+                registration = (
+                    f"F.arrow_udf({implementation}, returnType={return_type}, "
+                    f"functionType=F.ArrowUDFType.{mode})"
+                )
+                if udf.get("deterministic") is False:
+                    registration += ".asNondeterministic()"
+                lines.append(f"        self.{udf['udf_name']} = {registration}")
+            else:
+                lines.append(f"        self.{udf['udf_name']} = F.udf({implementation}, returnType={return_type})")
         return lines
 
     def _udf_methods(self, plan: PySparkExecutionPlan) -> list[str]:
@@ -1209,6 +1223,30 @@ class RenderPySparkTransformModule:
         for expression in self._expressions(plan):
             for udf in self._expression_udfs(expression):
                 found[str(udf["udf_name"])] = udf
+        owners = (*plan.steps, *plan.outputs, *(item.output for item in plan.stage_outputs))
+        for owner in owners:
+            aggregates = [getattr(owner, "aggregate", None)]
+            aggregates.extend(result.aggregate for result in getattr(owner, "results", ()))
+            aggregates.extend(operation.aggregate for operation in getattr(owner, "operations", ()))
+            for aggregate in aggregates:
+                if aggregate is None:
+                    continue
+                for assignment in aggregate.assignments:
+                    options = dict(assignment.options)
+                    if assignment.function != "arrow_udf_grouped_agg":
+                        continue
+                    udf = {
+                        "arrow_udf": True,
+                        "function": options["arrow_function"],
+                        "function_name": options["arrow_function_name"],
+                        "module": options["arrow_module"],
+                        "qualname": options["arrow_qualname"],
+                        "udf_name": options["arrow_udf_name"],
+                        "return_type": options["arrow_return_type"],
+                        "function_type": options["arrow_function_type"],
+                        "deterministic": options.get("arrow_deterministic"),
+                    }
+                    found[str(udf["udf_name"])] = udf
         return tuple(found[name] for name in sorted(found))
 
     def _expressions(self, plan: PySparkExecutionPlan):
@@ -1321,7 +1359,29 @@ class RenderPySparkTransformModule:
                 yield assignment.order_by
 
     def _expression_udfs(self, expression) -> tuple[dict[str, object], ...]:
-        found = [dict(expression.data)] if expression.kind == "python_udf" else []
+        data = dict(expression.data or {})
+        if expression.kind == "python_udf":
+            found = [data]
+        elif expression.kind == "arrow_udf":
+            found = [{**data, "arrow_udf": True}]
+        elif expression.kind == "aggregate" and data.get("function") == "arrow_udf_grouped_agg":
+            found = [
+                {
+                    "arrow_udf": True,
+                    "function": data["arrow_function"],
+                    "function_name": data["arrow_function_name"],
+                    "module": data["arrow_module"],
+                    "qualname": data["arrow_qualname"],
+                    "udf_name": data["arrow_udf_name"],
+                    "return_type": data["arrow_return_type"],
+                    "function_type": data["arrow_function_type"],
+                    "deterministic": data.get("arrow_deterministic"),
+                }
+            ]
+        elif expression.kind == "arrow_udf_window":
+            found = [{**data, "arrow_udf": True}]
+        else:
+            found = []
         for argument in expression.args:
             found.extend(self._expression_udfs(argument))
         for nested in self._query_expressions(expression):
@@ -1624,6 +1684,11 @@ class RenderPySparkTransformModule:
                 for output in all_outputs
                 for assignment in output.projection
             )
+            or any(
+                assignment.expression.kind == "arrow_udf_window"
+                for owner in (*plan.steps, *all_outputs)
+                for assignment in getattr(owner, "projection", ())
+            )
         )
 
     def _has_window_projection(self, expression) -> bool:
@@ -1631,7 +1696,7 @@ class RenderPySparkTransformModule:
         function = data.get("function")
         return (
             expression.kind == "transform_expression" and isinstance(function, str) and function.startswith("window_")
-        ) or any(self._has_window_projection(argument) for argument in expression.args)
+        ) or expression.kind == "arrow_udf_window" or any(self._has_window_projection(argument) for argument in expression.args)
 
 
 def render_pyspark_transform_module(*args, **kwargs) -> str:

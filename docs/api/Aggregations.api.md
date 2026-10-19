@@ -134,8 +134,8 @@ the current `order` row scope as `o`.
 
 ## Sketches and Bitmaps
 
-Use HLL or Bitmap state when a grouped transform must publish a reusable approximation or compact set summary. For a
-final exact count, prefer `count_distinct(...)`; for an immediate approximate count, consider
+Use HLL, Bitmap, KLL, or Theta state when a grouped transform must publish a reusable approximation or compact set
+summary. For a final exact count, prefer `count_distinct(...)`; for an immediate approximate count, consider
 `approx_count_distinct(...)`. Sketch state is useful when a later transform must consume or combine it.
 
 ### Declared state
@@ -144,11 +144,13 @@ final exact count, prefer `count_distinct(...)`; for an immediate approximate co
 | --- | --- | --- |
 | `hll_sketch(lg_config_k=12)` | Branded Binary HLL state | `customers = hll_sketch(lg_config_k=12)` |
 | `bitmap()` | Branded Binary Bitmap state | `features = bitmap()` |
-| `kll_sketch(domain)`, `theta_sketch()` | Branded Binary declarations | Exact PySpark 4.1 ordinary or Connect profile; KLL domain is Long, Float, or Double |
+| `kll_sketch(domain)`, `theta_sketch()` | Branded Binary declarations | KLL domain is Long, Float, or Double; exact PySpark 4.1 ordinary or Connect profile |
 
-`hll_sketch(...)` retains a literal precision from 4 through 21. HLL and Bitmap values cannot be cast to ordinary
-`binary()` or to each other. KLL and Theta helpers are available only for exact `>=4.1,<4.2` ordinary and Connect
-profiles; the default profile remains unchanged. Their Binary schema fields carry versioned logical metadata.
+`hll_sketch(...)` retains a literal precision from 4 through 21. KLL retains a Long, Float, or Double value domain;
+Theta accepts Spark's native supported scalar values and integral arrays. HLL, Bitmap, KLL, and Theta values cannot be
+cast to ordinary `binary()` or to one another. KLL and Theta helpers are available only for exact `>=4.1,<4.2`
+ordinary and Connect profiles; the default profile remains unchanged. Their Binary schema fields carry versioned
+logical metadata, including the KLL domain.
 
 ### Operations
 
@@ -162,6 +164,17 @@ profiles; the default profile remains unchanged. Their Binary schema fields carr
 | `bitmap_or_agg(value, where=None)` | `bitmap_or_agg` | `bitmap_or_agg(order.feature_bitmap)` |
 | `bitmap_count(value)` | `bitmap_count` | `bitmap_count(order.feature_bitmap)` |
 | `bitmap_bit_position(value)`, `bitmap_bucket_number(value)` | Bitmap position helpers | `bitmap_bit_position(order.position)` |
+| `kll_sketch_agg(value, k=200, where=None)` | Domain-preserving KLL construction | `kll_sketch_agg(order.latency, k=200)` |
+| `kll_sketch_get_n(value)` | KLL item count (Long) | `kll_sketch_get_n(order.latency_sketch)` |
+| `kll_sketch_get_quantile(value, rank)` | KLL quantile in the declared domain | `kll_sketch_get_quantile(order.latency_sketch, 0.5)` |
+| `kll_sketch_get_rank(value, quantile)` | KLL rank (Double) | `kll_sketch_get_rank(order.latency_sketch, 250)` |
+| `kll_sketch_merge(left, right)` | Pairwise KLL merge | `kll_sketch_merge(order.morning, order.evening)` |
+| `kll_sketch_to_string(value)` | KLL diagnostic rendering | `kll_sketch_to_string(order.latency_sketch)` |
+| `theta_sketch_agg(value, lg_nom_entries=12, where=None)` | Theta construction | `theta_sketch_agg(order.customer_id)` |
+| `theta_union(left, right, lg_nom_entries=12)` / `theta_union_agg(value, lg_nom_entries=12, where=None)` | Pairwise / aggregate union | `theta_union(order.current, order.previous)` |
+| `theta_intersection(left, right)` / `theta_intersection_agg(value, where=None)` | Pairwise / aggregate intersection | `theta_intersection(order.current, order.previous)` |
+| `theta_difference(left, right)` | Directional set difference | `theta_difference(order.current, order.previous)` |
+| `theta_sketch_estimate(value)` | Approximate cardinality (Long) | `theta_sketch_estimate(order.customers)` |
 
 **Details And Differences**
 
@@ -173,6 +186,15 @@ profiles; the default profile remains unchanged. Their Binary schema fields carr
   for validating serialized input sketches.
 - Bitmap construction and position helpers require Integer or Long input. Sketch consumers reject raw Binary and the
   wrong opaque family before execution.
+- KLL `k` must be an integer literal from 8 through 65,535; Theta `lg_nom_entries` must be an integer literal from 4
+  through 26. These settings configure construction or union and do not change the declared logical type. KLL
+  Integer/Long inputs use the Long domain, Float and Double retain their domains, and Decimal inputs need an explicit
+  cast to one of those types.
+- KLL rank and quantile operations preserve Spark's native behavior for empty sketches, including its native error.
+  Check `kll_sketch_get_n(sketch) > 0` before querying when a group may have no values. Theta estimates are Long; an
+  empty or all-null Theta sketch estimates zero.
+- Theta construction accepts Integer, Long, Float, Double, String, and Binary values, plus integral arrays; each
+  array is treated as one value by Spark.
 - Sketch state is compatible only with the appropriate Spark/profile implementation; it is not a portable Binary
   interchange format. In streaming, grouped operations follow ordinary watermark and output-mode rules. Callers own
   checkpoints, sinks, retention, and external exchange.

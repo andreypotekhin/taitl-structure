@@ -120,10 +120,20 @@ class PySparkSymbolicContext:
 
         return Projection(sources=sources, target=cast(Any, target))
 
-    def special(self, function, *, type: str, return_type: object | None, nullable: bool, args, kwargs):
+    def special(
+        self, function, *, type: str, return_type: object | None, nullable: bool,
+        function_type: str = "scalar", deterministic: bool | None = None, args, kwargs
+    ):
         from structure.plugin.pyspark.dsl.model.SpecialFunction import SpecialFunction
 
-        return SpecialFunction(function, type=type, return_type=return_type, nullable=nullable)(*args, **kwargs)
+        return SpecialFunction(
+            function,
+            type=type,
+            return_type=return_type,
+            nullable=nullable,
+            function_type=function_type,
+            deterministic=deterministic,
+        )(*args, **kwargs)
 
 
 def current_pyspark_context() -> PySparkSymbolicContext | None:

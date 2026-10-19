@@ -277,7 +277,9 @@ references provide the user-facing operation details.
 
 Excluded categories stay caller-owned: readers, writers, storage, catalogs, sessions, table management, actions,
 materializers, streaming lifecycle operations, Python UDTFs, Pandas APIs, RDD APIs, and arbitrary callback APIs.
-Existing scalar `@special(type="udf")` remains its documented ordinary-PySpark exception.
+Existing scalar `@special(type="udf")` remains its documented ordinary-PySpark exception. Typed Arrow UDFs have an
+exact PySpark 4.1 profile contract, recorded in [APITracker](APITracker.md) and the
+[Transform reference](../reference/Transform.ref.md#arrow-udfs); Arrow UDTFs remain caller-owned.
 
 ## Reference
 

@@ -2086,6 +2086,20 @@ class RenderPySparkStep:
                 key_columns=key_columns,
             )
             return f"F.grouping({expression}).cast({self._schema.type(assignment.field.type)}).alias({alias})"
+        if assignment.function == "arrow_udf_grouped_agg":
+            options = dict(assignment.options)
+            rendered_arrow_args = [
+                render_pyspark_expression(argument, scope_aliases=self._scope_aliases(step))
+                for argument in assignment.arguments
+            ]
+            positional_count = cast(int, options["arrow_positional_count"])
+            keyword_names = cast(tuple[str, ...], options["arrow_keyword_names"])
+            named = [
+                f"{name}={value}"
+                for name, value in zip(keyword_names, rendered_arrow_args[positional_count:], strict=True)
+            ]
+            call = f"self.{options['arrow_udf_name']}({', '.join([*rendered_arrow_args[:positional_count], *named])})"
+            return f"{call}.alias({alias})"
         arguments = assignment.arguments or (() if assignment.expression is None else (assignment.expression,))
         if assignment.function in self._aggregate_functions() and arguments:
             rendered_arguments = [

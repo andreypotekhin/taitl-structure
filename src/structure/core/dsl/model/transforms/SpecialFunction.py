@@ -29,11 +29,15 @@ class SpecialFunction:
         type: str,
         return_type: object | None = None,
         nullable: bool = True,
+        function_type: str = "scalar",
+        deterministic: bool | None = None,
     ) -> None:
         self.function = function
         self.type = type
         self.return_type = return_type
         self.nullable = nullable
+        self.function_type = function_type
+        self.deterministic = deterministic
         self.__name__ = function.__name__
         self.__qualname__ = function.__qualname__
         self.__module__ = function.__module__
@@ -52,7 +56,16 @@ class SpecialFunction:
         special = getattr(context, "special", None)
         if not callable(special):
             raise TypeError("The selected plugin does not support @special(...) symbolic calls")
-        return special(self.function, type=self.type, return_type=self.return_type, nullable=self.nullable, args=args, kwargs=kwargs)
+        options = {
+            "type": self.type,
+            "return_type": self.return_type,
+            "nullable": self.nullable,
+            "args": args,
+            "kwargs": kwargs,
+        }
+        if self.type == "arrow_udf":
+            options.update(function_type=self.function_type, deterministic=self.deterministic)
+        return special(self.function, **options)
 
     def __get__(self, instance: object, owner: type | None = None):
         """Bind decorated methods without hiding the wrapper on the class."""

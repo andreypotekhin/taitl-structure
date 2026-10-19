@@ -41,7 +41,8 @@ The examples use declaration forms from the [Schema reference](Schema.ref.md) an
   [expression API](../api/Expressions.api.md#sql-function-helpers) and [Schema API](../api/Schemas.api.md).
 - Transform source is compiler-visible. `@raw` remains the explicit boundary for caller-supplied PySpark behavior.
 - Expression truthiness, raw SQL strings, UDTFs, and arbitrary callback bodies are unsupported. Scalar
-  `@special(type="udf")` remains an ordinary-PySpark row-local feature with its warning policy.
+  `@special(type="udf")` remains an ordinary-PySpark row-local feature; typed `@special(type="arrow_udf")` is
+  supported on exact ordinary and Connect 4.1 profiles as documented in the [Transform reference](Transform.ref.md#arrow-udfs).
 
 ```python
 from structure import *

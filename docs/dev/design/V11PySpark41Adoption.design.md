@@ -47,9 +47,12 @@ The query package handles operations that change relation shape or introduce a n
 a boolean relation predicate with declared correlation scope. `lateralJoin` is admitted only if the relation and
 cardinality contract can be expressed without a raw DataFrame callback; otherwise it remains a caller-owned hook.
 
-The observations-and-sketches package separates row output from metrics and opaque binary sketches. Complex observation
-values may be recorded as a runtime capability or remain outside the compiler-visible transform contract. KLL and Theta
-sketches need explicit binary-type, mergeability, dependency, and deterministic-output contracts before support.
+The observations-and-sketches package separates row output from metrics and opaque binary sketches. Typed batch
+observations are admitted for exact ordinary and Connect 4.1 profiles. KLL and Theta sketches have explicit logical
+Binary types, construction and consumer contracts, and exact-profile capability gates. Ordinary and Connect 4.1 batch
+parity passes; ordinary 4.1 also passes watermarked streaming and same-configuration restart. Connect streaming remains
+outside the backend contract. See the [observations and sketches design](V11PySpark41ObservationsAndSketches.design.md)
+and [implementation ExecPlan](../planning/P10182603.V11-kll-theta-sketches.plan.md).
 
 The geospatial package owns native Geometry/Geography and the root `st_geomfromwkb`, `st_geogfromwkb`, `st_asbinary`,
 `st_srid`, and `st_setsrid` helpers. It uses the `>=4.1,<4.2` profile, begins with ordinary PySpark evidence, and makes
@@ -57,8 +60,10 @@ no Connect or streaming claim before positive evidence. External providers are n
 their namespaces and Binary boundaries are specified in
 [Geospatial Provider Boundaries](../planning/past/P10012602.Geospatial-provider-boundaries.plan.md).
 
-The Python-and-streaming package keeps Arrow UDF/UDTF caller-owned and implements explicit state processor compiler
-surfaces. Row-based `transform_with_state(...)` is supported on ordinary PySpark 4.1 with typed named
+The Python-and-streaming package admits typed Arrow scalar, scalar-iterator, grouped-aggregate, and analytic-window UDFs
+for ordinary and Spark Connect 4.1 batch execution, and scalar/iterator streaming on ordinary Spark 4.1. Arrow UDTFs
+remain caller-owned; see the [Arrow UDF specification](../specifications/V11ArrowUdfs.spec.md) for the exact contract.
+The package also implements explicit state processor compiler surfaces. Row-based `transform_with_state(...)` is supported on ordinary PySpark 4.1 with typed named
 Value/List/Map state, timers, initial state, online/generated parity, and same-checkpoint restart evidence. The separate
 `transform_with_state_in_pandas(...)` targets ordinary PySpark 4.0 and 4.1 and is supported after both complete lanes
 passed. Their generated transforms do not own query lifecycle. See the row
