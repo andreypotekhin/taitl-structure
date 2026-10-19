@@ -27,3 +27,15 @@ This is the compatibility companion to the [API reference](../api/Joins.api.md).
 | `strategy=` | Join hint | `inner_join(on=o.id == c.id, strategy="shuffle_hash")` | yes | yes | Requests a Spark join strategy hint (for example, shuffle hash); the optimizer remains responsible for the physical plan. |
 | `JoinDedupe.latest_by(...)` | `row_number` | `JoinDedupe.latest_by(c.at)` | yes | yes | Keeps the highest ordered right-side row within each join key before matching; ordering and tie handling are explicit. |
 | `JoinDedupe.earliest_by(...)` | `row_number` | `JoinDedupe.earliest_by(c.at)` | yes | yes | Keeps the lowest ordered right-side row within each join key before matching; ordering and tie handling are explicit. |
+
+## PySpark 4.1 relation queries
+
+The query features below are batch-only and admitted on exact ordinary and Spark Connect `>=4.1,<4.2` profiles.
+Focused native/online/generated parity passed on Spark/PySpark 4.1.0 for both variants. Earlier and later profiles
+remain gated.
+
+| Structure API | PySpark parity | Example | PySpark 3 | PySpark 4 | Details |
+| --- | --- | --- | --- | --- | --- |
+| `query.exists()` | `DataFrame.exists()` | `inventory.where(inventory.store_id == store.store_id.outer()).exists()` | no | yes | Returns a non-null Boolean expression; relation queries support typed filters, projection, ordering, and ordered limits. |
+| `expression.isin(query)` | `Column.isin(DataFrame)` | `store.store_id.isin(inventory.project(["store_id"]))` | no | yes | Uncorrelated only; scalar expressions require one projected column, while struct members compare to projected columns in order. |
+| `lateral_join(query, ...)` | `DataFrame.lateralJoin()` | `lateral_join(matching, on=matching.quantity > 50, how="left")` | no | yes | Inner/left joins retain duplicates; ordered query limits run before the separate `on=` predicate. Left output fields are nullable, and results are classified batch-only. |

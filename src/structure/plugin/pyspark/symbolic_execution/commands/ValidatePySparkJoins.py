@@ -43,7 +43,7 @@ class ValidatePySparkJoins:
         return tuple(diagnostics)
 
     def _shape(self, join, occurrence: int, request: StepAuthoringRequest) -> None:
-        if join.method in {JoinMethod.LOOKUP, JoinMethod.TEMPORAL_ONE, JoinMethod.AS_OF_ONE} and join.how not in {
+        if join.method in {JoinMethod.LOOKUP, JoinMethod.TEMPORAL_ONE, JoinMethod.AS_OF_ONE, JoinMethod.LATERAL} and join.how not in {
             Join.LEFT,
             Join.INNER,
         }:
@@ -67,6 +67,14 @@ class ValidatePySparkJoins:
                 request,
                 f"rowset_join(...) does not support join type {join.how!r}.",
                 'Use "left", "inner", "right", "full", or "cross".',
+            )
+        if join.method is JoinMethod.LATERAL and join.query is None:
+            self._error(
+                join,
+                occurrence,
+                request,
+                "lateral_join(...) requires a typed relation query.",
+                "Pass an input relation or prepare one with where(), project(), and optional order_by()/limit().",
             )
         if join.hint is not None and not isinstance(join.hint, JoinHint):
             self._error(
@@ -237,6 +245,8 @@ class ValidatePySparkJoins:
             return self._equalities(predicate)
         if join.method is JoinMethod.EXISTS:
             return self._exists(join, occurrence, predicate, request)
+        if join.method is JoinMethod.LATERAL:
+            return []
         return self._keys(join, occurrence, predicate, request)
 
     def _keys(self, join, occurrence, predicate, request) -> list[Expression]:

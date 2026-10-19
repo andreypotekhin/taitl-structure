@@ -49,10 +49,20 @@ PYSPARK_4_1_TIME_CAPABILITIES = frozenset(
      ("expression", "time_trunc")}
 )
 PYSPARK_4_1_SCALAR_CAPABILITIES |= PYSPARK_4_1_TIME_CAPABILITIES
-PYSPARK_4_1_ORDINARY_CAPABILITIES = PYSPARK_4_1_SCALAR_CAPABILITIES | frozenset({("expression", "column_transform")})
+PYSPARK_4_1_QUERY_CAPABILITIES = frozenset(
+    {
+        ("query", "correlation"),
+        ("query", "exists"),
+        ("query", "in_subquery"),
+        ("query", "lateral_join"),
+    }
+)
+PYSPARK_4_1_ORDINARY_CAPABILITIES = PYSPARK_4_1_SCALAR_CAPABILITIES | PYSPARK_4_1_QUERY_CAPABILITIES | frozenset(
+    {("expression", "column_transform")}
+)
 PYSPARK_4_1_CONNECT_CAPABILITIES = frozenset(
     {("expression", "column_transform"), ("optimization", "checkpoint")}
-) | PYSPARK_4_1_SCALAR_CAPABILITIES
+) | PYSPARK_4_1_SCALAR_CAPABILITIES | PYSPARK_4_1_QUERY_CAPABILITIES
 LEGACY_PANDAS_STATE_PROFILES = frozenset({">=3.5,<4.1", ">=3.5,<4.0", ">=4.0,<4.1", ">=4.1,<4.2"})
 LEGACY_PANDAS_STATE_CAPABILITY = frozenset({("streaming", "apply_in_pandas_with_state")})
 PYSPARK_4_2_CAPABILITIES = frozenset({("expression", "is_valid_variant")})
@@ -508,6 +518,21 @@ class PySparkCapabilities:
                     "Choose a live-tested Iceberg profile and install its matching Spark runtime and SQL extensions. "
                     "See docs/compatibility/DeltaIceberg.compat.md."
                 ),
+            )
+
+        if requirement.group == "query":
+            return CapabilityDecision.unsupported_capability(
+                backend=self.id,
+                requirement=requirement,
+                rationale=(
+                    f"PySpark 4.1 typed query operation {requirement.name!r} has not passed its "
+                    "online and generated parity gate."
+                ),
+                use=(
+                    'Use target_profile = ">=4.1,<4.2" with a positively admitted backend variant after parity; '
+                    "see docs/dev/design/V11PySpark41QueryOperations.design.md."
+                ),
+                required_target=">=4.1,<4.2",
             )
 
         return CapabilityDecision.unsupported_capability(

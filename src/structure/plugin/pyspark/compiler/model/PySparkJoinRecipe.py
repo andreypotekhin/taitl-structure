@@ -7,6 +7,7 @@ from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySp
 from structure.plugin.pyspark.compiler.model.PySparkJoinAsOfRecipe import PySparkJoinAsOfRecipe
 from structure.plugin.pyspark.compiler.model.PySparkJoinDedupeRecipe import PySparkJoinDedupeRecipe
 from structure.plugin.pyspark.compiler.model.PySparkJoinTemporalRecipe import PySparkJoinTemporalRecipe
+from structure.plugin.pyspark.compiler.model.PySparkRelationQueryRecipe import PySparkRelationQueryRecipe
 from structure.plugin.pyspark.dsl.joins.Join import Join
 from structure.plugin.pyspark.dsl.joins.JoinHint import JoinHint
 from structure.plugin.pyspark.dsl.joins.JoinMethod import JoinMethod
@@ -30,3 +31,4 @@ class PySparkJoinRecipe:
     temporal: PySparkJoinTemporalRecipe | None = None
     as_of: PySparkJoinAsOfRecipe | None = None
     assert_singleton_in_batch: bool = False
+    query: PySparkRelationQueryRecipe | None = None

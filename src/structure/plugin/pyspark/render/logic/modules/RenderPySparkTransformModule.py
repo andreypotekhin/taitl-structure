@@ -543,6 +543,8 @@ class RenderPySparkTransformModule:
             return
         for argument in expression.args:
             yield from self._expression_specials(argument)
+        for nested in self._query_expressions(expression):
+            yield from self._expression_specials(nested)
 
     def _legacy_class(
         self,
@@ -1199,6 +1201,12 @@ class RenderPySparkTransformModule:
     def _joins_expressions(self, joins):
         for join in joins:
             yield join.predicate
+            if join.query is not None:
+                for kind, value in join.query.operations:
+                    if kind == "where":
+                        yield value
+                    elif kind == "order_by":
+                        yield from value
             if join.dedupe is not None:
                 yield join.dedupe.order_by
             if join.temporal is not None:
@@ -1230,7 +1238,20 @@ class RenderPySparkTransformModule:
         found = [dict(expression.data)] if expression.kind == "python_udf" else []
         for argument in expression.args:
             found.extend(self._expression_udfs(argument))
+        for nested in self._query_expressions(expression):
+            found.extend(self._expression_udfs(nested))
         return tuple(found)
+
+    def _query_expressions(self, expression):
+        """Yield predicates and orderings stored outside expression child args."""
+        query = (expression.data or {}).get("query")
+        if query is None:
+            return
+        for kind, value in query.operations:
+            if kind == "where":
+                yield value
+            elif kind == "order_by":
+                yield from value
 
     def _has_temporal_literal(self, plan: PySparkExecutionPlan) -> bool:
         return any(self._has_temporal_literal_expression(expression) for expression in self._expressions(plan)) or any(
@@ -1244,7 +1265,9 @@ class RenderPySparkTransformModule:
         return (
             isinstance(expression.data.get("default"), (date, datetime, time_value))
             or (expression.kind == "literal" and isinstance(expression.data.get("value"), (date, datetime, time_value)))
-        ) or any(self._has_temporal_literal_expression(argument) for argument in expression.args)
+        ) or any(self._has_temporal_literal_expression(argument) for argument in expression.args) or any(
+            self._has_temporal_literal_expression(nested) for nested in self._query_expressions(expression)
+        )
 
     def _has_decimal_literal(self, plan: PySparkExecutionPlan) -> bool:
         return any(self._has_decimal_literal_expression(expression) for expression in self._expressions(plan))
@@ -1253,7 +1276,9 @@ class RenderPySparkTransformModule:
         return (
             isinstance(expression.data.get("default"), Decimal)
             or (expression.kind == "literal" and isinstance(expression.data.get("value"), Decimal))
-        ) or any(self._has_decimal_literal_expression(argument) for argument in expression.args)
+        ) or any(self._has_decimal_literal_expression(argument) for argument in expression.args) or any(
+            self._has_decimal_literal_expression(nested) for nested in self._query_expressions(expression)
+        )
 
     def _last_step_validates_final(self, plan: PySparkExecutionPlan) -> bool:
         if not plan.steps:

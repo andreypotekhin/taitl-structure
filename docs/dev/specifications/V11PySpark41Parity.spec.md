@@ -39,24 +39,39 @@ helpers: `current_time`, `make_time`, `to_time`, `try_to_time`, `time_diff`, and
 from 0 through 6 and participates in schema identity. Python `datetime.time` values follow Spark's clock-field
 conversion, ignoring timezone metadata. Comparisons require matching TIME precision; ordering accepts any TIME
 precision. Casts are restricted to String and TIME, and TIME arithmetic is excluded. Formats and units may be typed
-String expressions. The Spark
-feature flag `spark.sql.timeType.enabled` remains caller-configured, with native Spark failures when disabled.
+String expressions. The Spark feature flag `spark.sql.timeType.enabled` remains caller-configured on the Spark
+session (for example, through `SparkSession.builder.config(...)`); it is not a Structure transform option. Native
+Spark failures surface when disabled.
 Admission requires the exact `>=4.1,<4.2` ordinary and Connect variants, Spark-free gate/schema checks, generated
 schema inspection, and online/generated runtime parity. No streaming claim is implied by batch evidence.
 
 ## Feature 2: relational query operations
 
-`DataFrame.exists` first appeared in PySpark 4.0 and remains in the V11 parity backlog. The 4.1 IN-subquery extension
-is `Column.isin(DataFrame)`; literal/list `isin(...)` remains the existing Structure contract. Both subquery forms
-require boolean relation predicates with named correlation scope. The compiler must reject accidental outer-column
-capture, ambiguous aliases, and unsupported multi-row scalar assumptions. `DataFrame.lateralJoin` also first appeared
-in 4.0 and is admitted only with an explicit row-cardinality and output-schema contract. A raw Python function returning
-a DataFrame is not compiler-visible and remains caller-owned unless a future typed relation-lambda
-design is approved.
+The approved API and semantics are specified in
+[V11PySpark41QueryOperations.design.md](../design/V11PySpark41QueryOperations.design.md). An additional
+`InputScope` builds an immutable typed inner query with `.where()`/`.filter()`, `.project()`, `.order_by()`, and
+ordered `.limit()` operations. The supported query consumers are batch-only and admitted independently for exact
+ordinary and Connect `>=4.1,<4.2` profiles; both variants have positive native/online/generated parity evidence.
 
-Acceptance requires positive correlated and uncorrelated cases, empty and duplicate right-side cases, null behavior,
-alias collisions, explain/traceability output, ordinary and generated parity, and Connect-specific tests where the
-upstream API supports Connect.
+`.exists()` returns a native-shaped Boolean expression that may be projected, filtered, negated, or combined. Existing
+`exists(..., on=...)` and `not_exists(..., on=...)` remain filtering semi/anti joins. `.isin(relation_or_query)` adds
+uncorrelated native IN-subquery behavior while preserving existing literal/list `isin(...)`; scalar values compare to
+one output column and struct values compare to projected columns in order. Spark three-valued null semantics are
+preserved. Correlated inner queries and lateral joins mark visible outer fields with `.outer()`.
+
+`lateral_join(...)` supports prepared and inferred typed queries, inner and left joins, a separate post-query `on=`
+condition, and an explicit `allow_cartesian=True` requirement when no correlation or connecting condition exists.
+Query operations are filtering, projection, ordering, and limits; query-local joins, aggregates/windows, nested
+queries, correlated IN, and arbitrary DataFrame callbacks remain unsupported. A raw Python function returning a
+DataFrame is caller-owned.
+
+Acceptance requires online and generated ordinary/Connect parity for correlated and uncorrelated cases, empty and
+duplicate right inputs, SQL null behavior, ordered limits with post-limit `on`, output schema/nullability,
+alias/scope diagnostics, explain/traceability, and generated-source safety checks.
+
+Evidence: both focused query integration cases pass on ordinary PySpark/Spark 4.1.0 and Spark Connect/PySpark/Spark
+4.1.0, including empty IN-subquery behavior. Spark-free query contract and user-story tests pass. The default target
+profile remains `>=3.5,<4.1`; other profiles remain gated.
 
 ## Feature 3: observations and approximate sketches
 

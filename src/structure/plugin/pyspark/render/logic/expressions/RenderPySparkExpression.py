@@ -7,6 +7,7 @@ from contextvars import ContextVar, Token
 from typing import Any, Mapping, cast
 
 from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
+from structure.plugin.pyspark.compiler.model.PySparkRelationQueryRecipe import PySparkRelationQueryRecipe
 from structure.plugin.pyspark.dsl.types import (
     ArrayType,
     BinaryType,
@@ -50,6 +51,50 @@ class RenderPySparkExpression:
         finally:
             _embed_exprs.reset(token)
 
+    def _relation_query(
+        self, query: PySparkRelationQueryRecipe, aliases: Mapping[str, str], *, source: str | None = None
+    ) -> str:
+        expression = f"{source or query.source}.alias({query.source_name!r})"
+        current_schema = query.source_schema
+        current_alias = query.source_name
+        for kind, value in query.operations:
+            query_aliases = {**aliases, query.source_name: current_alias, query.output_scope: current_alias}
+            if kind == "where":
+                expression += f".where({self._render(cast(PySparkExpressionRecipe, value), query_aliases)})"
+            elif kind == "order_by":
+                orderings = ", ".join(
+                    self._render(order, query_aliases)
+                    for order in cast(tuple[PySparkExpressionRecipe, ...], value)
+                )
+                expression += f".orderBy({orderings})"
+            elif kind == "limit":
+                expression += f".limit({value})"
+            elif kind == "project":
+                next_schema = self._query_projection_schema(current_schema, value)
+                source_fields = current_schema._structure_fields
+                columns = []
+                for field in next_schema._structure_fields.values():
+                    source_field = source_fields.get(field.name) or next(
+                        (item for item in source_fields.values() if item.column == field.column), None
+                    )
+                    if source_field is None:
+                        raise ValueError(f"Query projection source field for {field.name!r} is unavailable")
+                    columns.append(
+                        f"F.col({(current_alias + '.' + source_field.column)!r}).alias({field.column!r})"
+                    )
+                expression += f".select({', '.join(columns)}).alias({query.output_scope!r})"
+                current_schema = next_schema
+                current_alias = query.output_scope
+        return expression
+
+    def _query_projection_schema(self, source_schema, target):
+        from structure.dsl import Schema
+
+        if isinstance(target, type) and issubclass(target, Schema):
+            return target
+        declarations = {name: getattr(source_schema, name) for name in target}
+        return type(f"{source_schema.__name__}QueryProjection", (Schema,), declarations)
+
     def _render(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:
         if expression.kind == "field":
             return self._field(expression, aliases)
@@ -67,6 +112,8 @@ class RenderPySparkExpression:
             return self._struct(expression, aliases)
         if expression.kind == "literal":
             return f"F.lit({expression.data['value']!r})"
+        if expression.kind == "outer":
+            return f"{self._render(expression.args[0], aliases)}.outer()"
         if expression.kind == "variable":
             rendered = f"F.lit(self._structure_variables[{expression.data['name']!r}])"
             if expression.type is not None:
@@ -150,6 +197,12 @@ class RenderPySparkExpression:
             value, *items = expression.args
             rendered_items = ", ".join(self._render(item, aliases) for item in items)
             return f"{self._render(value, aliases)}.isin({rendered_items})"
+        if expression.kind in {"query_exists", "isin_query"}:
+            query = cast(PySparkRelationQueryRecipe, expression.data["query"])
+            rendered_query = self._relation_query(query, aliases)
+            if expression.kind == "query_exists":
+                return f"{rendered_query}.exists()"
+            return f"{self._render(expression.args[0], aliases)}.isin({rendered_query})"
         if expression.kind in {"contains", "startswith", "endswith", "like", "ilike", "rlike"}:
             rendered_value = self._render(expression.args[0], aliases)
             if len(expression.args) == 2:
@@ -335,14 +388,12 @@ class RenderPySparkExpression:
                 f"{expression.data['pair_delimiter']!r}, {expression.data['key_value_delimiter']!r})"
             )
         if function == "named_struct":
-            named_arguments = []
-            for argument_index, value in enumerate(expression.args):
-                named_arguments.append(
-                    self._render_literal_value(value)
-                    if argument_index % 2 == 0
-                    else self._render(value, aliases)
-                )
-            return f"F.named_struct({', '.join(named_arguments)})"
+            fields = []
+            for argument_position in range(0, len(expression.args), 2):
+                name = expression.args[argument_position].data["value"]
+                rendered_field = self._render(expression.args[argument_position + 1], aliases)
+                fields.append(f"{rendered_field}.alias({name!r})")
+            return f"F.struct({', '.join(fields)})"
         if function == "array":
             return f"F.array({', '.join(self._render(value, aliases) for value in expression.args)})"
         if function == "array_repeat":
@@ -1085,3 +1136,13 @@ class RenderPySparkExpression:
 
 
 render_pyspark_expression = RenderPySparkExpression()
+
+
+def render_pyspark_relation_query(
+    query: PySparkRelationQueryRecipe,
+    *,
+    scope_aliases: Mapping[str, str] | None = None,
+    source: str | None = None,
+) -> str:
+    """Render a typed relation query as a public PySpark DataFrame chain."""
+    return render_pyspark_expression._relation_query(query, scope_aliases or {}, source=source)

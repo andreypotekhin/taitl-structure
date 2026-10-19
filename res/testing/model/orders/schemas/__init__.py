@@ -14,6 +14,7 @@ from testing.model.orders.schemas.order import (
 )
 from testing.model.orders.schemas.product import BlockedProduct, Product, ProductBase
 from testing.model.orders.schemas.promotion import Promotion
+from testing.model.orders.schemas.query_operations import ClearanceItem, Inventory, Store, StoreItem
 from testing.model.orders.schemas.shipment import Shipment
 from testing.model.orders.schemas.v3 import V3OrderDetails, V3OrderProjection, V3OrderSource
 from testing.model.orders.schemas.scalar import BitwiseProjection, BitwiseSource

@@ -369,7 +369,14 @@ class RunOnlinePySparkTransform:
             for result in step.results:
                 projected = df.select(
                     *(
-                        self._assignment(assignment, step=step, functions=functions, window=window, types=types)
+                        self._assignment(
+                            assignment,
+                            step=step,
+                            functions=functions,
+                            window=window,
+                            types=types,
+                            relation_frames=frames,
+                        )
                         for assignment in result.projection
                     )
                 )
@@ -405,7 +412,14 @@ class RunOnlinePySparkTransform:
         if step.projection:
             df = df.select(
                 *(
-                    self._assignment(assignment, step=step, functions=functions, window=window, types=types)
+                    self._assignment(
+                        assignment,
+                        step=step,
+                        functions=functions,
+                        window=window,
+                        types=types,
+                        relation_frames=frames,
+                    )
                     for assignment in step.projection
                 )
             )
@@ -471,7 +485,14 @@ class RunOnlinePySparkTransform:
         if output.projection:
             df = df.select(
                 *(
-                    self._assignment(assignment, step=output, functions=functions, window=window, types=types)
+                    self._assignment(
+                        assignment,
+                        step=output,
+                        functions=functions,
+                        window=window,
+                        types=types,
+                        relation_frames=inputs,
+                    )
                     for assignment in output.projection
                 )
             )
@@ -500,7 +521,8 @@ class RunOnlinePySparkTransform:
             for filter in step.filters:
                 df = df.where(
                     self._expressions.evaluate(
-                        filter, functions=functions, aliases=self._scope_aliases(step), window=window
+                        filter, functions=functions, aliases=self._scope_aliases(step), window=window,
+                        relation_frames=frames,
                     )
                 )
             return df
@@ -527,6 +549,7 @@ class RunOnlinePySparkTransform:
                         functions=functions,
                         aliases=self._scope_aliases(step),
                         window=window,
+                        relation_frames=frames,
                     )
                 )
             if operation.kind == "aggregate" and operation.aggregate is not None:
@@ -2103,6 +2126,19 @@ class RunOnlinePySparkTransform:
         watermarks: tuple[PySparkWatermarkRecipe, ...],
         streaming_step: bool,
     ):
+        if getattr(join, "method", None) is JoinMethod.LATERAL:
+            if join.query is None:
+                raise TypeError("lateral_join recipe is missing its typed relation query")
+            aliases = self._scope_aliases(step, join)
+            right = self._expressions.relation_query(
+                join.query,
+                relation_frames=frames,
+                functions=functions,
+                aliases=aliases,
+                window=window,
+            )
+            predicate = self._expressions.evaluate(join.predicate, functions=functions, aliases=aliases)
+            return df.lateralJoin(right, predicate, join.how.value)
         row_id = None
         if join.as_of is not None or join.temporal is not None:
             row_id = f"__structure_{join.left_alias}_{join.right_alias}_row"
@@ -2282,12 +2318,13 @@ class RunOnlinePySparkTransform:
             return "left_anti"
         return join.how.value
 
-    def _assignment(self, assignment, *, step, functions, window, types):
+    def _assignment(self, assignment, *, step, functions, window, types, relation_frames=None):
         column = self._expressions.evaluate(
             assignment.expression,
             functions=functions,
             aliases=self._scope_aliases(step),
             window=window,
+            relation_frames=relation_frames,
         )
         column = self._validator.cast(column, assignment.field, assignment.expression, types=types)
         return self._validator.alias(column, assignment.field, assignment.expression)
@@ -2309,6 +2346,9 @@ class RunOnlinePySparkTransform:
             aliases[step.input_schema.__name__] = ""
         for item in step.joins:
             aliases[item.input_name] = item.right_alias
+            if item.query is not None:
+                aliases[item.query.output_scope] = item.query.output_scope
+                aliases[item.input_name] = item.query.output_scope
         for operation in step.operations:
             if operation.posexplode_struct is not None:
                 aliases[operation.posexplode_struct.scope] = ""
@@ -2334,7 +2374,9 @@ class RunOnlinePySparkTransform:
             if operation.relation_hierarchy_fallback is not None:
                 aliases[operation.relation_hierarchy_fallback.scope] = ""
         if join is not None:
-            aliases[join.input_name] = join.right_alias
+            aliases[join.input_name] = join.query.output_scope if join.query is not None else join.right_alias
+            if join.query is not None:
+                aliases[join.query.output_scope] = join.query.output_scope
         return aliases
 
     def _missing_executor(self, invocation: Transform, *, session) -> StructureRuntimeError:

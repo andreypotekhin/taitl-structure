@@ -1,6 +1,9 @@
+from typing import cast
+
 from structure.plugin.api.v1.model import CompilerProvenance, DataflowDependency
 from structure.plugin.pyspark.compiler.logic.traceability.CompilerDataflowReads import CompilerDataflowReads
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
+from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.plugin.pyspark.dsl.joins.JoinMethod import JoinMethod
 
@@ -34,7 +37,7 @@ class MapJoinTraceability:
         return tuple(
             DataflowDependency(
                 target=f"{step.name}.join[{join.occurrence}].{join.input_name}",
-                sources=self._dataflow.reads(join.predicate),
+                sources=self._join_reads(join),
                 operation=join.method.value,
                 step=step.name,
                 detail=self._detail(join),
@@ -60,11 +63,33 @@ class MapJoinTraceability:
         if join.as_of is not None:
             detail["as_of"] = join.as_of.direction.value
             detail["ties"] = join.as_of.ties.value
+        if join.method is JoinMethod.LATERAL and join.query is not None:
+            minimum = 1 if join.how.value == "left" else 0
+            upper = join.query.bound
+            detail["rows_per_input_min"] = str(minimum)
+            detail["rows_per_input_max"] = "*" if upper is None else str(max(1, upper) if minimum else upper)
         return detail
+
+    def _join_reads(self, join) -> tuple[str, ...]:
+        sources = list(self._dataflow.reads(join.predicate))
+        if join.query is not None:
+            for kind, value in join.query.operations:
+                expressions = (
+                    (cast(PySparkExpressionRecipe, value),)
+                    if kind == "where"
+                    else cast(tuple[PySparkExpressionRecipe, ...], value)
+                    if kind == "order_by"
+                    else ()
+                )
+                for expression in expressions:
+                    sources.extend(self._dataflow.reads(expression))
+        return tuple(dict.fromkeys(sources))
 
     def _cardinality(self, method: JoinMethod) -> str:
         if method in {JoinMethod.EXISTS, JoinMethod.NOT_EXISTS}:
             return "row_filtering"
         if method is JoinMethod.ROWSET:
+            return "row_multiplying"
+        if method is JoinMethod.LATERAL:
             return "row_multiplying"
         return "select_one"

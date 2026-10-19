@@ -47,6 +47,8 @@ class PySparkSymbolicContext:
         self.default_project_frame: str | None = None
         self.current_scopes: set[str] = set()
         self.relation_scopes: dict[str, object] = {}
+        self.relation_queries: dict[int, object] = {}
+        self.consumed_relation_queries: set[int] = set()
         self._token: Token[SymbolicContext | None] | None = None
         self.state_budget_target: tuple[str, int | None] | None = None
         self.state_budget_attached_target: tuple[str, int | None] | None = None
@@ -74,6 +76,19 @@ class PySparkSymbolicContext:
             return existing
         self.relation_scopes[scope] = relation
         return relation
+
+    def register_relation_query(self, query: object) -> None:
+        self.relation_queries[id(query)] = query
+
+    def consume_relation_query(self, query: object) -> None:
+        self.consumed_relation_queries.add(id(query))
+        for parent in getattr(query, "ancestors", ()):
+            self.consumed_relation_queries.add(id(parent))
+
+    def unused_relation_queries(self) -> tuple[object, ...]:
+        return tuple(
+            query for identity, query in self.relation_queries.items() if identity not in self.consumed_relation_queries
+        )
 
     def record_aggregate(self, aggregate: object, state_budget: object | None = None) -> None:
         from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan

@@ -931,7 +931,8 @@ class MapPySparkStep:
         alias_scopes: set[str],
         capabilities: BackendCapabilities,
     ) -> PySparkJoinRecipe:
-        capabilities.require(CapabilityRequirement(group="join", name=join.method.value))
+        group = "query" if join.method is JoinMethod.LATERAL else "join"
+        capabilities.require(CapabilityRequirement(group=group, name=join.method.value))
         capabilities.require(CapabilityRequirement(group="join", name=self._join_mode_capability(join)))
         if join.method is JoinMethod.ROWSET:
             self._require_rowset_predicate_capabilities(join, capabilities=capabilities)
@@ -942,6 +943,11 @@ class MapPySparkStep:
         dedupe = self._dedupe(join, capabilities=capabilities)
         temporal = self._temporal(join, capabilities=capabilities)
         as_of = self._as_of(join, capabilities=capabilities)
+        query = (
+            self._expressions.map_query(join.query, capabilities=capabilities)
+            if join.query is not None
+            else None
+        )
 
         source_name = join.input_name if join.input_name in alias_scopes else self._join_source_name(join.source)
         return PySparkJoinRecipe(
@@ -960,6 +966,7 @@ class MapPySparkStep:
             temporal=temporal,
             as_of=as_of,
             assert_singleton_in_batch=join.assert_singleton_in_batch,
+            query=query,
         )
 
     def _dedupe(

@@ -472,7 +472,8 @@ future documents are not V10 backlog commitments.
 - Inventory every reviewed PySpark 4.1 Python API addition against the 4.0 baseline and give it exactly one Structure
   status, owner boundary, capability key, diagnostic, test, and evidence path.
 - Add the exact `>=4.1,<4.2` ordinary and Spark Connect capability profiles while preserving 3.5/4.0 regression lanes.
-- Implement the approved typed 4.1 expression, `Column.transform`, existence/IN-subquery, and lateral-relation slices.
+- + Implemented typed 4.1 expression helpers, `Column.transform`, EXISTS/IN-subquery, and lateral-relation slices for
+  their evidenced ordinary and Connect profiles; see Sprints 56 and 57 for results.
 - Decide and specify complex observations and KLL/Theta sketch aggregates; retain explicit gates where metric or binary
   semantics are not typed and deterministic.
 - Document and test caller-owned boundaries for Arrow UDF/UDTFs, row-based `transformWithState`, Declarative Pipelines,

@@ -77,6 +77,7 @@ class OperationPlan:
     family: str | None = None
     capability: OperationCapability | None = None
     cardinality: OperationCardinality = OperationCardinality.UNKNOWN
+    cardinality_bounds: tuple[int, int | None] | None = None
     streaming: StreamingSupport = StreamingSupport.UNKNOWN
     streaming_output_modes: tuple[StreamingOutputMode, ...] = ()
     state_budget: StateBudgetPlan | None = None
@@ -101,14 +102,23 @@ class OperationPlan:
             "rowset_join": OperationCardinality.ROW_MULTIPLYING,
             "temporal_one": OperationCardinality.SELECT_ONE,
             "as_of_one": OperationCardinality.SELECT_ONE,
+            "lateral_join": OperationCardinality.ROW_MULTIPLYING,
         }[join.method.value]
+        group = "query" if join.method.value == "lateral_join" else "join"
+        bounds = None
+        streaming = StreamingSupport.BATCH_ONLY if join.method.value == "lateral_join" else StreamingSupport.UNKNOWN
+        if join.method.value == "lateral_join":
+            minimum = 1 if join.how.value == "left" else 0
+            upper = None if join.query is None else join.query.bound
+            bounds = (minimum, max(1, upper) if minimum and upper is not None else upper)
         return OperationPlan(
             "join",
             join=join,
             family="join",
-            capability=OperationCapability("join", join.method.value),
+            capability=OperationCapability(group, join.method.value),
             cardinality=cardinality,
-            streaming=StreamingSupport.UNKNOWN,
+            cardinality_bounds=bounds,
+            streaming=streaming,
         )
 
     @staticmethod

@@ -84,6 +84,22 @@ def _same_type(left: StructureType | None, right: StructureType | None) -> bool:
     return not isinstance(left, StructType) or not isinstance(right, StructType) or left.schema is right.schema
 
 
+def _query_member_types_compatible(left: StructureType | None, right: StructureType | None) -> bool:
+    """Compare nested IN members by shape and position, not schema class identity."""
+    if isinstance(left, StructType) or isinstance(right, StructType):
+        if not isinstance(left, StructType) or not isinstance(right, StructType):
+            return False
+        left_fields = tuple(left.schema._structure_fields.values())
+        right_fields = tuple(right.schema._structure_fields.values())
+        return len(left_fields) == len(right_fields) and all(
+            _query_member_types_compatible(left_field.type, right_field.type)
+            for left_field, right_field in zip(left_fields, right_fields, strict=True)
+        )
+    if left is None or right is None:
+        return False
+    return Expression(kind="literal", type=left)._compatible_comparison_types(left, right)
+
+
 @dataclass(frozen=True, eq=False)
 class Expression:
     """A typed Spark expression captured without executing Spark.
@@ -117,6 +133,12 @@ class Expression:
         """Return a non-null boolean expression for Spark ``isNotNull``."""
         return Expression(kind="is_not_null", type=BooleanType(), nullable=False, args=(self,))
 
+    def outer(self) -> "Expression":
+        """Mark a field as belonging to the visible outer row of a relation query."""
+        if self.kind == "outer":
+            raise TypeError("outer() cannot be applied twice to the same expression")
+        return Expression(kind="outer", type=self.type, nullable=self.nullable, args=(self,))
+
     def isnan(self) -> "Expression":
         """Return whether a Float or Double expression is NaN."""
         if not isinstance(self.type, (FloatType, DoubleType)):
@@ -142,6 +164,39 @@ class Expression:
         the caller's list cannot change the compiled expression.
         """
         from structure.plugin.pyspark.dsl.expressions import literal
+
+        if len(values) == 1:
+            from structure.plugin.pyspark.dsl.InputScope import InputScope
+            from structure.plugin.pyspark.dsl.RelationQuery import RelationQuery, relation_query
+
+            relation = values[0]
+            query = relation if isinstance(relation, RelationQuery) else (
+                relation_query(relation) if isinstance(relation, InputScope) else None
+            )
+            if query is not None:
+                query._consume(correlation_allowed=False)
+                fields = query.output_fields
+                if isinstance(self.type, StructType):
+                    members = tuple(self.type.schema._structure_fields.values())
+                    if len(members) != len(fields):
+                        raise TypeError("isin(query) struct membership requires matching projected column arity")
+                    if any(
+                        not _query_member_types_compatible(member.type, field.type)
+                        for member, field in zip(members, fields, strict=True)
+                    ):
+                        raise TypeError("isin(query) struct membership requires compatible projected member types")
+                elif len(fields) != 1:
+                    raise TypeError("isin(query) scalar membership requires exactly one projected query column")
+                elif fields and not (self.type is None and self.nullable):
+                    if self.type is None or not self._compatible_comparison_types(self.type, fields[0].type):
+                        raise TypeError("isin(query) requires a projected column compatible with the expression type")
+                return Expression(
+                    kind="isin_query",
+                    type=BooleanType(),
+                    nullable=True,
+                    data={"query": query},
+                    args=(self,),
+                )
 
         if len(values) == 1 and isinstance(values[0], list):
             values = tuple(values[0])

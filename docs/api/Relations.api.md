@@ -6,6 +6,9 @@ compiler-visible schema, cardinality, ordering, and streaming contracts.
 The default transformation baseline is ordinary PySpark `>=3.5,<4.1`. Relation operations that are batch-only or have a
 streaming schema-evolution gate are called out below.
 
+Additional input parameters can build typed inner queries for Spark 4.1 `exists`, `isin`, and `lateral_join`. Those
+query methods and their scope rules are described in the [Transform reference](../reference/Transform.ref.md#typed-relation-queries).
+
 ## Aliases, Ordering, Bounds, And Sampling
 
 | Structure API | PySpark parity | Example |

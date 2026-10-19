@@ -227,6 +227,14 @@ class RenderPySparkExplainReport:
         nested = [expression] if expression.kind == "transform_expression" else []
         for argument in expression.args:
             nested.extend(self._helper_expressions(argument))
+        query = (expression.data or {}).get("query")
+        if query is not None:
+            for kind, value in query.operations:
+                if kind == "where":
+                    nested.extend(self._helper_expressions(value))
+                elif kind == "order_by":
+                    for ordering in value:
+                        nested.extend(self._helper_expressions(ordering))
         return tuple(nested)
 
     def _fields(self, expression) -> tuple[str, ...]:
@@ -236,6 +244,14 @@ class RenderPySparkExplainReport:
             fields.append(str(data.get("name", data.get("field", "field"))))
         for argument in expression.args:
             fields.extend(self._fields(argument))
+        query = (expression.data or {}).get("query")
+        if query is not None:
+            for kind, value in query.operations:
+                if kind == "where":
+                    fields.extend(self._fields(value))
+                elif kind == "order_by":
+                    for ordering in value:
+                        fields.extend(self._fields(ordering))
         return tuple(fields)
 
     def _operation(self, operation: PySparkOperationRecipe) -> str:
@@ -423,6 +439,7 @@ class RenderPySparkExplainReport:
             JoinMethod.ROWSET: "row_multiplying",
             JoinMethod.TEMPORAL_ONE: "select_one",
             JoinMethod.AS_OF_ONE: "select_one",
+            JoinMethod.LATERAL: "row_multiplying",
         }[operation.join.method]
 
     @staticmethod
@@ -439,6 +456,11 @@ class RenderPySparkExplainReport:
         input_modes: dict[str, bool],
     ) -> str:
         parts = [f"{join.input_name} {join.method.value} {self._cardinality(join)}"]
+        if join.method is JoinMethod.LATERAL:
+            upper = None if join.query is None else join.query.bound
+            minimum = 1 if join.how is Join.LEFT else 0
+            maximum = "*" if upper is None else str(max(1, upper) if minimum else upper)
+            parts.append(f"rows_per_input={minimum}..{maximum}")
         if join.assert_singleton_in_batch:
             parts.append("singleton=batch-only")
         if join.dedupe is not None:

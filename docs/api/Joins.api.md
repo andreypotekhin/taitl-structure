@@ -11,11 +11,14 @@ and `e` denote a temporal predicate, event time, valid-from, and valid-to expres
 | `lookup_join(...)` | `DataFrame.join` | `lookup_join(on=o.customer_id == c.id)` |
 | `exists(...)` | left-semi join | `where(exists(on=o.customer_id == c.id))` |
 | `not_exists(...)` | left-anti join | `where(not_exists(on=o.customer_id == c.id))` |
+| `lateral_join(...)` | `DataFrame.lateralJoin` | `lateral_join(where=c.store_id == o.store_id.outer(), to=Item, how="left")` |
 
 **Details And Differences**
 
 - `lookup_join(...)` enriches the current relation and defaults to `"left"`.
 - `exists(...)` and `not_exists(...)` filter current rows without exposing right-side fields.
+- `lateral_join(...)` consumes a typed 4.1 relation query and exposes projected right fields. Its `on=` condition is
+  evaluated after the inner query's limit. See [typed relation queries](../reference/Transform.ref.md#typed-relation-queries).
 - `on=` is a symbolic predicate; same-name key shorthand is covered below.
 
 ## General Rowset Joins
@@ -85,4 +88,6 @@ and `e` denote a temporal predicate, event time, valid-from, and valid-to expres
 
 ## Compatibility
 
-See the exhaustive [Joins compatibility ledger](../compatibility/Joins.compat.md).
+The lateral query operation is batch-only and supported on exact ordinary and Connect `>=4.1,<4.2` profiles.
+Focused PySpark 4.1.0 and Spark Connect 4.1.0 online/generated/native parity covers correlated queries, ordered limits,
+post-limit `on=`, duplicate matches, and left-null extension. See the exhaustive [Joins compatibility ledger](../compatibility/Joins.compat.md).

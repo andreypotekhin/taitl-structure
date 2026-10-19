@@ -50,6 +50,10 @@ PySpark `Column` surface; functions such as `trim` and `lower` remain function-f
   An empty list, nested list, or list mixed with additional positional values is rejected.
 - Struct mutation requires an explicit declared result Schema. It is rejected unless that schema exactly preserves the
   source shape apart from the named replacement or removals.
+- `isin(relation_or_query)` is a Spark 4.1 batch-only IN-subquery form admitted for exact `>=4.1,<4.2` ordinary and
+  Connect profiles. It accepts an uncorrelated typed relation query, preserves native null semantics,
+  and requires one projected column for scalar values. Struct expressions compare against projected columns in order.
+  See [typed relation queries](../reference/Transform.ref.md#typed-relation-queries).
 - URL helpers accept String expressions and preserve input nullability. `url_decode(...)` is strict: malformed encoded
   input follows Spark's error behavior. `try_url_decode(...)` returns null for malformed input and requires PySpark 4.0+.
 

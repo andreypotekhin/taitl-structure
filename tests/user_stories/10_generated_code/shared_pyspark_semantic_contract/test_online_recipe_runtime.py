@@ -291,7 +291,7 @@ def test_online_expression_evaluator_preserves_pyspark_column_semantics() -> Non
         ),
         (
             named_struct("region", "west"),
-            "named_struct(lit('region'),lit('west'))",
+            "struct(region=lit('west'))",
         ),
         (_get_field(_field(RawShippedOrder, "shipping"), "city"), "col(RawShippedOrder.shipping).getField('city')"),
         (_cast(_field(RawOrder, "status"), "int"), "cast(col(orders.status) as int)"),

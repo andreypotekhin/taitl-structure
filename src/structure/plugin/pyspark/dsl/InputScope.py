@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from typing import TypeVar, cast, overload
 
 import structure.plugin.pyspark.dsl.options as options
@@ -23,6 +23,7 @@ from structure.plugin.pyspark.dsl.joins.OverlapPolicy import OverlapPolicy
 from structure.plugin.pyspark.dsl.joins.TiePolicy import TiePolicy
 from structure.plugin.pyspark.dsl.operations.ExactlyOnePlan import ExactlyOnePlan
 from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
+from structure.plugin.pyspark.dsl.RelationQuery import RelationQuery, relation_query
 from structure.plugin.pyspark.dsl.RowScope import RowScope
 from structure.plugin.pyspark.dsl.types import BooleanType
 
@@ -51,7 +52,11 @@ class InputScope(RowScope):
             "and use lookup_join(customer, on=...)."
         )
 
-    def exists(self, *, on: Expression, hint: JoinHint | str | None = None) -> Expression:
+    def exists(self, *, on: Expression | None = None, hint: JoinHint | str | None = None) -> Expression:
+        if on is None:
+            if hint is not None:
+                raise TypeError("InputScope.exists(hint=...) requires on=; query.exists() takes no join hint")
+            return relation_query(self).exists()
         return exists(self, on=on, hint=hint)
 
     def not_exists(self, *, on: Expression, hint: JoinHint | str | None = None) -> Expression:
@@ -115,14 +120,31 @@ class InputScope(RowScope):
         return super().__getattr__(name)
 
     def where(self, *predicates: object):
-        from structure.plugin.pyspark.dsl.body import where
+        if self._structure_joined_scope is not None:
+            return self._structure_joined_scope.where(*predicates)
+        return relation_query(self).where(*predicates)
 
-        return where(*predicates)
+    def filter(self, *predicates: object):
+        """Build an immutable query over this unjoined relation."""
+        if self._structure_joined_scope is not None:
+            return self._structure_joined_scope.filter(*predicates)
+        return relation_query(self).filter(*predicates)
 
     def project(self, *args: object) -> object:
-        from structure.plugin.pyspark.dsl.body import project
+        """Build a query projection without changing the current driving lane."""
+        if self._structure_joined_scope is not None:
+            return self._structure_joined_scope.project(*args)
+        if len(args) != 1:
+            raise TypeError("input.project(target) requires one Schema class or field-name iterable")
+        return relation_query(self).project(cast(type[Schema], args[0]))
 
-        return project(*args)
+    def order_by(self, *orderings: object):
+        """Build an ordered query over this unjoined relation."""
+        return relation_query(self).order_by(*orderings)
+
+    def limit(self, count: int):
+        """Limit this relation query after ordering it."""
+        return relation_query(self).limit(count)
 
 
 Relation = TypeVar("Relation", bound=Schema | InputScope)
@@ -271,6 +293,81 @@ def not_exists(
 ) -> Expression:
     """Return a boolean expression that is true when no matching relation row exists."""
     return _existence_join(JoinMethod.NOT_EXISTS, relation, on=on, hint=hint)
+
+
+def lateral_join(
+    relation: InputScope | RelationQuery | None = None,
+    *,
+    where: object | None = None,
+    on: object | None = None,
+    to: type[Schema] | None = None,
+    order_by: object = (),
+    limit: int | None = None,
+    how: Join | str = Join.INNER,
+    allow_cartesian: bool = False,
+) -> RowScope:
+    """Join a typed relation query to each row in the driving lane.
+
+    Query operations remain immutable and are recorded separately from `on`;
+    the capability gate keeps execution closed until ordinary and Connect
+    parity has passed.
+    """
+    context = _join_context("lateral_join")
+    if relation is None:
+        inference = _combine_query_predicates(where, on)
+        relation = cast(InputScope, _infer_relation("lateral_join", context, inference, validate_pairs=False))
+    if isinstance(relation, InputScope):
+        query = relation_query(relation)
+        source = relation
+    elif isinstance(relation, RelationQuery):
+        query = relation
+        source = cast(InputScope, relation.relation)
+    else:
+        raise TypeError("lateral_join(relation, ...) requires an input relation or prepared relation query")
+
+    if where is not None:
+        query = query.where(where)
+    if isinstance(order_by, Expression):
+        query = query.order_by(order_by)
+    elif isinstance(order_by, (tuple, list)):
+        if order_by:
+            query = query.order_by(*order_by)
+    else:
+        raise TypeError("lateral_join(order_by=...) requires one order expression or a tuple/list of expressions")
+    if limit is not None:
+        query = query.limit(limit)
+    if to is not None:
+        query = query.project(to)
+
+    if how in {"leftouter", "left_outer"}:
+        how = Join.LEFT
+    how = options.join(how, call="lateral_join(...)")
+    if how not in {Join.INNER, Join.LEFT}:
+        raise TypeError('lateral_join(...) supports only how="inner" and how="left"')
+    if not isinstance(allow_cartesian, bool):
+        raise TypeError("lateral_join(allow_cartesian=...) requires a boolean")
+
+    predicate = literal(True) if on is None else _join_predicate("lateral_join", on)
+    _validate_query_scopes(query, predicate, context, source)
+    if not _has_query_outer_reference(query) and not _connects_lateral_scopes(query, predicate, context, source):
+        if not allow_cartesian:
+            raise TypeError(
+                "lateral_join(...) has no outer correlation or connecting on= condition. "
+                "Set allow_cartesian=True to opt into a lateral product."
+            )
+
+    query._consume()
+    join = JoinPlan(
+        input_name=source._structure_input_name,
+        source=source._structure_source,
+        input_schema=query.output_schema,
+        predicate=predicate,
+        how=how,
+        method=JoinMethod.LATERAL,
+        query=query,
+    )
+    _record_scoped_join(context, source, join)
+    return cast(RowScope, source._structure_joined_scope)
 
 
 @overload
@@ -852,12 +949,120 @@ def _record_scoped_join(context, relation: InputScope, join: JoinPlan) -> None:
     context.operations.append(OperationPlan.join_operation(join))
     relation._structure_joined_scope = RowScope(
         name=relation._structure_input_name,
-        schema=relation._structure_input_schema,
+        schema=join.input_schema,
         nullable=join.how in {Join.LEFT, Join.FULL},
         nullable_reason=_right_nullable_reason(join.how),
     )
     if join.how in {Join.RIGHT, Join.FULL}:
         _mark_left_scopes_nullable(context, right=relation, how=join.how)
+
+
+def _combine_query_predicates(where: object | None, on: object | None) -> Expression:
+    if where is None and on is None:
+        raise TypeError("lateral_join(...) requires relation= or a predicate that identifies one")
+    if where is None:
+        return _join_predicate("lateral_join", on)
+    if on is None:
+        return _join_predicate("lateral_join", where)
+    return _join_predicate("lateral_join", where) & _join_predicate("lateral_join", on)
+
+
+def _validate_query_scopes(query: RelationQuery, on: Expression, context, source: InputScope) -> None:
+    allowed_outer = set(context.current_scopes)
+    allowed_outer.update(
+        name
+        for name, relation in context.relation_scopes.items()
+        if getattr(relation, "_structure_joined_scope", None) is not None
+    )
+    current_schema = query.source_schema
+    for kind, value in query.operations:
+        if kind == "project":
+            current_schema = RelationQuery._projected_schema(current_schema, value)
+            continue
+        expressions: tuple[Expression, ...]
+        if kind == "where":
+            expressions = (cast(Expression, value),)
+        elif kind == "order_by":
+            expressions = cast(tuple[Expression, ...], value)
+        else:
+            continue
+        for root in expressions:
+            outer_fields = {
+                id(expression.args[0])
+                for expression in _walk_expression(root)
+                if expression.kind == "outer" and expression.args
+            }
+            for expression in _walk_expression(root):
+                if expression.kind == "outer":
+                    if len(expression.args) != 1 or expression.args[0].kind != "field":
+                        raise TypeError("query outer() currently requires one direct outer field reference")
+                    scope = str((expression.args[0].data or {}).get("scope", ""))
+                    if scope not in allowed_outer:
+                        raise TypeError(
+                            f"query.outer() references unrelated scope {scope!r}; "
+                            "use the driving row or an already joined scope"
+                        )
+                    continue
+                if expression.kind != "field" or id(expression) in outer_fields:
+                    continue
+                scope = str((expression.data or {}).get("scope", ""))
+                if scope != source._structure_input_name and scope != query.output_scope:
+                    raise TypeError(
+                        f"Query field {scope!r} is outside inner relation {source._structure_input_name!r}; "
+                        "mark a visible outer field with .outer()"
+                    )
+                column = str((expression.data or {}).get("field", ""))
+                if column not in {field.column for field in current_schema._structure_fields.values()}:
+                    raise TypeError(f"Query operation references unavailable projected field {column!r}")
+
+    for expression in _walk_expression(on):
+        if expression.kind == "outer":
+            raise TypeError("lateral_join(on=...) uses normal field references; .outer() belongs inside the query")
+        if expression.kind != "field":
+            continue
+        scope = str((expression.data or {}).get("scope", ""))
+        if scope in {source._structure_input_name, query.output_scope}:
+            column = str((expression.data or {}).get("field", ""))
+            if column not in {field.column for field in query.output_fields}:
+                raise TypeError(
+                    f"lateral_join(on=...) references projected-away field {column!r}; include it in to= or project(...)"
+                )
+        elif scope not in allowed_outer:
+            raise TypeError(f"lateral_join(on=...) references unrelated scope {scope!r}")
+
+
+def _walk_expression(expression: Expression):
+    yield expression
+    for argument in expression.args:
+        yield from _walk_expression(argument)
+    for value in (expression.data or {}).values():
+        yield from _walk_expression_value(value)
+
+
+def _walk_expression_value(value: object):
+    if isinstance(value, Expression):
+        yield from _walk_expression(value)
+    elif isinstance(value, Mapping):
+        for nested in value.values():
+            yield from _walk_expression_value(nested)
+    elif isinstance(value, (tuple, list)):
+        for nested in value:
+            yield from _walk_expression_value(nested)
+
+
+def _has_query_outer_reference(query: RelationQuery) -> bool:
+    return any(expression.kind == "outer" for predicate in query.filters for expression in _walk_expression(predicate))
+
+
+def _connects_lateral_scopes(query: RelationQuery, on: Expression, context, source: InputScope) -> bool:
+    scopes = _scopes(on)
+    inner = {source._structure_input_name, query.output_scope}
+    outer = set(context.current_scopes) | {
+        name
+        for name, relation in context.relation_scopes.items()
+        if getattr(relation, "_structure_joined_scope", None) is not None
+    }
+    return bool(scopes & inner and scopes & outer)
 
 
 def _using_keys(function: str, value: object) -> tuple[str, ...]:

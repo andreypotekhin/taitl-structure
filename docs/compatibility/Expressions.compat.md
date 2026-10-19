@@ -397,6 +397,7 @@ This is the compatibility companion to the [API reference](../api/Expressions.ap
 | — | Profile evidence | — | — | — | Status: `target-gated`. Admission requires a released profile plus classic, Connect, generated/online, and streaming evidence. Migration: Use an admitted profile or native PySpark. |
 | — | Geospatial providers | — | no | no | Status: `target-gated`. Native root `st_*` is 4.1+; external providers are namespaced and scope-matched. Migration: Use native PySpark or an explicit Binary boundary. |
 | `transform(function)` | `Column.transform` | `o.name.transform(lambda value: upper(trim(value)))` | no | yes | Status: `supported` for PySpark `>=4.1,<4.2` on ordinary and Spark Connect variants. The typed callback determines result type/nullability and preserves row cardinality. Pinned 4.1.0 online/generated evidence covers inline and bound `@special(type="expr")` callbacks, nullable inputs, changed result types, values/schema, and generated spelling on both variants. |
+| `isin(relation_or_query)` | `Column.isin(DataFrame)` | `store.store_id.isin(inventory.project(["store_id"]))` | no | yes | Supported for exact ordinary and Connect `>=4.1,<4.2`; only uncorrelated typed queries are accepted. Scalar IN uses one projected column; struct IN compares member columns positionally. Online/generated/native parity passes on Spark/PySpark 4.1.0 for both variants. |
 
 ## PySpark 4.1 scalar helpers
 

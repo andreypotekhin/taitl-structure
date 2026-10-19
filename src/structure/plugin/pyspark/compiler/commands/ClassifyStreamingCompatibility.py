@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+from typing import cast
 
 from structure.plugin.api.v1.model import StreamingFinding, StreamingReport, StreamingStateStage
 from structure.plugin.pyspark.compiler.logic.RemovalSafety import recipe_values
@@ -11,6 +12,7 @@ from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySpark
 from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.plugin.pyspark.compiler.model.PySparkHookRecipe import PySparkHookRecipe
 from structure.plugin.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoinRecipe
+from structure.plugin.pyspark.compiler.model.PySparkRelationQueryRecipe import PySparkRelationQueryRecipe
 from structure.plugin.pyspark.dsl.joins.Join import Join
 from structure.plugin.pyspark.dsl.joins.JoinMethod import JoinMethod
 from structure.plugin.pyspark.dsl.operations.StateBudgetPlan import StateBudgetPlan
@@ -50,6 +52,17 @@ class ClassifyStreamingCompatibility:
             streaming_step = streaming_contract or streaming_source or uses_streaming_input
             if streaming_step:
                 findings.extend(self._batch_random(step))
+                if self._uses_typed_query(step):
+                    findings.append(
+                        StreamingFinding(
+                            code="STREAM-E0801",
+                            support=StreamingSupport.BATCH_ONLY,
+                            step=step.name,
+                            operation="typed relation query",
+                            problem="Typed EXISTS, IN-subquery, and lateral-query operations are batch-only.",
+                            use="Use these query operations with batch inputs, or move the query into a batch transform.",
+                        )
+                    )
             expressions = tuple(assignment.expression for assignment in step.projection)
             findings.extend(self._window_projection(step.name, expressions, streaming=streaming_step))
             for result in step.results:
@@ -501,6 +514,34 @@ class ClassifyStreamingCompatibility:
 
     def _uses_streaming_input(self, step, input_modes: dict[str, bool]) -> bool:
         return bool(input_modes.get(step.source)) or any(bool(input_modes.get(source)) for source in step.input_sources)
+
+    @staticmethod
+    def _uses_typed_query(step) -> bool:
+        if any(join.method is JoinMethod.LATERAL for join in step.joins):
+            return True
+        expressions = [*step.filters, *(item.expression for item in step.projection)]
+        for result in step.results:
+            expressions.extend(item.expression for item in result.projection)
+        expressions.extend(join.predicate for join in step.joins)
+
+        def contains_query(expression: PySparkExpressionRecipe) -> bool:
+            if expression.kind in {"query_exists", "isin_query"}:
+                return True
+            if any(contains_query(argument) for argument in expression.args):
+                return True
+            query = cast(PySparkRelationQueryRecipe | None, (expression.data or {}).get("query"))
+            if query is None:
+                return False
+            for kind, value in query.operations:
+                if kind == "where" and contains_query(cast(PySparkExpressionRecipe, value)):
+                    return True
+                if kind == "order_by" and any(
+                    contains_query(order) for order in cast(tuple[PySparkExpressionRecipe, ...], value)
+                ):
+                    return True
+            return False
+
+        return any(contains_query(expression) for expression in expressions)
 
     def _has_blocking_findings(self, findings: tuple[StreamingFinding, ...]) -> bool:
         return any(finding.support is not StreamingSupport.COMPATIBLE for finding in findings)

@@ -25,7 +25,10 @@ from structure.plugin.pyspark.dsl.joins.JoinMethod import JoinMethod
 from structure.plugin.pyspark.dsl.types import ArrayType, DecimalType, MapType, StructType, StructureType
 from structure.plugin.pyspark.iceberg.model import IcebergMutation
 from structure.plugin.pyspark.iceberg.runtime import render_iceberg_predicate_template
-from structure.plugin.pyspark.render.logic.expressions.RenderPySparkExpression import render_pyspark_expression
+from structure.plugin.pyspark.render.logic.expressions.RenderPySparkExpression import (
+    render_pyspark_expression,
+    render_pyspark_relation_query,
+)
 from structure.plugin.pyspark.render.logic.steps.RenderPySparkAggregatePlan import RenderPySparkAggregatePlan
 from structure.plugin.pyspark.render.logic.steps.RenderPySparkFilters import RenderPySparkFilters
 from structure.plugin.pyspark.render.logic.steps.RenderPySparkJsonTuple import RenderPySparkJsonTuple
@@ -2321,6 +2324,18 @@ class RenderPySparkStep:
         sources: dict[str, str],
         target: str,
     ) -> list[str]:
+        if join.method is JoinMethod.LATERAL:
+            if join.query is None:
+                raise TypeError("lateral_join recipe is missing its typed relation query")
+            aliases = self._scope_aliases(step, join)
+            right_name = f"{join.right_alias}_lateral"
+            source = sources.get(join.query.source, join.query.source)
+            query = render_pyspark_relation_query(join.query, scope_aliases=aliases, source=source)
+            predicate = render_pyspark_expression(join.predicate, scope_aliases=aliases)
+            return [
+                f"        {right_name} = {query}",
+                f"        {target} = {target}.lateralJoin({right_name}, {predicate}, {join.how.value!r})",
+            ]
         source = sources.get(join.source, join.source)
         right = source
         lines = []
@@ -2630,6 +2645,9 @@ class RenderPySparkStep:
             aliases[step.input_schema.__name__] = ""
         for item in step.joins:
             aliases[item.input_name] = item.right_alias
+            if item.query is not None:
+                aliases[item.query.output_scope] = item.query.output_scope
+                aliases[item.input_name] = item.query.output_scope
         for operation in step.operations:
             if operation.posexplode_struct is not None:
                 aliases.update(self._struct_generator_renderer.aliases(step))
@@ -2655,7 +2673,9 @@ class RenderPySparkStep:
             if operation.relation_hierarchy_fallback is not None:
                 aliases[operation.relation_hierarchy_fallback.scope] = ""
         if join is not None:
-            aliases[join.input_name] = join.right_alias
+            aliases[join.input_name] = join.query.output_scope if join.query is not None else join.right_alias
+            if join.query is not None:
+                aliases[join.query.output_scope] = join.query.output_scope
         return aliases
 
     def _literal(self, value: str) -> str:

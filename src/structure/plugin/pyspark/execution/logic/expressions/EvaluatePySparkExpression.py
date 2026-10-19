@@ -1,6 +1,8 @@
-from typing import Any, cast
+from contextvars import ContextVar, Token
+from typing import Any, Mapping, cast
 
 from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
+from structure.plugin.pyspark.compiler.model.PySparkRelationQueryRecipe import PySparkRelationQueryRecipe
 from structure.plugin.pyspark.dsl.types import (
     ArrayType,
     BinaryType,
@@ -22,6 +24,8 @@ from structure.plugin.pyspark.dsl.types import (
     TimeType,
 )
 
+_relation_frames: ContextVar[Mapping[str, object] | None] = ContextVar("structure_relation_frames", default=None)
+
 
 class EvaluatePySparkExpression:
 
@@ -31,7 +35,13 @@ class EvaluatePySparkExpression:
 
         return PySpark.schema
 
-    def evaluate(self, expression: PySparkExpressionRecipe, *, functions, aliases, window=None):
+    def evaluate(self, expression: PySparkExpressionRecipe, *, functions, aliases, window=None, relation_frames=None):
+        if relation_frames is not None:
+            token: Token[Mapping[str, object] | None] = _relation_frames.set(relation_frames)
+            try:
+                return self.evaluate(expression, functions=functions, aliases=aliases, window=window)
+            finally:
+                _relation_frames.reset(token)
         if expression.kind == "field":
             if "column" in expression.data:
                 return expression.data["column"]
@@ -57,6 +67,8 @@ class EvaluatePySparkExpression:
             return self._struct(expression, functions=functions, aliases=aliases, window=window)
         if expression.kind == "literal":
             return functions.lit(expression.data["value"])
+        if expression.kind == "outer":
+            return self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window).outer()
         if expression.kind == "variable":
             from pyspark.sql import types as T  # type: ignore[import-not-found]
 
@@ -156,6 +168,12 @@ class EvaluatePySparkExpression:
             return self.evaluate(value, functions=functions, aliases=aliases, window=window).isin(
                 *(self.evaluate(item, functions=functions, aliases=aliases, window=window) for item in items)
             )
+        if expression.kind in {"query_exists", "isin_query"}:
+            query = cast(PySparkRelationQueryRecipe, expression.data["query"])
+            frame = self._relation_query(query, functions=functions, aliases=aliases, window=window)
+            if expression.kind == "query_exists":
+                return frame.exists()
+            return self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window).isin(frame)
         if expression.kind in {"contains", "startswith", "endswith", "like", "ilike", "rlike"}:
             value = self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window)
             pattern = (
@@ -188,6 +206,68 @@ class EvaluatePySparkExpression:
         if expression.kind == "not":
             return ~self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window)
         raise TypeError(f"Unsupported PySpark expression recipe: {expression.kind}")
+
+    def _relation_query(self, query, *, functions, aliases, window):
+        frames = _relation_frames.get()
+        if frames is None or query.source not in frames:
+            raise ValueError(
+                f"Relation query source {query.source_name!r} is unavailable while evaluating a subquery expression"
+            )
+        frame = cast(Any, frames[query.source]).alias(query.source_name)
+        current_schema = query.source_schema
+        current_alias = query.source_name
+        for kind, value in query.operations:
+            query_aliases = {**aliases, query.source_name: current_alias, query.output_scope: current_alias}
+            if kind == "where":
+                frame = frame.where(
+                    self.evaluate(
+                        cast(PySparkExpressionRecipe, value),
+                        functions=functions,
+                        aliases=query_aliases,
+                        window=window,
+                    )
+                )
+            elif kind == "order_by":
+                frame = frame.orderBy(
+                    *(
+                        self.evaluate(order, functions=functions, aliases=query_aliases, window=window)
+                        for order in cast(tuple[PySparkExpressionRecipe, ...], value)
+                    )
+                )
+            elif kind == "limit":
+                frame = frame.limit(cast(int, value))
+            elif kind == "project":
+                next_schema = self._query_projection_schema(current_schema, value)
+                source_fields = current_schema._structure_fields
+                assignments = []
+                for field in next_schema._structure_fields.values():
+                    source_field = source_fields.get(field.name) or next(
+                        (item for item in source_fields.values() if item.column == field.column), None
+                    )
+                    if source_field is None:
+                        raise ValueError(f"Query projection source field for {field.name!r} is unavailable")
+                    assignments.append(
+                        functions.col(f"{current_alias}.{source_field.column}").alias(field.column)
+                    )
+                frame = frame.select(*assignments).alias(query.output_scope)
+                current_schema = next_schema
+                current_alias = query.output_scope
+        return frame.alias(query.output_scope)
+
+    def relation_query(self, query, *, relation_frames, functions, aliases, window=None):
+        token: Token[Mapping[str, object] | None] = _relation_frames.set(relation_frames)
+        try:
+            return self._relation_query(query, functions=functions, aliases=aliases, window=window)
+        finally:
+            _relation_frames.reset(token)
+
+    def _query_projection_schema(self, source_schema, target):
+        from structure.dsl import Schema
+
+        if isinstance(target, type) and issubclass(target, Schema):
+            return target
+        declarations = {name: getattr(source_schema, name) for name in target}
+        return type(f"{source_schema.__name__}QueryProjection", (Schema,), declarations)
 
     def _struct(self, expression: PySparkExpressionRecipe, *, functions, aliases, window=None):
         fields = cast(tuple[Any, ...], expression.data["fields"])
@@ -463,11 +543,13 @@ class EvaluatePySparkExpression:
                 expression.data["key_value_delimiter"],
             )
         if function == "named_struct":
-            evaluated = tuple(
-                self.evaluate(value, functions=functions, aliases=aliases, window=window)
-                for value in expression.args
+            fields = tuple(
+                self.evaluate(expression.args[index + 1], functions=functions, aliases=aliases, window=window).alias(
+                    str(expression.args[index].data["value"])
+                )
+                for index in range(0, len(expression.args), 2)
             )
-            return functions.named_struct(*evaluated)
+            return functions.struct(*fields)
         if function == "array":
             return functions.array(
                 *(
@@ -858,7 +940,11 @@ class EvaluatePySparkExpression:
                 args[0], expression.data["pair_delimiter"], expression.data["key_value_delimiter"]
             )
         if function == "named_struct":
-            return functions.named_struct(*args)
+            named_args = tuple(
+                args[index + 1].alias(str(expression.args[index].data["value"]))
+                for index in range(0, len(args), 2)
+            )
+            return functions.struct(*named_args)
         if function in {"like", "ilike", "regexp", "regexp_like", "rlike"}:
             return getattr(functions, function)(args[0], args[1])
         if function in {"base64", "unbase64"}:

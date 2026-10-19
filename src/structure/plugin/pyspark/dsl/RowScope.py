@@ -72,6 +72,10 @@ class RowScope:
 
         return where(*predicates)
 
+    def filter(self, *predicates: object):
+        """Alias for ``where(...)`` on the current driving or joined row scope."""
+        return self.where(*predicates)
+
     def project(self, *args: object) -> object:
         """Continue a chained body declaration with ``project(...)``."""
         from structure.plugin.pyspark.dsl.body import project

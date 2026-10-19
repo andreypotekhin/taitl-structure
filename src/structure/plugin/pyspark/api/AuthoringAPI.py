@@ -9,6 +9,7 @@ from structure.plugin.api.v1 import StepAuthoringCapture, StepAuthoringRequest, 
 from structure.plugin.pyspark.api.PySpark import PySpark
 from structure.plugin.pyspark.delta.operations import DeltaScope
 from structure.plugin.pyspark.dsl.InputScope import InputScope
+from structure.plugin.pyspark.dsl.RelationQuery import RelationQuery
 from structure.plugin.pyspark.dsl.RowScope import RowScope
 from structure.plugin.pyspark.iceberg.operations import IcebergScope
 from structure.plugin.pyspark.symbolic_execution.model.PySparkSinkEffect import PySparkSinkEffect
@@ -94,6 +95,15 @@ class PySparkStepSession:
             if self._forwarded_table_scope is not None and value is None:
                 value = self._forwarded_table_scope
             body = PySpark.symbolic_execution.capture()(value, context=self._context, request=self._request)
+            unused_queries = self._context.unused_relation_queries()
+            if unused_queries:
+                sources = ", ".join(
+                    sorted({cast(RelationQuery, query).source_name for query in unused_queries})
+                )
+                raise TypeError(
+                    f"Step {self._request.name!r} builds an unused relation query for {sources}. "
+                    "Consume it with query.exists(), expression.isin(query), or lateral_join(query, ...)."
+                )
             table_sources = tuple(
                 (result.lane, mutation.target)
                 for result in self._request.results

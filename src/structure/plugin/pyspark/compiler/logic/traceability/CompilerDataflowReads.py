@@ -1,6 +1,8 @@
 from collections.abc import Iterable
+from typing import cast
 
 from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
+from structure.plugin.pyspark.compiler.model.PySparkRelationQueryRecipe import PySparkRelationQueryRecipe
 
 
 class CompilerDataflowReads:
@@ -10,7 +12,19 @@ class CompilerDataflowReads:
             if "scope" not in expression.data:
                 return ()
             return (f"{expression.data['scope']}.{expression.data['field']}",)
-        return self._unique(read for argument in expression.args for read in self.reads(argument))
+        reads = [read for argument in expression.args for read in self.reads(argument)]
+        query = cast(PySparkRelationQueryRecipe | None, (expression.data or {}).get("query"))
+        if query is not None:
+            for kind, value in query.operations:
+                if kind == "where":
+                    reads.extend(self.reads(cast(PySparkExpressionRecipe, value)))
+                elif kind == "order_by":
+                    reads.extend(
+                        read
+                        for order in cast(tuple[PySparkExpressionRecipe, ...], value)
+                        for read in self.reads(order)
+                    )
+        return self._unique(reads)
 
     def _unique(self, values: Iterable[str]) -> tuple[str, ...]:
         seen: set[str] = set()

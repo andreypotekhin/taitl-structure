@@ -9,8 +9,8 @@ The [Transform background](../background/Transform.back.md) explains the source 
 operation inventories. For persistent table mutation and catalog-table steps, see the
 [Delta and Iceberg tables API](../api/DeltaIceberg.api.md).
 
-For typed scalar helpers, including PySpark 4.1 character, quoting, date parsing, random values, and UUIDs, see the
-[Expression reference](Expressions.ref.md).
+For typed scalar helpers, including PySpark 4.1 character, quoting, date parsing, random values, UUIDs, and TIME, see
+the [Expression reference](Expressions.ref.md).
 
 Examples use the `OrderRaw`, `OrderNormalized`, and related schemas introduced in the [Schema reference](Schema.ref.md).
 Replace them with the schemas in your own application.
@@ -272,6 +272,71 @@ def summarize(self, order: Order, customer: Customer) -> CustomerTotal:
 
 The same source-order rules apply when the step uses a window, collection callback, or relation-shape operation; choose
 the focused API reference for the operation's cardinality and target conditions.
+
+## Typed relation queries
+
+On the exact ordinary PySpark and Spark Connect `>=4.1,<4.2` profiles, an additional relation parameter can build a
+typed query without changing the current driving lane. The query supports `.where()`/`.filter()`, `.project()`,
+`.order_by()`, `.limit()`, and `.exists()`. Query filters are evaluated against that relation; `.outer()` marks a
+driving or already joined field referenced from inside a correlated query.
+
+Use `.exists()` as a Boolean expression in an output, filter, or Boolean combination. Existing `exists(..., on=...)`
+and `not_exists(..., on=...)` remain row-filtering semi/anti joins. For `isin`, pass a bare relation or an uncorrelated
+query. A scalar left expression compares against one projected query column; a struct expression compares columns in
+projection order. Both preserve Spark's native three-valued null behavior.
+
+Use `lateral_join` when the inner query should contribute fields to each driving row. The `on=` condition is checked
+after the query's filters, ordering, limit, and projection. In this inline form, query the `inventory` relation while
+marking the correlation explicitly:
+
+```python
+class Store(Schema):
+    store_id = string(nullable=False)
+
+
+class Inventory(Schema):
+    inventory_id = long(nullable=False)
+    store_id = string(nullable=False)
+    status = string(nullable=False)
+    item_name = string(nullable=False)
+    quantity = long(nullable=False)
+
+
+class ClearanceItem(Schema):
+    item_name = string(nullable=False)
+    quantity = long(nullable=False)
+
+
+class StoreItem(Schema):
+    store_id = string(nullable=False)
+    item_name = string(nullable=True)
+
+
+def find(self, store: Store, inventory: Inventory) -> StoreItem:
+    lateral_join(
+        where=(inventory.store_id == store.store_id.outer()) & (inventory.status == "Clearance"),
+        to=ClearanceItem,
+        on=inventory.quantity > 50,
+        how="left",
+    )
+    return StoreItem(store_id=store.store_id, item_name=inventory.item_name)
+```
+
+The equivalent prepared form separates query construction from joining. `matching.quantity` refers to the projected
+query result in `on=`:
+
+```python
+matching = inventory.where(
+    (inventory.store_id == store.store_id.outer()) & (inventory.status == "Clearance")
+).project(ClearanceItem)
+lateral_join(matching, on=matching.quantity > 50, how="left")
+```
+
+Inner joins drop stores without a match. Left joins preserve them with null right-side fields; duplicate matching rows
+remain duplicate output rows. Add `.order_by(...)` before `.limit(n)`. The query limit selects candidates before
+`on=` runs. An uncorrelated lateral product requires `allow_cartesian=True`. These query operations are batch-only
+and supported for exact ordinary and Spark Connect `>=4.1,<4.2` profiles. Focused online/generated/native parity
+passed on Spark/PySpark 4.1.0 for both variants; other profiles remain gated.
 
 ### Typed Spark SQL
 

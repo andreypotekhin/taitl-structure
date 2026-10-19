@@ -2,31 +2,102 @@ from typing import cast
 
 from structure.plugin.api.v1.model import BackendCapabilities, CapabilityRequirement
 from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
+from structure.plugin.pyspark.compiler.model.PySparkRelationQueryRecipe import PySparkRelationQueryRecipe
 from structure.plugin.pyspark.dsl.Expression import Expression
+from structure.plugin.pyspark.dsl.InputScope import InputScope
+from structure.plugin.pyspark.dsl.RelationQuery import RelationQuery
 from structure.plugin.pyspark.dsl.types import ArrayType, MapType, StructType, TimeType
 
 
 class MapPySparkExpression:
 
-    def map(self, expression: Expression, *, capabilities: BackendCapabilities) -> PySparkExpressionRecipe:
+    def map(
+        self,
+        expression: Expression,
+        *,
+        capabilities: BackendCapabilities,
+        _query_context: bool = False,
+    ) -> PySparkExpressionRecipe:
+        if expression.kind == "outer" and not _query_context:
+            raise TypeError("Expression.outer() is valid only inside a typed relation query")
         group, name = self._requirement(expression)
         capabilities.require(CapabilityRequirement(group=group, name=name))
         self._type_capability(expression.type, capabilities=capabilities)
         data = dict(expression.data or {})
         if expression.kind == "special_expr":
-            data["body"] = self.map(cast(Expression, data["body"]), capabilities=capabilities)
-            data["expanded"] = self.map(cast(Expression, data["expanded"]), capabilities=capabilities)
+            data["body"] = self.map(
+                cast(Expression, data["body"]), capabilities=capabilities, _query_context=_query_context
+            )
+            data["expanded"] = self.map(
+                cast(Expression, data["expanded"]), capabilities=capabilities, _query_context=_query_context
+            )
             data["keyword_arguments"] = tuple(
-                (name, self.map(argument, capabilities=capabilities))
+                (name, self.map(argument, capabilities=capabilities, _query_context=_query_context))
                 for name, argument in cast(tuple[tuple[str, Expression], ...], data["keyword_arguments"])
             )
+        if expression.kind in {"query_exists", "isin_query"}:
+            data["query"] = self.map_query(cast(RelationQuery, data["query"]), capabilities=capabilities)
         return PySparkExpressionRecipe(
             kind=expression.kind,
             type=expression.type,
             nullable=expression.nullable,
             data=data,
-            args=tuple(self.map(argument, capabilities=capabilities) for argument in expression.args),
+            args=tuple(
+                self.map(argument, capabilities=capabilities, _query_context=_query_context)
+                for argument in expression.args
+            ),
         )
+
+    def map_query(self, query: RelationQuery, *, capabilities: BackendCapabilities) -> PySparkRelationQueryRecipe:
+        expressions = tuple(
+            expression
+            for kind, value in query.operations
+            for expression in (
+                cast(tuple[Expression, ...], value)
+                if kind == "order_by"
+                else (cast(Expression, value),)
+                if kind == "where"
+                else ()
+            )
+        )
+        if any(self._contains_nested_query(expression) for expression in expressions):
+            raise TypeError("Typed relation queries do not yet support query-local nested subqueries")
+        operations = tuple(
+            (
+                kind,
+                tuple(
+                    self.map(expression, capabilities=capabilities, _query_context=True)
+                    for expression in cast(tuple[Expression, ...], value)
+                )
+                if kind == "order_by"
+                else self.map(cast(Expression, value), capabilities=capabilities, _query_context=True)
+                if kind == "where"
+                else value,
+            )
+            for kind, value in query.operations
+        )
+        return PySparkRelationQueryRecipe(
+            source_name=query.source_name,
+            source=cast(InputScope, query.relation)._structure_source,
+            source_schema=query.source_schema,
+            output_schema=query.output_schema,
+            output_scope=query.output_scope,
+            operations=operations,
+        )
+
+    @staticmethod
+    def _contains_nested_query(expression: Expression) -> bool:
+        if expression.kind in {"query_exists", "isin_query"}:
+            return True
+        nested = list(expression.args)
+        data = expression.data or {}
+        if expression.kind == "special_expr":
+            nested.extend(cast(Expression, data[key]) for key in ("body", "expanded") if key in data)
+            nested.extend(
+                argument
+                for _, argument in cast(tuple[tuple[str, Expression], ...], data.get("keyword_arguments", ()))
+            )
+        return any(MapPySparkExpression._contains_nested_query(argument) for argument in nested)
 
     def _type_capability(self, type, *, capabilities: BackendCapabilities) -> None:
         if type is None:
@@ -46,6 +117,12 @@ class MapPySparkExpression:
         if expression.kind == "transform_expression":
             data = expression.data or {}
             return str(data["capability_group"]), str(data["capability_name"])
+        if expression.kind == "outer":
+            return "query", "correlation"
+        if expression.kind == "query_exists":
+            return "query", "exists"
+        if expression.kind == "isin_query":
+            return "query", "in_subquery"
         if expression.kind == "lambda_arg":
             return "expression", "standard_helper_call"
         if expression.kind == "field":

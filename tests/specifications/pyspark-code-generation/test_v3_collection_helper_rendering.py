@@ -166,7 +166,7 @@ def test_map_constructors_render_the_native_pyspark_functions() -> None:
     )
     assert (
         RenderPySparkExpression()(cast(PySparkExpressionRecipe, named_struct("region", "west")))
-        == "F.named_struct('region', F.lit('west'))"
+        == "F.struct(F.lit('west').alias('region'))"
     )
 
 
