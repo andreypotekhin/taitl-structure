@@ -386,7 +386,7 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
 - Typed batch observations support exact ordinary and Connect `>=4.1,<4.2` profiles. Declare
   `quality = observation(MetricSchema)`, bind once with `observe(MetricSchema(...))` or
   `observe(self.quality, MetricSchema(...))`, then read `result.quality.get()` after an action traverses a returned
-  output. The handle exposes `.schema`; observations are batch-only. See the [observation ExecPlan](../dev/planning/past/P10182602.V11-batch-observations.plan.md).
+  output. The handle exposes `.schema`; observations are batch-only. See the [observation ExecPlan](../dev/past/planning/P10182602.V11-batch-observations.plan.md).
 - `hash(...)` and `xxhash64(...)` accept scalar inputs. `crc32(...)` accepts String or Binary input and returns a
   nullable Long checksum. These are Spark hash/checksum functions, not cryptographic identifiers;
   do not use them for security, cross-engine interchange, or persistent identifiers. `md5(...)`, `sha1(...)`, and

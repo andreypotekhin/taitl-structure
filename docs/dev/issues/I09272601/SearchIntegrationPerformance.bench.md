@@ -238,7 +238,7 @@ Final repository verification: `make gold` regenerated the checked-in examples; 
 1,947 tests passed / 195 skipped, secondary checks 78 passed / 7 skipped, and mypy clean across 1,278 files.
 Both wheel and sdist built successfully. `git diff --check` passed. Build log: `/tmp/search-guards-build-final.log`.
 The completed three-point implementation plan is
-[archived here](../../planning/past/P09262602.Search-guard-reuse.plan.md).
+[archived here](../../past/planning/P09262602.Search-guard-reuse.plan.md).
 
 ## Checkpoint work reduction (P09272602, 2026-09-27)
 

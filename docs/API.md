@@ -34,6 +34,7 @@ PySpark correspondence and boundary details.
 | Schemas and types | [Schemas API](api/Schemas.api.md) | [Schemas compatibility](compatibility/Schemas.compat.md) |
 | Streaming | [Streaming API](api/Streaming.api.md) | [Streaming compatibility](compatibility/Streaming.compat.md) |
 | Transforms and hooks | [Transforms API](api/Transforms.api.md) | [Transforms compatibility](compatibility/Transforms.compat.md) |
+| User-defined functions | [UDF API](api/UDF.api.md) | [UDF reference](reference/UDF.ref.md#compatibility) |
 | Windows | [Windows API](api/Windows.api.md) | [Windows compatibility](compatibility/Windows.compat.md) |
 
 Other orientation: [API compatibility overview](compatibility/APICompatibility.md), [API tracker](compatibility/APITracker.md),
@@ -52,9 +53,9 @@ Other orientation: [API compatibility overview](compatibility/APICompatibility.m
 
 - Schema classes own field names, aliases, types, and nullability instead of exposing raw Spark schema objects.
 - Transform source is compiler-visible. `@raw` remains the honest boundary for caller-owned PySpark behavior.
-- Expression truthiness, raw SQL strings, UDTFs, and arbitrary callback bodies are unsupported. Scalar
-  `@special(type="udf")` remains an ordinary-PySpark row-local feature. Typed `@special(type="arrow_udf")` is
-  available on exact PySpark 4.1 profiles; see the [Transform reference](reference/Transform.ref.md#arrow-udfs).
+- Expression truthiness, raw SQL strings, UDTFs, and arbitrary callback bodies are unsupported. Structure's explicit
+  scalar Python and typed Arrow UDF boundaries, examples, and compatibility are documented in the
+  [UDF API](api/UDF.api.md) and [UDF reference](reference/UDF.ref.md).
 
 ## Version compatibility
 

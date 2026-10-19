@@ -9,7 +9,7 @@ when their PySpark 4.1 capabilities and evidence are available.
 ## Observation boundary
 
 The typed batch observation design agreed on 2026-10-18 is recorded in the
-[completed observation ExecPlan](../planning/past/P10182602.V11-batch-observations.plan.md). It resolves the API,
+[completed observation ExecPlan](../past/planning/P10182602.V11-batch-observations.plan.md). It resolves the API,
 typing, retrieval, native lifecycle, and composition choices below. Structure supports batch observations on ordinary
 and Spark Connect `>=4.1,<4.2`; focused native/online/generated parity passed on PySpark/Spark 4.1.0 for both variants.
 

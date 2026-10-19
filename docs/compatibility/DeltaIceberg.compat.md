@@ -30,7 +30,7 @@ by Structure. Each classic lane's Delta suite reports 31 passed and 3 skipped; t
 and one ordinary-only JVM inspection skip. Delta upstream compatibility alone does not establish Structure admission.
 Connect validates native shape and CHECK metadata but delegates generated, identity, and default behavior to Delta; it
 does not inherit ordinary feature-metadata bridge checks. PySpark 4.2 and other Connect profiles remain unadmitted. See
-the [Delta Connect admission plan](../dev/planning/past/P10062601.V11-delta-connect-admission.plan.md).
+the [Delta Connect admission plan](../dev/past/planning/P10062601.V11-delta-connect-admission.plan.md).
 
 Delta table inheritance replacement/extension and composed post-commit reads passed in online and generated execution
 on classic Spark 3.5.3 / Delta 3.3.3, Spark 4.0.0 / Delta 4.0.1, Spark 4.1.0 / Delta 4.1.0, and Spark Connect

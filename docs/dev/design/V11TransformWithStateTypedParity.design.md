@@ -200,7 +200,7 @@ population. A changed checkpoint declaration is tested for an actionable Spark f
 Spark-controlled if Spark does not expose a stable error.
 
 Row mode admission, composite key support, and event-time timers are governed by
-`docs/dev/planning/past/P10062603.V11-transform-with-state-admission-and-typed-parity.plan.md`. The separate
+`docs/dev/past/planning/P10062603.V11-transform-with-state-admission-and-typed-parity.plan.md`. The separate
 `transform_with_state_in_pandas(...)` contract retains its own implementation plan and evidence. This design does not
 transfer row evidence to the Pandas API.
 

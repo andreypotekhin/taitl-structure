@@ -1092,7 +1092,7 @@
       "notes": "The admitted generators cover the PySpark struct generator family over array<struct> with contains_null=False. Primitive scalar-array and map generators have separate explicit output naming contracts. Opt-in integration coverage includes null and empty outer rows.",
       "evidence": [
         "docs/dev/design/TypedRelationOperations.design.md",
-        "docs/dev/design/V7PySparkGeneratorExpansion.design.md",
+        "docs/dev/past/design/V7PySparkGeneratorExpansion.design.md",
         "tests/specifications/v6-api-ledger/test_v6_posexplode_struct.py",
         "tests/specifications/v7-api-ledger/test_v7_explode_struct.py",
         "tests/specifications/v7-api-ledger/test_v7_generator_parity_matrix.py",
@@ -1160,7 +1160,7 @@
       "evidence": [
         "docs/api/Relations.api.md",
         "docs/dev/specifications/TypedRelationOperations.spec.md",
-        "docs/dev/specifications/V9ApiCatalogDesignGatedFeatures.spec.md",
+        "docs/dev/specifications/ApiCatalogDesignGatedFeatures.spec.md",
         "tests/specifications/v6-api-ledger/test_v6_relation_union.py",
         "tests/user_stories/10_generated_code/shared_pyspark_semantic_contract/test_online_recipe_runtime.py",
         "tests/specifications/streaming-compatibility/test_v1_streaming_compatibility.py"
@@ -1200,7 +1200,7 @@
       "evidence": [
         "docs/api/Relations.api.md",
         "docs/dev/specifications/TypedRelationOperations.spec.md",
-        "docs/dev/specifications/V9ApiCatalogDesignGatedFeatures.spec.md",
+        "docs/dev/specifications/ApiCatalogDesignGatedFeatures.spec.md",
         "tests/specifications/v6-api-ledger/test_v6_relation_ordering.py",
         "tests/specifications/v6-api-ledger/test_v6_relation_range_partitioning.py",
         "tests/specifications/v9-api-catalog/test_v9_relation_sampling.py",
@@ -1622,7 +1622,7 @@
       "contract": "Typed scalar batches, scalar iterators, grouped aggregate metrics, and analytic aggregate windows; explicit Structure return type; native callback result conversion and failures.",
       "notes": "Native/online/generated batch parity passes on ordinary and Connect PySpark/Spark 4.1.0. Ordinary scalar and iterator stream processed-data and same-checkpoint restart parity passes; grouped/analytic streaming and Connect streaming are excluded. PyArrow is required on driver and workers.",
       "evidence": [
-        "docs/dev/specifications/V11ArrowUdfs.spec.md",
+        "docs/dev/specifications/UDF.spec.md",
         "docs/reference/Transform.ref.md",
         "docs/compatibility/Transforms.compat.md",
         "tests/specifications/v11-arrow-udfs/test_arrow_udf_contract.py",

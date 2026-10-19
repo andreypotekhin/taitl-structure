@@ -14,7 +14,7 @@ Below is an index for published diagnostic codes. For the full diagnostic contra
 | DSL-E0404 | error | Ignored compiler code reached | Keep ignored code outside compiled logic, or use a UDF or explicit hook for intentional runtime execution. |
 | DSL-E0405 | error | Opaque runtime code reached | Keep opaque runtime code outside compiled logic, or use a UDF or explicit hook for intentional runtime execution. |
 | DSL-E0406 | error | Invalid row-level foreach sink | Declare and bind a sink, then target a returned final output row. |
-| DSL-W0403 | warning | Python UDF is optimizer-opaque | Keep intentional UDFs or set `warn_on_udfs = false`. |
+| DSL-W0403 | warning | Python UDF is optimizer-opaque | Prefer a symbolic expression; keep intentional UDFs or set `warn_on_udfs = false`. See the [UDF reference](reference/UDF.ref.md). |
 | PYSPARK-W2701 | warning | PySpark query plan is growing through repeated reuse | A branch is reused after joins or unions have made the Spark query plan expensive to build. Add `checkpoint()` or `local_checkpoint()` before reusing it, or restructure around a stable base relation; `cache()` and `persist()` alone do not shorten the query plan. See the [driver-heap gotcha](troubleshooting/memory/spark_driver_heap_oom.gotcha.md). |
 | PYSPARK-W2702 | warning | PySpark query plan branch is reused many times | A costly query plan branch feeds several downstream operations. Add a checkpoint at the shared branch or reduce its consumers. |
 | PYSPARK-W2703 | warning | Repeated PySpark query plan validation is expensive | Several strict checks are attached to a large query plan. Keep checks at input/output boundaries or checkpoint before validating a reused branch. |

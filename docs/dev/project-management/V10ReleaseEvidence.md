@@ -101,8 +101,8 @@ The detailed RCA, measurements, and decisions are recorded in `docs/dev/issues/I
 commands are in `docs/troubleshooting/memory/spark_driver_heap_oom.gotcha.md`.
 
 Completed post-baseline plans provide additional focused PySpark 3.5/4.0 and Connect 3.5/4.0 SQL and temporal evidence;
-see [P09302601](../planning/past/P09302601.PySpark-SQL-baseline-gap-closeout.plan.md) and
-[P10022601](../planning/past/P10022601.PySpark-temporal-baseline-closeout.plan.md). The final `make build` on 2026-10-04 passed: main suite 2,128
+see [P09302601](../past/planning/P09302601.PySpark-SQL-baseline-gap-closeout.plan.md) and
+[P10022601](../past/planning/P10022601.PySpark-temporal-baseline-closeout.plan.md). The final `make build` on 2026-10-04 passed: main suite 2,128
 passed/245 skipped; secondary suite 109 passed/7 skipped; formatting, flake8, mypy, sdist, and wheel succeeded.
 
 ## SearchDocuments readiness matrix

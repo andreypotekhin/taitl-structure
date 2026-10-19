@@ -57,6 +57,8 @@ result = EnrichOrdersGenerated(
 Create a new mirror instance for each batch. Expression specials expand at their call sites by default. `embed_exprs`
 instead emits static generated helpers. `embed_hooks` and `embed_udfs` copy opted-in raw
 hook and UDF bodies into generated source. Without them, generated code delegates to the original transform instance.
+See the [UDF background](background/UDF.back.md#generated-code-and-dependency-ownership) for callback dependency and
+optimizer-visibility boundaries.
 
 ### Embedded Raw Hooks
 
@@ -142,4 +144,3 @@ Developers should:
 
 Developers should not edit generated files by hand. If generated code is wrong, change the Structure source,
 configuration, or generator, then regenerate.
-

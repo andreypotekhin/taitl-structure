@@ -10,7 +10,7 @@ pytestmark = [
     pytest.mark.integration,
     pytest.mark.skipif(
         backend_name().endswith("41"),
-        reason="Sedona 1.9 geometry provider evidence is scoped to Spark 3.5/4.0; V9ApiCatalogDesignGatedFeatures.spec.md",
+        reason="Sedona 1.9 geometry provider evidence is scoped to Spark 3.5/4.0; ApiCatalogDesignGatedFeatures.spec.md",
     ),
 ]
 

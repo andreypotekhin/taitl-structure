@@ -25,7 +25,7 @@ callbacks remain caller-owned.
 
 ## Governing plan
 
-[V11 query operations ExecPlan](../../planning/past/P10182601.V11-query-operations.plan.md) records the agreed
+[V11 query operations ExecPlan](../../past/planning/P10182601.V11-query-operations.plan.md) records the agreed
 `where()`/`project()` query syntax, inferred and prepared lateral joins, optional `on=`, SQL null behavior,
 explicit outer references, ordered limits, Cartesian opt-in, implementation sequence, and parity evidence.
 

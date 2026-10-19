@@ -7,9 +7,11 @@ streaming boundaries.
 
 ## Arrow UDF and UDTF
 
-Arrow-native UDF and UDTF decorators execute user Python in workers and introduce serialization, dependency, batching,
-error, and (for UDTFs) row-cardinality behavior. They remain explicit raw or caller-owned boundaries in V11. A future
-narrow typed contract must specify input/output schemas, nullability, batching, failure, resource, and Connect rules.
+Structure now supports typed Arrow UDF declarations under the exact PySpark 4.1 profile after defining their callback,
+type, capability, backend, and streaming contracts. The current decision and design rationale live in the [UDF
+design](UDF.design.md), with the normative contract in the [UDF specification](../specifications/UDF.spec.md).
+Arrow UDTFs remain caller-owned: their row-cardinality and output-schema contract is distinct from expression UDFs and
+has not been admitted here.
 
 ## Row-based transformWithState
 

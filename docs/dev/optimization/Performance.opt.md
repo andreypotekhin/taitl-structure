@@ -195,7 +195,7 @@ A useful optimization report includes:
 - Benchmark report: [SearchIntegrationPerformance.bench.md](../issues/I09272601/SearchIntegrationPerformance.bench.md)
 - Search evidence: [Search-proving-heap.evidence.md](../issues/I09272601/Search-proving-heap.evidence.md)
 - Shared-plan boundary plan: [P09262601](../planning/P09262601.Shared-plan-boundaries.plan.md)
-- Guard reuse plan: [P09262602](../planning/past/P09262602.Search-guard-reuse.plan.md)
+- Guard reuse plan: [P09262602](../past/planning/P09262602.Search-guard-reuse.plan.md)
 - Memory methodology: [Memory.opt.md](Memory.opt.md)
 - Performance runbook: [Performance.runbook.md](../../runbooks/Performance.runbook.md)
 - Profiling runbook: [Profiling.runbook.md](../../runbooks/Profiling.runbook.md)

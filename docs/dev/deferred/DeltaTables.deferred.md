@@ -2,7 +2,7 @@
 
 The [Delta design](../design/DeltaTables.design.md) and [specification](../specifications/DeltaTables.spec.md) define
 the implemented transform contract. This queue lists native Delta features still outside that contract. The current
-implementation plan is [V11 Delta parity and maintenance](../planning/past/P10052603.V11-delta-parity-inspection-and-maintenance.plan.md).
+implementation plan is [V11 Delta parity and maintenance](../past/planning/P10052603.V11-delta-parity-inspection-and-maintenance.plan.md).
 
 ## Implemented and admitted surface
 

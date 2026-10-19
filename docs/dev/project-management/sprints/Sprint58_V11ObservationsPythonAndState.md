@@ -3,7 +3,7 @@
 Status: in progress; target: 2027-02-05.
 
 Typed batch observations are implemented for ordinary and Spark Connect `>=4.1,<4.2`; exact parity and build evidence
-is recorded in the [completed typed batch observations ExecPlan](../../planning/past/P10182602.V11-batch-observations.plan.md).
+is recorded in the [completed typed batch observations ExecPlan](../../past/planning/P10182602.V11-batch-observations.plan.md).
 KLL/Theta helpers and recursive metadata are implemented. Ordinary and Connect 4.1 batch parity passes; ordinary 4.1
 also passes watermarked streaming and same-configuration restart parity. Connect remains batch-only under the existing
 streaming boundary. The [KLL/Theta ExecPlan](../../planning/P10182603.V11-kll-theta-sketches.plan.md) records the
@@ -46,8 +46,8 @@ Catalog status, diagnostics, specification, and tests agree; gated APIs are reje
 
 `docs/dev/planning/P08042601.V11-pyspark-4.1-adoption.plan.md`,
 `docs/dev/planning/P10042603.V11-transform-with-state-admission-and-typed-parity.plan.md`,
-`docs/dev/planning/past/P10042604.V11-transform-with-state-in-pandas.plan.md`,
+`docs/dev/past/planning/P10042604.V11-transform-with-state-in-pandas.plan.md`,
 `docs/dev/planning/P10062602.V11-apply-in-pandas-with-state.plan.md`,
-`docs/dev/planning/past/P10042602.Row-level-foreach-sinks.plan.md`,
-`docs/dev/planning/past/P10052601.Schema-declared-foreach-batch-sinks.plan.md`, and the V11 Python/streaming and
+`docs/dev/past/planning/P10042602.Row-level-foreach-sinks.plan.md`,
+`docs/dev/past/planning/P10052601.Schema-declared-foreach-batch-sinks.plan.md`, and the V11 Python/streaming and
 observations designs.

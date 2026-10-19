@@ -27,6 +27,7 @@ The examples use declaration forms from the [Schema reference](Schema.ref.md) an
 | --- | --- | --- | --- |
 | Schemas | supported | `StructType`, SQL types | [Schema reference](Schema.ref.md) |
 | Transforms and hooks | supported | DataFrame pipeline | [Transform reference](Transform.ref.md) |
+| User-defined functions | supported with explicit boundaries | Scalar Python and exact-profile Arrow callbacks | [UDF reference](UDF.ref.md) |
 | Expressions | supported | Column and SQL-function subset | [Expression reference](Expressions.ref.md) and [API](../api/Expressions.api.md) |
 | Geospatial | target-gated | Native PySpark 4.1+ and provider namespaces | [Geospatial reference](Geospatial.ref.md) |
 
@@ -42,7 +43,7 @@ The examples use declaration forms from the [Schema reference](Schema.ref.md) an
 - Transform source is compiler-visible. `@raw` remains the explicit boundary for caller-supplied PySpark behavior.
 - Expression truthiness, raw SQL strings, UDTFs, and arbitrary callback bodies are unsupported. Scalar
   `@special(type="udf")` remains an ordinary-PySpark row-local feature; typed `@special(type="arrow_udf")` is
-  supported on exact ordinary and Connect 4.1 profiles as documented in the [Transform reference](Transform.ref.md#arrow-udfs).
+  supported on exact ordinary and Connect 4.1 profiles as documented in the [UDF reference](UDF.ref.md#compatibility).
 
 ```python
 from structure import *

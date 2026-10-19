@@ -39,7 +39,7 @@ original ranking assertions. Result collections took less than one second each; 
 dominates. These measurements establish completion, not a claim that all plan-growth or Search performance issues are
 solved. The complete text-fixture case passed in 61.74 seconds on ordinary PySpark 3.5 and 47.13 seconds on Connect 4.0;
 the combined seven-test Connect Search module passed in 139.34 seconds. The
-[completed follow-up plan](../../planning/past/P09252601.Search-integration-lineage.plan.md) records the evidence.
+[completed follow-up plan](../../past/planning/P09252601.Search-integration-lineage.plan.md) records the evidence.
 
 
 

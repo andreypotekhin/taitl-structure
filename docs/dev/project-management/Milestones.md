@@ -435,7 +435,7 @@ evidence, and initial build evidence. Sprints 45--48 closed the remaining design
 2026-08-02.
 The governing completed plan is
 `close/archive/planning/P07292602.V9-pyspark-streaming-api-coverage.plan.md`, and the governing specification is
-`docs/dev/specifications/V9PySparkStreamingApiCoverage.spec.md`.
+`docs/dev/past/specifications/V9PySparkStreamingApiCoverage.spec.md`.
 
 ### Exit Criteria
 
@@ -451,20 +451,20 @@ The governing completed plan is
 - Design-gated streaming rows and non-streaming APICatalog planned/deferred rows have dedicated design,
   implementation specification, and active follow-up planning:
   `docs/dev/gated/Streaming.gates.md`,
-  `docs/dev/specifications/V9StreamingDesignGatedFeatures.spec.md`,
+  `docs/dev/specifications/StreamingDesignGatedFeatures.spec.md`,
   `docs/dev/gated/ApiCatalog.gates.md`,
-  `docs/dev/specifications/V9ApiCatalogDesignGatedFeatures.spec.md`,
-`docs/dev/planning/past/P07302601.V9-api-catalog-design-gates.plan.md`, and the Variant child plan
-`docs/dev/planning/past/P07302602.V9-variant-type-and-helpers.plan.md`.
+  `docs/dev/specifications/ApiCatalogDesignGatedFeatures.spec.md`,
+`docs/dev/past/planning/P07302601.V9-api-catalog-design-gates.plan.md`, and the Variant child plan
+`docs/dev/past/planning/P07302602.V9-variant-type-and-helpers.plan.md`.
 The released PySpark 4.0/4.2 Variant implementation slice is complete; the repository has no PySpark 4.2 live lane,
 so `is_valid_variant(...)` retains capability-only evidence without a positive runtime claim. PySpark 4.3+ mutation
 helpers remain design-gated until released profiles exist. Global selected-row and broad analytic-window helpers are
 streaming-ineligible; finite grouped selected-value aggregates are admitted. Row `transform_with_state(...)` is
 supported on ordinary PySpark 4.1 with typed named state, timer, online/generated parity, and restart evidence.
 Pandas `transform_with_state_in_pandas(...)` is supported for ordinary PySpark 4.0 and 4.1 after both canonical full
-lanes passed; see the completed [ExecPlan](../planning/past/P10042604.V11-transform-with-state-in-pandas.plan.md).
+lanes passed; see the completed [ExecPlan](../past/planning/P10042604.V11-transform-with-state-in-pandas.plan.md).
 The dated execution schedule is
-`docs/dev/planning/past/P07302603.V9-closeout-and-release.plan.md`.
+`docs/dev/past/planning/P07302603.V9-closeout-and-release.plan.md`.
 - Diagnostics and explain output tell users whether a streaming issue should be fixed in Structure source,
   caller-owned lifecycle code, or a batch materialization boundary.
 - Every admitted Structure-owned streaming claim has PySpark 3.5/4.0 live evidence, generated-source lifecycle scans,
@@ -504,13 +504,13 @@ lanes whose broad full-selection runs did not complete.
 ### Governing Documents
 
 - `docs/dev/project-management/V10.md`
-- `docs/dev/planning/past/P08022601.V10-api-catalog-and-schema-evolution.plan.md`
-- `docs/dev/planning/past/P08022602.V10-streaming-state-and-join-contracts.plan.md`
-- `docs/dev/planning/past/P08022603.V10-streaming-side-effects-and-arbitrary-state.plan.md`
-- `docs/dev/planning/past/P08022604.V10-evidence-catalog-reconciliation-and-hardening.plan.md`
-- `docs/dev/planning/past/P08042601.Collision-safe-generated-identities.plan.md`
-- `docs/dev/planning/past/P08052602.Search-vector-index-and-rrf.plan.md` (explicit v10 Search application proving slice)
-- `docs/dev/planning/past/P08082601.Typed-scalar-generators-and-optimizer-visible-search-chunking.plan.md` (explicit v10 compiler/API and Search chunking proving slice)
+- `docs/dev/past/planning/P08022601.V10-api-catalog-and-schema-evolution.plan.md`
+- `docs/dev/past/planning/P08022602.V10-streaming-state-and-join-contracts.plan.md`
+- `docs/dev/past/planning/P08022603.V10-streaming-side-effects-and-arbitrary-state.plan.md`
+- `docs/dev/past/planning/P08022604.V10-evidence-catalog-reconciliation-and-hardening.plan.md`
+- `docs/dev/past/planning/P08042601.Collision-safe-generated-identities.plan.md`
+- `docs/dev/past/planning/P08052602.Search-vector-index-and-rrf.plan.md` (explicit v10 Search application proving slice)
+- `docs/dev/past/planning/P08082601.Typed-scalar-generators-and-optimizer-visible-search-chunking.plan.md` (explicit v10 compiler/API and Search chunking proving slice)
 
 ## M16: V11 PySpark 4.1 Adoption
 
@@ -545,13 +545,13 @@ Status: planned. V11 follows the V10 closeout and runs from Sprint 55 through Sp
 
 - `docs/dev/project-management/V11.md`
 - `docs/dev/planning/P08042601.V11-pyspark-4.1-adoption.plan.md`
-- `docs/dev/planning/past/P10042601.V11-delta-transform-mutations.plan.md`
-- `docs/dev/planning/past/P10062601.V11-delta-connect-admission.plan.md`
+- `docs/dev/past/planning/P10042601.V11-delta-transform-mutations.plan.md`
+- `docs/dev/past/planning/P10062601.V11-delta-connect-admission.plan.md`
 - `docs/dev/planning/P10062602.V11-apply-in-pandas-with-state.plan.md`
-- `docs/dev/planning/past/P10062603.V11-transform-with-state-admission-and-typed-parity.plan.md`
-- `docs/dev/planning/past/P10042604.V11-transform-with-state-in-pandas.plan.md`
-- `docs/dev/planning/past/P10042602.Row-level-foreach-sinks.plan.md`
-- `docs/dev/planning/past/P10052601.Schema-declared-foreach-batch-sinks.plan.md`
+- `docs/dev/past/planning/P10062603.V11-transform-with-state-admission-and-typed-parity.plan.md`
+- `docs/dev/past/planning/P10042604.V11-transform-with-state-in-pandas.plan.md`
+- `docs/dev/past/planning/P10042602.Row-level-foreach-sinks.plan.md`
+- `docs/dev/past/planning/P10052601.Schema-declared-foreach-batch-sinks.plan.md`
 - `docs/dev/planning/P08042603.V11-retained-v9-design-gates.plan.md`
 - `docs/dev/design/V11PySpark41Adoption.design.md`
 - `docs/dev/specifications/V11PySpark41Parity.spec.md`
@@ -607,7 +607,7 @@ passes, including the full test suite and package build.
 
 ### Governing documents
 
-- `docs/dev/planning/past/P10082601.Table-inheritance-and-composition.plan.md`
+- `docs/dev/past/planning/P10082601.Table-inheritance-and-composition.plan.md`
 - `docs/dev/specifications/DSL.spec.md`
 - `docs/dev/specifications/DeltaTables.spec.md`
 - `docs/dev/specifications/IcebergTables.spec.md`

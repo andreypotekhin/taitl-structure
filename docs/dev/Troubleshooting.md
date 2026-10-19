@@ -169,7 +169,7 @@ Cause: The 4.1 gateway configures Delta and Iceberg, without Sedona's SQL extens
 specification scopes optional-provider live evidence to Spark 3.5/4.0.
 Fix: Run the geometry provider test in its configured 3.5/4.0 lanes. It is marked as excluded at collection time on
 4.1, with the specification named in the skip reason. This exclusion does not establish geometry support on 4.1.
-See [provider target rules](specifications/V9ApiCatalogDesignGatedFeatures.spec.md#provider-neutral-geometry-slice).
+See [provider target rules](specifications/ApiCatalogDesignGatedFeatures.spec.md#provider-neutral-geometry-slice).
 
 ### Problem (integration): Delta Connect 4.1 fails while decoding a server response
 

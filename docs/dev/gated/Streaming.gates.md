@@ -57,9 +57,9 @@ declares named Value/List/Map state attributes, supports typed initial state, an
 `external_state_processor(...)` keeps unsupported Python constructs and additional PySpark features available as an
 opaque boundary. Persisted state changes are checkpoint-sensitive and Structure does not migrate state. PySpark 4.0
 does not expose the row processor entry point. See the
-[row admission plan](../planning/past/P10062603.V11-transform-with-state-admission-and-typed-parity.plan.md),
+[row admission plan](../past/planning/P10062603.V11-transform-with-state-admission-and-typed-parity.plan.md),
 [typed parity design](../design/V11TransformWithStateTypedParity.design.md), and
-[row processor plan](../planning/past/P10042603.V11-transform-with-state.plan.md).
+[row processor plan](../past/planning/P10042603.V11-transform-with-state.plan.md).
 
 ### Legacy `applyInPandasWithState` — `design-gated`
 
@@ -96,6 +96,6 @@ APIs remain caller-owned or outside the Structure transform contract. See
 - [Streaming deferred work](../deferred/Streaming.deferred.md) owns postponed lifecycle and orchestration direction.
 - [Spark Streaming design](../design/SparkStreaming.design.md) owns the durable transformation boundary.
 - [Streaming API reference](../../api/Streaming.api.md) is the user-facing support surface.
-- [V10 streaming plan](../planning/past/P08022602.V10-streaming-state-and-join-contracts.plan.md) owns active
+- [V10 streaming plan](../past/planning/P08022602.V10-streaming-state-and-join-contracts.plan.md) owns active
   implementation work.
 - [V10 release evidence](../project-management/V10ReleaseEvidence.md) records unavailable proof lanes.

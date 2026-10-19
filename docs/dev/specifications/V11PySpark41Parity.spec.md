@@ -77,7 +77,7 @@ profile remains `>=3.5,<4.1`; other profiles remain gated.
 
 Typed batch observations follow the contract in the
 [observation design](../design/V11PySpark41ObservationsAndSketches.design.md#observation-boundary) and its
-[completed implementation plan](../planning/past/P10182602.V11-batch-observations.plan.md). A transform declares a named metric
+[completed implementation plan](../past/planning/P10182602.V11-batch-observations.plan.md). A transform declares a named metric
 Schema with `observation(Schema)`, binds it once with `observe(Schema(...))` or
 `observe(self.declaration, Schema(...))`, and exposes a typed handle beside its row outputs. `get()` adds no Spark
 action; the caller first performs an action on a returned path that traverses the observation. Metric nullability
@@ -85,7 +85,7 @@ follows global aggregate semantics, including nullable `sum` on empty input. Obs
 Connect lifecycle behavior, are batch-only, and follow stage-output visibility. Native/online/generated parity passed
 for values, schema, empty input, conditional counts, collection snapshots, and Connect's pre-action state on ordinary
 and Connect PySpark/Spark 4.1.0. The exact `>=4.1,<4.2` variants are admitted independently; earlier and later profiles
-remain gated. See the [observation ExecPlan](../planning/past/P10182602.V11-batch-observations.plan.md).
+remain gated. See the [observation ExecPlan](../past/planning/P10182602.V11-batch-observations.plan.md).
 
 KLL and Theta sketches are implemented as opaque Spark Binary values with recursive logical metadata. Typed KLL
 construction, query, merge, and rendering helpers and typed Theta construction, set operations, and estimates are
@@ -97,7 +97,7 @@ native edge behavior.
 
 ## Feature 4: Arrow UDF/UDTF and state processors
 
-The dedicated [Arrow UDF specification](V11ArrowUdfs.spec.md) admits typed scalar, scalar-iterator, grouped-aggregate,
+The general [UDF specification](UDF.spec.md) admits typed scalar, scalar-iterator, grouped-aggregate,
 and analytic-window callbacks on exact ordinary and Connect `>=4.1,<4.2` profiles after online/generated parity. Ordinary
 scalar and iterator streaming pass processed-data and same-checkpoint restart parity; grouped/analytic streaming and
 Connect streaming remain excluded. Arrow UDTF and general vectorized callbacks remain caller-owned boundaries. The explicit state
@@ -105,13 +105,13 @@ processor surfaces are separate families: row-based `transform_with_state(...)` 
 `transform_with_state_in_pandas(...)` targets ordinary PySpark 4.0 and 4.1; and legacy
 `apply_in_pandas_with_state(...)` targets ordinary PySpark 3.5, 4.0, and 4.1. Each has its own compiler path,
 target-profile rows, live evidence, and checkpoint-restart gate. The row family is governed by the dedicated
-[admission and typed-parity plan](../planning/past/P10062603.V11-transform-with-state-admission-and-typed-parity.plan.md),
+[admission and typed-parity plan](../past/planning/P10062603.V11-transform-with-state-admission-and-typed-parity.plan.md),
 which admits Append and Update output modes and rejects Complete during compilation. Spark Connect and
 Dataset/Scala arbitrary-state APIs remain outside the row claim. The row API supports Append and Update and the None,
 ProcessingTime, and EventTime modes in their valid combinations; Complete is rejected during compilation. Ordinary
 PySpark 4.1 online/generated evidence covers composite keys, both timer clocks, and same-checkpoint restart. Pandas
 `transform_with_state_in_pandas(...)` is supported on ordinary PySpark 4.0 and 4.1 after both complete lanes passed;
-see its [completed ExecPlan](../planning/past/P10042604.V11-transform-with-state-in-pandas.plan.md). Legacy
+see its [completed ExecPlan](../past/planning/P10042604.V11-transform-with-state-in-pandas.plan.md). Legacy
 `apply_in_pandas_with_state(...)` remains `design-gated` pending its own profile-specific callback and parity evidence.
 The accepted typed row contract is recorded in `V11TransformWithStateTypedParity.design.md`.
 

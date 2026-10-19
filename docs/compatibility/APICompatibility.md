@@ -6,7 +6,7 @@ For extensions on top of PySpark, see [API.md](../API.md#extensions-beyond-pyspa
 
 The current open contract register is maintained in [API Catalog Gates](../dev/gated/ApiCatalog.gates.md), with streaming
 gates in [Streaming Gates](../dev/gated/Streaming.gates.md). Planning for remaining actionable rows is grouped in the
-[API catalog and schema-evolution plan](../dev/planning/past/P08022601.V10-api-catalog-and-schema-evolution.plan.md).
+[API catalog and schema-evolution plan](../dev/past/planning/P08022601.V10-api-catalog-and-schema-evolution.plan.md).
 Companion streaming state, side-effect, and evidence plans are linked from the
 [streaming project plan](../dev/project-management/V10.md). An open or gated row is not a support claim;
 each entry must name its owner boundary, evidence, and caller remedy.
@@ -277,9 +277,9 @@ references provide the user-facing operation details.
 
 Excluded categories stay caller-owned: readers, writers, storage, catalogs, sessions, table management, actions,
 materializers, streaming lifecycle operations, Python UDTFs, Pandas APIs, RDD APIs, and arbitrary callback APIs.
-Existing scalar `@special(type="udf")` remains its documented ordinary-PySpark exception. Typed Arrow UDFs have an
-exact PySpark 4.1 profile contract, recorded in [APITracker](APITracker.md) and the
-[Transform reference](../reference/Transform.ref.md#arrow-udfs); Arrow UDTFs remain caller-owned.
+Scalar `@special(type="udf")` and typed `@special(type="arrow_udf")` are explicit Python execution boundaries; their
+declarations, examples, profile gates, and ownership rules are in the [UDF reference](../reference/UDF.ref.md#compatibility).
+Arrow UDFs require exact PySpark 4.1 profiles. Arrow UDTFs remain caller-owned.
 
 ## Reference
 

@@ -396,11 +396,12 @@ method is an error; use `@special(type="udf")` for intentional scalar Python or 
 Use `@special(type="opaque")` for a runtime callback or class whose body Structure must not inspect. Calling it directly
 from a compiled method also fails; a consuming API must explicitly accept it.
 
-### UDFs
+### User-defined functions
 
 Use `@special(type="udf")` only for deliberately opaque, row-local Python logic that cannot be expressed with the
 typed DSL. Declare both its Spark return type and nullability. Structure records `DSL-W0403` by default because Spark
 cannot inspect or optimize the Python body; set `@transform(warn_on_udfs=False)` only after accepting that trade-off.
+For the complete scalar and Arrow contracts, examples, and compatibility matrix, see the [UDF reference](reference/UDF.ref.md).
 
 ```python
 class Publish(Transform):
@@ -415,10 +416,10 @@ class Publish(Transform):
         return Published(id=self.clean(row.id))
 ```
 
-This is an explicit escape hatch, not an implicit fallback for unsupported expressions. Spark Connect supports the
-public scalar UDF API for batch transforms, while streaming remains ordinary-only. Keep the body scalar and self-contained. Generated modules delegate to
-the source transform unless `generated_code_options` includes `embed_udfs`; embedding affects generated module
-self-containment, not compiler visibility or warning policy.
+This is an explicit escape hatch, not an implicit fallback for unsupported expressions. Scalar Python UDFs are
+supported for batch use on admitted ordinary and Connect profiles. Keep the body scalar and self-contained. Generated
+modules delegate to the source transform unless `generated_code_options` includes `embed_udfs`; embedding affects
+generated module self-containment, not compiler visibility or warning policy.
 
 ## Aggregation
 

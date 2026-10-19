@@ -58,11 +58,11 @@ The geospatial package owns native Geometry/Geography and the root `st_geomfromw
 `st_srid`, and `st_setsrid` helpers. It uses the `>=4.1,<4.2` profile, begins with ordinary PySpark evidence, and makes
 no Connect or streaming claim before positive evidence. External providers are not aliases for the native package;
 their namespaces and Binary boundaries are specified in
-[Geospatial Provider Boundaries](../planning/past/P10012602.Geospatial-provider-boundaries.plan.md).
+[Geospatial Provider Boundaries](../past/planning/P10012602.Geospatial-provider-boundaries.plan.md).
 
 The Python-and-streaming package admits typed Arrow scalar, scalar-iterator, grouped-aggregate, and analytic-window UDFs
 for ordinary and Spark Connect 4.1 batch execution, and scalar/iterator streaming on ordinary Spark 4.1. Arrow UDTFs
-remain caller-owned; see the [Arrow UDF specification](../specifications/V11ArrowUdfs.spec.md) for the exact contract.
+remain caller-owned; see the [UDF specification](../specifications/UDF.spec.md) for the exact contract.
 The package also implements explicit state processor compiler surfaces. Row-based `transform_with_state(...)` is supported on ordinary PySpark 4.1 with typed named
 Value/List/Map state, timers, initial state, online/generated parity, and same-checkpoint restart evidence. The separate
 `transform_with_state_in_pandas(...)` targets ordinary PySpark 4.0 and 4.1 and is supported after both complete lanes

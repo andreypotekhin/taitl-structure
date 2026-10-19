@@ -117,8 +117,42 @@ are structural; do not use nullness alone to identify a subtotal.
 PySpark 4.1 Arrow UDFs declared with `function_type="grouped_agg"` can provide a custom grouped metric or an analytic
 window metric. Declare a concrete `return_type`; callback input values arrive as an Arrow array. Spark handles result
 conversion and worker errors. Grouped Arrow metrics cannot be mixed with built-in aggregate metrics in the same
-aggregate, and group data is held in worker memory. See [Arrow UDFs](Transform.ref.md#arrow-udfs) for declaration and
-window examples. Streaming inputs are rejected for grouped and analytic-window forms.
+aggregate, and group data is held in worker memory. Streaming inputs are rejected for grouped and analytic-window
+forms. See the [UDF reference](UDF.ref.md#arrow-udfs) for declaration details and scalar/iterator examples, and its
+analytic-window example.
+
+For a custom grouped metric, define the callback on the transform and use it in the grouped output:
+
+```python
+from structure import *
+from structure.plugin.pyspark.dsl import types
+
+
+class Values(Schema):
+    key = long(nullable=False)
+    value = long(nullable=True)
+
+
+class GroupResult(Schema):
+    key = long(nullable=False)
+    mean = double(nullable=True)
+
+
+@transform
+class ArrowGrouped(Transform):
+    rows = input(Values)
+    output_rows = output(GroupResult)
+
+    @special(type="arrow_udf", return_type=types.double(), function_type="grouped_agg")
+    def mean(values):
+        import pyarrow.compute as pc
+
+        return pc.mean(values).as_py()
+
+    def apply(self, row: Values) -> GroupResult:
+        group_by(row.key)
+        return GroupResult(key=row.key, mean=self.mean(row.value))
+```
 
 Use metric helpers to name the values calculated for each grouped result.
 

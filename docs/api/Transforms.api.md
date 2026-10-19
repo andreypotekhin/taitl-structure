@@ -46,7 +46,8 @@ are documented in the [Relations API](Relations.api.md).
 | `@step(cache=StorageLevel.MEMORY_AND_DISK)` | `persist(StorageLevel.MEMORY_AND_DISK)` | `@step(cache=StorageLevel.MEMORY_AND_DISK)` |
 | Ordinary helper / class | Reusable compiler-visible expression logic | `def clean(v): return trim(v)` |
 | `@special(type="expr")` | Optional expression metadata or named helper rendering | `@special(type="expr")\ndef clean(v): return trim(v)` |
-| `@special(type="arrow_udf", return_type=...)` | Spark 4.1 Arrow scalar, iterator, or grouped aggregate UDF | `@special(type="arrow_udf", return_type=types.double(), function_type="scalar_iter")` |
+| `@special(type="udf", return_type=..., nullable=...)` | Explicit row-local scalar Python UDF | `@special(type="udf", return_type=string(), nullable=False)` |
+| `@special(type="arrow_udf", return_type=...)` | Exact-profile Arrow scalar, iterator, or grouped UDF | `@special(type="arrow_udf", return_type=types.long(), function_type="scalar_iter")` |
 | `Compiler.frontend.analyze()` | Structural transform plan | `plan = Compiler.frontend.analyze()(Publish)` |
 | `Compiler.frontend.compile()` | Selected-platform compilation | `compiled = Compiler.frontend.compile()(Publish)` |
 
@@ -64,9 +65,8 @@ are documented in the [Relations API](Relations.api.md).
   restructuring the algorithm around a stable base relation. Python variables, aliases, temporary views, `cache()`,
   and `persist()` are not lineage boundaries.
 - Expression specials compile without PySpark. Raw SQL and arbitrary Python UDF helpers remain outside the symbolic API.
-- Arrow UDF declarations require an explicit Structure return type and use call-site expressions to determine input
-  types. Exact ordinary/Connect 4.1 batch support and ordinary scalar/iterator streaming support are documented in the
-  [Transform reference](../reference/Transform.ref.md#arrow-udfs); Connect streaming and grouped streaming are excluded.
+- Scalar Python and Arrow UDF declarations are summarized in the [UDF API](UDF.api.md); examples and exact profile,
+  execution, and streaming behavior are in the [UDF reference](../reference/UDF.ref.md).
 - `Compiler.frontend.analyze()` does not invoke step methods or start a Spark job.
 - `Compiler.frontend.compile()` authors and compiles for the selected platform but does not start a Spark job.
 

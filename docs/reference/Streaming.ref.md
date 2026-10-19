@@ -397,7 +397,7 @@ stream-stream semi form also requires both input declarations, watermarks, and a
 
 On ordinary PySpark 4.1, Arrow scalar and scalar-iterator UDFs are supported for streaming projections, including
 checkpoint restart. Grouped Arrow aggregates and analytic Arrow windows are rejected with `STREAM-E0801`; Spark
-Connect streaming is outside the Arrow UDF support claim. See the [Arrow UDF reference](Transform.ref.md#arrow-udfs).
+Connect streaming is outside the Arrow UDF support claim. See the [UDF compatibility reference](UDF.ref.md#compatibility).
 
 ## Inspect required output modes
 
