@@ -48,6 +48,7 @@ PYSPARK_4_1_TIME_CAPABILITIES = frozenset(
      ("expression", "to_time"), ("expression", "try_to_time"), ("expression", "time_diff"),
      ("expression", "time_trunc")}
 )
+PYSPARK_4_1_OBSERVATION_CAPABILITIES = frozenset({("observation", "batch")})
 PYSPARK_4_1_SCALAR_CAPABILITIES |= PYSPARK_4_1_TIME_CAPABILITIES
 PYSPARK_4_1_QUERY_CAPABILITIES = frozenset(
     {
@@ -57,12 +58,15 @@ PYSPARK_4_1_QUERY_CAPABILITIES = frozenset(
         ("query", "lateral_join"),
     }
 )
-PYSPARK_4_1_ORDINARY_CAPABILITIES = PYSPARK_4_1_SCALAR_CAPABILITIES | PYSPARK_4_1_QUERY_CAPABILITIES | frozenset(
-    {("expression", "column_transform")}
+PYSPARK_4_1_ORDINARY_CAPABILITIES = (
+    PYSPARK_4_1_SCALAR_CAPABILITIES
+    | PYSPARK_4_1_QUERY_CAPABILITIES
+    | PYSPARK_4_1_OBSERVATION_CAPABILITIES
+    | frozenset({("expression", "column_transform")})
 )
 PYSPARK_4_1_CONNECT_CAPABILITIES = frozenset(
     {("expression", "column_transform"), ("optimization", "checkpoint")}
-) | PYSPARK_4_1_SCALAR_CAPABILITIES | PYSPARK_4_1_QUERY_CAPABILITIES
+) | PYSPARK_4_1_SCALAR_CAPABILITIES | PYSPARK_4_1_QUERY_CAPABILITIES | PYSPARK_4_1_OBSERVATION_CAPABILITIES
 LEGACY_PANDAS_STATE_PROFILES = frozenset({">=3.5,<4.1", ">=3.5,<4.0", ">=4.0,<4.1", ">=4.1,<4.2"})
 LEGACY_PANDAS_STATE_CAPABILITY = frozenset({("streaming", "apply_in_pandas_with_state")})
 PYSPARK_4_2_CAPABILITIES = frozenset({("expression", "is_valid_variant")})
@@ -532,6 +536,19 @@ class PySparkCapabilities:
                     'Use target_profile = ">=4.1,<4.2" with a positively admitted backend variant after parity; '
                     "see docs/dev/design/V11PySpark41QueryOperations.design.md."
                 ),
+                required_target=">=4.1,<4.2",
+            )
+
+        if requirement.group == "observation":
+            return CapabilityDecision.unsupported_capability(
+                backend=self.id,
+                requirement=requirement,
+                rationale=(
+                    "Typed batch observations require PySpark >=4.1,<4.2; "
+                    f"configured target is {self.id.target!r} with variant {self.id.variant!r}."
+                ),
+                use='Set target_profile = ">=4.1,<4.2" and select a parity-tested variant. '
+                "See docs/compatibility/Expressions.compat.md.",
                 required_target=">=4.1,<4.2",
             )
 

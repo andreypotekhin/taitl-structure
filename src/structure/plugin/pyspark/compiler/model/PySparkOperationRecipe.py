@@ -16,6 +16,7 @@ from structure.plugin.pyspark.compiler.model.PySparkMaterializationRecipe import
     PySparkPersistRecipe,
     PySparkUnpersistRecipe,
 )
+from structure.plugin.pyspark.compiler.model.PySparkObservationRecipe import PySparkObservationRecipe
 from structure.plugin.pyspark.compiler.model.PySparkOrderedTimelineScanRecipe import PySparkOrderedTimelineScanRecipe
 from structure.plugin.pyspark.compiler.model.PySparkPosexplodeStructRecipe import PySparkPosexplodeStructRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationAliasRecipe import PySparkRelationAliasRecipe
@@ -51,6 +52,7 @@ class PySparkOperationRecipe:
     filter: PySparkExpressionRecipe | None = None
     join: PySparkJoinRecipe | None = None
     aggregate: PySparkAggregateRecipe | None = None
+    observation: PySparkObservationRecipe | None = None
     selected_rows: PySparkSelectedRowsRecipe | None = None
     duplicate_rows: PySparkDuplicateRowsRecipe | None = None
     exactly_one: PySparkExactlyOneRecipe | None = None
@@ -95,6 +97,10 @@ class PySparkOperationRecipe:
     @staticmethod
     def aggregate_operation(aggregate: PySparkAggregateRecipe) -> "PySparkOperationRecipe":
         return PySparkOperationRecipe(kind="aggregate", aggregate=aggregate)
+
+    @staticmethod
+    def observation_operation(observation: PySparkObservationRecipe) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="observation", observation=observation)
 
     @staticmethod
     def selected_rows_operation(selected_rows: PySparkSelectedRowsRecipe) -> "PySparkOperationRecipe":

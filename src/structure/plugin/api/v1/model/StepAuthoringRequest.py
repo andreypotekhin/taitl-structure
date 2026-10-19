@@ -23,3 +23,4 @@ class StepAuthoringRequest:
     effect: bool = False
     sinks: tuple[StepAuthoringSink, ...] = ()
     sink_effect: bool = False
+    observations: tuple[object, ...] = ()

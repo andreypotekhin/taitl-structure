@@ -536,3 +536,10 @@ the first analytical join slice.
 - + As a developer, I receive failures for null order keys, duplicate order keys, partition overrun, invalid state
   shape, unsupported placement, and unsupported streaming use so that recurrence order and memory bounds remain
   explicit.
+
+## + 27. Typed Batch Observations
+
+- + As a developer, I can declare a named metric Schema, attach aggregate metrics to a batch relation, and read a fresh
+  typed observation snapshot after an output action so that quality metrics remain separate from row outputs.
+- + As a developer, I can use complex metric values and native empty-input nullability so that Spark's aggregate values
+  are preserved without changing my returned rows.

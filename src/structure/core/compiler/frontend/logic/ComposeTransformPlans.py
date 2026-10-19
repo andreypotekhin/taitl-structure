@@ -72,6 +72,18 @@ class ComposeTransformPlans:
             steps=tuple(steps),
             outputs=tuple(outputs),
             stage_outputs=tuple(stage_outputs),
+            observations=tuple(
+                getattr(wrapper_class, "_structure_observations", {}).values()
+            ) if wrapper_class is not None else (),
+            stage_observations=tuple(
+                ((label,), declaration)
+                for label, plan in zip(labels, stage_plans, strict=True)
+                for declaration in plan.observations
+            ) + tuple(
+                ((label, *path), declaration)
+                for label, plan in zip(labels, stage_plans, strict=True)
+                for path, declaration in plan.stage_observations
+            ),
             allow_stage_outputs=allow_stage_outputs,
             internal_inputs=tuple(internal_inputs),
             options=(

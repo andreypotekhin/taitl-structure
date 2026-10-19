@@ -60,6 +60,7 @@ _CORE_CONTRACTS = {
     "StructureToolError": "structure.core.tools.model.StructureToolError",
     "TransformResult": "structure.core.runtime.session.model.TransformResult",
     "SinkResult": "structure.core.runtime.session.model.SinkResult",
+    "ObservationResult": "structure.core.runtime.session.model.ObservationResult",
     "StageResult": "structure.core.runtime.session.model.StageResult",
     "TransformSchemas": "structure.core.runtime.schemas.model.TransformSchemas",
     "ValidateSchemaToolRequest": "structure.core.tools.logic.rules.ValidateSchemaToolRequest",

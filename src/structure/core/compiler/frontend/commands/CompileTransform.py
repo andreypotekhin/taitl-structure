@@ -182,6 +182,7 @@ class CompileTransform:
             capture_special_exprs="embed_exprs" in config.generated_code_options,
         )
         outputs = self._outputs(transform_class, lanes, explicit_outputs)
+        self._validate_observation_paths(transform_class, steps, outputs)
         sinks = self._sink_plans(transform_class, steps, outputs)
         steps = [step for step in steps if step.results]
         return TransformPlan(
@@ -190,10 +191,42 @@ class CompileTransform:
             steps=tuple(steps),
             outputs=tuple(outputs),
             sinks=tuple(sinks),
+            observations=tuple(transform_class._structure_observations.values()),
             allow_stage_outputs=config.allow_stage_outputs,
             options=transform_class.effective_transform_options(),
             diagnostics=tuple(diagnostics),
         )
+
+    def _validate_observation_paths(self, transform_class, steps, outputs) -> None:
+        observations = [
+            (step, operation.observation)
+            for step in steps
+            for operation in getattr(step, "operations", ())
+            if operation.kind == "observation" and operation.observation is not None
+        ]
+        if not observations:
+            return
+        reachable = {output.source for output in outputs}
+        changed = True
+        while changed:
+            changed = False
+            for step in steps:
+                result_frames = {result.frame for result in step.results}
+                if not result_frames.intersection(reachable):
+                    continue
+                parents = {step.source, *(item.source for item in step.inputs)}
+                before = len(reachable)
+                reachable.update(parents)
+                changed = changed or len(reachable) != before
+        for step, observation in observations:
+            if not any(result.frame in reachable for result in step.results):
+                raise self._error(
+                    "DSL-E0402",
+                    transform_class=transform_class,
+                    member=step.name,
+                    problem=f"Observation {observation.name!r} is attached to a relation with no returned output path.",
+                    use="Attach the observation to a step whose result contributes to an output action.",
+                )
 
     def _reject_mixed_stage_members(self, transform_class: type[Transform]) -> None:
         members = self._member_collector.collect(transform_class)
@@ -747,6 +780,7 @@ class CompileTransform:
                 project_root=_diagnostic_project_root.get(),
             ),
             plugin_options=plugin_options,
+            observations=tuple(transform_class._structure_observations.values()),
             effect=effect_candidate,
             sinks=tuple(
                 StepAuthoringSink(

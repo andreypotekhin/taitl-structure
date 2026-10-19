@@ -11,6 +11,7 @@ from structure.plugin.pyspark.dsl.operations.JsonTuplePlan import JsonTuplePlan
 from structure.plugin.pyspark.dsl.operations.LegacyPandasStatePlan import LegacyPandasStatePlan
 from structure.plugin.pyspark.dsl.operations.MapGeneratorPlan import MapGeneratorPlan
 from structure.plugin.pyspark.dsl.operations.MaterializationPlan import CheckpointPlan, PersistPlan, UnpersistPlan
+from structure.plugin.pyspark.dsl.operations.ObservationPlan import ObservationPlan
 from structure.plugin.pyspark.dsl.operations.OperationCapability import OperationCapability
 from structure.plugin.pyspark.dsl.operations.OperationCardinality import OperationCardinality
 from structure.plugin.pyspark.dsl.operations.OrderedTimelineScanPlan import OrderedTimelineScanPlan
@@ -43,6 +44,7 @@ class OperationPlan:
     filter: Any | None = None
     join: Any | None = None
     aggregate: Any | None = None
+    observation: ObservationPlan | None = None
     selected_rows: SelectedRowsPlan | None = None
     duplicate_rows: DuplicateRowsPlan | None = None
     exactly_one: ExactlyOnePlan | None = None
@@ -148,6 +150,17 @@ class OperationPlan:
             streaming=StreamingSupport.BATCH_ONLY,
             streaming_output_modes=modes,
             state_budget=state_budget,
+        )
+
+    @staticmethod
+    def observation_operation(observation: ObservationPlan) -> OperationPlan:
+        return OperationPlan(
+            "observation",
+            observation=observation,
+            family="observation",
+            capability=OperationCapability("observation", "batch", docs="docs/compatibility/Expressions.compat.md"),
+            cardinality=OperationCardinality.ROW_PRESERVING,
+            streaming=StreamingSupport.BATCH_ONLY,
         )
 
     @staticmethod

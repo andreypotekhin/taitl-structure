@@ -8,6 +8,7 @@ from collections.abc import Iterable, Mapping
 from structure.core.dsl.model.transforms.aliases import require_alias
 from structure.core.dsl.model.transforms.InputDeclaration import InputDeclaration
 from structure.core.dsl.model.transforms.LaneDeclaration import LaneDeclaration
+from structure.core.dsl.model.transforms.ObservationDeclaration import ObservationDeclaration
 from structure.core.dsl.model.transforms.OutputDeclaration import OutputBindings, OutputDeclaration
 from structure.core.dsl.model.transforms.ParameterDeclaration import ParameterDeclaration
 from structure.core.dsl.model.transforms.SinkDeclaration import SinkDeclaration
@@ -64,6 +65,7 @@ class Transform:
     _structure_lanes: dict[str, LaneDeclaration] = {}
     _structure_outputs: dict[str, OutputDeclaration] = {}
     _structure_sinks: dict[str, SinkDeclaration] = {}
+    _structure_observations: dict[str, ObservationDeclaration] = {}
     _structure_parameters: dict[str, ParameterDeclaration] = {}
     _structure_variables: dict[str, VariableDeclaration] = {}
     _structure_input_aliases: dict[str, str] = {}
@@ -83,6 +85,7 @@ class Transform:
         lanes: dict[str, LaneDeclaration] = {}
         outputs: dict[str, OutputDeclaration] = {}
         sinks: dict[str, SinkDeclaration] = {}
+        observations: dict[str, ObservationDeclaration] = {}
         output_bindings: dict[str, object] = {}
         parameters: dict[str, ParameterDeclaration] = {}
         variables: dict[str, VariableDeclaration] = {}
@@ -91,6 +94,7 @@ class Transform:
             lanes.update(getattr(base, "_structure_lanes", {}))
             outputs.update(getattr(base, "_structure_outputs", {}))
             sinks.update(getattr(base, "_structure_sinks", {}))
+            observations.update(getattr(base, "_structure_observations", {}))
             output_bindings.update(getattr(base, "_structure_output_bindings", {}))
             parameters.update(getattr(base, "_structure_parameters", {}))
             variables.update(getattr(base, "_structure_variables", {}))
@@ -107,6 +111,8 @@ class Transform:
                     inputs[value.name] = InputDeclaration(schema=value.schema, name=value.name, binding=value.binding)
             if isinstance(value, SinkDeclaration):
                 sinks[value.name] = value
+            if isinstance(value, ObservationDeclaration):
+                observations[value.name] = value
             if isinstance(value, ParameterDeclaration):
                 parameters[value.name] = value
             elif name in parameters:
@@ -120,6 +126,7 @@ class Transform:
         cls._structure_lanes = lanes
         cls._structure_outputs = outputs
         cls._structure_sinks = sinks
+        cls._structure_observations = observations
         binding_blocks = [value for value in cls.__dict__.values() if isinstance(value, OutputBindings)]
         if len(binding_blocks) > 1:
             raise TypeError(f"{cls.__name__} declares more than one output binding block")

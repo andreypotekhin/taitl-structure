@@ -5,6 +5,7 @@ from types import MappingProxyType
 from typing import Any
 
 from structure.core.runtime.schemas.model.TransformSchemas import ResultSchemas
+from structure.core.runtime.session.model.ObservationResult import ObservationResult
 
 
 class StageResult(Mapping[str, Any]):
@@ -17,6 +18,8 @@ class StageResult(Mapping[str, Any]):
         schema: Mapping[str, Any] | None = None,
         aliases: Mapping[str, tuple[str, ...]] | None = None,
         stages: Mapping[str, "StageResult"] | None = None,
+        observations: Mapping[str, ObservationResult] | None = None,
+        unused_observations: tuple[str, ...] = (),
     ) -> None:
         output_values = dict(outputs)
         output_aliases = dict(aliases or {})
@@ -24,6 +27,8 @@ class StageResult(Mapping[str, Any]):
         object.__setattr__(self, "_structure_output_aliases", MappingProxyType(output_aliases))
         object.__setattr__(self, "_structure_aliases", MappingProxyType(self._alias_index(output_aliases)))
         object.__setattr__(self, "_structure_stages", MappingProxyType(dict(stages or {})))
+        object.__setattr__(self, "_structure_observations", MappingProxyType(dict(observations or {})))
+        object.__setattr__(self, "_structure_unused_observations", frozenset(unused_observations))
         object.__setattr__(self, "schema", ResultSchemas(schema, aliases=output_aliases))
 
     @property
@@ -48,6 +53,10 @@ class StageResult(Mapping[str, Any]):
             return self._structure_outputs[self._structure_aliases[name]]
         if name in self._structure_stages:
             return self._structure_stages[name]
+        if name in self._structure_observations:
+            return self._structure_observations[name]
+        if name in self._structure_unused_observations:
+            raise AttributeError(f"Observation {name!r} was declared but is unused in this stage.")
         raise AttributeError(name)
 
     def __setattr__(self, name: str, value: Any) -> None:
@@ -70,6 +79,8 @@ class StageResult(Mapping[str, Any]):
 
 def build_stage_results(
     records: list[tuple[tuple[str, ...], Any, Any, tuple[str, ...]]],
+    observation_records: list[tuple[tuple[str, ...], str, ObservationResult]] | None = None,
+    unused_observation_records: list[tuple[tuple[str, ...], str]] | None = None,
 ) -> Mapping[str, StageResult]:
     """Build a recursive stage namespace from flattened output records."""
 
@@ -79,18 +90,46 @@ def build_stage_results(
             raise ValueError("Stage output paths must contain a stage and output name")
         nodes = root
         for stage_name in path[:-1]:
-            node = nodes.setdefault(stage_name, {"outputs": {}, "schemas": {}, "aliases": {}, "stages": {}})
+            node = nodes.setdefault(stage_name, {"outputs": {}, "schemas": {}, "aliases": {}, "stages": {}, "observations": {}, "unused_observations": set()})
             nodes = node["stages"]
         stage_name = path[-2]
         node = root
         for name in path[:-2]:
             node = node[name]["stages"]
-        stage = node.setdefault(stage_name, {"outputs": {}, "schemas": {}, "aliases": {}, "stages": {}})
+        stage = node.setdefault(stage_name, {"outputs": {}, "schemas": {}, "aliases": {}, "stages": {}, "observations": {}, "unused_observations": set()})
         output_name = path[-1]
         stage["outputs"][output_name] = value
         stage["schemas"][output_name] = schema
         if aliases:
             stage["aliases"][output_name] = aliases
+
+    for path, name, observation in observation_records or []:
+        if not path:
+            raise ValueError("Stage observation paths must contain at least one stage")
+        nodes = root
+        stage = None
+        for stage_name in path:
+            stage = nodes.setdefault(
+                stage_name,
+                {"outputs": {}, "schemas": {}, "aliases": {}, "stages": {}, "observations": {}, "unused_observations": set()},
+            )
+            nodes = stage["stages"]
+        assert stage is not None
+        stage["observations"][name] = observation
+
+    for path, name in unused_observation_records or []:
+        if not path:
+            raise ValueError("Stage observation paths must contain at least one stage")
+        nodes = root
+        stage = None
+        for stage_name in path:
+            stage = nodes.setdefault(
+                stage_name,
+                {"outputs": {}, "schemas": {}, "aliases": {}, "stages": {}, "observations": {}, "unused_observations": set()},
+            )
+            nodes = stage["stages"]
+        assert stage is not None
+        stage["unused_observations"].add(name)
 
     def freeze(nodes: Mapping[str, dict[str, Any]]) -> Mapping[str, StageResult]:
         return MappingProxyType(
@@ -100,6 +139,8 @@ def build_stage_results(
                     schema=node["schemas"],
                     aliases=node["aliases"],
                     stages=freeze(node["stages"]),
+                    observations=node["observations"],
+                    unused_observations=tuple(node["unused_observations"]),
                 )
                 for name, node in nodes.items()
             }

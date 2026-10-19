@@ -21,7 +21,7 @@ from re import fullmatch
 from typing import Any, cast, overload
 
 import structure.plugin.pyspark.dsl.options as options
-from structure.dsl import FieldDeclaration, Schema
+from structure.dsl import FieldDeclaration, ObservationDeclaration, Schema
 from structure.plugin.api.v1.model import SymbolicContext
 from structure.plugin.api.v1.model import current_symbolic_context as current_context
 from structure.plugin.pyspark.dsl.Expression import Expression, is_order_direction, is_orderable_type
@@ -34,6 +34,7 @@ from structure.plugin.pyspark.dsl.operations.CacheOperations import (
 )
 from structure.plugin.pyspark.dsl.operations.DuplicateRowsPlan import DuplicateRowsPlan
 from structure.plugin.pyspark.dsl.operations.MaterializationPlan import CheckpointPlan, UnpersistPlan
+from structure.plugin.pyspark.dsl.operations.ObservationPlan import ObservationPlan
 from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
 from structure.plugin.pyspark.dsl.operations.OrderedTimelineScanPlan import OrderedTimelineScanPlan
 from structure.plugin.pyspark.dsl.operations.SelectedRowsPlan import SelectedRowsPlan
@@ -1558,6 +1559,7 @@ def _aggregate(
     # during API introspection).  Only a live authoring context records that a
     # step needs aggregate lowering.
     if context := current_context():
+        context = cast(Any, context)
         context.aggregate_requested = True
     if (
         function in {"avg", "bool_and", "bool_or", "first_value", "last_value", "max", "min", "sum", "sum_distinct"}
@@ -1581,13 +1583,148 @@ def _aggregate(
         data["order_by_index"] = len(args)
         args = (*args, order_by)
     data.update({key: value for key, value in options if value is not None})
-    return Expression(
+    expression = Expression(
         kind="aggregate",
         type=type,
         nullable=nullable,
         data=data,
         args=args,
     )
+    if context is not None:
+        cast(Any, context)._aggregate_expressions[id(expression)] = expression
+    return expression
+
+
+def observe(*arguments: object) -> object:
+    """Attach typed aggregate metrics to the current batch relation."""
+    if len(arguments) == 1:
+        reference = None
+        metrics = arguments[0]
+    elif len(arguments) == 2:
+        reference, metrics = arguments
+        if not isinstance(reference, ObservationDeclaration):
+            raise TypeError("observe(reference, metrics) requires a declared observation reference")
+    else:
+        raise TypeError("observe(...) accepts metrics or a declared reference and metrics")
+    if not isinstance(metrics, Schema):
+        raise TypeError("observe(...) requires a Schema-valued metrics payload")
+    context = cast(Any, _context("observe(...)"))
+    declarations = cast(tuple[ObservationDeclaration, ...], tuple(context.observation_declarations))
+    matches = [item for item in declarations if item.metric_schema is type(metrics)]
+    if reference is not None:
+        reference = cast(ObservationDeclaration, reference)
+        if not any(reference is item for item in declarations):
+            raise TypeError("observe(...) reference is not declared by this transform")
+        if reference.metric_schema is not type(metrics):
+            raise TypeError(
+                f"Observation {reference.name!r} requires {reference.metric_schema.__name__}, "
+                f"not {type(metrics).__name__}."
+            )
+        declaration = reference
+    elif len(matches) == 1:
+        declaration = matches[0]
+    elif not matches:
+        raise TypeError(
+            f"No observation is declared for {type(metrics).__name__}. Add "
+            f"`quality = observation({type(metrics).__name__})` to the transform."
+        )
+    else:
+        names = ", ".join(item.name for item in matches)
+        raise TypeError(
+            f"Multiple observations use {type(metrics).__name__}: {names}. "
+            "Pass the intended declaration as the first argument to observe(...)."
+        )
+    if declaration.name in context.observation_bindings:
+        raise TypeError(f"Observation {declaration.name!r} may be bound only once per compiled specialization.")
+    fields = tuple(metrics._structure_values.items())
+    declared_fields = set(type(metrics)._structure_fields)
+    supplied_fields = {name for name, _ in fields}
+    if declared_fields != supplied_fields:
+        raise TypeError(
+            f"Observation {declaration.name!r} must supply every metric field; "
+            f"missing={sorted(declared_fields - supplied_fields)}, extra={sorted(supplied_fields - declared_fields)}."
+        )
+    converted: list[tuple[str, Expression]] = []
+    consumed: set[int] = set()
+    for name, value in fields:
+        source_expression = value if isinstance(value, Expression) else literal(value)
+        expression = _observation_expression(source_expression)
+        field = type(metrics)._structure_fields[name]
+        if not _scan_assignable(expression, field.type):
+            raise TypeError(
+                f"Observation {declaration.name!r} field {name!r} has type "
+                f"{getattr(expression.type, 'name', 'untyped')}, incompatible with {field.type.name}."
+            )
+        if expression.nullable and not field.nullable:
+            raise TypeError(
+                f"Observation {declaration.name!r} field {name!r} may be null; declare it nullable or add a fallback."
+            )
+        _validate_observation_expression(expression, name=name, declaration=declaration)
+        converted.append((name, expression))
+        pending = [source_expression]
+        while pending:
+            current = pending.pop()
+            if current.kind == "aggregate":
+                consumed.add(id(current))
+            pending.extend(current.args)
+    unobserved_aggregates = set(context._aggregate_expressions) - context._observation_aggregate_ids - consumed
+    if context.aggregate_keys is not None or unobserved_aggregates:
+        raise TypeError(
+            "observe(...) cannot share a step with a pending grouped or row-output aggregate; "
+            "observe the input first or use a following step for the aggregate result."
+        )
+    context._observation_aggregate_ids.update(consumed)
+    context.aggregate_requested = any(
+        identity not in context._observation_aggregate_ids for identity in context._aggregate_expressions
+    )
+    context.observation_bindings.add(declaration.name)
+    context.operations.append(
+        OperationPlan.observation_operation(
+            ObservationPlan(declaration.name, type(metrics), tuple(converted), declaration)
+        )
+    )
+    return context.default_project_source
+
+
+def _observation_expression(expression: Expression) -> Expression:
+    arguments = tuple(_observation_expression(argument) for argument in expression.args)
+    data = expression.data or {}
+    function = data.get("function")
+    nullable = expression.nullable
+    if expression.kind == "aggregate" and function in {
+        "avg", "bool_and", "bool_or", "first", "first_value", "last", "last_value", "max", "median",
+        "min", "std", "stddev", "stddev_pop", "stddev_samp", "sum", "variance", "var_pop", "var_samp",
+    }:
+        nullable = True
+    elif function not in {"coalesce", "ifnull", "nvl", "nvl2", "zeroifnull", "struct", "named_struct"}:
+        nullable = nullable or any(argument.nullable for argument in arguments)
+    return replace(expression, args=arguments, nullable=nullable)
+
+
+def _validate_observation_expression(
+    expression: Expression, *, name: str, declaration: ObservationDeclaration
+) -> None:
+    def visit(current: Expression, *, aggregate_depth: int) -> None:
+        data = current.data or {}
+        function = data.get("function")
+        if current.kind == "window" or function in {"row_number", "rank", "dense_rank", "lag", "lead"}:
+            raise TypeError(f"Observation {declaration.name!r} metric {name!r} cannot contain window expressions.")
+        if current.kind == "aggregate":
+            if aggregate_depth:
+                raise TypeError(f"Observation {declaration.name!r} metric {name!r} cannot nest aggregates.")
+            if function in {"count_distinct", "approx_count_distinct"} or data.get("distinct"):
+                raise TypeError(
+                    f"Observation {declaration.name!r} metric {name!r} cannot use distinct aggregates."
+                )
+            aggregate_depth += 1
+        if current.kind == "field" and aggregate_depth == 0:
+            raise TypeError(
+                f"Observation {declaration.name!r} metric {name!r} must aggregate each row field reference."
+            )
+        for argument in current.args:
+            visit(argument, aggregate_depth=aggregate_depth)
+
+    visit(expression, aggregate_depth=0)
 
 
 def _global_aggregate_may_be_empty() -> bool:

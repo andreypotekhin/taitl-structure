@@ -71,6 +71,11 @@ class LowerPySparkPlan:
                 (*((input, False) for input in plan.inputs), *((input, True) for input in plan.internal_inputs))
             )
         )
+        has_observations = bool(plan.observations or plan.stage_observations)
+        # Spark Connect Observation handles attach to a relation lineage. A plan boundary can
+        # materialize an intermediate frame and detach that handle before the caller's action.
+        # Keep the observations' lineage intact through the full transform, including composed stages.
+        effective_boundary_policy = "off" if has_observations else boundary_policy
         boundary_frames = self._boundary_frames(plan)
         steps = tuple(
             self._steps.map(
@@ -78,7 +83,7 @@ class LowerPySparkPlan:
                 last=index == len(plan.steps) - 1,
                 capabilities=target,
                 check_intermediate=check_intermediate,
-                boundary_policy=boundary_policy,
+                boundary_policy=effective_boundary_policy,
                 boundary_frames=boundary_frames,
             )
             for index, step in enumerate(plan.steps)
@@ -98,6 +103,8 @@ class LowerPySparkPlan:
             steps=steps,
             outputs=outputs,
             requires_hook_inputs=False,
+            observations=plan.observations,
+            stage_observations=plan.stage_observations,
             stage_outputs=stage_outputs,
             allow_stage_outputs=plan.allow_stage_outputs,
             delta_check_match=str((plan.options or {}).get("delta_check_match", delta_check_match)),

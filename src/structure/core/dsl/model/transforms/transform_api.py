@@ -11,6 +11,7 @@ from structure.core.dsl.model.transforms.BindingSelector import BindingSelector,
 from structure.core.dsl.model.transforms.InOutBinding import InOutBinding
 from structure.core.dsl.model.transforms.InputDeclaration import InputDeclaration
 from structure.core.dsl.model.transforms.LaneDeclaration import LaneDeclaration
+from structure.core.dsl.model.transforms.ObservationDeclaration import ObservationDeclaration
 from structure.core.dsl.model.transforms.OutputDeclaration import OutputBindings, OutputDeclaration
 from structure.core.dsl.model.transforms.ParameterDeclaration import ParameterDeclaration
 from structure.core.dsl.model.transforms.SchemaMode import SchemaMode
@@ -177,6 +178,11 @@ def output(
 def sink(sink_type: type) -> SinkDeclaration:
     """Declare the Structure Schema consumed by a caller-owned sink."""
     return SinkDeclaration(sink_type=sink_type)
+
+
+def observation(schema: type[Schema]) -> ObservationDeclaration:
+    """Declare typed batch metrics exposed by a transform result."""
+    return ObservationDeclaration(metric_schema=schema)
 
 
 @overload

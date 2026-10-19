@@ -29,6 +29,7 @@ class FieldDeclaration:
         default=None, repr=False, compare=False
     )
     _options: frozenset[str] = field(default_factory=frozenset, repr=False, compare=False)
+    _name: str = field(default="", init=False, repr=False, compare=False)
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "metadata", MappingProxyType(dict(self.metadata)))
@@ -45,3 +46,14 @@ class FieldDeclaration:
             description=self.description,
             validator=self.validator,
         )
+
+    def __set_name__(self, owner: type, name: str) -> None:
+        object.__setattr__(self, "_name", name)
+
+    def __get__(self, instance: object | None, owner: type | None = None) -> object:
+        if instance is None:
+            return self
+        values = getattr(instance, "_structure_values", None)
+        if isinstance(values, dict) and self._name in values:
+            return values[self._name]
+        raise AttributeError(self._name)

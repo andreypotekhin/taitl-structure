@@ -30,8 +30,8 @@ runtime evidence. The detailed row-by-row inventory is maintained in the [API tr
 
 The current V11 state and side-effect boundaries are:
 
-- `Column.transform` and typed EXISTS/IN/lateral relation queries are supported on ordinary PySpark and Spark Connect
-  4.1 with focused online/generated/native parity. Other new expressions, complex observations, and KLL/Theta
+- `Column.transform`, typed EXISTS/IN/lateral relation queries, and typed batch observations are supported on ordinary
+  PySpark and Spark Connect 4.1 with focused online/generated/native parity. Other new expressions and KLL/Theta
   sketches remain `design-gated` until their typed contracts and target evidence are complete. The [versioned Python delta](../../src/structure/plugin/pyspark/resources/pyspark-4.1-python-api-delta.json)
   separates actual 4.1 index additions from older APIs retained for V11 work.
 - Relation query consumers are batch-only and limited to exact `>=4.1,<4.2`; the default profile remains

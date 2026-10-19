@@ -3,6 +3,7 @@ from structure.core.runtime.session.model.StructureRuntimeError import Structure
 from structure.core.runtime.session.model.StructureSession import StructureSession
 from structure.core.runtime.session.model.StageResult import StageResult
 from structure.core.runtime.session.model.SinkResult import SinkResult
+from structure.core.runtime.session.model.ObservationResult import ObservationResult
 from structure.core.runtime.session.model.TransformResult import TransformResult
 from structure.core.runtime.session.model.StateBudgetGuard import StateBudgetExceeded, StateBudgetGuard
 
@@ -12,6 +13,7 @@ __all__ = [
     "StructureSession",
     "StageResult",
     "SinkResult",
+    "ObservationResult",
     "TransformResult",
     "StateBudgetGuard",
     "StateBudgetExceeded",

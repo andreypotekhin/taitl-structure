@@ -98,6 +98,8 @@ class RenderPySparkExpression:
     def _render(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:
         if expression.kind == "field":
             return self._field(expression, aliases)
+        if expression.kind == "aggregate":
+            return self._aggregate(expression, aliases)
         if expression.kind == "get_field":
             return f"{self._render(expression.args[0], aliases)}.getField({expression.data['field']!r})"
         if expression.kind == "with_field":
@@ -231,6 +233,70 @@ class RenderPySparkExpression:
         if expression.kind == "not":
             return f"~({self._render(expression.args[0], aliases)})"
         raise TypeError(f"Unsupported PySpark expression recipe: {expression.kind}")
+
+    def _aggregate(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:
+        function = str(expression.data["function"])
+        functions = {
+            "avg": "avg",
+            "mean": "mean",
+            "max": "max",
+            "min": "min",
+            "sum": "sum",
+            "count": "count",
+            "count_if": "count_if",
+            "bool_and": "bool_and",
+            "bool_or": "bool_or",
+            "every": "every",
+            "some": "some",
+            "first": "first",
+            "last": "last",
+            "median": "median",
+            "product": "product",
+            "std": "std",
+            "stddev": "stddev",
+            "stddev_pop": "stddev_pop",
+            "stddev_samp": "stddev_samp",
+            "variance": "variance",
+            "var_pop": "var_pop",
+            "var_samp": "var_samp",
+            "kurtosis": "kurtosis",
+            "skewness": "skewness",
+            "collect_list": "collect_list",
+            "collect_set": "collect_set",
+            "array_agg": "array_agg",
+            "any_value": "any_value",
+            "approx_count_distinct": "approx_count_distinct",
+            "approx_percentile": "percentile_approx",
+            "corr": "corr",
+            "covar": "covar_samp",
+            "covar_pop": "covar_pop",
+        }
+        try:
+            native_function = functions[function]
+        except KeyError as error:
+            raise TypeError(f"Unsupported observation aggregate: {function}") from error
+
+        argument_count = cast(int, expression.data.get("arg_count", len(expression.args)))
+        arguments = [self._render(argument, aliases) for argument in expression.args[:argument_count]]
+        where_index = expression.data.get("where_index")
+        if where_index is not None:
+            predicate = self._render(expression.args[cast(int, where_index)], aliases)
+            if arguments:
+                arguments[0] = f"F.when({predicate}, {arguments[0]})"
+            elif function == "count":
+                arguments.append(f"F.when({predicate}, F.lit(1))")
+            else:
+                raise TypeError(f"Observation aggregate {function} does not support where=...")
+        if function == "count" and not arguments:
+            arguments.append("F.lit(1)")
+        if function == "approx_count_distinct" and "relative_sd" in expression.data:
+            arguments.append(repr(expression.data["relative_sd"]))
+        if function == "approx_percentile":
+            arguments.extend((repr(expression.data["percentage"]), repr(expression.data.get("accuracy", 10000))))
+        rendered = f"F.{native_function}({', '.join(arguments)})"
+        if expression.type is not None:
+            rendered += f".cast({self._inline_type(expression.type)})"
+        return rendered
 
     def _special_expr(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:
         if not _embed_exprs.get():

@@ -12,6 +12,7 @@ from structure.plugin.pyspark.compiler.model.PySparkDuplicateRowsRecipe import P
 from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.plugin.pyspark.compiler.model.PySparkHookRecipe import PySparkHookRecipe
 from structure.plugin.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoinRecipe
+from structure.plugin.pyspark.compiler.model.PySparkObservationRecipe import PySparkObservationRecipe
 from structure.plugin.pyspark.compiler.model.PySparkOrderedTimelineScanRecipe import PySparkOrderedTimelineScanRecipe
 from structure.plugin.pyspark.compiler.model.PySparkOutputRecipe import PySparkOutputRecipe
 from structure.plugin.pyspark.compiler.model.PySparkSelectedRowsRecipe import PySparkSelectedRowsRecipe
@@ -167,7 +168,13 @@ class RenderPySparkStep:
                     generated_hooks=generated_hooks,
                 )
             )
-        lines.extend(self._validations(step.validations, target=target))
+        lines.extend(
+            self._validations(
+                step.validations,
+                target=target,
+                preserve_observation=any(operation.kind == "observation" for operation in step.operations),
+            )
+        )
         lines.extend(self._post_operations(step, target=target))
         if frame_mapping is not None and isinstance(step, PySparkStepRecipe):
             for result in step.results:
@@ -547,7 +554,13 @@ class RenderPySparkStep:
                     generated_hooks=generated_hooks,
                 )
             )
-            lines.extend(self._validations(result.validations, target=result.frame))
+            lines.extend(
+                self._validations(
+                    result.validations,
+                    target=result.frame,
+                    preserve_observation=any(operation.kind == "observation" for operation in step.operations),
+                )
+            )
             lines.extend(self._post_operations(step, target=result.frame))
             if frame_mapping is not None:
                 lines.extend(self._command_result_accumulation(result, frame_mapping=frame_mapping))
@@ -708,6 +721,18 @@ class RenderPySparkStep:
                 ordered_lines.extend(
                     self._aggregate_renderer(step, operation.aggregate, target=target, backend_target=backend_target)
                 )
+            if operation.kind == "observation" and operation.observation is not None:
+                observation = operation.observation
+                observation_key = ".".join((*observation.path, observation.name))
+                handle = f"self._structure_observations[{observation_key!r}]"
+                ordered_lines.append(
+                    f"        {handle} = Observation({observation_key + '_'!r} + str(id(self)))"
+                )
+                metrics = ", ".join(
+                    f"{render_pyspark_expression(expression, scope_aliases=self._scope_aliases(step))}.alias({name!r})"
+                    for name, expression in observation.metrics
+                )
+                ordered_lines.append(f"        {target} = {target}.observe({handle}, {metrics})")
             if operation.kind == "selected_rows" and operation.selected_rows is not None:
                 ordered_lines.extend(self._selected_rows(step, operation.selected_rows, target=target))
             if operation.kind == "drop_duplicates":
@@ -2606,6 +2631,7 @@ class RenderPySparkStep:
         *,
         target: str = "df",
         hook_boundary: bool = False,
+        preserve_observation: bool = False,
     ) -> list[str]:
         lines: list[str] = []
         for validation in validations:
@@ -2619,7 +2645,7 @@ class RenderPySparkStep:
                 )
             if validation.project:
                 lines.append(f"        {target} = project_schema({target}, {schema})")
-            if validation.boundary:
+            if validation.boundary and not preserve_observation:
                 lines.extend(
                     [
                         f"        if not {target}.isStreaming:",

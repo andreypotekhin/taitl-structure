@@ -118,8 +118,9 @@ evidence for each claimed profile.
 Persisted opaque state is Spark/profile-specific rather than an interchange format. Documentation and diagnostics must
 require users to pin the compatible Spark and provider profile. Count-Min remains caller-owned because its baseline SQL
 surface produces bytes without a typed SQL consumer. KLL and Theta reuse this opaque-type model only on the PySpark 4.1
-profile; they are not default-baseline support. Observation metrics are a separate future side-channel design, not
-regular transform output fields.
+profile; they are not default-baseline support. Typed batch observations are a separately admitted PySpark 4.1
+side-channel capability, not regular transform output fields; see the V11 observation design for its exact ordinary
+and Connect profile.
 
 The complete default-baseline implementation and documentation contract is maintained in
 [Sketches and Bitmaps design](SketchBitmap.design.md). It separates the supported HLL/Bitmap surface from

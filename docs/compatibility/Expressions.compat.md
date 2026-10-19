@@ -427,6 +427,12 @@ TIME comparisons require matching precisions; ordering accepts all TIME precisio
 native Spark behavior (including String parsing that may retain microseconds beyond the declared TIME precision). Date
 and timestamp casts and TIME arithmetic are excluded. See the [TIME reference](../reference/Expressions.ref.md#spark-41-time-values).
 
+## Spark 4.1 typed batch observations
+
+| Structure API | PySpark parity | Example | PySpark 3 | PySpark 4 | Details |
+| --- | --- | --- | --- | --- | --- |
+| `observation(Schema)`, `observe(...)`, `result.name.get()` | `DataFrame.observe` and `Observation` | `result.quality.get()` | no | yes | Supported only for exact `>=4.1,<4.2` ordinary and Spark Connect targets, batch-only. Metric nullability follows global aggregate behavior, including nullable empty-input sums. Caller actions execute the observed path; Structure adds no action. Native/online/generated parity passed for Spark/PySpark 4.1.0. See the [observation reference](../reference/Expressions.ref.md#typed-batch-observations). |
+
 ## Typed field and expression helpers
 
 | Structure API | PySpark parity | Example | PySpark 3 | PySpark 4 | Details |

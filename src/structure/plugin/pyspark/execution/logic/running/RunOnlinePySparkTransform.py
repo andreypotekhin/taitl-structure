@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import cast
+from typing import Any, cast
+from uuid import uuid4
 
 from structure.dsl import Transform
 from structure.plugin.api.v1.model import RuntimeDiagnostic, StructureRuntimeError, TransformResult
@@ -112,6 +113,7 @@ class RunOnlinePySparkTransform:
         from pyspark.sql import types as T  # type: ignore[import-not-found]
 
         inputs = dict(invocation._structure_bound_inputs)
+        observation_results: dict[str, Any] = {}
         delta_tables = {}
         iceberg_tables = {}
         self._backend_target = plan.backend.target
@@ -271,6 +273,7 @@ class RunOnlinePySparkTransform:
                 window=Window,
                 types=T,
                 command_result_frames=command_result_frames,
+                observation_results=observation_results,
             )
             frames.update(produced)
 
@@ -321,13 +324,39 @@ class RunOnlinePySparkTransform:
                         output.aliases,
                     )
                 )
+        root_observations = {
+            getattr(declaration, "name"): observation_results[getattr(declaration, "name")]
+            for declaration in plan.observations
+            if getattr(declaration, "name") in observation_results
+        }
+        stage_observation_records: list[tuple[tuple[str, ...], str, Any]] = []
+        unused_stage_observations: list[tuple[tuple[str, ...], str]] = []
+        if plan.allow_stage_outputs:
+            for path, declaration in plan.stage_observations:
+                name = getattr(declaration, "name")
+                key = ".".join((*path, name))
+                observation_result = observation_results.get(key)
+                if observation_result is None:
+                    unused_stage_observations.append((path, name))
+                else:
+                    stage_observation_records.append((path, name, observation_result))
+        stage_names = tuple(dict.fromkeys(
+            (*[item.path[0] for item in plan.stage_outputs], *[path[0] for path, _ in plan.stage_observations])
+        ))
         return TransformResult(
             outputs,
             single=len(plan.outputs) == 1,
             aliases=self._output_aliases(plan),
             stage_records=stage_records,
+            stage_observations=stage_observation_records if plan.allow_stage_outputs else None,
+            unused_stage_observations=unused_stage_observations if plan.allow_stage_outputs else None,
             stage_outputs_enabled=plan.allow_stage_outputs,
-            stage_names=tuple(dict.fromkeys(item.path[0] for item in plan.stage_outputs)),
+            stage_names=stage_names,
+            observations=root_observations,
+            unused_observations=tuple(
+                getattr(declaration, "name") for declaration in plan.observations
+                if getattr(declaration, "name") not in root_observations
+            ),
         )
 
     def _output_aliases(self, plan: PySparkExecutionPlan) -> dict[str, tuple[str, ...]]:
@@ -346,9 +375,12 @@ class RunOnlinePySparkTransform:
         window,
         types,
         command_result_frames: set[str] | None = None,
+        observation_results: dict | None = None,
     ):
         if command_result_frames is None:
             command_result_frames = set()
+        if observation_results is None:
+            observation_results = {}
         active = current
         if step.before_hooks:
             self._hooks.apply(
@@ -361,7 +393,8 @@ class RunOnlinePySparkTransform:
 
         df = active.alias(step.input_alias)
         df = self._operations(
-            step, df, frames=frames, functions=functions, window=window, types=types, session=session
+            step, df, frames=frames, functions=functions, window=window, types=types, session=session,
+            observation_results=observation_results,
         )
 
         if len(step.results) > 1:
@@ -400,7 +433,11 @@ class RunOnlinePySparkTransform:
                         self._validator.validate(projected, validation, types=types)
                     if validation.project:
                         projected = self._validator.project(projected, validation, types=types, functions=functions)
-                    if validation.boundary and not projected.isStreaming:
+                    if (
+                        validation.boundary
+                        and not projected.isStreaming
+                        and not any(operation.kind == "observation" for operation in step.operations)
+                    ):
                         projected = apply_plan_boundary(projected, projected.sparkSession, owner=session)
                 projected = self._post_operations(step, projected)
                 projected = self._append_command_result(
@@ -440,7 +477,11 @@ class RunOnlinePySparkTransform:
                 self._validator.validate(df, validation, types=types)
             if validation.project:
                 df = self._validator.project(df, validation, types=types, functions=functions)
-            if validation.boundary and not df.isStreaming:
+            if (
+                validation.boundary
+                and not df.isStreaming
+                and not any(operation.kind == "observation" for operation in step.operations)
+            ):
                 df = apply_plan_boundary(df, df.sparkSession, owner=session)
         df = self._post_operations(step, df)
         result = step.results[0]
@@ -500,7 +541,12 @@ class RunOnlinePySparkTransform:
         df = self._post_operations(output, df)
         return df
 
-    def _operations(self, step: PySparkStepRecipe | PySparkOutputRecipe, df, *, frames, functions, window, types, session):
+    def _operations(
+        self, step: PySparkStepRecipe | PySparkOutputRecipe, df, *, frames, functions, window, types, session,
+        observation_results=None,
+    ):
+        if observation_results is None:
+            observation_results = {}
         if any(operation.checkpoint and operation.checkpoint.stage_input for operation in step.operations):
             if not df.isStreaming:
                 # Stage before joins introduce additional qualifiers; keep checkpoint submission shallow.
@@ -554,6 +600,26 @@ class RunOnlinePySparkTransform:
                 )
             if operation.kind == "aggregate" and operation.aggregate is not None:
                 df = self._aggregate(step, df, operation.aggregate, functions=functions, types=types)
+            if operation.kind == "observation" and operation.observation is not None:
+                from pyspark.sql import Observation  # type: ignore[import-not-found]
+
+                from structure.plugin.api.v1.model import ObservationResult
+
+                observation = operation.observation
+                observation_key = ".".join((*observation.path, observation.name))
+                handle = Observation(f"{observation_key}_{uuid4().hex}")
+                columns = [
+                    self._expressions.evaluate(
+                        expression,
+                        functions=functions,
+                        aliases=self._scope_aliases(step),
+                        window=window,
+                        relation_frames=frames,
+                    ).alias(name)
+                    for name, expression in observation.metrics
+                ]
+                df = df.observe(handle, *columns)
+                observation_results[observation_key] = ObservationResult(observation.schema, lambda: handle.get)
             if operation.kind == "selected_rows" and operation.selected_rows is not None:
                 df = self._selected_rows(step, df, operation.selected_rows, functions=functions, window=window)
             if operation.kind == "drop_duplicates":

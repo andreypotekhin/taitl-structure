@@ -24,6 +24,8 @@ class TransformPlan:
     diagnostics: tuple[Any, ...] = ()
     streaming_boundaries: tuple[StreamingBoundaryPlan, ...] = ()
     sinks: tuple[SinkPlan, ...] = ()
+    observations: tuple[object, ...] = ()
+    stage_observations: tuple[tuple[tuple[str, ...], object], ...] = ()
 
     @property
     def output_schema(self) -> Any:

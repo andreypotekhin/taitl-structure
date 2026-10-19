@@ -144,6 +144,8 @@ class RenderPySparkTransformModule:
             lines.insert(1, "from decimal import Decimal")
         if self._has_window(plan):
             lines.insert(2, "from pyspark.sql import Window")
+        if self._observations(plan):
+            lines.insert(2, "from pyspark.sql import Observation")
         if self._has_explicit_cache_level(plan):
             lines.insert(2, "from pyspark import StorageLevel")
         lines.extend(
@@ -153,6 +155,8 @@ class RenderPySparkTransformModule:
                 generated_code_options=generated_code_options,
             )
         )
+        for schema in self._observation_schemas(plan):
+            lines.append(f"from {schema.__module__} import {schema.__name__}")
 
         helpers = ["TransformResult", "assert_schema", "project_schema", "apply_plan_boundary", "close_plan_boundaries"]
         has_stateful_transform = any(
@@ -165,6 +169,8 @@ class RenderPySparkTransformModule:
         if self._has_policy_checks(plan):
             helpers.extend(("reuse_policy_checks", "singleton_policy"))
         lines.append(f"from {runtime_module} import {', '.join(helpers)}")
+        if self._observations(plan):
+            lines.append("from structure.plugin.api.v1.model import ObservationResult")
         if has_stateful_transform:
             state_helpers = ["apply_stateful_transform", "apply_legacy_pandas_state"]
             lines.append(f"from structure.plugin.pyspark.execution.stateful import {', '.join(state_helpers)}")
@@ -361,6 +367,8 @@ class RenderPySparkTransformModule:
                 "        self._ran = True",
             ]
         )
+        if self._observations(plan) or plan.stage_observations:
+            lines.append("        self._structure_observations = {}")
         if any(item.binding in {"delta", "delta_table"} for item in plan.inputs):
             lines.append("        self._delta_tables = {}")
         if any(item.binding in {"iceberg", "iceberg_table"} for item in plan.inputs):
@@ -410,13 +418,20 @@ class RenderPySparkTransformModule:
         single = "True" if len(plan.outputs) == 1 else "False"
         aliases = self._output_aliases(plan)
         alias_argument = f", aliases={aliases!r}" if aliases else ""
+        observation_argument, unused_argument, stage_observation_argument, unused_stage_argument = (
+            self._result_observation_arguments(plan)
+        )
         lines.append(
             f"        return TransformResult("
             f"{{{', '.join(result_entries)}}}, "
             f"single={single}, "
             f"schema={{{', '.join(schema_entries)}}}"
             f"{stage_argument}"
-            f"{alias_argument})"
+            f"{alias_argument}"
+            f"{observation_argument}"
+            f"{unused_argument}"
+            f"{stage_observation_argument}"
+            f"{unused_stage_argument})"
         )
         wrappers = (
             self._flat_methods(embedded_hooks)
@@ -582,6 +597,8 @@ class RenderPySparkTransformModule:
         lines.append("    ) -> TransformResult:")
         if self._has_runtime_variables(plan):
             lines.append("        self._structure_variables = _structure_variables or {}")
+        if self._observations(plan) or plan.stage_observations:
+            lines.append("        self._structure_observations = {}")
         if any(item.binding in {"delta", "delta_table"} for item in plan.inputs):
             lines.append("        self._delta_tables = {}")
         if any(item.binding in {"iceberg", "iceberg_table"} for item in plan.inputs):
@@ -664,13 +681,20 @@ class RenderPySparkTransformModule:
         single = "True" if len(plan.outputs) == 1 else "False"
         aliases = self._output_aliases(plan)
         alias_argument = f", aliases={aliases!r}" if aliases else ""
+        observation_argument, unused_argument, stage_observation_argument, unused_stage_argument = (
+            self._result_observation_arguments(plan)
+        )
         lines.append(
             f"        return TransformResult("
             f"{{{', '.join(result_entries)}}}, "
             f"single={single}, "
             f"schema={{{', '.join(schema_entries)}}}"
             f"{stage_argument}"
-            f"{alias_argument})"
+            f"{alias_argument}"
+            f"{observation_argument}"
+            f"{unused_argument}"
+            f"{stage_observation_argument}"
+            f"{unused_stage_argument})"
         )
         if self._options.enabled(generated_code_options, "embed_hooks"):
             lines.extend(["", *self._methods_for(embedded_hooks, source_transform)])
@@ -756,6 +780,8 @@ class RenderPySparkTransformModule:
         lines.append("    ) -> TransformResult:")
         if self._has_runtime_variables(plan):
             lines.append("        self._structure_variables = _structure_variables or {}")
+        if self._observations(plan) or plan.stage_observations:
+            lines.append("        self._structure_observations = {}")
         if any(item.binding in {"delta", "delta_table"} for item in plan.inputs):
             lines.append("        self._delta_tables = {}")
         if any(item.binding in {"iceberg", "iceberg_table"} for item in plan.inputs):
@@ -810,13 +836,20 @@ class RenderPySparkTransformModule:
         single = "True" if len(plan.outputs) == 1 else "False"
         aliases = self._output_aliases(plan)
         alias_argument = f", aliases={aliases!r}" if aliases else ""
+        observation_argument, unused_argument, stage_observation_argument, unused_stage_argument = (
+            self._result_observation_arguments(plan)
+        )
         lines.append(
             f"        return TransformResult("
             f"{{{', '.join(result_entries)}}}, "
             f"single={single}, "
             f"schema={{{', '.join(schema_entries)}}}"
             f"{stage_argument}"
-            f"{alias_argument})"
+            f"{alias_argument}"
+            f"{observation_argument}"
+            f"{unused_argument}"
+            f"{stage_observation_argument}"
+            f"{unused_stage_argument})"
         )
         if self._options.enabled(generated_code_options, "embed_hooks"):
             lines.extend(["", *self._methods_for(embedded_hooks, source_transform)])
@@ -1025,6 +1058,59 @@ class RenderPySparkTransformModule:
             if owner_import != source_transform:
                 imports[module].add(owner)
         return [f"from {module} import {', '.join(sorted(names))}" for module, names in sorted(imports.items())]
+
+    @staticmethod
+    def _observations(plan: PySparkExecutionPlan) -> dict[str, type[Schema]]:
+        return {
+            ".".join((*operation.observation.path, operation.observation.name)): operation.observation.schema
+            for step in plan.steps
+            for operation in step.operations
+            if operation.observation is not None
+        }
+
+    def _result_observation_arguments(self, plan: PySparkExecutionPlan) -> tuple[str, str, str, str]:
+        used = self._observations(plan)
+        root_handles: dict[str, str] = {}
+        unused: list[str] = []
+        for item in plan.observations:
+            name = cast(str, getattr(item, "name"))
+            schema = cast(type[Schema], getattr(item, "schema"))
+            if name in used:
+                root_handles[name] = (
+                    f"ObservationResult({schema.__name__}, "
+                    f"lambda: self._structure_observations[{name!r}].get)"
+                )
+            else:
+                unused.append(name)
+        root_entries = ", ".join(f"{name!r}: {handle}" for name, handle in root_handles.items())
+        observation_argument = f", observations={{{root_entries}}}" if root_handles else ""
+        unused_argument = f", unused_observations={tuple(unused)!r}" if plan.observations else ""
+
+        stage_handles: dict[tuple[str, ...], dict[str, str]] = {}
+        unused_stage: list[tuple[tuple[str, ...], str]] = []
+        if plan.allow_stage_outputs:
+            for path, item in plan.stage_observations:
+                name = cast(str, getattr(item, "name"))
+                schema = cast(type[Schema], getattr(item, "schema"))
+                key = ".".join((*path, name))
+                if key not in used:
+                    unused_stage.append((path, name))
+                    continue
+                stage_handles.setdefault(path, {})[name] = (
+                    f"ObservationResult({schema.__name__}, "
+                    f"lambda: self._structure_observations[{key!r}].get)"
+                )
+        stage_entries = ", ".join(
+            f"{path!r}: {{{', '.join(f'{name!r}: {handle}' for name, handle in handles.items())}}}"
+            for path, handles in stage_handles.items()
+        )
+        stage_observation_argument = f", stage_observations={{{stage_entries}}}" if plan.stage_observations else ""
+        unused_stage_argument = f", unused_stage_observations={unused_stage!r}" if plan.stage_observations else ""
+        return observation_argument, unused_argument, stage_observation_argument, unused_stage_argument
+
+    @staticmethod
+    def _observation_schemas(plan: PySparkExecutionPlan) -> tuple[type[Schema], ...]:
+        return tuple(dict.fromkeys(RenderPySparkTransformModule._observations(plan).values()))
 
     def _hook_impl_initializers(self, plan: PySparkExecutionPlan, *, source_transform: str) -> list[str]:
         lines: list[str] = []
@@ -1413,7 +1499,14 @@ class RenderPySparkTransformModule:
         backend_target: str,
         mirror: bool = False,
     ) -> tuple[list[str], str]:
-        if not plan.allow_stage_outputs or not plan.stage_outputs:
+        stage_names = tuple(dict.fromkeys(
+            (*[item.path[0] for item in plan.stage_outputs], *[path[0] for path, _ in plan.stage_observations])
+        ))
+        if not plan.allow_stage_outputs and plan.stage_observations:
+            return [], f", stage_outputs_enabled=False, stage_names={stage_names!r}"
+        if plan.allow_stage_outputs and plan.stage_observations and not plan.stage_outputs:
+            return [], f", stage_outputs_enabled=True, stage_names={stage_names!r}"
+        if not plan.stage_outputs:
             return [], ""
         lines: list[str] = []
         records: list[str] = []
@@ -1432,7 +1525,6 @@ class RenderPySparkTransformModule:
             records.append(
                 f"({stage_output.path!r}, {value}, {self._schema.constant_name(output.output_schema)}, {output.aliases!r})"
             )
-        stage_names = tuple(dict.fromkeys(item.path[0] for item in plan.stage_outputs))
         return lines, (
             f", stage_records=[{', '.join(records)}]"
             f", stage_outputs_enabled={plan.allow_stage_outputs!r}"

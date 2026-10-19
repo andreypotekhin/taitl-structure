@@ -75,14 +75,20 @@ profile remains `>=3.5,<4.1`; other profiles remain gated.
 
 ## Feature 3: observations and approximate sketches
 
-Observation metrics are not silently added to a transform's row schema. The design must choose between a typed metric
-channel, a caller-owned observation hook, or an explicit unsupported status. Complex metric values must define allowed
-types, serialization, retrieval timing, and batch/streaming behavior. KLL and Theta sketch aggregates must define their
-binary result type, merge semantics, optional dependency behavior, determinism, and whether users can consume the
-result inside a Structure schema. Until those decisions are implemented and tested, the rows remain `design-gated`.
+Typed batch observations follow the contract in the
+[observation design](../design/V11PySpark41ObservationsAndSketches.design.md#observation-boundary) and its
+[completed implementation plan](../planning/past/P10182602.V11-batch-observations.plan.md). A transform declares a named metric
+Schema with `observation(Schema)`, binds it once with `observe(Schema(...))` or
+`observe(self.declaration, Schema(...))`, and exposes a typed handle beside its row outputs. `get()` adds no Spark
+action; the caller first performs an action on a returned path that traverses the observation. Metric nullability
+follows global aggregate semantics, including nullable `sum` on empty input. Observations preserve native ordinary and
+Connect lifecycle behavior, are batch-only, and follow stage-output visibility. Native/online/generated parity passed
+for values, schema, empty input, conditional counts, collection snapshots, and Connect's pre-action state on ordinary
+and Connect PySpark/Spark 4.1.0. The exact `>=4.1,<4.2` variants are admitted independently; earlier and later profiles
+remain gated. See the [observation ExecPlan](../planning/past/P10182602.V11-batch-observations.plan.md).
 
-Acceptance is a documented positive or negative contract, with no misleading support claim and with runtime diagnostics
-that point to the caller-owned alternative when applicable.
+KLL and Theta sketch aggregates remain `design-gated` separately. Their binary result type, merge semantics, optional
+dependency behavior, determinism, and typed consumption contract require their own decisions and evidence.
 
 ## Feature 4: Arrow UDF/UDTF and state processors
 

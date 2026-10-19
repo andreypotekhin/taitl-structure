@@ -37,6 +37,11 @@ class ValidatePySparkRelationReads:
                     ),
                 )
                 self._validate(relations, joined, reads, request)
+            if operation.kind == "observation" and operation.observation is not None:
+                reads = set().union(
+                    *(self._scopes(expression) for _, expression in operation.observation.metrics)
+                )
+                self._validate(relations, joined, reads, request)
             if operation.kind == "selected_rows" and operation.selected_rows is not None:
                 selected = operation.selected_rows
                 reads = set().union(

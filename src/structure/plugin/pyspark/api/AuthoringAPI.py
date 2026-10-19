@@ -61,6 +61,7 @@ class PySparkStepSession:
         )
         self._capture_pending = False
         self._forwarded_table_scope: object | None = None
+        self._context.observation_declarations = tuple(request.observations)
 
     def __enter__(self) -> PySparkStepSession:
         self._context.__enter__()

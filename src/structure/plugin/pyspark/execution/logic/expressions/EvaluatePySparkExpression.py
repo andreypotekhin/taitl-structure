@@ -50,6 +50,8 @@ class EvaluatePySparkExpression:
             if alias == "":
                 return functions.col(self._field_path(expression))
             return functions.col(f"{alias}.{self._field_path(expression)}")
+        if expression.kind == "aggregate":
+            return self._aggregate(expression, functions=functions, aliases=aliases, window=window)
         if expression.kind == "get_field":
             return self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window).getField(
                 expression.data["field"]
@@ -206,6 +208,46 @@ class EvaluatePySparkExpression:
         if expression.kind == "not":
             return ~self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window)
         raise TypeError(f"Unsupported PySpark expression recipe: {expression.kind}")
+
+    def _aggregate(self, expression, *, functions, aliases, window):
+        function = str(expression.data["function"])
+        native_names = {
+            "avg": "avg", "mean": "mean", "max": "max", "min": "min", "sum": "sum",
+            "count": "count", "count_if": "count_if", "bool_and": "bool_and", "bool_or": "bool_or",
+            "every": "every", "some": "some", "first": "first", "last": "last", "median": "median",
+            "product": "product", "std": "std", "stddev": "stddev", "stddev_pop": "stddev_pop",
+            "stddev_samp": "stddev_samp", "variance": "variance", "var_pop": "var_pop",
+            "var_samp": "var_samp", "kurtosis": "kurtosis", "skewness": "skewness",
+            "collect_list": "collect_list", "collect_set": "collect_set", "array_agg": "array_agg",
+            "any_value": "any_value", "approx_count_distinct": "approx_count_distinct",
+            "approx_percentile": "percentile_approx", "corr": "corr", "covar": "covar_samp",
+            "covar_pop": "covar_pop",
+        }
+        try:
+            aggregate = getattr(functions, native_names[function])
+        except KeyError as error:
+            raise TypeError(f"Unsupported observation aggregate: {function}") from error
+        argument_count = int(expression.data.get("arg_count", len(expression.args)))
+        arguments = [
+            self.evaluate(argument, functions=functions, aliases=aliases, window=window)
+            for argument in expression.args[:argument_count]
+        ]
+        where_index = expression.data.get("where_index")
+        if where_index is not None:
+            predicate = self.evaluate(expression.args[int(where_index)], functions=functions, aliases=aliases, window=window)
+            if arguments:
+                arguments[0] = functions.when(predicate, arguments[0])
+            elif function == "count":
+                arguments.append(functions.when(predicate, functions.lit(1)))
+            else:
+                raise TypeError(f"Observation aggregate {function} does not support where=...")
+        if function == "count" and not arguments:
+            arguments.append(functions.lit(1))
+        if function == "approx_count_distinct" and "relative_sd" in expression.data:
+            arguments.append(expression.data["relative_sd"])
+        if function == "approx_percentile":
+            arguments.extend((expression.data["percentage"], expression.data.get("accuracy", 10000)))
+        return aggregate(*arguments)
 
     def _relation_query(self, query, *, functions, aliases, window):
         frames = _relation_frames.get()

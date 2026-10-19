@@ -76,6 +76,19 @@ class ComposeTransformGraph:
             steps=tuple(steps),
             outputs=tuple(outputs),
             stage_outputs=tuple(public_stage_outputs),
+            observations=tuple(wrapper_class._structure_observations.values()),
+            stage_observations=tuple(
+                ((stage.name or self._snake(type(stage.invocation).__name__),), declaration)
+                for stage, plan in zip(stages, stage_plans, strict=True)
+                for declaration in plan.observations
+            ) + tuple(
+                (
+                    (stage.name or self._snake(type(stage.invocation).__name__), *path),
+                    declaration,
+                )
+                for stage, plan in zip(stages, stage_plans, strict=True)
+                for path, declaration in plan.stage_observations
+            ),
             allow_stage_outputs=allow_stage_outputs,
             internal_inputs=tuple(internal_inputs),
             options=wrapper_class.resolve_transform_options(

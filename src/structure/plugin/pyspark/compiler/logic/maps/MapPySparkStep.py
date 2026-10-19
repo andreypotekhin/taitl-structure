@@ -24,6 +24,7 @@ from structure.plugin.pyspark.compiler.model.PySparkMaterializationRecipe import
     PySparkPersistRecipe,
     PySparkUnpersistRecipe,
 )
+from structure.plugin.pyspark.compiler.model.PySparkObservationRecipe import PySparkObservationRecipe
 from structure.plugin.pyspark.compiler.model.PySparkOperationRecipe import PySparkOperationRecipe
 from structure.plugin.pyspark.compiler.model.PySparkOrderedTimelineScanRecipe import PySparkOrderedTimelineScanRecipe
 from structure.plugin.pyspark.compiler.model.PySparkProjectionRecipe import PySparkProjectionRecipe
@@ -238,6 +239,25 @@ class MapPySparkStep:
                     self._operation_modes(
                         PySparkOperationRecipe.aggregate_operation(
                             self._aggregate(operation.aggregate, capabilities=capabilities)
+                        ),
+                        operation,
+                    )
+                )
+            if operation.kind == "observation" and operation.observation is not None:
+                recipes.append(
+                    self._operation_modes(
+                        PySparkOperationRecipe.observation_operation(
+                            PySparkObservationRecipe(
+                                name=operation.observation.name,
+                                path=tuple(step_name.rsplit(".", 1)[0].split("."))
+                                if "." in step_name
+                                else (),
+                                schema=operation.observation.schema,
+                                metrics=tuple(
+                                    (name, self._expressions.map(expression, capabilities=capabilities))
+                                    for name, expression in operation.observation.metrics
+                                ),
+                            )
                         ),
                         operation,
                     )

@@ -109,6 +109,7 @@ class AnalyzeTransform(CompileTransform):
             inputs=tuple(inputs),
             steps=tuple(steps),
             outputs=tuple(outputs),
+            observations=tuple(transform_class._structure_observations.values()),
             allow_stage_outputs=config.allow_stage_outputs,
             options=transform_class.effective_transform_options(),
             diagnostics=tuple(diagnostics),

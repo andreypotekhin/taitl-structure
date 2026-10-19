@@ -3,16 +3,18 @@
 from structure.core.dsl.model.transforms.InputDeclaration import InputDeclaration
 from structure.core.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.core.dsl.model.transforms.ParameterDeclaration import ParameterDeclaration
+from structure.core.dsl.model.transforms.ObservationDeclaration import ObservationDeclaration
 from structure.core.dsl.model.transforms.SinkDeclaration import SinkDeclaration
 from structure.core.dsl.model.transforms.StageDeclaration import StageDeclaration, StageOutputReference
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.dsl.model.transforms.VariableDeclaration import VariableDeclaration, VariableReference
-from structure.core.dsl.model.transforms.transform_api import input, lane, parameter, sink, special, stage, transform, variable
+from structure.core.dsl.model.transforms.transform_api import input, lane, observation, parameter, sink, special, stage, transform, variable
 
 __all__ = [
     "InputDeclaration",
     "LaneDeclaration",
     "ParameterDeclaration",
+    "ObservationDeclaration",
     "VariableDeclaration",
     "VariableReference",
     "SinkDeclaration",
@@ -21,6 +23,7 @@ __all__ = [
     "Transform",
     "input",
     "lane",
+    "observation",
     "parameter",
     "sink",
     "special",

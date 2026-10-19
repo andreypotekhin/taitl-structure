@@ -2,9 +2,13 @@
 
 Status: planned; target: 2027-02-05.
 
+Typed batch observations are implemented for ordinary and Spark Connect `>=4.1,<4.2`; exact parity and build evidence
+is recorded in the [completed typed batch observations ExecPlan](../../planning/past/P10182602.V11-batch-observations.plan.md).
+Approximate sketches remain design-gated.
+
 ## Sprint goal
 
-Close the contract decisions for complex observations, approximate sketches, Arrow UDF/UDTFs, the separate row and
+Close the remaining contract decisions for approximate sketches, Arrow UDF/UDTFs, the separate row and
 Pandas state processor families, legacy `applyInPandasWithState`, and caller-owned side-effect handoffs.
 
 ## User-facing outcome
@@ -14,7 +18,8 @@ API; no gated state or worker-Python API is generated accidentally.
 
 ## Implementation tasks
 
-- Specify and implement a typed metric channel or retain the observation gate.
+- [x] Implement typed batch observations and admit only ordinary and Spark Connect `>=4.1,<4.2` after per-variant
+  online/generated parity.
 - Specify sketch binary/merge/dependency semantics or retain the gate.
 - Add stable diagnostics and generated-source boundary checks for Arrow UDF/UDTF and unsupported state APIs. Row-based
   `transformWithState` is admitted for ordinary PySpark 4.1 with independent ledger status and live mode/timer/restart

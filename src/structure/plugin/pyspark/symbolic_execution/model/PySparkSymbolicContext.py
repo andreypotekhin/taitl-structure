@@ -36,6 +36,10 @@ class PySparkSymbolicContext:
         self.step_output_schema = step_output_schema
         self.aggregate_keys: tuple[tuple[str, Expression], ...] | None = None
         self.aggregate_requested = False
+        self._aggregate_expressions: dict[int, Expression] = {}
+        self._observation_aggregate_ids: set[int] = set()
+        self.observation_declarations: tuple[object, ...] = ()
+        self.observation_bindings: set[str] = set()
         self.aggregate_levels: tuple[tuple[str, ...], ...] = ()
         self.aggregate_grouping = "group_by"
         self.aggregate_having: Expression | None = None

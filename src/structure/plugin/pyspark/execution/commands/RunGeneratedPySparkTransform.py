@@ -78,6 +78,8 @@ class RunGeneratedPySparkTransform:
                 single=len(plan.outputs) == 1,
                 aliases=self._output_aliases(plan),
                 stages=stages,
+                observations=getattr(result, "_structure_observations", {}),
+                unused_observations=tuple(getattr(result, "_structure_unused_observations", ())),
                 stage_outputs_enabled=getattr(result, "_structure_stage_outputs_enabled", True),
                 stage_names=tuple(getattr(result, "_structure_stage_names", ())),
             )

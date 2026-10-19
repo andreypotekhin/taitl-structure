@@ -5,6 +5,7 @@ from types import MappingProxyType
 from typing import Any
 
 from structure.core.runtime.schemas.model.TransformSchemas import ResultSchemas
+from structure.core.runtime.session.model.ObservationResult import ObservationResult
 from structure.core.runtime.session.model.SinkResult import SinkResult
 from structure.core.runtime.session.model.StageResult import StageResult, build_stage_results
 
@@ -14,6 +15,7 @@ class TransformResult(Mapping[str, Any]):
     _structure_aliases: Mapping[str, str]
     _structure_output_aliases: Mapping[str, tuple[str, ...]]
     _structure_sinks: Mapping[str, SinkResult]
+    _structure_observations: Mapping[str, ObservationResult]
     _structure_single: bool
     state_budget: Mapping[str, object]
     schema: ResultSchemas
@@ -26,8 +28,12 @@ class TransformResult(Mapping[str, Any]):
         schema: Mapping[str, Any] | None = None,
         aliases: Mapping[str, tuple[str, ...]] | None = None,
         stage_records: list[tuple[tuple[str, ...], Any, Any, tuple[str, ...]]] | None = None,
+        stage_observations: list[tuple[tuple[str, ...], str, ObservationResult]] | None = None,
+        unused_stage_observations: list[tuple[tuple[str, ...], str]] | None = None,
         stages: Mapping[str, StageResult] | None = None,
         sinks: Mapping[str, SinkResult] | None = None,
+        observations: Mapping[str, ObservationResult] | None = None,
+        unused_observations: tuple[str, ...] = (),
         stage_outputs_enabled: bool = True,
         stage_names: tuple[str, ...] = (),
         state_budget: Mapping[str, object] | None = None,
@@ -49,7 +55,21 @@ class TransformResult(Mapping[str, Any]):
         if reserved:
             raise ValueError(f"TransformResult sink names are reserved: {', '.join(sorted(reserved))}")
         object.__setattr__(self, "_structure_sinks", MappingProxyType(sink_values))
-        stage_values = build_stage_results(stage_records or []) if stage_records is not None else dict(stages or {})
+        observation_values = dict(observations or {})
+        all_public_names = set(values) | set(output_aliases) | set(self._alias_index(output_aliases)) | set(sink_values)
+        collisions = set(observation_values) & all_public_names
+        if collisions:
+            raise ValueError(f"TransformResult observation names collide with outputs or sinks: {', '.join(sorted(collisions))}")
+        reserved = set(observation_values) & (set(dir(type(self))) | {"schema"})
+        if reserved:
+            raise ValueError(f"TransformResult observation names are reserved: {', '.join(sorted(reserved))}")
+        object.__setattr__(self, "_structure_observations", MappingProxyType(observation_values))
+        object.__setattr__(self, "_structure_unused_observations", frozenset(unused_observations))
+        stage_values = (
+            build_stage_results(stage_records or [], stage_observations, unused_stage_observations)
+            if stage_records is not None or stage_observations is not None or unused_stage_observations is not None
+            else dict(stages or {})
+        )
         object.__setattr__(self, "_structure_stages", MappingProxyType(dict(stage_values)))
         object.__setattr__(self, "_structure_stage_outputs_enabled", stage_outputs_enabled)
         object.__setattr__(self, "_structure_stage_names", frozenset(stage_names))
@@ -76,6 +96,12 @@ class TransformResult(Mapping[str, Any]):
             return self._structure_outputs[name]
         if name in self._structure_sinks:
             return self._structure_sinks[name]
+        if name in self._structure_observations:
+            return self._structure_observations[name]
+        if name in self._structure_unused_observations:
+            raise AttributeError(
+                f"Observation {name!r} was declared but is unused in this transform specialization."
+            )
         if name in self._structure_aliases:
             return self._structure_outputs[self._structure_aliases[name]]
         if name in self._structure_stages:

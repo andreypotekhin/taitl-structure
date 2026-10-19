@@ -32,6 +32,8 @@ class PySparkExecutionPlan:
     state_budget_memory_source: str | None = None
     state_budget_fallback_mb: int | None = None
     transform_memory_budget: object | None = None
+    observations: tuple[object, ...] = ()
+    stage_observations: tuple[tuple[tuple[str, ...], object], ...] = ()
 
     @property
     def final_validation(self) -> PySparkValidationRecipe:

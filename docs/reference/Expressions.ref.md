@@ -142,3 +142,62 @@ class ParseTimes(Transform):
 
 See the [TIME compatibility entry](../compatibility/Expressions.compat.md#spark-41-time) for runtime evidence and
 profile details.
+
+## Typed batch observations
+
+Observations provide a named metric value beside a transform's row outputs on exact PySpark 4.1 ordinary and Spark
+Connect profiles. They are batch-only and do not add a Spark action.
+
+Declare the metric Schema on the transform and bind it once in a step. The caller performs an action on a returned
+output path that includes the observation, then reads a fresh typed snapshot:
+
+```python
+from structure import *
+from structure.plugin.pyspark import *
+
+
+class Order(Schema):
+    order_id = string(nullable=False)
+    quantity = long(nullable=False)
+
+
+class OrderMetrics(Schema):
+    rows = long(nullable=False)
+    total_quantity = long(nullable=True)
+
+
+@transform
+class MeasureAcceptedOrders(Transform):
+    orders = input(Order)
+    accepted = output(Order)
+    quality = observation(OrderMetrics)
+
+    def accept(self, order: Order) -> Order:
+        where(order.quantity >= 0)
+        observe(OrderMetrics(rows=count(), total_quantity=sum(order.quantity)))
+        return Order.project(order)
+
+
+result = MeasureAcceptedOrders(orders=frame).run(session)
+result.accepted.collect()
+metrics = result.quality.get()
+assert metrics.rows == 2
+assert metrics.total_quantity == 5
+```
+
+The result handle exposes the declared Schema class through `.schema`. Each `.get()` returns a fresh detached Schema
+snapshot; nested schema values and arrays/maps are copied recursively. Composed-stage handles are available through
+`result.stages.<stage>.<name>` when `allow_stage_outputs=True`.
+
+When several declarations use the same metric Schema, pass the intended handle explicitly:
+
+```python
+observe(self.quality, OrderMetrics(rows=count(), total_quantity=sum(order.quantity)))
+```
+
+This is an alternative to schema inference; bind a declaration only once. Empty input produces `rows == 0` and
+`total_quantity is None`, so empty-sensitive aggregates need nullable metric fields. `coalesce(sum(...), 0)` is
+non-null. Ordinary Spark retains its first action's values, while Spark Connect exposes its current native values on
+later actions. Before an action, Connect raises an actionable unavailable-metrics error; ordinary Spark's native
+getter waits for the first action. `get()` never triggers an action. Native/online/generated parity passed on ordinary
+and Connect PySpark/Spark 4.1.0.

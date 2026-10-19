@@ -2,6 +2,7 @@ from collections.abc import Mapping
 from types import MappingProxyType
 
 from pyspark.sql import functions as F
+from structure.plugin.api.v1.model import ObservationResult
 from structure.plugin.pyspark.execution.logic.PlanBoundary import apply_plan_boundary, close_plan_boundaries
 from structure.plugin.pyspark.execution.logic.PolicyChecks import reuse_policy_checks, singleton_policy
 from structure.plugin.pyspark.execution.logic.ValidatePySparkOrderedAggregate import ordered_aggregate_guard
@@ -58,7 +59,7 @@ def project_schema(df, schema):
 
 class TransformResult:
 
-    def __init__(self, outputs, *, single=False, schema=None, aliases=None, stage_records=None, stage_outputs_enabled=True, stage_names=()):
+    def __init__(self, outputs, *, single=False, schema=None, aliases=None, stage_records=None, stage_outputs_enabled=True, stage_names=(), observations=None, unused_observations=(), stage_observations=None, unused_stage_observations=()):
         values = dict(outputs)
         output_aliases = dict(aliases or {})
         if single:
@@ -67,7 +68,9 @@ class TransformResult:
         object.__setattr__(self, '_structure_outputs', MappingProxyType(values))
         object.__setattr__(self, '_structure_output_aliases', MappingProxyType(output_aliases))
         object.__setattr__(self, '_structure_aliases', MappingProxyType(_alias_index(output_aliases)))
-        object.__setattr__(self, '_structure_stages', MappingProxyType(_build_stage_results(stage_records or [])))
+        object.__setattr__(self, '_structure_stages', MappingProxyType(_build_stage_results(stage_records or [], stage_observations or {}, unused_stage_observations)))
+        object.__setattr__(self, '_structure_observations', MappingProxyType(dict(observations or {})))
+        object.__setattr__(self, '_structure_unused_observations', frozenset(unused_observations))
         object.__setattr__(self, '_structure_stage_outputs_enabled', stage_outputs_enabled)
         object.__setattr__(self, '_structure_stage_names', frozenset(stage_names))
         object.__setattr__(self, 'schema', ResultSchemas(schema, aliases=output_aliases))
@@ -94,6 +97,10 @@ class TransformResult:
             return self._structure_outputs[self._structure_aliases[name]]
         if name in self._structure_stages:
             return self._structure_stages[name]
+        if name in self._structure_observations:
+            return self._structure_observations[name]
+        if name in self._structure_unused_observations:
+            raise AttributeError(f"Observation {name!r} was declared but is unused in this transform specialization.")
         if name in self._structure_stage_names and not self._structure_stage_outputs_enabled:
             raise AttributeError('Stage output access is disabled; set allow_stage_outputs=True to enable it')
         raise AttributeError(name)
@@ -107,11 +114,13 @@ class TransformResult:
 
 class StageResult:
 
-    def __init__(self, outputs, *, schema=None, aliases=None, stages=None):
+    def __init__(self, outputs, *, schema=None, aliases=None, stages=None, observations=None, unused_observations=()):
         output_aliases = dict(aliases or {})
         object.__setattr__(self, '_structure_outputs', MappingProxyType(dict(outputs)))
         object.__setattr__(self, '_structure_aliases', MappingProxyType(_alias_index(output_aliases)))
         object.__setattr__(self, '_structure_stages', MappingProxyType(dict(stages or {})))
+        object.__setattr__(self, '_structure_observations', MappingProxyType(dict(observations or {})))
+        object.__setattr__(self, '_structure_unused_observations', frozenset(unused_observations))
         object.__setattr__(self, 'schema', ResultSchemas(schema, aliases=output_aliases))
 
     @property
@@ -136,6 +145,10 @@ class StageResult:
             return self._structure_outputs[self._structure_aliases[name]]
         if name in self._structure_stages:
             return self._structure_stages[name]
+        if name in self._structure_observations:
+            return self._structure_observations[name]
+        if name in self._structure_unused_observations:
+            raise AttributeError(f"Observation {name!r} was declared but is unused in this stage.")
         raise AttributeError(name)
 
     def __setattr__(self, name, value):
@@ -145,23 +158,42 @@ class StageResult:
         return dict(self._structure_outputs)
 
 
-def _build_stage_results(records):
+def _build_stage_results(records, observation_records=None, unused_observation_records=()):
     root = {}
+
+    def new_node():
+        return {'outputs': {}, 'schemas': {}, 'aliases': {}, 'stages': {}, 'observations': {}, 'unused_observations': set()}
+
     for path, value, schema, aliases in records:
         nodes = root
         for stage_name in path[:-1]:
-            node = nodes.setdefault(stage_name, {'outputs': {}, 'schemas': {}, 'aliases': {}, 'stages': {}})
+            node = nodes.setdefault(stage_name, new_node())
             nodes = node['stages']
         stage_name = path[-2]
         node = root
         for name in path[:-2]:
             node = node[name]['stages']
-        stage = node.setdefault(stage_name, {'outputs': {}, 'schemas': {}, 'aliases': {}, 'stages': {}})
+        stage = node.setdefault(stage_name, new_node())
         output_name = path[-1]
         stage['outputs'][output_name] = value
         stage['schemas'][output_name] = schema
         if aliases:
             stage['aliases'][output_name] = aliases
+
+    for path, observations in (observation_records or {}).items():
+        nodes = root
+        stage = None
+        for stage_name in path:
+            stage = nodes.setdefault(stage_name, new_node())
+            nodes = stage['stages']
+        stage['observations'].update(observations)
+    for path, name in unused_observation_records:
+        nodes = root
+        stage = None
+        for stage_name in path:
+            stage = nodes.setdefault(stage_name, new_node())
+            nodes = stage['stages']
+        stage['unused_observations'].add(name)
 
     def freeze(nodes):
         return MappingProxyType({
@@ -170,6 +202,8 @@ def _build_stage_results(records):
                 schema=node['schemas'],
                 aliases=node['aliases'],
                 stages=freeze(node['stages']),
+                observations=node['observations'],
+                unused_observations=node['unused_observations'],
             )
             for name, node in nodes.items()
         })
