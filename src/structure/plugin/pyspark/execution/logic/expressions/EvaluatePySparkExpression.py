@@ -1053,17 +1053,12 @@ class EvaluatePySparkExpression:
             "is_variant_null",
         }:
             return getattr(functions, function)(args[0])
-        if function in {"geo_from_wkt", "geo_as_wkt", "geo_intersects", "geo_contains", "geo_within"}:
-            names = {
-                "geo_from_wkt": "ST_GeomFromWKT",
-                "geo_as_wkt": "ST_AsText",
-                "geo_intersects": "ST_Intersects",
-                "geo_contains": "ST_Contains",
-                "geo_within": "ST_Within",
-            }
-            if function == "geo_from_wkt":
-                args.append(functions.lit(expression.data["srid"]))
-            return functions.call_function(names[function], *args)
+        if function == "geo_helper":
+            from structure.plugin.pyspark.geo.runtime import call_geospatial_function
+
+            return call_geospatial_function(
+                cast(str, expression.data["provider"]), cast(str, expression.data["operation"]), *args
+            )
         if function in {"variant_get", "try_variant_get"}:
             return getattr(functions, function)(args[0], expression.data["path"], expression.data["target_type"])
         if function in {

@@ -4,7 +4,15 @@ from collections import defaultdict
 from typing import Mapping, Sequence
 
 from structure.dsl import Schema
-from structure.plugin.pyspark.dsl.types import ArrayType, GeometryType, MapType, StructType, StructureType
+from structure.plugin.pyspark.dsl.types import (
+    ArrayType,
+    GeographyType,
+    GeometryType,
+    MapType,
+    SedonaGeometryType,
+    StructType,
+    StructureType,
+)
 
 
 class RenderPySparkSchemaModule:
@@ -21,14 +29,19 @@ class RenderPySparkSchemaModule:
         dependency_modules: Mapping[type[Schema], str] | None = None,
     ) -> str:
         dependencies = self._dependencies(schemas, dependency_modules or {})
-        imports = self._imports(dependencies, any(self._uses_geometry(schema) for schema in schemas))
+        native_geo, sedona_geo = any(self._uses_type(schema, (GeometryType, GeographyType)) for schema in schemas), any(
+            self._uses_type(schema, (SedonaGeometryType,)) for schema in schemas
+        )
+        imports = self._imports(dependencies, native_geo, sedona_geo)
         constants = "\n\n".join(self._schema(schema) for schema in schemas)
         return f"{imports}\n\n\n{constants}\n"
 
-    def _imports(self, dependencies: Mapping[str, tuple[str, ...]], geometry: bool) -> str:
+    def _imports(self, dependencies: Mapping[str, tuple[str, ...]], native_geo: bool, sedona_geo: bool) -> str:
         lines = ["from pyspark.sql import types as T"]
-        if geometry:
-            lines.append("from structure.plugin.pyspark.geo import geometry_type")
+        if native_geo:
+            lines.append("from structure.plugin.pyspark.schema.runtime import native_spatial_type")
+        if sedona_geo:
+            lines.append("from structure.plugin.pyspark.schema.runtime import sedona_geometry_type")
         for module in sorted(dependencies):
             constants = dependencies[module]
             if len(constants) == 1:
@@ -56,16 +69,18 @@ class RenderPySparkSchemaModule:
 
         return {module: tuple(sorted(constants)) for module, constants in modules.items()}
 
-    def _uses_geometry(self, schema: type[Schema]) -> bool:
-        return any(self._type_uses_geometry(field.type) for field in schema._structure_fields.values())
+    def _uses_type(self, schema: type[Schema], wanted: tuple[type, ...]) -> bool:
+        return any(self._type_uses(field.type, wanted) for field in schema._structure_fields.values())
 
-    def _type_uses_geometry(self, type: StructureType) -> bool:
-        if isinstance(type, GeometryType):
+    def _type_uses(self, type: StructureType, wanted: tuple[type, ...]) -> bool:
+        if isinstance(type, wanted):
             return True
         if isinstance(type, ArrayType):
-            return self._type_uses_geometry(type.element)
+            return self._type_uses(type.element, wanted)
         if isinstance(type, MapType):
-            return self._type_uses_geometry(type.key) or self._type_uses_geometry(type.value)
+            return self._type_uses(type.key, wanted) or self._type_uses(type.value, wanted)
+        if isinstance(type, StructType):
+            return any(self._type_uses(field.type, wanted) for field in type.schema._structure_fields.values())
         return False
 
     def _schema_dependencies(self, schema: type[Schema]) -> set[type[Schema]]:

@@ -96,6 +96,23 @@ PYSPARK_4_1_CONNECT_CAPABILITIES = frozenset(
 ) | PYSPARK_4_1_SCALAR_CAPABILITIES | PYSPARK_4_1_QUERY_CAPABILITIES | PYSPARK_4_1_OBSERVATION_CAPABILITIES
 PYSPARK_4_1_CONNECT_CAPABILITIES |= PYSPARK_4_1_SKETCH_CAPABILITIES
 PYSPARK_4_1_CONNECT_CAPABILITIES |= PYSPARK_4_1_ARROW_UDF_CAPABILITIES
+GEO_APACHE_CAPABILITIES = frozenset(
+    ("geospatial", f"apache.{name}")
+    for name in ("st_geomfromwkb", "st_geogfromwkb", "st_asbinary", "st_srid", "st_setsrid")
+)
+GEO_DATABRICKS_CAPABILITIES = frozenset(
+    ("geospatial", f"databricks.{name}")
+    for name in ("st_geomfromwkb", "st_geogfromwkb", "st_asbinary", "st_srid", "st_setsrid")
+)
+GEO_SEDONA_CAPABILITIES = frozenset(
+    ("geospatial", f"sedona.{name}")
+    for name in (
+        "st_geomfromwkt", "st_geomfromwkb", "st_geomfromewkb", "st_astext", "st_asbinary",
+        "st_asewkb", "st_srid", "st_setsrid", "st_intersects", "st_contains", "st_within",
+    )
+)
+NATIVE_GEO_SCHEMA_CAPABILITIES = frozenset({("schema", "native_geometry"), ("schema", "native_geography")})
+SEDONA_GEO_SCHEMA_CAPABILITIES = frozenset({("schema", "sedona_geometry")})
 LEGACY_PANDAS_STATE_PROFILES = frozenset({">=3.5,<4.1", ">=3.5,<4.0", ">=4.0,<4.1", ">=4.1,<4.2"})
 LEGACY_PANDAS_STATE_CAPABILITY = frozenset({("streaming", "apply_in_pandas_with_state")})
 PYSPARK_4_2_CAPABILITIES = frozenset({("expression", "is_valid_variant")})
@@ -171,7 +188,8 @@ COMMON_CAPABILITIES = frozenset(
         ("relation", "sql"),
         ("expression", "standard_helper_call"),
         ("pyspark", "ordered_timeline_scan"),
-        ("geo", "geometry"),
+        *GEO_SEDONA_CAPABILITIES,
+        *SEDONA_GEO_SCHEMA_CAPABILITIES,
         ("join", "lookup_join"),
         ("join", "exists"),
         ("join", "not_exists"),
@@ -452,6 +470,7 @@ class PySparkCapabilities:
             return base_capabilities
         if target_profile == ">=4.0,<4.1":
             base_capabilities = base_capabilities | PYSPARK_4_CAPABILITIES | PYSPARK_4_0_CAPABILITIES
+            base_capabilities |= GEO_DATABRICKS_CAPABILITIES | NATIVE_GEO_SCHEMA_CAPABILITIES
             if self.id.variant == "ordinary":
                 base_capabilities |= PYSPARK_4_0_STREAMING_CAPABILITIES
         elif target_profile == ">=4.1,<4.2":
@@ -459,9 +478,15 @@ class PySparkCapabilities:
                 base_capabilities | PYSPARK_4_CAPABILITIES | PYSPARK_4_0_CAPABILITIES | PYSPARK_4_1_CAPABILITIES
             )
             if self.id.variant == "ordinary":
-                base_capabilities |= PYSPARK_4_0_STREAMING_CAPABILITIES | PYSPARK_4_1_ORDINARY_CAPABILITIES
+                base_capabilities |= (
+                    PYSPARK_4_0_STREAMING_CAPABILITIES | PYSPARK_4_1_ORDINARY_CAPABILITIES
+                    | GEO_APACHE_CAPABILITIES | GEO_DATABRICKS_CAPABILITIES | NATIVE_GEO_SCHEMA_CAPABILITIES
+                )
             elif self.id.variant == "spark-connect":
-                base_capabilities |= PYSPARK_4_1_CONNECT_CAPABILITIES | DELTA_CAPABILITIES
+                base_capabilities |= (
+                    PYSPARK_4_1_CONNECT_CAPABILITIES | DELTA_CAPABILITIES
+                    | GEO_APACHE_CAPABILITIES | GEO_DATABRICKS_CAPABILITIES | NATIVE_GEO_SCHEMA_CAPABILITIES
+                )
         elif target_profile == ">=4.2,<4.3":
             base_capabilities = base_capabilities | PYSPARK_4_CAPABILITIES | PYSPARK_4_2_CAPABILITIES
         if self.id.variant == "ordinary" and target_profile in LEGACY_PANDAS_STATE_PROFILES:
@@ -524,6 +549,26 @@ class PySparkCapabilities:
                     "See docs/compatibility/Expressions.compat.md."
                 ),
                 required_target=">=4.1,<4.2",
+            )
+
+        if requirement.group == "geospatial":
+            provider = requirement.name.split(".", 1)[0]
+            target = ">=4.1,<4.2" if provider == "apache" else ">=4.0,<4.1 or >=4.1,<4.2"
+            return CapabilityDecision.unsupported_capability(
+                backend=self.id,
+                requirement=requirement,
+                rationale=f"The {provider} spatial helper {requirement.name!r} is not admitted for target {self.id.target!r}.",
+                use=f"Use an admitted exact target profile for {provider} spatial helpers; see docs/reference/Geospatial.ref.md.",
+                required_target=target,
+            )
+
+        if requirement.key() in NATIVE_GEO_SCHEMA_CAPABILITIES:
+            return CapabilityDecision.unsupported_capability(
+                backend=self.id,
+                requirement=requirement,
+                rationale=f"Native spatial schema types require an exact Spark 4.0 or 4.1 target; configured target is {self.id.target!r}.",
+                use='Set target_profile = ">=4.0,<4.1" or ">=4.1,<4.2" and verify the runtime exposes native constructors. See docs/reference/Geospatial.ref.md.',
+                required_target=">=4.0,<4.1 or >=4.1,<4.2",
             )
 
         if requirement.group == "delta":

@@ -483,15 +483,15 @@ including nested fields, because permissive Spark parsing can produce null value
 
 ## Geospatial Expressions
 
-Geospatial expressions are target-gated; the default PySpark `>=3.5,<4.1` profile has no stable spatial expression API.
-The planned native PySpark 4.1+ root names are `st_geomfromwkb`, `st_geogfromwkb`, `st_asbinary`, `st_srid`, and
-`st_setsrid`. External providers keep their own names in modules such as `sedona.st_geomfromwkt` and
-`sedona.st_intersects`.
+The helper namespace selects the implementation: root `st_*` calls Apache PySpark, `databricks.st_*` calls the
+Databricks Python API, and `sedona.st_*` calls Sedona. The default profile does not admit native helpers; Apache calls
+are gated to exact PySpark 4.1. Databricks and Sedona have independent runtime requirements.
 
-Spatial values do not become interchangeable because the function names are similar. A provider-scoped operation needs
-the same `geo_provider` scope as its arguments; predicates require the same provider, Geometry/Geography kind, and
-fixed SRID. See the [Geospatial reference](../reference/Geospatial.ref.md) for target status, scope, and Binary
-handoffs.
+The schema declaration selects the representation. Native Geometry/Geography can be shared by Apache and Databricks
+helpers when their runtime constructors are compatible; Sedona uses a distinct Geometry UDT. Predicates require the
+same representation, spatial kind, and fixed SRID. A caller may bridge types explicitly through Binary in one
+expression, restoring SRID when WKB drops it. Spark 4.1 requires `spark.sql.geospatial.enabled=true` in the caller's
+Spark session. See the [Geospatial reference](../reference/Geospatial.ref.md).
 
 ## Compatibility
 

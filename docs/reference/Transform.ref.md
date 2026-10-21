@@ -94,16 +94,12 @@ class PublishOrders(Transform):
 | `cache=True` | Persist the completed step at Spark's default storage level |
 | `cache=StorageLevel...` | Persist with an explicit PySpark storage level |
 | `streaming=` | Declare or reject streaming compatibility for the transform |
-| `geo_provider=` | Planned target-gated spatial provider scope; see [Geospatial](Geospatial.ref.md) |
 
 Method-level `input=` and `output=` accept ordered lists for steps with multiple inputs or results. A lane with the
 same name as an original input shadows that input for later inferred bindings.
 
 Operations are applied in source order. Independent lanes remain independent; a step does not silently merge every
 DataFrame currently in scope.
-
-The planned `geo_provider=` option resolves at step, transform, and application levels. It selects a spatial provider's
-physical schema and validates its namespaced functions; it does not make arbitrary provider values interchangeable.
 
 ## Projections and filters
 

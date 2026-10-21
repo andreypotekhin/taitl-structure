@@ -1,36 +1,19 @@
-# Geospatial
+# Geospatial Background
 
-Spatial SQL looks more uniform than it is. A function named `ST_Intersects` says little about the physical Geometry
-representation, the coordinate reference system (SRID), a Geography distinction, or whether an extension registered a
-function that conflicts with a Spark builtin. Structure therefore treats a spatial value as a typed provider value, not
-as an unqualified SQL object.
+Spatial support has two distinct identities. The helper namespace chooses a Python implementation; the declared field
+type chooses the physical value representation. Root helpers target Apache PySpark, `databricks.*` targets the
+Databricks Python namespace, and `sedona.*` targets Sedona. No application setting or scope precedence selects a
+provider.
 
-## Native Spark and providers
+Native Spark Geometry and Geography are shared schema types when the active runtime exposes compatible constructors.
+Databricks can backport Spark APIs, so type-constructor availability is checked directly rather than inferred only
+from the Spark version. Sedona Geometry remains a separate UDT, and its logical SRID is recorded in schema metadata.
 
-Native Spark adds Geometry, Geography, and a small WKB/SRID function set in PySpark 4.1. That is separate from the
-default Structure PySpark profile, which ends before 4.1. Sedona and other providers have broader APIs, including WKT
-constructors and predicates, but need their own dependencies, physical schemas, and evidence.
+Binary encoders are necessary for crossing representations, but are not currently sufficient in one Spark session.
+Spark 4.1 live tests show Sedona's SQL extension replaces Spark's same-named `st_*` registrations, so native and
+Sedona workloads must use separate sessions. WKB drops SRID; the caller must carry that information independently.
+A similarly named helper does not establish conversion compatibility or collision-free registration.
 
-Native names stay familiar: `st_geomfromwkb`, `st_asbinary`, and `st_setsrid` are no-prefix names on an eligible native
-target. An external provider uses a module such as `sedona.st_geomfromwkt`. The distinction makes it clear which
-runtime owns an expression and makes provider APIs searchable from their source documentation.
-
-## SRID and Binary
-
-An SRID identifies the coordinate reference system used to interpret coordinates. Two equal-looking coordinates may not
-be comparable if they use different reference systems. Structure tracks a fixed SRID when it is known statically and a
-mixed SRID when it is not. It rejects unsafe comparisons rather than silently choosing a transformation.
-
-Well-Known Binary (WKB) is a binary geometry representation. Standard WKB does not encode an SRID, so it is not a full
-interchange record by itself. Extended WKB variants may carry SRID but remain provider conventions unless an exact
-source/destination pair proves otherwise. A `binary()` field is consequently a deliberate application boundary, not a
-portable Geometry declaration.
-
-## Cell indexes
-
-H3 and S2 model spatial cells, not general Geometry/Geography values. They are useful provider namespaces with their
-own types and operations, but treating them as alternate implementations of generic ST functions would hide important
-semantic differences. Structure keeps them as extensions.
-
-For public behavior, see the [Geospatial reference](../reference/Geospatial.ref.md). For implementation policy, see the
-[Geospatial design](../dev/design/Geospatial.design.md).
+The default profile remains `>=3.5,<4.1`. Apache spatial helpers are scoped to exact PySpark 4.1; Databricks and Sedona
+have independent requirements. A managed runtime and Databricks Connect each need live evidence. See the
+[Geospatial reference](../reference/Geospatial.ref.md) for current API usage and support boundaries.

@@ -1,91 +1,59 @@
-# Design: Geospatial Provider Boundaries
+# Design: Geospatial Namespaces and Representations
 
 ## Purpose
 
-Structure must make a spatial value's physical implementation as explicit as its SQL type. Native Spark Geometry and
-Geography, Sedona Geometry, and future Mosaic-like providers do not become interchangeable because their functions have
-similar names. This design provides a migration-friendly native surface and an equal, explicit place for provider APIs
-without pretending their values, codecs, or runtime setup are portable.
+Spatial APIs vary by Python package, physical Spark type, and server runtime. Structure makes those choices visible in
+the helper namespace and field declaration. Spark and Sedona register overlapping unqualified SQL names, so their
+helpers currently run in separate sessions. This
+design removes ambient provider selection and keeps managed-runtime support tied to evidence from the actual runtime.
 
-The delivery and evidence sequence is [P10012602](../past/planning/P10012602.Geospatial-provider-boundaries.plan.md). This
-document defines future behavior; it does not promote geospatial support in the PySpark `>=3.5,<4.1` baseline.
+The implementation record is [P10192602](../planning/P10192602.Geospatial-namespaces-and-native-types.plan.md).
 
-## Namespaces
+## Namespace selects the helper
 
-Native PySpark 4.1+ uses no provider prefix. Its Structure helpers retain the public PySpark names:
+Root `st_*` functions call Apache PySpark. `databricks.st_*` calls
+`pyspark.databricks.sql.functions`. `sedona.st_*` calls Sedona's public Python wrappers. The source spelling selects
+the implementation on every expression; no `geo_provider` configuration, decorator option, precedence rule, or
+automatic distribution detection exists. The generated and online evaluators dispatch from this stored namespace and
+never fall back to a different package.
 
-| Native helper | Logical result or rule |
-| --- | --- |
-| `st_geomfromwkb(wkb, srid=None)` | Geometry; omitted SRID is fixed 0, literal SRID is fixed, symbolic SRID is mixed |
-| `st_geogfromwkb(wkb)` | Geography with fixed SRID 4326 |
-| `st_asbinary(geo)` | Binary WKB; no portable SRID claim |
-| `st_srid(geo)` | nullable Integer SRID |
-| `st_setsrid(geo, srid)` | same kind; literal SRID is fixed and symbolic SRID is mixed |
+## Field type selects the representation
 
-There is intentionally no `native_*` namespace. Native names are available only when the target profile supports them.
+`geometry(srid=None)` and `geography(srid=None)` declare native Spark values. Databricks values use the same native
+declarations where the runtime constructors produce compatible physical types. Sedona uses
+`sedona.geometry(srid=None)` and a distinct Geometry UDT. Helper provenance therefore does not imply a different
+physical type, and a shared SQL type does not imply that every runtime exposes every helper.
 
-Every external provider uses a namespace and keeps names easy to search from its native documentation:
+`None` records mixed or unknown SRID; an integer records a fixed SRID. Native physical constructors preserve SRID.
+Sedona's UDT does not consistently preserve the logical SRID in the Python schema, so
+`structure.logical_type` metadata carries it recursively through arrays, maps, and structs. Missing metadata remains
+caller-declared intent; present conflicting metadata fails. This declaration does not inspect input rows.
 
-```python
-from structure.plugin.pyspark import sedona
+## Bridges and semantic boundaries
 
-shape = sedona.st_geomfromwkt(row.wkt, 4326)
-inside = sedona.st_intersects(shape, area)
-payload = sedona.st_asewkb(shape)
-```
+The initial helper catalog is intentionally small. Native operations cover WKB construction, WKB encoding, SRID
+inspection, and SRID assignment. Databricks exposes the same family with its optional `st_geomfromwkb` SRID argument.
+Sedona adds WKT/EWKB constructors, text/binary encoders, SRID operations, and three predicates. No spatial joins,
+measurements, Geography support in Sedona, or coordinate transformations are included. H3 and S2 remain separate
+cell-index APIs rather than Geometry/Geography representations.
 
-Mosaic and future Geometry providers follow the same pattern. H3 and S2 remain namespaced cell-index extensions; they
-are not implementations of the Geometry/Geography backend contract.
+Binary encoding is the required representation boundary for any future cross-provider bridge, but it does not resolve
+the current SQL registration collision. A live Spark 4.1 test with `SedonaSqlExtensions` loaded shows that
+`st_geomfromwkb` resolves to a different function and returns a mixed-SRID type instead of Spark's SRID-0 type. Inline
+Apache/Sedona bridges and mixed-provider queries remain gated until both implementations can be selected without
+unqualified SQL name lookup. WKB loses SRID; the caller must restore it separately. Structure does not infer
+semantics from serialized bytes or silently cast values.
 
-## Provider selection and values
+## Admission and managed runtimes
 
-`geo_provider` is selected at application configuration, `@transform`, or `@step`. The effective value resolves in this
-order: step, transform, application, then native inference. Native inference occurs only when the resolved PySpark
-target supports native spatial types. An external namespace requires the same effective provider.
+Native schema constructors are checked at runtime on exact Spark 4.0 and 4.1 profile declarations. This conditional
+check allows a managed distribution to backport the types without claiming they exist in stock Apache Spark 4.0.
+Apache helpers remain exact 4.1 capabilities. Databricks helpers have independent exact 4.0 and 4.1 gates plus actual
+module/function checks. Sedona has its own package, profile, and execution-mode gates. A package import check is not
+parity evidence.
 
-Provider selection does more than name a renderer. It fixes the physical Spark schema materialization, validates
-runtime requirements, and prevents a provider operation from accidentally consuming another provider's spatial value.
-External provider renderers must use their supported Python API or an unambiguous provider function; they may not rely
-on registering an unqualified `ST_*` name that happens to win Spark function resolution.
-
-Every spatial type records three facts:
-
-- dialect: `native` or an external provider identifier;
-- kind: Geometry or Geography; and
-- SRID: a fixed integer or mixed (`None`).
-
-`geometry(srid=...)` and `geography(srid=...)` are declaration forms resolved against the effective provider. A fixed
-field describes one SRID. `srid=None` describes mixed values. A provider constructor with an omitted or nonliteral SRID
-produces mixed SRID rather than claiming a provider default as static knowledge.
-
-Operations requiring spatial comparability require one dialect, one kind, and the same fixed SRID. Mixed-SRID and
-cross-kind predicate operands fail before Spark execution. A later design may add explicit runtime validation; it does
-not exist in this contract.
-
-## Binary handoff
-
-Spatial values never pass directly from one provider scope to another. A caller may deliberately project one provider's
-representation into a declared ordinary `binary()` field and consume it in a later provider-scoped step. Structure
-recognizes that Binary is no longer a spatial value and does not infer its codec.
-
-Standard WKB does not carry SRID. A caller that uses WKB and needs SRID must preserve it separately and restore it in
-the receiving provider. Provider formats such as Sedona EWKB may embed SRID, but no Structure API promises that a
-different provider decodes those bytes or preserves dimensions, kind, or CRS. Codec validation is application-owned
-until a source/destination provider pair has dedicated evidence.
-
-## Capability and evidence
-
-A future provider adapter declares its identifier, physical Geometry/Geography schema materializers, supported helper
-signatures, supported profile/variant modes, renderer, and runtime prerequisites. Every helper is admitted separately:
-similar SQL names do not imply shared null, SRID, geography, or malformed-input semantics.
-
-Native ST support requires PySpark 4.1+ capability entries. Each external provider requires its own profile and
-dependency entries. A promotion requires symbolic typing, generated rendering, online/generated parity, positive
-ordinary-runtime evidence, Spark Connect evidence before claiming Connect, and streaming evidence before claiming
-streaming. Collision tests must run native and the provider together when the target permits both.
-
-## Non-goals
-
-This design does not provide coordinate transformation, measurements, spatial indexes or joins, automatic provider
-conversion, portable persistence, arbitrary provider SQL, or H3/S2 Geometry emulation. Those capabilities need their
-own typed inputs, outputs, cost/cardinality, and target contracts.
+Spark-free compilation remains possible because optional packages load only when their value representation or
+helper is used. Online/generated results, schemas, nulls, malformed inputs, and namespace collisions must match the
+selected upstream runtime. Ordinary and Connect modes are separately evidenced. Managed Databricks Spark and
+Databricks Connect need their own sessions and results; local Apache Spark cannot certify them. Batch evidence does
+not establish streaming support.

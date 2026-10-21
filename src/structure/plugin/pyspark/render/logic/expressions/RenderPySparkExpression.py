@@ -842,17 +842,11 @@ class RenderPySparkExpression:
             "is_variant_null",
         }:
             return f"F.{function}({args[0]})"
-        if function in {"geo_from_wkt", "geo_as_wkt", "geo_intersects", "geo_contains", "geo_within"}:
-            names = {
-                "geo_from_wkt": "ST_GeomFromWKT",
-                "geo_as_wkt": "ST_AsText",
-                "geo_intersects": "ST_Intersects",
-                "geo_contains": "ST_Contains",
-                "geo_within": "ST_Within",
-            }
-            if function == "geo_from_wkt":
-                args.append(f"F.lit({expression.data['srid']})")
-            return f"F.call_function({names[function]!r}, {', '.join(args)})"
+        if function == "geo_helper":
+            args = [self._render(argument, aliases) for argument in expression.args]
+            provider = expression.data["provider"]
+            operation = expression.data["operation"]
+            return f"call_geospatial_function({provider!r}, {operation!r}, {', '.join(args)})"
         if function in {"variant_get", "try_variant_get"}:
             return f"F.{function}({args[0]}, {expression.data['path']!r}, {expression.data['target_type']!r})"
         if function in {

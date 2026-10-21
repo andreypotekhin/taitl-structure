@@ -25,7 +25,8 @@ ADMITTED = CARRY_FORWARD | {
     f"pyspark.sql.functions.{name}"
     for name in (
         "chr", "quote", "try_to_date", "random", "uuid", "current_time", "make_time", "to_time",
-        "try_to_time", "time_diff", "time_trunc", "arrow_udf",
+        "try_to_time", "time_diff", "time_trunc", "arrow_udf", "st_geomfromwkb", "st_geogfromwkb",
+        "st_asbinary", "st_srid", "st_setsrid",
     )
 } | {f"pyspark.sql.functions.{name}_{domain}" for name in KLL_HELPERS for domain in ("bigint", "float", "double")} | {
     f"pyspark.sql.functions.{name}" for name in THETA_HELPERS

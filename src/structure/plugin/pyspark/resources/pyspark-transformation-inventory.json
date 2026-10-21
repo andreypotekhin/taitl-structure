@@ -127,6 +127,19 @@
   ],
   "target_only_apis": [
     {
+      "id": "functions.v11-geospatial-native",
+      "version": "4.1.0",
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2; Apache-only session",
+      "reason": "Five native Geometry/Geography helpers pass ordinary and Connect 4.1.0 online/generated/native schema parity with Spark geospatial enabled. Sedona replaces overlapping unqualified SQL registrations, so cross-provider same-session use remains gated; managed Databricks evidence is open.",
+      "pyspark": [
+        "st_geomfromwkb",
+        "st_geogfromwkb",
+        "st_asbinary",
+        "st_srid",
+        "st_setsrid"
+      ]
+    },
+    {
       "id": "column.transform",
       "version": "4.1.0",
       "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",

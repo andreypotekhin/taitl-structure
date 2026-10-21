@@ -69,6 +69,12 @@ class MapPySparkSchemaToStructureSource:
             return f"decimal({type.precision}, {type.scale})"
         if name == "TimeType":
             return f"time({type.precision})"
+        if name == "GeometryType":
+            if self._is_sedona(type):
+                return "sedona.geometry(srid=None)"
+            return f"geometry(srid={self._native_srid(type)!r})"
+        if name == "GeographyType":
+            return f"geography(srid={self._native_srid(type)!r})"
         if name == "ArrayType":
             contains_null = "True" if bool(type.containsNull) else "False"
             element = self._type(type.elementType, root=root, path=(*path, "item"))
@@ -94,6 +100,7 @@ class MapPySparkSchemaToStructureSource:
         if not isinstance(kind, str):
             raise StructureToolError(f"Malformed {METADATA_KEY} descriptor at {location}.")
         expected_keys = {
+            "sedona_geometry": {"version", "kind", "srid"},
             "kll_sketch": {"version", "kind", "domain"},
             "theta_sketch": {"version", "kind"},
             "bitmap": {"version", "kind"},
@@ -104,6 +111,11 @@ class MapPySparkSchemaToStructureSource:
         if expected_keys is None or set(descriptor) != expected_keys:
             raise StructureToolError(f"Malformed {METADATA_KEY} descriptor at {location}.")
         physical_name = physical.__class__.__name__
+        if kind == "sedona_geometry" and physical_name == "GeometryType" and self._is_sedona(physical):
+            srid = descriptor.get("srid")
+            if srid is not None and (isinstance(srid, bool) or not isinstance(srid, int)):
+                raise StructureToolError(f"Invalid Sedona SRID metadata at {location}.")
+            return f"sedona.geometry(srid={srid!r})"
         if kind == "kll_sketch" and physical_name == "BinaryType":
             domain = descriptor.get("domain")
             if domain not in {"long", "float", "double"}:
@@ -143,6 +155,17 @@ class MapPySparkSchemaToStructureSource:
             value_contains_null = "True" if bool(physical.valueContainsNull) else "False"
             return f"map({key}, {value}, value_contains_null={value_contains_null})"
         raise StructureToolError(f"{METADATA_KEY} metadata at {location} conflicts with physical {physical_name}.")
+
+    @staticmethod
+    def _is_sedona(type) -> bool:
+        return type.__class__.__module__.startswith("sedona.") or "sedona" in type.__class__.__module__.lower()
+
+    @staticmethod
+    def _native_srid(type) -> int | None:
+        srid = getattr(type, "srid", None)
+        if isinstance(srid, bool) or not isinstance(srid, int):
+            return None
+        return srid
 
     def _fields(self, schema) -> tuple:
         return tuple(getattr(schema, "fields", ()))

@@ -23,6 +23,7 @@ from structure.plugin.pyspark.dsl.types import (
     Decimal,
     Double,
     Float,
+    GeographyType,
     Geometry,
     HllSketch,
     Integer,
@@ -149,9 +150,14 @@ def theta_sketch(**options: object) -> Any:
     return _declare(ThetaSketch(), options)
 
 
-def geometry(srid: int, **options: object) -> Any:
-    """Declare a provider-neutral planar Spark ``GEOMETRY`` field."""
+def geometry(srid: int | None = None, **options: object) -> Any:
+    """Declare a native Spark ``GEOMETRY`` field with fixed or mixed SRID."""
     return _declare(Geometry(srid), options)
+
+
+def geography(srid: int | None = None, **options: object) -> Any:
+    """Declare a native Spark ``GEOGRAPHY`` field with fixed or mixed SRID."""
+    return _declare(GeographyType(srid), options)
 
 
 def decimal(precision: int, scale: int, **options: object) -> Any:
@@ -289,6 +295,7 @@ __all__ = [
     "double",
     "float",
     "geometry",
+    "geography",
     "hll_sketch",
     "bitmap",
     "kll_sketch",

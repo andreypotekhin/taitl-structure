@@ -222,6 +222,11 @@ This matrix maps early sprints to specification sections and major deliverables.
 
 ## V11
 
+- As a developer, I can declare native and Sedona Geometry fields in one schema and select each helper namespace
+  explicitly without ambient provider configuration; execute Apache and Sedona helpers in their supported isolated
+  sessions. Evidence:
+  `tests/user_stories/geospatial/test_namespaced_spatial_types.py` and
+  `tests/specifications/geospatial/test_namespaced_api.py`.
 - As a developer, I can chain watermarked deduplication with a watermarked event-time window aggregate on proven
   ordinary PySpark 3.5/4.0 profiles, declare a budget beside each operation, and retain dedupe state across a caller-owned
   checkpoint restart. Evidence: `tests/user_stories/23_streaming_transformation_roadmap/chained_dedupe_window/` and

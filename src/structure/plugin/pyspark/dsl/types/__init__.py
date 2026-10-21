@@ -18,6 +18,9 @@ from structure.plugin.pyspark.dsl.types.FloatType import FloatType
 from structure.plugin.pyspark.dsl.types.Float import Float
 from structure.plugin.pyspark.dsl.types.Geometry import Geometry
 from structure.plugin.pyspark.dsl.types.GeometryType import GeometryType
+from structure.plugin.pyspark.dsl.types.GeographyType import GeographyType
+from structure.plugin.pyspark.dsl.types.Geography import Geography
+from structure.plugin.pyspark.dsl.types.SedonaGeometryType import SedonaGeometryType
 from structure.plugin.pyspark.dsl.types.IntegerType import IntegerType
 from structure.plugin.pyspark.dsl.types.Integer import Integer
 from structure.plugin.pyspark.dsl.types.LongType import LongType
@@ -99,7 +102,8 @@ def theta_sketch(*, profile: object = _PROFILE_UNSET) -> StructureType:
     if profile is not _PROFILE_UNSET:
         raise TypeError("types.theta_sketch(profile=...) was removed; set plugin.pyspark.profile instead")
     return ThetaSketch()
-def geometry(srid: int) -> StructureType: return Geometry(srid)
+def geometry(srid: int | None = None) -> StructureType: return Geometry(srid)
+def geography(srid: int | None = None) -> StructureType: return GeographyType(srid)
 def decimal(precision: int, scale: int) -> StructureType: return Decimal(precision, scale)
 def array(element: StructureType, *, contains_null: object = True) -> StructureType: return Array(element, contains_null=contains_null)
 def map(key: StructureType, value: StructureType, *, value_contains_null: object = True) -> StructureType: return Map(key, value, value_contains_null=value_contains_null)
@@ -109,7 +113,7 @@ def struct(schema: type[Schema]) -> StructureType: return Struct(schema)
 __all__ = [
     "Array", "ArrayType", "Binary", "BinaryType", "Boolean", "BooleanType", "Date", "DateType", "Decimal", "DecimalType", "Double",
     "DoubleType", "Float", "FloatType", "Integer", "IntegerType", "Long", "LongType", "Map", "MapType",
-    "Geometry", "GeometryType", "ScalarType", "SketchType", "HllSketch", "HllSketchType", "Bitmap", "BitmapType", "KllSketch", "KllSketchType", "ThetaSketch", "ThetaSketchType", "String", "StringType", "Struct", "StructType", "StructureType", "Time", "TimeType", "Timestamp", "TimestampType", "TimestampNTZ", "TimestampNTZType", "Variant", "VariantType",
+    "Geometry", "GeometryType", "Geography", "GeographyType", "SedonaGeometryType", "ScalarType", "SketchType", "HllSketch", "HllSketchType", "Bitmap", "BitmapType", "KllSketch", "KllSketchType", "ThetaSketch", "ThetaSketchType", "String", "StringType", "Struct", "StructType", "StructureType", "Time", "TimeType", "Timestamp", "TimestampType", "TimestampNTZ", "TimestampNTZType", "Variant", "VariantType",
     "array", "binary", "boolean", "date", "decimal", "double", "float", "geometry", "hll_sketch", "bitmap", "kll_sketch", "theta_sketch", "integer", "long", "map", "string", "struct", "time", "timestamp", "timestamp_ntz", "variant",
-    "interval", "IntervalType",
+    "interval", "IntervalType", "geography",
 ]

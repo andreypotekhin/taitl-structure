@@ -78,6 +78,12 @@ narrower use cases and roadmap features.
 - + As a developer, I can access the final output Spark schema after `.run(session)` so that execution does
   not require generated files for persistence setup.
 
+## Spatial data
+
+- As a developer, I can declare native and Sedona Geometry fields in one schema and select each helper namespace
+  explicitly without ambient provider configuration; execute Apache and Sedona helpers in their supported isolated
+  sessions.
+
 ## 6. Transform Classes
 
 - + As a developer, I can decorate a class with `@transform` so that it becomes a Structure transform.

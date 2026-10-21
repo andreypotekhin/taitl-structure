@@ -170,17 +170,13 @@ nondeterminism are declared. Pandas UDFs, UDTFs, arbitrary Python callbacks, and
 at an explicit raw boundary; existing scalar UDFs and compiler-visible expression callbacks are distinct supported
 forms.
 
-## Geospatial provider boundary
+## Geospatial namespace boundary
 
-The full geospatial contract is maintained in [Geospatial design](Geospatial.design.md) and its execution sequence in
-[P10012602](../past/planning/P10012602.Geospatial-provider-boundaries.plan.md). The default baseline does not include native
-Spark Geometry/Geography or external provider support.
-
-Future native PySpark 4.1+ APIs use familiar no-prefix `st_*` names. External providers use their own namespaces, such
-as `sedona.st_geomfromwkt`, and must match an application, transform, or step `geo_provider` selection. Geometry and
-Geography values retain dialect, kind, and fixed or mixed SRID facts; they cannot cross provider dialects directly.
-An ordinary declared `binary()` field is the deliberate handoff boundary. WKB, EWKB, and any other Binary codec remain
-caller-owned interoperability decisions rather than portable Structure guarantees.
+The full contract is maintained in [Geospatial design](Geospatial.design.md) and its execution sequence in
+[P10192602](../planning/P10192602.Geospatial-namespaces-and-native-types.plan.md). Helper namespaces select the
+implementation (`st_*`, `databricks.st_*`, or `sedona.st_*`); schema declarations select native or Sedona
+representation. No configuration or decorator provider scope exists. Explicit Binary expressions can bridge
+representations, while codec and SRID preservation remain caller-owned.
 
 ## Evidence and diagnostics
 

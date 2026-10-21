@@ -19,7 +19,7 @@ this table for deferred SQL-family direction; the gap register remains the sourc
 | Generic generators and writer partition transforms | `caller-owned-guided` | `stack` and typed relation distribution are implemented; generic/result-layout forms remain caller-owned. |
 | XML | `design-gated` | Define declared schemas, options, malformed input, and parse/serialize evidence. |
 | URL parsing and safe decoding | `target-gated` | `try_url_decode` requires PySpark 4.0; URL parsing needs a separate typed result-shape design. |
-| Geospatial providers | `target-gated` | Native 4.1 root APIs and external provider namespaces are tracked in P10012602. |
+| Geospatial APIs | `target-gated` | Explicit helper namespaces and native/Sedona type rules are specified in Geospatial.spec.md and implemented under P10192602; managed runtime parity remains open. |
 | Runtime metadata and reflection | `caller-owned-guided` | Keep non-query-clock runtime reads at an explicit native boundary. |
 | Variant mutation helpers | `target-gated` | Define released target profile and mutation semantics. |
 
@@ -37,13 +37,14 @@ Variant append, insert, set, and delete helpers remain reserved for a released t
 work is indexed in [API Catalog Gates](../gated/ApiCatalog.gates.md); no mutation helper is implied by the released
 Variant parsing and extraction slice.
 
-### Geospatial Provider Boundary
+### Geospatial Namespace and Runtime Evidence
 
-Native Spark `st_*` helpers are a PySpark 4.1+ target slice. External providers use exact-name namespaces such as
-`sedona.st_geomfromwkt` and require matching `geo_provider` scope. Spatial values retain provider dialect, kind, and
-fixed or mixed SRID facts; they cannot cross providers directly. An ordinary Binary field is the explicit handoff, with
-codec compatibility owned by the application. The contract is in the active [Geospatial design](../design/Geospatial.design.md),
-and current support status is in the [API tracker](../../compatibility/APITracker.md).
+The active contract is in [Geospatial design](../design/Geospatial.design.md) and
+[Geospatial.spec.md](../specifications/Geospatial.spec.md). Helper namespace selects the implementation; field types
+select native or Sedona representation. There is no `geo_provider` scope. Sedona replaces Spark's unqualified
+`st_*` SQL registrations, so same-session Apache/Sedona calls and inline Binary bridges remain gated. Managed
+Databricks and Databricks Connect parity remain open in
+[P10192602](../planning/P10192602.Geospatial-namespaces-and-native-types.plan.md).
 
 ### Join Reordering
 

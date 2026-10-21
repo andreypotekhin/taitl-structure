@@ -6,7 +6,15 @@ from structure.plugin.pyspark.compiler.model.PySparkRelationQueryRecipe import P
 from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.InputScope import InputScope
 from structure.plugin.pyspark.dsl.RelationQuery import RelationQuery
-from structure.plugin.pyspark.dsl.types import ArrayType, MapType, StructType, TimeType
+from structure.plugin.pyspark.dsl.types import (
+    ArrayType,
+    GeographyType,
+    GeometryType,
+    MapType,
+    SedonaGeometryType,
+    StructType,
+    TimeType,
+)
 
 
 class MapPySparkExpression:
@@ -104,6 +112,12 @@ class MapPySparkExpression:
             return
         if isinstance(type, TimeType):
             capabilities.require(CapabilityRequirement(group="schema", name="time"))
+        elif isinstance(type, GeometryType):
+            capabilities.require(CapabilityRequirement(group="schema", name="native_geometry"))
+        elif isinstance(type, GeographyType):
+            capabilities.require(CapabilityRequirement(group="schema", name="native_geography"))
+        elif isinstance(type, SedonaGeometryType):
+            capabilities.require(CapabilityRequirement(group="schema", name="sedona_geometry"))
         elif isinstance(type, ArrayType):
             self._type_capability(type.element, capabilities=capabilities)
         elif isinstance(type, MapType):
@@ -177,8 +191,9 @@ class MapPySparkExpression:
                 "is_variant_null",
             }:
                 return "expression", "variant"
-            if function in {"geo_from_wkt", "geo_as_wkt", "geo_intersects", "geo_contains", "geo_within"}:
-                return "geo", "geometry"
+            if function == "geo_helper":
+                data = expression.data or {}
+                return "geospatial", f"{data['provider']}.{data['operation']}"
             if function == "to_decimal":
                 return "expression", "cast"
             return "expression", "standard_helper_call"

@@ -20,8 +20,9 @@ Schema declarations define Structure's typed row contract and materialize to Spa
 | `binary()` | Spark binary type | `payload = binary(nullable=True)` |
 | `decimal(...)` | `DecimalType` | `total = decimal(12, 2)` |
 | `variant(...)` | `VariantType` | `payload = variant(nullable=True)` |
-| `geometry(srid=...)` | Target-gated provider-bound Geometry | `location = geometry(srid=4326)` |
-| `geography(srid=...)` | Target-gated provider-bound Geography | `location = geography(srid=4326)` |
+| `geometry(srid=...)` | Native Spark Geometry | `location = geometry(srid=4326)` |
+| `geography(srid=...)` | Native Spark Geography | `location = geography(srid=4326)` |
+| `sedona.geometry(srid=...)` | Sedona Geometry UDT | `location = sedona.geometry(srid=4326)` |
 | `hll_sketch(lg_config_k=...)` | Branded opaque Binary HLL state | `customers = hll_sketch(lg_config_k=12)` |
 | `bitmap()` | Branded opaque Binary Bitmap state | `features = bitmap()` |
 
@@ -51,9 +52,10 @@ DataFrame validation modes.
 - `variant(...)` declares Spark's opaque semi-structured `VariantType`. It preserves schema and field nullability only.
   A transform using it must resolve to a PySpark 4 profile, including when that profile comes from
   `[tool.structure.plugin.pyspark]`.
-- `geometry(srid=...)` and `geography(srid=...)` are planned target-gated declarations. A resolved provider owns their
-  physical Spark type. A literal SRID is fixed; `srid=None` is mixed. The default baseline has no stable spatial field
-  claim. See the [Geospatial reference](../reference/Geospatial.ref.md).
+- `geometry(srid=...)` and `geography(srid=...)` declare native spatial types; `sedona.geometry(...)` declares a
+  distinct Sedona UDT. `srid=None` means mixed or unknown. Native type constructors are runtime-checked on exact Spark
+  4.0/4.1 profiles. Spark 4.1 native spatial execution requires caller-set `spark.sql.geospatial.enabled=true`.
+  See the [Geospatial reference](../reference/Geospatial.ref.md).
 - `hll_sketch(...)` and `bitmap()` preserve an opaque algorithm brand even though Spark materializes Binary. HLL
   precision is part of the declared type. See [Sketches and Bitmaps](Aggregations.api.md#sketches-and-bitmaps).
 

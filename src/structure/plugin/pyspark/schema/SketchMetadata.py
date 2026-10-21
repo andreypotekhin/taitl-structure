@@ -6,9 +6,12 @@ from collections.abc import Mapping
 
 from structure.plugin.pyspark.dsl.types import (
     ArrayType,
+    GeographyType,
+    GeometryType,
     HllSketchType,
     KllSketchType,
     MapType,
+    SedonaGeometryType,
     SketchType,
     ThetaSketchType,
 )
@@ -18,6 +21,10 @@ DESCRIPTOR_VERSION = 1
 
 
 def sketch_descriptor(type) -> dict[str, object] | None:
+    if isinstance(type, SedonaGeometryType):
+        return {"version": DESCRIPTOR_VERSION, "kind": "sedona_geometry", "srid": type.srid}
+    if isinstance(type, (GeometryType, GeographyType)):
+        return None
     if isinstance(type, KllSketchType):
         return {"version": DESCRIPTOR_VERSION, "kind": "kll_sketch", "domain": type.domain}
     if isinstance(type, HllSketchType):
@@ -27,15 +34,20 @@ def sketch_descriptor(type) -> dict[str, object] | None:
     if isinstance(type, SketchType):
         return {"version": DESCRIPTOR_VERSION, "kind": "bitmap"}
     if isinstance(type, ArrayType):
-        element = sketch_descriptor(type.element)
+        element = logical_descriptor(type.element)
         return None if element is None else {"version": DESCRIPTOR_VERSION, "kind": "array", "element": element}
     if isinstance(type, MapType):
-        key = sketch_descriptor(type.key)
-        value = sketch_descriptor(type.value)
+        key = logical_descriptor(type.key)
+        value = logical_descriptor(type.value)
         return None if key is None and value is None else {
             "version": DESCRIPTOR_VERSION, "kind": "map", "key": key, "value": value
         }
     return None
+
+
+def logical_descriptor(type) -> dict[str, object] | None:
+    """Return the shared logical descriptor for sketch and Sedona values."""
+    return sketch_descriptor(type)
 
 
 def field_metadata(type, existing: Mapping[str, object] | None = None, *, path: str = "field") -> dict[str, object]:

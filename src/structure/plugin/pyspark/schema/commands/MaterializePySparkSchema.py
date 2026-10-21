@@ -9,11 +9,13 @@ from structure.plugin.pyspark.dsl.types import (
     DecimalType,
     DoubleType,
     FloatType,
+    GeographyType,
     GeometryType,
     IntegerType,
     IntervalType,
     LongType,
     MapType,
+    SedonaGeometryType,
     SketchType,
     StringType,
     StructType,
@@ -76,10 +78,15 @@ class MaterializePySparkSchema:
             return cls(type.start_field, type.end_field)
         if isinstance(type, VariantType):
             return spark_types.VariantType()
-        if isinstance(type, GeometryType):
-            from structure.plugin.pyspark.geo import geometry_type
+        if isinstance(type, (GeometryType, GeographyType)):
+            from structure.plugin.pyspark.schema.runtime import native_spatial_type
 
-            return geometry_type()
+            name = "GeometryType" if isinstance(type, GeometryType) else "GeographyType"
+            return native_spatial_type(spark_types, name, type.srid)
+        if isinstance(type, SedonaGeometryType):
+            from structure.plugin.pyspark.schema.runtime import sedona_geometry_type
+
+            return sedona_geometry_type(type.srid)
         if isinstance(type, DecimalType):
             return spark_types.DecimalType(type.precision, type.scale)
         if isinstance(type, ArrayType):

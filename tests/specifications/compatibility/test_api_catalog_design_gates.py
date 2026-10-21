@@ -20,10 +20,11 @@ def test_api_catalog_open_rows_use_design_gate_language() -> None:
     assert "planned" not in text.lower()
     assert "| deferred |" not in text.lower()
     assert "| XML, URL, and runtime functions | partial or unsupported |" in text
-    assert "| Geospatial provider APIs | target-gated |" in text
+    assert "| Geospatial APIs | partially implemented; target-gated |" in text
     assert "| Variant functions | partial |" in text
     assert "mutation remain target-gated" in text
-    assert "Native `st_*` belongs to PySpark 4.1+" in text
+    assert "Apache native 4.1 and Sedona 3.5/4.0/4.1 ordinary/Connect parity pass in isolated sessions" in text
+    assert "same-session Apache/Sedona mixing remain open" in text
     assert "| Aggregate aliases | unsupported |" in text
     assert "| Sampling | implemented |" in text
     assert "| Join reordering | design-gated |" in text
@@ -51,11 +52,11 @@ def test_api_catalog_design_gate_docs_cover_non_streaming_open_rows() -> None:
     for phrase in (
         "XML remains low priority",
         "Variant Mutation Profiles",
-        "Geospatial Provider Boundary",
-        "native PySpark 4.1+",
+        "Geospatial Namespaces",
+        "No application, transform, or step setting",
         "sedona.st_geomfromwkt",
-        "geo_provider",
-        "Binary handoff",
+        "databricks.st_geomfromwkb",
+        "inline Binary bridge",
         "H3 and S2",
         "join_order(\"optimizer\")",
         'ties="error"',
@@ -66,16 +67,15 @@ def test_api_catalog_design_gate_docs_cover_non_streaming_open_rows() -> None:
         assert phrase in combined
 
 
-def test_v9_design_gated_helpers_are_not_public_exports() -> None:
-    for helper in (
-        "join_order",
-        "geography",
-        "st_contains",
-        "st_intersects",
-    ):
+def test_geospatial_helpers_are_public_in_explicit_namespaces() -> None:
+    for helper in ("join_order", "st_contains", "st_intersects"):
         assert not hasattr(pyspark, helper)
 
     assert hasattr(pyspark, "geometry")
+    assert hasattr(pyspark, "geography")
+    assert hasattr(pyspark, "databricks")
+    assert hasattr(pyspark, "sedona")
+    assert hasattr(pyspark.sedona, "st_intersects")
 
 
 def test_v9_variant_helpers_are_public_exports() -> None:

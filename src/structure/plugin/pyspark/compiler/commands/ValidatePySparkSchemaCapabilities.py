@@ -4,8 +4,11 @@ from structure.dsl import Schema
 from structure.plugin.api.v1.model import BackendCapabilities, CapabilityRequirement, TransformPlan
 from structure.plugin.pyspark.dsl.types import (
     ArrayType,
+    GeographyType,
+    GeometryType,
     KllSketchType,
     MapType,
+    SedonaGeometryType,
     SketchType,
     StructType,
     StructureType,
@@ -44,6 +47,12 @@ class ValidatePySparkSchemaCapabilities:
     def _type(self, type: StructureType, *, capabilities: BackendCapabilities, visited: set[type[Schema]]) -> None:
         if isinstance(type, TimeType):
             capabilities.require(CapabilityRequirement(group="schema", name="time"))
+        elif isinstance(type, GeometryType):
+            capabilities.require(CapabilityRequirement(group="schema", name="native_geometry"))
+        elif isinstance(type, GeographyType):
+            capabilities.require(CapabilityRequirement(group="schema", name="native_geography"))
+        elif isinstance(type, SedonaGeometryType):
+            capabilities.require(CapabilityRequirement(group="schema", name="sedona_geometry"))
         elif isinstance(type, VariantType):
             capabilities.require(CapabilityRequirement(group="schema", name="variant"))
         elif isinstance(type, SketchType):

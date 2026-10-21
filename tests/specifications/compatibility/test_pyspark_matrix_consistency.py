@@ -118,7 +118,38 @@ def test_runner_keeps_filtered_provider_phases_when_no_tests_match(tmp_path) -> 
     _assert_cleanup("spark-connect41", checkpoint, submit, pid)
 
 
-def _run_launcher(tmp_path, backend, failing_phase=0, status=0, setup_failure=False, pytest_args=""):
+@pytest.mark.parametrize("backend", ("pyspark41", "spark-connect41"))
+def test_runner_isolates_sedona_coexistence_phase(tmp_path, backend) -> None:
+    environment = {
+        "STRUCTURE_SEDONA_ONLY": "1",
+        "STRUCTURE_SEDONA_TESTS": "1",
+        "STRUCTURE_SPARK_JARS_PACKAGES": (
+            "org.apache.sedona:sedona-spark-shaded-4.1_2.13:1.9.0,"
+            "org.datasyslab:geotools-wrapper:1.9.0-33.5"
+        ),
+    }
+    result, phases, checkpoint, submit, pid = _run_launcher(
+        tmp_path, backend, extra_environment=environment
+    )
+    assert result.returncode == 0
+    assert len(phases) == 1
+    assert "/workspace/tests/integration/pyspark/v11/test_geospatial.py" in phases[0]
+    assert "/workspace/tests/integration/pyspark/v9/test_geometry.py" in phases[0]
+    assert "=== Integration phase: sedona" in result.stdout
+    if backend == "spark-connect41":
+        command = submit.read_text(encoding="utf-8")
+        assert "org.apache.sedona:sedona-spark-shaded-4.1_2.13:1.9.0" in command
+        assert (
+            "spark.sql.extensions=org.apache.sedona.sql.SedonaSqlExtensions,"
+            "io.delta.sql.DeltaSparkSessionExtension,"
+            "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions"
+        ) in command
+    _assert_cleanup(backend, checkpoint, submit, pid)
+
+
+def _run_launcher(
+    tmp_path, backend, failing_phase=0, status=0, setup_failure=False, pytest_args="", extra_environment=None
+):
     calls = tmp_path / "timeout-calls"
     checkpoint = tmp_path / "connect-checkpoint"
     checkpoint.mkdir()
@@ -159,6 +190,7 @@ def _run_launcher(tmp_path, backend, failing_phase=0, status=0, setup_failure=Fa
         "STRUCTURE_FAIL_STATUS": str(status),
         "INTEGRATION_PYTEST_ARGS": pytest_args,
         "STRUCTURE_ICEBERG_ONLY": "0",
+        **(extra_environment or {}),
     }
     runner = Path("infra/compose/images/pyspark/run-integration.sh").resolve()
     if setup_failure:

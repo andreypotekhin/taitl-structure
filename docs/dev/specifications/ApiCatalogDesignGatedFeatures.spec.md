@@ -33,8 +33,8 @@ geometry type and a documented coordinate reference policy; the geometry type an
 Current disposition:
 
 - Variant field support is implemented for the bundled PySpark plugin.
-- Apache Sedona 1.9.0 is the selected optional integration provider. The admitted surface is a narrow provider-neutral typed
-  `GEOMETRY` slice; the bundled PySpark plugin remains free of geospatial dependencies and provider-specific exports.
+- Geospatial APIs now use explicit `databricks` and `sedona` namespaces. The full current type, helper, and evidence
+  contract lives in [Geospatial.spec.md](Geospatial.spec.md); this catalog no longer defines a provider-neutral API.
 - `variant(nullable=True)` declares an opaque `VariantType`, renders as `T.VariantType()`, and materializes to
   PySpark's `VariantType` only for a transform whose resolved profile is a supported PySpark 4 profile. The resolved
   plugin profile may come from the global `[tool.structure.plugin.pyspark]` configuration or a compile/session
@@ -50,8 +50,6 @@ Current disposition:
   `variant_set(...)`, `try_variant_set(...)`, and `variant_delete(...)` are not admitted until a released PySpark 4.3+
   profile is added to Structure's compatibility matrix. The eventual Structure surface should accept literal
   `$`-prefixed paths even though Spark also supports runtime path columns.
-- Geometry fields and helpers are exported through the provider-neutral PySpark DSL; the bundled plugin exports no
-  provider-specific type, import, or implementation.
 
 Remaining current-scope Variant work is PySpark 4.2 evidence closure for the admitted literal, equality, and
 row-expansion contracts. Mutation helpers remain explicitly design-gated until their Spark profiles are released;
@@ -63,51 +61,14 @@ helpers are admitted only on their owning Spark profiles; and row expansion is a
 table-valued/generator operation. Dynamic paths, implicit extraction result types, ordering, and private Python Variant
 objects remain explicit exclusions unless a later design changes this contract.
 
-### Provider-neutral Geometry Slice
+### Geospatial Namespaces
 
-The optional-provider slice is Apache Sedona 1.9.0 `GEOMETRY`; `GEOGRAPHY` is not admitted. It belongs to a
-Sedona-specific optional plugin, never the bundled PySpark plugin.
-
-Public candidate API:
-
-- `geometry(srid=..., nullable=True)` declares a planar geometry field. `srid` is a required positive integer literal.
-- `geometry_from_wkt(value, srid=...)` returns `Geometry[srid]` from a String value.
-- `geometry_as_wkt(value)` returns a String value.
-- `intersects(left, right)`, `contains(left, right)`, and `within(left, right)` return nullable Boolean values.
-
-These are provider-neutral PySpark DSL exports. They lower only through the common Spark SQL `ST_*` contract and must
-not expose a provider import, provider configuration, or raw SQL escape hatch to transform authors.
-
-Coordinate-reference rules:
-
-- the declared SRID is part of a geometry type; Geometry values with unequal SRIDs cannot be combined by the admitted
-  predicates;
-- construction requires a literal SRID and records it in the symbolic type; rendering uses the common Spark SQL
-  `ST_GeomFromWKT` contract and leaves provider-specific representation to the active runtime;
-- WKT serialization preserves geometry text only. It does not promise to encode, infer, validate, transform, or
-  compare coordinate reference systems outside the declared literal SRID;
-- null geometries propagate null through construction, serialization, and predicates according to the active
-  provider's common Spark SQL semantics.
-
-Capability and target rules:
-
-- the PySpark plugin owns a provider-neutral `GeoProvider` extension contract: geometry schema materialization,
-  operation lowering, generated imports, and runtime availability validation are provider responsibilities;
-- generated PySpark uses the common Spark SQL `GEOMETRY`/`ST_*` contract and must not contain a provider name or import;
-- no provider is selected or configured by an end user. Geometry transforms compile normally and validate the active
-  Spark runtime only when schemas are materialized or a transform executes. The diagnostic names the missing common
-  Geometry SQL contract, not a particular provider;
-- the bundled PySpark plugin must not import or require Sedona. Compose integration uses a Sedona adapter pinned to
-  `apache-sedona==1.9.0`, the matching Spark/Scala-specific Sedona shaded JAR, and the GeoTools wrapper. PySpark 3.5
-  and 4.0 lanes must honor Sedona's documented Java requirements.
-
-Out of scope:
-
-- `GEOGRAPHY`, unknown or runtime-selected SRIDs, CRS transformation, distance/area/length measurement, spatial
-  joins and indexes, geometry collections, non-WKT serialization, raster support, and all raw `ST_*` wrappers.
-
-Tests for the first implementation must cover symbolic field and SRID compatibility, unavailable-provider diagnostics,
-provider-neutral generated calls, and live Sedona Compose parity for the supported 3.5 and 4.0 lanes.
+The previous provider-neutral Geometry slice and runtime adapter are superseded. Current behavior is specified in
+[Geospatial.spec.md](Geospatial.spec.md), including native Spark Geometry/Geography, explicit Apache/Databricks/Sedona
+helper namespaces, Sedona's distinct UDT, and recursive schema metadata. Same-session cross-provider use and inline
+Binary bridges remain gated because Sedona replaces Spark's unqualified `st_*` SQL registrations. Support is gated
+by operation, dependency, exact target profile, and execution mode. The implementation evidence is tracked in
+[P10192602](../planning/P10192602.Geospatial-namespaces-and-native-types.plan.md).
 
 ## Join Reordering
 
@@ -312,7 +273,7 @@ The API catalog design-gate plan is accepted when:
 
 ## V10 Continuation
 
-V10 carries forward only the actionable core API slices from `docs/dev/deferred/ApiCatalog.deferred.md`: provider-neutral Geometry,
+V10 carried forward only the then-actionable core API slices from `docs/dev/deferred/ApiCatalog.deferred.md`: experimental Geometry,
 sampling refinements, and typed missing-column schema evolution. The grouped V10 API plan also records explicit
 dispositions for XML, unreleased Variant mutation profiles, and opt-in join reordering. Application-specific future
 documents are not part of the V10 implementation boundary.

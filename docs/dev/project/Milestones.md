@@ -538,6 +538,9 @@ Status: planned. V11 follows the V10 closeout and runs from Sprint 55 through Sp
 - The retained-V9 stateful-chain gate admits only the two documented finite pairs; watermarked dedupe followed by an
   event-time window aggregate has PySpark 3.5.0/4.0.0 parity, progress-guard, and checkpoint-restart evidence. Other
   chains and profiles without live evidence remain gated.
+- Geospatial helpers select Apache, Databricks, or Sedona through explicit namespaces; native and Sedona schema
+  types remain distinct; only live-evidenced provider/profile/mode combinations are admitted. Managed Databricks and
+  Databricks Connect evidence is tracked separately in P10192602.
 - The integration matrix runs PySpark 3.5, 4.0, and 4.1 in ordinary and Connect lanes without dropping regression
   coverage; generated artifacts are fresh; and `make build` passes.
 
@@ -545,6 +548,7 @@ Status: planned. V11 follows the V10 closeout and runs from Sprint 55 through Sp
 
 - `docs/dev/project/V11.md`
 - `docs/dev/planning/P08042601.V11-pyspark-4.1-adoption.plan.md`
+- `docs/dev/planning/P10192602.Geospatial-namespaces-and-native-types.plan.md`
 - `docs/dev/past/planning/P10042601.V11-delta-transform-mutations.plan.md`
 - `docs/dev/past/planning/P10062601.V11-delta-connect-admission.plan.md`
 - `docs/dev/planning/P10062602.V11-apply-in-pandas-with-state.plan.md`

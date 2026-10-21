@@ -10,6 +10,7 @@ _MODULES = (
     "relation_sets",
     "aggregation",
     "expressions",
+    "native_geo",
     "operations_api",
     "InputScope",
     "body",

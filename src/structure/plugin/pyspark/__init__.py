@@ -22,7 +22,8 @@ from structure.plugin.pyspark.dsl.generators import posexplode_struct as _posexp
 from structure.plugin.pyspark.dsl.generators import stack as _stack
 from structure.plugin.pyspark.dsl.generators import variant_explode as _variant_explode
 from structure.plugin.pyspark.dsl.generators import variant_explode_outer as _variant_explode_outer
-from structure.plugin.pyspark.dsl.geo import contains, geometry_as_wkt, geometry_from_wkt, intersects, within
+from structure.plugin.pyspark.dsl.geo import contains
+from structure.plugin.pyspark.dsl.native_geo import st_asbinary, st_geogfromwkb, st_geomfromwkb, st_setsrid, st_srid
 from structure.plugin.pyspark.dsl.Interval import Interval
 from structure.plugin.pyspark.dsl.relation_sets import (
     except_all,
@@ -146,6 +147,7 @@ if TYPE_CHECKING:
         double,
         float,
         geometry,
+        geography,
         integer,
         long,
         map,
@@ -188,7 +190,7 @@ window_time current_date curdate current_timestamp current_time make_time to_tim
 window_collect_list window_collect_set window_count window_count_distinct window_max window_min window_sum
 window_stddev window_variance is_valid_variant is_variant_null octet_length parse_json schema_of_csv schema_of_json schema_of_variant schema_of_variant_agg substring_index
 to_variant_object try_parse_json try_variant_get variant_get
-variant_literal ceiling negate negative positive power bitwise_not
+variant_literal ceiling negate negative positive power bitwise_not geography st_asbinary st_geogfromwkb st_geomfromwkb st_setsrid st_srid
 variant_array_append try_variant_array_append variant_insert try_variant_insert variant_set try_variant_set variant_delete
 """.split()
 
@@ -209,6 +211,7 @@ _FIELD_FACTORIES = {
     "time",
     "variant",
     "geometry",
+    "geography",
     "hll_sketch",
     "bitmap",
     "kll_sketch",
@@ -761,15 +764,23 @@ __all__ = [  # noqa: F405
     "time_diff",
     "time_trunc",
     "geometry",
+    "geography",
+    "Geometry",
+    "GeometryType",
+    "Geography",
+    "GeographyType",
+    "databricks",
+    "sedona",
     "hll_sketch",
     "bitmap",
     "kll_sketch",
     "theta_sketch",
-    "geometry_as_wkt",
-    "geometry_from_wkt",
-    "intersects",
     "contains",
-    "within",
+    "st_geomfromwkb",
+    "st_geogfromwkb",
+    "st_asbinary",
+    "st_srid",
+    "st_setsrid",
     "cache",
     "persist",
     "unpersist",
@@ -824,8 +835,10 @@ def __getattr__(name: str):
         return getattr(import_module("structure.plugin.pyspark.dsl.field"), name)
     if name in {"Expression", "InputScope", "RowScope", "TimeWindow"}:
         return getattr(import_module(f"structure.plugin.pyspark.dsl.{name}"), name)
-    if name in {"Time", "TimeType"}:
+    if name in {"Time", "TimeType", "Geometry", "GeometryType", "Geography", "GeographyType"}:
         return getattr(import_module(f"structure.plugin.pyspark.dsl.types.{name}"), name)
+    if name in {"databricks", "sedona"}:
+        return import_module(f"structure.plugin.pyspark.dsl.{name}")
     if name in {"SqlResult", "SqlCommandResult"}:
         return getattr(import_module("structure.plugin.pyspark.dsl.SqlResult"), name)
     if name == "sql":

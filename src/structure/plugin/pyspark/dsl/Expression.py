@@ -21,10 +21,13 @@ from structure.plugin.pyspark.dsl.types import (
     DecimalType,
     DoubleType,
     FloatType,
+    GeographyType,
+    GeometryType,
     IntegerType,
     IntervalType,
     LongType,
     MapType,
+    SedonaGeometryType,
     SketchType,
     StringType,
     StructType,
@@ -71,6 +74,10 @@ def _same_type(left: StructureType | None, right: StructureType | None) -> bool:
         return left.precision == right.precision and left.scale == right.scale
     if isinstance(left, TimeType) and isinstance(right, TimeType):
         return left.precision == right.precision
+    if isinstance(left, (GeometryType, GeographyType, SedonaGeometryType)) or isinstance(
+        right, (GeometryType, GeographyType, SedonaGeometryType)
+    ):
+        return type(left) is type(right) and getattr(left, "srid", None) == getattr(right, "srid", None)
     if isinstance(left, ArrayType) and isinstance(right, ArrayType):
         return left.contains_null == right.contains_null and _same_type(left.element, right.element)
     if isinstance(left, MapType) and isinstance(right, MapType):
@@ -272,16 +279,19 @@ class Expression:
     def cast(self, target: StructureType) -> "Expression":
         """Cast to a scalar Structure type with Spark ``cast`` semantics."""
         self._validate_time_cast(target, "cast")
+        self._validate_spatial_cast(target, "cast")
         return self._cast(target)
 
     def astype(self, target: StructureType) -> "Expression":
         """Alias for :meth:`cast`, mirroring common DataFrame naming."""
         self._validate_time_cast(target, "astype")
+        self._validate_spatial_cast(target, "astype")
         return self._cast(target)
 
     def try_cast(self, target: StructureType) -> "Expression":
         """Cast to a scalar Structure type while preserving failed parses as null."""
         self._validate_time_cast(target, "try_cast")
+        self._validate_spatial_cast(target, "try_cast")
         cast_expression = self._cast(target)
         return Expression(
             kind="try_cast",
@@ -585,6 +595,10 @@ class Expression:
         return self._compatible_comparison_types(self.type, other.type)
 
     def _compatible_comparison_types(self, left: StructureType, right: StructureType) -> bool:
+        if isinstance(left, (GeometryType, GeographyType, SedonaGeometryType)) or isinstance(
+            right, (GeometryType, GeographyType, SedonaGeometryType)
+        ):
+            return False
         if isinstance(left, TimeType) or isinstance(right, TimeType):
             return (
                 isinstance(left, TimeType)
@@ -810,3 +824,11 @@ class Expression:
         if isinstance(self.type, TimeType) and isinstance(target, (StringType, TimeType)):
             return
         raise TypeError(f"{call}(...) supports TIME casts only to or from String or TIME")
+
+    def _validate_spatial_cast(self, target: StructureType, call: str) -> None:
+        spatial_types = (GeometryType, GeographyType, SedonaGeometryType)
+        if isinstance(self.type, spatial_types) or isinstance(target, spatial_types):
+            raise TypeError(
+                f"{call}(...) does not cast spatial values; use an explicit namespaced encoder and decoder "
+                "through Binary. See docs/reference/Geospatial.ref.md."
+            )

@@ -395,7 +395,7 @@ This is the compatibility companion to the [API reference](../api/Expressions.ap
 | `aes_encrypt(...)` / `aes_decrypt(...)` | AES-GCM | `aes_encrypt(o.payload, key, mode="GCM", iv=nonce)` | yes | yes | Typed GCM calls support symbolic keys and include a nonce-reuse warning. Manual IVs remain available for deterministic use and external interoperability; callers own uniqueness and nonce safety. |
 | — | String aggregation | — | no | yes | Status: `target-gated`. PySpark 4.0-only `string_agg`/`listagg` are outside the 3.5/4.0 intersection baseline. Migration: Use native PySpark on the 4.0 target or await a target-profile admission. |
 | — | Profile evidence | — | — | — | Status: `target-gated`. Admission requires a released profile plus classic, Connect, generated/online, and streaming evidence. Migration: Use an admitted profile or native PySpark. |
-| — | Geospatial providers | — | no | no | Status: `target-gated`. Native root `st_*` is 4.1+; external providers are namespaced and scope-matched. Migration: Use native PySpark or an explicit Binary boundary. |
+| `st_*`, `databricks.st_*`, `sedona.st_*` | Spatial helper namespaces | `sedona.st_geomfromwkt(row.wkt, 4326)` | no | target-gated | Namespace selects the Python implementation; field type selects native or Sedona representation. Apache native 4.1 and Sedona 3.5/4.0/4.1 ordinary/Connect parity pass in isolated sessions. Managed Databricks parity remains open. Sedona replaces Spark's unqualified SQL registrations, so same-session cross-provider calls and Binary bridges remain gated. |
 | `transform(function)` | `Column.transform` | `o.name.transform(lambda value: upper(trim(value)))` | no | yes | Status: `supported` for PySpark `>=4.1,<4.2` on ordinary and Spark Connect variants. The typed callback determines result type/nullability and preserves row cardinality. Pinned 4.1.0 online/generated evidence covers inline and bound `@special(type="expr")` callbacks, nullable inputs, changed result types, values/schema, and generated spelling on both variants. |
 | `isin(relation_or_query)` | `Column.isin(DataFrame)` | `store.store_id.isin(inventory.project(["store_id"]))` | no | yes | Supported for exact ordinary and Connect `>=4.1,<4.2`; only uncorrelated typed queries are accepted. Scalar IN uses one projected column; struct IN compares member columns positionally. Online/generated/native parity passes on Spark/PySpark 4.1.0 for both variants. |
 
@@ -426,6 +426,12 @@ Live admission evidence is recorded in Sprint 56; unsupported profiles and gener
 TIME comparisons require matching precisions; ordering accepts all TIME precisions. TIME-to-TIME casts preserve Spark's precision conversion; TIME/String casts use
 native Spark behavior (including String parsing that may retain microseconds beyond the declared TIME precision). Date
 and timestamp casts and TIME arithmetic are excluded. See the [TIME reference](../reference/Expressions.ref.md#spark-41-time-values).
+
+## Spark 4.1 geospatial helpers
+
+| Structure API | PySpark parity | Example | PySpark 3 | PySpark 4 | Details |
+| --- | --- | --- | --- | --- | --- |
+| Native `st_geomfromwkb`, `st_geogfromwkb`, `st_asbinary`, `st_srid`, `st_setsrid` | Apache Spark 4.1 spatial SQL | `st_geomfromwkb(row.payload)` | no | exact 4.1 | Online, generated, and native value/schema parity passed on PySpark/Spark 4.1.0 ordinary and Connect. Set `spark.sql.geospatial.enabled=true` in the Spark session. Managed Databricks and Databricks Connect remain open. Sedona must run in an isolated session because its extension replaces Spark's unqualified ST registrations; cross-provider Binary bridges are gated. See [Geospatial](../reference/Geospatial.ref.md). |
 
 ## Spark 4.1 typed batch observations
 

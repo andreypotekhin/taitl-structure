@@ -842,7 +842,7 @@ APIs whose additional design boundary is recorded below.
 | `uniform` | 4.0.0 | `target-gated` | Use native PySpark or a separately admitted random-function profile with explicit seed semantics. |
 | `validate_utf8` | 4.0.0 | `target-gated` | Use native PySpark or a separately admitted UTF-8 profile. |
 | `random`, `uuid`, and related random helpers | 4.1 | `target-gated` | Track in the V11 adoption ledger with explicit version and seed evidence. |
-| Native `st_geomfromwkb`, `st_geogfromwkb`, `st_asbinary`, `st_srid`, `st_setsrid` | 4.1 | `target-gated` | Track native Geometry/Geography in P10012602 with provider and mode evidence. |
+| Native `st_geomfromwkb`, `st_geogfromwkb`, `st_asbinary`, `st_srid`, `st_setsrid` | 4.1 | `target-gated` | Supported on exact ordinary/Connect 4.1 in an Apache-only session with Spark geospatial enabled; see [Geospatial reference](../../reference/Geospatial.ref.md). Same-session Sedona mixing and managed Databricks remain gated. |
 
 Source comparison: [PySpark 3.5.6 SQL functions](https://spark.apache.org/docs/3.5.6/api/python/reference/pyspark.sql/functions.html)
 and [PySpark 4.0.0 SQL functions](https://spark.apache.org/docs/4.0.0/api/python/reference/pyspark.sql/functions.html).
@@ -862,7 +862,7 @@ missing contract or native-PySpark remedy before the status can change.
 | Variant mutation | `target-gated` | Released profile plus classic, Connect, generated/online, and streaming evidence. | Use the profile or native PySpark. |
 | XML | `design-gated` | Declared schema, normalized options, malformed-record policy, and parse/serialize evidence. | Use a native PySpark boundary. |
 | URL | `partial` | `url_encode` and strict `url_decode` are baseline row-local; `try_url_decode` is 4.0 target-gated. | Use native PySpark for safe decoding or unsupported profiles. |
-| Geospatial providers | `target-gated` | Native root `st_*` is 4.1+; external providers are namespaced and scope-matched. | Use native PySpark or an explicit Binary boundary. |
+| Geospatial APIs | `target-gated` | Apache native Spark 4.1 and Sedona 3.5/4.0/4.1 ordinary/Connect parity pass in isolated sessions. Managed Databricks and same-session Apache/Sedona parity remain open because Sedona replaces unqualified SQL registrations. | Select an explicitly supported namespace in an isolated session; cross-provider Binary bridges are currently gated. |
 | Runtime metadata and reflection | `caller-owned-guided` | Query-clock expressions are the only admitted symbolic runtime reads. | Use an explicit native PySpark boundary. |
 | UDTFs, pandas UDFs, callbacks | `caller-owned-guided` | Arbitrary runtime behavior. | Use explicit native PySpark. |
 

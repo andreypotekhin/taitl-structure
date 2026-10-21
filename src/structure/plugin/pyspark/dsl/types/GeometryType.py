@@ -5,12 +5,16 @@ from structure.plugin.pyspark.dsl.types.StructureType import StructureType
 
 @dataclass(frozen=True)
 class GeometryType(StructureType):
-    """A planar Spark SQL Geometry value with a declared coordinate reference."""
+    """Native Spark Geometry, with ``None`` representing mixed or unknown SRIDs."""
 
-    srid: int
+    srid: int | None = None
 
-    def __init__(self, srid: int) -> None:
-        if isinstance(srid, bool) or not isinstance(srid, int) or srid <= 0:
-            raise ValueError("Geometry SRID must be a positive integer")
+    def __init__(self, srid: int | None = None) -> None:
+        _validate_srid(srid)
         object.__setattr__(self, "name", "geometry")
         object.__setattr__(self, "srid", srid)
+
+
+def _validate_srid(srid: object) -> None:
+    if srid is not None and (isinstance(srid, bool) or not isinstance(srid, int)):
+        raise TypeError("Spatial SRID must be an integer or None")

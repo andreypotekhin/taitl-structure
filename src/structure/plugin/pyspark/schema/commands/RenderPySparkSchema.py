@@ -13,11 +13,13 @@ from structure.plugin.pyspark.dsl.types import (
     DecimalType,
     DoubleType,
     FloatType,
+    GeographyType,
     GeometryType,
     IntegerType,
     IntervalType,
     LongType,
     MapType,
+    SedonaGeometryType,
     SketchType,
     StringType,
     StructType,
@@ -94,7 +96,11 @@ class RenderPySparkSchema:
         if isinstance(type, VariantType):
             return "T.VariantType()"
         if isinstance(type, GeometryType):
-            return "geometry_type()"
+            return f"native_spatial_type(T, 'GeometryType', {type.srid!r})"
+        if isinstance(type, GeographyType):
+            return f"native_spatial_type(T, 'GeographyType', {type.srid!r})"
+        if isinstance(type, SedonaGeometryType):
+            return f"sedona_geometry_type({type.srid!r})"
         if isinstance(type, DecimalType):
             return f"T.DecimalType({type.precision}, {type.scale})"
         if isinstance(type, ArrayType):

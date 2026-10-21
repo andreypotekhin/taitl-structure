@@ -31,7 +31,7 @@ the gate register searchable without duplicating the full PySpark inventory.
 | Variant mutation helpers | `target-gated` | Released target profile plus classic, Connect, generated/online, and streaming evidence. |
 | URL encode/decode | `partial` | `url_encode` and strict `url_decode` are typed; `try_url_decode` is a 4.0 target gate. |
 | XML helpers | `design-gated` | Declared schema, options, malformed-input behavior, and parse/serialize evidence. |
-| Geospatial providers | `target-gated` | Native 4.1 root APIs and namespaced external providers are specified in the [Geospatial design](../design/Geospatial.design.md); current support status is in the [API tracker](../../compatibility/APITracker.md). |
+| Geospatial APIs | `target-gated` | Apache native 4.1 and Sedona 3.5/4.0/4.1 ordinary/Connect parity pass in isolated sessions. Managed Databricks parity and same-session Apache/Sedona use remain open in [P10192602](../planning/P10192602.Geospatial-namespaces-and-native-types.plan.md). |
 | Runtime metadata and reflection | `caller-owned-guided` | Query-clock expressions are the only admitted symbolic runtime reads. |
 | `expr` / `call_function` | `unsupported` | Raw SQL removes typed expression ownership. |
 | UDTFs, pandas UDFs, callbacks | `caller-owned-guided` | Arbitrary runtime behavior is outside typed transforms. |
@@ -58,11 +58,13 @@ Variant append, insert, set, and delete helpers are reserved for a released targ
 evidence gate is maintained in [API Catalog Gates](ApiCatalog.gates.md); classic, Connect, generated/online, and
 streaming evidence are all required before release.
 
-### Geospatial providers
+### Geospatial namespaces
 
-Native Geometry/Geography is a PySpark 4.1 target gate. External provider helpers are namespaced and require matching
-provider scope. The default baseline makes no spatial support claim; see
-[P10012602](../past/planning/P10012602.Geospatial-provider-boundaries.plan.md).
+The active contract is in [Geospatial.spec.md](../specifications/Geospatial.spec.md). Helper namespace selects the
+implementation; field declaration selects native or Sedona representation. There is no provider setting or scope
+precedence. Exact target and execution-mode evidence controls admission. Managed Databricks and Databricks Connect
+remain open. Sedona's extension replaces Spark's unqualified `st_*` registrations, so same-session cross-provider use
+and inline Binary bridges remain gated; see [P10192602](../planning/P10192602.Geospatial-namespaces-and-native-types.plan.md).
 
 ### Random and order-sensitive functions
 

@@ -169,6 +169,8 @@ class RenderPySparkTransformModule:
         if self._has_policy_checks(plan):
             helpers.extend(("reuse_policy_checks", "singleton_policy"))
         lines.append(f"from {runtime_module} import {', '.join(helpers)}")
+        if any(self._has_geospatial_helper(expression) for expression in self._expressions(plan)):
+            lines.append("from structure.plugin.pyspark.geo.runtime import call_geospatial_function")
         if self._observations(plan):
             lines.append("from structure.plugin.api.v1.model import ObservationResult")
         if has_stateful_transform:
@@ -1256,6 +1258,25 @@ class RenderPySparkTransformModule:
             yield from self._step_expressions(output)
         for stage_output in plan.stage_outputs:
             yield from self._step_expressions(stage_output.output)
+
+    def _has_geospatial_helper(self, expression: PySparkExpressionRecipe) -> bool:
+        if expression.kind == "call" and expression.data.get("function") == "geo_helper":
+            return True
+        if any(self._has_geospatial_helper(argument) for argument in expression.args):
+            return True
+        return any(
+            self._data_has_geospatial_helper(value)
+            for value in (expression.data or {}).values()
+        )
+
+    def _data_has_geospatial_helper(self, value) -> bool:
+        if isinstance(value, PySparkExpressionRecipe):
+            return self._has_geospatial_helper(value)
+        if isinstance(value, (tuple, list)):
+            return any(self._data_has_geospatial_helper(item) for item in value)
+        if isinstance(value, Mapping):
+            return any(self._data_has_geospatial_helper(item) for item in value.values())
+        return False
 
     def _step_expressions(self, step: PySparkStepRecipe | PySparkOutputRecipe):
         yield from step.filters

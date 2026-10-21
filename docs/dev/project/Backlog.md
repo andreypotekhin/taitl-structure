@@ -487,6 +487,9 @@ future documents are not V10 backlog commitments.
   generated-source boundaries.
 - Track classic Delta table admission and the separate Delta Connect 4.1 admission as distinct packages; do not infer
   broader Connect or 4.2 support from either one.
+- [x] Implement namespaced Apache, Databricks, and Sedona spatial helpers with native Geometry/Geography and distinct
+  Sedona Geometry schema types. Apache native 4.1 and Sedona 3.5/4.0/4.1 ordinary/Connect parity is recorded; managed
+  Databricks parity and same-session Apache/Sedona mixing remain gated by [P10192602](../planning/P10192602.Geospatial-namespaces-and-native-types.plan.md).
 - Extend Compose, runner selection, backend metadata, fixtures, version assertions, CI, and evidence reports to
   `pyspark41` and `spark-connect41`.
 - Reconcile API Catalog, API Reference, machine-readable inventories, compatibility/troubleshooting docs, generated

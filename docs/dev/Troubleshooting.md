@@ -161,15 +161,16 @@ rebuilds are required for dependency or image-configuration changes, not launche
 with the live run and keep Iceberg/Delta results separate from the general phase.
 See [integration runner behavior](../../infra/compose/README.md#run-tests).
 
-### Problem (integration): Connect 4.1 cannot resolve ST_GeomFromWKT
+### Problem (runtime): A namespaced spatial helper is unavailable
 
-When: A Sedona geometry provider test is included in the general Connect 4.1 selection.
-Error: UNRESOLVED_ROUTINE for ST_GeomFromWKT.
-Cause: The 4.1 gateway configures Delta and Iceberg, without Sedona's SQL extension. The existing V9 geometry
-specification scopes optional-provider live evidence to Spark 3.5/4.0.
-Fix: Run the geometry provider test in its configured 3.5/4.0 lanes. It is marked as excluded at collection time on
-4.1, with the specification named in the skip reason. This exclusion does not establish geometry support on 4.1.
-See [provider target rules](specifications/ApiCatalogDesignGatedFeatures.spec.md#provider-neutral-geometry-slice).
+When: An expression uses `sedona.*` or `databricks.*` and the selected Python or Spark server lacks that provider's
+helper.
+Error: Structure reports that the exact namespaced helper is unavailable and links to the Geospatial reference.
+Cause: The namespace intentionally selects one implementation; Structure does not fall back to a similarly named
+function in another package. Sedona also requires matching Python and JVM packages plus its Spark extension.
+Fix: Install and configure the provider that matches the expression namespace, then rerun the live parity case for the
+same execution mode. For Databricks, use the caller's managed Spark or authenticated Databricks Connect session.
+See [Geospatial Types and Helpers](../reference/Geospatial.ref.md).
 
 ### Problem (integration): Delta Connect 4.1 fails while decoding a server response
 
@@ -409,3 +410,19 @@ spark = SparkSession.builder.config("spark.sql.timeType.enabled", "true").getOrC
 ```
 
 The caller's Spark installation must support Spark 4.1 TIME. Structure does not change this setting automatically.
+
+### Problem (PySpark 4.1 geospatial): Spark reports `GEOSPATIAL_DISABLED`
+
+When: Native `geometry`/`geography` expressions execute on Spark 4.1.
+
+Error: `[UNSUPPORTED_FEATURE.GEOSPATIAL_DISABLED] The feature is not supported: Geospatial feature is disabled.`
+
+Cause: Spark 4.1 guards native spatial functions and types behind `spark.sql.geospatial.enabled`.
+
+Fix: Enable the Spark setting in the caller-owned session before executing spatial queries, for example:
+
+```python
+spark = SparkSession.builder.config("spark.sql.geospatial.enabled", "true").getOrCreate()
+```
+
+Structure does not change this setting. Ordinary and Spark Connect parity was verified with the setting enabled.

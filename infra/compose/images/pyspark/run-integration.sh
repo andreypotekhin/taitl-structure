@@ -115,6 +115,7 @@ if [[ "${backend}" == spark-connect* ]]; then
     fi
     connect_jars=("${SPARK_HOME}"/jars/spark-connect_*.jar)
     connect_packages=()
+    connect_extensions=()
     connect_resource=""
     if [[ -e "${connect_jars[0]}" ]]; then
         connect_resource="${connect_jars[0]}"
@@ -129,7 +130,7 @@ if [[ "${backend}" == spark-connect* ]]; then
     if [[ -n "${STRUCTURE_SPARK_JARS_PACKAGES:-}" ]]; then
         connect_packages+=("${STRUCTURE_SPARK_JARS_PACKAGES}")
         if [[ "${STRUCTURE_SPARK_JARS_PACKAGES}" == *sedona* ]]; then
-            connect_args+=(--conf "spark.sql.extensions=org.apache.sedona.sql.SedonaSqlExtensions")
+            connect_extensions+=(org.apache.sedona.sql.SedonaSqlExtensions)
         fi
     fi
     if [[ "${backend}" == "spark-connect41" ]]; then
@@ -139,7 +140,6 @@ if [[ "${backend}" == spark-connect* ]]; then
             "com.google.protobuf:protobuf-java:4.33.0"
         )
         connect_args+=(
-            --conf "spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension,org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions"
             --conf "spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog"
             --conf "spark.sql.catalog.structure_iceberg=org.apache.iceberg.spark.SparkCatalog"
             --conf "spark.sql.catalog.structure_iceberg.type=hadoop"
@@ -147,6 +147,14 @@ if [[ "${backend}" == spark-connect* ]]; then
             --conf "spark.connect.extensions.relation.classes=org.apache.spark.sql.connect.delta.DeltaRelationPlugin"
             --conf "spark.connect.extensions.command.classes=org.apache.spark.sql.connect.delta.DeltaCommandPlugin"
         )
+        connect_extensions+=(
+            io.delta.sql.DeltaSparkSessionExtension
+            org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions
+        )
+    fi
+    if (( ${#connect_extensions[@]} > 0 )); then
+        extensions_arg=$(IFS=,; printf '%s' "${connect_extensions[*]}")
+        connect_args+=(--conf "spark.sql.extensions=${extensions_arg}")
     fi
     if (( ${#connect_packages[@]} > 0 )); then
         packages_arg=$(IFS=,; printf '%s' "${connect_packages[*]}")
@@ -160,6 +168,21 @@ if [[ "${backend}" == spark-connect* ]]; then
     SPARK_SUBMIT_OPTS="${SPARK_SUBMIT_OPTS:-} -Dlog4j.configurationFile=file:/etc/spark/log4j2-integration.properties" \
         spark-submit "${connect_args[@]}" >"${connect_log}" 2>&1 &
     connect_pid="$!"
+fi
+
+if [[ "${STRUCTURE_SEDONA_ONLY:-0}" == "1" ]]; then
+    if [[ "${backend}" != "pyspark41" && "${backend}" != "spark-connect41" ]]; then
+        echo "The isolated Sedona coexistence phase is configured only for Spark 4.1." >&2
+        exit 2
+    fi
+    if [[ "${STRUCTURE_SPARK_JARS_PACKAGES:-}" != *sedona* ]]; then
+        echo "STRUCTURE_SPARK_JARS_PACKAGES must select the pinned Sedona runtime for this phase." >&2
+        exit 2
+    fi
+    run_phase sedona \
+        /workspace/tests/integration/pyspark/v11/test_geospatial.py \
+        /workspace/tests/integration/pyspark/v9/test_geometry.py
+    exit 0
 fi
 
 

@@ -1,41 +1,47 @@
-"""Resolve the active Spark Geometry data type without naming a provider."""
+"""Lazy dispatch for explicitly selected spatial Python APIs."""
 
-from importlib.metadata import entry_points
-from typing import Any, Protocol, cast
-
-
-class GeoProvider(Protocol):
-    """Provider contract for Structure's common Spark SQL Geometry surface."""
-
-    def geometry_type(self): ...
-
-    def validate(self, operations: frozenset[str]) -> None: ...
+from importlib import import_module
 
 
-def geometry_type():
-    """Return the active provider's Spark ``GEOMETRY`` data type.
-
-    Providers register one ``structure.geo_provider`` entry point. Resolution is
-    intentionally late so ordinary compilation and generated-code import remain
-    Spark- and provider-free.
-    """
-    providers = tuple(entry_points(group="structure.geo_provider"))
-    if not providers:
-        try:
-            from structure.plugin.pyspark.geo.providers.sedona import provider as create_provider
-        except ImportError as error:
-            raise RuntimeError(
-                "GEO-E0901: The active Spark runtime has no Geometry SQL provider. "
-                "Install a provider that implements Structure's GEOMETRY/ST_* contract."
-            ) from error
-        return create_provider().geometry_type()
-    if len(providers) != 1:
-        names = ", ".join(sorted(provider.name for provider in providers))
+def call_geospatial_function(provider: str, operation: str, *arguments):
+    """Call exactly the provider named in the compiled expression."""
+    modules = {
+        "apache": ("pyspark.sql.functions", operation),
+        "databricks": ("pyspark.databricks.sql.functions", operation),
+    }
+    if provider == "sedona":
+        module_name, function_name = _sedona_function(operation)
+    else:
+        selected = modules.get(provider)
+        if selected is None:
+            raise ValueError(f"Unknown geospatial helper namespace {provider!r}")
+        module_name, function_name = selected
+    try:
+        module = import_module(module_name)
+        function = getattr(module, function_name)
+    except (ImportError, AttributeError) as error:
         raise RuntimeError(
-            f"GEO-E0902: Multiple Geometry SQL providers are installed: {names}. "
-            "Keep exactly one active provider."
-        )
-    provider: Any = providers[0].load()
-    if isinstance(provider, type) or callable(provider):
-        provider = provider()
-    return cast(GeoProvider, provider).geometry_type()
+            f"The {provider}.{operation}(...) helper is unavailable. Install the matching provider "
+            "Python and runtime packages; see docs/reference/Geospatial.ref.md."
+        ) from error
+    return function(*arguments)
+
+
+def _sedona_function(operation: str) -> tuple[str, str]:
+    wrappers = {
+        "st_geomfromwkt": ("sedona.spark.sql.st_constructors", "ST_GeomFromWKT"),
+        "st_geomfromwkb": ("sedona.spark.sql.st_constructors", "ST_GeomFromWKB"),
+        "st_geomfromewkb": ("sedona.spark.sql.st_constructors", "ST_GeomFromEWKB"),
+        "st_astext": ("sedona.spark.sql.st_functions", "ST_AsText"),
+        "st_asbinary": ("sedona.spark.sql.st_functions", "ST_AsBinary"),
+        "st_asewkb": ("sedona.spark.sql.st_functions", "ST_AsEWKB"),
+        "st_srid": ("sedona.spark.sql.st_functions", "ST_SRID"),
+        "st_setsrid": ("sedona.spark.sql.st_functions", "ST_SetSRID"),
+        "st_intersects": ("sedona.spark.sql.st_predicates", "ST_Intersects"),
+        "st_contains": ("sedona.spark.sql.st_predicates", "ST_Contains"),
+        "st_within": ("sedona.spark.sql.st_predicates", "ST_Within"),
+    }
+    try:
+        return wrappers[operation]
+    except KeyError as error:
+        raise ValueError(f"Unknown Sedona helper {operation!r}") from error

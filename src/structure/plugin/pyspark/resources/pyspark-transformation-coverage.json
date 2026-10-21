@@ -1694,6 +1694,27 @@
         "docs/dev/specifications/V11PySpark41Parity.spec.md",
         "tests/integration/pyspark/v11/test_observations.py"
       ]
+    },
+    {
+      "id": "functions.v11-geospatial-native",
+      "status": "supported",
+      "structure": "st_geomfromwkb(...), st_geogfromwkb(...), st_asbinary(...), st_srid(...), st_setsrid(...)",
+      "public_symbols": [
+        "st_geomfromwkb",
+        "st_geogfromwkb",
+        "st_asbinary",
+        "st_srid",
+        "st_setsrid"
+      ],
+      "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2; Apache-only session",
+      "contract": "Typed native Geometry/Geography helpers preserve Spark values, SRID-aware schemas, nullability, and generated spelling when spark.sql.geospatial.enabled=true.",
+      "notes": "Live native/online/generated value and schema parity passes on PySpark/Spark 4.1.0 ordinary and Connect. Sedona replaces overlapping unqualified ST registrations, so same-session cross-provider calls and Binary bridges remain gated; managed Databricks evidence is open.",
+      "evidence": [
+        "docs/dev/specifications/Geospatial.spec.md",
+        "docs/reference/Geospatial.ref.md",
+        "tests/specifications/geospatial/test_namespaced_api.py",
+        "tests/integration/pyspark/v11/test_geospatial.py"
+      ]
     }
   ]
 }

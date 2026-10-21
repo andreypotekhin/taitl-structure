@@ -15,7 +15,15 @@ boundary and remedy.
 
 - [x] Reconcile the supported pinned API delta, target-only inventory, and transformation coverage for query operations, observations, and KLL/Theta; exact-profile capability guards pass.
 - Reconcile remaining API Catalog, API Reference, compatibility docs, generated artifacts, and six-lane evidence.
-- Run `make build`, `make integration`, and `make build INTEGRATION=1`.
+- [x] Implement explicit geospatial namespaces and native/Sedona schema types under
+  [P10192602](../../planning/P10192602.Geospatial-namespaces-and-native-types.plan.md). Apache native 4.1 ordinary/
+  Connect and Sedona 3.5/4.0/4.1 ordinary/Connect parity pass in isolated sessions. Same-session Apache/Sedona use,
+  Binary bridges, and managed Databricks/Databricks Connect parity remain gated.
+- [x] Run `make build`: formatting, Flake8, mypy, 2,675 tests / 373 skips, 155 follow-up tests / 7 skips, and package builds passed.
+- [x] Run full ordinary and Connect 4.1 integration lanes. Connect passed Iceberg 21, Delta 55 / 1 expected skip,
+  and general 234 / 60 skips. Ordinary passed Iceberg 21 and Delta 53 / 3 expected skips; general had 53 passes,
+  one Databricks-session skip, and one independent foreachBatch schema failure (`AlertMessage` expected, `Alert` received).
+- Run the complete six-lane integration matrix and `make build INTEGRATION=1`.
 - Review the six-lane evidence report and resolve release blockers or record precise deferrals.
 - [x] Complete Arrow UDF implementation and evidence: Connect batch parity, retained scalar-UDF regressions, both
   unfiltered 4.1 lanes, and `make build`. The ordinary lane exposes one independent foreachBatch handoff failure;
