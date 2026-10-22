@@ -7,6 +7,10 @@ from structure.plugin.api.v1 import CompileRequest, PluginCompilation
 from structure.plugin.api.v1.model import TransformPlan
 from structure.plugin.pyspark.api.AuthoringAPI import PySparkStepBody
 from structure.plugin.pyspark.api.PySpark import PySpark
+from structure.plugin.pyspark.capabilities.model.PySparkCapabilities import (
+    DEFAULT_TARGET_PROFILE,
+    DEFAULT_TARGET_VARIANT,
+)
 from structure.plugin.pyspark.dsl.operations.StateBudgetPlan import StateBudgetPlan
 
 
@@ -45,11 +49,16 @@ class CompilerAPI(CompilerAPIV1):
             default=bool(options.get("warn_on_lineage_growth", True)),
         )
         thresholds = self._lineage_thresholds(request.plugin_options)
+        plugin_options = request.plugin_options
+        profile = str(plugin_options.get("profile", DEFAULT_TARGET_PROFILE))
+        variant = str(plugin_options.get("variant", DEFAULT_TARGET_VARIANT))
         if request.purpose is CompilationPurpose.DOCUMENTATION:
             diagnostics = self._diagnostics(
                 plan,
                 warn_on_udfs=warn_on_udfs,
                 warn_on_lineage_growth=warn_on_lineage_growth,
+                profile=profile,
+                variant=variant,
                 **thresholds,
             )
             return PluginCompilation(
@@ -57,7 +66,6 @@ class CompilerAPI(CompilerAPIV1):
                 fingerprint=plan.name,
                 diagnostics=diagnostics,
             )
-        plugin_options = request.plugin_options
         delta_check_match = plugin_options.get("delta_check_match", "expression")
         if delta_check_match not in ("expression", "name", "off"):
             raise ValueError("PySpark delta_check_match must be 'expression', 'name', or 'off'")
@@ -88,6 +96,8 @@ class CompilerAPI(CompilerAPIV1):
             plan,
             warn_on_udfs=warn_on_udfs,
             warn_on_lineage_growth=warn_on_lineage_growth,
+            profile=profile,
+            variant=variant,
             execution_plan=lowered,
             **thresholds,
         )
@@ -110,6 +120,8 @@ class CompilerAPI(CompilerAPIV1):
         *,
         warn_on_udfs: bool,
         warn_on_lineage_growth: bool,
+        profile: str = DEFAULT_TARGET_PROFILE,
+        variant: str = DEFAULT_TARGET_VARIANT,
         execution_plan=None,
         repeat_cost: int = 8,
         fanout_cost: int = 8,
@@ -118,7 +130,7 @@ class CompilerAPI(CompilerAPIV1):
     ):
         return (
             *self._udf_diagnostics(plan, enabled=warn_on_udfs),
-            *self._expression_diagnostics(plan),
+            *self._expression_diagnostics(plan, profile=profile, variant=variant),
             *self._lineage_diagnostics(
                 plan,
                 enabled=warn_on_lineage_growth,

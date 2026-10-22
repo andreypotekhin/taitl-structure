@@ -89,9 +89,11 @@ the same fixed SRID.
 Spark 4.1 and Sedona register overlapping unqualified `st_*` SQL function names. In a live coexistence run,
 `SedonaSqlExtensions` changed Spark's native `st_geomfromwkb` result from the declared SRID-0 `GeometryType(0)` to
 `GeometryType()` (mixed/unknown SRID). This makes the native contract fail schema validation and can change other
-operations too. Keep Apache native and Sedona workloads in separate Spark sessions. An inline Binary bridge is not
-currently supported because its source and destination expressions still share the colliding session registry.
-WKB also drops SRID; preserve or restore SRID separately when transferring encoded values between sessions.
+operations too. Structure emits `PYSPARK-W2707` when one Spark 4.1 ordinary or Connect transform combines Apache
+native and Sedona helpers. Keep the workloads in separate Spark sessions. Cross-session transfer is caller-managed:
+persist WKB and SRID separately in the source session, then reconstruct and validate the spatial value in the
+destination session. WKB does not carry SRID. Structure does not provide an inline bridge because both providers
+would still resolve through the colliding session registry.
 
 ## Support boundaries
 

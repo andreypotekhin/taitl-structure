@@ -426,3 +426,15 @@ spark = SparkSession.builder.config("spark.sql.geospatial.enabled", "true").getO
 ```
 
 Structure does not change this setting. Ordinary and Spark Connect parity was verified with the setting enabled.
+
+### Problem (PySpark 4.1 geospatial): `PYSPARK-W2707` reports mixed Apache and Sedona helpers
+
+When: One transform uses Apache-native and Sedona spatial helpers under the Spark 4.1 ordinary or Spark Connect
+profile.
+
+Cause: Both providers register overlapping unqualified `st_*` SQL names in a Spark session. Namespace-qualified
+Python APIs do not isolate those SQL registrations.
+
+Fix: Run the Apache-native and Sedona work in separate Spark sessions. For a transfer, persist WKB and SRID as
+separate values in the source session, then decode and restore SRID in the destination session. See the
+[cross-session WKB recipe](../recipes/GeospatialProviderBridge.md) and the [Geospatial reference](../reference/Geospatial.ref.md#provider-coexistence-boundary).

@@ -21,6 +21,7 @@ Below is an index for published diagnostic codes. For the full diagnostic contra
 | PYSPARK-W2704 | warning | PySpark output query plan is unusually large | An output depends on many operations without enough planning boundaries. Split the computation with a checkpoint or simplify the output path. |
 | PYSPARK-W2705 | warning | Timestamp pattern has no effect on typed temporal input | Remove the pattern, or parse a String expression. |
 | PYSPARK-W2706 | warning | Time zone has no effect on NTZ timestamp construction | Remove the zone, or use `make_timestamp_ltz(...)`. |
+| PYSPARK-W2707 | warning | Apache and Sedona spatial helpers share Spark SQL registrations | Run each provider in a separate Spark session. Persist WKB and SRID separately for cross-session transfer. See the [geospatial coexistence boundary](reference/Geospatial.ref.md#provider-coexistence-boundary). |
 | SCHEMA-E0301 | error | Nullable expression assigned to non-nullable field | Guard the value or provide a non-null default. |
 | SCHEMA-E0302 | error | Explicit conversion required | Use an explicit conversion helper such as `to_decimal(...)`. |
 | SCHEMA-E0303 | error | Incompatible output field type | Use a compatible expression type or explicit conversion. |
@@ -123,6 +124,14 @@ String expression containing the text to parse.
 
 `make_timestamp(...)` with `spark.sql.timestampType=TIMESTAMP_NTZ` builds a wall-clock timestamp; the `timezone=`
 argument does not shift that value. Remove it, or use `make_timestamp_ltz(...)` when you need an instant.
+
+### PYSPARK-W2707
+
+On Spark 4.1, Sedona SQL extensions and native Spark geospatial functions register overlapping unqualified `st_*`
+names. A transform containing both `apache.*` and `sedona.*` helpers can therefore resolve a call through the other
+provider's registration. Use separate Spark sessions. For a handoff, materialize WKB and SRID in the source session,
+then read both values and reconstruct the spatial value in the destination session. See the [cross-session WKB
+recipe](recipes/GeospatialProviderBridge.md).
 
 ### SCHEMA-E0301
 See [Diagnostics.md](background/Diagnostics.back.md#schema-e0301).

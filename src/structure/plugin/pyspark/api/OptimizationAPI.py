@@ -3,6 +3,10 @@ from dataclasses import replace
 from structure.plugin.api.v1 import OptimizationReport, OptimizationRequest, PluginCompilation, TransformPlan
 from structure.plugin.pyspark.api.CompilerAPI import CompilerAPI
 from structure.plugin.pyspark.api.PySpark import PySpark
+from structure.plugin.pyspark.capabilities.model.PySparkCapabilities import (
+    DEFAULT_TARGET_PROFILE,
+    DEFAULT_TARGET_VARIANT,
+)
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 
 
@@ -26,10 +30,18 @@ class OptimizationAPI:
             warn_on_lineage_growth=compiler._warn_on_lineage_growth(
                 original, default=bool(options.get("warn_on_lineage_growth", True))
             ),
+            profile=str(compile_request.plugin_options.get("profile", DEFAULT_TARGET_PROFILE)),
+            variant=str(compile_request.plugin_options.get("variant", DEFAULT_TARGET_VARIANT)),
             execution_plan=lowered,
             **compiler._lineage_thresholds(compile_request.plugin_options),
         )
-        growth_codes = {"PYSPARK-W2701", "PYSPARK-W2702", "PYSPARK-W2703", "PYSPARK-W2704"}
+        growth_codes = {
+            "PYSPARK-W2701",
+            "PYSPARK-W2702",
+            "PYSPARK-W2703",
+            "PYSPARK-W2704",
+            "PYSPARK-W2707",
+        }
         diagnostics = (
             *(item for item in request.compilation.diagnostics if getattr(item, "code", None) not in growth_codes),
             *diagnostics,

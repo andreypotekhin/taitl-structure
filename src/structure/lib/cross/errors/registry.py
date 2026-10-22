@@ -183,6 +183,24 @@ diagnostic_registry = DiagnosticRegistry(
             use_template="Remove timezone= for wall-clock construction, or use make_timestamp_ltz(...) to construct an instant.",
         ),
         DiagnosticEntry(
+            code="PYSPARK-W2707",
+            severity="warning",
+            title="Apache and Sedona spatial helpers share Spark SQL registrations",
+            owner="pyspark",
+            status="active",
+            docs="docs/Diagnostics.md#pyspark-w2707",
+            introduced="1.0.0",
+            problem_template=(
+                "This Spark 4.1 transform combines Apache-native and Sedona spatial helpers, whose unqualified st_* "
+                "SQL registrations can conflict in the same Spark session."
+            ),
+            use_template=(
+                "Run Apache-native and Sedona work in separate Spark sessions. To transfer a value, persist WKB "
+                "and SRID separately, then reconstruct it in the destination session. See the provider coexistence "
+                "boundary in docs/reference/Geospatial.ref.md."
+            ),
+        ),
+        DiagnosticEntry(
             code="SCHEMA-E0301",
             severity="error",
             title="Nullable expression assigned to non-nullable field",
