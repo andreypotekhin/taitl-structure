@@ -159,9 +159,11 @@ For release verification, use the Compose matrix rather than a locally installed
     make integration BACKEND=pyspark40
     make integration BACKEND=pyspark41
 
-The initial `pyspark41` lane selects the runtime-version check and V11 integration tests only. Run
-`spark-connect35` and `spark-connect40` only for a feature family whose capability profile claims Spark Connect
-support. Record the exact commands, runtime versions, and passed/skipped totals in the hardening plan's
+The ordinary `pyspark41` lane selects the runtime-version check and V11 integration tests after its isolated provider
+phases. The `spark-connect41` lane runs the full integration and live-concept selection after isolated Iceberg/Delta
+phases. Connect 3.5/4.0 run their full configured general selections, excluding those provider modules because their
+provider setup/admission is absent. Use `make integration` to run all six lanes sequentially. Record exact commands,
+runtime versions, and passed/skipped/failed totals in the hardening plan's
 `Outcomes & Retrospective`; this concise evidence record replaces a formal sign-off or scorecard.
 
 ## Concept Tests
@@ -380,8 +382,11 @@ The Compose stack is defined in `infra/compose/docker-compose.yaml`. Local value
 `infra/compose/.env`, created automatically from the tracked `infra/compose/.env_example` when missing. The full stack
 starts the selected PySpark backend version on distinct services and ports.
 
-The current matrix covers ordinary PySpark 3.5/4.0 and Spark Connect over PySpark 3.5/4.0. Spark Connect lanes start
-the Connect gateway inside the runner container instead of adding separate Compose services.
+The current matrix covers ordinary and Spark Connect PySpark 3.5.3, 4.0.0, and 4.1.0. All six Compose runners invoke
+the mounted Bash launcher, so selection changes do not require a dependency-image rebuild. It reports runtime
+versions, launcher checksum, phase selections, counts, exit status, and pytest skip reasons. Spark Connect lanes start
+the gateway inside the runner container; Connect 4.1 uses local workers and needs no standalone master/worker startup.
+Other lanes lazily start their required services with `--no-recreate` to preserve shared running containers.
 
 Pytest integration tests must use `pytest.mark.integration` and must not import PySpark at module import time. Import
 PySpark inside fixtures or test functions so the default suite can collect tests without Spark installed.
@@ -408,8 +413,9 @@ a new result containing canonical public outputs. It does not retain stage outpu
 types are preserved, but Parquet can widen nullability; do not use it for nullability-contract assertions.
 
 Snapshots and classic checkpoint directories are unique per test under `.pytest-workspace-tmp/integration` on the
-Compose shared volume and are removed by their owning fixtures. Connect 4.0 uses a runner-owned checkpoint directory
-configured at server startup and removed after the server exits. Applications still own their production storage.
+Compose shared volume and are removed by their owning fixtures. Connect 4.0 and 4.1 use runner-owned checkpoint
+directories configured at server startup and removed with the gateway after success, test failure, or timeout.
+Applications still own their production storage.
 
 Use `support.timing.phase` for construction/collection timings. An eager checkpoint is charged to construction,
 not to the later collection. `rows(frame, *order)` reuses an ordered collection for subsequent unordered assertions;

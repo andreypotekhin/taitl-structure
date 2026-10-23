@@ -24,6 +24,16 @@ The operation is captured inside the normal active `PySparkSymbolicContext`. Cor
 data. PySpark validates it, maps it to a recipe, evaluates it online, renders the same public PySpark APIs, and adds a
 traceability/explain fact.
 
+## Exact-4.1 query extension
+
+Typed relation queries add filters, projection, ordering, and literal limits over an input relation. Exact ordinary
+and Connect `>=4.1,<4.2` batch consumers include correlated EXISTS, uncorrelated scalar/struct IN, and inner/left
+lateral joins. Outer references are explicit through `.outer()`, and lateral `on=` applies after the inner query's
+limit. This extension preserves the relation/cardinality model while rejecting nested queries, correlated IN,
+query-local joins/aggregates, and arbitrary DataFrame callbacks. The detailed decisions and live evidence are in
+[Query Operations](V11PySpark41QueryOperations.design.md) and the
+[parity specification](../specifications/V11PySpark41Parity.spec.md#feature-2-relational-query-operations).
+
 ## Cardinality Categories
 
 The operation model uses the existing cardinality vocabulary where possible and adds no ambiguous “transformation”

@@ -32,7 +32,7 @@ The project should prioritize:
 ## Pre-Coding Gate
 
 Before the first vertical slice, Sprint 00 must retire the highest-risk unknowns called out in
-[Challenges design](../../../close/archive/design/Challenges.design.md).
+[pre-coding decision inventory](../design/DecisionsBeforeCoding.design.md).
 
 Required spikes:
 
@@ -531,6 +531,18 @@ documents remain outside V10.
   chunking proving slice is explicitly limited to `P08082601.Typed-scalar-generators-and-optimizer-visible-search-chunking.plan.md`.
 - Store, Stocks, Streams, or School application futures.
 
+## V11 implementation and release status
+
+V11 implements exact PySpark 4.1 expressions and TIME, typed relation queries and batch observations, KLL/Theta,
+typed Arrow UDFs, ordinary row/Pandas state processors, and namespaced spatial APIs. The native Apache and Connect
+claims require their own evidence; managed Databricks evidence and legacy Pandas state remain separate gates.
+
+All six configured lane selections ran on 2026-10-21. Connect lanes passed; each ordinary lane reported the same
+foreachBatch handoff test mismatch. The owner correction is present in the working tree and requires live reruns.
+The default stays `>=3.5,<4.1` until the passing matrix and all-backend integration build complete. See the
+[V11 charter](V11.md), [matrix evidence](sprints/Sprint59_V11IntegrationMatrix.md), and
+[closeout sprint](sprints/Sprint60_V11HardeningAndCloseout.md).
+
 ## Release Milestones
 
 | Milestone | Goal | Sprints |
@@ -551,3 +563,4 @@ documents remain outside V10.
 | M13 | v8 PySpark Structured Streaming coverage parity | Sprints 36--39 and v8 hardening |
 | M14 | v9 PySpark streaming API coverage, design-gate follow-up, and release hardening | Sprints 40--48 |
 | M15 | v10 API Catalog and streaming contract expansion | Conditionally complete 2026-08-22; Sprints 49--54 evidence retained |
+| M16 | V11 PySpark 4.1 adoption and independently evidenced Connect support | Sprints 55–60; release checks remain open |

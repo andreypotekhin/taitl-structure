@@ -43,9 +43,10 @@ The expression package handles row-preserving APIs. It gives each admitted funct
 reusable existing node, defines nullability and deterministic-seed rules, and rejects random or opaque calls when the
 source does not provide an explicit policy.
 
-The query package handles operations that change relation shape or introduce a nested query. `exists` is represented as
-a boolean relation predicate with declared correlation scope. `lateralJoin` is admitted only if the relation and
-cardinality contract can be expressed without a raw DataFrame callback; otherwise it remains a caller-owned hook.
+The query package implements correlated EXISTS, uncorrelated scalar/struct IN, and inner/left lateral joins for exact
+ordinary and Connect 4.1 batch profiles. Typed queries use filters, projections, ordering, and limits, with explicit
+`.outer()` correlation and post-limit join predicates. Nested queries, correlated IN, query-local joins or aggregates,
+and raw DataFrame callbacks remain outside this slice. Native/online/generated parity passes on both variants.
 
 The observations-and-sketches package separates row output from metrics and opaque binary sketches. Typed batch
 observations are admitted for exact ordinary and Connect 4.1 profiles. KLL and Theta sketches have explicit logical
@@ -54,11 +55,12 @@ parity passes; ordinary 4.1 also passes watermarked streaming and same-configura
 outside the backend contract. See the [observations and sketches design](V11PySpark41ObservationsAndSketches.design.md)
 and [implementation ExecPlan](../planning/P10182603.V11-kll-theta-sketches.plan.md).
 
-The geospatial package owns native Geometry/Geography and the root `st_geomfromwkb`, `st_geogfromwkb`, `st_asbinary`,
-`st_srid`, and `st_setsrid` helpers. It uses the `>=4.1,<4.2` profile, begins with ordinary PySpark evidence, and makes
-no Connect or streaming claim before positive evidence. External providers are not aliases for the native package;
-their namespaces and Binary boundaries are specified in
-[Geospatial Provider Boundaries](Geospatial.design.md).
+The geospatial package implements native Geometry/Geography and five root Apache helpers on exact ordinary and
+Connect 4.1 batch profiles after parity evidence. Native execution requires the caller's Spark geospatial setting.
+Explicit `databricks.*` and `sedona.*` namespaces select external Python helpers; field types independently select the
+representation. Sedona 1.9.0 parity passes on ordinary/Connect 3.5, 4.0, and 4.1 in isolated sessions. Managed
+Databricks parity remains open. Apache/Sedona use in one exact-4.1 transform emits `PYSPARK-W2707`; use separate
+sessions and persisted WKB plus SRID for transfer. See the [Geospatial design](Geospatial.design.md).
 
 The Python-and-streaming package admits typed Arrow scalar, scalar-iterator, grouped-aggregate, and analytic-window UDFs
 for ordinary and Spark Connect 4.1 batch execution, and scalar/iterator streaming on ordinary Spark 4.1. Arrow UDTFs

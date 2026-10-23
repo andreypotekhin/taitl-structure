@@ -6,10 +6,18 @@ pipelines, while later hardening broadened PySpark parity and caller-owned strea
 now explicit through a public Plugin API: Core continues to orchestrate every workflow, the bundled PySpark plugin
 supplies target-specific service facets, and external wheels can supply equivalent plugin integrations.
 
-The historical phase checklist is archived in
-[Implementation.md](../../close/archive/implementation/Implementation.md). Current parity and boundary detail is in
+The maintained version sequence is in the [project roadmap](project/Roadmap.md) . Current parity and boundary detail is
+in
 [APITracker.md](../compatibility/APITracker.md); current API and streaming gates are in [gated/](gated/), and deferred direction is in
 [deferred/](deferred/).
+
+## V11 status
+
+V11 implements opt-in exact PySpark 4.1 expression, TIME, query, observation, sketch, Arrow UDF,
+state-processor, and geospatial APIs. Ordinary and Connect evidence is recorded per feature. The default remains
+`>=3.5,<4.1` pending the passing release matrix; see the [V11 charter](project/V11.md) and
+[outstanding work](project/OutstandingTasks.md). XML, broader stateful chains, managed Databricks evidence, and legacy
+Pandas state retain their separately documented gates.
 
 ## Foundations
 

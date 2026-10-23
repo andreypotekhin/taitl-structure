@@ -73,8 +73,8 @@ generic target name. See [PluginConfiguration.md](specifications/PluginConfigura
 
 ## PySpark Plugin
 
-The bundled `pyspark` plugin supplies the supported PySpark 3.5.x and 4.0.x target behavior, including schema
-materialization, DSL authoring, capability rules, lowering, execution, rendering, and target diagnostics. Its
+The bundled `pyspark` plugin supplies the default PySpark 3.5.x/4.0.x behavior and admitted opt-in exact-4.1 features,
+including schema materialization, DSL authoring, capability rules, lowering, execution, rendering, and diagnostics. Its
 `ordinary` and `spark-connect` variants are plugin options, not Core concepts. Compiler-only workflows remain free of
 PySpark, Java, SparkSession, and cluster startup; runtime execution receives a caller-owned Spark session.
 
@@ -83,7 +83,7 @@ lowering, validation placement, hooks, aliases, and projection shape. Structure 
 creation or termination, general data loading and publishing, streaming queries, checkpoints, triggers, or
 orchestration. The PySpark plugin can execute explicit, compiled Delta mutations on caller-supplied tables. It
 validates the declared shape and CHECK metadata, and returns the original handle. Table creation and native constraint
-installation remain caller-owned; see the [Delta design](design/V11DeltaSchemaBoundMutations.design.md).
+installation remain caller-owned; see the [Delta design](design/DeltaTables.design.md).
 
 ## Extension Boundary
 

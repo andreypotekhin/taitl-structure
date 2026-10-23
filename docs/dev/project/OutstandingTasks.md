@@ -1,21 +1,33 @@
-# Outstanding
+# Outstanding Work
 
-## v1
+This is the current follow-up index. Feature status is maintained in the
+[API tracker](../../compatibility/APITracker.md); release acceptance is maintained in [Milestones](Milestones.md).
 
-CI workflow evidence
-Tracked in [Milestones.md (line 5)](C:/Taitl/Code/taitl/taitl-structure/docs/dev/project/Milestones.md:5) and [Sprint00_Groundwork.md (line 135)](C:/Taitl/Code/taitl/taitl-structure/docs/dev/project/sprints/Sprint00_Groundwork.md:135). This is mainly proof that lint/type/test/build run in CI before marking M0/Sprint 00 done.
+## V11 release checks
 
-Live PySpark integration matrix
-Tracked in [Milestones.md](Milestones.md), [Sprint05_JoinsTraceabilityBuildIntegration.md](../../../close/archive/sprints/Sprint05_JoinsTraceabilityBuildIntegration.md), and [P06212604.Local-infrastructure-integration-testing.plan.md](../../../close/archive/planning/P06212604.Local-infrastructure-integration-testing.plan.md). The code path exists; final pass needs at least one real Spark/PySpark lane, ideally PySpark 3.5 and 4.0.
+- Rerun the ordinary 3.5, 4.0, and 4.1 lanes after the foreachBatch owner correction, then complete the all-backend
+  `make build INTEGRATION=1`. The recorded 2026-10-21 runs each failed the same handoff-schema assertion; the working
+  tree now corrects the expected schema to the declared `Alert`, but that edit does not replace live evidence.
+- Keep the default profile at `>=3.5,<4.1` until the required passing matrix is complete. Connect 3.5/4.0/4.1 passed
+  their latest configured selections; ordinary 4.1 remains scoped to the runtime assertion and V11 tests.
+- Reconcile the final release report and retrospective after those results. See
+  [Sprint 59](sprints/Sprint59_V11IntegrationMatrix.md)
+  and [Sprint 60](sprints/Sprint60_V11HardeningAndCloseout.md).
 
-Broader negative schema-validation coverage against Spark DataFrames
-Tracked in [Milestones.md (line 58)](C:/Taitl/Code/taitl/taitl-structure/docs/dev/project/Milestones.md:58) and [Sprint02_SchemasAndValidation.md (line 102)](C:/Taitl/Code/taitl/taitl-structure/docs/dev/project/sprints/Sprint02_SchemasAndValidation.md:102). This means live invalid DataFrame cases: missing columns, extra columns, type mismatch, nested mismatch, nullable/strict mode behavior.
+## Feature evidence gates
 
-Generated-code version headers
-Still promised by compatibility policy in [Compatibility.md (line 90)](C:/Taitl/Code/taitl/taitl-structure/docs/Compatibility.md:90) and M6 in [Milestones.md (line 121)](C:/Taitl/Code/taitl/taitl-structure/docs/dev/project/Milestones.md:121). Final pass should add or verify generator version and target PySpark range comments in generated artifacts.
+- Managed Databricks Spark and Databricks Connect require caller-supplied live sessions. Local Apache/Sedona parity
+  does not establish managed-runtime support. Apache/Sedona workloads use separate sessions; mixed exact-4.1 transforms
+  emit `PYSPARK-W2707`. See the [Geospatial plan](../planning/P10192602.Geospatial-namespaces-and-native-types.plan.md).
+- Legacy `apply_in_pandas_with_state` has accumulation/restart evidence, with timeout and zero/multiple-output proof
+  still pending under its [own plan](../planning/P10062602.V11-apply-in-pandas-with-state.plan.md).
+- Broader stateful chains, streaming missing-column union, unreleased Variant operations, XML, and join reordering
+  retain their individual dispositions in [API gates](../gated/ApiCatalog.gates.md),
+  [Streaming gates](../gated/Streaming.gates.md), and [Function gates](../gated/Functions.gates.md).
 
-Setup/configuration doctor checks
-Still listed as v1 complete-phase work in [archived Implementation.md (line 54)](C:/Taitl/Code/taitl/taitl-structure/close/archive/implementation/Implementation.md:54) and as remaining M6 work in [Milestones.md (line 121)](C:/Taitl/Code/taitl/taitl-structure/docs/dev/project/Milestones.md:121). This likely wants a lightweight structure doctor or equivalent check path for common adoption failures.
+## Earlier release requirements
 
-Multi-version PySpark evidence
-Also part of M6 in [Milestones.md (line 129)](C:/Taitl/Code/taitl/taitl-structure/docs/dev/project/Milestones.md:129). This overlaps with the integration matrix but should produce release-ready evidence for the documented >=3.5,<4.1 target.
+The earlier milestone records still identify CI workflow evidence, broader negative live-schema cases, generated
+version/target headers, and setup/doctor checks as follow-up work. Reconcile each against its implementation and
+specific acceptance evidence before closing M0–M6; V11 feature completion does not close those records automatically.
+See [Milestones](Milestones.md) and [Compatibility](../../Compatibility.md).

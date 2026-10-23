@@ -1,6 +1,6 @@
 # Sprint 55: V11 Admission and PySpark 4.1 API Diff
 
-Status: planned; target: 2026-12-25.
+Status: admission and inventory implemented; release verification continues in Sprints 59/60; target: 2026-12-25.
 
 ## Sprint goal
 
@@ -14,15 +14,16 @@ evidence path.
 
 ## Implementation tasks
 
-- Add the 4.1-to-4.0 API inventory and reconcile machine-readable coverage.
-- Add exact 4.1 target profile and variant policy tests.
-- Review the V11 design/specification documents and record scope decisions.
-- Split the state ledger into row `transform_with_state`, Pandas
+- [x] Add the 4.1-to-4.0 API inventory and reconcile machine-readable coverage.
+- [x] Add exact 4.1 target profile and variant policy tests.
+- [x] Review the V11 design/specification documents and record scope decisions.
+- [x] Split the state ledger into row `transform_with_state`, Pandas
   `transform_with_state_in_pandas`, legacy `apply_in_pandas_with_state`, and Dataset/Scala arbitrary-state families;
   assign each family its own status and evidence owner.
-- Record the already implemented Delta-table and Delta Connect admissions as separate packages, and carry forward the
+- [x] Record the already implemented Delta-table and Delta Connect admissions as separate packages, and carry forward
+  the
   caller-owned `foreach` and `foreach_batch` handoffs without assigning Structure query-lifecycle ownership.
-- Update catalog/reference, roadmap, milestone, backlog, and traceability navigation.
+- [x] Update catalog/reference, roadmap, milestone, backlog, and traceability navigation.
 
 ## Inherited V10 entry conditions
 
@@ -38,6 +39,12 @@ treated as passing baselines:
 The source baseline is [V10 Release Evidence](../V10ReleaseEvidence.md), dated 2026-10-04. Sprint 55 may proceed with
 feature inventory work while these owners classify the handoff, but Sprint 55 cannot close with an unresolved item
 having no owner, command, status, or next decision.
+
+The 2026-10-21 six-lane run exercised the inherited order-hook and scalar-import cases without those historical
+failures. All runtime versions matched their pins. The remaining ordinary foreachBatch failure and required reruns are
+recorded in [Sprint 59](Sprint59_V11IntegrationMatrix.md#corrected-six-lane-matrix-2026-10-21) . The table above
+preserves
+the V10 entry conditions and their original owners.
 
 ## Acceptance
 

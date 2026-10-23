@@ -179,7 +179,7 @@ Progress:
 - Sprint 08 completed the first analytical slice: grouped aggregates, selected-row helpers, exact/subset dedupe,
   projection windows, rolling row metrics, and basic array/map higher-order helpers.
 - Sprint 09 carried advanced analytical support from
-  [P07052601.Advanced-analytical-operations.plan.md](../../../close/archive/planning/P07052601.Advanced-analytical-operations.plan.md).
+  [Advanced analytical operations design](../design/AdvancedAnalyticalOperations.design.md).
 
 Exit Criteria:
 
@@ -514,7 +514,8 @@ lanes whose broad full-selection runs did not complete.
 
 ## M16: V11 PySpark 4.1 Adoption
 
-Status: planned. V11 follows the V10 closeout and runs from Sprint 55 through Sprint 60, ending 2027-03-05.
+Status: in progress; six-lane evidence is recorded, with release blocked by the foreachBatch owner failure. V11 follows
+the V10 closeout and runs from Sprint 55 through Sprint 60, ending 2027-03-05.
 
 ### Exit criteria
 
@@ -542,7 +543,12 @@ Status: planned. V11 follows the V10 closeout and runs from Sprint 55 through Sp
   types remain distinct; only live-evidenced provider/profile/mode combinations are admitted. Managed Databricks and
   Databricks Connect evidence is tracked separately in P10192602.
 - The integration matrix runs PySpark 3.5, 4.0, and 4.1 in ordinary and Connect lanes without dropping regression
-  coverage; generated artifacts are fresh; and `make build` passes.
+  coverage; generated artifacts are fresh; and the all-backend `make build INTEGRATION=1` passes. The 2026-10-21
+  matrix found the
+  same owner-bound foreachBatch schema mismatch on all ordinary lanes (`AlertMessage` expected, declared `Alert`
+  received); see Sprint 59. Keep the default profile at `>=3.5,<4.1` until this blocker is resolved and the required
+  passing build completes. The integration-enabled build has passed with `BACKEND=spark-connect41`; the all-backend
+  build remains pending because the sequential run stops at ordinary PySpark 3.5 on that failure.
 
 ### Governing documents
 

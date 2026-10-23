@@ -61,7 +61,7 @@ def test_schema_sink_runs_batch_transform_and_caller_deduplicates_replays(spark,
                 result = PublishAlerts(events=events).run(parent)
                 handoff = result.send_alerts
                 assert handoff.dataframe is result.alerts
-                assert handoff.schema is AlertMessage
+                assert handoff.schema is Alert
 
                 commits: dict[tuple[str, int], list[dict[str, str]]] = {}
 

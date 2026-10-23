@@ -25,24 +25,27 @@ diagnostics for missing checkpoint configuration.
 
 ### Watermarks And State Policy
 
-Watermarks and state policies define how long Spark keeps streaming state and when late data is dropped. Future state
-policies need explicit event-time fields, delay thresholds, tie policies, and output mode expectations.
+Watermarks, finite state-stage metadata, per-operator budgets, and progress guidance are implemented for the admitted
+shapes. Broader state policies still need explicit event-time fields, delay thresholds, retention, tie behavior,
+output compatibility, and restart evidence.
 
 ### Stateful Operations
 
-Aggregations, windowed aggregations, selected-row helpers, ranking, lag/lead, rolling metrics, exact/subset dedupe, and
-many full rowset joins should be admitted one family at a time with capabilities, diagnostics, explain output, and live
-streaming tests.
+Watermarked event-time/session aggregation, dedupe, supported stream joins, two finite stateful pairs, and the
+admitted row/Pandas processors are implemented. Global selected-row helpers, ranking, lag/lead, rolling projections,
+and additional compositions retain their gates. Consult the [Streaming reference](../../reference/Streaming.ref.md)
+for each operation's mode, state, and evidence limits.
 
 ### Stream-Stream Joins
 
-Stream-stream joins need declared input modes, watermark relationships, event-time constraints, join type limits, and
-state retention policy.
+Admitted stream-stream joins have declared input modes, watermarks, event-time bounds, and join-type limits. Cross,
+anti, and other unsupported shapes need their own state-retention and output-mode evidence.
 
 ### Arbitrary Hooks And Foreach Logic
 
-Certifying arbitrary hook bodies, `foreachBatch`, `foreach`, external side effects, and custom sink code requires a
-different safety model.
+Typed `foreach` and `foreach_batch` handoffs and safety declarations are implemented. Callers construct and attach
+writers, own retries and idempotence, and start queries. Certifying arbitrary hook bodies or managing external effects
+would require a separate operational model.
 
 ## Future Design Shape
 
@@ -66,24 +69,24 @@ Structured Streaming evidence, and public reference documentation.
 
 Structure does not own `readStream`, `writeStream`, triggers, checkpoints, output-mode application, query names,
 query start/stop, deployment, recovery, `foreachBatch`, `foreach`, custom side-effect sinks, external side effects, or
-arbitrary state APIs.
+general state APIs outside the admitted processor interfaces.
 
 ## Transformation Features
 
 More complex stateful transformation features remain deferred until their state semantics are compiler-visible:
 
-- chained windowed/stateful aggregations beyond the admitted single-stage event-time and session-window shapes;
+- chained stateful operations outside the two documented finite pairs;
 - cross and anti stream joins;
 - selected-row helpers such as latest or earliest on streaming inputs;
 - ranking, lag/lead, and rolling windows; and
-- arbitrary state APIs.
+- general state APIs outside the admitted processor interfaces.
 
 ### Streaming-Ineligible Selection and Windows
 
 Global `latest_by(...)`, `earliest_by(...)`, and dedupe variants do not have finite state without a watermark,
 event-time bound, timeout, or window. Broad `row_number(...)`, `rank(...)`, `dense_rank(...)`, `lag(...)`, `lead(...)`,
-and rolling projection windows remain batch-only. A future finite-window alternative must prove bounded state,
-deterministic ties, output mode, online/generated parity, and live Spark behavior.
+and rolling projection windows remain batch-only. Grouped `first_value(...)` and `last_value(...)` within a watermarked event-time window provide the admitted finite
+selection alternative; broader projection windows remain excluded.
 
 ### SearchDocuments Streaming Proving Lane
 
@@ -98,11 +101,11 @@ compile-time diagnostics, explain output showing state assumptions, execution an
 apply, live Spark Structured Streaming verification, and troubleshooting guidance.
 The following remain deferred or caller-owned:
 - keep lifecycle ownership explicit until a separate product decision establishes operational semantics;
-- chained stateful aggregations beyond the admitted single-stage shapes;
+- stateful chains outside the two admitted finite pairs;
 - cross and anti stream joins;
 - selected-row helpers on streaming inputs;
 - ranking, lag/lead, and rolling windows; and
-- arbitrary state APIs with declared state, timeout, recovery, and restart semantics.
+- Dataset/Scala state APIs, broader processor combinations, and legacy Pandas forms awaiting their own evidence.
 
 ## V10 Adoption
 

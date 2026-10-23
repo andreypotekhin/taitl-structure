@@ -55,6 +55,10 @@ are required for external Connect deployments using Structure's Delta helpers.
 See [Delta Connect server troubleshooting](../../docs/dev/Troubleshooting.md#problem-integration-delta-connect-41-fails-while-decoding-a-server-response)
 if a cached server reports a Protobuf class error.
 
+Connect 3.5 and 4.0 do not run the Iceberg or Delta integration modules: those profiles have no isolated provider
+server setup or admitted provider contract. The launcher excludes those modules from their general test selection.
+Connect 4.1 retains the isolated provider passes and excludes them from its general pass.
+
 Ordinary PySpark runs use the JVM default driver heap unless `STRUCTURE_SPARK_DRIVER_MEMORY` is set. For a bounded
 diagnostic run, set it in `infra/compose/.env` or pass it to the runner, for example
 `docker compose ... run --rm -e STRUCTURE_SPARK_DRIVER_MEMORY=3g structure-integration-pyspark35`. The runner applies
@@ -67,6 +71,9 @@ if a run selects fewer modules than expected. Each run records the launcher chec
 records its selection, exit status, and pytest skip reasons. Iceberg and Delta run in separate processes before the
 general suite. Connect 4.0 and 4.1 each receive a unique temporary checkpoint directory, removed together with their
 gateway when the runner exits, including after test failure or timeout.
+
+The integration orchestrator starts only services required by the selected backends and uses Compose `--no-recreate`
+so already-running shared Spark services keep their containers and uptime during another lane's run.
 
 The test runner is removed after every run, while the Spark master/worker services and the versioned Spark Connect Ivy
 caches are retained locally. This avoids repeat image builds, Spark startup, and Spark Connect dependency downloads.

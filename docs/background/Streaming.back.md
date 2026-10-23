@@ -30,8 +30,9 @@ query = result.writeStream.option("checkpointLocation", checkpoint).toTable("ord
 
 Structure maintains the checked transformation plan and returns DataFrame plans. It does not generate `readStream` or
 `writeStream`, start or stop queries, set checkpoints or triggers, apply output modes, or perform external side effects
-while compiling or executing a transform. A declared row-sink handoff makes the output DataFrame and writer class
-available to caller code; the caller must explicitly attach and start that sink.
+while compiling or executing a transform. A declared row-sink handoff makes the output DataFrame and consumed schema
+available to caller code. The caller constructs a compatible `Sink[Schema]` writer and explicitly attaches and starts
+that sink.
 
 Streaming compatibility means the generated or online transformation can accept the concrete streaming DataFrame shape,
 and every operation on streaming data is admitted by the compiler-visible policy. It does not mean Structure starts a

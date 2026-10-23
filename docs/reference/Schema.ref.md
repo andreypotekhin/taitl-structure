@@ -159,11 +159,13 @@ struct(Address) == struct(Address)
 | `double()` | `T.DoubleType()` |
 | `boolean()` | `T.BooleanType()` |
 | `date()` | `T.DateType()` |
+| `time(precision=6)` | `T.TimeType(6)`; exact 4.1 profiles |
 | `timestamp()` | `T.TimestampType()` |
 | `timestamp_ntz()` | `T.TimestampNTZType()` |
 | `field.interval(type=Interval.YEAR_TO_MONTH)` | `T.YearMonthIntervalType(0, 1)` |
 | `field.interval(unit=Interval.DAY)` | `T.DayTimeIntervalType(0, 0)` |
 | `binary()` | `T.BinaryType()` |
+| `variant()` | `T.VariantType()`; requires a resolved PySpark 4 profile |
 
 The choice is part of the contract. Structure does not infer a field type from live data.
 `timestamp()` is Spark's instant-based type, while `timestamp_ntz()` is a wall-clock type; they are distinct and are
@@ -173,6 +175,45 @@ is needed. Both require exactly one of `type=` or `unit=`. Calendar interval fie
 calendar intervals remain expression-only. Interval Row conversion is target-sensitive: DayTime values convert to
 `datetime.timedelta`, while YearMonth and Calendar values fail on tested PySpark 4.0 and/or Spark Connect paths. Keep
 these intervals inside SQL expressions and collect a non-interval output column.
+
+### TIME and spatial types
+
+TIME fields require exact ordinary or Connect `>=4.1,<4.2` profiles. Precision is an integer from 0 through 6,
+excluding booleans, and is preserved in type equality, nested fields, schema reads, and generated source:
+
+```python
+class OpeningHours(Schema):
+    opens = time(precision=3, nullable=False)
+    closes = time()
+```
+
+Enable `spark.sql.timeType.enabled=true` on the Spark session before execution. Python `datetime.time` literals retain
+their clock fields; timezone information is ignored according to Spark conversion. See
+[TIME values](Expressions.ref.md#spark-41-time-values)
+for parsing, comparisons, precision casts, and the six expression helpers.
+
+Native `geometry(srid=...)` and `geography(srid=...)` and the distinct `sedona.geometry(srid=...)` are documented in
+the [Geospatial reference](Geospatial.ref.md). Their field type and helper namespace determine representation and
+provider separately. Native constructors are checked against the active runtime; Apache native 4.1 execution also
+requires `spark.sql.geospatial.enabled=true` on the Spark session.
+
+### Sketch types
+
+Declare opaque sketch fields by algorithm rather than using an untyped Binary field:
+
+```python
+class Metrics(Schema):
+    unique_users = hll_sketch(lg_config_k=12)
+    feature_ids = bitmap()
+    latencies = kll_sketch(double())
+    customer_ids = theta_sketch()
+```
+
+KLL and Theta require exact ordinary or Connect `>=4.1,<4.2`. KLL's Long, Float, or Double domain is part of type
+identity; KLL `k` and Theta `lg_nom_entries` are operation settings. HLL retains `lg_config_k` in its identity.
+Recursive `structure.logical_type` metadata distinguishes the algorithms in Spark Binary fields and storage readback.
+Missing metadata can be supplied by an explicit schema; conflicting or malformed metadata fails validation. No
+serialized-payload portability is promised. See [Sketches and bitmaps](../api/Aggregations.api.md#sketches-and-bitmaps).
 
 ### Decimal
 

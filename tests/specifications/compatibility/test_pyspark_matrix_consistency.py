@@ -67,6 +67,9 @@ def test_runner_phases_and_cleanup(tmp_path, backend) -> None:
         assert "/workspace/tests/integration/pyspark/v11/test_delta_transform_live.py" in phases[1]
         assert "--ignore=/workspace/tests/integration/pyspark/iceberg" in phases[2]
         assert "--ignore=/workspace/tests/integration/pyspark/v11/test_delta_transform_live.py" in phases[2]
+    if backend in {"spark-connect35", "spark-connect40"}:
+        assert "--ignore=/workspace/tests/integration/pyspark/iceberg" in phases[0]
+        assert "--ignore=/workspace/tests/integration/pyspark/v11/test_delta_transform_live.py" in phases[0]
     if backend == "pyspark41":
         assert "/workspace/tests/integration/pyspark/v11" in phases[-1]
         assert "/workspace/tests/concepts/live_pyspark" not in phases[-1]
@@ -246,7 +249,7 @@ def test_orchestrator_builds_runners_and_starts_selected_services(tmp_path, monk
     assert runner.SERVICES == mappings
     services = tuple(dict.fromkeys(service for name in backends for service in mappings[name]))
     if services:
-        expected.append(("up", "-d", *(("--build",) if build else ()), *services))
+        expected.append(("up", "-d", "--no-recreate", *(("--build",) if build else ()), *services))
     expected.extend(("run", "--rm", f"structure-integration-{name}") for name in backends)
     assert calls == expected
     assert tmp_path.joinpath("integration").is_dir()

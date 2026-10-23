@@ -31,14 +31,18 @@ runtime evidence. The detailed row-by-row inventory is maintained in the [API tr
 The current V11 state and side-effect boundaries are:
 
 - `Column.transform`, typed EXISTS/IN/lateral relation queries, typed batch observations, and KLL/Theta sketches are
-  supported on ordinary PySpark and Spark Connect 4.1 with focused online/generated/native parity. Other new
-  expressions remain evidence-gated. The [versioned Python delta](../../src/structure/plugin/pyspark/resources/pyspark-4.1-python-api-delta.json)
+  supported on ordinary PySpark and Spark Connect 4.1 with focused online/generated/native parity. The five scalar
+  additions, TIME and its six helpers, and five Apache spatial helpers are also admitted on exact 4.1 profiles;
+  Spark's TIME and spatial settings remain caller-configured. The
+  [versioned Python delta](../../src/structure/plugin/pyspark/resources/pyspark-4.1-python-api-delta.json)
   separates actual 4.1 index additions from older APIs retained for V11 work.
 - Relation query consumers are batch-only and limited to exact `>=4.1,<4.2`; the default profile remains
   `>=3.5,<4.1`. Their query body supports filters, projection, ordering, and limits; nested queries, correlated IN,
   query-local joins/aggregations/windows, and arbitrary DataFrame callbacks remain outside the typed contract.
-- Arrow UDF/UDTFs remain `caller-owned-guided`; generated Structure transforms do not own worker Python or callback
-  cardinality.
+- Typed Arrow scalar, scalar-iterator, grouped-aggregate, and analytic-window UDFs are supported for exact ordinary
+  and Connect 4.1 batch profiles. Ordinary scalar/iterator streaming and checkpoint restart are evidenced. Spark
+  handles callback conversion, cardinality, and worker errors; Arrow UDTFs remain caller-owned. See the [UDF
+  reference](../reference/UDF.ref.md).
 - Row `transform_with_state` and Pandas `transform_with_state_in_pandas` are supported on their admitted ordinary
   PySpark profiles after their independent parity and restart evidence passed. Legacy `apply_in_pandas_with_state`
   remains `design-gated` with its own callback and checkpoint contract.
@@ -49,7 +53,9 @@ The current V11 state and side-effect boundaries are:
 - Apache Iceberg SQL and typed helpers are `supported` on classic PySpark 3.5–4.1 and Spark Connect 4.1 with Iceberg
   1.12.0; the exact operation scope and format-v2 limitation are recorded in the
   [combined Delta and Iceberg ledger](DeltaIceberg.compat.md#apache-iceberg).
-- Retained V9 gates remain `design-gated`; XML and cost-based join reordering remain unsupported.
+- Retained V9 items have individual dispositions: two finite stateful chains are admitted under their documented
+  conditions; broader chains, missing-column streaming union, legacy Pandas state, and unreleased Variant operations
+  retain their gates. XML and cost-based join reordering remain unsupported.
 
 See the [V11 parity specification](../dev/specifications/V11PySpark41Parity.spec.md), [streaming compatibility
 ledger](Streaming.compat.md), and [Delta and Iceberg compatibility ledger](DeltaIceberg.compat.md) for API-family
@@ -109,8 +115,8 @@ function-specific gates are indexed in [Function Gates](../dev/gated/Functions.g
 | Relation distribution | implemented | `coalesce(partitions=...)`, `repartition(count, *keys)`, and `repartition(*keys)` | Hash distribution preserves rows/schema and gives no ordering or stable partition identity; range repartitioning is batch-only and writer partition transforms remain caller-owned. | [Relations API](../api/Relations.api.md) |
 | Variant functions | partial | Released-profile Variant parsing, extraction, validation, schema inspection, conversion, and TVF expansion | `is_valid_variant` and mutation remain target-gated until a released profile has complete evidence. | [Expressions API](../api/Expressions.api.md) |
 | XML, URL, and runtime functions | partial or unsupported | Typed `url_encode(...)`, strict `url_decode(...)`, and target-gated `try_url_decode(...)`; no XML surface | XML and XPath await a declared-schema contract; runtime metadata and reflection remain caller-owned. | [Expressions API](../api/Expressions.api.md) |
-| Geospatial APIs | partially implemented; target-gated | No default-baseline native spatial claim | Apache native 4.1 and Sedona 3.5/4.0/4.1 ordinary/Connect parity pass in isolated sessions. Managed Databricks evidence and same-session Apache/Sedona mixing remain open. | [Geospatial reference](../reference/Geospatial.ref.md) |
-| Python UDF/UDTF and custom types | implemented for scalar UDFs; otherwise unsupported | Opt-in scalar `@special(type="udf")` for ordinary batch use | Pandas UDFs, UDTFs, UDTs, arbitrary callbacks, and implicit UDF conversion remain caller-owned; they cannot be counted as symbolic SQL-function coverage. | [Transforms API](../api/Transforms.api.md) |
+| Geospatial APIs | partially implemented; target-gated | No default-baseline native spatial claim | Apache native 4.1 and Sedona 3.5/4.0/4.1 ordinary/Connect parity pass in isolated sessions. Managed Databricks evidence remains open. Apache/Sedona workloads require separate sessions; mixed exact-4.1 transforms emit `PYSPARK-W2707`. | [Geospatial reference](../reference/Geospatial.ref.md) |
+| Python UDF/UDTF and custom types | supported for explicit scalar and Arrow UDFs | Scalar `@special(type="udf")` on admitted ordinary/Connect batch profiles; typed `@special(type="arrow_udf")` on exact 4.1 | Ordinary scalar Python and Arrow scalar/iterator streaming are separately evidenced. Pandas UDFs, UDTFs, UDTs, and implicit UDF conversion remain caller-owned. | [UDF reference](../reference/UDF.ref.md) |
 
 ## Joins
 
@@ -228,8 +234,8 @@ lifecycle recipe.
 | Relation coalescing | implemented | `DataFrame.coalesce` | `coalesce(partitions=...)` preserves rows; streaming use emits the `STREAM-W0803` throughput advisory | [Relations API](../api/Relations.api.md) |
 | Priority selection | streaming-ineligible | `select_first_qualified`, top-N | Lowers through ranking and validation aggregates; remains batch-only | Use caller-owned PySpark after a materialization boundary |
 | Analytic windows and selected-row helpers | streaming-ineligible | ranking, `Window`, lag/lead, rolling windows, latest/earliest | Broad analytic projections and global selected-row helpers have no finite streaming state contract; grouped `first_value(...)`/`last_value(...)` inside a watermarked event-time window is the admitted finite alternative | Use the finite grouped aggregate or caller-owned PySpark after materialization |
-| Stateful composition boundary | implemented | One streaming aggregate/dedupe/join followed by stateless operations | The one-stateful-plus-stateless policy rejects a second stateful operation with diagnostics | [Streaming API](../api/Streaming.api.md) |
-| Chained stateful operators | design-gated | Chains of streaming aggregates/dedupe/joins | Needs explicit composition and state-budget policy before Structure can own the shape | Use caller-owned PySpark |
+| Stateful composition boundary | implemented | One streaming aggregate/dedupe/join followed by stateless operations, plus the two documented finite pairs | A further stateful stage outside those pairs is rejected with prior/requested stage context | [Streaming API](../api/Streaming.api.md) |
+| Chained stateful operators | partial; broader chains design-gated | Chained event-time window aggregates; ordinary 3.5/4.0 watermarked dedupe followed by one event-time window aggregate in Append mode | Per-operator budgets, progress guidance, and restart evidence are documented for the dedupe pair. Reversed order, joins, processors, and third stateful stages remain gated. | See the [Streaming reference](../reference/Streaming.ref.md#deduplicate-then-aggregate-in-event-time); use caller-owned stages for other chains |
 | Pandas and RDD boundaries | unsupported | Pandas UDF, RDD, `mapInPandas` | Opaque execution does not fit Structure's symbolic transform contract | Use caller-owned streaming code |
 | Row `transformWithState` | supported | `transform_with_state(...)`; ordinary PySpark `>=4.1,<4.2` | Supports Append/Update, None/ProcessingTime/EventTime, timers, composite keys, and typed named Value/List/Map state. Complete is rejected during compilation. | Use `external_state_processor(...)` for native processor features outside the typed named Value/List/Map state contract |
 | Pandas `transformWithStateInPandas` | supported | `transform_with_state_in_pandas(...)`; ordinary PySpark `>=4.0,<4.1` and `>=4.1,<4.2` | Typed/native online/generated parity, timers, composite keys, initial state, TTL, restart, and tested native checkpoint evolution pass on both pinned profiles. Spark and the caller control state/checkpoint evolution; Structure does not migrate state. | Use `external_state_processor(...)` for native state features beyond the typed one-value-state-and-timers surface |

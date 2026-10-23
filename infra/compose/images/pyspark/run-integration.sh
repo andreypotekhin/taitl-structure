@@ -218,6 +218,14 @@ if [[ -n "${iceberg_runtime:-}" ]]; then
     pytest_args+=(--ignore=/workspace/tests/integration/pyspark/iceberg)
 fi
 test_paths=(/workspace/tests/integration /workspace/tests/concepts/live_pyspark)
+if [[ "${backend}" == spark-connect* && "${backend}" != "spark-connect41" ]]; then
+    # Provider integrations are admitted only on Connect 4.1. Keep the
+    # unconfigured Iceberg and Delta suites out of older Connect lanes.
+    pytest_args+=(
+        --ignore=/workspace/tests/integration/pyspark/iceberg
+        --ignore=/workspace/tests/integration/pyspark/v11/test_delta_transform_live.py
+    )
+fi
 if [[ "${backend}" == "pyspark35" || "${backend}" == "pyspark40" || "${backend}" == "pyspark41" || "${backend}" == "spark-connect41" ]]; then
     # Keep Delta's pinned live evidence in its own process before the broader
     # PySpark tests initialize a driver or Connect client.

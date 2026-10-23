@@ -12,6 +12,26 @@ For Delta file layout, see [compaction and Z-ordering](reference/DeltaIceberg.re
 [choosing columns](background/DeltaIceberg.back.md#choosing-z-order-columns), and
 [runnable examples](recipes/DeltaTableInspectionAndMaintenance.md#compaction-and-z-ordering).
 
+## Select a PySpark target
+
+The default profile is `>=3.5,<4.1`. Opt into the admitted Spark 4.1 APIs in project configuration:
+
+```toml
+[tool.structure.plugin.pyspark]
+profile = ">=4.1,<4.2"
+variant = "ordinary" # or "spark-connect" for supported batch operations
+```
+
+The 4.1 additions include `Column.transform`, scalar helpers, TIME, typed relation queries, batch observations,
+KLL/Theta sketches, Arrow UDFs, and native spatial helpers. Start with the
+[4.1 feature guide](API.md#version-compatibility)
+for signatures and examples. Row state processors require ordinary 4.1; Pandas state processors also support ordinary
+4.0. Streaming availability is documented per API.
+
+TIME needs `spark.sql.timeType.enabled=true` on the Spark session; native spatial operations need
+`spark.sql.geospatial.enabled=true`. Configure these through `SparkSession.builder.config(...)` or your Spark
+installation. Structure target configuration selects available APIs; it does not enable Spark runtime features.
+
 ## Schema Classes
 
 A schema class defines a contract and compiles into PySpark schema (`StructType`/`StructField`).
@@ -563,6 +583,29 @@ return TenantSketches(
 precision by default; mixed-precision pairwise or aggregate union requires an explicit opt-in and emits `SKETCH-W0802`. Opaque sketch
 state is Spark/profile specific, not generic Binary interchange. Grouped sketch operations in streaming follow normal
 watermark and output-mode rules.
+
+For exact ordinary or Connect `>=4.1,<4.2`, use `kll_sketch(domain)` for approximate quantiles and
+`theta_sketch()` for approximate distinct sets and set operations:
+
+```python
+class TenantMetrics(Schema):
+    tenant_id = string()
+    latency = kll_sketch(double())
+    customers = theta_sketch()
+
+
+# In a transform step:
+group_by(tenant_id=event.tenant_id)
+return TenantMetrics(
+    tenant_id=event.tenant_id,
+    latency=kll_sketch_agg(event.latency, k=200),
+    customers=theta_sketch_agg(event.customer_id, lg_nom_entries=12),
+)
+```
+
+Consume these with `kll_sketch_get_quantile(...)` or `theta_sketch_estimate(...)`; Theta also supports union,
+intersection, and difference. KLL/Theta batch parity passes on ordinary and Connect 4.1; watermarked streaming and
+same-configuration restart are evidenced on ordinary 4.1.
 
 Reference: [Sketches and Bitmaps API](api/Aggregations.api.md#sketches-and-bitmaps),
 [Sketches and Bitmaps reference](reference/Aggregations.ref.md#opaque-sketch-metrics), and

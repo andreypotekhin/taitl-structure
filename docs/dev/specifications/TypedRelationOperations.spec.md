@@ -1,5 +1,12 @@
 # Typed Relation Operations
 
+## Versioned extension
+
+The exact ordinary/Connect PySpark 4.1 batch query extension supports correlated EXISTS, uncorrelated relation IN, and
+inner/left lateral joins. Its scope, alias, null, ordered-limit, cardinality, and capability rules are normative in
+[V11 parity: relation queries](V11PySpark41Parity.spec.md#feature-2-relational-query-operations). It does not widen the
+default profile or admit arbitrary DataFrame-returning callbacks.
+
 ## Purpose
 
 This specification admits the first v6 operations that act on whole relations rather than only the current row. Each

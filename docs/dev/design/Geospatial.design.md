@@ -40,9 +40,14 @@ cell-index APIs rather than Geometry/Geography representations.
 Binary encoding is the required representation boundary for any future cross-provider bridge, but it does not resolve
 the current SQL registration collision. A live Spark 4.1 test with `SedonaSqlExtensions` loaded shows that
 `st_geomfromwkb` resolves to a different function and returns a mixed-SRID type instead of Spark's SRID-0 type. Inline
-Apache/Sedona bridges and mixed-provider queries remain gated until both implementations can be selected without
-unqualified SQL name lookup. WKB loses SRID; the caller must restore it separately. Structure does not infer
-semantics from serialized bytes or silently cast values.
+Apache/Sedona bridges are not provided. Use separate sessions and caller-managed persisted WKB plus SRID handoffs;
+WKB loses SRID, so the caller must restore it separately. Structure does not infer semantics from serialized bytes or
+silently cast values.
+
+The compiler emits advisory `PYSPARK-W2707` when an exact `>=4.1,<4.2` ordinary or Connect transform contains both
+Apache and Sedona helper calls. It explains the SQL collision and points to separate-session WKB/SRID guidance. This
+static check does not probe server registrations or combine provider use across independent transforms. Apache-only
+code can therefore still fail in a caller-supplied session that has loaded Sedona; session isolation is required.
 
 ## Admission and managed runtimes
 

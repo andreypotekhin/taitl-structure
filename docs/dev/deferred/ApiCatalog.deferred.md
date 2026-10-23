@@ -15,13 +15,17 @@ this table for deferred SQL-family direction; the gap register remains the sourc
 | Scope | Status | Deferred direction |
 | --- | --- | --- |
 | Dynamic JSON schemas | `design-gated` | Define a schema before execution; declared-schema `json_tuple` is supported separately. |
-| Sketch and bitmap aggregates | `design-gated` | Define state, accuracy, mergeability, and result contracts. |
 | Generic generators and writer partition transforms | `caller-owned-guided` | `stack` and typed relation distribution are implemented; generic/result-layout forms remain caller-owned. |
 | XML | `design-gated` | Define declared schemas, options, malformed input, and parse/serialize evidence. |
 | URL parsing and safe decoding | `target-gated` | `try_url_decode` requires PySpark 4.0; URL parsing needs a separate typed result-shape design. |
 | Geospatial APIs | `target-gated` | Explicit helper namespaces and native/Sedona type rules are specified in Geospatial.spec.md and implemented under P10192602; managed runtime parity remains open. |
 | Runtime metadata and reflection | `caller-owned-guided` | Keep non-query-clock runtime reads at an explicit native boundary. |
 | Variant mutation helpers | `target-gated` | Define released target profile and mutation semantics. |
+
+HLL/Bitmap baseline helpers and exact-4.1 KLL/Theta helpers are implemented. Their type, precision, metadata,
+mergeability, and streaming rules are maintained in the
+[Aggregations compatibility ledger](../../compatibility/Aggregations.compat.md) .
+They are not deferred work.
 
 ## Non-Streaming Gates
 
@@ -42,7 +46,9 @@ Variant parsing and extraction slice.
 The active contract is in [Geospatial design](../design/Geospatial.design.md) and
 [Geospatial.spec.md](../specifications/Geospatial.spec.md). Helper namespace selects the implementation; field types
 select native or Sedona representation. There is no `geo_provider` scope. Sedona replaces Spark's unqualified
-`st_*` SQL registrations, so same-session Apache/Sedona calls and inline Binary bridges remain gated. Managed
+`st_*` SQL registrations. Run Apache and Sedona in separate sessions and persist WKB plus SRID for caller-managed
+transfer. Exact-4.1 transforms containing both helper families emit `PYSPARK-W2707`; an inline Binary bridge does not
+solve the registration collision. Managed
 Databricks and Databricks Connect parity remain open in
 [P10192602](../planning/P10192602.Geospatial-namespaces-and-native-types.plan.md).
 

@@ -14,6 +14,7 @@ Schema declarations define Structure's typed row contract and materialize to Spa
 | `float()` | Spark float type | `float()` |
 | `double()` | Spark double type | `double()` |
 | `date()` | Spark date type | `date()` |
+| `time(precision=6)` | Spark TIME (exact 4.1 profiles) | `opened = time(precision=3)` |
 | `timestamp()` | Spark timestamp type | `timestamp()` |
 | `timestamp_ntz()` | Spark timestamp without time zone | `timestamp_ntz()` |
 | `field.interval(type=...)`, `field.interval(unit=...)` | Qualified Spark interval | `field.interval(type=Interval.YEAR_TO_MONTH)` |
@@ -25,6 +26,8 @@ Schema declarations define Structure's typed row contract and materialize to Spa
 | `sedona.geometry(srid=...)` | Sedona Geometry UDT | `location = sedona.geometry(srid=4326)` |
 | `hll_sketch(lg_config_k=...)` | Branded opaque Binary HLL state | `customers = hll_sketch(lg_config_k=12)` |
 | `bitmap()` | Branded opaque Binary Bitmap state | `features = bitmap()` |
+| `kll_sketch(domain)` | Branded Binary KLL state (exact 4.1 profiles) | `latencies = kll_sketch(double())` |
+| `theta_sketch()` | Branded Binary Theta state (exact 4.1 profiles) | `customers = theta_sketch()` |
 
 For a caller-bound Delta table, `Schema.constraints = (check(predicate, name=...),)` declares expected native CHECK
 metadata. `Schema.delta_columns` can declare expected generated, identity, and default fields so Delta insert checks
@@ -40,6 +43,9 @@ DataFrame validation modes.
   outside the DSL.
 - `nullable=`, `alias=`, `metadata=`, and `description=` belong on field factories.
 - `decimal(...)` requires precision and scale in the type contract.
+- `time(precision=6)` requires exact ordinary or Connect `>=4.1,<4.2`; precision is an integer from 0 through 6,
+  excluding booleans, and is part of type identity. Enable `spark.sql.timeType.enabled=true` on the Spark session.
+  See the [TIME reference](../reference/Expressions.ref.md#spark-41-time-values).
 - `timestamp()` represents Spark's instant-based TimestampType; `timestamp_ntz()` represents wall-clock
   TimestampNTZType. The two types are not interchangeable. Python `datetime` annotations continue to map to
   `timestamp()`; declare `timestamp_ntz()` explicitly for NTZ fields.
@@ -58,6 +64,9 @@ DataFrame validation modes.
   See the [Geospatial reference](../reference/Geospatial.ref.md).
 - `hll_sketch(...)` and `bitmap()` preserve an opaque algorithm brand even though Spark materializes Binary. HLL
   precision is part of the declared type. See [Sketches and Bitmaps](Aggregations.api.md#sketches-and-bitmaps).
+- `kll_sketch(domain)` accepts Long, Float, or Double as its domain; `theta_sketch()` has no input domain in its type.
+  KLL `k` and Theta `lg_nom_entries` configure operations rather than type identity. Sketch metadata survives nested
+  schemas and storage round trips; opaque payloads are not a portable interchange format.
 
 ## Nested Declarations
 

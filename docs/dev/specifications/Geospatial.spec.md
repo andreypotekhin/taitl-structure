@@ -82,6 +82,11 @@ Apache native and Sedona helpers or use an inline Binary bridge between them. Ru
 separate sessions/runtimes. A Binary boundary alone does not avoid this SQL registration collision. WKB also drops
 SRID, and Structure performs no coordinate transformation.
 
+For exact `>=4.1,<4.2` ordinary and Connect targets, compilation must emit `PYSPARK-W2707` when a transform's
+expression graph contains both Apache and Sedona helper calls. The diagnostic is advisory and recommends isolated
+sessions with caller-managed WKB-plus-SRID transfer. It does not inspect the active Spark registry or detect mixing
+across independent transforms; it cannot certify that an Apache-only transform's supplied session is free of Sedona.
+
 ## Capability and evidence rules
 
 The default profile remains `>=3.5,<4.1`. Native type constructors are conditionally available on exact

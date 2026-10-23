@@ -9,10 +9,12 @@ does not admit Variant mutation, XML helpers, or join reordering.
 
 ## Normative rules
 
-1. Each retained item has exactly one V11 status: `design-gated`, `caller-owned-guided`, `streaming-ineligible`, or
-   `unsupported`.
-2. A `design-gated` item must fail before lowering with a diagnostic that names the item, explains the missing contract,
-   and gives the caller-owned remedy.
+1. Each retained item has one stated status: `structure-supported`, `design-gated`, `caller-owned-guided`,
+   `streaming-ineligible`, or `unsupported`.
+2. An unimplemented or rejected shape must fail before lowering with a diagnostic naming the item, the missing
+   requirement, and the caller remedy. A compiler path explicitly gated on incomplete runtime evidence, such as legacy
+   Pandas state, must describe its implemented subset and remaining evidence without claiming that compilation itself
+   is rejected. Compiler availability does not establish supported status.
 3. For `caller-owned-guided` items, runtime lifecycle and side-effect calls remain caller-authored. Generated Structure
    modules must not contain their lifecycle or side-effect calls.
 4. A target-specific row must name its required PySpark profile. An unavailable runtime is unavailable evidence, never a

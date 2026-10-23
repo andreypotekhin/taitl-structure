@@ -792,7 +792,7 @@ do not replace the function-level rows above or imply that a family-level candid
 | Scope | Status | Structure work | Migration requirement |
 | --- | --- | --- | --- |
 | UTF-8 validation | target-gated | PySpark 4.0-only validation helpers are outside the default intersection baseline. | Use native PySpark or add a versioned UTF-8 profile. |
-| Temporal API additions | implemented / individually gated | The common temporal names have individual target presence, contract, status, and remedy rows in [Newly Reconciled Temporal Functions](#newly-reconciled-temporal-functions). | Follow the relevant row; target-only forms remain in the versioned section. |
+| Temporal API additions | implemented / individually gated | The common temporal names have individual target presence, contract, status, and remedy rows in [Temporal and Query-Clock Functions](#temporal-and-query-clock-functions). | Follow the relevant row; target-only forms remain in the versioned section. |
 | Current-time | implemented | Typed query-clock calls preserve six spellings and same-query equality metadata. | Use native PySpark for unmodeled timestamp variants. |
 | AES-GCM | implemented | Typed GCM calls, symbolic keys, and nonce-risk warning. | Use native PySpark for excluded AES forms. |
 | String aggregation | target-gated | PySpark 4.0-only `string_agg`/`listagg` are outside the 3.5/4.0 intersection baseline. | Use native PySpark on the 4.0 target or await a target-profile admission. |
@@ -842,7 +842,7 @@ APIs whose additional design boundary is recorded below.
 | `uniform` | 4.0.0 | `target-gated` | Use native PySpark or a separately admitted random-function profile with explicit seed semantics. |
 | `validate_utf8` | 4.0.0 | `target-gated` | Use native PySpark or a separately admitted UTF-8 profile. |
 | `random`, `uuid`, and related random helpers | 4.1 | `target-gated` | Track in the V11 adoption ledger with explicit version and seed evidence. |
-| Native `st_geomfromwkb`, `st_geogfromwkb`, `st_asbinary`, `st_srid`, `st_setsrid` | 4.1 | `target-gated` | Supported on exact ordinary/Connect 4.1 in an Apache-only session with Spark geospatial enabled; see [Geospatial reference](../../reference/Geospatial.ref.md). Same-session Sedona mixing and managed Databricks remain gated. |
+| Native `st_geomfromwkb`, `st_geogfromwkb`, `st_asbinary`, `st_srid`, `st_setsrid` | 4.1 | `target-gated` | Supported on exact ordinary/Connect 4.1 in an Apache-only session with Spark geospatial enabled; see [Geospatial reference](../../reference/Geospatial.ref.md). Apache/Sedona sessions must be isolated; mixed exact-4.1 transforms emit `PYSPARK-W2707`. Managed Databricks evidence remains open. |
 
 Source comparison: [PySpark 3.5.6 SQL functions](https://spark.apache.org/docs/3.5.6/api/python/reference/pyspark.sql/functions.html)
 and [PySpark 4.0.0 SQL functions](https://spark.apache.org/docs/4.0.0/api/python/reference/pyspark.sql/functions.html).
@@ -862,7 +862,7 @@ missing contract or native-PySpark remedy before the status can change.
 | Variant mutation | `target-gated` | Released profile plus classic, Connect, generated/online, and streaming evidence. | Use the profile or native PySpark. |
 | XML | `design-gated` | Declared schema, normalized options, malformed-record policy, and parse/serialize evidence. | Use a native PySpark boundary. |
 | URL | `partial` | `url_encode` and strict `url_decode` are baseline row-local; `try_url_decode` is 4.0 target-gated. | Use native PySpark for safe decoding or unsupported profiles. |
-| Geospatial APIs | `target-gated` | Apache native Spark 4.1 and Sedona 3.5/4.0/4.1 ordinary/Connect parity pass in isolated sessions. Managed Databricks and same-session Apache/Sedona parity remain open because Sedona replaces unqualified SQL registrations. | Select an explicitly supported namespace in an isolated session; cross-provider Binary bridges are currently gated. |
+| Geospatial APIs | `target-gated` | Apache native Spark 4.1 and Sedona 3.5/4.0/4.1 ordinary/Connect parity pass in isolated sessions. Managed Databricks evidence remains open; Sedona replaces unqualified SQL registrations. | Select a supported namespace in an isolated session; use persisted WKB plus SRID for cross-session transfer. Mixed exact-4.1 transforms emit `PYSPARK-W2707`. |
 | Runtime metadata and reflection | `caller-owned-guided` | Query-clock expressions are the only admitted symbolic runtime reads. | Use an explicit native PySpark boundary. |
 | UDTFs, pandas UDFs, callbacks | `caller-owned-guided` | Arbitrary runtime behavior. | Use explicit native PySpark. |
 

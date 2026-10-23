@@ -477,21 +477,26 @@ future documents are not V10 backlog commitments.
 - + Implement KLL/Theta sketch helpers and logical metadata for ordinary and Connect 4.1 batch use, with ordinary 4.1
   watermarked streaming and same-configuration restart parity. Connect streaming remains outside the backend contract.
   Typed batch observations are implemented for both variants.
-- Document and test caller-owned boundaries for Arrow UDF/UDTFs, row-based `transformWithState`, Declarative Pipelines,
-  SQL Scripting, Python Data Sources, readers, writers, sessions, and catalogs.
+- + Implement typed Arrow UDF scalar, iterator, grouped aggregate, and analytic-window modes on ordinary/Connect
+  4.1 batch, plus ordinary scalar/iterator streaming and restart. Arrow UDTFs remain caller-owned; see the UDF docs.
+- + Document caller-owned Declarative Pipelines, SQL Scripting, Python Data Sources, readers, writers, sessions, and
+  catalogs.
 - + Keep row `transform_with_state`, Pandas `transform_with_state_in_pandas`, legacy
   `apply_in_pandas_with_state`, and Dataset/Scala arbitrary state as separate ledger families with independent
   evidence owners; row admission and the typed named-state parity contract are implemented on ordinary PySpark 4.1.
-  Pandas families retain independent evidence gates.
+  Pandas `transform_with_state_in_pandas` is admitted on ordinary 4.0/4.1; legacy `apply_in_pandas_with_state`
+  retains its independent timeout and zero/multiple-output evidence gate.
 - Preserve typed caller-owned handoffs for `foreach` and `foreach_batch`, including retry/idempotence safety and clean
   generated-source boundaries.
 - Track classic Delta table admission and the separate Delta Connect 4.1 admission as distinct packages; do not infer
   broader Connect or 4.2 support from either one.
 - [x] Implement namespaced Apache, Databricks, and Sedona spatial helpers with native Geometry/Geography and distinct
   Sedona Geometry schema types. Apache native 4.1 and Sedona 3.5/4.0/4.1 ordinary/Connect parity is recorded; managed
-  Databricks parity and same-session Apache/Sedona mixing remain gated by [P10192602](../planning/P10192602.Geospatial-namespaces-and-native-types.plan.md).
-- Extend Compose, runner selection, backend metadata, fixtures, version assertions, CI, and evidence reports to
-  `pyspark41` and `spark-connect41`.
+  Databricks parity remains open. Apache/Sedona work requires isolated sessions; mixed exact-4.1 transforms emit
+  `PYSPARK-W2707`. See [P10192602](../planning/P10192602.Geospatial-namespaces-and-native-types.plan.md).
+- + Extend Compose, runner selection, backend metadata, fixtures, version assertions, and evidence reports to
+  `pyspark41` and `spark-connect41`. All six lane selections have run; ordinary foreachBatch reruns and the full
+  integration-enabled release build remain required by Sprint 59/60.
 - Reconcile API Catalog, API Reference, machine-readable inventories, compatibility/troubleshooting docs, generated
   artifacts, traceability, and release evidence before deciding whether the default profile includes 4.1.
 

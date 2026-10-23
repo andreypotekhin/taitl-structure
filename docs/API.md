@@ -47,7 +47,8 @@ Other orientation: [API compatibility overview](compatibility/APICompatibility.m
 | Schemas | supported | `StructType`, SQL types | [Schema reference](reference/Schema.ref.md) |
 | Transforms and hooks | supported | DataFrame pipeline | [Transforms API](api/Transforms.api.md) |
 | Expressions | supported | Column and SQL-function subset | [Expression reference](reference/Expressions.ref.md) and [API](api/Expressions.api.md) |
-| Geospatial | target-gated | Native PySpark 4.1+ and provider namespaces | [Geospatial reference](reference/Geospatial.ref.md) |
+| Geospatial | target-gated | Apache native exact 4.1 and explicit Databricks/Sedona namespaces | [Geospatial reference](reference/Geospatial.ref.md) |
+| User-defined functions | supported with profile and mode limits | Scalar Python and typed Arrow callbacks | [UDF reference](reference/UDF.ref.md) |
 
 **Details And Differences**
 
@@ -63,6 +64,25 @@ PySpark 4.1 adoption, feature status, target profiles, and live evidence are mai
 [API Compatibility catalog](compatibility/APICompatibility.md#pyspark-41-adoption) and its detailed
 [API tracker](compatibility/APITracker.md). The [V11 charter](dev/project/V11.md) records project scope and
 schedule; these compatibility documents are the source for versioned API claims.
+
+Select `profile = ">=4.1,<4.2"` explicitly to use the admitted 4.1 features. Each feature has ordinary and
+Spark Connect batch evidence; streaming availability is listed separately in its reference.
+
+| Feature | Public guide |
+| --- | --- |
+| `Column.transform` with inline or reusable expression helpers | [Transform reference](reference/Transform.ref.md#reusable-expression-helpers-with-columntransform) |
+| `chr`, `quote`, `try_to_date`, `random`, and `uuid` | [Scalar expressions](reference/Expressions.ref.md#pyspark-41-scalar-helpers) |
+| TIME type and six TIME functions | [TIME values](reference/Expressions.ref.md#spark-41-time-values) |
+| Correlated EXISTS, relation IN, and lateral joins | [Typed relation queries](reference/Transform.ref.md#typed-relation-queries) |
+| Named typed metrics evaluated by caller actions | [Batch observations](reference/Expressions.ref.md#typed-batch-observations) |
+| KLL quantiles and Theta set sketches | [Sketches and bitmaps](api/Aggregations.api.md#sketches-and-bitmaps) |
+| Scalar, iterator, grouped, and window Arrow UDFs | [UDF reference](reference/UDF.ref.md#arrow-udfs) |
+| Native Geometry/Geography and five Apache `st_*` helpers | [Geospatial reference](reference/Geospatial.ref.md) |
+
+Ordinary row state processors require exact 4.1; Pandas state processors also support exact 4.0. Their lifecycle and
+checkpoint rules are in the [Streaming reference](reference/Streaming.ref.md). TIME and native spatial execution
+require Spark session settings described in their guides. The default profile remains `>=3.5,<4.1` until the V11
+release checks pass.
 
 ## Analytical APIs
 
@@ -116,7 +136,7 @@ each provider remains optional and gated to its tested runtime profiles.
 | Array variants; generators | partial | `slice`, `explode`, `posexplode`, `inline` | Typed struct generators are supported; raw or untyped generators need distinct contracts. |
 | Window order; more aggregates | supported | Window functions and aggregate frames | Sprint 14. |
 | Collection basics | supported | Core arrays/maps | [Collections API](api/Collections.api.md) |
-| Raw APIs/lifecycle | unsupported | `expr`, raw `WindowSpec`, UDTF | Use hooks; caller owns lifecycle. Scalar `@special(type="udf")` is row-local ordinary-PySpark supported; typed Arrow UDFs are documented in the 4.1 tracker. |
+| Raw APIs/lifecycle | unsupported | `expr`, raw `WindowSpec`, UDTF | Use hooks; caller owns lifecycle. Scalar Python UDFs support ordinary/Connect batch and ordinary streaming; typed Arrow UDFs require exact 4.1 profiles. See the UDF reference. |
 
 For detailed restrictions, diagnostics, and feature-admission rationale, consult [APICompatibility.md](compatibility/APICompatibility.md),
 [APITracker.md](compatibility/APITracker.md), [Function Gates](dev/gated/Functions.gates.md), and the linked reference pages.

@@ -1,7 +1,7 @@
 # Sprint 56: V11 Expression and Column Parity
 
-Status: in progress; target: 2027-01-08. Column callbacks, the first five scalar helpers, and the TIME family are
-implemented on the reviewed PySpark 4.1 profile.
+Status: feature implementation and ordinary/Connect parity complete; target: 2027-01-08. Column callbacks, the five
+scalar helpers, and the TIME family are admitted on exact PySpark 4.1 profiles. Release checks remain in Sprint 60.
 
 ## Sprint goal
 
@@ -15,10 +15,10 @@ generated code behavior in online and generated execution on admitted ordinary a
 
 ## Implementation tasks
 
-- Extend expression IR, type/nullability inference, evaluator, renderer, imports, and capability keys.
-- Add seeded/nondeterministic and streaming classifications.
-- Add focused specification tests and ordinary 4.1 integration fixtures.
-- Prove or gate Connect support per function family.
+- [x] Extend expression IR, type/nullability inference, evaluator, renderer, imports, and capability keys.
+- [x] Add seeded/nondeterministic and streaming classifications.
+- [x] Add focused specification tests and ordinary 4.1 integration fixtures.
+- [x] Prove or gate Connect support per function family.
 
 ## Acceptance
 

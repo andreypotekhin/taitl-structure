@@ -27,8 +27,8 @@ The installable package lives under `src/structure`. Inside that package, projec
 Delta integration is plugin-owned: `plugin/pyspark/delta` holds symbolic mutations, CHECK binding, and late-bound
 runtime calls; PySpark capture/lowering preserves ordered effect steps; online execution and generated rendering use
 the same mutation recipes. Core recognizes Delta input/output bindings and the return-typed evolution result for
-normal step resolution. See the [Delta design](design/V11DeltaSchemaBoundMutations.design.md) and
-[specification](specifications/V11DeltaSchemaBoundMutations.spec.md).
+normal step resolution. See the [Delta design](design/DeltaTables.design.md) and
+[specification](specifications/DeltaTables.spec.md).
 
 Core components: configuration, cli, dsl, compiler, target, runtime
 and other system components (and subcomponents) defined by project architecture. Compiler subapps include

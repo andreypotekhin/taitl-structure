@@ -60,15 +60,24 @@ must be read by a compatible Spark/provider profile, and applications own retent
 testing. Structure does not promise that state produced by a different Spark release, provider, or algorithm can be
 read safely.
 
-KLL and Theta type declarations share the opaque-state model but require the PySpark 4.1 capability profile and live
-evidence. They are not default-baseline aggregate support. Count-Min state and observation metrics remain
-caller-owned because the current typed surface lacks their complete consumer and side-channel contracts.
+KLL and Theta share the opaque-state model and are admitted on exact ordinary and Connect `>=4.1,<4.2` after
+batch/storage parity. KLL identity includes its Long/Float/Double domain; Theta identity records the algorithm. KLL
+`k` and Theta `lg_nom_entries` configure operations rather than type identity. All four sketch families preserve their
+logical identity recursively through `structure.logical_type` metadata. Untagged Binary needs an explicit declared
+schema; conflicting or malformed metadata is rejected.
+
+Count-Min state remains caller-owned. Typed batch observation metrics are a separate implemented exact-4.1 feature,
+with their action lifecycle and snapshot model in the
+[observation design](V11PySpark41ObservationsAndSketches.design.md#observation-boundary).
 
 ## Streaming and evidence
 
 Scalar consumers and position helpers are row-preserving. Grouped construction and OR aggregation follow the existing
 watermark, state, and output-mode rules for grouped streaming aggregates. Documentation must not imply that opaque
 state has a portable streaming checkpoint or interchange guarantee.
+
+Ordinary 4.1 KLL/Theta watermarked aggregation and restart with the same query/sketch configuration have positive
+evidence. Connect support remains batch-only under the existing streaming policy.
 
 Promotion or extension requires symbolic type/nullability validation, capability checks, online/generated rendering
 parity, diagnostics, streaming classification, and target evidence. The authoritative specification is

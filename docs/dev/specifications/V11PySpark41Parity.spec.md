@@ -4,8 +4,9 @@
 
 This specification covers PySpark 4.1 APIs that could affect Structure's typed DataFrame transformation contract. It does
 not make a support claim by listing an upstream API. `supported` means the API has a complete Structure contract and
-positive evidence. `planned` means implementation is intended but incomplete. `design-gated` means the contract is not
-safe to implement yet. `caller-owned-guided` means callers may use the upstream API around a Structure transform.
+positive evidence. `planned` means implementation is intended but incomplete. `design-gated` means the design,
+implementation, or required runtime evidence remains incomplete. `caller-owned-guided` means callers may use the
+upstream API around a Structure transform.
 `streaming-ineligible` means the operation may be valid for batch but cannot be used in Structure's streaming contract.
 `unsupported` means Structure deliberately does not model it.
 
@@ -134,8 +135,9 @@ Its image uses Protobuf 6.33.0 for PySpark 4.1's generated state protocol; 3.5 a
 test session uses RocksDB because the default HDFS-backed state store rejects TransformWithState's multiple column
 families. Both 4.1 state processor APIs also require pandas, PyArrow, and Protobuf on the driver and workers; the Pandas
 API requires those packages on PySpark 4.0 as well.
-The row API's 4.1 fixture and the Pandas API's profile-specific fixtures are the relevant positive evidence; unrelated
-pre-V11 integration and concept tests are not run on 4.1. The lane is not evidence of full upstream processor parity:
+The row API's 4.1 fixture and the Pandas API's profile-specific fixtures are the relevant positive evidence. The
+ordinary lane does not select pre-V11 integration or concept tests; Connect 4.1 runs their full selection. Neither
+selection establishes full upstream processor parity:
 typed Structure callbacks cover the documented subset, while opaque native processors must be exercised for additional
 native capabilities claimed by their profile.
 
@@ -143,8 +145,9 @@ native capabilities claimed by their profile.
 
 The release matrix has six backends: `pyspark35`, `pyspark40`, `pyspark41`, `spark-connect35`,
 `spark-connect40`, and `spark-connect41`. Connect 4.1 runs the full integration and live concept suites, with the
-Iceberg and Delta providers kept in isolated passes. The exact Delta Connect package and batch checkpointing are
-admitted for their proven 4.1 rows; other Connect profiles remain gated. Each configured backend reports the exact
+Iceberg and Delta providers kept in isolated passes. Those providers are admitted only for Connect 4.1 and excluded
+from Connect 3.5/4.0 general selections. Reliable batch checkpointing is admitted separately on exact Connect 4.0 and
+4.1; Connect 3.5 retains its checkpoint gate. Each configured backend reports the exact
 PySpark and Spark version, target profile, target variant, image digest or pinned package version, and test selection.
 The 4.1 profile is `>=4.1,<4.2`. The initial ordinary 4.1 selection is limited to
 the backend version check and V11 integration tests. Ordinary 4.1 is release-blocking for every supported row after its

@@ -38,7 +38,7 @@ def main() -> None:
         run("build", *(f"structure-integration-{backend}" for backend in backends))
     services = _services(backends)
     if services:
-        run("up", "-d", *build, *services)
+        run("up", "-d", "--no-recreate", *build, *services)
     for backend in backends:
         print(f"\n=== Structure integration: {backend} ===", flush=True)
         run("run", "--rm", f"structure-integration-{backend}")

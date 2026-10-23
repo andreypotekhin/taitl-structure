@@ -6,12 +6,13 @@
 - 'Documenting' section in [Style.md](../Style.md)
 
 ### Text style, processes and operators
-- Main: [Prose.md](../Prose.md)
-- Definitions of text operators and processes. 
+- Main: [Documenting.md](../Documenting.md) and the documenting section of [Style.md](../Style.md).
 
 ### Annotated source code
-- Main: [Annotation.auto.md](../Annotation.auto.md)
-- Maintain annotated sources per instructions and scope described in main doc. 
+- Maintain example-source comments and docstrings alongside behavior changes so their explanations match the source.
+- Link public walkthroughs to the maintained source examples and update their snippets when an API changes.
+- Generated source and generated documentation remain compiler output: update their source inputs and regenerate them
+  through the existing generation workflow rather than editing generated artifacts by hand.
 
 ### Documentation hygiene
 Do not include sensitive information such as passwords, host names, absolute paths, developer username/home dir
@@ -19,8 +20,8 @@ in any documents. Timezone should be specified as abbreviation, rather than city
 
 ## Documentation style
 
-### End-User top-level documentation 
-Location: 
+### End-User top-level documentation
+Location:
 - docs/ (top level)
 
 - Top level documents are tailored for the readers when they first encounter the system.
@@ -28,8 +29,8 @@ Location:
 before used, and refrain from referring things that are described down the document
 (or give general idea/mention that it will be described further).
 
-### End-User reference documentation 
-Location: 
+### End-User reference documentation
+Location:
 - docs/api/
 - docs/reference/
 - docs/background/
@@ -42,7 +43,7 @@ Location:
   for each described topic, to help the reader build understanding.
 - Background documents are long-reads thoroughly covering the topic. They are superbly organized/structured
 for top-to-bottom reader. Background documents use design, specifications, architectural decisions
-and code as source of truth. 
+and code as source of truth.
 - Each background document focuses on a single topic. While new design/specifications/decisions are often added to the
   same topic, the set of background documents stays relatively stable.
 - Background docs are more formal than top-level. Besides reference material, they include design, architecture, system
@@ -64,29 +65,29 @@ Follow instructions in Documenting.md and Style.md
 Location: docs/dev/ subdirs
 Follow instructions in Documenting.md and Style.md
 
-### Documentation style tips 
-#### Documentation tips - general 
+### Documentation style tips
+#### Documentation tips - general
 - Use caution/consider alternative wording for corporate-speak such as 'owns', 'intentional', 'downstream'
 - Do not overuse power nouns like as 'boundary', 'contract': prefer to use only in their context (of boundaries, contracts)
-  - In other circumstance, use more specific word, e.g. 'schema' instead of 'contract' when describing input schemas. 
+  - In other circumstance, use more specific word, e.g. 'schema' instead of 'contract' when describing input schemas.
 - Avoid added qualifiers when not the point of the statement, such as 'complete', 'bounded', 'valid'
 - Do not overuse 'only'
   - Ex: 'Materialize source-faithful sentence content only in a private lane.'
 - Do not assume the reader actually reads headings - repeat heading text or its idea to body text if not already there.
 - Code examples use wildcard imports, to save lines.
-- Do not assume example apps code is known/can be referred as-is to the reader. 
-  - Ex: 'Keep tenant and other scope keys in the predicate.' - tenant is part of example app, not part of the project.  
+- Do not assume example apps code is known/can be referred as-is to the reader.
+  - Ex: 'Keep tenant and other scope keys in the predicate.' - tenant is part of example app, not part of the project.
 - Avoid overly complicated sentences that build up and read like mouthful.
   - Ex: 'Materialize source-faithful sentence content only in a private lane.'
 
-#### End-User documentation tips 
-- In Reference documents: 
+#### End-User documentation tips
+- In Reference documents:
   - ensure concept is defined/purpose is explained before showing code snippet.
   - avoid folding several statements into a quick paragraph. Consider bullet lists and examples.
   - avoid overloading a sentence with several statements.
 - In Recipe documents: avoid excess use of word 'recipe' (reader already realizes that).
 
-#### Developer documentation tips 
+#### Developer documentation tips
 - Use caution/consider alternative wording for corporate-speak such as 'owns', 'boundary', 'intentional', 'downstream'
 - Avoid added qualifiers when not the point of the statement, such as 'intentional', 'complete', 'bounded', 'valid'
 
@@ -112,6 +113,6 @@ They propagate bottom to top: from code changes to outer documents.
   relevant to developers.
 
 ### Notes for synchronizing
-- Avoid placing the new content at top or at a random place of the document. 
+- Avoid placing the new content at top or at a random place of the document.
 Think of best place for the top-to-bottom reader, who is trying to build understanding.
 - In code examples, use wildcard imports to save lines.

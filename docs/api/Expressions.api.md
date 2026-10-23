@@ -448,8 +448,8 @@ Bare `None` is untyped and rejected; `literal(None).cast(types.string())` is a v
   return non-nullable SQL-format schema Strings. Dynamic input is rejected because schema inference must be resolved
   before the typed output schema is compiled.
 - Raw `expr(...)`, `call_function(...)`, direct UDF/UDTF expressions, and implicit Python-to-UDF conversion are
-  unsupported. Scalar `@special(type="udf")` remains an ordinary-PySpark row-local feature with its warning policy;
-  see the [Transforms API](Transforms.api.md).
+  unsupported. Explicit scalar Python UDFs support admitted ordinary/Connect batch profiles and ordinary streaming;
+  typed Arrow UDFs have exact-4.1 and mode-specific gates. See the [UDF reference](../reference/UDF.ref.md).
 - Variant helpers require a resolved PySpark 4 profile. `is_valid_variant(...)` requires the `>=4.2,<4.3` profile.
   Paths are non-empty literal strings beginning with `$`; extraction requires an explicit Structure `as_type` and is
   nullable when the path is absent. The `try_` form is also nullable when casting fails. `schema_of_variant(...)`

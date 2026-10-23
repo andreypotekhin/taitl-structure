@@ -4,14 +4,18 @@ This directory contains project planning and tracking documents for **Structure*
 runtime/compiler toolkit that runs or generates clean PySpark DataFrame code. Current sprint records are in `sprints/`;
 completed sprints from before V11 are archived in [past/sprints](../past/sprints/).
 
+Current implementation and release status is recorded in [V11](V11.md) ,
+[Sprint 59 matrix evidence](sprints/Sprint59_V11IntegrationMatrix.md) ,
+[Sprint 60 closeout](sprints/Sprint60_V11HardeningAndCloseout.md), and [outstanding work](OutstandingTasks.md).
+
 The sprint plan assumes the documentation set from the Structure design package already exists, especially:
 
 - [UserStories.md](../specifications/UserStories.spec.md)
 - [GeneratedSource.md](../../GeneratedSource.md)
-- `devdocs/Architecture.md`
-- `close/archive/implementation/Implementation.md` (historical phase checklist)
-- `devdocs/Testing.md`
-- `devdocs/design/*.md`
+- [Architecture](../Architecture.md)
+- [Roadmap](Roadmap.md)
+- [Testing](../Testing.md)
+- [Design documents](../design/)
 
 ## Contents
 
@@ -55,7 +59,8 @@ project/
 
 ## Pre-Coding Spike Gate
 
-Sprint 00 includes a short spike gate before implementation of the first vertical slice. These spikes close the highest-risk design questions from [Challenges.md](../../../close/archive/design/Challenges.design.md):
+Sprint 00 includes a short spike gate before implementation of the first vertical slice. These spikes close the
+highest-risk design questions from [pre-coding decision inventory](../design/DecisionsBeforeCoding.design.md) :
 
 - `@raw(lane=lane)` binding inside class bodies.
 - Class-local `@special(type="expr")` helpers callable through `self` without a `self` parameter.
@@ -115,7 +120,7 @@ Every version ends with a dedicated hardening sprint after its feature-delivery 
 feature scope; it resolves release blockers and collects release evidence for regression, parity, compatibility,
 generated artifacts, documentation, diagnostics, and performance baselines.
 
-v4 closed with the [Final v4 Hardening Sprint](../../../close/archive/sprints/SprintV4_Hardening.md), after all of its feature sprints
+v4 closed with the final v4 hardening sprint, after all of its feature sprints
 and before v5 implementation resumed.
 
 v6 follows the v5 plugin hardening work with a deliberately bounded typed-PySpark closure program:

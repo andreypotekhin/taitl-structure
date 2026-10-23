@@ -10,6 +10,15 @@ Schema declarations are authored with the syntax specified in
 [SchemaDeclarationSyntax.spec.md](SchemaDeclarationSyntax.spec.md). Inheritance behavior is specified in
 [SchemaInheritance.spec.md](SchemaInheritance.spec.md).
 
+## PySpark type extensions
+
+The PySpark plugin extends the scalar model with exact-4.1 TIME precision, algorithm-branded sketch Binary values,
+and distinct native/Sedona spatial types. These are explicit schema identities, preserved recursively through nested
+types and generated/materialized schemas. Their detailed contracts are in
+[TIME parity](V11PySpark41Parity.spec.md#feature-1-41-expressions-and-column-transformation),
+[Sketch/Bitmap](SketchBitmap.spec.md), and [Geospatial](Geospatial.spec.md). Optional Spark/provider constructors are
+resolved at runtime so compiler-only schema checks remain Spark-free.
+
 ## Core Model
 
 ```text

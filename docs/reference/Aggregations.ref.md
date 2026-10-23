@@ -279,7 +279,7 @@ return CustomerSketchMetrics(
 | Operation | Contract |
 | --- | --- |
 | `kll_sketch_agg(value, k=200, where=None)` | Grouped KLL construction; `k` is a literal integer from 8 through 65,535 |
-| `kll_sketch_get_n(sketch)` | Number of retained input items, as Long |
+| `kll_sketch_get_n(sketch)` | Number of input items represented by the sketch, as Long |
 | `kll_sketch_get_quantile(sketch, rank)` | Approximate quantile in the declared Long, Float, or Double domain |
 | `kll_sketch_get_rank(sketch, quantile)` | Approximate rank of a value, as Double |
 | `kll_sketch_merge(left, right)` | Pairwise merge of compatible KLL sketches |

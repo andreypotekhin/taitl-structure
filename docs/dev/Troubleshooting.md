@@ -161,6 +161,25 @@ rebuilds are required for dependency or image-configuration changes, not launche
 with the live run and keep Iceberg/Delta results separate from the general phase.
 See [integration runner behavior](../../infra/compose/README.md#run-tests).
 
+### Problem (integration): Spark Connect 3.5/4.0 fails Iceberg or Delta namespace tests
+
+When: A Connect 3.5 or 4.0 general phase reports `REQUIRES_SINGLE_PART_NAMESPACE` for the `structure_iceberg`
+catalog, or Delta Connect provider failures.
+Cause: Those profiles have no isolated Iceberg catalog or Delta Connect server setup. Provider tests collected in the
+general phase therefore run without their required server configuration.
+Fix: Use the current mounted launcher, which excludes Iceberg and Delta modules from Connect 3.5/4.0 general
+selections. Only Connect 4.1 has isolated provider passes in this matrix. Verify the launcher checksum and phase
+selection before interpreting the old failures as runtime parity evidence.
+
+### Problem (integration): ordinary foreachBatch handoff schema assertion fails
+
+When: The PySpark 3.5, 4.0, or 4.1 full integration selection fails
+`test_schema_sink_runs_batch_transform_and_caller_deduplicates_replays`.
+Cause: The current assertion expects `AlertMessage`, while the declared sink handoff carries the transform's `Alert`
+schema. This is tracked by the foreachBatch feature owner; the closeout runner does not skip or redefine this contract.
+Fix: Resolve the schema expectation in the owning foreachBatch work, then rerun the affected ordinary lane and the
+integration-enabled build. Keep the default PySpark profile below 4.1 until the six-lane release gate passes.
+
 ### Problem (runtime): A namespaced spatial helper is unavailable
 
 When: An expression uses `sedona.*` or `databricks.*` and the selected Python or Spark server lacks that provider's

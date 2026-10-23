@@ -18,6 +18,9 @@ Connect. See [Compatibility.md](../Compatibility.md) for the full target policy,
 [API.md](../API.md#api-documentation-map) for the API documentation gateway, and [APICompatibility.md](../compatibility/APICompatibility.md)
 for the family-level compatibility summary.
 
+The [4.1 feature guide](../API.md#version-compatibility) links the opt-in expression, TIME, relation-query,
+observation, sketch, Arrow UDF, and spatial APIs. Each uses its stated exact profile and execution mode.
+
 The examples use declaration forms from the [Schema reference](Schema.ref.md) and the
 [Transform reference](Transform.ref.md).
 
@@ -29,7 +32,7 @@ The examples use declaration forms from the [Schema reference](Schema.ref.md) an
 | Transforms and hooks | supported | DataFrame pipeline | [Transform reference](Transform.ref.md) |
 | User-defined functions | supported with explicit boundaries | Scalar Python and exact-profile Arrow callbacks | [UDF reference](UDF.ref.md) |
 | Expressions | supported | Column and SQL-function subset | [Expression reference](Expressions.ref.md) and [API](../api/Expressions.api.md) |
-| Geospatial | target-gated | Native PySpark 4.1+ and provider namespaces | [Geospatial reference](Geospatial.ref.md) |
+| Geospatial | target-gated | Apache native exact 4.1 and explicit Databricks/Sedona namespaces | [Geospatial reference](Geospatial.ref.md) |
 
 **Details And Differences**
 
@@ -42,7 +45,8 @@ The examples use declaration forms from the [Schema reference](Schema.ref.md) an
   [expression API](../api/Expressions.api.md#sql-function-helpers) and [Schema API](../api/Schemas.api.md).
 - Transform source is compiler-visible. `@raw` remains the explicit boundary for caller-supplied PySpark behavior.
 - Expression truthiness, raw SQL strings, UDTFs, and arbitrary callback bodies are unsupported. Scalar
-  `@special(type="udf")` remains an ordinary-PySpark row-local feature; typed `@special(type="arrow_udf")` is
+  `@special(type="udf")` supports admitted ordinary and Connect batch profiles and ordinary streaming;
+  typed `@special(type="arrow_udf")` is
   supported on exact ordinary and Connect 4.1 profiles as documented in the [UDF reference](UDF.ref.md#compatibility).
 
 ```python

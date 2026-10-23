@@ -9,11 +9,16 @@ discrepancies, use the [API documentation map](API.md#api-documentation-map) and
 - [Schema reference](reference/Schema.ref.md): declarations, type semantics, inheritance, construction, validation,
   runtime schemas, and data-quality boundaries.
 - [Transform reference](reference/Transform.ref.md): transform declarations, steps, bindings, projections, hooks,
-  composition, streaming compatibility, and execution boundaries.
+  composition, typed relation queries, streaming compatibility, and execution boundaries.
+- [Expression reference](reference/Expressions.ref.md): PySpark 4.1 scalar helpers, TIME values, and typed batch
+  observations. The [Expressions API](api/Expressions.api.md) lists the baseline function families.
+- [UDF reference](reference/UDF.ref.md): scalar Python and Arrow callbacks, declaration options, examples, and
+  ordinary/Connect and streaming support.
 - [Delta and Iceberg tables API](api/DeltaIceberg.api.md): caller-bound relations, typed mutations, SQL access,
   metadata, maintenance, and explicit schema evolution.
 - [Delta and Iceberg tables reference](reference/DeltaIceberg.ref.md): concise provider declaration and operation inventory.
-- [Aggregations reference](reference/Aggregations.ref.md): grouped metrics, opaque HLL/Bitmap state, selected rows,
+- [Aggregations reference](reference/Aggregations.ref.md) : grouped metrics, HLL/Bitmap and KLL/Theta state, selected
+  rows,
   deduplication, windows, and higher-order collection operations.
 - [Join reference](reference/Join.ref.md): lookup, rowset, existence, temporal, as-of, and Cartesian joins.
 - [Configuration reference](reference/ConfigSchema.ref.md): files, precedence, target selection, validation, and CI
@@ -23,14 +28,14 @@ discrepancies, use the [API documentation map](API.md#api-documentation-map) and
   validation, and application-controlled Spark lifecycle.
 - [Streaming reference](reference/Streaming.ref.md): streaming inputs, compatibility checks, watermarks, stateful
   operations, joins, lifecycle handoff, and corrective diagnostics.
-- [Geospatial reference](reference/Geospatial.ref.md): native and provider target gates, SRIDs, scope, and Binary
+- [Geospatial reference](reference/Geospatial.ref.md): helper namespaces, native/Sedona types, SRIDs, and cross-session
   handoffs.
 - [Search example reference](reference/Search.ref.md): chunking, indexing, lexical scoring, presentation, similarity,
   feedback, and evaluation.
 - [Store example reference](reference/Store.ref.md): catalog, recommendations, demand, fulfillment, reconciliation,
   and analytics workflows.
-- [Search example specifications](examples/search/Readme.md): focused boundaries, decisions, and deferred
+- [Search example specifications](../examples/search/Readme.md): focused boundaries, decisions, and deferred
   alternatives.
-- [Store example specifications](examples/store/Readme.md): focused boundaries, decisions, and deferred alternatives.
+- [Store example specifications](../examples/store/Readme.md): focused boundaries, decisions, and deferred alternatives.
 
 Detailed topic material remains in [background](background/).

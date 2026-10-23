@@ -295,8 +295,9 @@ See `pyproject.seed.toml` for defaults.
 
 ## Compatibility
 
-Structure targets Python 3.11+, PySpark 3.5.x and 4.0.x, Linux runtimes, and Linux/macOS/Windows development
-environments.
+Structure targets Python 3.11+, the default PySpark 3.5.x/4.0.x profile, Linux runtimes, and Linux/macOS/Windows
+development environments. Admitted PySpark 4.1 features use the opt-in exact `>=4.1,<4.2` profile, with ordinary and
+Spark Connect support recorded per operation. See the [4.1 feature guide](API.md#version-compatibility).
 
 Airflow can call execution or generated-code execution transforms. It is not a Structure dependency.
 

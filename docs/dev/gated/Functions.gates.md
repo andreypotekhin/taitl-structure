@@ -31,7 +31,7 @@ the gate register searchable without duplicating the full PySpark inventory.
 | Variant mutation helpers | `target-gated` | Released target profile plus classic, Connect, generated/online, and streaming evidence. |
 | URL encode/decode | `partial` | `url_encode` and strict `url_decode` are typed; `try_url_decode` is a 4.0 target gate. |
 | XML helpers | `design-gated` | Declared schema, options, malformed-input behavior, and parse/serialize evidence. |
-| Geospatial APIs | `target-gated` | Apache native 4.1 and Sedona 3.5/4.0/4.1 ordinary/Connect parity pass in isolated sessions. Managed Databricks parity and same-session Apache/Sedona use remain open in [P10192602](../planning/P10192602.Geospatial-namespaces-and-native-types.plan.md). |
+| Geospatial APIs | `target-gated` | Apache native 4.1 and Sedona 3.5/4.0/4.1 ordinary/Connect parity pass in isolated sessions. Managed Databricks parity remains open; Apache/Sedona work uses separate sessions with `PYSPARK-W2707` for mixed exact-4.1 transforms. See [P10192602](../planning/P10192602.Geospatial-namespaces-and-native-types.plan.md). |
 | Runtime metadata and reflection | `caller-owned-guided` | Query-clock expressions are the only admitted symbolic runtime reads. |
 | `expr` / `call_function` | `unsupported` | Raw SQL removes typed expression ownership. |
 | UDTFs, pandas UDFs, callbacks | `caller-owned-guided` | Arbitrary runtime behavior is outside typed transforms. |
@@ -63,8 +63,10 @@ streaming evidence are all required before release.
 The active contract is in [Geospatial.spec.md](../specifications/Geospatial.spec.md). Helper namespace selects the
 implementation; field declaration selects native or Sedona representation. There is no provider setting or scope
 precedence. Exact target and execution-mode evidence controls admission. Managed Databricks and Databricks Connect
-remain open. Sedona's extension replaces Spark's unqualified `st_*` registrations, so same-session cross-provider use
-and inline Binary bridges remain gated; see [P10192602](../planning/P10192602.Geospatial-namespaces-and-native-types.plan.md).
+remain open. Sedona's extension replaces Spark's unqualified `st_*` registrations, so execute Apache and Sedona
+workloads in separate sessions. Exact-4.1 transforms containing both families emit `PYSPARK-W2707` with isolation and
+WKB-plus-SRID guidance. The warning does not inspect ambient server registrations or separate transforms; see
+[P10192602](../planning/P10192602.Geospatial-namespaces-and-native-types.plan.md) .
 
 ### Random and order-sensitive functions
 

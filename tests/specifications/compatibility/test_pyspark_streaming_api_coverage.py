@@ -98,7 +98,10 @@ def test_arbitrary_state_families_have_independent_status_and_evidence() -> None
     assert "Complete" in row["notes"]
     assert "tests/integration/pyspark/v11/test_transform_with_state.py" in row["evidence"]
 
-    assert pandas["status"] == "design-gated"
+    assert pandas["status"] == "structure-supported"
+    assert pandas["owner_boundary"] == "structure-transform"
+    assert pandas["support_claim"] == "transformed-dataframe-stateful"
+    assert "tests/integration/pyspark/v11/test_transform_with_state_in_pandas.py" in pandas["evidence"]
     assert legacy["status"] == "design-gated"
     assert "GroupedData.transformWithStateInPandas" in pandas["pyspark_apis"]
     assert "GroupedData.applyInPandasWithState" in legacy["pyspark_apis"]
@@ -176,7 +179,8 @@ def test_public_streaming_catalog_uses_v9_status_language() -> None:
     assert "| planned |" not in streaming
     assert "| deferred |" not in streaming
     assert "| Typed struct generators | implemented |" in streaming
-    assert "| Chained stateful operators | design-gated |" in streaming
+    assert "| Chained stateful operators | partial; broader chains design-gated |" in streaming
+    assert "two documented finite pairs" in streaming
     assert "| Global ordering, limits, and offsets | streaming-ineligible |" in streaming
     assert "| Analytic windows and selected-row helpers | streaming-ineligible |" in streaming
     assert "| `foreachBatch` side-effect sinks | caller-owned-guided |" in streaming

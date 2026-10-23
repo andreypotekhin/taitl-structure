@@ -1,6 +1,6 @@
 # Sprint 59: V11 Integration Matrix and Evidence
 
-Status: planned; target: 2027-02-19.
+Status: six-lane evidence collected; release closeout blocked by foreachBatch owner work; target: 2027-02-19.
 
 ## Sprint goal
 
@@ -22,7 +22,7 @@ Maintainers can run `make integration BACKEND=pyspark41` for the version check a
 - [x] Expand Connect 4.1 to the full integration and live concept selection, excluding its isolated Delta and Iceberg
   modules from the general pass. The runner test records all three phases and verifies checkpoint-directory cleanup.
 - [x] Use the mounted launcher on all six runners, explicitly build selected runner images, and verify source freshness,
-  lazy startup, phase selection, cleanup, and failure propagation with 40 Spark-free cases.
+  lazy startup, phase selection, cleanup, and failure propagation with 43 Spark-free cases.
 - [x] Complete the fresh, unfiltered Connect 4.1 run and correct the earlier V11-only evidence scope.
 - [x] Prove Connect 4.1 `Column.transform` online/generated parity and reliable batch checkpointing with a deep plan,
   preserved alias, and temporary-view cleanup.
@@ -30,8 +30,39 @@ Maintainers can run `make integration BACKEND=pyspark41` for the version check a
   remove their temporary views.
 - [ ] Collect the row `transform_with_state` 4.1 matrix from its admission plan, and keep Pandas state and legacy
   `applyInPandasWithState` evidence as independent profile rows.
-- [ ] Run the full six-lane matrix, generated-source checks, streaming checks, and regression tests before release.
-- Record unavailable optional-provider or Connect evidence explicitly.
+- [x] Run the full six-lane matrix, generated-source checks, streaming checks, and regression tests. The matrix is
+  recorded below; three ordinary foreachBatch failures remain an owner-bound release blocker.
+- [x] Record unavailable optional-provider or Connect evidence explicitly, including the Connect 3.5/4.0 provider
+  boundary and managed Databricks evidence gate.
+
+## Corrected six-lane matrix (2026-10-21)
+
+Runs used the repository-mounted launcher with no pytest filters. Each runner reported Python 3.11.17. Runtime-version
+assertions passed for PySpark and Spark in every lane. The ordinary 4.1 runner remains intentionally scoped to the
+backend version check and V11 suite; other lanes run the full integration and live-concept selection. Iceberg and
+Delta run in isolated processes on lanes that admit those providers. Connect 3.5 and 4.0 exclude both provider test
+modules because no isolated provider setup or admission exists for those profiles.
+
+| Backend | PySpark / Spark | Isolated Iceberg | Isolated Delta | General selection | Result |
+| --- | --- | --- | --- | --- | --- |
+| `pyspark35` | 3.5.3 / 3.5.3 | 21 passed | 53 passed, 3 skipped | 295 collected; 242 passed, 52 skipped, 1 failed | foreachBatch owner failure |
+| `spark-connect35` | 3.5.3 / 3.5.3 | excluded by provider boundary | excluded by provider boundary | 295 collected; 205 passed, 90 skipped | passed |
+| `pyspark40` | 4.0.0 / 4.0.0 | 21 passed | 53 passed, 3 skipped | 295 collected; 258 passed, 36 skipped, 1 failed | foreachBatch owner failure |
+| `spark-connect40` | 4.0.0 / 4.0.0 | excluded by provider boundary | excluded by provider boundary | 295 collected; 215 passed, 80 skipped | passed |
+| `pyspark41` | 4.1.0 / 4.1.0 | 21 passed | 53 passed, 3 skipped | 56 collected; 53 passed, 2 skipped, 1 failed | foreachBatch owner failure |
+| `spark-connect41` | 4.1.0 / 4.1.0 | 21 passed | 55 passed, 1 skipped | 295 collected; 234 passed, 61 skipped | passed |
+
+The pinned package set was Delta 3.3.3 / 4.0.1 / 4.1.0 on the corresponding lanes, Python Protobuf 5.29.3 on
+3.5/4.0 and 6.33.0 on 4.1, pandas 2.2.3, and PyArrow 19.0.1. Iceberg 1.12.0 was used on isolated provider phases.
+Connect 4.1 also used server Protobuf Java 4.33.0. The only failures were the three ordinary-PySpark occurrences of
+`test_schema_sink_runs_batch_transform_and_caller_deduplicates_replays`: the test expects `AlertMessage`, while the
+declared sink handoff carries schema `Alert`. This is assigned to the separate foreachBatch feature work and remains a
+release blocker; this closeout does not alter that contract or skip the test.
+
+The first Connect 3.5/4.0 attempts accidentally collected the Iceberg module in the general phase, where its isolated
+catalog was absent. Those diagnostic runs are not matrix evidence. The runner now excludes Iceberg and Delta modules
+from those two Connect general selections; the corrected full selections above pass. Spark-free runner contract tests
+pass 43 cases. Per-run logs are retained in `.pytest-workspace-tmp/integration/v11-*-closeout.log`.
 
 ## Historical evidence (2026-10-07)
 
@@ -92,7 +123,8 @@ checkpoint directories or runner containers remain; all six pre-existing Spark s
 ## Acceptance
 
 The initial stage is complete when the ordinary 4.1 lane reports its pinned version/profile and selects only V11 tests.
-Release acceptance still requires the full six-lane matrix and live evidence for every supported 4.1 feature. State
+Release acceptance still requires a passing full six-lane matrix and live evidence for every supported 4.1 feature.
+State
 processor evidence is recorded per API family and output/time-mode matrix. Delta Connect evidence remains scoped to its
 exact package and does not promote other Connect profiles. State processor and foreachBatch evidence is recorded in
 its owning feature plans. The full release matrix remains open.

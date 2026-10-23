@@ -239,8 +239,9 @@ This matrix maps early sprints to specification sections and major deliverables.
   declared schema/cardinality, and explainable dependencies.
 - As a developer, I can inspect separate typed/native compiler surfaces and runtime gates for row
   `transform_with_state`, Pandas `transform_with_state_in_pandas`, and legacy `apply_in_pandas_with_state`, while
-  typed batch observations are available on ordinary and Connect 4.1, and sketches and Arrow UDF/UDTFs retain their
-  documented boundaries.
+  typed batch observations and KLL/Theta sketches are available on ordinary and Connect 4.1. Typed Arrow UDFs support
+  ordinary/Connect 4.1 batch and ordinary scalar/iterator streaming; Arrow UDTFs remain caller-owned. Evidence:
+  `tests/integration/pyspark/v11/test_observations.py`, `test_kll_theta_sketches.py`, and `test_arrow_udfs.py`.
 - As a developer, I can hand a final Structure output to caller-owned `foreach` or `foreach_batch` code with explicit
   writer/safety metadata, without generated Structure code taking query-lifecycle ownership.
 - As a maintainer, I can distinguish classic Delta-table admission from the separately evidenced Delta Connect 4.1

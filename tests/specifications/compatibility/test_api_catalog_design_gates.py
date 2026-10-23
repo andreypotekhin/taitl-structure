@@ -24,7 +24,9 @@ def test_api_catalog_open_rows_use_design_gate_language() -> None:
     assert "| Variant functions | partial |" in text
     assert "mutation remain target-gated" in text
     assert "Apache native 4.1 and Sedona 3.5/4.0/4.1 ordinary/Connect parity pass in isolated sessions" in text
-    assert "same-session Apache/Sedona mixing remain open" in text
+    assert "Apache/Sedona workloads require separate sessions" in text
+    assert "PYSPARK-W2707" in text
+    assert "Managed Databricks evidence remains open" in text
     assert "| Aggregate aliases | unsupported |" in text
     assert "| Sampling | implemented |" in text
     assert "| Join reordering | design-gated |" in text

@@ -341,7 +341,9 @@ class OrderAnalytics(Transform):
         )
 ```
 
-More examples: [here](examples/search/transforms/evaluation/search_docs/ranking/eval_ranking.py), [here](examples/school/transforms/vectors.py), [here](examples/security/transforms/reports.py), [here](examples/store/transforms/analytics.py).
+More examples: [here](examples/search/transforms/evaluation/search_docs/ranking/eval_ranking.py) ,
+[here](examples/school/transforms/vectors.py) , [here](examples/security/transforms/reports.py) ,
+[here](examples/store/transforms/analytics/orders/workflow.py) .
 
 ## Streaming
 
@@ -388,8 +390,9 @@ Structure focuses on data transformation. Loading, writing, orchestrating and ot
 
 ## Compatibility
 
-Structure targets Python 3.11+, PySpark 3.5.x and 4.0.x, Linux runtimes, and Linux/macOS/Windows development
-environments.
+Structure targets Python 3.11+, the default PySpark 3.5.x/4.0.x profile, Linux runtimes, and Linux/macOS/Windows
+development environments. Admitted PySpark 4.1 features use the opt-in exact `>=4.1,<4.2` profile, with ordinary and
+Spark Connect support recorded per operation. See the [4.1 feature guide](docs/API.md#version-compatibility).
 
 Airflow can run transforms or call generated PySpark code, but is not a Structure dependency.
 
