@@ -1,13 +1,14 @@
 # Sprint 58: V11 Observations, Sketches, Python, and State Gates
 
-Status: in progress; target: 2027-02-05.
+Status: feature work complete; release matrix passed 2026-10-23; target: 2027-02-05.
 
 Typed batch observations are implemented for ordinary and Spark Connect `>=4.1,<4.2`; exact parity and build evidence
 is recorded in the [completed typed batch observations ExecPlan](../../past/planning/P10182602.V11-batch-observations.plan.md).
 KLL/Theta helpers and recursive metadata are implemented. Ordinary and Connect 4.1 batch parity passes; ordinary 4.1
 also passes watermarked streaming and same-configuration restart parity. Connect remains batch-only under the existing
 streaming boundary. The [KLL/Theta ExecPlan](../../planning/P10182603.V11-kll-theta-sketches.plan.md) records the
-completed feature evidence and the independent ordinary-lane release blocker.
+completed feature evidence. Its earlier ordinary-lane release blocker was resolved in the 2026-10-23 rerun recorded
+in [Sprint 59](Sprint59_V11IntegrationMatrix.md#passing-closeout-rerun-2026-10-23).
 
 ## Sprint goal
 
@@ -26,7 +27,7 @@ API; no gated state or worker-Python API is generated accidentally.
 - [x] Implement KLL/Theta helpers and recursive sketch metadata; focused online/generated/native batch parity passes on ordinary and Connect PySpark/Spark 4.1.0.
 - [x] Complete KLL/Theta edge-case and Parquet parity on ordinary and Connect 4.1, plus ordinary 4.1 watermarked streaming and same-configuration restart parity. Retain the existing Connect streaming boundary.
 - [x] Complete final `make build`; ordinary and Connect unfiltered lane evidence is recorded in the linked ExecPlan.
-- [ ] Resolve the single ordinary 4.1 foreachBatch handoff failure with its owning feature contract before closing the broader unfiltered lane.
+- [x] Rerun the ordinary 3.5/4.0/4.1 lanes after the foreachBatch owner corrected the expected `Alert` schema; the former failure passes in all three lanes. Full results are in [Sprint 59](Sprint59_V11IntegrationMatrix.md#passing-closeout-rerun-2026-10-23).
 - [x] Implement typed Arrow scalar/iterator/grouped/window UDFs with ordinary/Connect 4.1 batch parity and ordinary
   scalar/iterator streaming/restart evidence. Arrow UDTFs remain caller-owned; see the canonical UDF
   design/specification.

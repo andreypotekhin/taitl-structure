@@ -3,7 +3,7 @@
 These supported helpers and expression methods compile to Spark Column expressions. Examples abbreviate the current
 typed `order` row scope as `o`.
 
-The default transformation baseline is ordinary PySpark `>=3.5,<4.1`. Helpers with a narrower target profile or an
+The default transformation profile is ordinary PySpark `>=3.5,<4.2`. Helpers with a narrower target profile or an
 explicit design gate are marked in the details below.
 
 Column methods and SQL function helpers are separate APIs. Structure exposes a method when it is part of the supported

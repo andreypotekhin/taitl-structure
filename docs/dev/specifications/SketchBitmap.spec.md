@@ -2,7 +2,7 @@
 
 ## Scope
 
-This specification covers the baseline HLL and Bitmap design for PySpark `>=3.5,<4.1` and the exact PySpark 4.1 KLL
+This specification covers the baseline HLL and Bitmap design for PySpark `>=3.5,<4.2` and the exact PySpark 4.1 KLL
 and Theta extension. It covers opaque schema fields, typed operations, diagnostics, rendering, recursive metadata,
 and streaming classification. It does not claim a portable Binary serialization format, Count-Min support, or
 observation metrics.

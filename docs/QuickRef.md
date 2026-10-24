@@ -14,7 +14,7 @@ For Delta file layout, see [compaction and Z-ordering](reference/DeltaIceberg.re
 
 ## Select a PySpark target
 
-The default profile is `>=3.5,<4.1`. Opt into the admitted Spark 4.1 APIs in project configuration:
+The default profile is `>=3.5,<4.2`. APIs limited to exact Spark 4.1 targets remain capability-gated; set `>=4.1,<4.2` to target those APIs:
 
 ```toml
 [tool.structure.plugin.pyspark]
@@ -1460,7 +1460,7 @@ Reference: [transforms API](api/Transforms.api.md), [execution](background/Execu
 ## Compatibility
 
 Execution and generated-code execution target ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs for
-PySpark 3.5.x and 4.0.x by default:
+PySpark 3.5.x, 4.0.x, and 4.1.x by default:
 
 ```toml
 execution_mode = "online"
@@ -1469,7 +1469,7 @@ execution_mode = "online"
 default = "pyspark"
 
 [tool.structure.plugin.pyspark]
-profile = ">=3.5,<4.1"
+profile = ">=3.5,<4.2"
 variant = "ordinary"
 ```
 

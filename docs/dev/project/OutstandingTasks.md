@@ -5,14 +5,13 @@ This is the current follow-up index. Feature status is maintained in the
 
 ## V11 release checks
 
-- Rerun the ordinary 3.5, 4.0, and 4.1 lanes after the foreachBatch owner correction, then complete the all-backend
-  `make build INTEGRATION=1`. The recorded 2026-10-21 runs each failed the same handoff-schema assertion; the working
-  tree now corrects the expected schema to the declared `Alert`, but that edit does not replace live evidence.
-- Keep the default profile at `>=3.5,<4.1` until the required passing matrix is complete. Connect 3.5/4.0/4.1 passed
-  their latest configured selections; ordinary 4.1 remains scoped to the runtime assertion and V11 tests.
-- Reconcile the final release report and retrospective after those results. See
-  [Sprint 59](sprints/Sprint59_V11IntegrationMatrix.md)
-  and [Sprint 60](sprints/Sprint60_V11HardeningAndCloseout.md).
+- [x] Rerun the ordinary 3.5, 4.0, and 4.1 lanes after the foreachBatch owner correction.
+- [x] Complete `make build INTEGRATION=1` across all six backend lanes; every selected phase passed.
+- [x] Promote the default profile to `>=3.5,<4.2` after the six-lane matrix and integration-enabled build passed on
+  2026-10-23. Exact results and skip reasons are in
+  [Sprint 59](sprints/Sprint59_V11IntegrationMatrix.md#passing-closeout-rerun-2026-10-23) and
+  [Sprint 60](sprints/Sprint60_V11HardeningAndCloseout.md).
+- [ ] Write the V11 retrospective. The profile decision is recorded in the V11 charter and Sprint 60.
 
 ## Feature evidence gates
 

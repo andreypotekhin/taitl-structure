@@ -149,7 +149,7 @@ summary. For a final exact count, prefer `count_distinct(...)`; for an immediate
 `hll_sketch(...)` retains a literal precision from 4 through 21. KLL retains a Long, Float, or Double value domain;
 Theta accepts Spark's native supported scalar values and integral arrays. HLL, Bitmap, KLL, and Theta values cannot be
 cast to ordinary `binary()` or to one another. KLL and Theta helpers are available only for exact `>=4.1,<4.2`
-ordinary and Connect profiles; the default profile remains unchanged. Their Binary schema fields carry versioned
+ordinary and Connect profiles; KLL/Theta remain behind exact-profile gates under the `>=3.5,<4.2` default. Their Binary schema fields carry versioned
 logical metadata, including the KLL domain.
 
 ### Operations

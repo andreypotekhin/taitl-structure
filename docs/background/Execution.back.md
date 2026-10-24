@@ -176,7 +176,7 @@ Execution is the default:
 [tool.structure]
 execution_mode = "online"
 target_backend = "pyspark"
-target_profile = ">=3.5,<4.1"
+target_profile = ">=3.5,<4.2"
 ```
 
 Allowed execution modes:

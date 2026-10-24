@@ -178,7 +178,8 @@ When: The PySpark 3.5, 4.0, or 4.1 full integration selection fails
 Cause: The current assertion expects `AlertMessage`, while the declared sink handoff carries the transform's `Alert`
 schema. This is tracked by the foreachBatch feature owner; the closeout runner does not skip or redefine this contract.
 Fix: Resolve the schema expectation in the owning foreachBatch work, then rerun the affected ordinary lane and the
-integration-enabled build. Keep the default PySpark profile below 4.1 until the six-lane release gate passes.
+integration-enabled build. The six-lane release gate passed on 2026-10-23 and the default profile is now
+`>=3.5,<4.2`. Features requiring an exact 4.1 target remain capability-gated.
 
 ### Problem (runtime): A namespaced spatial helper is unavailable
 

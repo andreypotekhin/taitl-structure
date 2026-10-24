@@ -1,7 +1,8 @@
 # PySpark SQL Baseline Gaps
 
-This is the function-level migration gap register for the ordinary PySpark `>=3.5,<4.1` baseline. The baseline is the
-intersection of the public PySpark 3.5.x and 4.0.x APIs. It complements the family summary in
+This is the function-level migration gap register for the ordinary PySpark `>=3.5,<4.2` default profile. The shared
+baseline is the intersection of the public PySpark 3.5.x, 4.0.x, and 4.1.x APIs; features requiring narrower runtimes
+remain target-gated. It complements the family summary in
 [APITracker.md](../../compatibility/APITracker.md) and the public compatibility summary in
 [APICompatibility.md](../../compatibility/APICompatibility.md).
 
@@ -868,7 +869,7 @@ missing contract or native-PySpark remedy before the status can change.
 
 ## Reconciliation Rules
 
-Every baseline function receives exactly one row in the completed register. Each row records PySpark 3.5.x and 4.0.x
+Every baseline function receives exactly one row in the completed register. Each row records PySpark 3.5.x, 4.0.x, and 4.1.x
 presence, PySpark signature, Structure symbol or equivalent, status, evidence, and migration remedy. A name absent from
 either target line is not a default-baseline implementation task; it belongs in the target adoption ledger.
 

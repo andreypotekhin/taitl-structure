@@ -17,8 +17,8 @@ def test_pyspark_compatibility_matrix_matches_docs_and_compose_defaults() -> Non
     script = Path("scripts/run_integration.py").read_text(encoding="utf-8")
     compose = Path("infra/compose/docker-compose.yaml").read_text(encoding="utf-8")
 
-    assert "PySpark 3.5.x and 4.0.x" in docs
-    assert 'profile = ">=3.5,<4.1"' in docs
+    assert "PySpark 3.5.x, 4.0.x, and 4.1.x" in docs
+    assert 'profile = ">=3.5,<4.2"' in docs
     assert _env_value(env, "PYSPARK35_VERSION") == "3.5.3"
     assert _env_value(env, "PYSPARK40_VERSION") == "4.0.0"
     assert _env_value(env, "PYSPARK41_VERSION") == "4.1.0"
@@ -288,7 +288,7 @@ def test_public_docs_use_target_variant_and_do_not_claim_v4_only_spark_connect()
     ]
     text = "\n".join(path.read_text(encoding="utf-8") for path in paths)
 
-    assert 'profile = ">=3.5,<4.1"' in text
+    assert 'profile = ">=3.5,<4.2"' in text
     assert 'variant = "ordinary"' in text
     assert 'variant = "spark-connect"' in text
     assert "spark-connect35" in text

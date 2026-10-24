@@ -1,7 +1,7 @@
 # V11 Documentation Review
 
-Reviewed on 2026-10-22. This record reconciles public guides and current development documents with implemented APIs,
-capability admission, and the evidence available at review time. It does not close the V11 release gate.
+Reviewed on 2026-10-22 and updated with 2026-10-23 release evidence. This record reconciles public guides and current development documents with implemented APIs,
+capability admission, and the evidence available at review time. The matrix and build evidence gate passed; the configured default-profile decision and retrospective remain open.
 
 ## Sources and coverage
 
@@ -44,26 +44,21 @@ and code remain unchanged by this documentation review.
 
 ## Release evidence and remaining work
 
-The latest recorded matrix is the [2026-10-21 six-lane run](sprints/Sprint59_V11IntegrationMatrix.md#corrected-six-lane-matrix-2026-10-21).
-All versions matched their pins; Connect selections passed. Each ordinary lane recorded the same foreachBatch handoff
-assertion mismatch. The working tree corrects that assertion; fresh ordinary-lane runs and the
-all-backend integration-enabled build are still required. Historical failing counts remain valid evidence of their
-original runs and must not be rewritten as passing results.
-
-The successful `make build INTEGRATION=1 BACKEND=spark-connect41` validates the selected backend and the build path;
-it does not establish an all-backend passing build. The default remains `>=3.5,<4.1`. Managed Databricks sessions,
-legacy Pandas timeout/cardinality evidence, broader stateful chains, unreleased Variant operations, and XML/join
-reordering retain their documented dispositions. See [Outstanding work](OutstandingTasks.md).
+The [2026-10-23 rerun](sprints/Sprint59_V11IntegrationMatrix.md#passing-closeout-rerun-2026-10-23) passed every
+ordinary and Connect lane, including isolated provider phases where admitted, and `make build INTEGRATION=1` passed.
+The corrected `Alert` schema expectation passed across ordinary 3.5/4.0/4.1. Following that passing matrix, the
+configured default profile is `>=3.5,<4.2`; exact-profile APIs remain capability-gated. Managed Databricks sessions, legacy Pandas timeout/cardinality
+evidence, broader stateful chains, unreleased Variant operations, and XML/join reordering retain their documented
+dispositions. See [Outstanding work](OutstandingTasks.md).
 
 ## Review validation
 
-Validation completed on 2026-10-22:
+Documentation validation completed on 2026-10-22; release validation completed on 2026-10-23:
 
 - Active Markdown documents: zero missing local targets; changed documents: zero invalid heading anchors.
 - Compatibility/documentation consistency suite: 110 passed.
-- `make build`: formatting, Flake8, and mypy passed; main suite 2,681 passed / 373 skipped; regression suite
+- `make build` after default-profile promotion: formatting, Flake8, and mypy passed; main suite 2,682 passed / 373 skipped; regression suite
   155 passed / 7 skipped; source distribution and wheel built successfully.
 - `git diff --check`: passed.
-
-Live lanes were not rerun for this documentation review. These checks do not replace the outstanding ordinary-lane
-reruns or all-backend integration-enabled build.
+- Fresh live lanes: all six selected lanes and admitted provider phases passed; detailed counts, runtime pins, skip
+  reasons, and build suite results are recorded in Sprint 59. `make build INTEGRATION=1` exited successfully.

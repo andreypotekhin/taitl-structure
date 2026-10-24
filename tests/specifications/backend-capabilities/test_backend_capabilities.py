@@ -27,7 +27,7 @@ def test_default_pyspark_capabilities_do_not_import_pyspark() -> None:
     resolved = Capabilities.resolve()()
 
     assert resolved.id.name == "pyspark"
-    assert resolved.id.target == ">=3.5,<4.1"
+    assert resolved.id.target == ">=3.5,<4.2"
     assert resolved.id.variant == "ordinary"
     assert resolved.id.family == "ordinary_pyspark"
     after = {name for name in sys.modules if name.startswith("pyspark")}
@@ -368,7 +368,7 @@ def test_spark_connect_resolves_as_pyspark_variant() -> None:
     resolved = Capabilities.resolve()(target="pyspark", options={"variant": "spark-connect"})
 
     assert resolved.id.name == "pyspark"
-    assert resolved.id.target == ">=3.5,<4.1"
+    assert resolved.id.target == ">=3.5,<4.2"
     assert resolved.id.variant == "spark-connect"
     assert resolved.id.family == "spark_connect_dataframe"
     assert resolved.require(CapabilityRequirement(group="backend", name="spark_connect_dataframe")).supported

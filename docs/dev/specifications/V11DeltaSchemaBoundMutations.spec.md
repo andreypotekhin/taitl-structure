@@ -11,7 +11,7 @@ Public usage and target status: [Delta tables API](../../api/DeltaIceberg.api.md
 
 The following surfaces are implemented and admitted for ordinary PySpark 3.5, 4.0, and 4.1 with pinned live evidence
 for PySpark 3.5.3 / Delta 3.3.3, PySpark 4.0.0 / Delta 4.0.1, and PySpark 4.1.0 / Delta 4.1.0. The broad
-`>=3.5,<4.1` profile admits only helpers supported on both 3.5 and 4.0. The exact PySpark 4.1 Spark Connect Delta
+`>=3.5,<4.2` profile admits only helpers supported across the tested 3.5, 4.0, and 4.1 versions. The exact PySpark 4.1 Spark Connect Delta
 package is separately admitted; other Connect profiles and PySpark 4.2 are outside this admission; see the
 [compatibility ledger](../../compatibility/DeltaIceberg.compat.md).
 

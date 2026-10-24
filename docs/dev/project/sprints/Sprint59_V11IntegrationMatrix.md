@@ -1,6 +1,6 @@
 # Sprint 59: V11 Integration Matrix and Evidence
 
-Status: six-lane evidence collected; release closeout blocked by foreachBatch owner work; target: 2027-02-19.
+Status: six-lane rerun and integration-enabled build passed on 2026-10-23; default-profile decision and retrospective remain.
 
 ## Sprint goal
 
@@ -28,10 +28,10 @@ Maintainers can run `make integration BACKEND=pyspark41` for the version check a
   preserved alias, and temporary-view cleanup.
 - [x] Run the shared deep-plan checkpoint regression on Connect 4.0 and Connect 4.1; both preserve output behavior and
   remove their temporary views.
-- [ ] Collect the row `transform_with_state` 4.1 matrix from its admission plan, and keep Pandas state and legacy
+- [x] Collect the row `transform_with_state` 4.1 matrix from its admission plan, and keep Pandas state and legacy
   `applyInPandasWithState` evidence as independent profile rows.
-- [x] Run the full six-lane matrix, generated-source checks, streaming checks, and regression tests. The matrix is
-  recorded below; three ordinary foreachBatch failures remain an owner-bound release blocker.
+- [x] Run the full six-lane matrix, generated-source checks, streaming checks, and regression tests. The 2026-10-21
+  baseline and passing 2026-10-23 rerun are recorded below.
 - [x] Record unavailable optional-provider or Connect evidence explicitly, including the Connect 3.5/4.0 provider
   boundary and managed Databricks evidence gate.
 
@@ -63,6 +63,37 @@ The first Connect 3.5/4.0 attempts accidentally collected the Iceberg module in 
 catalog was absent. Those diagnostic runs are not matrix evidence. The runner now excludes Iceberg and Delta modules
 from those two Connect general selections; the corrected full selections above pass. Spark-free runner contract tests
 pass 43 cases. Per-run logs are retained in `.pytest-workspace-tmp/integration/v11-*-closeout.log`.
+
+## Passing closeout rerun (2026-10-23)
+
+The ordinary 3.5, 4.0, and 4.1 lanes were first run independently after the foreachBatch test was corrected to expect
+the declared `Alert` schema. Then `make build INTEGRATION=1` completed successfully across all six backends. Every run
+used the repository-mounted launcher (checksum `291251968 10758`), no pytest filters, and Python 3.11.17. PySpark/Spark
+versions matched their configured pins in every lane.
+
+Other pins were Delta 3.3.3 / 4.0.1 / 4.1.0 on the corresponding runtime lanes, Iceberg 1.12.0 on admitted
+provider phases, pandas 2.2.3, PyArrow 19.0.1, and Python Protobuf 5.29.3 on 3.5/4.0 or 6.33.0 on 4.1.
+
+| Backend | PySpark / Spark | Isolated Iceberg | Isolated Delta | General selection | Result |
+| --- | --- | --- | --- | --- | --- |
+| `pyspark35` | 3.5.3 / 3.5.3 | 21 passed | 53 passed, 3 skipped | 295 collected; 243 passed, 52 skipped | passed |
+| `spark-connect35` | 3.5.3 / 3.5.3 | excluded by provider boundary | excluded by provider boundary | 295 collected; 205 passed, 90 skipped | passed |
+| `pyspark40` | 4.0.0 / 4.0.0 | 21 passed | 53 passed, 3 skipped | 295 collected; 259 passed, 36 skipped | passed |
+| `spark-connect40` | 4.0.0 / 4.0.0 | excluded by provider boundary | excluded by provider boundary | 295 collected; 215 passed, 80 skipped | passed |
+| `pyspark41` | 4.1.0 / 4.1.0 | 21 passed | 53 passed, 3 skipped | 56 collected; 54 passed, 2 skipped | passed |
+| `spark-connect41` | 4.1.0 / 4.1.0 | 21 passed | 55 passed, 1 skipped | 295 collected; 234 passed, 61 skipped | passed |
+
+The ordinary failure from the 2026-10-21 baseline is resolved: `test_schema_sink_runs_batch_transform_and_caller_deduplicates_replays`
+passes on every ordinary profile with the expected `Alert` schema. No unexpected failures or new skips occurred.
+Skip reasons remain attached to existing profile, provider, streaming, runtime, and external-session boundaries; pytest
+reported those reasons in the recorded output. Before running the lanes sequentially, the integration-enabled build
+passed formatting, Flake8, mypy (1,451 files), the main suite (2,681 passed / 373 skipped), the regression suite
+(155 passed / 7 skipped), and package creation. Complete output is retained at
+`.pytest-workspace-tmp/integration/v11-six-lane-all-backend-2026-10-23.log` in the working tree.
+
+This satisfies the integration-matrix and build evidence requirement. The recorded release decision promotes the
+default profile to `>=3.5,<4.2`; exact-profile feature gates remain in force. Managed Databricks evidence, legacy Pandas timeout/cardinality proof, broader
+stateful chains, and other independently documented gates are not failures in this matrix.
 
 ## Historical evidence (2026-10-07)
 

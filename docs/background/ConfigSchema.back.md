@@ -24,7 +24,7 @@ default = "pyspark"
 disabled_distributions = []
 
 [tool.structure.plugin.pyspark]
-profile = ">=3.5,<4.1"
+profile = ">=3.5,<4.2"
 variant = "ordinary"
 ```
 
@@ -81,7 +81,7 @@ generated_code_options = []
 generated_code_hard_wrap = 120
 execution_mode = "online"
 target_backend = "pyspark"
-target_profile = ">=3.5,<4.1"
+target_profile = ">=3.5,<4.2"
 target_variant = "ordinary"
 hook_target_default = ["pyspark"]
 traceability = "none"
@@ -227,7 +227,7 @@ Unknown backends fail through backend capability diagnostics.
 
 Type: version range string.
 
-Default: `">=3.5,<4.1"`.
+Default: `">=3.5,<4.2"`.
 
 Rules:
 

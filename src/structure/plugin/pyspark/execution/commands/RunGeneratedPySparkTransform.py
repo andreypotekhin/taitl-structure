@@ -180,7 +180,7 @@ class RunGeneratedPySparkTransform:
             ),
             docs="docs/background/Execution.back.md",
             context={
-                "target_profile": str(getattr(session, "plugin_options", {}).get("profile", ">=3.5,<4.1")),
+                "target_profile": str(getattr(session, "plugin_options", {}).get("profile", ">=3.5,<4.2")),
                 "target_variant": str(getattr(session, "plugin_options", {}).get("variant", "ordinary")),
             },
         )

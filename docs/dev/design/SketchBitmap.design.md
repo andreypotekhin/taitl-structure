@@ -6,7 +6,7 @@ HLL and Bitmap support lets a transform publish compact analytical state instead
 an approximate distinct-cardinality summary; a Bitmap carries a compact set of integral positions. Both are useful
 only when a later transform can understand the state that an earlier transform produced.
 
-This design defines that shared state boundary for the default PySpark `>=3.5,<4.1` baseline. It refines the opaque
+This design defines that shared state boundary for the default PySpark `>=3.5,<4.2` profile. It refines the opaque
 state discussion in [PySpark SQL Boundary Contracts](PySparkSQLBoundaryContracts.design.md) into an implementable and
 user-facing feature. It does not attempt to admit every Spark sketch or to present Spark Binary values as a general
 serialization format.
@@ -25,7 +25,7 @@ for their own local symbols.
 
 ## Baseline surface
 
-The default PySpark `>=3.5,<4.1` surface contains:
+The PySpark `>=3.5,<4.2` shared surface contains:
 
 | Family | Structure surface | Result |
 | --- | --- | --- |

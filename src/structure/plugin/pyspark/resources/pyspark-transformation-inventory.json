@@ -1,7 +1,7 @@
 {
   "baseline": {
-    "pyspark": ">=3.5,<4.1",
-    "policy": "Intersection of public PySpark 3.5.x and 4.0.x transformation APIs selected for Structure's typed DSL, plus explicit caller-owned boundary APIs needed for migration disposition.",
+    "pyspark": ">=3.5,<4.2",
+    "policy": "Intersection of public PySpark 3.5.x, 4.0.x, and 4.1.x transformation APIs selected for Structure's typed DSL, plus explicit caller-owned boundary APIs needed for migration disposition. APIs requiring a narrower runtime retain exact-profile capability gates.",
     "source": "https://spark.apache.org/docs/4.0.1/api/python/reference/pyspark.sql/",
     "comparison_sources": [
       "https://spark.apache.org/docs/3.5.6/api/python/reference/pyspark.sql/functions.html",
@@ -122,7 +122,7 @@
         "uniform",
         "validate_utf8"
       ],
-      "reason": "Target-line additions remain gated from the shared >=3.5,<4.1 baseline; per-function target and migration dispositions are in the gap register."
+      "reason": "Target-line additions remain gated from the broad >=3.5,<4.2 default where their runtime range is narrower; per-function target and migration dispositions are in the gap register."
     }
   ],
   "target_only_apis": [

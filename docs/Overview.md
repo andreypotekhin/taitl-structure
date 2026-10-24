@@ -287,7 +287,7 @@ strict_performance = true
 default = "pyspark"
 
 [tool.structure.plugin.pyspark]
-profile = ">=3.5,<4.1"
+profile = ">=3.5,<4.2"
 variant = "ordinary"
 ```
 

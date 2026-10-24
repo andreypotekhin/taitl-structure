@@ -11,7 +11,7 @@ def test_default_pyspark_support_range_resolves_without_importing_pyspark() -> N
     resolved = Capabilities.resolve()()
 
     assert resolved.id.name == "pyspark"
-    assert resolved.id.target == ">=3.5,<4.1"
+    assert resolved.id.target == ">=3.5,<4.2"
     assert {name for name in sys.modules if name.startswith("pyspark")} == before
 
 

@@ -9,7 +9,7 @@ generation, and online execution; it does not accept arbitrary DataFrame callbac
 
 New query consumers are batch-only and admitted for exact ordinary PySpark and Spark Connect `>=4.1,<4.2` profiles.
 Focused online/generated/native parity passed independently on Spark/PySpark 4.1.0 for both variants. The project
-default profile remains `>=3.5,<4.1`.
+operations remain gated to the exact `>=4.1,<4.2` target profile.
 
 ## Relation query contract
 

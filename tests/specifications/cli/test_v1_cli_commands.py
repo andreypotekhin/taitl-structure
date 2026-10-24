@@ -225,7 +225,7 @@ def test_v1_cli_init_writes_seed_config() -> None:
         assert '[tool.structure.plugin]' in text
         assert 'default = "pyspark"' in text
         assert '[tool.structure.plugin.pyspark]' in text
-        assert 'profile = ">=3.5,<4.1"' in text
+        assert 'profile = ">=3.5,<4.2"' in text
         assert 'variant = "ordinary"' in text
 
 

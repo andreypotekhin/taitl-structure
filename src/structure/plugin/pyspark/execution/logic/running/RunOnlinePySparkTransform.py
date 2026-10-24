@@ -52,7 +52,7 @@ class RunOnlinePySparkTransform:
         self._map_generators = RunOnlinePySparkMapGenerator()
         self._json_tuple_generator = RunOnlinePySparkJsonTuple()
         self._validator = ValidatePySparkFrame()
-        self._backend_target = ">=3.5,<4.1"
+        self._backend_target = ">=3.5,<4.2"
 
     @property
     def _schema(self):
@@ -2495,7 +2495,7 @@ class RunOnlinePySparkTransform:
             ),
             docs="docs/background/Execution.back.md",
             context={
-                "target_profile": str(options.get("profile", ">=3.5,<4.1")),
+                "target_profile": str(options.get("profile", ">=3.5,<4.2")),
                 "target_variant": str(options.get("variant", "ordinary")),
             },
         )

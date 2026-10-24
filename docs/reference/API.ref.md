@@ -13,7 +13,7 @@ means the caller may use the upstream API around a Structure transform. `streami
 Structure is not a one-to-one PySpark
 wrapper: admitted APIs remain typed, symbolic, capability-checked, explainable, and readable in generated code.
 
-The default target is ordinary PySpark `>=3.5,<4.1`; completed compiler-visible batch features also target Spark
+The default target is ordinary PySpark `>=3.5,<4.2`; completed compiler-visible batch features also target Spark
 Connect. See [Compatibility.md](../Compatibility.md) for the full target policy,
 [API.md](../API.md#api-documentation-map) for the API documentation gateway, and [APICompatibility.md](../compatibility/APICompatibility.md)
 for the family-level compatibility summary.

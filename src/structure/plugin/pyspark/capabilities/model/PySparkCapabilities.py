@@ -6,12 +6,13 @@ from structure.plugin.api.v1.model import (
     GeneratedImports,
 )
 
-DEFAULT_TARGET_PROFILE = ">=3.5,<4.1"
+DEFAULT_TARGET_PROFILE = ">=3.5,<4.2"
 DEFAULT_TARGET_VARIANT = "ordinary"
 
 SUPPORTED_PROFILES = frozenset(
     {
         ">=3.5,<4.1",
+        ">=3.5,<4.2",
         ">=3.5,<4.0",
         ">=4.0,<4.1",
         ">=4.1,<4.2",
@@ -113,7 +114,7 @@ GEO_SEDONA_CAPABILITIES = frozenset(
 )
 NATIVE_GEO_SCHEMA_CAPABILITIES = frozenset({("schema", "native_geometry"), ("schema", "native_geography")})
 SEDONA_GEO_SCHEMA_CAPABILITIES = frozenset({("schema", "sedona_geometry")})
-LEGACY_PANDAS_STATE_PROFILES = frozenset({">=3.5,<4.1", ">=3.5,<4.0", ">=4.0,<4.1", ">=4.1,<4.2"})
+LEGACY_PANDAS_STATE_PROFILES = frozenset({">=3.5,<4.1", ">=3.5,<4.2", ">=3.5,<4.0", ">=4.0,<4.1", ">=4.1,<4.2"})
 LEGACY_PANDAS_STATE_CAPABILITY = frozenset({("streaming", "apply_in_pandas_with_state")})
 PYSPARK_4_2_CAPABILITIES = frozenset({("expression", "is_valid_variant")})
 MATERIALIZATION_CAPABILITIES = frozenset(
@@ -124,7 +125,7 @@ MATERIALIZATION_CAPABILITIES = frozenset(
         ("optimization", "local_checkpoint"),
     }
 )
-MATERIALIZATION_PROFILES = frozenset({">=3.5,<4.1", ">=3.5,<4.0", ">=4.0,<4.1"})
+MATERIALIZATION_PROFILES = frozenset({">=3.5,<4.1", ">=3.5,<4.2", ">=3.5,<4.0", ">=4.0,<4.1"})
 DELTA_CAPABILITIES = frozenset(
     {
         ("delta", "binding"),
@@ -493,12 +494,13 @@ class PySparkCapabilities:
             base_capabilities |= LEGACY_PANDAS_STATE_CAPABILITY
         if self.id.variant == "ordinary" and target_profile in {
             ">=3.5,<4.1",
+            ">=3.5,<4.2",
             ">=3.5,<4.0",
             ">=4.0,<4.1",
             ">=4.1,<4.2",
         }:
             base_capabilities |= DELTA_CAPABILITIES
-        if target_profile in {">=3.5,<4.1", ">=3.5,<4.0", ">=4.0,<4.1", ">=4.1,<4.2"} and self.id.variant == "ordinary":
+        if target_profile in {">=3.5,<4.1", ">=3.5,<4.2", ">=3.5,<4.0", ">=4.0,<4.1", ">=4.1,<4.2"} and self.id.variant == "ordinary":
             base_capabilities |= ICEBERG_CAPABILITIES
         if target_profile == ">=4.1,<4.2" and self.id.variant == "spark-connect":
             base_capabilities |= ICEBERG_CAPABILITIES

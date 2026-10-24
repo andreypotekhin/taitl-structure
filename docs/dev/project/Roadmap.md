@@ -537,10 +537,9 @@ V11 implements exact PySpark 4.1 expressions and TIME, typed relation queries an
 typed Arrow UDFs, ordinary row/Pandas state processors, and namespaced spatial APIs. The native Apache and Connect
 claims require their own evidence; managed Databricks evidence and legacy Pandas state remain separate gates.
 
-All six configured lane selections ran on 2026-10-21. Connect lanes passed; each ordinary lane reported the same
-foreachBatch handoff test mismatch. The owner correction is present in the working tree and requires live reruns.
-The default stays `>=3.5,<4.1` until the passing matrix and all-backend integration build complete. See the
-[V11 charter](V11.md), [matrix evidence](sprints/Sprint59_V11IntegrationMatrix.md), and
+All six configured lanes and the all-backend integration-enabled build passed on 2026-10-23, including the corrected
+foreachBatch handoff assertion. The default profile is now `>=3.5,<4.2` following the passing matrix and integration-enabled build. See
+the [V11 charter](V11.md), [matrix evidence](sprints/Sprint59_V11IntegrationMatrix.md), and
 [closeout sprint](sprints/Sprint60_V11HardeningAndCloseout.md).
 
 ## Release Milestones

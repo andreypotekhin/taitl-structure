@@ -13,7 +13,7 @@ Spark Connect remains inside the PySpark target boundary:
 ```toml
 [tool.structure]
 target_backend = "pyspark"
-target_profile = ">=3.5,<4.1"
+target_profile = ">=3.5,<4.2"
 target_variant = "spark-connect"
 ```
 

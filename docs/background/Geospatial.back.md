@@ -14,6 +14,6 @@ Spark 4.1 live tests show Sedona's SQL extension replaces Spark's same-named `st
 Sedona workloads must use separate sessions. WKB drops SRID; the caller must carry that information independently.
 A similarly named helper does not establish conversion compatibility or collision-free registration.
 
-The default profile remains `>=3.5,<4.1`. Apache spatial helpers are scoped to exact PySpark 4.1; Databricks and Sedona
+The default profile is `>=3.5,<4.2`. Apache spatial helpers are scoped to exact PySpark 4.1; Databricks and Sedona
 have independent requirements. A managed runtime and Databricks Connect each need live evidence. See the
 [Geospatial reference](../reference/Geospatial.ref.md) for current API usage and support boundaries.

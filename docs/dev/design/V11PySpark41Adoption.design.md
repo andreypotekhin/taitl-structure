@@ -28,8 +28,9 @@ classic DataFrame runtime and is the least ambiguous path for new Python APIs. S
 implicit consequence of ordinary support. Each feature records whether its PySpark 4.1 documentation supports Connect,
 whether generated code avoids classic-only objects, and whether a live Connect test passes.
 
-The implementation uses the exact profile `>=4.1,<4.2` during adoption. Existing `>=3.5,<4.1` behavior remains intact
-and is tested as a regression. A broad default profile is promoted only after the closeout gate.
+The implementation uses the exact profile `>=4.1,<4.2` for APIs requiring Spark 4.1. Existing 3.5/4.0 behavior remains
+intact and is tested as a regression. After the closeout gate passed, the broad default profile was promoted to
+`>=3.5,<4.2`; exact-runtime capabilities remain separately gated.
 
 ## Feature admission rule
 

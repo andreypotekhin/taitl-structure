@@ -70,7 +70,7 @@ owns the meaning of its own table. For example, PySpark owns `profile` and `vari
 default = "pyspark"
 
 [tool.structure.plugin.pyspark]
-profile = ">=3.5,<4.1"
+profile = ">=3.5,<4.2"
 variant = "ordinary"
 ```
 
@@ -258,7 +258,7 @@ execution_mode = "online"
 default = "pyspark"
 
 [tool.structure.plugin.pyspark]
-profile = ">=3.5,<4.1"
+profile = ">=3.5,<4.2"
 variant = "ordinary"
 ```
 
@@ -275,7 +275,7 @@ generated
 
 `plugin.default` selects the installed target plugin. `plugin.pyspark.profile` constrains which PySpark APIs execution
 and generated-code execution may use. The default targets
-PySpark 3.5.x and 4.0.x. If a DSL feature cannot be generated for the configured profile, `structure check` and
+PySpark 3.5.x, 4.0.x, and 4.1.x. If a DSL feature cannot be generated for the configured profile, `structure check` and
 `structure compile` should fail with `BACKEND-E2402` and name the unsupported capability. Unknown backend
 targets fail with `BACKEND-E2401`. Backend capability behavior is specified in
 [Capabilities background](background/Capabilities.back.md).

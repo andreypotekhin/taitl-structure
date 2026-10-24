@@ -68,9 +68,9 @@ BackendId
 Examples:
 
 ```text
-pyspark >=3.5,<4.1 ordinary ordinary_pyspark
-pyspark >=3.5,<4.1 spark-connect spark_connect_dataframe
-pyspark-sql >=3.5,<4.1 ordinary sql_relation
+pyspark >=3.5,<4.2 ordinary ordinary_pyspark
+pyspark >=3.5,<4.2 spark-connect spark_connect_dataframe
+pyspark-sql >=3.5,<4.2 ordinary sql_relation
 polars >=1.0 ordinary local_lazy_dataframe
 duckdb >=1.0 ordinary sql_relation
 pandas >=2.0 ordinary local_eager_dataframe
@@ -107,7 +107,7 @@ Future configuration keys:
 ```toml
 [tool.structure]
 target_backend = "pyspark"
-target_profile = ">=3.5,<4.1"
+target_profile = ">=3.5,<4.2"
 target_variant = "ordinary"
 compat_targets = ["pyspark", "polars", "duckdb"]
 hook_target_default = ["pyspark"]

@@ -58,7 +58,7 @@ Future alternative backends may add `runtime`, `output`, `hook`, and `type` grou
 to distinguish execution, generated output mode, target-scoped hook support, and backend type limits.
 
 The current implementation has one concrete target profile: ordinary PySpark for
-`target_profile = ">=3.5,<4.1"`.
+`target_profile = ">=3.5,<4.2"`.
 The profile is static source data. Selecting it must not import `pyspark`, start Java, create a Spark session, or touch
 a Spark cluster. Future profiles must follow the same no-runtime-import rule for Spark SQL, typed PySpark DataFrame
 patterns, Pandas, Polars, DuckDB, Spark Connect, Ibis, or other backend runtimes.

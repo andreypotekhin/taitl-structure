@@ -89,7 +89,7 @@ across independent transforms; it cannot certify that an Apache-only transform's
 
 ## Capability and evidence rules
 
-The default profile remains `>=3.5,<4.1`. Native type constructors are conditionally available on exact
+The default profile is `>=3.5,<4.2`. Native type constructors are conditionally available on exact
 `>=4.0,<4.1` and `>=4.1,<4.2` profiles, after checking the actual runtime constructor. Apache helpers are exact 4.1
 only. Databricks helpers have separate exact 4.0/4.1 requirements and require actual module and function checks.
 Sedona has independent dependency, profile, and mode requirements. No provider fallback is permitted.

@@ -2380,7 +2380,7 @@ def _grouping_sets_plan() -> PySparkExecutionPlan:
     )
     return PySparkExecutionPlan(
         transform="GroupingSets",
-        backend=BackendId(name="pyspark", target=">=3.5,<4.1", family="ordinary_pyspark"),
+        backend=BackendId(name="pyspark", target=">=3.5,<4.2", family="ordinary_pyspark"),
         inputs=(PySparkInputRecipe("metrics", RawMetric, 0, input_validation),),
         steps=(step,),
         outputs=(

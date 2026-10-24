@@ -514,7 +514,8 @@ lanes whose broad full-selection runs did not complete.
 
 ## M16: V11 PySpark 4.1 Adoption
 
-Status: in progress; six-lane evidence is recorded, with release blocked by the foreachBatch owner failure. V11 follows
+Status: integration matrix and all-backend integration build passed on 2026-10-23; default-profile release decision and
+retrospective remain. V11 follows
 the V10 closeout and runs from Sprint 55 through Sprint 60, ending 2027-03-05.
 
 ### Exit criteria
@@ -543,12 +544,10 @@ the V10 closeout and runs from Sprint 55 through Sprint 60, ending 2027-03-05.
   types remain distinct; only live-evidenced provider/profile/mode combinations are admitted. Managed Databricks and
   Databricks Connect evidence is tracked separately in P10192602.
 - The integration matrix runs PySpark 3.5, 4.0, and 4.1 in ordinary and Connect lanes without dropping regression
-  coverage; generated artifacts are fresh; and the all-backend `make build INTEGRATION=1` passes. The 2026-10-21
-  matrix found the
-  same owner-bound foreachBatch schema mismatch on all ordinary lanes (`AlertMessage` expected, declared `Alert`
-  received); see Sprint 59. Keep the default profile at `>=3.5,<4.1` until this blocker is resolved and the required
-  passing build completes. The integration-enabled build has passed with `BACKEND=spark-connect41`; the all-backend
-  build remains pending because the sequential run stops at ordinary PySpark 3.5 on that failure.
+  coverage; generated artifacts are fresh; and the all-backend `make build INTEGRATION=1` passes. All six lanes and
+  the integration-enabled build passed on 2026-10-23. The 2026-10-21 foreachBatch mismatch is resolved by the owner’s
+  correction to expect the declared `Alert` schema. The passing matrix supports the recorded default-profile promotion
+  to `>=3.5,<4.2`; full results are in Sprint 59.
 
 ### Governing documents
 

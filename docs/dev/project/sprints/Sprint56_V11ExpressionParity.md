@@ -114,8 +114,8 @@ fixture-only type/nullability and cast-expectation mismatches. Those fixtures we
 focused runs.
 
 Spark-free checks pass 147 focused helper tests, including exact-profile rejection, type/nullability rules, comparison
-and ordering, cast boundaries, generated TIME spelling, and scans for classic-only Connect access. The default profile
-remains `>=3.5,<4.1`.
+and ordering, cast boundaries, generated TIME spelling, and scans for classic-only Connect access. At that point, the
+default was `>=3.5,<4.1`; the later 2026-10-23 closeout promoted it to `>=3.5,<4.2`. TIME remains exact-profile gated.
 
 Final `make build` evidence (2026-10-08): isort, Flake8, and mypy (1,413 source files) passed; the main pytest suite
 passed 2,522 tests with 332 skipped in 193.56s; the additional golden/differential/metamorphic/concepts/API snapshot/

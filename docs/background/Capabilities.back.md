@@ -110,11 +110,11 @@ The default is:
 [tool.structure]
 execution_mode = "online"
 target_backend = "pyspark"
-target_profile = ">=3.5,<4.1"
+target_profile = ">=3.5,<4.2"
 target_variant = "ordinary"
 ```
 
-Structure supports Python 3.11 and newer. The default PySpark profile targets PySpark 3.5.x and 4.0.x. The target
+Structure supports Python 3.11 and newer. The default PySpark profile targets PySpark 3.5.x, 4.0.x, and 4.1.x. The target
 layer owns version-specific API decisions and should prefer the oldest compatible API when a range spans supported
 PySpark lines.
 
@@ -142,7 +142,7 @@ Spark Connect is a PySpark variant, not a separate backend id:
 
 ```toml
 target_backend = "pyspark"
-target_profile = ">=3.5,<4.1"
+target_profile = ">=3.5,<4.2"
 target_variant = "spark-connect"
 ```
 
@@ -281,7 +281,7 @@ target-scoped hook violations.
 A useful diagnostic identifies:
 
 ```text
-Target: pyspark >=3.5,<4.1
+Target: pyspark >=3.5,<4.2
 Variant: ordinary
 Transform: orders.transforms.order.EnrichOrders
 Step: add_customer

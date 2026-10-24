@@ -37,7 +37,7 @@ def spark_connect_runtime_error(
         context={
             "surface": surface,
             "cause": type(error).__name__,
-            "target_profile": str(options.get("profile", ">=3.5,<4.1")),
+            "target_profile": str(options.get("profile", ">=3.5,<4.2")),
             "target_variant": str(options.get("variant", "spark-connect")),
         },
     )

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This design records the decisions made while closing the PySpark `>=3.5,<4.1` SQL baseline gaps. It preserves useful
+This design records the decisions made while closing the PySpark SQL baseline gaps for the default `>=3.5,<4.2` target. It preserves useful
 PySpark migration paths when Structure can state a typed, compiler-visible contract. It keeps the remaining behavior at
 an explicit caller-owned boundary rather than admitting raw scalar SQL, mutable runtime schemas, or untyped serialized
 state. The separately designed [Typed SQL Execution](TypedSqlExecution.design.md) feature is a full-relation operation
@@ -153,7 +153,7 @@ policy.
 
 The existing typed literal-path Variant mutations remain visible but target-gated. They are released only after a
 concrete profile proves capability, symbolic typing, generated and online parity, classic and Connect behavior, and the
-applicable streaming classification. The default `>=3.5,<4.1` baseline makes no Variant mutation claim.
+applicable streaming classification. The default `>=3.5,<4.2` profile makes no Variant mutation claim.
 
 ## URL, XML, runtime, and opaque Python
 

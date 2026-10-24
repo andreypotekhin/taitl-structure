@@ -4,7 +4,7 @@
 
 Structure supports compiler-visible expressions and relation operations, while `@raw` remains its general escape hatch. Some projects already own reviewed Spark SQL that expresses a complete relation more clearly than a new DSL operation. This design admits that narrow case: callers declare result schemas before compilation, while data-changing SQL produces an explicitly typed command-result relation.
 
-The design targets PySpark `>=3.5,<4.1` in ordinary PySpark and Spark Connect. It follows the shape of PySpark's `SparkSession.sql` workflow, but exposes SQL only as a helper used inside Transform methods. Callers configure Spark, catalogs, Delta Lake, Iceberg, and other providers. Structure does not create sessions, configure catalogs, manage transactions, or interpret provider-specific SQL.
+The design targets the default PySpark `>=3.5,<4.2` profile in ordinary PySpark and Spark Connect. It follows the shape of PySpark's `SparkSession.sql` workflow, but exposes SQL only as a helper used inside Transform methods. Callers configure Spark, catalogs, Delta Lake, Iceberg, and other providers. Structure does not create sessions, configure catalogs, manage transactions, or interpret provider-specific SQL.
 
 ## Public API
 

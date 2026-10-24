@@ -97,7 +97,7 @@ would still resolve through the colliding session registry.
 
 ## Support boundaries
 
-The default PySpark profile remains `>=3.5,<4.1`; Apache native helpers are not admitted there. Spark 4.1 native
+The default PySpark profile is `>=3.5,<4.2`; Apache native helpers remain gated to an exact 4.1 target. Spark 4.1 native
 helpers require `spark.sql.geospatial.enabled=true` and an Apache-only session. Ordinary Spark and Spark Connect are
 separate execution modes. Databricks and Databricks Connect parity remains open until caller-owned sessions are
 available. Streaming and JDBC/ODBC SQL warehouses are outside this batch PySpark DataFrame contract.

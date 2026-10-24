@@ -57,7 +57,7 @@ workflows without importing PySpark implementation modules or any external plugi
 
 ## PySpark Plugin
 
-The bundled `pyspark` plugin implements the supported PySpark 3.5.x and 4.0.x behavior. It owns fields, expressions,
+The bundled `pyspark` plugin implements the supported PySpark 3.5.x, 4.0.x, and 4.1.x behavior. It owns fields, expressions,
 joins, aggregations, schema materialization, capability rules, lowering, online execution, generated rendering, and
 Spark Connect diagnostics. Its `ordinary` and `spark-connect` variants are PySpark plugin options; Core handles them
 as opaque values.

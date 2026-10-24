@@ -137,7 +137,7 @@ def apply_legacy_pandas_state(
 ):
     """Apply the legacy grouped Pandas state API on an admitted profile."""
 
-    supported_profiles = {">=3.5,<4.1", ">=3.5,<4.0", ">=4.0,<4.1", ">=4.1,<4.2"}
+    supported_profiles = {">=3.5,<4.1", ">=3.5,<4.2", ">=3.5,<4.0", ">=4.0,<4.1", ">=4.1,<4.2"}
     if target_profile not in supported_profiles:
         raise RuntimeError(
             "apply_in_pandas_with_state requires ordinary PySpark >=3.5,<4.2 within the supported "

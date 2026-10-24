@@ -1,6 +1,6 @@
 # Sprint 55: V11 Admission and PySpark 4.1 API Diff
 
-Status: admission and inventory implemented; release verification continues in Sprints 59/60; target: 2026-12-25.
+Status: admission and inventory implemented; six-lane release matrix and integration build passed 2026-10-23; profile decision and retrospective remain; target: 2026-12-25.
 
 ## Sprint goal
 
@@ -41,10 +41,9 @@ feature inventory work while these owners classify the handoff, but Sprint 55 ca
 having no owner, command, status, or next decision.
 
 The 2026-10-21 six-lane run exercised the inherited order-hook and scalar-import cases without those historical
-failures. All runtime versions matched their pins. The remaining ordinary foreachBatch failure and required reruns are
-recorded in [Sprint 59](Sprint59_V11IntegrationMatrix.md#corrected-six-lane-matrix-2026-10-21) . The table above
-preserves
-the V10 entry conditions and their original owners.
+failures. The ordinary foreachBatch failure reported then was resolved by its owner, and the 2026-10-23 unfiltered
+rerun passed all six lanes and `make build INTEGRATION=1`; see [Sprint 59](Sprint59_V11IntegrationMatrix.md#passing-closeout-rerun-2026-10-23).
+The table above preserves the V10 entry conditions and their original owners.
 
 ## Acceptance
 

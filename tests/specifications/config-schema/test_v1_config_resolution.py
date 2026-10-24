@@ -50,7 +50,7 @@ def test_v1_config_uses_defaults_and_tracks_sources() -> None:
         assert config.state_budget_memory_source is None
         assert config.state_budget_fallback_mb is None
         assert config.execution_mode == "online"
-        assert dict(config.plugin_options["pyspark"])["profile"] == ">=3.5,<4.1"
+        assert dict(config.plugin_options["pyspark"])["profile"] == ">=3.5,<4.2"
         assert dict(config.plugin_options["pyspark"])["variant"] == "ordinary"
         assert config.hook_target_default == ("pyspark",)
         assert config.source_map["plugin"] == "default"
@@ -243,7 +243,7 @@ def test_v1_config_merges_opaque_plugin_tables_and_keeps_them_immutable() -> Non
         )
 
     assert dict(config.plugin_options["pyspark"]) == {
-        "profile": ">=3.5,<4.1",
+        "profile": ">=3.5,<4.2",
         "variant": "ordinary",
         "vendor_mode": "fast",
         "retries": 3,

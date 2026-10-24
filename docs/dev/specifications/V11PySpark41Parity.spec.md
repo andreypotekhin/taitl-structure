@@ -72,7 +72,7 @@ alias/scope diagnostics, explain/traceability, and generated-source safety check
 
 Evidence: both focused query integration cases pass on ordinary PySpark/Spark 4.1.0 and Spark Connect/PySpark/Spark
 4.1.0, including empty IN-subquery behavior. Spark-free query contract and user-story tests pass. The default target
-profile remains `>=3.5,<4.1`; other profiles remain gated.
+profile is `>=3.5,<4.2`; exact-target-only features remain capability-gated.
 
 ## Feature 3: observations and approximate sketches
 

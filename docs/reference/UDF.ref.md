@@ -150,7 +150,7 @@ callback-result validation. Spark controls output conversion, cardinality, null 
 | Arrow grouped aggregate | Exact `>=4.1,<4.2`, batch | Exact `>=4.1,<4.2`, batch | Excluded |
 | Arrow analytic window | Exact `>=4.1,<4.2`, batch | Exact `>=4.1,<4.2`, batch | Excluded |
 
-Arrow support is admitted independently for ordinary and Connect variants. The default PySpark profile `>=3.5,<4.1`
+Arrow support is admitted independently for ordinary and Connect variants. The default PySpark profile `>=3.5,<4.2`
 does not support Arrow UDF declarations. Connect streaming has no Arrow UDF support claim. Native, Structure online,
 and generated parity passes for the supported 4.1 batch modes; ordinary scalar and iterator streaming restart parity
 also passes. For exact target selection and evidence, see the [compatibility ledger](../compatibility/Transforms.compat.md)

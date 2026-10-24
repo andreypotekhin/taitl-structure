@@ -15,7 +15,7 @@ first stable release.
 Structure targets:
 
 - Python 3.11 and newer;
-- PySpark 3.5.x and 4.0.x, expressed as `plugin.pyspark.profile = ">=3.5,<4.1"` by default;
+- PySpark 3.5.x, 4.0.x, and 4.1.x, expressed as `plugin.pyspark.profile = ">=3.5,<4.2"` by default;
 - ordinary PySpark, expressed as `plugin.pyspark.variant = "ordinary"` by default;
 - Linux runtime environments for execution and generated-code execution;
 - Linux and macOS development environments;
@@ -35,7 +35,7 @@ execution_mode = "online"
 default = "pyspark"
 
 [tool.structure.plugin.pyspark]
-profile = ">=3.5,<4.1"
+profile = ">=3.5,<4.2"
 variant = "ordinary"
 ```
 
@@ -108,7 +108,7 @@ Spark Connect is a PySpark target variant, not a separate backend id:
 default = "pyspark"
 
 [tool.structure.plugin.pyspark]
-profile = ">=3.5,<4.1"
+profile = ">=3.5,<4.2"
 variant = "spark-connect"
 ```
 
@@ -127,9 +127,10 @@ KLL/Theta, Arrow UDFs, and native spatial helpers. Spark's `spark.sql.timeType.e
 `spark.sql.geospatial.enabled` settings are configured on the caller's Spark session or installation. Apache native
 and Sedona spatial workloads require separate sessions because their SQL registrations overlap.
 
-The default profile remains `>=3.5,<4.1` until the required passing release matrix is complete. Exact runtime pins,
-selections, counts, skip reasons, and current release blockers are maintained in the
-[V11 evidence record](dev/project/sprints/Sprint59_V11IntegrationMatrix.md#corrected-six-lane-matrix-2026-10-21).
+The required six-lane matrix and `make build INTEGRATION=1` passed on 2026-10-23, including the corrected
+foreachBatch handoff assertion. The passing six-lane matrix led to promotion of the configured default to
+`>=3.5,<4.2`. Exact runtime pins, selections, counts, and skip reasons are maintained in the
+[V11 evidence record](dev/project/sprints/Sprint59_V11IntegrationMatrix.md#passing-closeout-rerun-2026-10-23).
 
 Spark Connect must not change public DSL syntax, generated class APIs, transform `run(...)` signatures, generated-code
 review shape, or streaming orchestration semantics. It must also avoid classic-only internals such as SparkContext,

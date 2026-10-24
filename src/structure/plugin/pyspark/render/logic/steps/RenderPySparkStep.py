@@ -62,7 +62,7 @@ class RenderPySparkStep:
         sources: dict[str, str] | None = None,
         source_transform: str | None = None,
         generated_hooks: bool = False,
-        backend_target: str = ">=3.5,<4.1",
+        backend_target: str = ">=3.5,<4.2",
         frame_mapping: str | None = None,
         delta_check_match: str = "expression",
         delta_cdf_checks: bool = True,
@@ -2050,7 +2050,7 @@ class RenderPySparkStep:
         step,
         aggregate: PySparkAggregateRecipe,
         key_columns: tuple[tuple[PySparkAggregateKey, str], ...],
-        backend_target: str = ">=3.5,<4.1",
+        backend_target: str = ">=3.5,<4.2",
     ) -> str:
         alias = self._literal(assignment.field.column)
         if assignment.function == "count":
@@ -2781,7 +2781,7 @@ def render_pyspark_step(
     sources: dict[str, str] | None = None,
     source_transform: str | None = None,
     generated_hooks: bool = False,
-    backend_target: str = ">=3.5,<4.1",
+    backend_target: str = ">=3.5,<4.2",
 ) -> str:
     """Render a step through the legacy function-shaped entry point."""
     return RenderPySparkStep()(

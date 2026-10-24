@@ -106,7 +106,7 @@ generated_package = "structure_generated"
 generated_code_hard_wrap = 120
 execution_mode = "online"
 target_backend = "pyspark"
-target_profile = ">=3.5,<4.1"
+target_profile = ">=3.5,<4.2"
 traceability = "none"
 validate_inputs = true
 input_validation_mode = "schema_only"
@@ -792,7 +792,7 @@ Problem:
   The PySpark generator has no capability profile for this target range.
 
 Use:
-  Set target_profile to a supported range such as ">=3.5,<4.1".
+  Set target_profile to a supported range such as ">=3.5,<4.2".
 
 See docs/dev/specifications/BackendCapabilities.spec.md
 ```

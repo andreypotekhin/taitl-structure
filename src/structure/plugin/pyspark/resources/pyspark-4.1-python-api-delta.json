@@ -2550,6 +2550,6 @@
     "The 4.1 pages for random and try_to_date say New in version 1.4.0 and 4.0.0 respectively, although neither appears in the pinned 4.0 function index or has a 4.0 reference page. They are index additions, not asserted first implementations.",
     "No 4.1 Spark Connect Structure claim follows from a PySpark reference annotation; all Connect admissions require separate live evidence.",
     "uniform and randstr already appear in the 4.0 function index and are not 4.1 delta rows.",
-    "Admission reconciliation (2026-10-19): native KLL suffix variants map to six generic typed helpers; seven Theta helpers, typed observations, EXISTS, IN-subquery, and lateral joins use their existing independent ordinary/Connect 4.1 parity evidence. This does not close the six-lane release matrix or promote the default profile."
+    "Admission reconciliation (2026-10-19): native KLL suffix variants map to six generic typed helpers; seven Theta helpers, typed observations, EXISTS, IN-subquery, and lateral joins use their existing independent ordinary/Connect 4.1 parity evidence. The default profile was later promoted to >=3.5,<4.2 after the six-lane release matrix; operations requiring exact 4.1 remain gated."
   ]
 }

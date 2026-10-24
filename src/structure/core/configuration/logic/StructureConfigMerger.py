@@ -11,8 +11,8 @@ class StructureConfigMerger:
     _retired = {
         "compat_targets": "Select a plugin with plugin.default; a multi-target compatibility matrix is not configured by Core.",
         "target_backend": 'Use [tool.structure.plugin] default = "pyspark".',
-        "target_pyspark": 'Use [tool.structure.plugin.pyspark] profile = ">=3.5,<4.1".',
-        "target_profile": 'Use [tool.structure.plugin.pyspark] profile = ">=3.5,<4.1".',
+        "target_pyspark": 'Use [tool.structure.plugin.pyspark] profile = ">=3.5,<4.2".',
+        "target_profile": 'Use [tool.structure.plugin.pyspark] profile = ">=3.5,<4.2".',
         "target_variant": 'Use [tool.structure.plugin.pyspark] variant = "ordinary".',
     }
 

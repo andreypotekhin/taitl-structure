@@ -305,8 +305,8 @@ joins, and explicit deferred/unsupported stateful families.
 
 ## Compatibility 
 
-Structure targets Python 3.11+ and execution/generated-code execution for PySpark 3.5.x and 4.0.x. The default project
-settings are `execution_mode = "online"` and the PySpark plugin options `profile = ">=3.5,<4.1"` and
+Structure targets Python 3.11+ and execution/generated-code execution for PySpark 3.5.x, 4.0.x, and 4.1.x. The default project
+settings are `execution_mode = "online"` and the PySpark plugin options `profile = ">=3.5,<4.2"` and
 `variant = "ordinary"` under `[tool.structure.plugin.pyspark]`.
 
 Execution and generated-code execution target ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs by default.

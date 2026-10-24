@@ -14,8 +14,8 @@ in
 ## V11 status
 
 V11 implements opt-in exact PySpark 4.1 expression, TIME, query, observation, sketch, Arrow UDF,
-state-processor, and geospatial APIs. Ordinary and Connect evidence is recorded per feature. The default remains
-`>=3.5,<4.1` pending the passing release matrix; see the [V11 charter](project/V11.md) and
+state-processor, and geospatial APIs. Ordinary and Connect evidence is recorded per feature. The default is now
+`>=3.5,<4.2` after the six-lane release matrix passed; see the [V11 charter](project/V11.md) and
 [outstanding work](project/OutstandingTasks.md). XML, broader stateful chains, managed Databricks evidence, and legacy
 Pandas state retain their separately documented gates.
 

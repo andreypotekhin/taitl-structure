@@ -29,7 +29,7 @@ execution_mode = "online"
 default = "pyspark"
 
 [tool.structure.plugin.pyspark]
-profile = ">=3.5,<4.1"
+profile = ">=3.5,<4.2"
 variant = "ordinary"
 ```
 
@@ -51,7 +51,7 @@ generated_package = "structure_generated"
 default = "pyspark"
 
 [tool.structure.plugin.pyspark]
-profile = ">=3.5,<4.1"
+profile = ">=3.5,<4.2"
 variant = "ordinary"
 ```
 
@@ -111,7 +111,7 @@ Select the target in the project configuration so every composed transform resol
 default = "pyspark"
 
 [tool.structure.plugin.pyspark]
-profile = ">=3.5,<4.1"
+profile = ">=3.5,<4.2"
 variant = "spark-connect"
 ```
 
@@ -211,7 +211,7 @@ source_roots = ["src"]
 generated_dir = "generated"
 
 [tool.structure.plugin.pyspark]
-profile = ">=3.5,<4.1"
+profile = ">=3.5,<4.2"
 variant = "ordinary"
 ```
 
@@ -455,7 +455,7 @@ When moving from root-level target settings to plugin selection, replace rather 
 default = "pyspark"
 
 [tool.structure.plugin.pyspark]
-profile = ">=3.5,<4.1"
+profile = ">=3.5,<4.2"
 variant = "ordinary"
 ```
 

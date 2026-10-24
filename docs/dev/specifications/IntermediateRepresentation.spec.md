@@ -1141,7 +1141,7 @@ Operation:
   WindowProject
 
 Target:
-  pyspark >=3.5,<4.1
+  pyspark >=3.5,<4.2
 
 Problem:
   Rolling WindowProject forms are not enabled for the current compiler.

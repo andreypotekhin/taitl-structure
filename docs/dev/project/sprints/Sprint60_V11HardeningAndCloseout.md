@@ -1,6 +1,6 @@
 # Sprint 60: V11 Hardening and Closeout
 
-Status: in progress; full matrix recorded, closeout blocked by the foreachBatch owner failure; target: 2027-03-05.
+Status: integration matrix and integration-enabled build passed on 2026-10-23; default profile promoted to `>=3.5,<4.2`; retrospective remains.
 
 ## Sprint goal
 
@@ -22,28 +22,27 @@ boundary and remedy.
   Connect and Sedona 3.5/4.0/4.1 ordinary/Connect parity pass in isolated sessions. Exact-4.1 transforms mixing
   Apache/Sedona helpers emit `PYSPARK-W2707`; use separate sessions and persisted WKB/SRID handoffs. Inline bridges
   are not provided. Managed Databricks/Databricks Connect parity remains open.
-- [x] Run `make build`: formatting, Flake8, mypy, 2,675 tests / 373 skips, 155 follow-up tests / 7 skips, and package builds passed.
-- [x] Run all six unfiltered integration lanes. Corrected Connect 3.5/4.0 passed 205/90 and 215/80 (passed/skipped);
-  Connect 4.1 passed Iceberg 21, Delta 55/1, and general 234/61. Ordinary 3.5 and 4.0 each reported one
-  foreachBatch owner failure; ordinary 4.1 reported 53 passed, 2 skipped, and the same failure. Full evidence and
-  provider pins are in [Sprint 59](Sprint59_V11IntegrationMatrix.md#corrected-six-lane-matrix-2026-10-21).
-- [x] Run the integration-enabled build after the matrix: `make build INTEGRATION=1 BACKEND=spark-connect41` passed
-  formatting, Flake8, mypy, 2,681 main tests / 373 skips, 155 follow-up tests / 7 skips, package builds, and the
-  Connect 4.1 Iceberg 21, Delta 55 / 1 skip, and general 234 / 61 selection. The default all-backend integration build
-  remains blocked at the first ordinary lane by the recorded foreachBatch failure.
-- [x] Review the six-lane evidence report; retain the foreachBatch mismatch as an explicit release blocker with its
-  existing owner.
+- [x] Run `make build`: formatting, Flake8, mypy, 2,682 main tests / 373 skips, 155 follow-up tests / 7 skips, and package builds passed after default-profile promotion.
+- [x] Validate default-profile/configuration changes with 449 focused tests covering config resolution, capability selection,
+  CLI templates, compatibility docs, plugin artifacts, state profiles, and backend metadata.
+- [x] Rerun all six unfiltered integration lanes after the foreachBatch expectation was corrected. All ordinary and
+  Connect phases passed; the corrected ordinary handoff case passed on 3.5, 4.0, and 4.1. Exact selection counts and
+  skip reasons are in [Sprint 59](Sprint59_V11IntegrationMatrix.md#passing-closeout-rerun-2026-10-23).
+- [x] Run `make build INTEGRATION=1` across all six backends. Formatting, Flake8, mypy, main and regression suites,
+  package builds, provider phases, and every general selection passed. The complete output is retained in the
+  integration workspace and summarized in Sprint 59.
+- [x] Reconcile the six-lane evidence report; the 2026-10-21 foreachBatch failure is historical and resolved by the
+  owner's `Alert` expectation correction.
 - [x] Complete Arrow UDF implementation and evidence: Connect batch parity, retained scalar-UDF regressions, both
-  unfiltered 4.1 lanes, and `make build`. The ordinary lane exposes one independent foreachBatch handoff failure;
-  grouped/analytic streaming and Connect streaming remain explicitly excluded.
-- [x] Keep the default profile at `>=3.5,<4.1` because the required passing matrix is not yet complete; record the
-  decision in the V11 ExecPlan.
+  unfiltered 4.1 lanes, and `make build`. Grouped/analytic streaming and Connect streaming remain explicitly excluded.
+- [x] Record the release decision: promote the default profile to `>=3.5,<4.2`, based on the passing six-lane matrix
+  and integration-enabled build.
 
 ## Acceptance
 
 Every supported row has positive evidence and every gate has a reason and remedy; generated output is fresh; the full
-integration-enabled build passes; the foreachBatch blocker is resolved by its owner; and the V11 retrospective is
-complete.
+integration-enabled build passes; the foreachBatch blocker is resolved by its owner. The default-profile promotion is
+recorded; the V11 retrospective remains to write.
 
 ## Governing plan
 

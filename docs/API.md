@@ -13,7 +13,7 @@ materialization for streaming input; `unsupported` deliberately stays outside th
 Structure is not a one-to-one PySpark
 wrapper: admitted APIs remain typed, symbolic, capability-checked, explainable, and readable in generated code.
 
-The default target is ordinary PySpark `>=3.5,<4.1`; batch features also target Spark
+The default target is ordinary PySpark `>=3.5,<4.2`; batch features also target Spark
 Connect. See [Compatibility.md](Compatibility.md) for the full target policy, [APICompatibility.md](compatibility/APICompatibility.md)
 for family-level compatibility, and [APITracker.md](compatibility/APITracker.md) for detailed parity tracking.
 For the detailed narrative reference, see [API.ref.md](reference/API.ref.md).
@@ -81,8 +81,8 @@ Spark Connect batch evidence; streaming availability is listed separately in its
 
 Ordinary row state processors require exact 4.1; Pandas state processors also support exact 4.0. Their lifecycle and
 checkpoint rules are in the [Streaming reference](reference/Streaming.ref.md). TIME and native spatial execution
-require Spark session settings described in their guides. The default profile remains `>=3.5,<4.1` until the V11
-release checks pass.
+require Spark session settings described in their guides. The six-lane matrix and integration-enabled build passed;
+the configured default is now `>=3.5,<4.2`, following the passing six-lane release matrix.
 
 ## Analytical APIs
 

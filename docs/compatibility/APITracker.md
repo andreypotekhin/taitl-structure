@@ -32,7 +32,7 @@ function-level contracts are maintained in [APICompatibility.md](APICompatibilit
 
 Track gaps against the default target range in [Compatibility.md](../Compatibility.md):
 
-- PySpark 3.5.x and 4.0.x;
+- PySpark 3.5.x, 4.0.x, and 4.1.x;
 - ordinary PySpark DataFrame/Column APIs;
 - Spark Connect for completed compiler-visible batch features.
 
@@ -46,14 +46,14 @@ Consult the official Spark 4.0.1 docs when expanding this page:
   <https://spark.apache.org/docs/4.0.1/api/python/reference/pyspark.sql/api/pyspark.sql.DataFrame.join.html>
 
 The latest Spark docs may be useful for discovery, but features introduced after PySpark 4.0.x are not current-baseline
-gaps. PySpark 4.1 adoption has a separate ledger below and in [V11.md](../dev/project/V11.md); it must not silently change the default `>=3.5,<4.1` baseline.
+gaps. Exact-profile PySpark 4.1 features have a separate ledger below and in [V11.md](../dev/project/V11.md); widening the default profile does not bypass those capability gates.
 
 ## Current Baseline
 
 This register was reviewed on 2026-10-22 against the implemented V11 APIs and evidence. The default target remains
-PySpark `>=3.5,<4.1` , ordinary PySpark, with
+PySpark `>=3.5,<4.2`, ordinary PySpark, with
 Spark Connect claims only for completed compiler-visible batch features. The authoritative inventory is the intersection
-of the PySpark 3.5.x and 4.0.x public APIs, not the newest Spark documentation.
+of the PySpark 3.5.x, 4.0.x, and 4.1.x public APIs, not the newest Spark documentation.
 
 Full SQL-function coverage means that every baseline function has exactly one disposition: implemented with evidence,
 planned for a typed Structure contract, design-gated, caller-owned-guided, streaming-ineligible, or unsupported. It does
@@ -79,7 +79,8 @@ function coverage ExecPlan](../dev/planning/P08222601.PySpark-SQL-function-cover
 
 ## PySpark 4.1 Adoption Tracker
 
-These rows track the opt-in `>=4.1,<4.2` target profile; they do not widen the default `>=3.5,<4.1` baseline. The
+These rows track APIs gated to the exact `>=4.1,<4.2` target; the default profile is `>=3.5,<4.2`, and exact-target
+requirements still apply. The
 primary target is ordinary PySpark. Spark Connect is admitted only with separate 4.1 runtime evidence. See the
 [adoption design](../dev/design/V11PySpark41Adoption.design.md), [parity specification](../dev/specifications/V11PySpark41Parity.spec.md),
 and [V11 project tracker](../dev/project/V11.md). The pinned

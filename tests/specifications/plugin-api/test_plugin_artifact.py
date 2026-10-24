@@ -300,8 +300,8 @@ def test_core_passes_only_selected_opaque_plugin_options_to_plugin_facets() -> N
     authoring_request = authoring.requests[0]
     assert request is not None
     assert isinstance(authoring_request, StepAuthoringRequest)
-    assert request.plugin_options == {"profile": ">=3.5,<4.1", "variant": "ordinary", "vendor_mode": "fast"}
-    assert authoring_request.plugin_options == {"profile": ">=3.5,<4.1", "variant": "ordinary", "vendor_mode": "fast"}
+    assert request.plugin_options == {"profile": ">=3.5,<4.2", "variant": "ordinary", "vendor_mode": "fast"}
+    assert authoring_request.plugin_options == {"profile": ">=3.5,<4.2", "variant": "ordinary", "vendor_mode": "fast"}
     with pytest.raises(TypeError):
         request.plugin_options["vendor_mode"] = "safe"
 

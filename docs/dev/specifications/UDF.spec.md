@@ -72,7 +72,7 @@ result objects surface as native Spark errors.
 The Arrow capabilities are `expression.arrow_udf_scalar`, `expression.arrow_udf_scalar_iter`,
 `aggregate.arrow_udf_grouped_agg`, and `window.arrow_udf_grouped_agg`. Each is supported only for exact
 `>=4.1,<4.2` profiles and ordinary and Spark Connect variants are admitted independently after parity evidence. The
-default profile remains `>=3.5,<4.1`; profiles outside the exact supported range reject these operations.
+default profile is `>=3.5,<4.2`; Arrow operations remain gated to the exact supported range.
 
 Ordinary and Connect batch support covers all three modes. Ordinary streaming supports scalar and scalar-iterator
 modes after processed-data and durable-checkpoint restart evidence. Grouped aggregates and analytic windows over

@@ -48,9 +48,9 @@ BackendId
   family
 ```
 
-For the default PySpark profile, `name = "pyspark"`, `target = ">=3.5,<4.1"`, `variant = "ordinary"`, and
+For the default PySpark profile, `name = "pyspark"`, `target = ">=3.5,<4.2"`, `variant = "ordinary"`, and
 implementation `family = "ordinary_pyspark"`. For the Spark Connect variant, `name = "pyspark"`,
-`target = ">=3.5,<4.1"`, `variant = "spark-connect"`, and semantic `family = "spark_connect_dataframe"`.
+`target = ">=3.5,<4.2"`, `variant = "spark-connect"`, and semantic `family = "spark_connect_dataframe"`.
 Future alternative-backend reports may add semantic-family vocabulary such as `pyspark_dataframe` or `sql_relation`;
 that vocabulary must not require renaming the current v1 implementation family.
 
@@ -334,7 +334,7 @@ and documentation link.
 
 ```toml
 target_backend = "pyspark"
-target_profile = ">=3.5,<4.1"
+target_profile = ">=3.5,<4.2"
 target_variant = "ordinary"
 ```
 
@@ -343,7 +343,7 @@ family is `ordinary_pyspark`.
 
 ```toml
 target_backend = "pyspark"
-target_profile = ">=3.5,<4.1"
+target_profile = ">=3.5,<4.2"
 target_variant = "spark-connect"
 ```
 
@@ -365,7 +365,7 @@ Runtime PySpark execution tests may import PySpark. Capability tests and compile
 
 ## Acceptance Criteria
 
-- `target_backend = "pyspark"` with `target_profile = ">=3.5,<4.1"` and `target_variant = "ordinary"` resolves the
+- `target_backend = "pyspark"` with `target_profile = ">=3.5,<4.2"` and `target_variant = "ordinary"` resolves the
   ordinary PySpark capability profile.
 - `target_backend = "pyspark"` with `target_variant = "spark-connect"` resolves the Spark Connect PySpark-variant
   capability profile.

@@ -160,7 +160,7 @@ def test_native_legacy_processor_binding_lowers_schema_and_timeout_metadata() ->
     assert state.timeout == "none"
 
 
-@pytest.mark.parametrize("profile", [">=3.5,<4.0", ">=3.5,<4.1", ">=4.0,<4.1", ">=4.1,<4.2"])
+@pytest.mark.parametrize("profile", [">=3.5,<4.0", ">=3.5,<4.1", ">=3.5,<4.2", ">=4.0,<4.1", ">=4.1,<4.2"])
 def test_legacy_pandas_state_capability_is_admitted_on_ordinary_profiles(profile: str) -> None:
     capabilities = PySparkCapabilities(target_profile=profile, target_variant="ordinary")
     decision = capabilities.supports(

@@ -17,15 +17,15 @@ Typed Delta mutations, inspection reads, generated/identity/default columns, and
 classic PySpark 3.5, 4.0, and 4.1 with pinned live online/generated evidence: 3.5.3 / Delta 3.3.3, 4.0.0 / Delta
 4.0.1, and 4.1.0 / Delta 4.1.0. The exact Spark Connect 4.1 Delta package is separately admitted; other Connect
 profiles and PySpark 4.2 are outside this admission. They remain separate from
-the default PySpark `>=3.5,<4.1` DataFrame API baseline. See the [Delta API](../api/DeltaIceberg.api.md) and
+the default PySpark `>=3.5,<4.2` DataFrame API baseline. See the [Delta API](../api/DeltaIceberg.api.md) and
 [Delta compatibility ledger](DeltaIceberg.compat.md) for the precise operations, schema evolution rules, and target
 limits.
 
 ## PySpark 4.1 Adoption
 
-This is the compatibility register for the configured `>=4.1,<4.2` target. It does not widen the default
-`>=3.5,<4.1` baseline. The primary target is ordinary PySpark; Spark Connect is claimed only for rows with separate
-runtime evidence. The detailed row-by-row inventory is maintained in the [API tracker](APITracker.md), while the
+This is the compatibility register for APIs admitted only on the exact `>=4.1,<4.2` target. The default profile is
+`>=3.5,<4.2`, but the broad range does not admit APIs whose evidence requires an exact runtime target. The primary
+target is ordinary PySpark; Spark Connect is claimed only for rows with separate runtime evidence. The detailed row-by-row inventory is maintained in the [API tracker](APITracker.md), while the
 [V11 charter](../dev/project/V11.md) owns schedule and project scope.
 
 The current V11 state and side-effect boundaries are:
@@ -36,8 +36,8 @@ The current V11 state and side-effect boundaries are:
   Spark's TIME and spatial settings remain caller-configured. The
   [versioned Python delta](../../src/structure/plugin/pyspark/resources/pyspark-4.1-python-api-delta.json)
   separates actual 4.1 index additions from older APIs retained for V11 work.
-- Relation query consumers are batch-only and limited to exact `>=4.1,<4.2`; the default profile remains
-  `>=3.5,<4.1`. Their query body supports filters, projection, ordering, and limits; nested queries, correlated IN,
+- Relation query consumers are batch-only and limited to exact `>=4.1,<4.2`; the default profile is
+  `>=3.5,<4.2`. Their query body supports filters, projection, ordering, and limits; nested queries, correlated IN,
   query-local joins/aggregations/windows, and arbitrary DataFrame callbacks remain outside the typed contract.
 - Typed Arrow scalar, scalar-iterator, grouped-aggregate, and analytic-window UDFs are supported for exact ordinary
   and Connect 4.1 batch profiles. Ordinary scalar/iterator streaming and checkpoint restart are evidenced. Spark
@@ -90,7 +90,7 @@ composition, arithmetic `+`, `-`, and `*`, null predicates, `isin(...)`, and inc
 
 ## SQL Functions
 
-The default parity baseline is the intersection of the public PySpark 3.5.x and 4.0.x function APIs. A family is
+The default parity baseline is the intersection of the public PySpark 3.5.x, 4.0.x, and 4.1.x function APIs. A family is
 `partial` when Structure covers useful typed functions but at least one baseline function remains open. A Structure
 name may be a deliberately typed equivalent rather than the exact PySpark spelling; the compatibility columns record
 that difference instead of treating it as complete parity. The detailed family tracker is in [APITracker.md](APITracker.md);
@@ -247,7 +247,7 @@ lifecycle recipe.
 
 ## API Coverage
 
-This section is Structure's checked catalog for its PySpark `>=3.5,<4.1` transformation baseline. It covers typed
+This section is Structure's checked catalog for its PySpark `>=3.5,<4.2` transformation baseline. It covers typed
 transformations over caller-supplied DataFrames, not readers, writers, sessions, catalog/table management, actions, or
 streaming lifecycle. The catalog below is the public summary of the current compatibility decisions; focused API
 references provide the user-facing operation details.

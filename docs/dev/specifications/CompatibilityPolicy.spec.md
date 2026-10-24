@@ -30,11 +30,11 @@ execution_mode = "online"
 default = "pyspark"
 
 [plugin.pyspark]
-profile = ">=3.5,<4.1"
+profile = ">=3.5,<4.2"
 variant = "ordinary"
 ```
 
-This means execution and generated-code execution should target PySpark 3.5.x and 4.0.x APIs unless the user configures a
+This means execution and generated-code execution should target PySpark 3.5.x, 4.0.x, and 4.1.x APIs unless the user configures a
 different target.
 
 Airflow is not a hard dependency. Execution and generated-code execution should be usable from Airflow, Spark jobs, notebooks,
@@ -101,7 +101,7 @@ Spark Connect is a PySpark target variant, not a separate backend id. The config
 default = "pyspark"
 
 [plugin.pyspark]
-profile = ">=3.5,<4.1"
+profile = ">=3.5,<4.2"
 variant = "spark-connect"
 ```
 
@@ -240,4 +240,4 @@ New optional keys may appear in minor releases. Removing or changing a documente
 - [BackendCapabilities.spec.md](BackendCapabilities.spec.md) documents the backend capability interface and PySpark v1 profile.
 - [Roadmap.md](../Roadmap.md) and public roadmap text schedule Spark Connect batch support promotion for Sprint 09.
 - The seed config defaults are `execution_mode = "online"`, `plugin.default = "pyspark"`,
-  `plugin.pyspark.profile = ">=3.5,<4.1"`, and `plugin.pyspark.variant = "ordinary"`.
+  `plugin.pyspark.profile = ">=3.5,<4.2"`, and `plugin.pyspark.variant = "ordinary"`.

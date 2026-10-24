@@ -1639,7 +1639,7 @@
       ],
       "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
       "contract": "Correlated Boolean EXISTS expressions preserve native null and empty-input semantics; outer fields are explicit.",
-      "notes": "Native/online/generated values and schemas pass on ordinary and Connect PySpark/Spark 4.1.0. Batch-only; default-profile support is unchanged.",
+      "notes": "Native/online/generated values and schemas pass on ordinary and Connect PySpark/Spark 4.1.0. Batch-only; exact >=4.1,<4.2 target required under the broad default profile.",
       "evidence": [
         "docs/dev/design/V11PySpark41QueryOperations.design.md",
         "docs/dev/specifications/V11PySpark41Parity.spec.md",
@@ -1655,7 +1655,7 @@
       ],
       "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
       "contract": "Uncorrelated scalar or named-struct IN against a projected typed relation preserves Spark SQL three-valued logic.",
-      "notes": "Native/online/generated values and schemas pass on ordinary and Connect PySpark/Spark 4.1.0. Batch-only; default-profile support is unchanged.",
+      "notes": "Native/online/generated values and schemas pass on ordinary and Connect PySpark/Spark 4.1.0. Batch-only; exact >=4.1,<4.2 target required under the broad default profile.",
       "evidence": [
         "docs/dev/design/V11PySpark41QueryOperations.design.md",
         "docs/dev/specifications/V11PySpark41Parity.spec.md",
@@ -1671,7 +1671,7 @@
       ],
       "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
       "contract": "Inner/left lateral joins preserve query operation order, post-query on=, explicit outer references, and Cartesian opt-in.",
-      "notes": "Native/online/generated values and schemas pass on ordinary and Connect PySpark/Spark 4.1.0. Batch-only; default-profile support is unchanged.",
+      "notes": "Native/online/generated values and schemas pass on ordinary and Connect PySpark/Spark 4.1.0. Batch-only; exact >=4.1,<4.2 target required under the broad default profile.",
       "evidence": [
         "docs/dev/design/V11PySpark41QueryOperations.design.md",
         "docs/dev/specifications/V11PySpark41Parity.spec.md",
@@ -1688,7 +1688,7 @@
       ],
       "profile": "ordinary PySpark and Spark Connect >=4.1,<4.2",
       "contract": "Named typed aggregate snapshots preserve row output and native per-variant action lifecycle without adding an action.",
-      "notes": "Native/online/generated values and schemas pass on ordinary and Connect PySpark/Spark 4.1.0. Batch-only; default-profile support is unchanged.",
+      "notes": "Native/online/generated values and schemas pass on ordinary and Connect PySpark/Spark 4.1.0. Batch-only; exact >=4.1,<4.2 target required under the broad default profile.",
       "evidence": [
         "docs/dev/design/V11PySpark41ObservationsAndSketches.design.md",
         "docs/dev/specifications/V11PySpark41Parity.spec.md",

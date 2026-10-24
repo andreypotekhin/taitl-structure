@@ -20,7 +20,7 @@ def test_v1_pyspark_recipe_lowering_is_spark_free() -> None:
     assert after == before
     assert recipe.transform == "EnrichOrders"
     assert recipe.backend.name == "pyspark"
-    assert recipe.backend.target == ">=3.5,<4.1"
+    assert recipe.backend.target == ">=3.5,<4.2"
 
 
 def test_v1_pyspark_recipe_preserves_inputs_and_steps() -> None:

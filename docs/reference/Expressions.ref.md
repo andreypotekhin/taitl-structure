@@ -8,7 +8,7 @@ expression helpers.
 ## PySpark 4.1 scalar helpers
 
 Select `plugin.pyspark.profile = ">=4.1,<4.2"` to use these helpers on ordinary PySpark or Spark Connect.
-The default `>=3.5,<4.1` profile rejects them during compilation.
+The broad default `>=3.5,<4.2` profile rejects them during compilation; select the exact `>=4.1,<4.2` target to use them.
 
 | Helper | Input | Result | Null behavior |
 | --- | --- | --- | --- |

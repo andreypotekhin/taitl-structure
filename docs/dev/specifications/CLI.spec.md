@@ -123,7 +123,7 @@ generated_dir = "generated"
 generated_package = "structure_generated"
 execution_mode = "online"
 target_backend = "pyspark"
-target_profile = ">=3.5,<4.1"
+target_profile = ">=3.5,<4.2"
 hook_target_default = ["pyspark"]
 traceability = "none"
 validate_inputs = true
@@ -371,10 +371,10 @@ Setting:
   target_profile = "<3.0"
 
 Problem:
-  Structure v1 supports PySpark 3.5.x and 4.0.x by default.
+  Structure v1 supports PySpark 3.5.x, 4.0.x, and 4.1.x by default.
 
 Use:
-  Set `target_profile = ">=3.5,<4.1"` or choose a supported range.
+  Set `target_profile = ">=3.5,<4.2"` or choose a supported range.
 
 See docs/dev/specifications/BackendCapabilities.spec.md
 ```
