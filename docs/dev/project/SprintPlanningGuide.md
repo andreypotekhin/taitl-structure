@@ -20,6 +20,18 @@ backend versions, passed/skipped totals, and links to explicit deferrals. It doe
 separate scorecard. `make build` is necessary but insufficient: release closure also runs the relevant classic Compose
 lanes and Spark Connect lanes only where support is claimed. A skipped live lane is not release evidence.
 
+## Validation Cadence
+
+Reserve sprint capacity for `make build INTEGRATION=1 BACKEND=all` against the closing candidate
+and for repairing integration regressions. This runs every configured backend's documented selection and required
+isolated provider phases; it does not imply that every backend runs every test.
+
+Each coding task requires `make build`; focused live checks are discretionary during development. Full integration
+belongs to sprint acceptance. Support claims and completed user stories retain their positive runtime-evidence gates.
+Record the tested revision, commands, versions, selection scope, results, outstanding gates, and logs in the sprint
+review or ExecPlan. Rerun affected selections after fixes and broaden reruns when shared changes invalidate evidence.
+See [Testing](../Testing.md#validation-cadence) for the detailed policy.
+
 ## Sprint Planning Inputs
 
 Each sprint should include:
@@ -29,6 +41,7 @@ Each sprint should include:
 - Implementation tasks.
 - Relevant specification items.
 - Acceptance criteria.
+- Full configured integration matrix and evidence recording at sprint close.
 - Demo script.
 - Risks.
 - Explicit non-goals.

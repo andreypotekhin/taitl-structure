@@ -39,6 +39,8 @@ change the current support claim.
 
 ## Acceptance
 
+- The full configured integration matrix passes at sprint close, with evidence recorded under the
+  [validation cadence](../../Testing.md#validation-cadence).
 - Each newly admitted pair/profile proves watermark propagation, output mode, state retention/eviction, and restart.
 - Update-mode join output agrees with native Spark for matched, late, and out-of-bound rows.
 - Union preserves declared nullability, nested schemas, aliases, and row multiplicity; unsafe evolution is rejected.
@@ -48,10 +50,11 @@ change the current support claim.
 Run the admitted dedupe/window pair with on-time and late events, inspect per-stage progress, and restart it.
 Separately compare an Update-mode join and a missing-column streaming union across all execution paths.
 
+During coding tasks, run `make build` and choose focused live checks as needed. At sprint close, run the full
+configured matrix against the closing candidate, including required isolated provider phases:
+
 ```bash
-make build
-make integration BACKEND=pyspark42
-make integration BACKEND=spark-connect42
+make build INTEGRATION=1 BACKEND=all
 ```
 
 The 4.2 runner selectors become available in Sprint 61. Connect commands exercise batch cases only; ordinary

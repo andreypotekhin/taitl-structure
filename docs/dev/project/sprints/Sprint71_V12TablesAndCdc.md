@@ -41,6 +41,8 @@ change the current support claim.
 
 ## Acceptance
 
+- The full configured integration matrix passes at sprint close, with evidence recorded under the
+  [validation cadence](../../Testing.md#validation-cadence).
 - Each admitted table pair passes isolated retained provider suites, including table identity and commit visibility.
 - Typed change-row consumption has schema/value parity; provider-specific metadata and bounds remain explicit.
 - CDC support is claimed per catalog/provider/variant; a Spark 4.2 version alone never establishes CDC availability.
@@ -50,10 +52,11 @@ change the current support claim.
 Mutate a caller-provisioned table, consume its declared change relation, and compare native/online/generated rows.
 Show the provider compatibility record and a corrective diagnostic for an unavailable changelog API.
 
+During coding tasks, run `make build` and choose focused live checks as needed. At sprint close, run the full
+configured matrix against the closing candidate, including required isolated provider phases:
+
 ```bash
-make build
-make integration BACKEND=pyspark42
-make integration BACKEND=spark-connect42
+make build INTEGRATION=1 BACKEND=all
 ```
 
 The 4.2 runner selectors become available in Sprint 61. Connect commands exercise batch cases only; ordinary

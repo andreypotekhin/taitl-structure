@@ -39,6 +39,8 @@ change the current support claim.
 
 ## Acceptance
 
+- The full configured integration matrix passes at sprint close, with evidence recorded under the
+  [validation cadence](../../Testing.md#validation-cadence).
 - Typed metric values match native observations per micro-batch without changing rows or schema.
 - Restart, empty-batch, replay, and composed-transform cases follow the documented identity and availability rules.
 - Batch .get() behavior remains unchanged and Connect streaming receives an explicit unsupported diagnostic.
@@ -48,10 +50,11 @@ change the current support claim.
 Attach a caller-owned progress callback to a stream with typed count and null-quality metrics.
 Process two batches, restart the query, and compare native/online/generated metrics and rows.
 
+During coding tasks, run `make build` and choose focused live checks as needed. At sprint close, run the full
+configured matrix against the closing candidate, including required isolated provider phases:
+
 ```bash
-make build
-make integration BACKEND=pyspark42
-make integration BACKEND=spark-connect42
+make build INTEGRATION=1 BACKEND=all
 ```
 
 The 4.2 runner selectors become available in Sprint 61. Connect commands exercise batch cases only; ordinary

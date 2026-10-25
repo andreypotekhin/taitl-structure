@@ -39,6 +39,8 @@ change the current support claim.
 
 ## Acceptance
 
+- The full configured integration matrix passes at sprint close, with evidence recorded under the
+  [validation cadence](../../Testing.md#validation-cadence).
 - Joined, grouped, and scalar queries match native results online and generated on claimed 4.1/4.2 batch variants.
 - Self-aliases, empty results, null comparisons, duplicate matches, and scalar over-cardinality have explicit tests.
 - Unsupported correlation/nesting receives a source-located diagnostic; existing V11 query fixtures retain their
@@ -49,10 +51,11 @@ change the current support claim.
 Compute a per-customer aggregate subquery and a joined correlated existence condition, then project a scalar
 result. Compare native, online, and generated rows and demonstrate the scalar-cardinality failure case.
 
+During coding tasks, run `make build` and choose focused live checks as needed. At sprint close, run the full
+configured matrix against the closing candidate, including required isolated provider phases:
+
 ```bash
-make build
-make integration BACKEND=pyspark42
-make integration BACKEND=spark-connect42
+make build INTEGRATION=1 BACKEND=all
 ```
 
 The 4.2 runner selectors become available in Sprint 61. Connect commands exercise batch cases only; ordinary

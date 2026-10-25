@@ -19,7 +19,8 @@ Follows all feature sprints. Unfinished core commitments require a recorded scop
 - [ ] Resolve release-blocking defects and rerun affected native/online/generated and ordinary-streaming evidence.
 - [ ] Run all eight documented unfiltered backend selections and isolated provider phases; retain selection counts and
       skip reasons.
-- [ ] Run make build and make build INTEGRATION=1; compare generated freshness and compiler/plan performance baselines.
+- [ ] Run `make build INTEGRATION=1 BACKEND=all` at sprint close; compare generated freshness and compiler/plan
+      performance baselines.
 - [ ] Reconcile APIs, capabilities, diagnostics, references, examples, user-story tests, and relevant annotated source.
 - [ ] Evaluate the default profile only after the passing matrix; record promotion or retention and exact-feature
       gating.
@@ -42,6 +43,8 @@ change the current support claim.
 
 - Every core feature meets its acceptance or has an explicit scope revision; supported claims have positive evidence.
 - Eight documented lane selections and the integration-enabled build pass; scoped selections are described accurately.
+- Evidence and failure recovery follow the [validation cadence](../../Testing.md#validation-cadence); required
+  release checks remain additional to the full sprint matrix.
 - The profile decision, migration notes, generated artifacts, performance comparisons, and retrospective are recorded.
 - Connect streaming and unavailable provider combinations remain excluded from support and release-pass accounting.
 
@@ -50,12 +53,15 @@ change the current support claim.
 Run the eight-lane integrated release command, then demonstrate one batch query/ranking pipeline and one ordinary
 streaming pipeline with restart. Review the exact runtime ledger and support/default-profile decision.
 
+During coding tasks, run `make build` and choose focused live checks as needed. At sprint close, run the full
+configured matrix against the closing candidate, including required isolated provider phases:
+
 ```bash
-make build
-make build INTEGRATION=1
+make build INTEGRATION=1 BACKEND=all
 ```
 
-Record exact commands, versions, selected/passed/skipped totals, reasons, and log locations in this sprint's review.
+Record the tested revision, exact commands, versions, selected/passed/failed/skipped totals, reasons, outstanding gates,
+and log locations in this sprint's review.
 
 ## Risks
 

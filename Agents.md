@@ -168,6 +168,11 @@ Upon completion, move suggestions to [close/archive/suggestions/](close/archive/
 ## Task completion
 Ensure the project fully builds with tests ('make build') at the end of each coding task.
 Resolve any build or test issues revealed before completing the coding task.
+Focused live integration checks are discretionary during tasks; the full integration matrix is not a task requirement.
+Close each sprint with `make build INTEGRATION=1 BACKEND=all` and record its evidence.
+Support claims and completed user stories still require their specified runtime evidence. See
+[validation cadence](docs/dev/Testing.md#validation-cadence) for sprint acceptance, failure recovery,
+and evidence rules.
 
 Suggestion items
 - Upon completion, move suggestion items to close/archive/suggestions.

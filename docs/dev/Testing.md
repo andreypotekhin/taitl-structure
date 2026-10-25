@@ -133,7 +133,7 @@ Execution should be tested by:
 
 ## Execution/Generated-Code Parity
 
-Every supported compiled operation must have at least one parity test before the operation is considered complete.
+Every supported compiled operation must have at least one passing parity test before the operation is admitted.
 Parity tests run the same transform online through `StructureSession` and through the generated PySpark class, then
 compare output column order, row contents, schema shape where Spark exposes it reliably, and expected validation
 placement.
@@ -146,7 +146,7 @@ Generated-code snapshots are still required for reviewability, but snapshots are
 runtime parity through the shared contract in [ExecutionSemanticContract.md](specifications/ExecutionSemanticContract.spec.md).
 
 Live PySpark parity tests are opt-in because they require the optional `pyspark` package and a usable local Spark
-runtime. Run them before release with:
+runtime. For a local parity run, use:
 
     poetry run pytest --run-integration tests/integration/pyspark -q
 
@@ -336,6 +336,38 @@ Live backend integration tests live under `tests/integration`. They are opt-in b
 Compose infrastructure, import PySpark, and create live Spark sessions. Ordinary `poetry run pytest`, `make test`, and
 `make build` remain Spark-free.
 
+### Validation cadence
+
+Validation has three checkpoints:
+
+| Checkpoint | Required validation |
+| --- | --- |
+| Coding task completion | `make build` and relevant regression coverage; focused live checks are discretionary. |
+| Sprint completion | `make build INTEGRATION=1 BACKEND=all` against the sprint's closing candidate. |
+| Release closure | Sprint matrix plus version compatibility, performance, documentation, and migration checks. |
+
+During a task, the implementer chooses focused live checks as needed for diagnosis or confidence in changed behavior.
+Record any checks performed and their selection scope. The full integration matrix is not a task completion
+requirement. An implementation task may finish before sprint integration; support claims and completed user stories
+still require their specified positive runtime evidence.
+
+Sprint acceptance runs every configured backend's documented selection and required isolated provider phases without
+additional test-selection filters. A full matrix does not mean every backend runs every test. In V12, Sprint 61 adds
+the two 4.2 lanes, bringing the closing matrix to eight lanes. Their planned names are not evidence of implementation.
+
+Record the tested revision, any uncommitted changes included in the candidate, exact commands, runtime versions,
+selection scope, passed/failed/skipped totals, skip reasons, outstanding gates, and log locations in the sprint review
+or ExecPlan's `Outcomes & Retrospective`. Missing or skipped evidence is not passing evidence; unavailable providers
+retain their explicit gates and remedies.
+
+Resolve integration regressions before sprint closure. After fixes, rerun affected selections and broaden reruns when
+shared changes invalidate other results. Record which earlier results remain applicable to the closing candidate.
+Task completion during this repair work still requires `make build`, with focused live checks chosen as needed.
+The final hardening sprint retains its additional release checks; earlier sprint matrices do not replace them.
+
+Documentation-only tasks use relevant consistency and link checks; they do not require a build or integration run.
+Historical validation records retain their original commands and dates.
+
 Run the full local backend matrix:
 
 ```text
@@ -375,10 +407,10 @@ caches; only the disposable test runner is removed. This makes repeated focused 
 state. Run `make integration-rebuild` after changing the integration image, or `make integration-down` to stop the
 services while preserving those caches.
 
-Run integration tests after the ordinary build:
+At sprint close, run the ordinary build and full configured integration matrix together:
 
 ```text
-make build INTEGRATION=1
+make build INTEGRATION=1 BACKEND=all
 ```
 
 The Compose stack is defined in `infra/compose/docker-compose.yaml`. Local values are stored in

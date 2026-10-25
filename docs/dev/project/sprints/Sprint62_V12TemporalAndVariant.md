@@ -40,6 +40,8 @@ change the current support claim.
 
 ## Acceptance
 
+- The full configured integration matrix passes at sprint close, with evidence recorded under the
+  [validation cadence](../../Testing.md#validation-cadence).
 - Conversion and serialization cases agree natively, online, and generated for nulls and fractional precision.
 - Timestamp bucketing covers supported timestamp kinds, non-default origins, session time zones, and invalid intervals.
 - Variant validation has positive 4.2 evidence on each claimed variant; mutation support is not inferred.
@@ -49,10 +51,11 @@ change the current support claim.
 Round-trip a declared TIME field through numeric microseconds and JSON/CSV, bucket timestamp values, and project
 Variant validity. Compare native, online, and generated values and schemas on both 4.2 batch lanes.
 
+During coding tasks, run `make build` and choose focused live checks as needed. At sprint close, run the full
+configured matrix against the closing candidate, including required isolated provider phases:
+
 ```bash
-make build
-make integration BACKEND=pyspark42
-make integration BACKEND=spark-connect42
+make build INTEGRATION=1 BACKEND=all
 ```
 
 The 4.2 runner selectors become available in Sprint 61. Connect commands exercise batch cases only; ordinary

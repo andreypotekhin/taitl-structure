@@ -40,6 +40,8 @@ change the current support claim.
 
 ## Acceptance
 
+- The full configured integration matrix passes at sprint close, with evidence recorded under the
+  [validation cadence](../../Testing.md#validation-cadence).
 - Grouped iterator aggregates match native Arrow results online and generated on each claimed batch variant.
 - Large nullable integers retain precision; invalid returned schemas/coercions produce documented failures.
 - Retained UDF modes pass their existing batch/ordinary-streaming tests, with no inferred grouped streaming admission.
@@ -49,10 +51,11 @@ change the current support claim.
 Aggregate several Arrow batches into one declared result per group, including nulls and large integers.
 Compare native, online, and generated results and demonstrate a return-schema mismatch.
 
+During coding tasks, run `make build` and choose focused live checks as needed. At sprint close, run the full
+configured matrix against the closing candidate, including required isolated provider phases:
+
 ```bash
-make build
-make integration BACKEND=pyspark42
-make integration BACKEND=spark-connect42
+make build INTEGRATION=1 BACKEND=all
 ```
 
 The 4.2 runner selectors become available in Sprint 61. Connect commands exercise batch cases only; ordinary

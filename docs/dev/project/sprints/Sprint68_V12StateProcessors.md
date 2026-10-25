@@ -40,6 +40,8 @@ change the current support claim.
 
 ## Acceptance
 
+- The full configured integration matrix passes at sprint close, with evidence recorded under the
+  [validation cadence](../../Testing.md#validation-cadence).
 - Each admitted family/profile has its own output/time-mode, timeout/timer, cardinality, and restart results.
 - Typed state kinds, composite keys, TTL expiry, and initial-state behavior match native processor behavior.
 - Legacy gates close only where all missing cases pass; unsupported modes fail before query start.
@@ -49,10 +51,11 @@ change the current support claim.
 Run a typed accumulator with state expiry and a legacy timeout callback that emits zero or multiple rows.
 Restart the unchanged queries from caller-managed checkpoints and compare native/online/generated output.
 
+During coding tasks, run `make build` and choose focused live checks as needed. At sprint close, run the full
+configured matrix against the closing candidate, including required isolated provider phases:
+
 ```bash
-make build
-make integration BACKEND=pyspark42
-make integration BACKEND=spark-connect42
+make build INTEGRATION=1 BACKEND=all
 ```
 
 The 4.2 runner selectors become available in Sprint 61. Connect commands exercise batch cases only; ordinary

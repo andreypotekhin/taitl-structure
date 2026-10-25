@@ -43,6 +43,8 @@ change the current support claim.
 
 ## Acceptance
 
+- The full configured integration matrix passes at sprint close, with evidence recorded under the
+  [validation cadence](../../Testing.md#validation-cadence).
 - Both new lanes start and report pinned versions; retained six-lane selections remain runnable with unchanged coverage.
 - The 4.2 inventory and V11 continuity map have no unassigned rows; differences are either repaired or assigned to a
   package.
@@ -54,10 +56,11 @@ change the current support claim.
 Run a V11 projection/query fixture natively, through Structure, and as generated code on both new lanes; compare schema
 and normalized rows. Show an unsupported-profile diagnostic and a client/engine mismatch diagnostic.
 
+During coding tasks, run `make build` and choose focused live checks as needed. At sprint close, run the full
+configured matrix against the closing candidate, including required isolated provider phases:
+
 ```bash
-make build
-make integration BACKEND=pyspark42
-make integration BACKEND=spark-connect42
+make build INTEGRATION=1 BACKEND=all
 ```
 
 The 4.2 runner selectors become available in Sprint 61. Connect commands exercise batch cases only; ordinary

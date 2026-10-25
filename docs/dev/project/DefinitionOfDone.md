@@ -2,6 +2,10 @@
 
 A story or task is done when all relevant criteria are satisfied.
 
+An implementation task may finish before sprint integration; support claims and completed user stories require
+their specified positive runtime evidence. Sprint completion also requires the full configured integration matrix.
+Follow the [validation cadence](../Testing.md#validation-cadence).
+
 ## Functional Criteria
 
 - The requested behavior is implemented.
@@ -50,14 +54,26 @@ A story or task is done when all relevant criteria are satisfied.
 
 ## Testing Criteria
 
+- `make build` passes after each coding task; documentation-only tasks use relevant consistency and link checks.
 - Unit tests pass.
 - Compiler tests pass.
 - `structure compile --fail-on-diff` passes when generated artifacts are in scope.
 - Generated code snapshot tests pass.
 - Generated code import tests pass.
-- PySpark execution tests pass where applicable.
+- Focused live integration checks are chosen as needed during tasks; record any checks performed and their scope.
+- Required PySpark execution and parity evidence passes before admitting support or marking user stories complete.
 - Negative compiler and diagnostic tests cover relevant broken transforms and warnings.
 - CI scripts are updated if needed.
+
+## Sprint Acceptance Criteria
+
+- `make build INTEGRATION=1 BACKEND=all` passes against the sprint's closing candidate, including every configured
+  backend selection and required isolated provider phase.
+- Integration regressions are resolved; affected selections are rerun after fixes, with broader reruns when shared
+  changes invalidate other results.
+- The sprint review or ExecPlan records the tested revision, commands, versions, selection scope, passed/failed/skipped
+  totals, reasons, outstanding gates, and log locations. Missing or skipped evidence is not a pass.
+- Version hardening retains its additional compatibility, performance, documentation, and migration checks.
 
 ## Review Criteria
 

@@ -90,6 +90,13 @@ Main: [Testing.md](Testing.md)
 
 Testing guidelines: [Style.md](Style.md)
 
+Run `make build` after each coding task. Choose focused live integration checks as needed during development and
+record any checks performed; the full integration matrix is not required at task completion.
+
+Run `make build INTEGRATION=1 BACKEND=all` against each sprint's closing candidate.
+Resolve integration regressions and record the results before closing the sprint. See
+[validation cadence](Testing.md#validation-cadence) for the detailed task, sprint, and release requirements.
+
 ## Support and Contributions
 
 We use a contributor-led support model suited to a developer audience. A code-related issue must include all of the

@@ -37,6 +37,8 @@ change the current support claim.
 
 ## Acceptance
 
+- The full configured integration matrix passes at sprint close, with evidence recorded under the
+  [validation cadence](../../Testing.md#validation-cadence).
 - Tuple summaries and mixed Tuple/Theta operations match native results within declared approximation tolerances.
 - Logical types survive supported schema/persistence round-trips; incompatible domains fail before Spark execution.
 - Aggregate extensions cover empty/all-null groups and windows without changing neighboring metrics or grouping keys.
@@ -46,10 +48,11 @@ change the current support claim.
 Build sketches for overlapping key groups, combine them, and compare estimates and summaries natively, online,
 and generated. Show a rejected domain mismatch and a metric-local window filter.
 
+During coding tasks, run `make build` and choose focused live checks as needed. At sprint close, run the full
+configured matrix against the closing candidate, including required isolated provider phases:
+
 ```bash
-make build
-make integration BACKEND=pyspark42
-make integration BACKEND=spark-connect42
+make build INTEGRATION=1 BACKEND=all
 ```
 
 The 4.2 runner selectors become available in Sprint 61. Connect commands exercise batch cases only; ordinary

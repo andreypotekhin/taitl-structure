@@ -37,6 +37,8 @@ change the current support claim.
 
 ## Acceptance
 
+- The full configured integration matrix passes at sprint close, with evidence recorded under the
+  [validation cadence](../../Testing.md#validation-cadence).
 - Every selected helper and type has native/online/generated evidence on each claimed batch target.
 - Tests cover fixed/mixed SRID, nulls, malformed WKB, optional arguments, and incompatible spatial representations.
 - Apache evidence does not promote Sedona or managed runtimes, and mixed-session guidance agrees with live results.
@@ -46,10 +48,11 @@ change the current support claim.
 Parse WKB into a declared native spatial schema, apply admitted SRID/serialization options, and compare values and
 schema metadata across all three execution paths. Demonstrate an incompatible-representation diagnostic.
 
+During coding tasks, run `make build` and choose focused live checks as needed. At sprint close, run the full
+configured matrix against the closing candidate, including required isolated provider phases:
+
 ```bash
-make build
-make integration BACKEND=pyspark42
-make integration BACKEND=spark-connect42
+make build INTEGRATION=1 BACKEND=all
 ```
 
 The 4.2 runner selectors become available in Sprint 61. Connect commands exercise batch cases only; ordinary

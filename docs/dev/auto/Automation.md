@@ -17,6 +17,10 @@ Example: auto/mastermind/file-extentions, auto/document/configurables
 Ensure any code changes adhere to the style guide ([Style.md](../Style.md))
 Fully build and test the project at the end of each task that touches the code.
 Ensure build completion ('make build') completes without errors
+Choose focused live integration checks as needed during tasks and record any checks performed. The full integration
+matrix is required at sprint close, not at each task: run
+`make build INTEGRATION=1 BACKEND=all` before closing a sprint. Follow the
+[validation cadence](../Testing.md#validation-cadence) for evidence, failure recovery, and feature admission.
 
 Output new suggestions to /docs/dev/suggestions/.
 Focus each suggestion on a specific topic, so it may be implemented in parallel with other tasks.

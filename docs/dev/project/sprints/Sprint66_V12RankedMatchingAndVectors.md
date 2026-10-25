@@ -39,6 +39,8 @@ change the current support claim.
 
 ## Acceptance
 
+- The full configured integration matrix passes at sprint close, with evidence recorded under the
+  [validation cadence](../../Testing.md#validation-cadence).
 - Ranked output cardinality and left-side null extension match native behavior, including empty candidate pools.
 - Ties and approximate modes are documented and tested without implying deterministic or index-backed results.
 - Existing deterministic selection APIs retain their guarantees; vector validation and numerical tolerances are
@@ -49,10 +51,11 @@ change the current support claim.
 Rank a filtered candidate relation for several query rows, compare all three execution paths, and show how
 candidate count affects the plan. Exercise zero/mismatched vectors and tied ranking values.
 
+During coding tasks, run `make build` and choose focused live checks as needed. At sprint close, run the full
+configured matrix against the closing candidate, including required isolated provider phases:
+
 ```bash
-make build
-make integration BACKEND=pyspark42
-make integration BACKEND=spark-connect42
+make build INTEGRATION=1 BACKEND=all
 ```
 
 The 4.2 runner selectors become available in Sprint 61. Connect commands exercise batch cases only; ordinary
