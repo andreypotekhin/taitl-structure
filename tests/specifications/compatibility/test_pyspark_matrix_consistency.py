@@ -7,6 +7,7 @@ import os
 import re
 import subprocess
 from pathlib import Path
+from shlex import split
 
 import pytest
 
@@ -59,7 +60,7 @@ def test_runner_phases_and_cleanup(tmp_path, backend) -> None:
     result, phases, checkpoint, submit, pid = _run_launcher(tmp_path, backend)
     assert result.returncode == 0
     providers = backend in {"pyspark35", "pyspark40", "pyspark41", "spark-connect41"}
-    assert len(phases) == (3 if providers else 1)
+    assert len(phases) == (3 if backend == "pyspark41" else 5 if providers else 3)
     if providers:
         assert "/workspace/tests/integration/pyspark/iceberg/test_native_iceberg.py" in phases[0]
         assert "/workspace/tests/integration/pyspark/iceberg/test_iceberg_sql.py" in phases[0]
@@ -74,20 +75,29 @@ def test_runner_phases_and_cleanup(tmp_path, backend) -> None:
         assert "/workspace/tests/integration/pyspark/v11" in phases[-1]
         assert "/workspace/tests/concepts/live_pyspark" not in phases[-1]
     else:
+        general = phases[2:] if providers else phases
+        assert "/workspace/tests/integration/pyspark/book_contracts " in general[0]
+        for directory in ("search", "security", "stocks", "store"):
+            assert f"/workspace/tests/integration/pyspark/{directory} " in general[1]
+            assert f"--ignore=/workspace/tests/integration/pyspark/{directory}" in general[2]
+        assert "--ignore=/workspace/tests/integration/pyspark/book_contracts" in general[2]
         assert "/workspace/tests/integration " in phases[-1]
         assert "/workspace/tests/concepts/live_pyspark" in phases[-1]
     for phase in phases:
         assert f"--integration-backend={backend}" in phase
         assert "-ra" in phase
+        assert "--durations=20" in phase
+        assert "-v" in phase
     assert "Integration launcher: backend=" in result.stdout
     assert "checksum=" in result.stdout
     assert "=== Integration phase: general" in result.stdout
     assert "Selection:" in result.stdout
     assert "Pytest overrides: <none>" in result.stdout
+    assert "elapsed=" in result.stdout
     _assert_cleanup(backend, checkpoint, submit, pid)
 
 
-@pytest.mark.parametrize("phase", (1, 2, 3))
+@pytest.mark.parametrize("phase", (1, 2, 3, 4, 5))
 @pytest.mark.parametrize("status", (1, 124, 137))
 def test_runner_stops_and_cleans_up_after_failure(tmp_path, phase, status) -> None:
     result, phases, checkpoint, submit, pid = _run_launcher(tmp_path, "spark-connect41", phase, status)
@@ -115,10 +125,56 @@ def test_runner_keeps_filtered_provider_phases_when_no_tests_match(tmp_path) -> 
         tmp_path, "spark-connect41", failing_phase=1, status=5, pytest_args="-k kll_theta"
     )
     assert result.returncode == 0
-    assert len(phases) == 3
+    assert len(phases) == 5
     assert "No tests matched the explicit filter in phase iceberg" in result.stdout
     assert "No tests matched the explicit filter in phase delta" in result.stdout
     _assert_cleanup("spark-connect41", checkpoint, submit, pid)
+
+
+@pytest.mark.parametrize("selection,count", (("all", 5), ("iceberg", 1), ("delta", 1), ("general", 3), ("general-contracts", 1), ("general-examples", 1), ("general-runtime", 1)))
+def test_runner_can_select_independent_phases(tmp_path, selection, count) -> None:
+    result, phases, checkpoint, submit, pid = _run_launcher(
+        tmp_path, "spark-connect41", extra_environment={"STRUCTURE_INTEGRATION_PHASE": selection}
+    )
+    assert result.returncode == 0
+    assert len(phases) == count
+    if selection != "all":
+        assert f"=== Integration phase: {selection}" in result.stdout
+    _assert_cleanup("spark-connect41", checkpoint, submit, pid)
+
+
+@pytest.mark.parametrize("backend,selection", (("pyspark35", "typo"), ("pyspark41", "general-contracts"), ("spark-connect35", "delta"), ("spark-connect40", "iceberg")))
+def test_runner_rejects_unavailable_phase_before_startup(tmp_path, backend, selection) -> None:
+    result, phases, checkpoint, submit, pid = _run_launcher(
+        tmp_path, backend, extra_environment={"STRUCTURE_INTEGRATION_PHASE": selection}
+    )
+    assert result.returncode == 2
+    assert phases == []
+    assert not submit.exists()
+    assert not pid.exists()
+
+
+def test_general_passes_partition_current_test_modules(tmp_path) -> None:
+    result, phases, *_ = _run_launcher(tmp_path, "pyspark35")
+    assert result.returncode == 0
+    partitions = []
+    for phase in phases[2:]:
+        arguments = split(phase)
+        paths = [Path(value.removeprefix("/workspace/")) for value in arguments if value.startswith("/workspace/")]
+        ignored = [Path(value.removeprefix("--ignore=/workspace/")) for value in arguments if value.startswith("--ignore=")]
+        partitions.append({
+            source for path in paths for source in path.rglob("test_*.py")
+            if not any(source == ignore or source.is_relative_to(ignore) for ignore in ignored)
+        })
+    expected = {
+        source for path in (Path("tests/integration"), Path("tests/concepts/live_pyspark"))
+        for source in path.rglob("test_*.py")
+        if not source.is_relative_to("tests/integration/pyspark/iceberg")
+        and source.name != "test_delta_transform_live.py"
+    }
+    assert all(partitions)
+    assert set.union(*partitions) == expected
+    assert sum(map(len, partitions)) == len(expected)
 
 
 @pytest.mark.parametrize("backend", ("pyspark41", "spark-connect41"))
@@ -193,6 +249,7 @@ def _run_launcher(
         "STRUCTURE_FAIL_STATUS": str(status),
         "INTEGRATION_PYTEST_ARGS": pytest_args,
         "STRUCTURE_ICEBERG_ONLY": "0",
+        "STRUCTURE_INTEGRATION_PHASE": "all",
         **(extra_environment or {}),
     }
     runner = Path("infra/compose/images/pyspark/run-integration.sh").resolve()
@@ -228,6 +285,8 @@ def test_compose_uses_mounted_launcher(backend) -> None:
 def test_orchestrator_builds_runners_and_starts_selected_services(tmp_path, monkeypatch, backend, build) -> None:
     monkeypatch.syspath_prepend(str(Path("scripts").resolve()))
     runner = importlib.import_module("run_integration")
+    for name in runner.RUNNER_OVERRIDES:
+        monkeypatch.delenv(name, raising=False)
     calls = []
     monkeypatch.setattr(runner, "parse", lambda: argparse.Namespace(backend=backend, build=build, down=False))
     monkeypatch.setattr(runner, "ensure_compose_env", lambda: None)
@@ -255,9 +314,30 @@ def test_orchestrator_builds_runners_and_starts_selected_services(tmp_path, monk
     assert tmp_path.joinpath("integration").is_dir()
 
 
+def test_orchestrator_forwards_filters_deadlines_and_phase_selection(tmp_path, monkeypatch) -> None:
+    monkeypatch.syspath_prepend(str(Path("scripts").resolve()))
+    runner = importlib.import_module("run_integration")
+    calls = []
+    monkeypatch.setattr(runner, "parse", lambda: argparse.Namespace(backend="pyspark35", build=False, down=False))
+    monkeypatch.setattr(runner, "ensure_compose_env", lambda: None)
+    monkeypatch.setattr(runner, "WORKSPACE_TMP", tmp_path / "integration")
+    monkeypatch.setattr(runner, "run", lambda *args: calls.append(args))
+    monkeypatch.setenv("INTEGRATION_PYTEST_ARGS", "-k runtime_versions -vv")
+    monkeypatch.setenv("STRUCTURE_INTEGRATION_TIMEOUT", "600")
+    monkeypatch.setenv("STRUCTURE_INTEGRATION_PHASE", "general-runtime")
+    runner.main()
+    assert calls[-1] == (
+        "run", "--rm", "-e", "INTEGRATION_PYTEST_ARGS", "-e", "STRUCTURE_INTEGRATION_TIMEOUT",
+        "-e", "STRUCTURE_INTEGRATION_PHASE", "structure-integration-pyspark35",
+    )
+    assert calls[0] == ("up", "-d", "--no-recreate", "spark35-master", "spark35-worker")
+
+
 def test_orchestrator_stops_after_failed_backend(tmp_path, monkeypatch) -> None:
     monkeypatch.syspath_prepend(str(Path("scripts").resolve()))
     runner = importlib.import_module("run_integration")
+    for name in runner.RUNNER_OVERRIDES:
+        monkeypatch.delenv(name, raising=False)
     calls = []
     monkeypatch.setattr(runner, "parse", lambda: argparse.Namespace(backend="all", build=False, down=False))
     monkeypatch.setattr(runner, "ensure_compose_env", lambda: None)

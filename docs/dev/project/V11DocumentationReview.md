@@ -70,9 +70,15 @@ evidence, broader stateful chains, unreleased Variant operations, and XML/join r
 dispositions. The default-profile selection is recorded; the V11 retrospective remains open.
 
 The subsequent runtime-check implementation passes `make build` and its focused matching/mismatching-profile case
-on all six pinned ordinary/Connect targets. Its ordinary 3.5 full general phase timed out at 3,600 seconds and 52% of
-295 collected tests after passing isolated Iceberg and Delta. That follow-up's full-suite validation remains open and
-does not replace the dated release matrix. See [Outstanding work](OutstandingTasks.md) and the
+on all six pinned ordinary/Connect targets. Its initial ordinary 3.5 full general phase timed out at 3,600 seconds and
+52% of 295 collected tests after passing isolated Iceberg and Delta. The subsequent timeout investigation split full
+general coverage into contracts, examples, and remaining runtime/concept passes, preserving exactly those 295 tests.
+The unfiltered ordinary 3.5 rerun passed all phases: 317 passed / 55 expected skips including providers. General pytest
+times were 14m13s, 8m29s, and 18m29s; launcher wall time for contracts was 30m30s, including a confirmed 16m20s macOS
+idle sleep. Each pass stayed within the unchanged 3,600-second deadline. Worker allocation and VM memory support
+keeping live execution sequential; independent phase selection permits smaller retries. `make build` passed with
+2,714 main tests / 373 skips and 174 follow-up tests / 7 skips. The remaining five full-lane reruns stay open and do
+not replace the dated release matrix. See [Outstanding work](OutstandingTasks.md) and the
 [runtime-check plan](../planning/P10232601.Profile-diagnostics-and-runtime-version-checks.plan.md).
 
 ## Review validation

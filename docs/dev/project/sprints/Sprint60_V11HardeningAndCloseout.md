@@ -42,8 +42,12 @@ boundary and remedy.
   documentation links, and a configurable client/engine version guard runs before execution and in generated classes.
   `make build` passed (2,695 main tests / 373 skips; 155 follow-up tests / 7 skips), and the runtime-profile case
   passed on all six pinned ordinary/Connect targets. The corrected generated-hook parity case passed on ordinary
-  3.5.3. An unfiltered ordinary 3.5 rerun passed Iceberg and Delta, then hit the 3,600-second general-phase timeout
-  at 52%; full-suite live validation remains open. See the [ExecPlan](../../planning/P10232601.Profile-diagnostics-and-runtime-version-checks.plan.md)
+  3.5.3. The initial unfiltered ordinary 3.5 rerun passed Iceberg and Delta, then hit the 3,600-second general-phase
+  timeout at 52%. Partitioning the same general selection into contracts/examples/runtime subsequently passed the
+  entire 3.5 lane (317 passed / 55 expected skips), with pytest times of 14m13s / 8m29s / 18m29s. Each pass kept
+  the original deadline; the confirmed macOS idle-sleep interruption and sequential resource limits are documented.
+  Runner checks passed (62), and `make build` passed (2,714 main / 373 skips; 174 follow-up / 7 skips). The remaining
+  five full-lane reruns stay open. See the [ExecPlan](../../planning/P10232601.Profile-diagnostics-and-runtime-version-checks.plan.md)
   for the exact evidence and disposition.
 
 ## Acceptance

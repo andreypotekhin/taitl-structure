@@ -355,8 +355,11 @@ make integration BACKEND=spark-connect41
 
 The ordinary PySpark 4.1 lane runs `tests/integration/pyspark/backend/test_runtime_versions.py` and
 `tests/integration/pyspark/v11` only. Connect 4.1 runs the full integration tree and live concept tests after isolated
-Iceberg and Delta provider passes; those provider modules are excluded from the general pass. Other integration tests
-continue to run on their existing backends.
+Iceberg and Delta provider passes; those provider modules are excluded from the general passes. Full general selections
+use three independent pytest processes: `general-contracts` for `book_contracts`, `general-examples` for `search`,
+`security`, `stocks`, and `store`, and `general-runtime` for the remaining integration tree plus live concepts. The last
+pass excludes the first two selections, preserving full coverage without duplicate execution. Ordinary 4.1 retains
+its single V11-only `general` phase. Other integration tests continue to run on their existing backends.
 
 The Delta suite is `tests/integration/pyspark/v11/test_delta_transform_live.py`. It uses disposable native tables and
 checks preflight validation, native CHECK and column metadata, mutations and reads, schema evolution, maintenance, and
@@ -465,8 +468,12 @@ only equally profiled runs and keep unprofiled regression evidence separate. Mon
 
 Shared sessions use two input partitions for tiny fixtures and cap diagnostic plan strings at 8192 characters.
 The runner bounds each pytest phase with `STRUCTURE_INTEGRATION_TIMEOUT` (seconds, default 3600, then a 15-second
-kill grace). Pass overrides into the container using Compose `run -e`; a host environment assignment on
-`scripts/run_integration.py` alone does not forward `INTEGRATION_PYTEST_ARGS`.
+kill grace). Each phase records its UTC start, elapsed seconds, test names, twenty slowest durations, and skip reasons.
+The orchestrator forwards host values for `INTEGRATION_PYTEST_ARGS`, `STRUCTURE_INTEGRATION_TIMEOUT`, and
+`STRUCTURE_INTEGRATION_PHASE`; direct Compose invocations use `run -e`.
+Set `STRUCTURE_INTEGRATION_PHASE=general-contracts`, `general-examples`, or `general-runtime` to retry an independent
+pass; `general` selects all general passes and `all` runs every configured phase, including providers. `iceberg` and
+`delta` select an admitted provider pass. Phase-selected results remain partial evidence until every lane phase passes.
 For a focused run against the checked-in runner without rebuilding the image:
 
 ```sh
@@ -478,6 +485,9 @@ docker compose --env-file infra/compose/.env -f infra/compose/docker-compose.yam
 
 Replace both backend names to select another lane. Run memory-sensitive lanes sequentially when the Docker VM
 cannot accommodate their combined driver heaps. A timeout is a failure, not a skip or evidence of support.
+The shared ordinary worker also allows one application to claim all cores. Concurrent containers can therefore
+queue for executors even when memory appears available. Parallel passes require separate workers or bounded Spark
+application allocations and isolated provider storage; the default runner keeps phases and lanes sequential.
 
 For a focused provider run, set `INTEGRATION_PYTEST_ARGS` and skip unrelated phases when necessary. For example, to
 run only the Delta 4.1 Connect tests selected by `-k liquid_clustering`, set

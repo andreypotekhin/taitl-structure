@@ -177,10 +177,17 @@ When: A live phase exits with status 124 or 137 and prints `Integration deadline
 Cause: Each pytest phase has a default 3,600-second deadline. Exit 137 can also mean another forced kill, so inspect the
 container logs before attributing it to a deadline. A full selection may exceed the limit; reaching the deadline
 does not identify a failing assertion or establish parity for tests that did not finish.
-Fix: Preserve the phase's selection and output, inspect its timings, and pass a justified longer
-`STRUCTURE_INTEGRATION_TIMEOUT` into the container with Compose `run -e` when rerunning the full selection. For a
-focused diagnosis, also pass `INTEGRATION_PYTEST_ARGS` with `run -e`; setting it only in the host environment of
-`scripts/run_integration.py` does not forward the filter. Record filtered results separately from full-suite evidence.
+Fix: Preserve the phase's selection, elapsed time, last named test, and slow-test durations. Full general selections
+are partitioned into `general-contracts`, `general-examples`, and `general-runtime`, each with its own deadline.
+Retry one with `STRUCTURE_INTEGRATION_PHASE=general-contracts make integration BACKEND=pyspark35`, changing the phase
+and backend as needed. The orchestrator forwards phase selection, `INTEGRATION_PYTEST_ARGS`, and
+`STRUCTURE_INTEGRATION_TIMEOUT`; direct Compose invocations need `run -e`. Use a longer deadline only when timings
+justify it. Record phase-selected or filtered results separately from full-suite evidence. Check Spark's master for
+applications waiting on cores before starting concurrent passes; ordinary applications can claim the entire worker.
+On macOS, check `pmset -g log` for idle sleep when launcher wall time and pytest duration differ substantially.
+Sleep can pause Docker execution and distort elapsed-time comparisons. Run `caffeinate -i make integration
+BACKEND=pyspark35` to prevent idle sleep for that command's lifetime; replace the backend as needed. This does not
+change persistent power settings or prevent deliberately putting the machine to sleep.
 See [integration timing guidance](Testing.md#integration-tests) and the
 [runner example](../../infra/compose/README.md#run-tests).
 

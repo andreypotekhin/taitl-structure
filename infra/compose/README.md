@@ -30,7 +30,7 @@ Run one backend's test selection:
 
 The ordinary PySpark 4.1 runner executes only the backend version check and `tests/integration/pyspark/v11`. It does
 not run the 3.5/4.0 regression tree or the concept tests. The Connect 4.1 runner runs the full integration and live
-concept suites after separate Iceberg and Delta provider passes. Those providers are excluded from the general pass.
+concept suites after separate Iceberg and Delta provider passes. Those providers are excluded from the general passes.
 The legacy Sedona geometry test uses the configured 3.5/4.0 provider lanes. The V11 geospatial tests separately create
 isolated native Apache and Sedona sessions, covering ordinary/Connect 4.1 native helpers and Sedona 1.9.0 on ordinary/
 Connect 3.5, 4.0, and 4.1. The ordinary 4.1 service does not install Sedona's SQL extension globally because it replaces
@@ -62,7 +62,7 @@ if a cached server reports a Protobuf class error.
 
 Connect 3.5 and 4.0 do not run the Iceberg or Delta integration modules: those profiles have no isolated provider
 server setup or admitted provider contract. The launcher excludes those modules from their general test selection.
-Connect 4.1 retains the isolated provider passes and excludes them from its general pass.
+Connect 4.1 retains the isolated provider passes and excludes them from its general passes.
 
 Ordinary PySpark runs use the JVM default driver heap unless `STRUCTURE_SPARK_DRIVER_MEMORY` is set. For a bounded
 diagnostic run, set it in `infra/compose/.env` or pass it to the runner, for example
@@ -78,7 +78,24 @@ general suite. Connect 4.0 and 4.1 each receive a unique temporary checkpoint di
 gateway when the runner exits, including after test failure or timeout.
 
 Each pytest phase has a 3,600-second default deadline. A timeout is an incomplete run, not a skip or passing evidence.
-For a focused diagnostic run, pass the filter and optional deadline into the container with Compose `run -e`:
+Full general selections run as three separate pytest processes: `general-contracts` covers `book_contracts`;
+`general-examples` covers `search`, `security`, `stocks`, and `store`; `general-runtime` covers the remaining integration
+tree and live concepts, excluding those directories and the isolated providers. The partitions retain the full
+selection without duplicate execution. Ordinary 4.1 retains its single V11-only `general` phase. Each phase prints
+its start time, elapsed seconds, individual test names, twenty slowest durations, and skip reasons, so a timeout can
+be traced to the test in progress rather than inferred from the percentage of collected tests completed.
+
+To retry one independent pass without repeating providers, select its phase:
+
+```sh
+STRUCTURE_INTEGRATION_PHASE=general-contracts make integration BACKEND=pyspark35
+```
+
+`all` is the default; `iceberg`, `delta`, `general`, and the three `general-*` names select individual phases or,
+for `general`, all general passes. Unsupported phase/backend combinations fail before starting a test session or
+Connect gateway. A selected phase is partial evidence; only all configured phases complete a lane. The orchestrator forwards
+`STRUCTURE_INTEGRATION_PHASE`, `INTEGRATION_PYTEST_ARGS`, and `STRUCTURE_INTEGRATION_TIMEOUT` from the host when set.
+For a focused diagnostic run, pass the filter and optional deadline through the orchestrator or Compose `run -e`:
 
 ```sh
 docker compose --env-file infra/compose/.env -f infra/compose/docker-compose.yaml run --rm \
@@ -87,11 +104,17 @@ docker compose --env-file infra/compose/.env -f infra/compose/docker-compose.yam
 ```
 
 Provider phases still collect; when an explicit filter selects no provider tests, that phase reports deselection and
-continues. Include provider test names in the filter when their execution is required. Setting the variable only in the
-host environment of `scripts/run_integration.py` does not forward it into the container.
+continues. Include provider test names in the filter when their execution is required.
 
 The integration orchestrator starts only services required by the selected backends and uses Compose `--no-recreate`
 so already-running shared Spark services keep their containers and uptime during another lane's run.
+Phases and lanes execute sequentially. Ordinary test applications can claim every core on their shared standalone
+worker; starting another pass there can leave it waiting for executor resources. Parallel execution requires separate
+workers or explicitly bounded application resources, enough combined driver/executor memory, and isolated provider
+catalogs and checkpoint storage. Container separation alone does not provide that isolation.
+For unattended runs on macOS, `caffeinate -i make integration BACKEND=pyspark35` prevents idle sleep for the command's
+lifetime without changing persistent power settings. A sleeping host can pause Docker and make launcher wall time
+substantially longer than pytest's measured execution time; retain both when comparing runs.
 
 The test runner is removed after every run, while the Spark master/worker services and the versioned Spark Connect Ivy
 caches are retained locally. This avoids repeat image builds, Spark startup, and Spark Connect dependency downloads.

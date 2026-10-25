@@ -17,8 +17,10 @@ This is the current follow-up index. Feature status is maintained in the
 
 - [ ] Finish full live-suite validation for the implemented [profile diagnostics and runtime version checks ExecPlan](../planning/P10232601.Profile-diagnostics-and-runtime-version-checks.plan.md).
   `make build` and the focused runtime-profile case on all six pinned ordinary/Connect targets pass. The corrected
-  generated-hook parity case passes on ordinary 3.5.3. Its unfiltered general phase timed out after 3,600 seconds
-  at 52%; the full six-lane suites remain open. The default-profile selection discussion remains separate; this
+  generated-hook parity case passes on ordinary 3.5.3. Following the initial general-phase timeout at 52%, the
+  partitioned unfiltered ordinary 3.5 lane passed all phases (317 passed / 55 expected skips). Contracts, examples,
+  and runtime/concepts measured 14m13s / 8m29s / 18m29s of pytest execution; all kept the 3,600-second deadline.
+  The remaining five full-lane reruns stay open. The default-profile selection discussion remains separate; this
   plan retains `>=3.5,<4.2` and existing capability admissions.
 
 ## Feature evidence gates

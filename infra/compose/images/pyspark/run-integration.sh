@@ -2,6 +2,23 @@
 set -euo pipefail
 
 backend="${1:?integration backend is required}"
+selected_phase="${STRUCTURE_INTEGRATION_PHASE:-all}"
+case "${selected_phase}" in
+    all|general) ;;
+    iceberg|delta)
+        if [[ "${backend}" == "spark-connect35" || "${backend}" == "spark-connect40" ]]; then
+            echo "Phase ${selected_phase} is not configured for ${backend}." >&2
+            exit 2
+        fi
+        ;;
+    general-contracts|general-examples|general-runtime)
+        if [[ "${backend}" == "pyspark41" ]]; then
+            echo "${backend} retains its V11-only general phase; select general instead." >&2
+            exit 2
+        fi
+        ;;
+    *) echo "Unknown STRUCTURE_INTEGRATION_PHASE: ${selected_phase}. Use all, iceberg, delta, general, general-contracts, general-examples, or general-runtime." >&2; exit 2 ;;
+esac
 connect_pid=""
 connect_log=""
 connect_checkpoints=""
@@ -36,14 +53,21 @@ VERSIONS
 run_phase() {
     local name="${1}"
     shift
+    if [[ "${selected_phase}" != all && "${selected_phase}" != "${name}" ]]; then
+        if [[ "${selected_phase}" != general || "${name}" != general-* ]]; then
+            return 0
+        fi
+    fi
+    local started=${SECONDS}
     printf "\n=== Integration phase: %s; backend=%s ===\n" "${name}" "${backend}"
+    printf "Started: %s; deadline=%ss\n" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "${STRUCTURE_INTEGRATION_TIMEOUT:-3600}"
     printf "Selection: %s\n" "$*"
     printf "Pytest overrides: %s\n" "${INTEGRATION_PYTEST_ARGS:-<none>}"
     local status=0
     timeout --signal=TERM --kill-after=15s "${STRUCTURE_INTEGRATION_TIMEOUT:-3600}" \
         python -m pytest "$@" \
         --rootdir=/workspace -p no:cacheprovider --run-integration \
-        "--integration-backend=${backend}" -ra \
+        "--integration-backend=${backend}" -ra -v --durations=20 \
         -W 'ignore:distutils Version classes are deprecated:DeprecationWarning' \
         -W 'ignore:The copy keyword is deprecated:Warning' \
         -W 'ignore:ReleaseExecute failed with exception:UserWarning' \
@@ -52,9 +76,9 @@ run_phase() {
         printf "No tests matched the explicit filter in phase %s; continuing to the next phase.\n" "${name}"
         status=0
     fi
-    printf "Phase result: %s; backend=%s; exit=%s\n" "${name}" "${backend}" "${status}"
+    printf "Phase result: %s; backend=%s; exit=%s; elapsed=%ss\n" "${name}" "${backend}" "${status}" "$((SECONDS - started))"
     if (( status == 124 || status == 137 )); then
-        echo "Integration deadline reached (${STRUCTURE_INTEGRATION_TIMEOUT:-3600}s); backend=${backend}." >&2
+        echo "Integration deadline reached (${STRUCTURE_INTEGRATION_TIMEOUT:-3600}s); backend=${backend}; phase=${name}." >&2
     fi
     if (( status != 0 )) && [[ -n "${connect_log}" && -f "${connect_log}" ]]; then
         echo "Spark Connect server output (last 200 lines):" >&2
@@ -195,7 +219,7 @@ elif [[ "${backend}" == "pyspark41" || "${backend}" == "spark-connect41" ]]; the
 fi
 
 if [[ -n "${iceberg_runtime:-}" && "${STRUCTURE_SKIP_ICEBERG_PHASE:-0}" != "1" ]]; then
-    echo "Running native Iceberg evidence with ${iceberg_runtime}" >&2
+    echo "Native Iceberg pin: ${iceberg_runtime}" >&2
     STRUCTURE_ICEBERG_TESTS=1 STRUCTURE_SPARK_JARS_PACKAGES="${iceberg_runtime}" \
         run_phase iceberg \
         /workspace/tests/integration/pyspark/iceberg/test_native_iceberg.py \
@@ -240,8 +264,22 @@ if [[ "${backend}" == "pyspark41" ]]; then
     )
 fi
 if [[ "${STRUCTURE_SKIP_GENERAL_PHASE:-0}" != "1" ]]; then
-    if (( ${#pytest_args[@]} > 0 )); then
-        test_paths+=("${pytest_args[@]}")
+    if [[ "${backend}" == "pyspark41" ]]; then
+        run_phase general "${test_paths[@]}" "${pytest_args[@]}"
+    else
+        contracts=/workspace/tests/integration/pyspark/book_contracts
+        examples=(
+            /workspace/tests/integration/pyspark/search
+            /workspace/tests/integration/pyspark/security
+            /workspace/tests/integration/pyspark/stocks
+            /workspace/tests/integration/pyspark/store
+        )
+        run_phase general-contracts "${contracts}" "${pytest_args[@]}"
+        run_phase general-examples "${examples[@]}" "${pytest_args[@]}"
+        pytest_args+=("--ignore=${contracts}")
+        for example in "${examples[@]}"; do
+            pytest_args+=("--ignore=${example}")
+        done
+        run_phase general-runtime "${test_paths[@]}" "${pytest_args[@]}"
     fi
-    run_phase general "${test_paths[@]}"
 fi

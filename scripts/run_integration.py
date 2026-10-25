@@ -21,6 +21,7 @@ SERVICES = {
     "spark-connect40": ("spark40-master", "spark40-worker"),
     "spark-connect41": (),
 }
+RUNNER_OVERRIDES = ("INTEGRATION_PYTEST_ARGS", "STRUCTURE_INTEGRATION_TIMEOUT", "STRUCTURE_INTEGRATION_PHASE")
 
 
 def main() -> None:
@@ -41,7 +42,8 @@ def main() -> None:
         run("up", "-d", "--no-recreate", *build, *services)
     for backend in backends:
         print(f"\n=== Structure integration: {backend} ===", flush=True)
-        run("run", "--rm", f"structure-integration-{backend}")
+        overrides = tuple(argument for name in RUNNER_OVERRIDES if name in os.environ for argument in ("-e", name))
+        run("run", "--rm", *overrides, f"structure-integration-{backend}")
 
 
 def parse() -> argparse.Namespace:
