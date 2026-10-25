@@ -34,6 +34,9 @@ class PySparkExecutionPlan:
     transform_memory_budget: object | None = None
     observations: tuple[object, ...] = ()
     stage_observations: tuple[tuple[tuple[str, ...], object], ...] = ()
+    target_profile: str = ">=3.5,<4.2"
+    target_variant: str = "ordinary"
+    runtime_version_check: str = "raise"
 
     @property
     def final_validation(self) -> PySparkValidationRecipe:

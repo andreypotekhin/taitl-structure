@@ -9,6 +9,7 @@ from structure.plugin.api.v1.model import ObservationResult
 from structure.plugin.pyspark.execution.logic.PlanBoundary import apply_plan_boundary, close_plan_boundaries
 from structure.plugin.pyspark.execution.logic.PolicyChecks import reuse_policy_checks, singleton_policy
 from structure.plugin.pyspark.execution.logic.ValidatePySparkOrderedAggregate import ordered_aggregate_guard
+from structure.plugin.pyspark.execution.logic.ValidatePySparkRuntime import validate_generated_pyspark_runtime
 from structure.plugin.pyspark.schema.SketchMetadata import METADATA_KEY
 
 

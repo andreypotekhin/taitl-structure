@@ -12,6 +12,7 @@ from examples.structure_generated.store.runtime.schema_assert import (
     project_schema,
     apply_plan_boundary,
     close_plan_boundaries,
+    validate_generated_pyspark_runtime,
 )
 from examples.structure_generated.store.pyspark.schemas.common import AUDIT_STAMP_SCHEMA, TENANT_KEY_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.inventory import (
@@ -24,9 +25,15 @@ from examples.structure_generated.store.pyspark.schemas.windows import DEMAND_WI
 
 
 class ProjectInventoryGenerated:
+    _structure_target_profile = '>=3.5,<4.2'
+    _structure_target_variant = 'ordinary'
+    _structure_runtime_version_check = 'raise'
 
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
+        validate_generated_pyspark_runtime(
+            self.spark, profile='>=3.5,<4.2', variant='ordinary', policy='raise', transform='ProjectInventory'
+        )
         self.ctx = ctx
 
     def close(self) -> None:

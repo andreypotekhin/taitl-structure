@@ -245,6 +245,7 @@ def test_v1_config_merges_opaque_plugin_tables_and_keeps_them_immutable() -> Non
     assert dict(config.plugin_options["pyspark"]) == {
         "profile": ">=3.5,<4.2",
         "variant": "ordinary",
+        "runtime_version_check": "raise",
         "vendor_mode": "fast",
         "retries": 3,
         "feature": ["x"],

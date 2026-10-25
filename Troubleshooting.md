@@ -1,5 +1,19 @@
 # Troubleshooting
 
+## Spark runtime profile does not match
+
+`PYSPARK-E2710` means either the installed PySpark client or the supplied Spark engine version falls outside
+`[tool.structure.plugin.pyspark].profile`. Check both versions in the diagnostic. Set the profile to a supported range
+containing both, or install/connect to a matching runtime. For a 4.1-only feature, the broad default does not admit the
+feature; set `profile = ">=4.1,<4.2"` and an admitted `variant` in the PySpark plugin table. This static capability
+selection does not switch the server runtime.
+
+`PYSPARK-E2711` means Structure could not read or parse `pyspark.__version__` or `spark.version`. Check that the
+PySpark package is installed and the supplied session is reachable. `runtime_version_check = "log"` records an ERROR
+and continues; `"off"` skips version discovery. These options do not make an unsupported profile or Spark operation
+compatible. See [runtime version configuration](docs/Configuration.md#pyspark-runtime-version-check) and
+[diagnostic details](docs/Diagnostics.md#pyspark-e2710-and-pyspark-e2711).
+
 ## Generated Delta Optimize Fails with `_structure_variables`
 
 Older generated code can raise `AttributeError` for `_structure_variables` when `delta_optimize(where=...)` uses a

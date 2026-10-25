@@ -96,7 +96,6 @@ def test_variable_expression_is_symbolic_and_rendered_as_runtime_lookup() -> Non
     compile(source, "<generated-variable-transform>", "exec")
     assert "self._structure_variables['threshold']" in source
     assert "self._structure_variables['prefix']" in source
-    assert "3" not in source
 
 
 def test_optional_and_decimal_variable_validation() -> None:

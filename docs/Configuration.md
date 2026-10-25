@@ -1,5 +1,25 @@
 # Configuration
 
+## PySpark runtime version check
+
+The configured `plugin.pyspark.profile` controls static capability admission. At execution time, Structure also checks
+that both the installed PySpark client and the supplied Spark session's engine version fall within that profile.
+The default profile is `>=3.5,<4.2`; using a 4.1-only feature requires an exact profile such as `>=4.1,<4.2` and a
+variant that admits the feature.
+
+```toml
+[tool.structure.plugin.pyspark]
+profile = ">=4.1,<4.2"
+variant = "ordinary"
+runtime_version_check = "raise" # "raise", "log", or "off"
+```
+
+`raise` is the default and stops before Structure compiles an executed transform. `log` emits the same profile
+diagnostic at Python logging level `ERROR` and continues. `off` performs no version discovery. Either override can
+allow native Spark failures to occur later; neither enables a statically gated feature. `spark.version` is read through
+the supplied session's public API, including for Spark Connect. Structure does not create a session to check versions.
+Static compilation and documentation generation remain runtime-independent. See [PYSPARK-E2710 and E2711](Diagnostics.md#pyspark-e2710-and-pyspark-e2711).
+
 Structure works by convention and supports a small TOML configuration for project-wide settings.
 
 Use configuration for paths, package names, execution mode, validation defaults, Spark SQL assumptions, compiler

@@ -13,6 +13,14 @@ This is the current follow-up index. Feature status is maintained in the
   [Sprint 60](sprints/Sprint60_V11HardeningAndCloseout.md).
 - [ ] Write the V11 retrospective. The profile decision is recorded in the V11 charter and Sprint 60.
 
+## Profile diagnostics and runtime validation
+
+- [ ] Finish full live-suite validation for the implemented [profile diagnostics and runtime version checks ExecPlan](../planning/P10232601.Profile-diagnostics-and-runtime-version-checks.plan.md).
+  `make build` and the focused runtime-profile case on all six pinned ordinary/Connect targets pass. The corrected
+  generated-hook parity case passes on ordinary 3.5.3. Its unfiltered general phase timed out after 3,600 seconds
+  at 52%; the full six-lane suites remain open. The default-profile selection discussion remains separate; this
+  plan retains `>=3.5,<4.2` and existing capability admissions.
+
 ## Feature evidence gates
 
 - Managed Databricks Spark and Databricks Connect require caller-supplied live sessions. Local Apache/Sedona parity

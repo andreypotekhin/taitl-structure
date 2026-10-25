@@ -23,6 +23,7 @@ plugin_options = "allow_injection"
 [tool.structure.plugin.pyspark]
 profile = ">=3.5,<4.2"
 variant = "ordinary"
+runtime_version_check = "raise"
 ```
 
 `plugin.default` is optional. It selects a plugin only for a transform that has neither
@@ -45,9 +46,11 @@ immutable data, and passes it only after that named plugin has been selected and
 key spelling and value meaning belong to the plugin. Core must neither reserve plugin-table keys nor merge the table
 with another plugin's table.
 
-The bundled PySpark plugin owns `plugin.pyspark.profile` and `plugin.pyspark.variant`. Their v5 meanings are the
-same as the prior PySpark profile and variant settings. This preserves the released PySpark target range without
-making it a Core-wide backend setting.
+The bundled PySpark plugin owns `plugin.pyspark.profile`, `plugin.pyspark.variant`, and
+`plugin.pyspark.runtime_version_check`. The profile and variant retain their v5 meanings. Runtime checking accepts
+`raise`, `log`, or `off`; `raise` is the default. This preserves the released PySpark target range without making it a
+Core-wide backend setting. The profile is checked against the installed PySpark client and supplied Spark engine
+when execution begins; static compile and documentation operations remain Spark-free.
 
 ## Precedence and Validation
 

@@ -11,6 +11,7 @@ from examples.structure_generated.search.runtime.schema_assert import (
     project_schema,
     apply_plan_boundary,
     close_plan_boundaries,
+    validate_generated_pyspark_runtime,
 )
 from examples.structure_generated.search.pyspark.schemas.bm25 import (
     DOCUMENT_BM25_SCORE_SCHEMA,
@@ -101,6 +102,10 @@ class ScoreBaseGenerated:
 
 
 class ScoreBm25Generated(ScoreBaseGenerated):
+    _structure_target_profile = '>=3.5,<4.2'
+    _structure_target_variant = 'ordinary'
+    _structure_runtime_version_check = 'raise'
+
     def _step_score_document_bm25_2(self, frames):
         # Step method: score_document_bm25
         document_bm25_scores = frames["expanded_query_terms"].alias("query_term")
@@ -434,6 +439,9 @@ class ScoreBm25Generated(ScoreBaseGenerated):
 
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
+        validate_generated_pyspark_runtime(
+            self.spark, profile='>=3.5,<4.2', variant='ordinary', policy='raise', transform='ScoreBm25'
+        )
         self.ctx = ctx
 
     def close(self) -> None:

@@ -184,7 +184,11 @@ def test_v1_transform_module_renderer_renders_class_runtime_shape() -> None:
     assert "project_schema," in text
     assert "apply_plan_boundary," in text
     assert "close_plan_boundaries," in text
+    assert "validate_generated_pyspark_runtime" in text
     assert "class EnrichOrdersGenerated:" in text
+    assert "_structure_target_profile" in text
+    assert "_structure_runtime_version_check" in text
+    assert "validate_generated_pyspark_runtime(" in text
     assert "        self._impl = EnrichOrders()" in text
     assert "        orders: DataFrame," in text
     assert '        assert_schema(orders, ORDER_RAW_SCHEMA, name="OrderRaw", mode="strict")' in text
@@ -254,6 +258,7 @@ def test_mirror_methods_render_source_named_steps_and_constructor_inputs() -> No
     assert "    def add_customer(self):" in text
     assert "    def run(self) -> TransformResult:" in text
     assert "        self.orders = self._input_orders" in text
+    assert "validate_generated_pyspark_runtime(" in text
     assert "        self.normalize()" in text
 
 

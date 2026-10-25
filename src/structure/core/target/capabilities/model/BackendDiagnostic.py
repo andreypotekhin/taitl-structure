@@ -33,6 +33,8 @@ class BackendDiagnostic:
         return Diagnostic(
             entry=diagnostic_registry[self.code],
             problem=self.problem,
+            explanation=self.why,
+            documentation=self.docs,
             use=self.use,
             context=self.context(),
         )

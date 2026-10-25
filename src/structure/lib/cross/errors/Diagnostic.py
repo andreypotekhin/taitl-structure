@@ -11,6 +11,8 @@ from structure.lib.cross.errors.SourceSpan import SourceSpan
 class Diagnostic:
     entry: DiagnosticEntry
     problem: str = ""
+    explanation: str = ""
+    documentation: str = ""
     use: str = ""
     context: Mapping[str, str] = field(default_factory=dict)
     source: str = ""
@@ -31,11 +33,11 @@ class Diagnostic:
 
     @property
     def docs(self) -> str:
-        return self.entry.docs
+        return self.documentation or self.entry.docs
 
     @property
     def why(self) -> str:
-        return self.entry.why_template
+        return self.explanation or self.entry.why_template
 
     def problem_text(self) -> str:
         return self.problem or self.entry.problem_template

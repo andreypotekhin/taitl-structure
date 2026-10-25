@@ -2,6 +2,12 @@
 
 This is the compatibility companion to the [API reference](../api/Expressions.api.md). It records Structure contracts alongside the corresponding PySpark API forms and examples for read-through. The shared baseline is the public PySpark 3.5.x/4.0.x intersection; Connect is claimed only where runtime evidence is recorded.
 
+Capability errors name the exact profile and variant that admit a gated helper. For example, the broad default
+`>=3.5,<4.2` does not admit the PySpark 4.1 `Column.transform`, TIME, or query helpers; set
+`[tool.structure.plugin.pyspark] profile = ">=4.1,<4.2"` with an admitted variant. At execution, the configured profile
+is checked against both `pyspark.__version__` and the supplied session's `spark.version`; see
+[runtime version configuration](../Configuration.md#pyspark-runtime-version-check).
+
 ## Conditional, Assertion, Predicate, and Null Functions
 
 | Structure API | PySpark parity | Example | PySpark 3 | PySpark 4 | Details |

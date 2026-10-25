@@ -20,6 +20,18 @@ SUPPORTED_PROFILES = frozenset(
     }
 )
 
+# The capability profiles are intentionally explicit keys, not general PEP 440
+# specifiers. Keep these intervals beside the keys so runtime validation uses
+# exactly the same admitted version ranges.
+PROFILE_VERSION_BOUNDS = {
+    ">=3.5,<4.1": ((3, 5, 0), (4, 1, 0)),
+    ">=3.5,<4.2": ((3, 5, 0), (4, 2, 0)),
+    ">=3.5,<4.0": ((3, 5, 0), (4, 0, 0)),
+    ">=4.0,<4.1": ((4, 0, 0), (4, 1, 0)),
+    ">=4.1,<4.2": ((4, 1, 0), (4, 2, 0)),
+    ">=4.2,<4.3": ((4, 2, 0), (4, 3, 0)),
+}
+
 SUPPORTED_VARIANTS = frozenset({"ordinary", "spark-connect"})
 PYSPARK_4_CAPABILITIES = frozenset(
     {
@@ -516,7 +528,8 @@ class PySparkCapabilities:
                 backend=self.id,
                 requirement=requirement,
                 rationale="No static PySpark capability profile exists for the configured target range.",
-                use=f"Set target_profile = {DEFAULT_TARGET_PROFILE!r}.",
+                use=(f"Set [tool.structure.plugin.pyspark] profile = {DEFAULT_TARGET_PROFILE!r}; "
+                     "see docs/reference/Configuration.ref.md."),
                 required_target=DEFAULT_TARGET_PROFILE,
             )
 
@@ -525,7 +538,9 @@ class PySparkCapabilities:
                 backend=self.id,
                 requirement=requirement,
                 rationale="No PySpark capability profile exists for the configured target variant.",
-                use='Set target_variant = "ordinary" or target_variant = "spark-connect".',
+                use=('Set [tool.structure.plugin.pyspark] variant = "ordinary" or "spark-connect" '
+                     '(the configured keys are plugin.pyspark.variant); '
+                     "see docs/reference/Configuration.ref.md."),
                 required_target=DEFAULT_TARGET_VARIANT,
             )
 
@@ -547,8 +562,11 @@ class PySparkCapabilities:
                     f"{self.id.target!r} with variant {self.id.variant!r}."
                 ),
                 use=(
-                    'Set target_profile = ">=4.1,<4.2" and target_variant to "ordinary" or "spark-connect". '
-                    "See docs/compatibility/Expressions.compat.md."
+                    'Set [tool.structure.plugin.pyspark] profile = ">=4.1,<4.2" and variant to '
+                    '"ordinary" or "spark-connect". This only changes static capability admission; '
+                    "use a matching Spark runtime. See "
+                    + ("docs/reference/UDF.ref.md." if requirement.name.startswith("arrow_udf")
+                       else "docs/compatibility/Expressions.compat.md.")
                 ),
                 required_target=">=4.1,<4.2",
             )
@@ -560,7 +578,9 @@ class PySparkCapabilities:
                 backend=self.id,
                 requirement=requirement,
                 rationale=f"The {provider} spatial helper {requirement.name!r} is not admitted for target {self.id.target!r}.",
-                use=f"Use an admitted exact target profile for {provider} spatial helpers; see docs/reference/Geospatial.ref.md.",
+                use=(f"Set [tool.structure.plugin.pyspark] profile = {target!r} and variant = "
+                     f"{self.id.variant!r} where admitted, install the {provider} provider, and see "
+                     "docs/reference/Geospatial.ref.md."),
                 required_target=target,
             )
 
@@ -569,7 +589,8 @@ class PySparkCapabilities:
                 backend=self.id,
                 requirement=requirement,
                 rationale=f"Native spatial schema types require an exact Spark 4.0 or 4.1 target; configured target is {self.id.target!r}.",
-                use='Set target_profile = ">=4.0,<4.1" or ">=4.1,<4.2" and verify the runtime exposes native constructors. See docs/reference/Geospatial.ref.md.',
+                use=('Set [tool.structure.plugin.pyspark] profile to ">=4.0,<4.1" or ">=4.1,<4.2"; '
+                     'use a runtime exposing the native constructors. See docs/reference/Geospatial.ref.md.'),
                 required_target=">=4.0,<4.1 or >=4.1,<4.2",
             )
 
@@ -582,7 +603,8 @@ class PySparkCapabilities:
                     f"with variant {self.id.variant}."
                 ),
                 use=(
-                    'Choose an admitted ordinary PySpark profile and install its pinned delta-spark version. '
+                    'Choose an admitted ordinary PySpark profile or the exact >=4.1,<4.2 Spark Connect profile, '
+                    'and install the matching Delta package. '
                     'See docs/compatibility/DeltaIceberg.compat.md.'
                 ),
             )
@@ -596,7 +618,8 @@ class PySparkCapabilities:
                     f"with variant {self.id.variant}."
                 ),
                 use=(
-                    "Choose a live-tested Iceberg profile and install its matching Spark runtime and SQL extensions. "
+                    "Choose a live-tested profile/variant (Connect is admitted on exact >=4.1,<4.2) and install its "
+                    "matching Spark runtime and SQL extensions. "
                     "See docs/compatibility/DeltaIceberg.compat.md."
                 ),
             )
@@ -606,12 +629,12 @@ class PySparkCapabilities:
                 backend=self.id,
                 requirement=requirement,
                 rationale=(
-                    f"PySpark 4.1 typed query operation {requirement.name!r} has not passed its "
-                    "online and generated parity gate."
+                    f"PySpark 4.1 typed query operation {requirement.name!r} is admitted only for exact "
+                    f">=4.1,<4.2 targets; configured target is {self.id.target!r} with variant {self.id.variant!r}."
                 ),
                 use=(
-                    'Use target_profile = ">=4.1,<4.2" with a positively admitted backend variant after parity; '
-                    "see docs/dev/design/V11PySpark41QueryOperations.design.md."
+                    'Set [tool.structure.plugin.pyspark] profile = ">=4.1,<4.2" and choose an admitted variant; '
+                    "see docs/reference/Expressions.ref.md."
                 ),
                 required_target=">=4.1,<4.2",
             )
@@ -624,9 +647,53 @@ class PySparkCapabilities:
                     "Typed batch observations require PySpark >=4.1,<4.2; "
                     f"configured target is {self.id.target!r} with variant {self.id.variant!r}."
                 ),
-                use='Set target_profile = ">=4.1,<4.2" and select a parity-tested variant. '
+                use='Set [tool.structure.plugin.pyspark] profile = ">=4.1,<4.2" and select an admitted variant. '
                 "See docs/compatibility/Expressions.compat.md.",
                 required_target=">=4.1,<4.2",
+            )
+
+        if requirement.key() in PYSPARK_4_1_SKETCH_CAPABILITIES:
+            return CapabilityDecision.unsupported_capability(
+                backend=self.id,
+                requirement=requirement,
+                rationale=(f"{requirement.group}.{requirement.name} requires the exact PySpark 4.1 profile; "
+                           f"configured target is {self.id.target!r} with variant {self.id.variant!r}."),
+                use=('Set [tool.structure.plugin.pyspark] profile = ">=4.1,<4.2" and choose an admitted '
+                     'variant. See docs/reference/Aggregations.ref.md.'),
+                required_target=">=4.1,<4.2",
+            )
+
+        if requirement.key() == ("streaming", "transform_with_state"):
+            return CapabilityDecision.unsupported_capability(
+                backend=self.id,
+                requirement=requirement,
+                rationale=("Typed row state is admitted for ordinary PySpark >=4.1,<4.2 only; "
+                           f"configured target is {self.id.target!r} with variant {self.id.variant!r}."),
+                use=('Set [tool.structure.plugin.pyspark] profile = ">=4.1,<4.2" and variant = "ordinary". '
+                     "See docs/reference/Streaming.ref.md."),
+                required_target=">=4.1,<4.2 ordinary",
+            )
+
+        if requirement.key() == ("streaming", "transform_with_state_in_pandas"):
+            return CapabilityDecision.unsupported_capability(
+                backend=self.id,
+                requirement=requirement,
+                rationale=("Pandas state is admitted for ordinary PySpark >=4.0,<4.1 and >=4.1,<4.2; "
+                           f"configured target is {self.id.target!r} with variant {self.id.variant!r}."),
+                use=('Set [tool.structure.plugin.pyspark] profile = ">=4.0,<4.1" or ">=4.1,<4.2" and '
+                     'variant = "ordinary". See docs/reference/Streaming.ref.md.'),
+                required_target=">=4.0,<4.1 or >=4.1,<4.2 ordinary",
+            )
+
+        if requirement.key() == ("optimization", "checkpoint") and self.id.variant == "spark-connect":
+            return CapabilityDecision.unsupported_capability(
+                backend=self.id,
+                requirement=requirement,
+                rationale=("Spark Connect checkpointing is admitted for exact >=4.0,<4.1 and >=4.1,<4.2 "
+                           f"targets; configured target is {self.id.target!r}."),
+                use=('Set [tool.structure.plugin.pyspark] profile to ">=4.0,<4.1" or ">=4.1,<4.2" and '
+                     'variant = "spark-connect". See docs/reference/Materialization.ref.md.'),
+                required_target=">=4.0,<4.1 or >=4.1,<4.2 spark-connect",
             )
 
         return CapabilityDecision.unsupported_capability(

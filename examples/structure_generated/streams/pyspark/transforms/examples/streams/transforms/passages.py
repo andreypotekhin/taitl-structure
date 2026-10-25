@@ -11,15 +11,22 @@ from examples.structure_generated.streams.runtime.schema_assert import (
     project_schema,
     apply_plan_boundary,
     close_plan_boundaries,
+    validate_generated_pyspark_runtime,
 )
 from examples.structure_generated.streams.pyspark.schemas.events import PASSAGE_SCHEMA, RAW_EVENT_SCHEMA
 from examples.structure_generated.streams.pyspark.schemas.race import GATE_SCHEMA, PADDLER_SCHEMA, RACE_SCHEMA
 
 
 class PreparePassagesGenerated:
+    _structure_target_profile = '>=3.5,<4.2'
+    _structure_target_variant = 'ordinary'
+    _structure_runtime_version_check = 'raise'
 
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
+        validate_generated_pyspark_runtime(
+            self.spark, profile='>=3.5,<4.2', variant='ordinary', policy='raise', transform='PreparePassages'
+        )
         self.ctx = ctx
 
     def close(self) -> None:

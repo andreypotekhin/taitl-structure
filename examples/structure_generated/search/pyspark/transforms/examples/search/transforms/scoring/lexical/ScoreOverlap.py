@@ -11,6 +11,7 @@ from examples.structure_generated.search.runtime.schema_assert import (
     project_schema,
     apply_plan_boundary,
     close_plan_boundaries,
+    validate_generated_pyspark_runtime,
     reuse_policy_checks,
     singleton_policy,
 )
@@ -110,6 +111,10 @@ class ScoreBaseGenerated:
 
 
 class ScoreOverlapGenerated(ScoreBaseGenerated):
+    _structure_target_profile = '>=3.5,<4.2'
+    _structure_target_variant = 'ordinary'
+    _structure_runtime_version_check = 'raise'
+
     def _step_select_document_vocabulary_2(self, frames):
         # Step method: select_document_vocabulary
         document_vocabulary = frames["document_terms"].alias("document_term")
@@ -839,6 +844,9 @@ class ScoreOverlapGenerated(ScoreBaseGenerated):
 
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
+        validate_generated_pyspark_runtime(
+            self.spark, profile='>=3.5,<4.2', variant='ordinary', policy='raise', transform='ScoreOverlap'
+        )
         self.ctx = ctx
 
     def close(self) -> None:

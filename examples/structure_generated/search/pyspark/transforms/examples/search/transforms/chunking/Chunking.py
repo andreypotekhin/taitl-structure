@@ -12,6 +12,7 @@ from examples.structure_generated.search.runtime.schema_assert import (
     project_schema,
     apply_plan_boundary,
     close_plan_boundaries,
+    validate_generated_pyspark_runtime,
 )
 from examples.structure_generated.search.pyspark.schemas.chunking_intermediate import (
     MARKED_DOCUMENT_LINE_SCHEMA,
@@ -455,9 +456,15 @@ class SentenceChunkingGenerated:
 
 
 class ChunkingGenerated(DocumentChunkingGenerated, SentenceChunkingGenerated):
+    _structure_target_profile = '>=3.5,<4.2'
+    _structure_target_variant = 'ordinary'
+    _structure_runtime_version_check = 'raise'
 
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
+        validate_generated_pyspark_runtime(
+            self.spark, profile='>=3.5,<4.2', variant='ordinary', policy='raise', transform='Chunking'
+        )
         self.ctx = ctx
         self._structure_udf_examples_search_transforms_chunking_sentencechunking_sentencechunking_default_sentence_spans = (
             F

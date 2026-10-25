@@ -449,7 +449,11 @@ def test_v1_generated_session_delegates_to_generated_class() -> None:
     module_name = "testing.model.structure_generated.orders.pyspark.transforms.order"
     installed = _install_generated_module(
         module_name,
-        fingerprint=_fingerprint(EnrichOrders, generated_package="testing.model.structure_generated.orders"),
+        fingerprint=_fingerprint(
+            EnrichOrders,
+            generated_package="testing.model.structure_generated.orders",
+            plugin={"pyspark": {"runtime_version_check": "off"}},
+        ),
     )
     try:
         invocation = EnrichOrders(
@@ -463,9 +467,12 @@ def test_v1_generated_session_delegates_to_generated_class() -> None:
         session = StructureSession(
             spark="spark",
             ctx="ctx",
-            execution_mode="generated",
-            generated_package="testing.model.structure_generated.orders",
             schema_types=FakeTypes,
+            config=StructureConfig.create(
+                execution_mode="generated",
+                generated_package="testing.model.structure_generated.orders",
+                plugin={"pyspark": {"runtime_version_check": "off"}},
+            ),
         )
 
         result = session.run(invocation)
@@ -554,7 +561,11 @@ def test_v1_generated_session_can_import_from_memory_storage() -> None:
     from testing.model.orders.transforms.order import EnrichOrders
 
     storage = MemoryStorage()
-    fingerprint = _fingerprint(EnrichOrders, generated_package="memory_generated")
+    fingerprint = _fingerprint(
+        EnrichOrders,
+        generated_package="memory_generated",
+        plugin={"pyspark": {"runtime_version_check": "off"}},
+    )
     storage.write(
         {
             "memory_generated/__init__.py": "",
@@ -596,10 +607,13 @@ def test_v1_generated_session_can_import_from_memory_storage() -> None:
     session = StructureSession(
         spark="spark",
         ctx="ctx",
-        execution_mode="generated",
-        generated_package="memory_generated",
         schema_types=FakeTypes,
         storage=storage,
+        config=StructureConfig.create(
+            execution_mode="generated",
+            generated_package="memory_generated",
+            plugin={"pyspark": {"runtime_version_check": "off"}},
+        ),
     )
 
     result = session.run(invocation)
@@ -699,7 +713,7 @@ def test_v1_generated_spark_connect_classic_only_failure_reports_boundary() -> N
         fingerprint=_fingerprint(
             EnrichOrders,
             generated_package="testing.model.structure_generated.orders",
-            plugin={"pyspark": {"variant": "spark-connect"}},
+            plugin={"pyspark": {"variant": "spark-connect", "runtime_version_check": "off"}},
         ),
     )
     try:
@@ -717,7 +731,7 @@ def test_v1_generated_spark_connect_classic_only_failure_reports_boundary() -> N
             config=StructureConfig.create(
                 execution_mode="generated",
                 generated_package="testing.model.structure_generated.orders",
-                plugin={"pyspark": {"variant": "spark-connect"}},
+                plugin={"pyspark": {"variant": "spark-connect", "runtime_version_check": "off"}},
             ),
         )
 

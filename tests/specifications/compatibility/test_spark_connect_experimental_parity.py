@@ -430,7 +430,23 @@ def test_completed_batch_feature_rendering_preserves_strict_mode_for_spark_conne
 
         assert spark_connect.backend.variant == "spark-connect"
         assert spark_connect.backend.family == "spark_connect_dataframe"
-        assert _render(ordinary) == _render(spark_connect)
+
+        def strip_target_metadata(source: str) -> str:
+            lines = []
+            skipping_guard = False
+            for line in source.splitlines():
+                if "_structure_target_" in line:
+                    continue
+                if "validate_generated_pyspark_runtime(" in line:
+                    skipping_guard = not line.rstrip().endswith(")")
+                    continue
+                if skipping_guard:
+                    skipping_guard = not line.strip().endswith(")")
+                    continue
+                lines.append(line)
+            return "\n".join(lines)
+
+        assert strip_target_metadata(_render(ordinary)) == strip_target_metadata(_render(spark_connect))
 
 
 def test_spark_connect_default_skips_intermediate_checks_and_emits_boundaries() -> None:

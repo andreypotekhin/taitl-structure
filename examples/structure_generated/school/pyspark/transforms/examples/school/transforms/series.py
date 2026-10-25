@@ -11,14 +11,21 @@ from examples.structure_generated.school.runtime.schema_assert import (
     project_schema,
     apply_plan_boundary,
     close_plan_boundaries,
+    validate_generated_pyspark_runtime,
 )
 from examples.structure_generated.school.pyspark.schemas.sequences import SERIES_APPROXIMATION_SCHEMA, TICK_SCHEMA
 
 
 class PiAsSeriesGenerated:
+    _structure_target_profile = '>=3.5,<4.2'
+    _structure_target_variant = 'ordinary'
+    _structure_runtime_version_check = 'raise'
 
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
+        validate_generated_pyspark_runtime(
+            self.spark, profile='>=3.5,<4.2', variant='ordinary', policy='raise', transform='PiAsSeries'
+        )
         self.ctx = ctx
 
     def close(self) -> None:
@@ -180,9 +187,15 @@ class PiAsSeriesGenerated:
 
 
 class EAsSeriesGenerated:
+    _structure_target_profile = '>=3.5,<4.2'
+    _structure_target_variant = 'ordinary'
+    _structure_runtime_version_check = 'raise'
 
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
+        validate_generated_pyspark_runtime(
+            self.spark, profile='>=3.5,<4.2', variant='ordinary', policy='raise', transform='EAsSeries'
+        )
         self.ctx = ctx
 
     def close(self) -> None:
@@ -335,9 +348,15 @@ class EAsSeriesGenerated:
 
 
 class Ln2AsSeriesGenerated:
+    _structure_target_profile = '>=3.5,<4.2'
+    _structure_target_variant = 'ordinary'
+    _structure_runtime_version_check = 'raise'
 
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
+        validate_generated_pyspark_runtime(
+            self.spark, profile='>=3.5,<4.2', variant='ordinary', policy='raise', transform='Ln2AsSeries'
+        )
         self.ctx = ctx
 
     def close(self) -> None:

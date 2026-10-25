@@ -52,6 +52,9 @@ class CompilerAPI(CompilerAPIV1):
         plugin_options = request.plugin_options
         profile = str(plugin_options.get("profile", DEFAULT_TARGET_PROFILE))
         variant = str(plugin_options.get("variant", DEFAULT_TARGET_VARIANT))
+        runtime_version_check = plugin_options.get("runtime_version_check", "raise")
+        if runtime_version_check not in {"raise", "log", "off"}:
+            raise ValueError("PySpark runtime_version_check must be 'raise', 'log', or 'off'.")
         if request.purpose is CompilationPurpose.DOCUMENTATION:
             diagnostics = self._diagnostics(
                 plan,
@@ -90,6 +93,12 @@ class CompilerAPI(CompilerAPIV1):
             boundary_policy=boundary_policy,
             delta_check_match=delta_check_match,
             delta_cdf_checks=delta_cdf_checks,
+        )
+        lowered = replace(
+            lowered,
+            target_profile=profile,
+            target_variant=variant,
+            runtime_version_check=runtime_version_check,
         )
         lowered = PySpark.compiler.optimize_projection_unions()(lowered)
         diagnostics = self._diagnostics(

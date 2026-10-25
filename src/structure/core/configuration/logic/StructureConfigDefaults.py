@@ -49,6 +49,13 @@ class StructureConfigDefaults:
             "spark.sql.storeAssignmentPolicy": "ANSI",
             "spark.sql.timestampType": "TIMESTAMP_LTZ",
             "spark.sql.legacy.interval.enabled": False,
-            "plugin": {"default": "pyspark", "pyspark": {"profile": ">=3.5,<4.2", "variant": "ordinary"}},
+            "plugin": {
+                "default": "pyspark",
+                "pyspark": {
+                    "profile": ">=3.5,<4.2",
+                    "variant": "ordinary",
+                    "runtime_version_check": "raise",
+                },
+            },
         }
         return values, {key: "default" for key in values}

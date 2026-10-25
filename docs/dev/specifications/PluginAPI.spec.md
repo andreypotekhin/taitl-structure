@@ -143,7 +143,11 @@ transform merely to answer a capability query.
 
 When present, the execution facet accepts an opaque compiled payload, normalized Core inputs, a caller-owned opaque
 runtime, optional caller context, and execution options. It validates runtime suitability and returns the target output
-inside the Core result boundary. It never starts a global session or owns external resource lifecycle.
+inside the Core result boundary. It never starts a global session or owns external resource lifecycle. Core may call an
+optional `validate_runtime(request)` method before compiling an executed transform; this method receives an execution
+request with `payload=None` and must rely only on target configuration and the supplied runtime. It is duck-typed and
+must not become a required member of the v1 executor protocol, so existing plugins remain compatible. Static compile,
+check, and documentation workflows do not invoke runtime preflight.
 
 When present, the generation facet accepts an opaque compiled payload and Core-owned generation metadata, then returns
 an immutable collection of relative paths and file contents. Paths must be relative, normalized, unique, and remain

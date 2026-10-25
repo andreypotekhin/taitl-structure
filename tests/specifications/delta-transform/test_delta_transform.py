@@ -122,7 +122,7 @@ def test_delta_capability_is_gated_before_the_admitted_spark_connect_profile() -
         CapabilityRequirement(group="delta", name="binding")
     )
     assert not decision.supported
-    assert "ordinary PySpark" in decision.use
+    assert "exact >=4.1,<4.2 Spark Connect profile" in decision.use
 
 
 @pytest.mark.parametrize("profile", [">=3.5,<4.1", ">=3.5,<4.0", ">=4.0,<4.1"])

@@ -474,7 +474,7 @@ def test_unknown_pyspark_variant_uses_capability_diagnostic() -> None:
     assert diagnostic.backend == "pyspark"
     assert diagnostic.feature_group == "backend"
     assert diagnostic.feature_name == "unknown"
-    assert 'target_variant = "ordinary"' in diagnostic.use
+    assert '[tool.structure.plugin.pyspark] variant = "ordinary"' in diagnostic.use
 
 
 def test_static_fixtures_evaluate_same_requirement_without_runtime_spark() -> None:
@@ -531,7 +531,8 @@ def test_column_transform_requires_pyspark_41() -> None:
             capabilities=PySparkCapabilities(),
         )
     assert ">=4.1,<4.2" in raised.value.diagnostic.use
-    assert 'target_variant to "ordinary" or "spark-connect"' in raised.value.diagnostic.use
+    assert '[tool.structure.plugin.pyspark]' in raised.value.diagnostic.use
+    assert '"ordinary" or "spark-connect"' in raised.value.diagnostic.use
     assert MapPySparkExpression().map(
         try_url_decode("x"), capabilities=PySparkCapabilities(target_profile=">=4.0,<4.1")
     ).data["function"] == "try_url_decode"

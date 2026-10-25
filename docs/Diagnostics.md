@@ -41,6 +41,8 @@ Below is an index for published diagnostic codes. For the full diagnostic contra
 | ONLINE-E1203 | error | Execution mode is unsupported | Use `execution_mode = "online"` or `execution_mode = "generated"`. |
 | BACKEND-E2401 | error | Unsupported backend target | Set `plugin.default` to an installed plugin target. |
 | BACKEND-E2402 | error | Unsupported backend capability | Choose a supported operation or use a hook. |
+| PYSPARK-E2710 | error | Spark runtime is outside the configured profile | Select a profile containing both the PySpark client and Spark engine versions, or use the documented `log`/`off` override. |
+| PYSPARK-E2711 | error | Spark runtime version is unavailable | Ensure PySpark is installed and the supplied Spark session exposes `version`; see runtime profile guidance. |
 | CONNECT-E2601 | error | Spark Connect boundary is unsupported | Use Spark Connect DataFrame APIs or set `plugin.pyspark.variant = "ordinary"`. |
 | CLI-X1101 | internal | Unexpected internal failure | Rerun with debug output and report the code with a reproduction. |
 | STREAM-E0801 | error | Transform is not streaming-compatible | Keep the transform batch-only, add the required watermark or event-time bound, or rewrite the operation using a supported streaming shape. |
@@ -124,6 +126,25 @@ String expression containing the text to parse.
 
 `make_timestamp(...)` with `spark.sql.timestampType=TIMESTAMP_NTZ` builds a wall-clock timestamp; the `timezone=`
 argument does not shift that value. Remove it, or use `make_timestamp_ltz(...)` when you need an instant.
+
+### PYSPARK-E2710
+
+Structure checks the installed `pyspark.__version__` and the supplied session's public `spark.version` before compiling
+an executed transform. Both must fall within `[tool.structure.plugin.pyspark].profile`. A broad profile such as
+`>=3.5,<4.2` admits common features across those releases; it does not enable operations gated to exact 4.1. For a
+4.1-only operation, select `profile = ">=4.1,<4.2"` and a supported `variant` in that TOML table, then use a matching
+runtime. Static checks and compilation do not inspect the installed runtime.
+
+The default `runtime_version_check = "raise"` stops before transform compilation or Spark work. Set it to `"log"` to
+emit one `ERROR` diagnostic and continue, or `"off"` to skip client and engine version discovery. These are deliberate
+overrides; they do not change static capability gates or establish compatibility for an otherwise unsupported
+runtime. See [configuration](Configuration.md#pyspark-runtime-version-check) and
+[runtime troubleshooting](Troubleshooting.md#spark-runtime-profile-does-not-match).
+
+### PYSPARK-E2711
+
+The same runtime profile troubleshooting applies when client or engine version discovery fails or returns an
+unparseable value. Check the PySpark installation and the supplied session's public `version` property.
 
 ### PYSPARK-W2707
 

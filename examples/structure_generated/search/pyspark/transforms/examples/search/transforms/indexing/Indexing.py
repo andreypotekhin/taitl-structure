@@ -11,6 +11,7 @@ from examples.structure_generated.search.runtime.schema_assert import (
     project_schema,
     apply_plan_boundary,
     close_plan_boundaries,
+    validate_generated_pyspark_runtime,
 )
 from examples.structure_generated.search.pyspark.schemas.chunking_intermediate import MATERIALIZED_SENTENCE_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.fields import (
@@ -843,9 +844,15 @@ class FieldIndexGenerated:
 
 
 class IndexingGenerated(LexIndexGenerated, FieldIndexGenerated):
+    _structure_target_profile = '>=3.5,<4.2'
+    _structure_target_variant = 'ordinary'
+    _structure_runtime_version_check = 'raise'
 
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
+        validate_generated_pyspark_runtime(
+            self.spark, profile='>=3.5,<4.2', variant='ordinary', policy='raise', transform='Indexing'
+        )
         self.ctx = ctx
         self._structure_udf_examples_search_transforms_lib_text_text_span = F.udf(self.span, returnType=T.StringType())
 

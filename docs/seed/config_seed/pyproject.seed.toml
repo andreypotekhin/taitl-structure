@@ -28,6 +28,7 @@ default = "pyspark"
 [tool.structure.plugin.pyspark]
 profile = ">=3.5,<4.2"
 variant = "ordinary"
+runtime_version_check = "raise"
 
 # Validation defaults.
 validate_inputs = true

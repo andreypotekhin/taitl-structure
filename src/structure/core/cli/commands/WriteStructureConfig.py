@@ -40,6 +40,7 @@ class WriteStructureConfig:
             "[tool.structure.plugin.pyspark]",
             'profile = ">=3.5,<4.2"',
             'variant = "ordinary"',
+            'runtime_version_check = "raise"',
         ]
         if seed:
             lines.extend(

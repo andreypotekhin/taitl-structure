@@ -164,13 +164,14 @@ class StructureSession:
             )
         if self._target(invocation) != self.target:
             return self._run_plugin(invocation)
+        plugin = Plugin.registry().select(self.target)
+        self._validate_executor_runtime(plugin, invocation)
         artifact = self._compiled(invocation)
         self._validate_inputs(invocation, artifact)
         schemas = artifact.schemas
         if schemas is None:
             raise RuntimeError("Runtime execution requires materialized transform schemas")
 
-        plugin = Plugin.registry().select(self.target)
         if plugin.api.executor is None:
             raise self._invalid_mode(invocation)
         result = plugin.api.executor.execute(
@@ -216,6 +217,8 @@ class StructureSession:
         if not bool(getattr(handoff_frame, "isStreaming", False)):
             raise ValueError("run_batch requires a handoff from a streaming output.")
 
+        plugin = Plugin.registry().select(self.target)
+        self._validate_executor_runtime(plugin, invocation)
         artifact = self._compiled(invocation)
         if artifact.schemas is None:
             raise RuntimeError("Batch transform execution requires materialized transform schemas.")
@@ -350,6 +353,7 @@ class StructureSession:
         plugin = Plugin.registry().select(artifact.plugin, disabled_distributions=configuration.disabled_distributions)
         if plugin.api.executor is None:
             raise self._invalid_mode(invocation)
+        self._validate_executor_runtime(plugin, invocation, runtime=self._plugin_runtime(invocation))
         value = plugin.api.executor.execute(
             ExecutionRequest(
                 payload=artifact.payload,
@@ -368,6 +372,21 @@ class StructureSession:
                 "Return TransformResult for a multi-output transform."
             )
         return TransformResult({outputs[0] if outputs else "result": value}, single=True)
+
+    def _validate_executor_runtime(self, plugin, invocation: Transform, *, runtime=None) -> None:
+        executor = plugin.api.executor
+        if self.online_executor is not None:
+            return
+        preflight = getattr(executor, "validate_runtime", None)
+        if callable(preflight):
+            preflight(
+                ExecutionRequest(
+                    payload=None,
+                    runtime=self if runtime is None else runtime,
+                    invocation=invocation,
+                    mode=self.execution_mode,
+                )
+            )
 
     def _target(self, invocation: Transform | TransformPipeline) -> str:
         return Plugin.resolve_target()(invocation, configuration=self._plugin_configuration())

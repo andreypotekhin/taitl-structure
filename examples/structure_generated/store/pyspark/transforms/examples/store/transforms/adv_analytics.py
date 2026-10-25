@@ -12,6 +12,7 @@ from examples.structure_generated.store.runtime.schema_assert import (
     project_schema,
     apply_plan_boundary,
     close_plan_boundaries,
+    validate_generated_pyspark_runtime,
     ordered_aggregate_guard,
 )
 from examples.structure_generated.store.pyspark.schemas.adv_analytics import (
@@ -25,9 +26,15 @@ from examples.structure_generated.store.pyspark.schemas.order import ORDER_FULFI
 
 
 class AdvancedOrderAnalyticsGenerated:
+    _structure_target_profile = '>=3.5,<4.2'
+    _structure_target_variant = 'ordinary'
+    _structure_runtime_version_check = 'raise'
 
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
+        validate_generated_pyspark_runtime(
+            self.spark, profile='>=3.5,<4.2', variant='ordinary', policy='raise', transform='AdvancedOrderAnalytics'
+        )
         self.ctx = ctx
 
     def close(self) -> None:

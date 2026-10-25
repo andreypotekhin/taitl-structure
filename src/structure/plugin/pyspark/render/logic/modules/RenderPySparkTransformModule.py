@@ -37,6 +37,14 @@ class RenderPySparkTransformModule:
         self._schema = PySpark.schema.render(schema_names)
         self._step = RenderPySparkStep(schema_names)
 
+    @staticmethod
+    def _runtime_guard_line(plan: PySparkExecutionPlan) -> str:
+        return (
+            "        validate_generated_pyspark_runtime("
+            f"self.spark, profile={plan.target_profile!r}, variant={plan.target_variant!r}, "
+            f"policy={plan.runtime_version_check!r}, transform={plan.transform!r})"
+        )
+
     def __call__(
         self,
         plan: PySparkExecutionPlan,
@@ -158,7 +166,8 @@ class RenderPySparkTransformModule:
         for schema in self._observation_schemas(plan):
             lines.append(f"from {schema.__module__} import {schema.__name__}")
 
-        helpers = ["TransformResult", "assert_schema", "project_schema", "apply_plan_boundary", "close_plan_boundaries"]
+        helpers = ["TransformResult", "assert_schema", "project_schema", "apply_plan_boundary", "close_plan_boundaries",
+                   "validate_generated_pyspark_runtime"]
         has_stateful_transform = any(
             operation.kind in {"transform_with_state", "apply_in_pandas_with_state"}
             for step in plan.steps
@@ -319,6 +328,9 @@ class RenderPySparkTransformModule:
         variable_argument = " _structure_variables=None," if has_runtime_variables or has_iceberg_operations else ""
         lines = [
             f"class {class_name}:",
+            f"    _structure_target_profile = {plan.target_profile!r}",
+            f"    _structure_target_variant = {plan.target_variant!r}",
+            f"    _structure_runtime_version_check = {plan.runtime_version_check!r}",
             "",
             f"    def __init__(self, *, spark: SparkSession, ctx=None,{variable_argument}",
         ]
@@ -330,6 +342,7 @@ class RenderPySparkTransformModule:
                 else f"        {input.name}: DataFrame,"
             )
         lines.extend(["    ):", "        self.spark = spark", "        self.ctx = ctx"])
+        lines.append(self._runtime_guard_line(plan))
         if has_runtime_variables or has_iceberg_operations:
             lines.append("        self._structure_variables = _structure_variables or {}")
         lines.append("        self._ran = False")
@@ -573,8 +586,16 @@ class RenderPySparkTransformModule:
     ) -> list[str]:
         class_name = f"{plan.transform}Generated"
         source_name = source_transform.rsplit(".", 1)[1]
-        lines = [f"class {class_name}:", "", "    def __init__(self, *, spark: SparkSession, ctx=None):"]
+        lines = [
+            f"class {class_name}:",
+            f"    _structure_target_profile = {plan.target_profile!r}",
+            f"    _structure_target_variant = {plan.target_variant!r}",
+            f"    _structure_runtime_version_check = {plan.runtime_version_check!r}",
+            "",
+            "    def __init__(self, *, spark: SparkSession, ctx=None):",
+        ]
         lines.append("        self.spark = spark")
+        lines.append(self._runtime_guard_line(plan))
         lines.append("        self.ctx = ctx")
         if self._requires_impl(plan, generated_code_options=generated_code_options):
             lines.append(f"        self._impl = {source_name}()")
@@ -747,7 +768,13 @@ class RenderPySparkTransformModule:
             else ""
         )
         source_name = source_transform.rsplit(".", 1)[1]
-        lines = [f"class {class_name}{bases}:"]
+        lines = [
+            f"class {class_name}{bases}:",
+            f"    _structure_target_profile = {plan.target_profile!r}",
+            f"    _structure_target_variant = {plan.target_variant!r}",
+            f"    _structure_runtime_version_check = {plan.runtime_version_check!r}",
+            "",
+        ]
         lines.extend(
             self._step_methods(
                 plan,
@@ -758,6 +785,7 @@ class RenderPySparkTransformModule:
         )
         lines.extend(["", "    def __init__(self, *, spark: SparkSession, ctx=None):"])
         lines.append("        self.spark = spark")
+        lines.append(self._runtime_guard_line(plan))
         lines.append("        self.ctx = ctx")
         if self._requires_impl(plan, generated_code_options=generated_code_options):
             lines.append(f"        self._impl = {source_name}()")

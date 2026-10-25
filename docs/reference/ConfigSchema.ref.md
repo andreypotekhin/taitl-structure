@@ -95,6 +95,7 @@ hand.
 | `plugin.<name>.*` | Immutable options owned by the selected plugin |
 | `plugin.pyspark.profile` | Supported PySpark version range |
 | `plugin.pyspark.variant` | `ordinary` or `spark-connect` |
+| `plugin.pyspark.runtime_version_check` | `raise` before transform compilation, `log` an ERROR and continue, or `off`; default `raise` |
 
 Target selection can also be supplied by a transform decorator, workflow `target=`, `StructureSession(target=...)`, or
 a CLI override. One composed pipeline resolves one target before plugin services run. Plugin options are not passed to

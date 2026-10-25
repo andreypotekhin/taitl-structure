@@ -37,6 +37,14 @@ boundary and remedy.
   unfiltered 4.1 lanes, and `make build`. Grouped/analytic streaming and Connect streaming remain explicitly excluded.
 - [x] Record the release decision: promote the default profile to `>=3.5,<4.2`, based on the passing six-lane matrix
   and integration-enabled build.
+- [x] Implement the [profile diagnostics and runtime validation follow-up](../../planning/P10232601.Profile-diagnostics-and-runtime-version-checks.plan.md):
+  capability remedies now name applicable profiles and variants, rendered exceptions retain their explanation and
+  documentation links, and a configurable client/engine version guard runs before execution and in generated classes.
+  `make build` passed (2,695 main tests / 373 skips; 155 follow-up tests / 7 skips), and the runtime-profile case
+  passed on all six pinned ordinary/Connect targets. The corrected generated-hook parity case passed on ordinary
+  3.5.3. An unfiltered ordinary 3.5 rerun passed Iceberg and Delta, then hit the 3,600-second general-phase timeout
+  at 52%; full-suite live validation remains open. See the [ExecPlan](../../planning/P10232601.Profile-diagnostics-and-runtime-version-checks.plan.md)
+  for the exact evidence and disposition.
 
 ## Acceptance
 
