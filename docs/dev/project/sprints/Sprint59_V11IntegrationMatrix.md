@@ -162,7 +162,7 @@ its owning feature plans. The full release matrix remains open.
 
 ## Governing plan
 
-`docs/dev/planning/P08042601.V11-pyspark-4.1-adoption.plan.md`,
+`docs/dev/past/planning/P08042601.V11-pyspark-4.1-adoption.plan.md`,
 `docs/dev/past/planning/P10072603.V11-connect-full-evidence.plan.md`,
 `docs/dev/past/planning/P10062603.V11-transform-with-state-admission-and-typed-parity.plan.md`,
 `docs/dev/past/planning/P10042604.V11-transform-with-state-in-pandas.plan.md`,

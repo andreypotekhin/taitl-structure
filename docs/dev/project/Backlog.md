@@ -499,9 +499,9 @@ future documents are not V10 backlog commitments.
   2026-10-23 after the foreachBatch owner corrected the `Alert` expectation.
 - + Reconcile API Catalog, API Reference, inventories, compatibility/troubleshooting docs, generated artifacts, and
   release evidence. The passing matrix supported promotion of the default profile to `>=3.5,<4.2`.
-- Complete full-suite validation of the implemented profile-diagnostic/runtime-check follow-up. Its focused runtime
-  case passes on all six targets; the ordinary 3.5 full general phase timed out. See
-  [Outstanding work](OutstandingTasks.md#profile-diagnostics-and-runtime-validation).
+- + Complete the full-suite validation of the implemented profile-diagnostic/runtime-check follow-up. All six
+  unfiltered ordinary/Connect selections pass; exact phase totals and skips are recorded in the archived
+  [runtime-check plan](../past/planning/P10232601.Profile-diagnostics-and-runtime-version-checks.plan.md).
 
 ### Epic: Bounded Timeline Recurrence
 
@@ -543,8 +543,9 @@ online/generated live cases on the selected classic and Connect lanes, and `make
 
 ## V12
 
-Status: planned. [V12](V12.md) commits twelve focused sprints, 61–72, to PySpark 4.2 adoption and deeper V11 coverage.
-Connect remains batch-only; ordinary streaming and caller-owned lifecycle boundaries are retained.
+Status: active; Sprint 61 preparation complete 2026-10-25, runtime implementation pending. [V12](V12.md) commits
+twelve focused sprints, 61–72, to PySpark 4.2 adoption and deeper V11 coverage. Connect remains batch-only; ordinary
+streaming and caller-owned lifecycle boundaries are retained.
 
 - [ ] Sprint 61: inventory 4.2 APIs/semantics, add ordinary/Connect runtime lanes, map V11 capability continuity,
   classify V11 follow-ups, and establish optional-provider feasibility.

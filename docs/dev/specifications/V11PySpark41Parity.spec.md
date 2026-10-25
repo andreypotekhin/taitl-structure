@@ -93,7 +93,7 @@ construction, query, merge, and rendering helpers and typed Theta construction, 
 admitted for exact `>=4.1,<4.2` ordinary and Connect batch profiles. Online/generated/native parity, schema metadata,
 and Parquet readback pass on both variants. Ordinary PySpark 4.1 additionally passes watermarked aggregate and
 same-configuration checkpoint-restart parity. Connect streaming remains outside the backend contract. See the
-[KLL/Theta implementation ExecPlan](../planning/P10182603.V11-kll-theta-sketches.plan.md) for detailed evidence and
+[KLL/Theta implementation ExecPlan](../past/planning/P10182603.V11-kll-theta-sketches.plan.md) for detailed evidence and
 native edge behavior.
 
 ## Feature 4: Arrow UDF/UDTF and state processors

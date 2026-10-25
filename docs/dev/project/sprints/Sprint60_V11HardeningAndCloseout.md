@@ -1,6 +1,7 @@
 # Sprint 60: V11 Hardening and Closeout
 
-Status: integration matrix and integration-enabled build passed on 2026-10-23; default profile promoted to `>=3.5,<4.2`; retrospective remains.
+Status: V11 release matrix/build, profile decision, and runtime-check validation complete; retrospective recorded
+2026-10-25.
 
 ## Sprint goal
 
@@ -37,7 +38,7 @@ boundary and remedy.
   unfiltered 4.1 lanes, and `make build`. Grouped/analytic streaming and Connect streaming remain explicitly excluded.
 - [x] Record the release decision: promote the default profile to `>=3.5,<4.2`, based on the passing six-lane matrix
   and integration-enabled build.
-- [x] Implement the [profile diagnostics and runtime validation follow-up](../../planning/P10232601.Profile-diagnostics-and-runtime-version-checks.plan.md):
+- [x] Implement the [profile diagnostics and runtime validation follow-up](../../past/planning/P10232601.Profile-diagnostics-and-runtime-version-checks.plan.md):
   capability remedies now name applicable profiles and variants, rendered exceptions retain their explanation and
   documentation links, and a configurable client/engine version guard runs before execution and in generated classes.
   `make build` passed (2,695 main tests / 373 skips; 155 follow-up tests / 7 skips), and the runtime-profile case
@@ -46,16 +47,18 @@ boundary and remedy.
   timeout at 52%. Partitioning the same general selection into contracts/examples/runtime subsequently passed the
   entire 3.5 lane (317 passed / 55 expected skips), with pytest times of 14m13s / 8m29s / 18m29s. Each pass kept
   the original deadline; the confirmed macOS idle-sleep interruption and sequential resource limits are documented.
-  Runner checks passed (62), and `make build` passed (2,714 main / 373 skips; 174 follow-up / 7 skips). The remaining
-  five full-lane reruns stay open. See the [ExecPlan](../../planning/P10232601.Profile-diagnostics-and-runtime-version-checks.plan.md)
-  for the exact evidence and disposition.
+  Runner checks passed (62), and `make build` passed (2,714 main / 373 skips; 174 follow-up / 7 skips). The five
+  remaining unfiltered lanes passed on 2026-10-25: ordinary 4.0 and 4.1, plus Connect 3.5, 4.0, and 4.1. Phase counts,
+  runtime versions, warnings, and target-specific skips are in the completed
+  [runtime-check plan](../../past/planning/P10232601.Profile-diagnostics-and-runtime-version-checks.plan.md).
 
 ## Acceptance
 
 Every supported row has positive evidence and every gate has a reason and remedy; generated output is fresh; the full
 integration-enabled build passes; the foreachBatch blocker is resolved by its owner. The default-profile promotion is
-recorded; the V11 retrospective remains to write.
+recorded; the [V11 retrospective](../V11Retrospective.md) is written. Completed plans, including the runtime-check
+follow-up, are archived. Unfinished feature designs retain their separate records.
 
 ## Governing plan
 
-`docs/dev/planning/P08042601.V11-pyspark-4.1-adoption.plan.md`.
+`docs/dev/past/planning/P08042601.V11-pyspark-4.1-adoption.plan.md`.

@@ -67,19 +67,18 @@ ordinary and Connect lane, including isolated provider phases where admitted, an
 The corrected `Alert` schema expectation passed across ordinary 3.5/4.0/4.1. Following that passing matrix, the
 configured default profile is `>=3.5,<4.2`; exact-profile APIs remain capability-gated. Managed Databricks sessions, legacy Pandas timeout/cardinality
 evidence, broader stateful chains, unreleased Variant operations, and XML/join reordering retain their documented
-dispositions. The default-profile selection is recorded; the V11 retrospective remains open.
+dispositions. The default-profile selection is recorded; the [V11 retrospective](V11Retrospective.md) is complete.
 
 The subsequent runtime-check implementation passes `make build` and its focused matching/mismatching-profile case
 on all six pinned ordinary/Connect targets. Its initial ordinary 3.5 full general phase timed out at 3,600 seconds and
-52% of 295 collected tests after passing isolated Iceberg and Delta. The subsequent timeout investigation split full
-general coverage into contracts, examples, and remaining runtime/concept passes, preserving exactly those 295 tests.
-The unfiltered ordinary 3.5 rerun passed all phases: 317 passed / 55 expected skips including providers. General pytest
-times were 14m13s, 8m29s, and 18m29s; launcher wall time for contracts was 30m30s, including a confirmed 16m20s macOS
-idle sleep. Each pass stayed within the unchanged 3,600-second deadline. Worker allocation and VM memory support
-keeping live execution sequential; independent phase selection permits smaller retries. `make build` passed with
-2,714 main tests / 373 skips and 174 follow-up tests / 7 skips. The remaining five full-lane reruns stay open and do
-not replace the dated release matrix. See [Outstanding work](OutstandingTasks.md) and the
-[runtime-check plan](../planning/P10232601.Profile-diagnostics-and-runtime-version-checks.plan.md).
+52% of 295 collected tests after passing isolated Iceberg and Delta. Partitioning the same general selection into
+contracts, examples, and runtime/concepts preserved all 295 tests. The unfiltered ordinary 3.5 rerun passed every
+phase: 317 passed / 55 expected skips including providers. General pytest times were 14m13s, 8m29s, and 18m29s;
+launcher wall time for contracts was 30m30s, including the confirmed 16m20s macOS idle sleep. The five other
+unfiltered lanes then passed on 2026-10-25 with exact phase counts and skip reasons recorded in the
+[completed runtime-check plan](../past/planning/P10232601.Profile-diagnostics-and-runtime-version-checks.plan.md).
+The fresh `make build` passed with 2,714 main tests / 373 skips and 174 follow-up tests / 7 skips. These results
+remain separate from the dated 2026-10-23 V11 release matrix.
 
 ## Review validation
 
@@ -100,4 +99,6 @@ The follow-up documentation review was validated on 2026-10-24:
 - Focused compatibility, capability, runtime-version, and diagnostic checks: 443 passed.
 - `make build`: formatting, Flake8, and mypy (1,453 source files) passed; main suite 2,695 passed / 373 skipped;
   follow-up suite 155 passed / 7 skipped; source distribution and wheel built successfully.
-- `git diff --check`: passed. The runtime follow-up's outstanding full live-suite evidence remains recorded above.
+- `git diff --check`: passed. The runtime follow-up's full live-suite evidence is recorded above and in its archived plan.
+- On 2026-10-25, all 29 changed Markdown files were checked after archive reconciliation: zero missing local targets or
+  heading anchors; `git diff --check` passed.

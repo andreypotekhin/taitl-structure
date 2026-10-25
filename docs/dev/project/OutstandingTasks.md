@@ -11,17 +11,22 @@ This is the current follow-up index. Feature status is maintained in the
   2026-10-23. Exact results and skip reasons are in
   [Sprint 59](sprints/Sprint59_V11IntegrationMatrix.md#passing-closeout-rerun-2026-10-23) and
   [Sprint 60](sprints/Sprint60_V11HardeningAndCloseout.md).
-- [ ] Write the V11 retrospective. The profile decision is recorded in the V11 charter and Sprint 60.
+- [x] Write the [V11 retrospective](V11Retrospective.md) and archive the completed governing and sketch plans.
+  The runtime-validation follow-up and unfinished retained designs remain independently tracked.
 
 ## Profile diagnostics and runtime validation
 
-- [ ] Finish full live-suite validation for the implemented [profile diagnostics and runtime version checks ExecPlan](../planning/P10232601.Profile-diagnostics-and-runtime-version-checks.plan.md).
+- [x] Finish the full live-suite validation for the implemented
+  [profile diagnostics and runtime version checks][runtime-plan].
   `make build` and the focused runtime-profile case on all six pinned ordinary/Connect targets pass. The corrected
   generated-hook parity case passes on ordinary 3.5.3. Following the initial general-phase timeout at 52%, the
   partitioned unfiltered ordinary 3.5 lane passed all phases (317 passed / 55 expected skips). Contracts, examples,
   and runtime/concepts measured 14m13s / 8m29s / 18m29s of pytest execution; all kept the 3,600-second deadline.
-  The remaining five full-lane reruns stay open. The default-profile selection discussion remains separate; this
-  plan retains `>=3.5,<4.2` and existing capability admissions.
+  All six ordinary/Connect selections now have unfiltered passing evidence. Exact phase totals and versions are in the
+  archived runtime-check plan. The default-profile selection discussion remains separate; this plan retains
+  `>=3.5,<4.2` and existing capability admissions.
+
+[runtime-plan]: ../past/planning/P10232601.Profile-diagnostics-and-runtime-version-checks.plan.md
 
 ## Feature evidence gates
 

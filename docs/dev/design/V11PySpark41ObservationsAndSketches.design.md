@@ -47,4 +47,4 @@ Ordinary PySpark 4.1 also passes watermarked KLL/Theta aggregate parity and same
 Spark Connect remains batch-only under the existing Structured Streaming boundary. Existing HLL/Bitmap admission
 remains unchanged. Streaming follows existing grouped aggregate, watermark, output-mode, and caller-owned checkpoint
 rules. See
-[the KLL/Theta implementation ExecPlan](../planning/P10182603.V11-kll-theta-sketches.plan.md).
+[the KLL/Theta implementation ExecPlan](../past/planning/P10182603.V11-kll-theta-sketches.plan.md).

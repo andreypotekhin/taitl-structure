@@ -1606,7 +1606,7 @@
       "notes": "Native/online/generated batch, metadata, and Parquet parity pass on ordinary and Connect PySpark/Spark 4.1.0. Ordinary 4.1 also passes watermarked aggregate and same-configuration checkpoint restart parity; Connect streaming remains unsupported. Count-Min remains caller-owned.",
       "evidence": [
         "docs/dev/specifications/SketchBitmap.spec.md",
-        "docs/dev/planning/P10182603.V11-kll-theta-sketches.plan.md",
+        "docs/dev/past/planning/P10182603.V11-kll-theta-sketches.plan.md",
         "tests/specifications/v11-sketches/test_sketch_types.py",
         "tests/integration/pyspark/v11/test_kll_theta_sketches.py"
       ]

@@ -54,7 +54,7 @@ observations are admitted for exact ordinary and Connect 4.1 profiles. KLL and T
 Binary types, construction and consumer contracts, and exact-profile capability gates. Ordinary and Connect 4.1 batch
 parity passes; ordinary 4.1 also passes watermarked streaming and same-configuration restart. Connect streaming remains
 outside the backend contract. See the [observations and sketches design](V11PySpark41ObservationsAndSketches.design.md)
-and [implementation ExecPlan](../planning/P10182603.V11-kll-theta-sketches.plan.md).
+and [implementation ExecPlan](../past/planning/P10182603.V11-kll-theta-sketches.plan.md).
 
 The geospatial package implements native Geometry/Geography and five root Apache helpers on exact ordinary and
 Connect 4.1 batch profiles after parity evidence. Native execution requires the caller's Spark geospatial setting.

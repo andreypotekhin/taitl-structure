@@ -1,6 +1,7 @@
 # Sprint 61: V12 Admission and Runtime Foundation
 
-Status: planned. Iteration 1 of 12; two weeks, with calendar dates unset.
+Status: active; preparation complete 2026-10-25, runtime implementation pending. Iteration 1 of 12; two weeks,
+with calendar dates unset.
 
 ## Sprint goal
 
@@ -24,7 +25,8 @@ Start from the V11 release evidence. This sprint supplies the runtime foundation
 - [ ] Exercise Arrow defaults, PyArrow >=18, client/engine version guards, and delayed Connect column resolution.
 - [ ] Probe Delta, Iceberg, Sedona, and managed-session availability; record exact compatible packages or missing
       artifacts.
-- [ ] Classify the V11 retrospective and runtime-check full-rerun follow-up without replacing dated release evidence.
+- [x] Record the V11 retrospective and classify the runtime-check full-rerun follow-up without replacing dated release
+      evidence. All five pending lanes passed unfiltered on 2026-10-25; results are in the archived runtime-check plan.
 - [ ] Assign every reviewed row a sprint, status, variant, streaming classification, remedy, and evidence location.
 
 Follow the [V12 delivery requirements](../V12.md#delivery-and-dependencies) for package design/specification,
@@ -71,6 +73,8 @@ runner selection, and generated-runtime checks. Resolve provider feasibility ear
 No default-profile promotion, blanket feature admission, Connect streaming, or implementation of later feature packages.
 
 ## Governing documents
+
+[Sprint 61 implementation plan](../../planning/P10252601.V12-admission-and-runtime.plan.md).
 
 [V12 charter](../V12.md), [sprint planning guide](../SprintPlanningGuide.md), and
 [definition of done](../DefinitionOfDone.md).

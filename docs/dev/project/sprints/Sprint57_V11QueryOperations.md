@@ -29,7 +29,7 @@ callbacks remain caller-owned.
 `where()`/`project()` query syntax, inferred and prepared lateral joins, optional `on=`, SQL null behavior,
 explicit outer references, ordered limits, Cartesian opt-in, implementation sequence, and parity evidence.
 
-The parent is the [V11 adoption ExecPlan](../../planning/P08042601.V11-pyspark-4.1-adoption.plan.md).
+The parent is the [V11 adoption ExecPlan](../../past/planning/P08042601.V11-pyspark-4.1-adoption.plan.md).
 The [query design](../../design/V11PySpark41QueryOperations.design.md) and parity specification now describe the
 implemented contract. Both ordinary and Connect `>=4.1,<4.2` query capabilities are admitted; the default profile
 remains unchanged.

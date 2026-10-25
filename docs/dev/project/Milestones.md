@@ -512,11 +512,12 @@ lanes whose broad full-selection runs did not complete.
 - `docs/dev/past/planning/P08052602.Search-vector-index-and-rrf.plan.md` (explicit v10 Search application proving slice)
 - `docs/dev/past/planning/P08082601.Typed-scalar-generators-and-optimizer-visible-search-chunking.plan.md` (explicit v10 compiler/API and Search chunking proving slice)
 
-## M16: V11 PySpark 4.1 Adoption
+## +M16: V11 PySpark 4.1 Adoption
 
-Status: integration matrix and all-backend integration build passed on 2026-10-23; the default profile is promoted to
-`>=3.5,<4.2`. The retrospective and full-suite validation of the runtime-check follow-up remain. V11 follows
-the V10 closeout and runs from Sprint 55 through Sprint 60, ending 2027-03-05.
+Status: complete on 2026-10-25. The 2026-10-23 integration matrix and all-backend integration build support the
+default profile `>=3.5,<4.2`; the separate runtime-check follow-up's six unfiltered live lanes and `make build` also
+passed. The retrospective is recorded. V11 used Sprints 55–60; their original future dates are historical planning
+estimates, not actual release dates.
 
 ### Exit criteria
 
@@ -549,14 +550,14 @@ the V10 closeout and runs from Sprint 55 through Sprint 60, ending 2027-03-05.
   correction to expect the declared `Alert` schema. The passing matrix supports the recorded default-profile promotion
   to `>=3.5,<4.2`; full results are in Sprint 59.
 - Profile diagnostics give copyable supported-profile/variant remedies. The configurable client/engine runtime guard
-  is implemented for session and generated execution, with focused matching/mismatching-profile checks passing on all
-  six targets and `make build` passing. Its full live rerun remains incomplete after an ordinary 3.5 phase timeout;
-  see [P10232601](../planning/P10232601.Profile-diagnostics-and-runtime-version-checks.plan.md).
+  is implemented for session and generated execution. Focused matching/mismatching-profile checks and the separate
+  full unfiltered selections pass on all six targets; `make build` passes. Exact phase totals and skip reasons are in
+  the [completed runtime-check plan](../past/planning/P10232601.Profile-diagnostics-and-runtime-version-checks.plan.md).
 
 ### Governing documents
 
 - `docs/dev/project/V11.md`
-- `docs/dev/planning/P08042601.V11-pyspark-4.1-adoption.plan.md`
+- `docs/dev/past/planning/P08042601.V11-pyspark-4.1-adoption.plan.md`
 - `docs/dev/planning/P10192602.Geospatial-namespaces-and-native-types.plan.md`
 - `docs/dev/past/planning/P10042601.V11-delta-transform-mutations.plan.md`
 - `docs/dev/past/planning/P10062601.V11-delta-connect-admission.plan.md`
@@ -630,8 +631,8 @@ passes, including the full test suite and package build.
 
 ## M19: V12 PySpark 4.2 Adoption and Deeper Coverage
 
-Status: planned on 2026-10-24. Twelve two-week sprints, 61–72; calendar dates are unset. V12 extends ordinary
-streaming while Spark Connect remains batch-only.
+Status: active on 2026-10-25; Sprint 61 preparation complete, runtime implementation pending. Twelve two-week sprints,
+61–72; calendar dates are unset. V12 extends ordinary streaming while Spark Connect remains batch-only.
 
 ### Exit criteria
 

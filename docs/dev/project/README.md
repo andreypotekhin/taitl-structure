@@ -4,13 +4,15 @@ This directory contains project planning and tracking documents for **Structure*
 runtime/compiler toolkit that runs or generates clean PySpark DataFrame code. Current sprint records are in `sprints/`;
 completed sprints from before V11 are archived in [past/sprints](../past/sprints/).
 
-Current implementation and release status is recorded in [V11](V11.md) ,
+V11 implementation and release evidence is recorded in [V11](V11.md),
 [Sprint 59 matrix evidence](sprints/Sprint59_V11IntegrationMatrix.md) ,
 [Sprint 60 closeout](sprints/Sprint60_V11HardeningAndCloseout.md), and [outstanding work](OutstandingTasks.md).
+The [V11 retrospective](V11Retrospective.md) records the final feature dispositions and V12 handoff.
 
-The next release is [V12: PySpark 4.2 adoption and deeper transformation coverage](V12.md), planned as twelve
-two-week sprints, 61–72, with calendar dates unset. Spark Connect remains batch-only; ordinary streaming receives
-the state, composition, and observation extensions. V12 is planned, not an implemented support claim.
+The current release is [V12: PySpark 4.2 adoption and deeper transformation coverage](V12.md), planned as twelve
+two-week sprints, 61–72, with calendar dates unset. Sprint 61 preparation is complete and runtime implementation is
+pending. Spark Connect remains batch-only; ordinary streaming receives the state, composition, and observation
+extensions. V12 planning does not establish a new support claim.
 
 The sprint plan assumes the documentation set from the Structure design package already exists, especially:
 

@@ -6,7 +6,7 @@ For extensions on top of PySpark, see [API.md](../API.md#extensions-beyond-pyspa
 
 The current open contract register is maintained in [API Catalog Gates](../dev/gated/ApiCatalog.gates.md), with streaming
 gates in [Streaming Gates](../dev/gated/Streaming.gates.md). Current PySpark 4.1 adoption work is coordinated in the
-[V11 adoption plan](../dev/planning/P08042601.V11-pyspark-4.1-adoption.plan.md), with completed V10 scope summarized in
+[V11 adoption plan](../dev/past/planning/P08042601.V11-pyspark-4.1-adoption.plan.md), with completed V10 scope summarized in
 the [V10 project record](../dev/project/V10.md) and its [release evidence](../dev/project/V10ReleaseEvidence.md).
 An open or gated row is not a support claim;
 each entry must name its owner boundary, evidence, and caller remedy.

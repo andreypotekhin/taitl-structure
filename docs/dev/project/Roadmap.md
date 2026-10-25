@@ -542,15 +542,16 @@ foreachBatch handoff assertion. The default profile is now `>=3.5,<4.2` followin
 the [V11 charter](V11.md), [matrix evidence](sprints/Sprint59_V11IntegrationMatrix.md), and
 [closeout sprint](sprints/Sprint60_V11HardeningAndCloseout.md).
 
-Profile diagnostics and configurable runtime checking are implemented. Matching/mismatching-profile checks pass on
-all six pinned ordinary/Connect targets; their follow-up full-suite validation remains open after an ordinary 3.5
-phase timeout. See [Outstanding work](OutstandingTasks.md#profile-diagnostics-and-runtime-validation).
+Profile diagnostics and configurable runtime checking are implemented. Focused matching/mismatching-profile checks
+and the separate full unfiltered selections pass on all six pinned ordinary/Connect targets. See the completed
+[runtime-check plan](../past/planning/P10232601.Profile-diagnostics-and-runtime-version-checks.plan.md).
 
-## V12 planned scope
+## V12 active scope
 
 V12 adopts PySpark 4.2 and deepens V11's query, temporal, spatial, sketch, Python, and ordinary streaming APIs.
 The [V12 charter](V12.md) schedules twelve two-week sprints, 61–72, over a relative 24-week envelope; calendar dates
-are unset. The charter and individual sprint documents define dependencies, demonstrations, and acceptance.
+are unset. Sprint 61 preparation is complete and runtime implementation is pending. The charter and individual sprint
+documents define dependencies, demonstrations, and acceptance.
 
 - Sprint 61 establishes the API inventory, ordinary/Connect 4.2 lanes, V11 capability continuity, and early provider
   feasibility. Retain ordinary/Connect 3.5, 4.0, and 4.1 regression selections.
