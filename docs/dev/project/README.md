@@ -8,6 +8,10 @@ Current implementation and release status is recorded in [V11](V11.md) ,
 [Sprint 59 matrix evidence](sprints/Sprint59_V11IntegrationMatrix.md) ,
 [Sprint 60 closeout](sprints/Sprint60_V11HardeningAndCloseout.md), and [outstanding work](OutstandingTasks.md).
 
+The next release is [V12: PySpark 4.2 adoption and deeper transformation coverage](V12.md), planned as twelve
+two-week sprints, 61–72, with calendar dates unset. Spark Connect remains batch-only; ordinary streaming receives
+the state, composition, and observation extensions. V12 is planned, not an implemented support claim.
+
 The sprint plan assumes the documentation set from the Structure design package already exists, especially:
 
 - [UserStories.md](../specifications/UserStories.spec.md)
@@ -23,6 +27,7 @@ The sprint plan assumes the documentation set from the Structure design package 
 project/
   Roadmap.md
   V11.md
+  V12.md
   Milestones.md
   Backlog.md
   V10.md
@@ -38,6 +43,18 @@ project/
     Sprint58_V11ObservationsPythonAndState.md
     Sprint59_V11IntegrationMatrix.md
     Sprint60_V11HardeningAndCloseout.md
+    Sprint61_V12AdmissionAndRuntime.md
+    Sprint62_V12TemporalAndVariant.md
+    Sprint63_V12NativeGeospatial.md
+    Sprint64_V12SketchesAndAggregates.md
+    Sprint65_V12QueryExpressiveness.md
+    Sprint66_V12RankedMatchingAndVectors.md
+    Sprint67_V12ArrowAndPythonExecution.md
+    Sprint68_V12StateProcessors.md
+    Sprint69_V12StreamingComposition.md
+    Sprint70_V12StreamingObservations.md
+    Sprint71_V12TablesAndCdc.md
+    Sprint72_V12HardeningAndCloseout.md
   ../past/sprints/
     Sprint17_V4IncrementalCompileCacheDiagnostics.md (postponed)
     Sprint18_V4StreamingMigration.md

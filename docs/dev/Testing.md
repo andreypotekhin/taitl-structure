@@ -464,7 +464,9 @@ truncation warnings can report the full physical-plan string length. Profiling c
 only equally profiled runs and keep unprofiled regression evidence separate. Monkeypatches are test-scoped.
 
 Shared sessions use two input partitions for tiny fixtures and cap diagnostic plan strings at 8192 characters.
-The runner bounds pytest with `STRUCTURE_INTEGRATION_TIMEOUT` (seconds, default 3600, then a 15-second kill grace).
+The runner bounds each pytest phase with `STRUCTURE_INTEGRATION_TIMEOUT` (seconds, default 3600, then a 15-second
+kill grace). Pass overrides into the container using Compose `run -e`; a host environment assignment on
+`scripts/run_integration.py` alone does not forward `INTEGRATION_PYTEST_ARGS`.
 For a focused run against the checked-in runner without rebuilding the image:
 
 ```sh

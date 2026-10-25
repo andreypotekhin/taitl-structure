@@ -89,10 +89,23 @@ as ordinary Binary. Persisted sketch state is compatible only with the relevant 
 general interchange format. Grouped sketches in streaming follow the ordinary watermark and output-mode rules; callers
 remain responsible for sources, sinks, checkpoints, retention, and external exchange.
 
-KLL and Theta are typed sketch features for exact PySpark 4.1 ordinary and Connect profiles; they are outside the
-default baseline. Batch parity is verified on both variants, and ordinary 4.1 has watermarked streaming and
-same-configuration restart evidence. Connect streaming remains outside the backend contract. Count-Min remains
-caller-owned.
+KLL summarizes a numeric distribution so later steps can query quantiles, ranks, and the represented item count.
+Its field type retains the Long, Float, or Double domain; construction accuracy `k` is an operation setting. Pairwise
+`kll_sketch_merge(...)` combines compatible sketches. Spark 4.1 has no KLL merge aggregate.
+
+Theta summarizes a set so later steps can compute union, intersection, directional difference, and cardinality.
+Construction and union use `lg_nom_entries` as an accuracy setting, while the field type records the Theta family.
+Use `theta_sketch_agg(...)` to build state, then `theta_union(...)`, `theta_intersection(...)`, or
+`theta_difference(...)` before `theta_sketch_estimate(...)` when a count depends on set relationships.
+
+KLL and Theta require exact PySpark 4.1 ordinary or Connect profiles. Like HLL and Bitmap, their Binary values retain
+logical schema metadata through nested fields and persisted-schema reads; conflicting metadata is rejected. They
+cannot be cast to another sketch family or ordinary Binary. The
+[sketch reference](../reference/Aggregations.ref.md#opaque-sketch-metrics) includes declared schemas, construction,
+consumption, and parameter ranges for all four families.
+
+Batch parity is verified on both 4.1 variants, and ordinary 4.1 has watermarked streaming and same-configuration restart
+evidence. Connect streaming remains outside the backend contract. Count-Min remains caller-owned.
 
 ### Windowed Enrichment
 

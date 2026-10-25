@@ -33,7 +33,7 @@ def spark_connect_runtime_error(
             "Remove classic-only Spark/Py4J/RDD access, use Spark Connect DataFrame APIs, "
             "or run with target_variant = \"ordinary\" when the code requires classic PySpark internals."
         ),
-        docs="docs/reference/SparkConnect.md",
+        docs="docs/background/SparkConnect.back.md#runtime-boundaries",
         context={
             "surface": surface,
             "cause": type(error).__name__,

@@ -469,9 +469,9 @@ future documents are not V10 backlog commitments.
 
 ### Epic: V11 PySpark 4.1 Adoption
 
-- Inventory every reviewed PySpark 4.1 Python API addition against the 4.0 baseline and give it exactly one Structure
+- + Inventory every reviewed PySpark 4.1 Python API addition against the 4.0 baseline and give it exactly one Structure
   status, owner boundary, capability key, diagnostic, test, and evidence path.
-- Add the exact `>=4.1,<4.2` ordinary and Spark Connect capability profiles while preserving 3.5/4.0 regression lanes.
+- + Add the exact `>=4.1,<4.2` ordinary and Spark Connect capability profiles while preserving 3.5/4.0 regression lanes.
 - + Implemented typed 4.1 expression helpers, `Column.transform`, EXISTS/IN-subquery, and lateral-relation slices for
   their evidenced ordinary and Connect profiles; see Sprints 56 and 57 for results.
 - + Implement KLL/Theta sketch helpers and logical metadata for ordinary and Connect 4.1 batch use, with ordinary 4.1
@@ -495,10 +495,13 @@ future documents are not V10 backlog commitments.
   Databricks parity remains open. Apache/Sedona work requires isolated sessions; mixed exact-4.1 transforms emit
   `PYSPARK-W2707`. See [P10192602](../planning/P10192602.Geospatial-namespaces-and-native-types.plan.md).
 - + Extend Compose, runner selection, backend metadata, fixtures, version assertions, and evidence reports to
-  `pyspark41` and `spark-connect41`. All six lane selections have run; ordinary foreachBatch reruns and the full
-  integration-enabled release build remain required by Sprint 59/60.
-- Reconcile API Catalog, API Reference, machine-readable inventories, compatibility/troubleshooting docs, generated
-  artifacts, traceability, and release evidence before deciding whether the default profile includes 4.1.
+  `pyspark41` and `spark-connect41`. All six lane selections and the integration-enabled release build passed on
+  2026-10-23 after the foreachBatch owner corrected the `Alert` expectation.
+- + Reconcile API Catalog, API Reference, inventories, compatibility/troubleshooting docs, generated artifacts, and
+  release evidence. The passing matrix supported promotion of the default profile to `>=3.5,<4.2`.
+- Complete full-suite validation of the implemented profile-diagnostic/runtime-check follow-up. Its focused runtime
+  case passes on all six targets; the ordinary 3.5 full general phase timed out. See
+  [Outstanding work](OutstandingTasks.md#profile-diagnostics-and-runtime-validation).
 
 ### Epic: Bounded Timeline Recurrence
 
@@ -537,3 +540,28 @@ online/generated live cases on the selected classic and Connect lanes, and `make
 - Verify or schedule C32 field-alias correctness for Python keywords/nonidentifiers.
 - Specify C33 hook ownership for composed transforms before enabling hook-bearing composition.
 - Replace C34's prose hook list with the maintained API ledger and raw-hook inventory.
+
+## V12
+
+Status: planned. [V12](V12.md) commits twelve focused sprints, 61–72, to PySpark 4.2 adoption and deeper V11 coverage.
+Connect remains batch-only; ordinary streaming and caller-owned lifecycle boundaries are retained.
+
+- [ ] Sprint 61: inventory 4.2 APIs/semantics, add ordinary/Connect runtime lanes, map V11 capability continuity,
+  classify V11 follow-ups, and establish optional-provider feasibility.
+- [ ] Sprint 62: extend temporal conversions/bucketing and declared-schema serialization; prove Variant validation.
+- [ ] Sprint 63: expand native spatial contracts and collect representation/SRID/provider-specific evidence.
+- [ ] Sprint 64: add Tuple sketch summaries and Theta interoperability; admit selected aggregate semantic extensions.
+- [ ] Sprint 65: add query-local joins, grouped results, and scalar subqueries with explicit scope/cardinality rules.
+- [ ] Sprint 66: add nearest-by ranked matching and available native vector operations with cost and tie guidance.
+- [ ] Sprint 67: add Arrow grouped iterator aggregation and verify Python/Arrow conversion compatibility.
+- [ ] Sprint 68: complete legacy state timeout/output evidence and admit ordinary 4.2 row/Pandas state independently.
+- [ ] Sprint 69: extend selected stateful chains, Update-mode joins, and schema-safe missing-column streaming union.
+- [ ] Sprint 70: add typed streaming observations and per-batch progress retrieval without owning query lifecycle.
+- [ ] Sprint 71: prove released compatible Delta/Iceberg 4.2 pairs and typed CDC consumption; gate provider bindings
+  by exact catalog capabilities and runtime evidence.
+- [ ] Sprint 72: finish dedicated hardening, eight documented runtime selections, integrated build, generated
+  freshness, performance comparisons, documentation, default-profile decision, and retrospective.
+
+Feature sprints include their own design/specification, user stories/tests, capability/diagnostic work, public docs,
+and positive live evidence. The [charter](V12.md#goals-and-release-boundaries) distinguishes core delivery commitments
+from provider-dependent admissions. No V12 item is implemented merely because it appears in this backlog.

@@ -41,5 +41,5 @@ class ReadPySparkSchema:
             "Spark Connect metadata access must stay within APIs exposed by the remote session. "
             "Pass schema=... with an explicit StructType, or run the tool with target_variant = \"ordinary\" "
             f"when metadata access requires classic PySpark internals. Cause: {type(error).__name__}: {error}. "
-            "See docs/reference/SparkConnect.md."
+            "See docs/background/SparkConnect.back.md#runtime-boundaries."
         )

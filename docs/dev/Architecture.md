@@ -73,10 +73,15 @@ generic target name. See [PluginConfiguration.md](specifications/PluginConfigura
 
 ## PySpark Plugin
 
-The bundled `pyspark` plugin supplies the default PySpark 3.5.x/4.0.x behavior and admitted opt-in exact-4.1 features,
+The bundled `pyspark` plugin supplies common PySpark 3.5.x/4.0.x/4.1.x behavior and admitted opt-in exact-4.1 features,
 including schema materialization, DSL authoring, capability rules, lowering, execution, rendering, and diagnostics. Its
 `ordinary` and `spark-connect` variants are plugin options, not Core concepts. Compiler-only workflows remain free of
 PySpark, Java, SparkSession, and cluster startup; runtime execution receives a caller-owned Spark session.
+
+The executor's optional preflight runs before execution-time compilation or schema materialization. For PySpark it
+compares installed client and supplied engine versions with the configured profile, under the `runtime_version_check`
+policy. Generated classes retain that profile and policy and use the same guard. Static capability admission remains
+independent of runtime discovery; see [Execution](specifications/Execution.spec.md#pyspark-runtime-version-checking).
 
 Online and generated execution consume one PySpark-owned lowered semantic contract, preserving parity in expression
 lowering, validation placement, hooks, aliases, and projection shape. Structure never takes ownership of Spark session

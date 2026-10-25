@@ -250,3 +250,36 @@ This matrix maps early sprints to specification sections and major deliverables.
   regression coverage.
 - As a maintainer, I can close V11 only after the API Catalog, API Reference, capability ledgers, diagnostics, generated
   artifacts, live evidence, and `make build` agree.
+
+## V12 planned outcomes
+
+These are planning links, not completed user stories or test evidence. Feature sprints add normative user stories
+and test references as their APIs are specified and implemented. The [V12 charter](V12.md) defines release acceptance.
+
+| Intended outcome | Delivery sprint |
+| --- | --- |
+| Select 4.2 and retain V11 behavior with explicit capabilities and runtime checks | [61][v12-s61] |
+| Use numeric TIME conversions, timestamp buckets, serialization, and Variant validation | [62][v12-s62] |
+| Use evidenced native spatial extensions with declared representation and SRID | [63][v12-s63] |
+| Combine typed Tuple/Theta sketches and use admitted aggregate extensions | [64][v12-s64] |
+| Compose joined/grouped queries and project scalar subquery results | [65][v12-s65] |
+| Rank candidates and use native vector operations with stated cost/tie behavior | [66][v12-s66] |
+| Use Arrow grouped iterators without conversion or nullable-integer regressions | [67][v12-s67] |
+| Adopt each ordinary state family with independent timeout/output/restart evidence | [68][v12-s68] |
+| Compose admitted streaming state stages, joins, and schema-safe unions | [69][v12-s69] |
+| Receive typed per-batch metrics through caller-owned streaming progress | [70][v12-s70] |
+| Use evidenced table-provider pairs and transform declared CDC rows | [71][v12-s71] |
+| Adopt a release with passing runtime selections, migration guidance, and fresh artifacts | [72][v12-s72] |
+
+[v12-s61]: sprints/Sprint61_V12AdmissionAndRuntime.md
+[v12-s62]: sprints/Sprint62_V12TemporalAndVariant.md
+[v12-s63]: sprints/Sprint63_V12NativeGeospatial.md
+[v12-s64]: sprints/Sprint64_V12SketchesAndAggregates.md
+[v12-s65]: sprints/Sprint65_V12QueryExpressiveness.md
+[v12-s66]: sprints/Sprint66_V12RankedMatchingAndVectors.md
+[v12-s67]: sprints/Sprint67_V12ArrowAndPythonExecution.md
+[v12-s68]: sprints/Sprint68_V12StateProcessors.md
+[v12-s69]: sprints/Sprint69_V12StreamingComposition.md
+[v12-s70]: sprints/Sprint70_V12StreamingObservations.md
+[v12-s71]: sprints/Sprint71_V12TablesAndCdc.md
+[v12-s72]: sprints/Sprint72_V12HardeningAndCloseout.md

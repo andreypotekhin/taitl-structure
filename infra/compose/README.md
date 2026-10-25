@@ -31,19 +31,24 @@ Run one backend's test selection:
 The ordinary PySpark 4.1 runner executes only the backend version check and `tests/integration/pyspark/v11`. It does
 not run the 3.5/4.0 regression tree or the concept tests. The Connect 4.1 runner runs the full integration and live
 concept suites after separate Iceberg and Delta provider passes. Those providers are excluded from the general pass.
-The optional Sedona geometry test remains scoped to the configured 3.5/4.0 provider lanes; 4.1 does not configure its
-SQL extension. Ordinary-only streaming, state processor, and sink tests keep their existing exclusions.
-The tracked
-environment template pins PySpark 4.1.0 and separate 4.1 ports; Compose uses those values as defaults if an existing
+The legacy Sedona geometry test uses the configured 3.5/4.0 provider lanes. The V11 geospatial tests separately create
+isolated native Apache and Sedona sessions, covering ordinary/Connect 4.1 native helpers and Sedona 1.9.0 on ordinary/
+Connect 3.5, 4.0, and 4.1. The ordinary 4.1 service does not install Sedona's SQL extension globally because it replaces
+native `st_*` registrations. Managed Databricks evidence requires caller-supplied sessions. Ordinary-only streaming,
+state processor, and sink tests retain their documented exclusions.
+The tracked environment template pins PySpark 4.1.0 and separate 4.1 ports; Compose uses those values as defaults if
+an existing
 untracked `.env` predates this lane. The 4.1 image also uses Protobuf 6.33.0 to match the generated state protocol
 bundled with PySpark 4.1; 3.5 and 4.0 keep the shared Protobuf 5.29.3 pin. The PySpark 4.0 Pandas state API and both
 4.1 state processor APIs require pandas, PyArrow, and Protobuf in the driver and worker environments. The 4.0/4.1
 state test sessions use Spark's RocksDB state store because these APIs create multiple state column families.
-The Delta live module runs first in its own Python process on each classic lane so Delta's Ivy-resolved jars are on the
+After Iceberg's isolated pass, the Delta live module runs in its own Python process on each ordinary lane so its jars
+are on the
 driver classpath before another PySpark test initializes the JVM. The image pins PySpark 3.5.3 with Delta 3.3.3,
 PySpark 4.0.0 with Delta 4.0.1, and PySpark 4.1.0 with Delta 4.1.0. The remaining V11 tests run in a fresh process.
 
-The Spark Connect lanes are experimental. They start the Spark Connect gateway inside the test runner container and do
+The Spark Connect lanes verify the admitted batch feature set. They start the gateway inside the test runner container
+and do
 not add separate Connect services to the Compose stack. The gateway defaults to a 3 GiB driver heap, which can be
 overridden with `STRUCTURE_SPARK_CONNECT_DRIVER_MEMORY` for constrained or larger local environments.
 The Connect 4.1 lane runs that gateway with `local[2]`; selecting it alone does not start Spark master and worker
@@ -71,6 +76,19 @@ if a run selects fewer modules than expected. Each run records the launcher chec
 records its selection, exit status, and pytest skip reasons. Iceberg and Delta run in separate processes before the
 general suite. Connect 4.0 and 4.1 each receive a unique temporary checkpoint directory, removed together with their
 gateway when the runner exits, including after test failure or timeout.
+
+Each pytest phase has a 3,600-second default deadline. A timeout is an incomplete run, not a skip or passing evidence.
+For a focused diagnostic run, pass the filter and optional deadline into the container with Compose `run -e`:
+
+```sh
+docker compose --env-file infra/compose/.env -f infra/compose/docker-compose.yaml run --rm \
+  -e 'INTEGRATION_PYTEST_ARGS=-k test_runtime_versions' \
+  -e STRUCTURE_INTEGRATION_TIMEOUT=600 structure-integration-spark-connect41
+```
+
+Provider phases still collect; when an explicit filter selects no provider tests, that phase reports deselection and
+continues. Include provider test names in the filter when their execution is required. Setting the variable only in the
+host environment of `scripts/run_integration.py` does not forward it into the container.
 
 The integration orchestrator starts only services required by the selected backends and uses Compose `--no-recreate`
 so already-running shared Spark services keep their containers and uptime during another lane's run.

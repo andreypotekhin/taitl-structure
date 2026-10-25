@@ -11,10 +11,12 @@ execution.
 Spark Connect remains inside the PySpark target boundary:
 
 ```toml
-[tool.structure]
-target_backend = "pyspark"
-target_profile = ">=3.5,<4.2"
-target_variant = "spark-connect"
+[tool.structure.plugin]
+default = "pyspark"
+
+[tool.structure.plugin.pyspark]
+profile = ">=3.5,<4.2"
+variant = "spark-connect"
 ```
 
 The variant uses the same Structure DSL, checked IR, generated class constructor, `run(...)` signature, and
@@ -57,13 +59,17 @@ Sprint 09 promotion covers completed compiler-visible batch features only:
 - explicit optimization directives only when the PySpark DataFrame API supports the directive without classic internals;
 - execution and generated-code execution through the same PySpark recipe layer.
 
+The exact 4.1 continuation admits versioned expression, query, observation, sketch, Arrow batch, and native spatial
+features after separate Connect evidence. Delta and Iceberg use isolated provider passes. Reliable batch checkpointing
+is admitted on exact Connect 4.0/4.1 profiles. Current operation status is maintained in the
+[Spark Connect specification](../specifications/SparkConnect.spec.md) and compatibility ledgers.
+
 The design deliberately excludes:
 
 - Structure-owned streaming source, sink, trigger, watermark, and state policy generation;
 - storage write orchestration and table lifecycle management;
 - RDD access, SparkContext access, direct JVM/Py4J calls, `_jdf`, and private classic PySpark fields;
 - automatic fallback to Python UDFs, local collection, row-wise loops, or SQL string rewrites;
-- deferred advanced analytical boundaries such as `grouping_sets(...)` and post-aggregate `having(...)`;
 - opaque hook bodies unless the hook is explicitly scoped and the user accepts responsibility for Connect-compatible
   PySpark code.
 
@@ -76,9 +82,10 @@ create a session, or contact a remote server.
 
 Runtime guardrails belong at the edges:
 
-- configuration resolution identifies `target_variant = "spark-connect"` without importing PySpark;
-- `structure doctor` or an equivalent setup check may validate a live Connect session only when the user asks for a
-  runtime check;
+- configuration resolution identifies `plugin.pyspark.variant = "spark-connect"` without importing PySpark;
+- execution preflight checks client and remote engine versions under the configured `runtime_version_check` policy;
+  the default raises before compilation, while static workflows never probe the runtime;
+- generated constructors use the same guard with the target and policy retained in their generated source;
 - execution and generated-code parity tests use caller-created sessions and never rely on a local `SparkContext`;
 - diagnostics name the classic-only feature, explain why Connect cannot run it, and link to the Spark Connect reference.
 

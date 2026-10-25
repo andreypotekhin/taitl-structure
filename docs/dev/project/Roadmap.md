@@ -263,7 +263,7 @@ management, and CLI orchestration. Plugin plugins participate through one discov
 - Core-owned workflows with schema, compiler, capability, execution, generation, and serialization service facets on
   one Plugin API façade.
 - Target-owned public field definitions and plugin DSL; no permanent root aliases for PySpark APIs.
-- A generic `StructureSession(runtime=..., context=...)` runtime boundary.
+- A generic `StructureSession(runtime=..., ctx=...)` runtime boundary.
 - Standard Core diagnostic and capability records whose target-specific content is supplied by plugins.
 - A bundled `structure.plugin.pyspark` implementation with no private integration path.
 - Supported external plugin development through vendor-owned packages, public documentation, and conformance tests.
@@ -542,6 +542,31 @@ foreachBatch handoff assertion. The default profile is now `>=3.5,<4.2` followin
 the [V11 charter](V11.md), [matrix evidence](sprints/Sprint59_V11IntegrationMatrix.md), and
 [closeout sprint](sprints/Sprint60_V11HardeningAndCloseout.md).
 
+Profile diagnostics and configurable runtime checking are implemented. Matching/mismatching-profile checks pass on
+all six pinned ordinary/Connect targets; their follow-up full-suite validation remains open after an ordinary 3.5
+phase timeout. See [Outstanding work](OutstandingTasks.md#profile-diagnostics-and-runtime-validation).
+
+## V12 planned scope
+
+V12 adopts PySpark 4.2 and deepens V11's query, temporal, spatial, sketch, Python, and ordinary streaming APIs.
+The [V12 charter](V12.md) schedules twelve two-week sprints, 61–72, over a relative 24-week envelope; calendar dates
+are unset. The charter and individual sprint documents define dependencies, demonstrations, and acceptance.
+
+- Sprint 61 establishes the API inventory, ordinary/Connect 4.2 lanes, V11 capability continuity, and early provider
+  feasibility. Retain ordinary/Connect 3.5, 4.0, and 4.1 regression selections.
+- Sprints 62–64 extend temporal/Variant validation, native geospatial APIs, and sketches/aggregate semantics.
+- Sprints 65–67 deepen typed queries, ranked matching/native vectors, and Arrow/Python execution.
+- Sprints 68–70 complete ordinary state evidence, extend selected streaming compositions and schema unions, and add
+  streaming observations with caller-owned progress retrieval.
+- Sprint 71 proves available Delta/Iceberg 4.2 pairs and CDC consumption; provider bindings remain conditional on
+  released compatible packages and catalog support.
+- Sprint 72 is dedicated hardening, with no new feature families, eight documented runtime selections, the
+  integration-enabled build, generated artifacts, performance comparisons, and release reconciliation.
+
+Connect remains batch-only throughout V12. Sources, sinks, triggers, checkpoints, query lifecycle, recovery, and
+external effects remain caller-owned. Feature evidence belongs in each delivery sprint. Default-profile promotion
+is evaluated during hardening; planning retains the current `>=3.5,<4.2` default and changes no support claims.
+
 ## Release Milestones
 
 | Milestone | Goal | Sprints |
@@ -563,3 +588,4 @@ the [V11 charter](V11.md), [matrix evidence](sprints/Sprint59_V11IntegrationMatr
 | M14 | v9 PySpark streaming API coverage, design-gate follow-up, and release hardening | Sprints 40--48 |
 | M15 | v10 API Catalog and streaming contract expansion | Conditionally complete 2026-08-22; Sprints 49--54 evidence retained |
 | M16 | V11 PySpark 4.1 adoption and independently evidenced Connect support | Sprints 55–60; release checks remain open |
+| M19 | V12 PySpark 4.2 adoption and deeper coverage | Planned: Sprints 61–72; dates unset |

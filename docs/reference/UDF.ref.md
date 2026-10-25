@@ -36,9 +36,10 @@ class Normalize(Transform):
         return Clean(code=self.normalize(row.code))
 ```
 
-The callback runs once per row value. Structure does not inspect it or verify that its results satisfy `nullable=False`;
-Spark owns callback execution and any worker errors. `DSL-W0403` warns that Spark cannot optimize the callback. The
-transform-level `warn_on_udfs=False` option suppresses the warning without changing execution semantics.
+The callback receives scalar Python values for its expression arguments. Structure does not inspect it or verify that
+its results satisfy `nullable=False`. Spark owns callback execution and any worker errors. `DSL-W0403` warns that
+Spark cannot optimize the callback. The transform-level `warn_on_udfs=False` option suppresses the warning without
+changing execution semantics.
 
 ## Arrow UDFs
 

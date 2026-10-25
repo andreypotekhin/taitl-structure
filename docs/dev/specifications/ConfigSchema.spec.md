@@ -39,9 +39,6 @@ generated_docs_formats = ["markdown", "json"]
 generated_code_options = []
 generated_code_hard_wrap = 120
 execution_mode = "online"
-target_backend = "pyspark"
-target_profile = ">=3.5,<4.2"
-target_variant = "ordinary"
 hook_target_default = ["pyspark"]
 traceability = "none"
 validate_intermediate = true
@@ -56,6 +53,14 @@ fail_on_diff = false
 
 spark.sql.ansi.enabled = true
 spark.sql.storeAssignmentPolicy = "ANSI"
+
+[tool.structure.plugin]
+default = "pyspark"
+
+[tool.structure.plugin.pyspark]
+profile = ">=3.5,<4.2"
+variant = "ordinary"
+runtime_version_check = "raise"
 ```
 
 When no configuration file exists, source-root discovery may replace `source_roots = ["src"]` with `["."]` according
@@ -182,63 +187,42 @@ generated
 
 Default: `"online"`.
 
-### target_backend
+### plugin.default
 
-Type: string enum.
+Type: non-empty plugin name. Default: `"pyspark"`.
 
-Allowed in v1:
+Selects an installed plugin when neither a transform nor the workflow selects a target. Core passes the selected
+plugin its own immutable option table. Removed root keys `target_backend`, `target_profile`, `target_variant`, and
+`compat_targets` are rejected with migration guidance; they are not alternative configuration spellings.
 
-```text
-pyspark
-```
+### plugin.pyspark.profile
 
-Unknown backends fail through backend capability diagnostics.
+Type: supported profile string. Default: `">=3.5,<4.2"`.
 
-### target_profile
+The default admits the shared PySpark 3.5/4.0/4.1 feature set. Supported selections are `>=3.5,<4.1`,
+`>=3.5,<4.2`, `>=3.5,<4.0`, `>=4.0,<4.1`, `>=4.1,<4.2`, and the separately gated future profile `>=4.2,<4.3`.
+Arbitrary ranges are not accepted. Exact-4.1 APIs require `>=4.1,<4.2`; the installed runtime does not narrow a broad
+profile automatically. Compiler commands resolve capabilities without reading installed PySpark or Spark versions.
 
-Type: version range string.
+### plugin.pyspark.variant
 
-Default: `">=3.5,<4.2"` in v1.
+Type: string enum. Default: `"ordinary"`.
 
-Rules:
+- `ordinary` uses the in-process PySpark SparkSession, DataFrame, and Column APIs.
+- `spark-connect` uses public Connect-compatible DataFrame and Column APIs and rejects classic-only internals.
 
-- Must be parseable by the project's version range parser.
-- Must resolve to a supported backend capability profile.
-- For `target_backend = "pyspark"`, it selects the supported PySpark profile range.
-- Must not inspect the locally installed backend version during compiler commands.
+The variant does not change the Structure DSL, generated class API, or transform `run(...)` signature. Streaming
+remains ordinary-PySpark-only; feature admission and optional provider dependencies follow the compatibility ledgers.
 
-### target_variant
+### plugin.pyspark.runtime_version_check
 
-Type: string enum.
+Type: string enum. Default: `"raise"`.
 
-Allowed for `target_backend = "pyspark"`:
-
-```text
-ordinary
-spark-connect
-```
-
-Default: `"ordinary"`.
-
-Rules:
-
-- `ordinary` targets the normal in-process PySpark `SparkSession`, `DataFrame`, and `Column` contract.
-- `spark-connect` targets Spark Connect through the PySpark DataFrame and Column API while rejecting classic-only
-  internals through backend capability diagnostics.
-- Spark Connect must not require a different Structure DSL, generated class API, or transform `run(...)` signature.
-
-### compat_targets
-
-Type: list of strings.
-
-Default: empty list.
-
-V1 status: recognized and stored. `structure check` and `structure explain` may report non-PySpark targets as pending;
-they must not claim Polars, DuckDB, or other future checks have run.
-
-Future compatibility-report targets. This setting asks `structure check` and `StructureTools.compatibility` to report
-whether compiler-visible Structure source is portable to additional backends. It does not change the active
-`target_backend`.
+At execution time, the PySpark plugin compares the installed client and supplied engine versions with its configured
+profile. `raise` reports a mismatch with `PYSPARK-E2710`, or unavailable version information with `PYSPARK-E2711`;
+`log` records the diagnostic at ERROR and continues; `off` skips discovery. Static workflows do not run the check.
+These policies do not alter feature admission or configure Spark. Generated code retains the selected profile,
+variant, and policy and must be regenerated after changes.
 
 ### hook_target_default
 
@@ -484,10 +468,7 @@ StructureConfig
   generated_docs_dir
   generated_docs_formats
   execution_mode
-  target_backend
-  target_profile
-  target_variant
-  compat_targets
+  plugin
   hook_target_default
   traceability
   validation
@@ -529,7 +510,8 @@ settings can include credentials or tokens, diagnostics must redact values by de
 - Invalid enum values show allowed values.
 - Invalid types fail before discovery.
 - `generated_package = "structure"` fails.
-- `target_backend = "pyspark"` resolves without importing PySpark.
-- Unknown `target_backend` fails through backend diagnostics.
+- `plugin.default = "pyspark"` and its capability options resolve without importing PySpark.
+- Unknown selected targets fail through backend diagnostics; removed root-level target keys fail with migration
+  guidance.
 - Validation mode shortcuts normalize deterministically.
 - Effective config records the source of each setting.

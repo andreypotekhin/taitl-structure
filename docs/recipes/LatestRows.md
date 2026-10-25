@@ -100,5 +100,5 @@ latest_by(
 Selected-row helpers are batch-only. A streaming current-state table needs explicit state and watermark semantics, so
 use a batch input here.
 
-For the complete helper contract, see [Latest and Earliest Rows](../QuickRef.md#latest-and-earliest-rows) and the
+For the complete helper contract, see [Latest and Earliest Rows](../QuickRef.md#latestearliest-rows) and the
 [Transform background](../background/Transform.back.md).

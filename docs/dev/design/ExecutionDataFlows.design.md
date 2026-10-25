@@ -20,12 +20,13 @@ commands need neither PySpark nor a Spark session.
 
 ```text
 1. Caller creates and owns the target runtime (a SparkSession for PySpark).
-2. Caller creates StructureSession(runtime=..., target=..., context=..., config=...).
+2. Caller creates StructureSession(runtime=..., target=..., ctx=..., config=...).
 3. Caller creates a transform invocation with named declared inputs.
 4. Transform.run(session) asks Core to resolve the transform's one target.
-5. Core retrieves or builds a compatible artifact and calls the selected plugin executor.
-6. The executor evaluates the opaque target payload and returns target output values.
-7. Core exposes those values through the standard TransformResult boundary.
+5. Core invokes the selected executor's optional runtime preflight before execution-time compilation.
+6. Core retrieves or builds a compatible artifact and calls the selected plugin executor.
+7. The executor evaluates the opaque target payload and returns target output values.
+8. Core exposes those values through the standard TransformResult boundary.
 ```
 
 The explicit `target=` is session- or invocation-local. It does not mutate project configuration or create a process-wide
@@ -46,6 +47,7 @@ selected PySpark executor
 PySpark-owned recipes -> DataFrame operations and hooks -> TransformResult
 ```
 
-The PySpark executor validates inputs and outputs and applies the configured intermediate-validation policy. The
+The PySpark executor first checks client and engine versions against the configured profile, under the configured
+`runtime_version_check` policy. It then validates inputs and outputs and applies intermediate-validation policy. The
 generated PySpark module renders the same lowered recipes. The caller continues to own reads, writes, Spark
 configuration, streaming query construction, triggers, checkpoints, sinks, and session lifecycle.

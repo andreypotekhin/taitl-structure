@@ -195,7 +195,7 @@ Use `variable(type, default=...)` when the value changes per run but must not pr
 Variables support scalar Spark literals and driver-side Delta selectors; they do not support Python branching or graph
 construction. A missing required value fails when the invocation runs. For example, a Delta CDF transform can declare
 `starting_version = variable(int)` and use `self.starting_version` in `delta_changes(...)`. See the
-[Delta table API](../api/DeltaIceberg.api.md#snapshot-and-change-feed-reads) for a full example and selector rules.
+[Delta table API](DeltaIceberg.ref.md#snapshot-reads) for a full example and selector rules.
 
 ## Hooks
 
@@ -602,6 +602,25 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
 The directive is retained in direct and generated execution. It does not transfer DataFrame control to Structure and
 does not make an operation admissible when the selected target cannot honor the requested storage level.
 
+### Checkpointing
+
+Use `checkpoint(eager=True)` inside a batch step when Spark's upstream logical plan must be truncated. Caching and
+Structure's temporary-view references retain logical lineage; a reliable checkpoint creates a new plan root.
+
+```python
+def truncate_plan(self, order: Order) -> Order:
+    checkpoint()
+    return Order.project(order)
+```
+
+The default `eager=True` writes the checkpoint immediately; `eager=False` defers materialization until an action.
+Configure a checkpoint directory on the caller's Spark runtime. For Spark Connect, configure `spark.checkpoint.dir`
+on the server before it starts. Exact Connect `>=4.0,<4.1` and `>=4.1,<4.2` profiles admit this batch operation;
+earlier and broad Connect profiles reject it. Ordinary PySpark supports it on the evidenced 3.5/4.0/4.1 profiles.
+The 4.0/4.1 Connect tests cover deep plans, aliases, and Structure temporary-view cleanup. Checkpoint storage and
+retention remain caller-controlled. See the [relation ledger](../compatibility/Relations.compat.md) for related
+materialization operations and their individual gates.
+
 ## Source-module safety and diagnostics
 
 Compiler-imported modules should declare classes, schemas, constants, and pure helpers only. Do not start Spark, read or
@@ -694,7 +713,10 @@ class NormalizeName(Transform):
 ```
 
 The helper has one expression parameter. Calling it with a Structure expression expands its body into the symbolic
-expression graph, so the same helper can also be used directly, for example `upper(trim(row.name))`.
+expression graph, so the same helper can also be used directly as `self.normalize_text(row.name)`.
+`Column.transform` requires exact `>=4.1,<4.2` ordinary or Spark Connect targets. The callback's returned expression
+determines its result type and nullability; for example, `row.name.transform(lambda value: length(value))` returns a
+length rather than text. Direct helper calls follow the capability requirements of the operations in the helper.
 
 ## Reuse decision guide
 

@@ -171,15 +171,27 @@ Fix: Use the current mounted launcher, which excludes Iceberg and Delta modules 
 selections. Only Connect 4.1 has isolated provider passes in this matrix. Verify the launcher checksum and phase
 selection before interpreting the old failures as runtime parity evidence.
 
+### Problem (integration): a pytest phase reaches its deadline
+
+When: A live phase exits with status 124 or 137 and prints `Integration deadline reached`.
+Cause: Each pytest phase has a default 3,600-second deadline. Exit 137 can also mean another forced kill, so inspect the
+container logs before attributing it to a deadline. A full selection may exceed the limit; reaching the deadline
+does not identify a failing assertion or establish parity for tests that did not finish.
+Fix: Preserve the phase's selection and output, inspect its timings, and pass a justified longer
+`STRUCTURE_INTEGRATION_TIMEOUT` into the container with Compose `run -e` when rerunning the full selection. For a
+focused diagnosis, also pass `INTEGRATION_PYTEST_ARGS` with `run -e`; setting it only in the host environment of
+`scripts/run_integration.py` does not forward the filter. Record filtered results separately from full-suite evidence.
+See [integration timing guidance](Testing.md#integration-tests) and the
+[runner example](../../infra/compose/README.md#run-tests).
+
 ### Problem (integration): ordinary foreachBatch handoff schema assertion fails
 
 When: The PySpark 3.5, 4.0, or 4.1 full integration selection fails
 `test_schema_sink_runs_batch_transform_and_caller_deduplicates_replays`.
-Cause: The current assertion expects `AlertMessage`, while the declared sink handoff carries the transform's `Alert`
-schema. This is tracked by the foreachBatch feature owner; the closeout runner does not skip or redefine this contract.
-Fix: Resolve the schema expectation in the owning foreachBatch work, then rerun the affected ordinary lane and the
-integration-enabled build. The six-lane release gate passed on 2026-10-23 and the default profile is now
-`>=3.5,<4.2`. Features requiring an exact 4.1 target remain capability-gated.
+Cause: An earlier assertion expected `AlertMessage`, while the declared sink handoff carries the transform's `Alert`
+schema. The owning feature work corrected the expectation; the 2026-10-23 ordinary 3.5/4.0/4.1 reruns passed.
+Fix: Use the current test and preserve the declared handoff schema. For a new mismatch, compare the sink declaration,
+batch transform input, and result schema before changing either the assertion or the feature contract.
 
 ### Problem (runtime): A namespaced spatial helper is unavailable
 
@@ -200,7 +212,8 @@ Cause: The Delta Connect server artifact can resolve Protobuf Java 3.x, which la
 protocol. The Python client's Protobuf package does not change the server JVM classpath.
 Fix: Use the Connect 4.1 launcher in `infra/compose/images/pyspark/run-integration.sh`, which pins
 `com.google.protobuf:protobuf-java:4.33.0` beside `delta-connect-server_4.1_2.13:4.1.0`. Rerun
-`make integration BACKEND=spark-connect41`; rebuild the image if the launcher itself was changed.
+`make integration BACKEND=spark-connect41`. The mounted launcher is read on each run; rebuild the image for dependency
+changes.
 
 ### Problem (integration): generated Delta validation receives a PySpark `StructType`
 

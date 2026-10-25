@@ -166,6 +166,12 @@ Execution is the default runtime surface. Compatible execution means:
   features;
 - compiler commands remain Spark-free even though execution may import PySpark.
 
+PySpark execution checks both the installed client and supplied Spark engine against the configured profile before
+execution-time compilation. The configurable
+[`runtime_version_check`](reference/ConfigSchema.ref.md#pyspark-runtime-version-check)
+policy raises by default, can log an ERROR and continue, or can skip discovery. Passing this check does not admit
+exact-profile APIs under a broader profile or certify otherwise unevidenced client/server/provider combinations.
+
 Breaking changes to `StructureSession`, transform invocation binding, or execution/generated-code semantic parity
 require a major version after 1.0.0 or a compatibility shim.
 
@@ -183,6 +189,11 @@ Compatibility rules:
 
 Generated code is readable and reviewable, but not hand-edited. Change Structure source, configuration, or the
 compiler instead.
+
+Generated classes retain their selected target and runtime-check policy; regenerate after changing them. The guard
+runs at class construction. Session-managed generated execution checks before module loading; a direct import can
+require version-specific schema constructors before the class is constructed. See
+[runtime compatibility](reference/Execution.ref.md#runtime-compatibility).
 
 ## Extension Compatibility
 

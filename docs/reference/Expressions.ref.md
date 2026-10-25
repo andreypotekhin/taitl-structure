@@ -5,6 +5,39 @@ Expressions describe typed Spark work inside a transform step. Read schema field
 lists the full helper inventory; the [Transform reference](Transform.ref.md) explains step declarations and reusable
 expression helpers.
 
+## Fields, literals, and nulls
+
+Read a field through a step's typed row argument, such as `row.name` or `row.address.zip`. These are symbolic
+expressions, not Python row values. Helpers accept typed expressions and supported Python literals; a string argument
+is literal text rather than a column name.
+
+Inside a step, combine expressions and place them in the returned Schema constructor:
+
+```python
+where((row.quantity > 0) & row.customer_id.is_not_null())
+return CleanOrder(
+    customer_id=row.customer_id,
+    name=upper(trim(coalesce(row.name, "UNKNOWN"))),
+)
+```
+
+Use `&`, `|`, and `~` for Boolean expressions; Python `and`, `or`, and expression truthiness are rejected. Comparisons
+follow SQL null semantics. `is_null()` and `is_not_null()` test missing values; `null_safe_eq(...)` treats two nulls
+as equal. Use `literal(None).cast(types.string())` for an explicitly typed null String.
+
+## Types and reusable expressions
+
+The compiler checks expression types and nullability against the output Schema. Use explicit casts such as
+`row.amount.cast(types.decimal(12, 2))` when conversion is needed; `types` is available from
+`structure.plugin.pyspark.dsl`. A field's Spark name comes from its schema alias, while source code uses its Python
+field name. See the [Schema reference](Schema.ref.md) for declarations and aliases.
+
+Helpers such as `upper(trim(row.name))` build native Spark expressions. Ordinary reusable helpers and
+`@special(type="expr")` retain that symbolic behavior. Exact-4.1 `Column.transform` applies such logic to one typed
+expression and can change its result type or nullability; see the
+[callback example](Transform.ref.md#reusable-expression-helpers-with-columntransform). Python worker callbacks use
+the separate [UDF declarations](UDF.ref.md).
+
 ## PySpark 4.1 scalar helpers
 
 Select `plugin.pyspark.profile = ">=4.1,<4.2"` to use these helpers on ordinary PySpark or Spark Connect.

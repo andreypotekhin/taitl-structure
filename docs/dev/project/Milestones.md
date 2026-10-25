@@ -514,8 +514,8 @@ lanes whose broad full-selection runs did not complete.
 
 ## M16: V11 PySpark 4.1 Adoption
 
-Status: integration matrix and all-backend integration build passed on 2026-10-23; default-profile release decision and
-retrospective remain. V11 follows
+Status: integration matrix and all-backend integration build passed on 2026-10-23; the default profile is promoted to
+`>=3.5,<4.2`. The retrospective and full-suite validation of the runtime-check follow-up remain. V11 follows
 the V10 closeout and runs from Sprint 55 through Sprint 60, ending 2027-03-05.
 
 ### Exit criteria
@@ -548,6 +548,10 @@ the V10 closeout and runs from Sprint 55 through Sprint 60, ending 2027-03-05.
   the integration-enabled build passed on 2026-10-23. The 2026-10-21 foreachBatch mismatch is resolved by the owner’s
   correction to expect the declared `Alert` schema. The passing matrix supports the recorded default-profile promotion
   to `>=3.5,<4.2`; full results are in Sprint 59.
+- Profile diagnostics give copyable supported-profile/variant remedies. The configurable client/engine runtime guard
+  is implemented for session and generated execution, with focused matching/mismatching-profile checks passing on all
+  six targets and `make build` passing. Its full live rerun remains incomplete after an ordinary 3.5 phase timeout;
+  see [P10232601](../planning/P10232601.Profile-diagnostics-and-runtime-version-checks.plan.md).
 
 ### Governing documents
 
@@ -596,6 +600,7 @@ pass.
 - `docs/dev/specifications/IcebergTables.spec.md`
 - `docs/api/DeltaIceberg.api.md`
 - `docs/compatibility/DeltaIceberg.compat.md`
+
 - `docs/dev/design/DeltaTables.design.md`
 - `docs/dev/specifications/DeltaTables.spec.md`
 
@@ -622,3 +627,34 @@ passes, including the full test suite and package build.
 - `docs/dev/specifications/IcebergTables.spec.md`
 - `docs/reference/DeltaIceberg.ref.md`
 - `docs/compatibility/DeltaIceberg.compat.md`
+
+## M19: V12 PySpark 4.2 Adoption and Deeper Coverage
+
+Status: planned on 2026-10-24. Twelve two-week sprints, 61–72; calendar dates are unset. V12 extends ordinary
+streaming while Spark Connect remains batch-only.
+
+### Exit criteria
+
+- The exact `>=4.2,<4.3` target carries the admitted V11 surface forward and adds separately evidenced ordinary
+  and Connect batch capabilities; the six retained 3.5/4.0/4.1 runtime selections remain covered.
+- The reviewed 4.2 API/semantic delta has one status, sprint owner, variant, streaming classification, remedy, and
+  evidence location for each item.
+- Temporal/Variant validation, native spatial APIs, Tuple sketches and aggregate extensions, richer queries,
+  ranked matching/native vectors, and Arrow grouped iterators meet their sprint acceptance.
+- Ordinary state families have independent mode/timer/cardinality/restart evidence. Selected streaming chains,
+  Update-mode joins, missing-column unions, and streaming observations meet their declared schema/state rules.
+- Compatible Delta/Iceberg 4.2 pairs and provider-specific CDC are admitted only after isolated evidence. Unavailable
+  dependencies retain an exact recorded gate; typed caller-created change-frame consumption is covered separately.
+- Native/online/generated parity, ordinary streaming late-data/eviction/restart evidence where relevant, generated
+  freshness, and compiler/plan performance comparisons support every claimed feature.
+- All eight documented backend selections and `make build INTEGRATION=1` pass with exact versions, selection counts,
+  and skip reasons. Scope revisions are explicit; unimplemented core commitments are not silently closed as gates.
+- Dedicated Sprint 72 adds no feature family. It records the default-profile decision, migration guidance,
+  troubleshooting, retrospective, and unresolved follow-ups. Connect streaming is excluded from acceptance.
+
+### Governing documents
+
+- [V12 charter and sprint sequence](V12.md).
+- [V12 backlog](Backlog.md#v12).
+- [Sprint 61 foundation](sprints/Sprint61_V12AdmissionAndRuntime.md).
+- [Sprint 72 hardening](sprints/Sprint72_V12HardeningAndCloseout.md).

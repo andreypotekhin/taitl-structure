@@ -96,7 +96,7 @@ def validate_pyspark_runtime(session: Any, *, transform: str = "", execution_mod
         "Set [tool.structure.plugin.pyspark] profile to a supported range containing both versions, or install/use "
         "a matching PySpark client and Spark engine. Deliberately set runtime_version_check = 'log' to continue "
         "with an ERROR log, or 'off' to skip version discovery. Profile selection does not enable version-specific "
-        "capabilities. See docs/reference/Configuration.ref.md and Troubleshooting.md."
+        "capabilities. See docs/reference/ConfigSchema.ref.md and Troubleshooting.md."
     )
     diagnostic = RuntimeDiagnostic(
         code=code,

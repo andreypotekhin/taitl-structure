@@ -123,9 +123,9 @@ compatibility selection passed 151 with 7 skipped in 106.07s; and the 0.1.1 sdis
 `git diff --check` also passed. The live focused ordinary and Connect 4.1 TIME lanes are recorded above; broader
 unfiltered Connect integration remains part of the separately tracked Connect parity work.
 
-### Next discussion
+### Relational query continuation
 
-Resolve the relational query API contract before implementation: whether `exists` and `isin(DataFrame)` use explicit
-named key pairs or a relation predicate DSL; the behavior for nullable correlation keys and SQL three-valued `IN`
-semantics; how aliases and accidental outer-column capture are resolved; and the first supported lateral join
-cardinality/join-kind combination. The state processor and foreachBatch work remains owned by its existing chats.
+Sprint 57 resolved the subsequent query design with typed relation predicates, explicit `.outer()` correlation,
+uncorrelated scalar/struct IN, and inner/left lateral joins with separate post-query conditions. These APIs are
+implemented and admitted for exact ordinary/Connect 4.1 batch profiles after native/online/generated parity. See
+[Sprint 57](Sprint57_V11QueryOperations.md). State processor and foreachBatch work retain their separate feature plans.

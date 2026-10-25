@@ -79,8 +79,13 @@ Execution is the default:
 ```toml
 [tool.structure]
 execution_mode = "online"
-target_backend = "pyspark"
-target_profile = ">=3.5,<4.2"
+
+[tool.structure.plugin]
+default = "pyspark"
+
+[tool.structure.plugin.pyspark]
+profile = ">=3.5,<4.2"
+variant = "ordinary"
 ```
 
 Allowed execution modes:
@@ -95,10 +100,10 @@ runtime runner that consumes compiler IR and live PySpark objects; `generated` s
 checked-in generated PySpark classes. The values remain compatible, while public prose uses execution and
 generated-code execution.
 
-`target_backend` and `target_profile` remain backend selection inputs. In v1 the only supported backend is `pyspark`.
-Future backends should be selected by the session, not by changing transform constructors. Backend support is checked
-against the session's resolved `StructureConfig` through [BackendCapabilities.spec.md](BackendCapabilities.spec.md), so execution
-and generated-code execution share the same target capability decisions.
+`plugin.default` selects the default plugin; its option table controls target-specific behavior. The bundled PySpark
+plugin owns `profile`, `variant`, and `runtime_version_check`. Capability checking uses the session's resolved
+configuration through [BackendCapabilities.spec.md](BackendCapabilities.spec.md), so online and generated execution
+share the same decisions. Legacy root-level target keys are rejected.
 
 Python users may pass a resolved config to the runtime session:
 
@@ -142,6 +147,29 @@ invocations. `Transform.compile(...)` remains available for early diagnostics; c
 `session.load(artifact)`. Sessions are isolated by default, while applications may deliberately share a
 `CompiledArtifactPool` between sessions. Clearing a pool releases derived compiler state without affecting Spark or a
 currently executing invocation.
+
+### PySpark runtime version checking
+
+Before compiling an executed transform, Core invokes the selected executor's optional `validate_runtime(request)`
+preflight. The PySpark implementation checks `pyspark.__version__` and the supplied session's public `version` against
+the numeric bounds of the configured capability profile. Both must belong to the range; equality is not required.
+The guard does not create or configure Spark or establish new client/server/provider support. Static compile, check,
+explain, and documentation workflows do not call preflight.
+
+`runtime_version_check` accepts `raise`, `log`, and `off`, defaulting to `raise`. A mismatch uses `PYSPARK-E2710`;
+missing, failed, or unparseable discovery uses `PYSPARK-E2711`. `raise` stops before schema materialization, input
+validation, hooks, or effects. `log` emits the same diagnostic through `structure.plugin.pyspark.runtime` at ERROR and
+continues. `off` reads neither version. These policies do not weaken capability gates or suppress native failures.
+
+The shared guard caches successful checks and logged mismatches by runtime, profile, variant, policy, and execution
+mode using weak runtime keys. Discovery failures are retried. Explicitly injected online executors bypass the normal
+session preflight and retain responsibility for their runtime behavior.
+
+Generated classes retain the selected profile, variant, and policy and run the same guard in their constructors,
+before UDF registration, hook instances, or DataFrame work. Session-managed generated execution checks before importing
+the generated class. A direct module import can instantiate version-specific schema constants before the constructor
+guard runs; that import requires a compatible PySpark installation. Regeneration is required after target/policy
+changes.
 
 ## Execution Modes
 

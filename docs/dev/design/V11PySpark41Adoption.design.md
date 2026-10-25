@@ -78,5 +78,6 @@ profiles, and evidence reports. It must permit one backend to be selected withou
 ## Rejected shortcuts
 
 Do not map unknown 4.1 functions through a generic `call_function` escape hatch and call that parity. Do not infer
-Connect support from ordinary Spark success. Do not make a Python callback symbolic by executing it during compilation.
+Connect support from ordinary Spark success. Do not treat an opaque worker-Python callback as compiler-visible
+expression logic; typed expression callbacks follow the separate symbolic-authoring contract.
 Do not put streaming state or lifecycle ownership into generated modules. Do not drop 3.5 or 4.0 lanes when adding 4.1.

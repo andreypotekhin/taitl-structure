@@ -112,63 +112,6 @@ are structural; do not use nullness alone to identify a subtotal.
 
 ## Metrics
 
-### Arrow grouped aggregates
-
-PySpark 4.1 Arrow UDFs declared with `function_type="grouped_agg"` can provide a custom grouped metric or an analytic
-window metric. Declare a concrete `return_type`; callback input values arrive as an Arrow array. Spark handles result
-conversion and worker errors. Grouped Arrow metrics cannot be mixed with built-in aggregate metrics in the same
-aggregate, and group data is held in worker memory. Streaming inputs are rejected for grouped and analytic-window
-forms. See the [UDF reference](UDF.ref.md#arrow-udfs) for declaration details and scalar/iterator examples, and its
-analytic-window example.
-
-For a custom grouped metric, define the callback on the transform and use it in the grouped output:
-
-```python
-from structure import *
-from structure.plugin.pyspark.dsl import types
-
-
-class Values(Schema):
-    key = long(nullable=False)
-    value = long(nullable=True)
-
-
-class GroupResult(Schema):
-    key = long(nullable=False)
-    mean = double(nullable=True)
-
-
-@transform
-class ArrowGrouped(Transform):
-    rows = input(Values)
-    output_rows = output(GroupResult)
-
-    @special(type="arrow_udf", return_type=types.double(), function_type="grouped_agg")
-    def mean(values):
-        import pyarrow.compute as pc
-
-        return pc.mean(values).as_py()
-
-    def apply(self, row: Values) -> GroupResult:
-        group_by(row.key)
-        return GroupResult(key=row.key, mean=self.mean(row.value))
-```
-
-Use metric helpers to name the values calculated for each grouped result.
-
-```python
-group_by(tenant_id=order.tenant_id, customer_id=order.customer_id)
-return CustomerMetrics(
-    tenant_id=order.tenant_id,
-    customer_id=order.customer_id,
-    order_count=count(),
-    paid_count=count(where=order.status == "paid"),
-    gross_total=sum(order.total),
-)
-```
-
-Metric helpers describe aggregate output fields; they do not return a Python dictionary or a collected value.
-
 ### Common metrics
 
 | Operation | Signature |
@@ -209,6 +152,17 @@ sample covariance and `covar_pop(...)` is population covariance. `some(...)` and
 input is true; `bool_and(...)` and `every(...)` require all inputs to be true. `mode(..., deterministic=True)`
 requires grouped keys and uses the lowest orderable candidate for ties. Variant aggregates require a resolved PySpark 4
 profile.
+
+```python
+return ProductStats(
+    average_price=avg(product.price),
+    price_stddev=stddev(product.price),
+    tags=collect_list(product.tag, order_by=product.tag.asc()),
+    categories=collect_set(product.category),
+)
+```
+
+The ordered list has a reproducible order; the set deliberately has no ordering promise.
 
 ### Opaque sketch metrics
 
@@ -326,17 +280,6 @@ grouped-streaming watermark, state, and output-mode rules. Ordinary PySpark 4.1 
 parity and same-configuration checkpoint restart. Spark Connect remains outside streaming support under the existing
 backend boundary. A transform does not own the source, sink, checkpoint, or retention policy.
 
-```python
-return ProductStats(
-    average_price=avg(product.price),
-    price_stddev=stddev(product.price),
-    tags=collect_list(product.tag, order_by=product.tag.asc()),
-    categories=collect_set(product.category),
-)
-```
-
-The ordered list has a reproducible order; the set deliberately has no ordering promise.
-
 ### Aggregate result behavior
 
 | Input/condition | Result behavior |
@@ -392,6 +335,63 @@ return CustomerSummary(
 ```
 
 Use a scalar tie-breaker or an explicit tie policy whenever the selected value is part of a published result.
+
+### Arrow grouped aggregates
+
+PySpark 4.1 Arrow UDFs declared with `function_type="grouped_agg"` can provide a custom grouped metric or an analytic
+window metric. Declare a concrete `return_type`; callback input values arrive as an Arrow array. Spark handles result
+conversion and worker errors. Grouped Arrow metrics cannot be mixed with built-in aggregate metrics in the same
+aggregate, and group data is held in worker memory. Streaming inputs are rejected for grouped and analytic-window
+forms. See the [UDF reference](UDF.ref.md#arrow-udfs) for declaration details and scalar/iterator examples, and its
+analytic-window example.
+
+For a custom grouped metric, define the callback on the transform and use it in the grouped output:
+
+```python
+from structure import *
+from structure.plugin.pyspark.dsl import types
+
+
+class Values(Schema):
+    key = long(nullable=False)
+    value = long(nullable=True)
+
+
+class GroupResult(Schema):
+    key = long(nullable=False)
+    mean = double(nullable=True)
+
+
+@transform
+class ArrowGrouped(Transform):
+    rows = input(Values)
+    output_rows = output(GroupResult)
+
+    @special(type="arrow_udf", return_type=types.double(), function_type="grouped_agg")
+    def mean(values):
+        import pyarrow.compute as pc
+
+        return pc.mean(values).as_py()
+
+    def apply(self, row: Values) -> GroupResult:
+        group_by(row.key)
+        return GroupResult(key=row.key, mean=self.mean(row.value))
+```
+
+Use metric helpers to name the values calculated for each grouped result.
+
+```python
+group_by(tenant_id=order.tenant_id, customer_id=order.customer_id)
+return CustomerMetrics(
+    tenant_id=order.tenant_id,
+    customer_id=order.customer_id,
+    order_count=count(),
+    paid_count=count(where=order.status == "paid"),
+    gross_total=sum(order.total),
+)
+```
+
+Metric helpers describe aggregate output fields; they do not return a Python dictionary or a collected value.
 
 ## Select and deduplicate rows
 

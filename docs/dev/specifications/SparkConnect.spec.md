@@ -8,13 +8,15 @@ configuration, not a separate backend and not a change to the public transform a
 Spark Connect uses the existing PySpark backend with a variant:
 
 ```toml
-[tool.structure]
-target_backend = "pyspark"
-target_profile = ">=3.5,<4.2"
-target_variant = "spark-connect"
+[tool.structure.plugin]
+default = "pyspark"
+
+[tool.structure.plugin.pyspark]
+profile = ">=3.5,<4.2"
+variant = "spark-connect"
 ```
 
-`target_variant = "ordinary"` remains the default. A project must opt in to Spark Connect explicitly.
+`variant = "ordinary"` remains the default. A project must opt in to Spark Connect explicitly.
 
 Compiler commands must resolve this configuration from static metadata only. They must not import PySpark, start Java,
 create a `SparkSession`, connect to a Spark server, or inspect the installed Spark runtime.
@@ -130,7 +132,6 @@ higher_order.map_zip_with
 dedupe.drop_duplicates
 window.avg
 window.count
-window.count_distinct
 window.row_number
 window.rank
 window.dense_rank
@@ -163,21 +164,32 @@ The support claim also includes the implemented public shapes behind these capab
 metrics, metric-local filters, reusable explicit windows, distribution/value/window aggregate helpers, and the expanded
 array/map higher-order helper set.
 
-Deferred capability boundaries remain explicit. `join.using_keys`, broad join strategy capability names,
-`window.window_project`, `optimization.repartition`, generated documentation, and production incremental compile stay
-unsupported until their owning specifications admit them.
+Join strategies, typed windows, relation repartition/coalesce, and generated documentation are implemented under their
+feature specifications. Production incremental compilation and Structure-owned streaming lifecycle remain outside the
+support claim. Capability keys and operation names follow the current
+[backend specification](BackendCapabilities.spec.md#pyspark-profile), rather than the older placeholder keys.
 
 Optimization capabilities must be admitted individually. `optimization.cache` is part of the current common PySpark
 profile. `optimization.persist`, `optimization.repartition`, `optimization.coalesce`, `optimization.checkpoint`, and
 join strategy hints are supported for Spark Connect only when the implementation uses public Connect-compatible
 DataFrame APIs and live tests prove that the directive does not change row or schema semantics.
 
-The explicit `>=4.0,<4.1` Connect profile admits reliable batch `optimization.checkpoint`. The 2026-09-25 live probe
+The explicit `>=4.0,<4.1` and `>=4.1,<4.2` Connect profiles admit reliable batch `optimization.checkpoint`. The original
+4.0 live probe
 configured `spark.checkpoint.dir` at server startup, preserved rows and schema, and verified that the checkpointed
 plan no longer contained its parent relation. Full Search reranking also passed online/generated parity with this
-boundary. This does not admit other materialization helpers, streaming checkpoints, or the mixed-version profile;
+boundary. Connect 4.1 additionally passes online/generated deep-plan checkpoint parity, alias preservation, and
+Structure temporary-view cleanup. This does not admit other materialization helpers, streaming checkpoints, or broad
+profiles;
 see the [resolved OOM issue](../issues/I09272602.Spark-driver-heap-exhaustion.issue.md) and its
 [Memory evidence](../issues/I09272602/Memory-evidence.md).
+
+Exact Connect 4.1 separately admits Column callbacks, the five scalar additions, TIME, typed relation queries, batch
+observations, KLL/Theta, Arrow batch modes, and native Apache spatial helpers after per-feature parity. Delta and
+Iceberg have isolated provider phases and optional dependency requirements. These claims do not promote Connect
+streaming, state processors, or managed Databricks evidence. The feature ledgers and
+[six-lane record](../project/sprints/Sprint59_V11IntegrationMatrix.md#passing-closeout-rerun-2026-10-23) record their
+scope.
 
 ## Ordinary-Only Requirements
 
@@ -207,6 +219,11 @@ StructureSession(spark=spark, ctx=ctx, config=config)
 For Spark Connect, `spark` is a caller-created Spark Connect session. Structure must not create or own the connection.
 Execution and generated-code execution must call the same public DataFrame and Column methods used by the shared
 PySpark recipe layer.
+
+The PySpark runtime guard reads the installed client and the remote session's public version before execution-time
+compilation. It follows the same `raise`/`log`/`off` policy as ordinary execution and does not infer a profile from the
+server. Static capability checks remain runtime-independent; see
+[Execution](Execution.spec.md#pyspark-runtime-version-checking).
 
 Runtime code must not access:
 
@@ -266,14 +283,16 @@ Spark Connect diagnostics use the backend diagnostic family unless a narrower co
 Required diagnostic cases:
 
 - unsupported target variant value;
-- unsupported backend capability for `target_variant = "spark-connect"`;
+- unsupported backend capability for `plugin.pyspark.variant = "spark-connect"`;
 - classic-only internal access detected statically;
 - live Connect session unavailable during explicit runtime verification;
-- Connect server/version mismatch in `structure doctor` or the manual verification script;
+- client or engine version outside the configured profile at execution preflight (`PYSPARK-E2710`);
+- unavailable or unparseable runtime versions (`PYSPARK-E2711`);
 - unsupported hook or generated runtime boundary detected as `CONNECT-E2601`;
 - unsupported StructureTools live metadata path.
 
-Every diagnostic must include a user action: change `target_variant` to `ordinary`, remove the classic-only API, rewrite
+Every diagnostic must include a user action: set `plugin.pyspark.variant = "ordinary"`, remove the classic-only API,
+rewrite
 the operation in compiler-visible DSL, pass a Connect-compatible session, or use an explicit schema.
 
 ## Verification Matrix
@@ -285,10 +304,14 @@ ordinary PySpark, PySpark 3.5.x, online
 ordinary PySpark, PySpark 3.5.x, generated
 ordinary PySpark, PySpark 4.0.x, online
 ordinary PySpark, PySpark 4.0.x, generated
+ordinary PySpark, PySpark 4.1.x, online
+ordinary PySpark, PySpark 4.1.x, generated
 Spark Connect, PySpark 3.5.x, online
 Spark Connect, PySpark 3.5.x, generated
 Spark Connect, PySpark 4.0.x, online
 Spark Connect, PySpark 4.0.x, generated
+Spark Connect, PySpark 4.1.x, online
+Spark Connect, PySpark 4.1.x, generated
 ```
 
 If CI cannot run the full Connect matrix in the current environment, Sprint 09 must add a documented manual verification
@@ -298,7 +321,7 @@ script and mark CI coverage as a release blocker before publishing a stable supp
 
 Spark Connect batch support is complete when:
 
-- `target_variant = "spark-connect"` resolves a supported backend capability profile;
+- `plugin.pyspark.variant = "spark-connect"` resolves a supported backend capability profile;
 - completed v1/v2 batch fixtures pass execution/generated-code parity against a real Spark Connect session;
 - compiler commands remain Spark-free;
 - generated source contains no classic-only internals;

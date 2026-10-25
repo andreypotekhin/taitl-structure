@@ -175,8 +175,12 @@ Execution is the default:
 ```toml
 [tool.structure]
 execution_mode = "online"
-target_backend = "pyspark"
-target_profile = ">=3.5,<4.2"
+[tool.structure.plugin]
+default = "pyspark"
+
+[tool.structure.plugin.pyspark]
+profile = ">=3.5,<4.2"
+variant = "ordinary"
 ```
 
 Allowed execution modes:
@@ -196,10 +200,10 @@ Generated-code execution may also use explicit in-memory generated artifacts. `M
 writing generated Python files to disk. This preserves the default "no generated files required" workflow while keeping
 generated-code semantics available for no-disk environments.
 
-`target_backend` and `target_profile` remain backend selection inputs. The supported backend is `pyspark`.
-Future backends should be selected by the session, not by changing transform constructors. Backend support is checked
-against the session's resolved `StructureConfig` through [Capabilities](Capabilities.back.md), so
-execution and generated-code execution share the same target capability decisions.
+`plugin.default` selects the default target; `plugin.pyspark.profile` and `variant` select its PySpark capabilities.
+The selected plugin checks support using the session's resolved configuration through
+[Capabilities](Capabilities.back.md), so online and generated execution share the same decisions. Legacy root-level
+target keys are rejected.
 
 Python users may pass a resolved config to the runtime session:
 
@@ -251,6 +255,7 @@ The lifecycle is lazy but deterministic:
 ```text
 first compatible invocation
   -> resolve configuration and target
+  -> invoke the selected executor's optional runtime preflight
   -> discover and compile source
   -> cache immutable artifact in the session pool
   -> execute with caller-owned Spark objects
@@ -261,6 +266,23 @@ later compatible invocation
 ```
 
 A cache hit cannot suppress diagnostics, change source anchors, or reuse live DataFrames from an earlier invocation.
+
+### PySpark runtime compatibility
+
+The PySpark executor validates the installed client version and the supplied session's public engine version against
+the configured profile before execution-time compilation and schema materialization. The profile still controls
+static feature admission. The runtime check does not select a profile, create Spark, or certify client/server and
+provider combinations beyond the recorded evidence.
+
+`runtime_version_check` defaults to `raise`; `log` emits an ERROR diagnostic and continues, while `off` skips version
+discovery. `PYSPARK-E2710` identifies out-of-range components and `PYSPARK-E2711` identifies a failed or unparseable
+version read. The guard is shared by online execution and generated classes. Generated artifacts retain their selected
+policy and target, so changing those settings requires regeneration. A direct import may materialize generated schema
+constants before a class constructor can check versions; session-managed generated execution checks before that import.
+
+Successful checks and logged mismatches are cached without retaining the Spark session. Failed discovery is retried.
+Static check, compile, explain, and documentation workflows perform no runtime preflight. See the
+[configuration reference](../reference/ConfigSchema.ref.md#pyspark-runtime-version-check) for policy selection.
 
 
 ## Execution Modes

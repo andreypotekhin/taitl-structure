@@ -32,7 +32,7 @@ The stories progress from setup and getting started to narrower use cases and ro
   are corrected quickly.
 - + As a developer, I can set `source_roots` so that transform source files are discovered predictably.
 - + As a developer, I can set `generated_dir` so that generated files are written predictably.
-- + As a developer, I can set `target_profile` so that generated code targets an intended PySpark version range.
+- + As a developer, I can set `plugin.pyspark.profile` so that generated code targets an intended PySpark version range.
 - + As a developer, I can receive an error when a requested feature cannot be generated for the configured PySpark
   target.
 - + As a developer, I can configure `execution_mode` so that my project chooses execution or generated-code execution.
@@ -304,8 +304,10 @@ The stories progress from setup and getting started to narrower use cases and ro
 
 - + As a developer, I can rely on a documented Python support range so that runtime expectations are clear.
 - + As a developer, I can rely on a documented PySpark support range so that generated code uses compatible APIs.
-- + As a developer, I can configure `target_profile` so that the emitter avoids APIs outside my deployment range.
-- + As a developer, I can configure `target_variant` so that ordinary PySpark and Spark Connect variant expectations are
+- + As a developer, I can configure `plugin.pyspark.profile` so that the emitter avoids APIs outside my deployment
+  range.
+- + As a developer, I can configure `plugin.pyspark.variant` so that ordinary PySpark and Spark Connect variant
+  expectations are
   clear.
 - + As a developer, I can see Spark Connect batch scope so that completed batch-feature expectations are clear.
 - As a developer, I can rely on semantic versioning after 1.0 so that upgrades carry predictable risk.

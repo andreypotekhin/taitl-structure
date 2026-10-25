@@ -95,6 +95,10 @@ persist WKB and SRID separately in the source session, then reconstruct and vali
 destination session. WKB does not carry SRID. Structure does not provide an inline bridge because both providers
 would still resolve through the colliding session registry.
 
+The warning detects compiler-visible namespaced helper calls within a transform. It cannot inspect raw hook bodies or
+discover which functions were registered on a caller's session. Absence of the warning does not certify that a session
+is free of provider collisions.
+
 ## Support boundaries
 
 The default PySpark profile is `>=3.5,<4.2`; Apache native helpers remain gated to an exact 4.1 target. Spark 4.1 native

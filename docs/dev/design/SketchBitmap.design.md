@@ -18,10 +18,10 @@ Structure retains an algorithm brand so an HLL cannot be passed to a Bitmap cons
 silently exchanged with another sketch family. A declared `hll_sketch(lg_config_k=...)` field also retains its
 precision parameter in the compiled schema contract.
 
-The public documentation uses dedicated Sketches and Bitmaps pages rather than an `Other` section. The APIs span the
-Schemas, Aggregations, and Expressions surfaces; the ownership, precision, and persistence rules would be difficult to
-discover in any one of those inventories. Those existing pages link to the dedicated pages and retain compact tables
-for their own local symbols.
+Public schema documentation describes the logical field types; Aggregations documents construction, composition,
+accuracy, and persistence; Expressions lists row-preserving consumers. The
+[aggregation reference](../../reference/Aggregations.ref.md#opaque-sketch-metrics) brings the four families together
+with declared schemas and worked examples. The separate inventories link to that common explanation.
 
 ## Baseline surface
 

@@ -32,6 +32,19 @@ This is the current follow-up index. Feature status is maintained in the
   retain their individual dispositions in [API gates](../gated/ApiCatalog.gates.md),
   [Streaming gates](../gated/Streaming.gates.md), and [Function gates](../gated/Functions.gates.md).
 
+## V12 planned delivery
+
+The [V12 charter](V12.md) and [backlog](Backlog.md#v12) track twelve planned sprints, 61–72. These tasks do not alter
+current support claims or erase the V11 follow-ups above.
+
+- [ ] Establish the 4.2 inventory, two runtime lanes, V11 continuity map, and provider feasibility in Sprint 61.
+- [ ] Deliver the temporal, spatial, sketch, query/ranking, and Arrow packages in Sprints 62–67.
+- [ ] Deliver ordinary state completion, streaming composition, and streaming observations in Sprints 68–70.
+  Spark Connect remains batch-only.
+- [ ] Prove available table-provider/CDC configurations in Sprint 71 using Sprint 61's dependency findings.
+- [ ] Close M19 through dedicated Sprint 72 hardening, eight documented runtime selections, and the
+  integration-enabled build. Set calendar dates separately; retain the 24-week relative planning envelope.
+
 ## Earlier release requirements
 
 The earlier milestone records still identify CI workflow evidence, broader negative live-schema cases, generated

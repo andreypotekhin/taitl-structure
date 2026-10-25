@@ -33,9 +33,8 @@ profile = ">=3.5,<4.2"
 variant = "ordinary"
 ```
 
-The plugin table is the current target-selection form. Legacy root keys such as `target_backend`, `target_profile`,
-`target_variant`, and `compat_targets` must not be mixed silently with plugin selection; use the equivalent plugin
-settings named by the diagnostic.
+The plugin table is the current target-selection form. Legacy root keys `target_backend`, `target_profile`,
+`target_variant`, and `compat_targets` are rejected; use the equivalent plugin settings named by the diagnostic.
 
 ## Minimal configuration
 
@@ -117,6 +116,43 @@ variant = "spark-connect"
 ```
 
 Use a session or transform override only when the workflow intentionally needs a different effective target.
+
+### PySpark profiles
+
+The default `>=3.5,<4.2` profile admits common APIs across PySpark 3.5, 4.0, and 4.1. Select an exact release-line
+profile to use features admitted for that line:
+
+| Profile | Intended use |
+| --- | --- |
+| `>=3.5,<4.2` | Default shared 3.5/4.0/4.1 feature set |
+| `>=3.5,<4.1` | Retained shared 3.5/4.0 feature set |
+| `>=3.5,<4.0` | PySpark 3.5 |
+| `>=4.0,<4.1` | PySpark 4.0 |
+| `>=4.1,<4.2` | PySpark 4.1, including admitted TIME, query, observation, sketch, Arrow, and spatial features |
+| `>=4.2,<4.3` | Recognized future profile; live 4.2 support remains gated |
+
+These strings are the supported selections. Arbitrary ranges such as `>=4.0,<4.2` or `>=4.0` are rejected. Installing
+Spark 4.1 does not narrow the configured profile automatically. If `BACKEND-E2402` names an admitted exact-4.1
+capability, use `profile = ">=4.1,<4.2"` with its supported `variant`; see the
+[feature guide](../API.md#version-compatibility).
+
+### PySpark runtime version check
+
+`runtime_version_check` accepts `"raise"` (the default), `"log"`, or `"off"` in the PySpark plugin table:
+
+```toml
+[tool.structure.plugin.pyspark]
+profile = ">=4.1,<4.2"
+variant = "spark-connect"
+runtime_version_check = "raise"
+```
+
+The check compares the installed PySpark client and supplied Spark engine versions with the configured profile. A
+mismatch raises `PYSPARK-E2710`; an unreadable or unparseable version raises `PYSPARK-E2711`. `log` records the
+diagnostic at `ERROR` and continues; `off` skips discovery. Neither policy changes capability admission. Both versions
+must belong to the range, but they need not be equal; passing this check does not certify every client/server pair.
+Static checks and compilation do not probe the runtime. See
+[runtime compatibility](Execution.ref.md#runtime-compatibility) for execution and generated-class timing.
 
 ## Execution and validation
 
@@ -255,15 +291,16 @@ Each plugin uses only the options under its own configuration table. Settings fo
 the active process. CLI `--target`, `StructureSession(target=...)`, capability resolution, and schema tooling use the
 same target name.
 
-The target profile is a version range, not a request to inspect the locally installed backend during compiler commands.
-An unsupported range or operation fails capability checking before generated output or runtime execution.
+The target profile is a supported configuration choice, not a request to inspect the locally installed backend during
+compiler commands. Unsupported selections are rejected. Static capability checking rejects unavailable operations
+before generated output or runtime execution.
 
 | Key | Default | Meaning |
 | --- | --- | --- |
-| `compat_targets` | `[]` | Additional targets reported as pending compatibility metadata |
 | `hook_target_default` | `["pyspark"]` | Effective target set for hooks without an explicit target |
 
-Non-PySpark compatibility targets are not claimed as executed checks. `hook_target_default = "explicit"` requires every
+The former `compat_targets` key is rejected; select an installed plugin with `plugin.default` or workflow `target=`.
+`hook_target_default = "explicit"` requires every
 hook to declare its target; `"configured"` limits unmarked hooks to the active target; `"all"` makes an opaque
 portability claim and may produce warnings. Runtime execution refuses to call a hook outside its effective target set.
 
@@ -273,7 +310,6 @@ default = "pyspark"
 
 [tool.structure]
 hook_target_default = "explicit"
-compat_targets = ["spark-connect"]
 ```
 
 With this setting, every raw hook must state its target rather than inheriting a portability claim implicitly.
@@ -460,9 +496,8 @@ profile = ">=3.5,<4.2"
 variant = "ordinary"
 ```
 
-Do not retain legacy `target_backend`, `target_profile`, `target_variant`, or `compat_targets` keys beside plugin
-tables unless the active release explicitly documents a compatibility bridge. Ambiguous configuration should fail with
-a migration diagnostic instead of silently selecting a different plugin.
+Remove legacy `target_backend`, `target_profile`, `target_variant`, and `compat_targets` keys. They fail with a
+migration diagnostic even when no plugin table is present. The diagnostic names the current selection form.
 
 After changing a target, validation mode, generated option, or SQL assumption, rerun `structure check` before comparing
 generated output so the effective configuration is part of the review.

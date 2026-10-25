@@ -529,7 +529,7 @@ class PySparkCapabilities:
                 requirement=requirement,
                 rationale="No static PySpark capability profile exists for the configured target range.",
                 use=(f"Set [tool.structure.plugin.pyspark] profile = {DEFAULT_TARGET_PROFILE!r}; "
-                     "see docs/reference/Configuration.ref.md."),
+                     "see docs/reference/ConfigSchema.ref.md."),
                 required_target=DEFAULT_TARGET_PROFILE,
             )
 
@@ -540,7 +540,7 @@ class PySparkCapabilities:
                 rationale="No PySpark capability profile exists for the configured target variant.",
                 use=('Set [tool.structure.plugin.pyspark] variant = "ordinary" or "spark-connect" '
                      '(the configured keys are plugin.pyspark.variant); '
-                     "see docs/reference/Configuration.ref.md."),
+                     "see docs/reference/ConfigSchema.ref.md."),
                 required_target=DEFAULT_TARGET_VARIANT,
             )
 
@@ -692,7 +692,7 @@ class PySparkCapabilities:
                 rationale=("Spark Connect checkpointing is admitted for exact >=4.0,<4.1 and >=4.1,<4.2 "
                            f"targets; configured target is {self.id.target!r}."),
                 use=('Set [tool.structure.plugin.pyspark] profile to ">=4.0,<4.1" or ">=4.1,<4.2" and '
-                     'variant = "spark-connect". See docs/reference/Materialization.ref.md.'),
+                     'variant = "spark-connect". See docs/reference/Transform.ref.md#checkpointing.'),
                 required_target=">=4.0,<4.1 or >=4.1,<4.2 spark-connect",
             )
 

@@ -61,6 +61,13 @@ interface instead of scattering PySpark-version or backend-feature conditionals 
 When a target range spans multiple supported PySpark lines, Structure should prefer the oldest compatible API that keeps
 the output clear and optimizer-visible.
 
+Profile selection is static and accepts the supported keys listed in the
+[configuration reference](../../reference/ConfigSchema.ref.md#pyspark-profiles). The broad default retains common
+3.5/4.0/4.1 APIs; exact-4.1 features require `>=4.1,<4.2`. Execution separately checks installed client and supplied
+engine versions against that selection with the configurable `runtime_version_check` policy. Passing the check does
+not certify a new client/server or managed-provider combination. Static compiler workflows never discover runtime
+versions. See [Execution](Execution.spec.md#pyspark-runtime-version-checking).
+
 ## Alternative Backend Scope
 
 Alternative backend support is specified in [AlternativeBackends.spec.md](AlternativeBackends.spec.md). The compatibility promise
@@ -76,19 +83,19 @@ checks may report non-active target issues as unsupported, degraded, opaque, or 
 
 ## v5 Plugin Migration
 
-M10 replaces the shared-source alternative-backend direction with one target platform per transform. This is a planned
-breaking v5 boundary, not a reinterpretation of released configuration. The v5 Plugin API makes each target own its
+M10 introduced one target platform per transform in place of shared-source alternative-backend selection. The v5
+Plugin API makes each target own its
 DSL, schema extensions, semantic checks, lowering, and runtime values; Core retains workflow orchestration and public
 artifact/diagnostic contracts. No v5 compatibility promise exists between transforms authored for different plugins.
 
-At v5 release, `target_backend`, `target_profile`, and `target_variant` are removed. Their replacement is
+Root keys `target_backend`, `target_profile`, `target_variant`, and `compat_targets` are removed. Their replacement is
 `plugin.default`, `plugin.disabled_distributions`, and a target-owned `plugin.<name>` table, as specified in
 [PluginConfiguration.spec.md](PluginConfiguration.spec.md). The bundled PySpark values move to
-`plugin.pyspark.profile` and `plugin.pyspark.variant`. The v5 migration guide must include this mapping and must
-fail legacy keys with an actionable configuration diagnostic rather than silently guessing how to translate them.
+`plugin.pyspark.profile` and `plugin.pyspark.variant`. Legacy keys fail with an actionable configuration diagnostic
+naming the replacement; they are not translated silently.
 
-The plugin boundary also changes direct execution from `StructureSession(spark=...)` to
-`StructureSession(runtime=..., context=..., config=...)`. The selected plugin validates the supplied runtime. Generated
+The plugin boundary accepts `StructureSession(runtime=..., ctx=..., config=...)`; the PySpark
+`StructureSession(spark=...)` spelling remains supported. The selected plugin validates the supplied runtime. Generated
 artifacts are compatible only with their recorded plugin identity, plugin version, and negotiated Plugin API
 version; users rebuild artifacts after any incompatible change.
 

@@ -113,8 +113,10 @@ ProcessingTime, and EventTime modes in their valid combinations; Complete is rej
 PySpark 4.1 online/generated evidence covers composite keys, both timer clocks, and same-checkpoint restart. Pandas
 `transform_with_state_in_pandas(...)` is supported on ordinary PySpark 4.0 and 4.1 after both complete lanes passed;
 see its [completed ExecPlan](../past/planning/P10042604.V11-transform-with-state-in-pandas.plan.md). Legacy
-`apply_in_pandas_with_state(...)` remains `design-gated` pending its own profile-specific callback and parity evidence.
-The accepted typed row contract is recorded in `V11TransformWithStateTypedParity.design.md`.
+`apply_in_pandas_with_state(...)` has an implemented compiler interface and accumulation/restart evidence on ordinary
+3.5/4.0/4.1. Its independent evidence gate remains open for timeout and zero/multiple-output cases; the row and Pandas
+state processor admissions do not close that gate. The accepted typed row contract is recorded in the
+[typed row-state design](../design/V11TransformWithStateTypedParity.design.md).
 
 In typed row mode, `on_rows(self, key, rows, timers)` is required, `on_timer(self, key, timer, timers)` is optional,
 and `on_initial_state(self, key, initial, timers)` is optional when paired with an `initial_state=` relation.

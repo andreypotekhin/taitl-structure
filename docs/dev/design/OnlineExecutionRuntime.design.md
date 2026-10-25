@@ -62,6 +62,7 @@ application creates SparkSession
   -> application constructs transform invocation with DataFrames
   -> Transform.run(session)
   -> StructureSession resolves config and runner
+  -> selected executor checks runtime suitability before compilation or schema materialization
   -> runner compiles or imports runtime target
   -> runner validates inputs
   -> runner executes compiled operations and hooks
@@ -107,6 +108,16 @@ It computes the generated module and class for the transform invocation, imports
 
 Missing generated code is a runtime configuration problem, not a reason to fall back silently to execution. The
 diagnostic must tell the user to run `structure compile`, fix import roots, or change `execution_mode`.
+
+The PySpark runtime guard is shared with online execution. It checks the installed client and supplied engine versions
+against the configured profile, with `raise`, `log`, and `off` policies. Runtime discovery belongs to execution and
+does not run in static compiler workflows. Successful checks and logged mismatches use weak runtime-keyed caches;
+failed discovery is retried. The exact behavior is specified in
+[Execution](../specifications/Execution.spec.md#pyspark-runtime-version-checking).
+
+Generated classes embed their selected profile, variant, and policy and check them at construction. Session-managed
+execution checks before loading the module; a direct generated import can require version-specific schema constructors
+before that guard runs. Keep the generated runtime installation compatible and regenerate after policy changes.
 
 ## Shared Semantic Contract
 

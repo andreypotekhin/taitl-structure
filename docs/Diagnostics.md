@@ -63,33 +63,46 @@ code and suggested fix remain the same.
 ## Anchors
 
 ### CONF-E0101
-See [Diagnostics.md](background/Diagnostics.back.md#conf-e0101).
+
+Remove an unknown key or correct its spelling. See the [configuration reference](reference/ConfigSchema.ref.md).
 
 ### CONF-E0102
-See [Diagnostics.md](background/Diagnostics.back.md#conf-e0102).
+
+Use the setting's declared type and allowed values. See the [configuration reference](reference/ConfigSchema.ref.md).
 
 ### DSL-E0401
-See [Diagnostics.md](background/Diagnostics.back.md#dsl-e0401).
+
+The step uses Python logic that cannot become a typed Spark expression. Use a supported expression or an explicit
+[UDF](reference/UDF.ref.md) or [hook](reference/Transform.ref.md#hooks) for opaque runtime logic.
 
 ### DSL-E0402
-See [Diagnostics.md](background/Diagnostics.back.md#dsl-e0402).
+
+Check transform decoration, method annotations, schema flow, and output bindings against the
+[Transform reference](reference/Transform.ref.md).
 
 ### DSL-E0404
-See [Diagnostics.md](background/Diagnostics.back.md#dsl-e0404).
+
+Compiled logic reached code marked `@special(type="ignore")`. Keep it outside compiled expressions or use an
+explicit [UDF or hook](reference/UDF.ref.md#scalar-python-udf) when runtime execution is required.
 
 ### DSL-E0405
+
 `@special(type="opaque")` code was called from a compiled step. Move the call outside compiler-visible logic, use
 `@special(type="udf")` for scalar Python execution, or use an explicit hook for DataFrame logic.
 
 ### DSL-E0406
+
 Declare the consumed row type with `sink(Schema)`, reference it as `self.sink_name` in `foreach(row, self.sink_name)`,
 and capture a row returned by that step and mapped to a declared final output. See the
 [row-level foreach specification](dev/specifications/V11RetainedV9DesignGates.spec.md#row-level-foreach).
 
 ### DSL-W0403
-See [Diagnostics.md](background/Diagnostics.back.md#dsl-w0403).
+
+A Python UDF body is opaque to Spark optimization. Prefer typed expressions, or retain the explicit callback when
+needed. See [scalar UDFs](reference/UDF.ref.md#scalar-python-udf) for the warning policy.
 
 ### PYSPARK-W2701
+
 See [the driver-heap gotcha](troubleshooting/memory/spark_driver_heap_oom.gotcha.md), the
 [Memory troubleshooting summary](troubleshooting/memory/Memory.trbl.md), and the
 [resolved OOM issue](dev/issues/I09272602.Spark-driver-heap-exhaustion.issue.md).
@@ -135,11 +148,12 @@ an executed transform. Both must fall within `[tool.structure.plugin.pyspark].pr
 4.1-only operation, select `profile = ">=4.1,<4.2"` and a supported `variant` in that TOML table, then use a matching
 runtime. Static checks and compilation do not inspect the installed runtime.
 
-The default `runtime_version_check = "raise"` stops before transform compilation or Spark work. Set it to `"log"` to
-emit one `ERROR` diagnostic and continue, or `"off"` to skip client and engine version discovery. These are deliberate
+The default `runtime_version_check = "raise"` raises before execution-time compilation, schema validation, hooks, or
+table effects. Set it to `"log"` to emit an `ERROR` diagnostic and continue, or `"off"` to skip client and engine
+version discovery. These are deliberate
 overrides; they do not change static capability gates or establish compatibility for an otherwise unsupported
 runtime. See [configuration](Configuration.md#pyspark-runtime-version-check) and
-[runtime troubleshooting](Troubleshooting.md#spark-runtime-profile-does-not-match).
+[runtime troubleshooting](../Troubleshooting.md#spark-runtime-profile-does-not-match).
 
 ### PYSPARK-E2711
 
@@ -149,76 +163,115 @@ unparseable value. Check the PySpark installation and the supplied session's pub
 ### PYSPARK-W2707
 
 On Spark 4.1, Sedona SQL extensions and native Spark geospatial functions register overlapping unqualified `st_*`
-names. A transform containing both `apache.*` and `sedona.*` helpers can therefore resolve a call through the other
+names. A transform containing both root Apache native helpers and `sedona.*` helpers can resolve a call through the
+other
 provider's registration. Use separate Spark sessions. For a handoff, materialize WKB and SRID in the source session,
 then read both values and reconstruct the spatial value in the destination session. See the [cross-session WKB
 recipe](recipes/GeospatialProviderBridge.md).
 
 ### SCHEMA-E0301
-See [Diagnostics.md](background/Diagnostics.back.md#schema-e0301).
+
+An expression may be null but the output field is required. Guard it with `where(value.is_not_null())` or supply
+a non-null default. See [schema validation](reference/Schema.ref.md).
 
 ### SCHEMA-E0302
-See [Diagnostics.md](background/Diagnostics.back.md#schema-e0302).
+
+Use an explicit typed conversion or parsing helper for the output assignment. See
+[expression types](reference/Expressions.ref.md#types-and-reusable-expressions).
 
 ### SCHEMA-E0303
-See [Diagnostics.md](background/Diagnostics.back.md#schema-e0303).
+
+The output expression type does not match its field. Choose a compatible expression or an explicit supported
+conversion; see the [Schema reference](reference/Schema.ref.md).
 
 ### JOIN-E0601
-See [Diagnostics.md](background/Diagnostics.back.md#join-e0601).
+
+A lookup condition must use supported equality-key pairs combined with `&`. Choose a relation join for a broader
+condition; see the [Join reference](reference/Join.ref.md).
 
 ### JOIN-W0601
-See [Diagnostics.md](background/Diagnostics.back.md#join-w0601).
+
+The lookup's right-side key is not proven unique. Declare a deterministic dedupe rule, or choose `left_join` or
+`inner_join` when row multiplication is intended. See the [Join reference](reference/Join.ref.md).
 
 ### REL-E0701
+
 See [Diagnostics.md](background/Diagnostics.back.md#rel-e0701).
 
 ### REL-E0702
+
 See [Diagnostics.md](background/Diagnostics.back.md#rel-e0702).
 
 ### REL-E0703
+
 See [Diagnostics.md](background/Diagnostics.back.md#rel-e0703).
 
 ### REL-E0704
+
 See [Diagnostics.md](background/Diagnostics.back.md#rel-e0704).
 
 ### REL-E0705
+
 See [Diagnostics.md](background/Diagnostics.back.md#rel-e0705).
 
 ### REL-E0706
+
 See [Diagnostics.md](background/Diagnostics.back.md#rel-e0706).
 
 ### GEN-E0901
-See [Diagnostics.md](background/Diagnostics.back.md#gen-e0901).
+
+Run `structure compile`, review the generated diff, and commit the refreshed artifacts. See
+[generated files](reference/Transform.ref.md#generated-files).
 
 ### GEN-E0902
-See [Diagnostics.md](background/Diagnostics.back.md#gen-e0902).
+
+Compile the transform and make its generated source root importable, or select `execution_mode = "online"`.
+See [execution modes](reference/Execution.ref.md#execution-modes).
 
 ### GEN-E0903
-See [Diagnostics.md](background/Diagnostics.back.md#gen-e0903).
+
+The embedded hook depends on source state that the generated module cannot package. Use a standalone hook body
+with local imports, or remove `embed_hooks`; see [generated options](Configuration.md#generated-code-options).
 
 ### ONLINE-E1201
-See [Diagnostics.md](background/Diagnostics.back.md#online-e1201).
+
+Pass every declared input by name before calling `run(session)`. See
+[input binding](reference/Execution.ref.md#input-binding-and-lane-flow).
 
 ### ONLINE-E1202
-See [Diagnostics.md](background/Diagnostics.back.md#online-e1202).
+
+Supply a caller-owned Spark session to `StructureSession` or an explicitly configured custom executor.
+See [session responsibilities](reference/Execution.ref.md#session-responsibilities).
 
 ### ONLINE-E1203
-See [Diagnostics.md](background/Diagnostics.back.md#online-e1203).
+
+Select `execution_mode = "online"` or `"generated"`. See
+[execution modes](reference/Execution.ref.md#execution-modes).
 
 ### BACKEND-E2401
-See [Diagnostics.md](background/Diagnostics.back.md#backend-e2401).
+
+Select an installed target with `plugin.default` or workflow `target=`, such as the bundled `pyspark` plugin.
+See [plugin selection](reference/ConfigSchema.ref.md#plugin-and-target-selection).
 
 ### BACKEND-E2402
-See [Diagnostics.md](background/Diagnostics.back.md#backend-e2402).
+
+The configured profile or variant does not admit the requested operation. Follow the diagnostic's feature-specific
+remedy. A supported 4.1 feature under the broad default requires `profile = ">=4.1,<4.2"` and an admitted `variant`
+in `[tool.structure.plugin.pyspark]`; see [profile selection](reference/ConfigSchema.ref.md#pyspark-profiles).
+Unimplemented features and missing providers retain their own design or dependency remedies.
 
 ### CONNECT-E2601
+
 See [SparkConnect.md](background/SparkConnect.back.md#runtime-boundaries).
 
 ### CLI-X1101
-See [Diagnostics.md](background/Diagnostics.back.md#cli-x1101).
+
+An unclassified internal failure occurred. Report the diagnostic code, exact command, and a concise reproduction.
+See the [CLI reference](reference/CLI.ref.md).
 
 ### STREAM-E0801
-See [Diagnostics.md](background/Diagnostics.back.md#stream-e0801).
+
+See [streaming diagnostics](reference/Streaming.ref.md#correct-streaming-diagnostics).
 
 The transform step contains an operation that is not compatible with streaming execution. Keep the transform
 batch-only, add the required watermark or event-time bound, or rewrite the operation using a supported streaming
@@ -228,7 +281,7 @@ PySpark code. See [Streaming API](api/Streaming.api.md) and
 
 ### STREAM-E0802
 
-See [Diagnostics.md](background/Diagnostics.back.md#stream-e0802).
+See [streaming diagnostics](reference/Streaming.ref.md#correct-streaming-diagnostics).
 
 A streaming stage output is consumed by a downstream input that does not accept streaming data. Declare the downstream
 input with `streaming=True`, or explicitly allow the stream-to-batch boundary with `allow_stream_to_batch=True`.
@@ -236,7 +289,8 @@ Under default policy, compiler-visible compatible code is accepted automatically
 diagnostic. An explicit `streaming=False` always remains an error.
 
 ### STREAM-W0801
-See [Diagnostics.md](background/Diagnostics.back.md#stream-w0801).
+
+See [streaming diagnostics](reference/Streaming.ref.md#correct-streaming-diagnostics).
 
 Structure cannot prove an arbitrary hook is streaming-compatible. Mark the hook `streaming=True` only when it returns a
 DataFrame and avoids Spark actions, RDD/Pandas conversion, `readStream`, `writeStream`, query start/stop, checkpoints,
@@ -245,7 +299,7 @@ lifecycle code in caller-owned PySpark recipes such as `examples/streams/adoptio
 
 ### STREAM-W0802
 
-See [Diagnostics.md](background/Diagnostics.back.md#stream-w0802).
+See [streaming diagnostics](reference/Streaming.ref.md#correct-streaming-diagnostics).
 
 Spark permits ordinary business-key streaming aggregates with `update` or `complete` output mode, but a watermark
 does not evict their state because the grouping is not event-time bounded. Use an event-time or session window when

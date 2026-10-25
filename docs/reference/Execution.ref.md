@@ -195,9 +195,28 @@ until the streaming query has stopped. Closing a child or parent Structure sessi
 uses them. Closing the session does not stop or reconfigure the caller's Spark session. Close a generated transform's
 Structure-owned resources after lazy results no longer need them when the runtime exposes that lifecycle.
 
+### Runtime compatibility
+
+For PySpark, `StructureSession.run(...)` and `run_batch(...)` check the installed client and supplied Spark engine
+against `plugin.pyspark.profile` before execution-time compilation or schema materialization. A mismatch raises
+`PYSPARK-E2710`; unavailable version information raises `PYSPARK-E2711`. Configure
+[`runtime_version_check`](ConfigSchema.ref.md#pyspark-runtime-version-check) to raise, log an error and continue, or
+skip discovery. Static compilation does not read runtime versions.
+
+Generated classes carry the profile, variant, and policy selected when generated. Their constructors perform the same
+check, so regenerate after changing those settings. Through `StructureSession`, the check runs before loading the
+generated module. If an application imports a generated module directly, its schema constants can require a
+version-specific PySpark constructor before the generated class is instantiated. Use a compatible PySpark installation
+for the import; the constructor check cannot catch an earlier import failure.
+
+Passing the version check does not enable an exact-profile feature under a broader profile, configure Spark's TIME or
+spatial feature flags, verify optional provider dependencies, or certify a managed runtime. Each still follows its
+documented capability and runtime requirements.
+
 ## Runtime order
 
-Both online and generated execution follow this order:
+The PySpark runtime compatibility check runs first. After it passes or an explicit `log`/`off` policy allows
+execution to continue, both online and generated execution follow this order:
 
 1. validate declared inputs;
 2. resolve DataFrames selected by hook bindings;

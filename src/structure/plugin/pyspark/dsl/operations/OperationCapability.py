@@ -7,4 +7,4 @@ class OperationCapability:
     group: str
     name: str
     source: Mapping[str, str] = field(default_factory=dict)
-    docs: str = "docs/reference/BackendCapabilities.md"
+    docs: str = "docs/background/Capabilities.back.md"

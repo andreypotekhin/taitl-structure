@@ -23,12 +23,11 @@ project from ordinary PySpark to Spark Connect.
 ## Configuration
 
 ```toml
-[tool.structure]
-target_backend = "pyspark"
-target_profile = ">=3.5,<4.2"
-target_variant = "spark-connect"
+[tool.structure.plugin]
+default = "pyspark"
 
 [tool.structure.plugin.pyspark]
+profile = ">=3.5,<4.2"
 variant = "spark-connect"
 plan_boundaries = "auto"
 ```
@@ -36,7 +35,8 @@ plan_boundaries = "auto"
 Ordinary PySpark remains the default:
 
 ```toml
-target_variant = "ordinary"
+[tool.structure.plugin.pyspark]
+variant = "ordinary"
 ```
 
 Configuration is resolved before compilation. A project can therefore run `structure check` and `structure compile`
@@ -62,6 +62,15 @@ Spark Connect support covers completed batch features that lower through public 
 - execution through `StructureSession`;
 - generated PySpark execution with the same constructor and `run(...)` signature as ordinary PySpark.
 
+Exact `>=4.1,<4.2` additionally admits Column callbacks, the five scalar additions, TIME, typed relation queries,
+batch observations, KLL/Theta, Arrow batch modes, and native Apache spatial helpers. Delta and Iceberg have separate
+provider dependencies and live evidence. Earlier or broader profiles do not acquire those exact-4.1 capabilities by
+running on a 4.1 server; see the [feature guide](../API.md#version-compatibility).
+
+Reliable batch checkpointing is admitted for exact Connect 4.0 and 4.1 profiles after deep-plan parity, alias
+preservation, and resource-cleanup checks. It requires a server checkpoint directory. Other materialization helpers
+retain their own capability decisions; temporary-view references do not truncate logical lineage.
+
 ## What Is Not Included
 
 Spark Connect support does not include:
@@ -83,11 +92,12 @@ opaque. For Spark Connect, hook bodies must use public Connect-compatible PySpar
 ## Runtime Boundaries
 
 If execution or generated-code execution detects that runtime code touched classic-only Spark internals while
-`target_variant = "spark-connect"` is active, Structure raises `CONNECT-E2601`. This diagnostic covers detected
+`plugin.pyspark.variant = "spark-connect"` is active, Structure raises `CONNECT-E2601`. This diagnostic covers detected
 SparkContext, RDD, JVM, Py4J, and private classic-field access from hook bodies or generated transform execution.
 
 The fix is to rewrite the code with public Spark Connect DataFrame APIs, move the logic into compiler-visible Structure
-DSL, or run the job with `target_variant = "ordinary"` when the code intentionally depends on classic PySpark internals.
+DSL, or run the job with `plugin.pyspark.variant = "ordinary"` when the code intentionally depends on classic PySpark
+internals.
 
 StructureTools schema generation can use Spark Connect metadata paths that the remote session supports. If table or
 path schema extraction fails through Spark Connect, the tool names Spark Connect in the error and suggests passing an
@@ -116,6 +126,10 @@ result = generated.run(orders=orders_df)
 
 Structure does not create or manage the remote Spark Connect server.
 
+Before execution-time compilation, the PySpark executor checks client and remote engine versions against the
+configured profile under `runtime_version_check`. Static compilation does not make that request. See
+[runtime compatibility](../reference/Execution.ref.md#runtime-compatibility) for policies and generated-class timing.
+
 The caller owns session creation, authentication, remote endpoint lifecycle, input DataFrames, actions, result
 materialization, and cleanup. Structure owns only transform invocation and the semantic plan it supplies to the target.
 This ownership is the same as ordinary execution except that the Connect variant rejects classic-only runtime access.
@@ -132,7 +146,7 @@ For a migration, keep the transform invocation unchanged and isolate target-spec
 ```python
 config = StructureConfig.resolve(
     project_root=project_root,
-    overrides={"target_variant": "spark-connect"},
+    overrides={"plugin": {"pyspark": {"variant": "spark-connect"}}},
 )
 session = StructureSession(spark=connect_spark, ctx=ctx, config=config)
 result = NormalizeOrders(orders=orders_df).run(session)
@@ -146,7 +160,7 @@ Only code that intentionally touches the runtime or a raw hook should require a 
 When a transform asks Spark Connect to run classic-only behavior, Structure should fail before execution or generation
 with a backend capability diagnostic. The diagnostic should name the unsupported feature and suggest one of these fixes:
 
-- use `target_variant = "ordinary"` when the project depends on classic-only PySpark;
+- use `plugin.pyspark.variant = "ordinary"` when the project depends on classic-only PySpark;
 - remove SparkContext, RDD, JVM, Py4J, `_jdf`, or private-field usage;
 - move hook logic into compiler-visible Structure DSL;
 - rewrite hook logic with public Connect-compatible PySpark APIs.
@@ -195,7 +209,7 @@ must preserve the cause, name Spark Connect, and suggest an explicit schema.
 
 When a Connect execution fails, diagnose from the outside in:
 
-1. Confirm that `target_variant` resolves to `spark-connect` and that the caller supplied a Connect session.
+1. Confirm that `plugin.pyspark.variant` resolves to `spark-connect` and that the caller supplied a Connect session.
 2. Check the capability decision for the operation family named in the failure.
 3. Search hooks and generated code for classic-only access such as `sparkContext`, `rdd`, `_jvm`, `_jdf`, or Py4J.
 4. Replace the operation with compiler-visible DSL or public Connect APIs, or explicitly select ordinary PySpark.

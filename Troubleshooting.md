@@ -1,19 +1,5 @@
 # Troubleshooting
 
-## Spark runtime profile does not match
-
-`PYSPARK-E2710` means either the installed PySpark client or the supplied Spark engine version falls outside
-`[tool.structure.plugin.pyspark].profile`. Check both versions in the diagnostic. Set the profile to a supported range
-containing both, or install/connect to a matching runtime. For a 4.1-only feature, the broad default does not admit the
-feature; set `profile = ">=4.1,<4.2"` and an admitted `variant` in the PySpark plugin table. This static capability
-selection does not switch the server runtime.
-
-`PYSPARK-E2711` means Structure could not read or parse `pyspark.__version__` or `spark.version`. Check that the
-PySpark package is installed and the supplied session is reachable. `runtime_version_check = "log"` records an ERROR
-and continues; `"off"` skips version discovery. These options do not make an unsupported profile or Spark operation
-compatible. See [runtime version configuration](docs/Configuration.md#pyspark-runtime-version-check) and
-[diagnostic details](docs/Diagnostics.md#pyspark-e2710-and-pyspark-e2711).
-
 ## Generated Delta Optimize Fails with `_structure_variables`
 
 Older generated code can raise `AttributeError` for `_structure_variables` when `delta_optimize(where=...)` uses a
@@ -79,7 +65,7 @@ String `+` requires two String operands. Convert a numeric expression explicitly
 A nullable String is accepted, but a null value makes the concatenation null. Use `coalesce(row.name, "") + "!"`
 when missing names should behave as empty strings. Bare `None` has no String type; use
 `literal(None).cast(types.string())` if you deliberately need a null string expression.
-See [Expressions API](docs/api/Expressions.api.md#general-column-transformations).
+See [Expressions API](docs/api/Expressions.api.md#column-transformations).
 
 ## Disk-less Source Transform Is Unavailable or Ambiguous
 
@@ -118,6 +104,19 @@ Structure checks the nested schema identity, so another schema with the same fie
 change one child field, construct the full nested value for now; partial nested updates are planned but not part of the
 current supported surface.
 
+## Spark Runtime Profile Does Not Match
+
+`PYSPARK-E2710` means either the installed PySpark client or the supplied Spark engine version falls outside
+`[tool.structure.plugin.pyspark].profile`. Check both versions in the diagnostic. Set the profile to a supported range
+containing both, or install/connect to a matching runtime. For a 4.1-only feature, set `profile = ">=4.1,<4.2"` and an
+admitted `variant` in the PySpark plugin table. Selecting a profile does not switch the server runtime.
+
+`PYSPARK-E2711` means Structure could not read or parse `pyspark.__version__` or `spark.version`. Check that the
+PySpark package is installed and the supplied session is reachable. `runtime_version_check = "log"` records an ERROR
+and continues; `"off"` skips version discovery. These options do not make an unsupported profile or Spark operation
+compatible. See [runtime version configuration](docs/Configuration.md#pyspark-runtime-version-check) and
+[diagnostic details](docs/Diagnostics.md#pyspark-e2710).
+
 ## Streaming Lifecycle Code Appears in a Transform or Hook
 
 If streaming diagnostics mention `STREAM-E0801` or `STREAM-W0801` around lifecycle code, keep `readStream`,
@@ -138,7 +137,7 @@ import failures after the query starts if an executor is missing a package.
 Keep the same caller-owned checkpoint location when restarting the same legacy query. Do not expect its saved state to
 load through `transform_with_state_in_pandas(...)` or `transform_with_state(...)`; Structure does not migrate between
 these Spark state formats. Timeout callbacks run only as later triggers advance, so a processing-time timeout is not an
-exact wall-clock guarantee. See [Streaming reference](docs/reference/Streaming.ref.md#review-an-arbitrary-state-boundary).
+exact wall-clock guarantee. See [Streaming reference](docs/reference/Streaming.ref.md#use-state-processors).
 
 ## Typed Pandas State Output or Dependency Error
 
@@ -149,4 +148,5 @@ they are not needed by Structure compilation.
 The typed processor's `on_batches` and `on_timer` callbacks must yield Pandas DataFrames whose columns match the
 declared output Schema by name and order. An empty DataFrame with no columns is normalized to that Schema; for other
 frames, use the error's callback name and expected/actual columns to correct the result. Spark still validates and
-converts column data types when the streaming query executes. See [Streaming reference](docs/reference/Streaming.ref.md#review-an-arbitrary-state-boundary).
+converts column data types when the streaming query executes. See [Streaming
+reference](docs/reference/Streaming.ref.md#use-state-processors).

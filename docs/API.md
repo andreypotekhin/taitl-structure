@@ -66,7 +66,9 @@ PySpark 4.1 adoption, feature status, target profiles, and live evidence are mai
 schedule; these compatibility documents are the source for versioned API claims.
 
 Select `profile = ">=4.1,<4.2"` explicitly to use the admitted 4.1 features. Each feature has ordinary and
-Spark Connect batch evidence; streaming availability is listed separately in its reference.
+Spark Connect batch evidence; streaming availability is listed separately in its reference. The broad default retains
+common 3.5/4.0/4.1 APIs and does not narrow automatically to the installed runtime. See
+[profile selection](reference/ConfigSchema.ref.md#pyspark-profiles) for supported settings and diagnostic remedies.
 
 | Feature | Public guide |
 | --- | --- |

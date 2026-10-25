@@ -109,23 +109,20 @@ The default is:
 ```toml
 [tool.structure]
 execution_mode = "online"
-target_backend = "pyspark"
-target_profile = ">=3.5,<4.2"
-target_variant = "ordinary"
+[tool.structure.plugin]
+default = "pyspark"
+
+[tool.structure.plugin.pyspark]
+profile = ">=3.5,<4.2"
+variant = "ordinary"
 ```
 
 Structure supports Python 3.11 and newer. The default PySpark profile targets PySpark 3.5.x, 4.0.x, and 4.1.x. The target
 layer owns version-specific API decisions and should prefer the oldest compatible API when a range spans supported
 PySpark lines.
 
-The active target is distinct from compatibility reporting. Future configuration may ask for a report across targets:
-
-```toml
-compat_targets = ["pyspark", "polars", "duckdb"]
-```
-
-Compatibility targets do not change the active execution target. Non-PySpark targets may be recorded as reserved
-metadata but do not claim execution support.
+A workflow selects one plugin; the former `compat_targets` configuration is rejected. Select a different installed
+plugin explicitly when checking a separate target. This does not establish cross-plugin transform portability.
 
 The target-family vocabulary is diagnostic metadata rather than an additional support claim. It includes
 `pyspark_dataframe`, `spark_connect_dataframe`, `typed_python_dataframe`, `local_lazy_dataframe`,
@@ -135,15 +132,15 @@ override an explicit capability decision.
 
 ## PySpark Profiles And Variants
 
-`target_backend = "pyspark"` selects the bundled production target. The ordinary variant uses an in-process
+`plugin.default = "pyspark"` selects the bundled production target. The ordinary variant uses an in-process
 `SparkSession`, `DataFrame`, and `Column` contract.
 
 Spark Connect is a PySpark variant, not a separate backend id:
 
 ```toml
-target_backend = "pyspark"
-target_profile = ">=3.5,<4.2"
-target_variant = "spark-connect"
+[tool.structure.plugin.pyspark]
+profile = ">=3.5,<4.2"
+variant = "spark-connect"
 ```
 
 The variant uses the PySpark DataFrame and Column API over a remote session. It must reject classic-only assumptions
@@ -152,6 +149,13 @@ or generation is claimed compatible. Public DSL syntax and `StructureSession` se
 
 Spark Connect support is limited to completed compiler-visible feature families with runtime evidence and explicit
 documentation. Streaming lifecycle remains caller-owned.
+
+
+The profile is one of the [supported selections](../reference/ConfigSchema.ref.md#pyspark-profiles), not an arbitrary
+range or automatic runtime detector. The broad default retains common APIs; `>=4.1,<4.2` enables separately admitted
+4.1 features. Capability failures carry a copyable profile/variant remedy when changing that selection is sufficient.
+The execution-time [runtime check](../reference/Execution.ref.md#runtime-compatibility) checks installed client and
+engine versions against the configured range. It does not change the static decision or establish provider parity.
 
 
 ## No-Spark and Private-API Boundary
@@ -296,15 +300,16 @@ See: the linked feature or capability background
 
 Capability groups describe Structure semantics rather than mirroring every target-library function. Current groups are
 `backend`, `expression`, `aggregate`, `compile`, `dedupe`, `docs`, `explain`, `higher_order`, `imports`, `join`,
-`optimization`, `validation`, `streaming`, and `window`; future profiles may add `runtime`, `output`, `hook`, and
-`type`.
+`optimization`, `validation`, `streaming`, `window`, `schema`, `query`, `observation`, `relation`, `set`,
+`generator`, `pyspark`, `delta`, and `iceberg`; feature specifications define their names and meaning.
 
 The ordinary PySpark profile covers fields, literals, projections, filters, boolean and equality expressions, null-safe
 equality, casts, standard helpers, lookup/analytical/rowset joins, aggregates, windows, higher-order arrays and maps,
 schema-only validation, strict projection, streaming row-local work, stream-static left and inner joins, and generated
-imports. Deferred requirements remain explicit unsupported decisions, including join strategies, repartition, richer
-field-lineage explain, incremental compilation, stream-stream joins, and streaming orchestration. Generated
-documentation is a capability-gated but implemented opt-in artifact family.
+imports. Join strategy hints and relation partitioning are implemented; stream-stream work follows its documented
+join/watermark/state restrictions. Exact-4.1 expression, query, observation, sketch, Arrow, and spatial capabilities
+remain separately gated. Production incremental compilation and Structure-owned streaming orchestration remain outside
+the supported surface. Generated documentation is an implemented opt-in artifact family.
 
 An alternative profile is complete only when it supplies type mapping, expression/filter/projection/join/validation
 lowering, runtime or generated mode behavior, hook ABI rules or an explicit no-hooks limitation, deterministic output,

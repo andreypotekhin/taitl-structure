@@ -113,15 +113,22 @@ Pandas state retain their separately documented gates.
   receiving a public product-support claim.
 - Immediate removal of target-owned names from the `structure` package root.
 
-## Current Adoption Focus
+## Next Release: V12
 
-- Adopt PySpark `>=4.1,<4.2` with ordinary PySpark as the primary target variant and separately evidenced Spark Connect
-  parity.
-- Maintain a versioned 4.0-to-4.1 API inventory with one status, owner boundary, contract, diagnostic, test, and
-  evidence path for every reviewed addition.
-- Admit only typed, symbolic, explainable 4.1 expression and relational APIs; keep arbitrary Python, readers/writers,
-  session/catalog, declarative-pipeline, SQL-scripting, and streaming-state/lifecycle families explicitly gated or
-  caller-owned.
-- Extend the six-lane live integration matrix to PySpark 4.1 and retain 3.5/4.0 regression evidence.
-- Close the adoption work only after catalog/reference reconciliation, generated-artifact freshness, live parity
-  evidence, and `make build`.
+[V12](project/V12.md) is planned as twelve two-week sprints, 61–72, with calendar dates unset. It combines PySpark
+4.2 adoption with deeper V11 coverage rather than reserving feature evidence for the final sprint.
+
+- Establish ordinary/Connect 4.2 lanes and explicit V11 capability continuity; retain the six 3.5/4.0/4.1 regression
+  selections and classify the reviewed 4.2 API/semantic delta.
+- Extend temporal and Variant validation, native spatial operations, sketches/aggregates, typed queries, ranked
+  matching/native vectors, and Arrow/Python execution.
+- Complete ordinary state-family evidence, selected streaming composition/schema-union rules, and streaming
+  observations. Spark Connect remains batch-only throughout V12.
+- Prove available Delta/Iceberg 4.2 pairs and typed CDC consumption; provider bindings require compatible released
+  dependencies and catalog-specific evidence.
+- Reserve Sprint 72 for dedicated hardening, eight documented runtime selections, the integration-enabled build,
+  generated freshness, performance comparisons, and a recorded default-profile decision.
+
+Sources, sinks, triggers, checkpoints, query lifecycle, recovery, and external effects remain caller-owned. The
+current default remains `>=3.5,<4.2`; V12 planning changes no support claim. See the
+[project roadmap](project/Roadmap.md#v12-planned-scope) and [V12 backlog](project/Backlog.md#v12).

@@ -82,6 +82,16 @@ Allowed groups:
 - `docs`;
 - `explain`;
 - `higher_order`;
+- `generator`;
+- `relation`;
+- `query`;
+- `schema`;
+- `set`;
+- `pyspark`;
+- `delta`;
+- `iceberg`;
+- `observation`;
+- `geospatial`;
 - `join`;
 - `optimization`;
 - `validation`;
@@ -103,12 +113,11 @@ Future alternative backends may add these groups:
 
 `docs` points to this specification or a narrower semantic specification.
 
-Capability requirements describe Structure semantics, not individual PySpark API entrypoints. A backend profile should
-answer questions such as "can this target lower grouped aggregation", "can it lower symbolic higher-order array
-transforms", or "can it lower this join family" rather than exposing a registry of every Spark function. This keeps
-PySpark version choices isolated in the target layer while preventing the compiler surface from becoming a second
-PySpark API. The same rule applies to Spark SQL, typed PySpark DataFrame patterns, Polars, DuckDB, Pandas, Ibis, and
-other future targets: capability requirements describe Structure semantics, not a mirror of the target library.
+Capability requirements describe typed Structure operations. Shared requirements can cover common grouped,
+higher-order, or join semantics; individual requirements such as `expression.to_time` distinguish operations whose
+version or runtime support differs. The feature catalogs carry the exhaustive API inventory. Capability profiles
+decide whether checked operations can run for a target without introducing an untyped function-dispatch fallback.
+This keeps version choices in the target layer and applies equally to future plugins.
 
 ## Decision Shape
 
@@ -126,152 +135,35 @@ CapabilityDecision
   required_target
 ```
 
-Supported decisions may leave diagnostic fields empty except for `docs`. Unsupported decisions must fill every
-diagnostic
+Supported decisions may leave diagnostic fields empty except for `docs`. Unsupported decisions provide the
+feature-specific problem, rationale, remedy, documentation, and available target requirements.
 
 ## PySpark Profile
 
-The default PySpark capability profile supports these requirements:
+The default `>=3.5,<4.2` profile admits common PySpark 3.5/4.0/4.1 semantics. Profile strings are explicit keys,
+not arbitrary version expressions. The supported keys and numeric bounds live together in
+`PySparkCapabilities.py`; execution-time version checking uses those same bounds without changing static admission.
+See the [profile reference](../../reference/ConfigSchema.ref.md#pyspark-profiles) for the supported selections.
 
-```text
-backend.ordinary_pyspark
-backend.spark_connect_dataframe
-expression.field_ref
-expression.literal
-expression.projection
-expression.filter
-expression.boolean_ops
-expression.equality
-expression.null_safe_equality
-expression.cast
-expression.standard_helper_call
-join.lookup_join
-join.exists
-join.not_exists
-join.inner_join
-join.lookup_dedupe
-join.temporal_one
-join.as_of_one
-join.left_join
-join.inner_join
-join.left_semi_join
-join.left_anti_join
-join.composite_equi_join
-join.rowset_join
-join.right_join
-join.full_join
-join.cross_join
-join.non_equi_condition
-join.disjunctive_condition
-join.broadcast_hint
-aggregate.group_by
-aggregate.rollup
-aggregate.cube
-aggregate.count
-aggregate.count_distinct
-aggregate.sum
-aggregate.min
-aggregate.max
-aggregate.avg
-aggregate.approx_count_distinct
-aggregate.approx_percentile
-aggregate.bool_and
-aggregate.bool_or
-aggregate.collect_list
-aggregate.collect_set
-aggregate.corr
-aggregate.covar
-aggregate.filtered_metric
-aggregate.first_value
-aggregate.grouping_id
-aggregate.is_grouped
-aggregate.last_value
-aggregate.stddev
-aggregate.variance
-higher_order.array_aggregate
-higher_order.array_reduce
-higher_order.array_distinct
-higher_order.array_exists
-higher_order.array_transform
-higher_order.array_filter
-higher_order.array_flatten
-higher_order.array_forall
-higher_order.array_position
-higher_order.cardinality
-higher_order.array_size
-higher_order.array_max
-higher_order.array_min
-higher_order.array_join
-higher_order.concat
-higher_order.arrays_overlap
-higher_order.get
-higher_order.sort_array
-higher_order.shuffle
-higher_order.arrays_zip
-higher_order.array_sort_by
-higher_order.array_zip_with
-higher_order.map_entries
-higher_order.map_transform_values
-higher_order.map_filter
-higher_order.map_from_entries
-higher_order.map_keys
-higher_order.map_transform_keys
-higher_order.map_values
-higher_order.map_zip_with
-dedupe.drop_duplicates
-window.avg
-window.count
-window.count_distinct
-window.row_number
-window.rank
-window.dense_rank
-window.cume_dist
-window.first_value
-window.lag
-window.last_value
-window.lead
-window.max
-window.min
-window.nth_value
-window.ntile
-window.percent_rank
-window.sum
-window.rolling_sum
-window.rolling_avg
-window.rolling_min
-window.rolling_max
-window.select_latest
-window.select_earliest
-optimization.cache
-validation.schema_only_validation
-validation.strict_projection
-validation.allow_extra_projection
-streaming.row_local_projection
-streaming.row_local_filter
-streaming.stream_static_left_join
-streaming.stream_static_inner_join
-imports.generated_pyspark_imports
-```
+Common requirements cover typed expressions, projections, filters, joins and strategy hints, grouped and window
+metrics, higher-order collections, relation ordering/partitioning, set operations, schema validation, and generated
+imports. Streaming support is further restricted by operation shape, target variant, state policy, and live evidence.
+The [API tracker](../../compatibility/APITracker.md) and feature ledgers carry the operation inventory.
 
-Deferred features must be represented as unsupported decisions. Examples:
+| Feature family | Admission rule |
+| --- | --- |
+| Column callbacks, five scalar additions, TIME, relation queries, observations, KLL/Theta, and Arrow UDFs | Exact `>=4.1,<4.2`; ordinary and Connect support is stated per operation and execution mode |
+| Native Geometry/Geography schema types | Exact 4.0/4.1 profiles plus available runtime type constructors |
+| Apache spatial helpers | Exact 4.1 ordinary/Connect batch; Spark feature flag and isolated provider session required |
+| Databricks and Sedona helpers | Explicit namespaces and provider-specific requirements; managed Databricks live evidence remains open |
+| Row state processors | Ordinary exact 4.1, with the typed state/timer/restart contract |
+| Pandas state processors | Ordinary exact 4.0/4.1; legacy Pandas state keeps its independent evidence gate |
+| Connect batch checkpointing | Exact 4.0/4.1 profiles; earlier Connect profiles reject it |
+| Delta and Iceberg | Optional provider packages on the evidenced ordinary profiles and exact Connect 4.1; dependencies are checked separately |
 
-```text
-window.window_project
-join.using_keys
-join.strategy_broadcast
-join.strategy_shuffle_hash
-join.strategy_shuffle_replicate_nl
-join.strategy_merge
-optimization.repartition
-explain.field_lineage
-docs.generated_docs
-compile.incremental
-streaming.stream_stream_join
-streaming.streaming_orchestration
-```
-
-Unsupported does not mean impossible forever. It means the feature is not part of the current backend contract and must
-not be lowered through silent fallback, Python UDFs, row-wise operations, or backend-specific ad hoc code.
+Unimplemented or unproven requirements return unsupported decisions. No path silently falls back to Python UDFs,
+row-wise execution, or opaque backend code. A future profile being recognized does not establish runtime support for
+its gated operations. Static capability admission and execution-time runtime suitability are distinct checks.
 
 ## Alternative Backend Extension
 
@@ -310,9 +202,9 @@ Severity: error
 
 Title: Unsupported backend target
 
-Common cause: configuration selects a `target_backend` for which Structure has no capability profile.
+Common cause: configuration or a workflow selects a plugin target with no available capability profile.
 
-Use: set `target_backend = "pyspark"` for v1.
+Use: select an installed target with `plugin.default` or workflow `target=`, such as the bundled `pyspark` plugin.
 
 ### BACKEND-E2402
 
@@ -322,29 +214,38 @@ Title: Unsupported backend capability
 
 Common cause: source or IR asks the configured backend to lower a feature outside its supported capability profile.
 
-Use: choose a supported Structure operation, use an explicit hook when arbitrary PySpark is the honest escape hatch, or
-wait until the feature's specification and backend profile promote it.
+Use: when a feature is supported on another admitted profile or variant, name the exact canonical plugin setting
+that enables it. For an exact-4.1 feature under the broad default, show
+`[tool.structure.plugin.pyspark] profile = ">=4.1,<4.2"` and the applicable variant. Do not describe an evidenced
+feature as awaiting parity. Provider-specific or unimplemented features retain their dependency or design remedy.
 
 Both diagnostics must include backend, target range, feature group, feature name, problem, rationale, suggested fix,
-and documentation link.
+and documentation link. `BackendDiagnostic.to_diagnostic()` preserves its specific `why`, `use`, and `docs` rather
+than replacing them with generic registry text. Direct exceptions and CLI rendering must expose the same remedy.
 
 ## PySpark Target Variants
 
-`target_backend = "pyspark"` supports target variants inside the same PySpark-family adapter.
+`plugin.default = "pyspark"` selects the plugin; `plugin.pyspark.variant` selects a variant of that plugin.
 
 ```toml
-target_backend = "pyspark"
-target_profile = ">=3.5,<4.2"
-target_variant = "ordinary"
+[tool.structure.plugin]
+default = "pyspark"
+
+[tool.structure.plugin.pyspark]
+profile = ">=3.5,<4.2"
+variant = "ordinary"
 ```
 
 The ordinary variant uses a normal in-process PySpark `SparkSession`, `DataFrame`, and `Column` contract. Its backend
 family is `ordinary_pyspark`.
 
 ```toml
-target_backend = "pyspark"
-target_profile = ">=3.5,<4.2"
-target_variant = "spark-connect"
+[tool.structure.plugin]
+default = "pyspark"
+
+[tool.structure.plugin.pyspark]
+profile = ">=3.5,<4.2"
+variant = "spark-connect"
 ```
 
 The Spark Connect variant uses the PySpark DataFrame and Column API over a remote session. Its backend family is
@@ -365,13 +266,13 @@ Runtime PySpark execution tests may import PySpark. Capability tests and compile
 
 ## Acceptance Criteria
 
-- `target_backend = "pyspark"` with `target_profile = ">=3.5,<4.2"` and `target_variant = "ordinary"` resolves the
+- `plugin.default = "pyspark"` with `plugin.pyspark.profile = ">=3.5,<4.2"` and `variant = "ordinary"` resolves the
   ordinary PySpark capability profile.
-- `target_backend = "pyspark"` with `target_variant = "spark-connect"` resolves the Spark Connect PySpark-variant
+- The PySpark plugin with `plugin.pyspark.variant = "spark-connect"` resolves the Spark Connect PySpark-variant
   capability profile.
 - Spark Connect supports completed compiler-visible batch feature capabilities and rejects classic-only backend
   internals with `BACKEND-E2402`.
-- Unknown `target_backend` fails with `BACKEND-E2401`.
+- Unknown selected targets fail with `BACKEND-E2401`.
 - Unsupported feature requirements fail with `BACKEND-E2402`.
 - Future backend profiles can report degraded, opaque, and unknown capabilities without importing backend runtimes.
 - Supported v1 feature requirements return supported decisions.

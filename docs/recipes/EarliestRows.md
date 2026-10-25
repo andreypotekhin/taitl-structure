@@ -100,5 +100,5 @@ better choice. Keep the partition key aligned with the question the output answe
 Ties are not a silent "pick either" case. The current public policy is `"error"`, so ensure the chosen ordering gives
 each partition one earliest row before relying on the result. These helpers are batch-only; use a batch input here.
 
-For the complete helper contract, see [Latest and Earliest Rows](../QuickRef.md#latest-and-earliest-rows) and the
+For the complete helper contract, see [Latest and Earliest Rows](../QuickRef.md#latestearliest-rows) and the
 [Transform background](../background/Transform.back.md).

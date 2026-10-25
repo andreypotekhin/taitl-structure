@@ -148,6 +148,11 @@ Required when available:
 Diagnostic values may include additional structured fields for renderers and integrations. Unknown fields must not
 change the meaning of the diagnostic code.
 
+`Diagnostic.explanation` and `Diagnostic.documentation` override the registry's generic rationale and documentation
+when an individual diagnostic provides more specific guidance. Backend diagnostic conversion preserves these fields
+along with `problem`, `use`, and context. Python exceptions and CLI output render the same feature-specific remedy,
+including a copyable exact profile/variant selection when a broader profile rejects a supported feature.
+
 ## Registry
 
 The implementation must contain a diagnostic registry before broad diagnostic work begins. The registry may be a Python
